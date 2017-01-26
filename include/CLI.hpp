@@ -16,7 +16,7 @@
 // This is unreachable outside this file; you should not use Combiner directly
 namespace {
 
-void logit(std::string output) {
+void logit(std::string) {
     //std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
 }
 
@@ -422,7 +422,7 @@ public:
             std::string name,           ///< The name, short,long
             std::string discription=""  ///< Discription string
             ) {
-        CLI::callback_t fun = [](CLI::results_t res){
+        CLI::callback_t fun = [](CLI::results_t){
             return true;
         };
         
