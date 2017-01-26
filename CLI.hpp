@@ -17,7 +17,7 @@
 namespace {
 
 void logit(std::string output) {
-    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
+    //std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
 }
 
 template <typename T>
@@ -64,51 +64,51 @@ namespace CLI {
 
 class Error : public std::runtime_error {
 public:
-    Error(std::string name) : runtime_error(name) {};
+    Error(std::string parent, std::string name) : runtime_error(parent + ": " + name) {}
 };
 
 class BadNameString : public Error {
 public:
-    BadNameString(std::string name) : Error("Failed to parse: " + name) {};
+    BadNameString(std::string name) : Error("BadNameString", name) {}
 };
 
 class CallForHelp : public Error {
 public:
-    CallForHelp() : Error("Help option passed") {};
+    CallForHelp() : Error("CallForHelp","") {}
 };
 
 class ParseError : public Error {
 public:
-    ParseError(std::string info="") : Error(info) {};
+    ParseError(std::string name) : Error("ParseError", name) {}
 };
 
 class OptionAlreadyAdded : public Error {
 public:
-    OptionAlreadyAdded(std::string name) : Error("Already added:" + name) {};
+    OptionAlreadyAdded(std::string name) : Error("OptionAlreadyAdded", name) {}
 };
 
 class OptionNotFound : public Error {
 public:
-    OptionNotFound(std::string name) : Error(name) {};
+    OptionNotFound(std::string name) : Error("OptionNotFound", name) {}
 };
 
 class RequiredError : public Error {
 public:
-    RequiredError(std::string name="") : Error(name) {};
+    RequiredError(std::string name) : Error("RequiredError", name) {}
 };
 
 class ExtraPositionalsError : public Error {
 public:
-    ExtraPositionalsError(std::string name="") : Error(name) {};
+    ExtraPositionalsError(std::string name) : Error("ExtraPositionalsError", name) {}
 };
 
 class HorribleError : public Error {
 public:
-    HorribleError(std::string name="") : Error("You should never see this error! "+name) {};
+    HorribleError(std::string name) : Error("HorribleError", "(You should never see this error) " + name) {}
 };
 class IncorrectConstruction : public Error {
 public:
-    IncorrectConstruction(std::string name="") : Error(name) {};
+    IncorrectConstruction(std::string name) : Error("IncorrectConstruction", name) {}
 };
 
 const std::regex reg_split{R"regex((?:([a-zA-Z0-9]?)(?:,|$)|^)([a-zA-Z0-9][a-zA-Z0-9_\-]*)?)regex"};
@@ -297,22 +297,21 @@ bool lexical_cast(std::string input, T& output) {
 
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 
+class App;
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new Program() instance with argc, argv, and a help discription. The templated
 *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
 * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
-public:
-
 protected:
     
     std::string name;
-    std::string discription;
+    std::string prog_discription;
     std::vector<Option> options;
     std::vector<std::string> missing_options;
     std::vector<std::string> positionals;
-    std::vector<App> subcommands;
+    std::vector<App*> subcommands;
     bool parsed{false};
     App* subcommand = nullptr;
 
@@ -320,16 +319,22 @@ public:
 
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string discription="")
-        : discription(discription) {
+    App(std::string prog_discription="")
+        : prog_discription(prog_discription) {
 
             add_flag("h,help", "Print this help message and exit");
 
     }
 
-    App& add_subcommand(std::string name) {
-        subcommands.emplace_back();
-        subcommands.back().name = name;
+    ~App() {
+        for(App* app : subcommands)
+            delete app;
+    }
+
+    App* add_subcommand(std::string name, std::string discription="") {
+        subcommands.push_back(new App(discription));
+        subcommands.back()->name = name;
+        logit(subcommands.back()->name);
         return subcommands.back();
     }
     /// Add an option, will automatically understand the type for common types.
@@ -514,7 +519,6 @@ public:
             throw CallForHelp();
         }
 
-        bool success = true;
         for(Option& opt : options) {
             while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
                 opt.get_new();
@@ -524,22 +528,21 @@ public:
             if (opt.required() && opt.count() < opt.expected())
                 throw RequiredError(opt.get_name());
             if (opt.count() > 0) {
-                success &= opt.run_callback();
+                if(!opt.run_callback())
+                    throw ParseError(opt.get_name());
             }
 
         }
-        if(!success)
-            throw ParseError();
         if(positionals.size()>0)
-            throw ExtraPositionalsError();
+            throw ExtraPositionalsError("[" + join(positionals) + "]");
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
-        for(App &com : subcommands) {
-            if(com.name == args.back()){ 
+        for(App *com : subcommands) {
+            if(com->name == args.back()){ 
                 args.pop_back();
-                com.parse(args);
-                subcommand = &com;
+                com->parse(args);
+                subcommand = com;
                 return;
             }
         }
@@ -551,7 +554,7 @@ public:
         std::smatch match;
 
         if(!std::regex_match(current, match, reg_short))
-            throw HorribleError("Subcommand");
+            throw HorribleError("Short");
         
         args.pop_back();
         std::string name = match[1];
@@ -608,8 +611,8 @@ public:
     Classifer _recognize(std::string current) const {
         if(current == "--")
             return Classifer::POSITIONAL_MARK;
-        for(const App &com : subcommands) {
-            if(com.name == current)
+        for(const App* com : subcommands) {
+            if(com->name == current)
                 return Classifer::SUBCOMMAND;
         }
         if(std::regex_match(current, reg_long))
@@ -685,7 +688,7 @@ public:
             std::cout << help() << std::endl;
             exit(0);
         } catch(const Error &e) {
-            std::cerr << "ERROR:" << std::endl;
+            std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             std::cerr << help() << std::endl;
             exit(1);
@@ -707,21 +710,22 @@ public:
 
     std::string help() const {
         std::stringstream out;
-        out << discription << std::endl;
+        if(name != "")
+            out << "Subcommand: " << name << " ";
+        out << prog_discription << std::endl;
         int len = std::accumulate(std::begin(options), std::end(options), 0,
                 [](int val, const Option &opt){
-                    return std::max(opt.help_len(), val);});
+                    return std::max(opt.help_len()+1, val);});
         for(const Option &opt : options) {
             out << opt.help(len) << std::endl;
         }
         if(subcommands.size()> 0) {
-            out << "Subcommands: ";
-            for(const App &com : subcommands) {
-                if(&com != &subcommands[0])
-                    out << ", ";
-                std::cout << com.get_name();
+            out << "Subcommands:" << std::endl;
+            int max = std::accumulate(std::begin(subcommands), std::end(subcommands), 0,
+                    [](int i, const App* j){return std::max(i, (int) j->get_name().length()+1);});
+            for(const App* com : subcommands) {
+                out << std::setw(max) << std::left << com->get_name() << " " << com->prog_discription << std::endl;
             }
-            out << std::endl;
         }
         return out.str();
     }
