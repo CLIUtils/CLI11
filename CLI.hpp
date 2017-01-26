@@ -17,7 +17,7 @@
 namespace {
 
 void logit(std::string output) {
-    //std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
+    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
 }
 
 template <typename T>
@@ -478,20 +478,19 @@ public:
     /// Parses the command line - throws errors
     void parse(int argc, char **argv) {
         std::vector<std::string> args;
-        for(int i=1; i<argc; i++)
-            args.emplace_back(argv[i]);
+        for(int i=argc-1; i>0; i--)
+            args.push_back(argv[i]);
         parse(args);
     }
 
     void parse(std::vector<std::string> args) {
         parsed = true;
-        std::reverse(args.begin(), args.end());
 
         bool positional_only = false;
         
         while(args.size()>0) {
 
-            logit(join(args));
+            logit("Parse: ["+join(args)+"]");
 
             Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
             switch(classifer) {
