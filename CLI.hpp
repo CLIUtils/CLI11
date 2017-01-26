@@ -17,7 +17,7 @@
 namespace {
 
 void logit(std::string output) {
-    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
+    //std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
 }
 
 template <typename T>
@@ -483,7 +483,7 @@ public:
         parse(args);
     }
 
-    void parse(std::vector<std::string> args) {
+    void parse(std::vector<std::string> & args) {
         parsed = true;
 
         bool positional_only = false;
