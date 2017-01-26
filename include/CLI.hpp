@@ -289,7 +289,10 @@ lexical_cast(std::string input, T& output) {
 
 // String and similar
 template<typename T>
-bool lexical_cast(std::string input, T& output) {
+typename std::enable_if<
+  !std::is_floating_point<T>::value
+  && !std::is_integral<T>::value, bool>::type
+lexical_cast(std::string input, T& output) {
     logit("Direct lexical cast: " + input);
     output = input;
     return true;

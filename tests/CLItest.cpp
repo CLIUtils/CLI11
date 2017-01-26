@@ -36,9 +36,79 @@ struct TApp : public ::testing::Test {
 
 };
 
-TEST_F(TApp, AFewArgs) {
+TEST_F(TApp, OneFlagShort) {
     app.add_flag("c,count");
     args = {"-c"};
     run();
+    EXPECT_EQ(1, app.count("c"));
     EXPECT_EQ(1, app.count("count"));
+}
+
+TEST_F(TApp, OneFlagLong) {
+    app.add_flag("c,count");
+    args = {"--count"};
+    run();
+    EXPECT_EQ(1, app.count("c"));
+    EXPECT_EQ(1, app.count("count"));
+}
+
+TEST_F(TApp, OneFlagRef) {
+    int ref;
+    app.add_flag("c,count", ref);
+    args = {"--count"};
+    run();
+    EXPECT_EQ(1, app.count("c"));
+    EXPECT_EQ(1, app.count("count"));
+    EXPECT_EQ(1, ref);
+}
+
+TEST_F(TApp, OneString) {
+    std::string str;
+    app.add_option("s,string", str);
+    args = {"--string", "mystring"};
+    run();
+    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(str, "mystring");
+}
+
+
+TEST_F(TApp, TogetherInt) {
+    int i;
+    app.add_option("i,int", i);
+    args = {"-i4"};
+    run();
+    EXPECT_EQ(1, app.count("int"));
+    EXPECT_EQ(1, app.count("i"));
+    EXPECT_EQ(i, 4);
+}
+
+TEST_F(TApp, SepInt) {
+    int i;
+    app.add_option("i,int", i);
+    args = {"-i","4"};
+    run();
+    EXPECT_EQ(1, app.count("int"));
+    EXPECT_EQ(1, app.count("i"));
+    EXPECT_EQ(i, 4);
+}
+
+TEST_F(TApp, OneStringAgain) {
+    std::string str;
+    app.add_option("s,string", str);
+    args = {"--string", "mystring"};
+    run();
+    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(str, "mystring");
+}
+
+
+TEST_F(TApp, DefaultStringAgain) {
+    std::string str = "previous";
+    app.add_option("s,string", str);
+    run();
+    EXPECT_EQ(0, app.count("s"));
+    EXPECT_EQ(0, app.count("string"));
+    EXPECT_EQ(str, "previous");
 }
