@@ -9,12 +9,15 @@
 #include <algorithm>
 #include <sstream>
 #include <type_traits>
+#include <unordered_set>
+#include <iomanip>
+#include <numeric>
 
 // This is unreachable outside this file; you should not use Combiner directly
 namespace {
 
 void logit(std::string output) {
-    std::cout << output << std::endl;
+    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
 }
 
 template <typename T>
@@ -30,8 +33,6 @@ std::string join(const T& v, std::string delim = ",") {
 }
 
 
-
-
 struct Combiner {
     int num;
     bool positional;
@@ -41,7 +42,7 @@ struct Combiner {
     /// Can be or-ed together
     Combiner operator | (Combiner b) const {
         Combiner self;
-        self.num = num + b.num;
+        self.num = std::min(num, b.num) == -1 ? -1 : std::max(num, b.num);
         self.positional = positional || b.positional;
         self.required = required || b.required;
         self.defaulted = defaulted || b.defaulted;
@@ -56,40 +57,66 @@ struct Combiner {
         return *this | b;
     }
 };
-
-
 }
+
 
 namespace CLI {
 
-class BadNameString : public std::runtime_error {
+class Error : public std::runtime_error {
 public:
-    BadNameString(std::string name) : runtime_error("Failed to parse: " + name) {};
+    Error(std::string name) : runtime_error(name) {};
 };
 
-class CallForHelp : public std::runtime_error {
+class BadNameString : public Error {
 public:
-    CallForHelp() : runtime_error("Help option passed") {};
+    BadNameString(std::string name) : Error("Failed to parse: " + name) {};
 };
 
-class ParseError : public std::runtime_error {
+class CallForHelp : public Error {
 public:
-    ParseError(std::string info="") : runtime_error(info) {};
+    CallForHelp() : Error("Help option passed") {};
 };
 
-class OptionAlreadyAdded : public std::runtime_error {
+class ParseError : public Error {
 public:
-    OptionAlreadyAdded(std::string name) : runtime_error("Already added:" + name) {};
+    ParseError(std::string info="") : Error(info) {};
 };
 
+class OptionAlreadyAdded : public Error {
+public:
+    OptionAlreadyAdded(std::string name) : Error("Already added:" + name) {};
+};
 
+class OptionNotFound : public Error {
+public:
+    OptionNotFound(std::string name) : Error(name) {};
+};
+
+class RequiredError : public Error {
+public:
+    RequiredError(std::string name="") : Error(name) {};
+};
+
+class ExtraPositionalsError : public Error {
+public:
+    ExtraPositionalsError(std::string name="") : Error(name) {};
+};
+
+class HorribleError : public Error {
+public:
+    HorribleError(std::string name="") : Error("You should never see this error! "+name) {};
+};
+class IncorrectConstruction : public Error {
+public:
+    IncorrectConstruction(std::string name="") : Error(name) {};
+};
 
 const std::regex reg_split{R"regex((?:([a-zA-Z0-9]?)(?:,|$)|^)([a-zA-Z0-9][a-zA-Z0-9_\-]*)?)regex"};
 const std::regex reg_short{R"regex(-([^-])(.*))regex"};
 const std::regex reg_long{R"regex(--([^-^=][^=]*)=?(.*))regex"};
 
 
-std::tuple<std::string, std::string> split(std::string fullname) throw(BadNameString) {
+std::tuple<std::string, std::string> split(std::string fullname) {
 
     std::smatch match;
     if (std::regex_match(fullname, match, reg_split)) {
@@ -101,11 +128,12 @@ std::tuple<std::string, std::string> split(std::string fullname) throw(BadNameSt
     } else throw BadNameString(fullname);
 }
 
-const Combiner NOTHING   {0,false,false,false};
-const Combiner REQUIRED  {0,false,true, false};
-const Combiner DEFAULT   {0,false,false,true};
-const Combiner POSITIONAL{0,true, false,false};
-const Combiner ARGS      {1,false,false,false};
+const Combiner NOTHING   {0, false,false,false};
+const Combiner REQUIRED  {1, false,true, false};
+const Combiner DEFAULT   {1, false,false,true};
+const Combiner POSITIONAL{1, true, false,false};
+const Combiner ARGS      {1, false,false,false};
+const Combiner UNLIMITED {-1,false,false,false};
 
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
@@ -125,9 +153,25 @@ protected:
 
 
 public:
-    Option(std::string name, std::string discription = "", Combiner opts=NOTHING, std::function<bool(results_t)> callback=[](results_t){return true;}) throw (BadNameString) :
+    Option(std::string name, std::string discription = "", Combiner opts=NOTHING, std::function<bool(results_t)> callback=[](results_t){return true;}) :
       opts(opts), discription(discription), callback(callback){
         std::tie(sname, lname) = split(name);
+    }
+
+    bool required() const {
+        return opts.required;
+    }
+
+    int expected() const {
+        return opts.num;
+    }
+
+    bool positional() const {
+        return opts.positional;
+    }
+
+    bool defaulted() const {
+        return opts.defaulted;
     }
 
     /// Process the callback
@@ -145,13 +189,17 @@ public:
             return sname==other.sname || lname==other.lname;
     }
 
-    std::string getName() const {
+    std::string get_name() const {
         if(sname=="")
             return "--" + lname;
         else if (lname=="")
             return "-" + sname;
         else
             return "-" + sname + ", --" + lname;
+    }
+
+    bool check_name(const std::string& name) const {
+        return name == sname || name == lname || name == sname + "," + lname;
     }
 
     bool check_sname(const std::string& name) const {
@@ -170,24 +218,23 @@ public:
         return lname;
     }
 
-
-    int get_num() const {
-        return opts.num;
-    }
-
     void add_result(int r, std::string s) {
+        logit("Adding result: " + s);
         results.at(r).push_back(s);
     }
     int get_new() {
         results.emplace_back();
         return results.size() - 1;
     }
-    int count() {
-        return results.size();
+    int count() const {
+        int out = 0;
+        for(const std::vector<std::string>& v : results)
+            out += v.size();
+        return out;
     }
 
     std::string string() const {
-        std::string val = "Option: " + getName() + "\n"
+        std::string val = "Option: " + get_name() + "\n"
              + "  " + discription + "\n"
              + "  [";
         for(const auto& item : results) {
@@ -199,7 +246,57 @@ public:
         return val;
     }
 
+    int help_len() const {
+        return std::min((int) get_name().length(), 40);
+    }
+
+    std::string help(int len = 0) const {
+        std::stringstream out;
+        out << std::setw(len) << std::left << get_name() << discription;
+        return out.str();
+    }
+
 };
+
+
+template<typename T>
+typename std::enable_if<std::is_integral<T>::value, bool>::type
+lexical_cast(std::string input, T& output) {
+    logit("Int lexical cast " + input);
+    try{
+        output = (T) std::stoll(input);
+        return true;
+    } catch (std::invalid_argument) {
+        return false;
+    } catch (std::out_of_range) {
+        return false;
+    }
+}
+    
+template<typename T>
+typename std::enable_if<std::is_floating_point<T>::value, bool>::type
+lexical_cast(std::string input, T& output) {
+    logit("Floating lexical cast " + input);
+    try{
+        output = (T) std::stold(input);
+        return true;
+    } catch (std::invalid_argument) {
+        return false;
+    } catch (std::out_of_range) {
+        return false;
+    }
+}
+
+// String and similar
+template<typename T>
+bool lexical_cast(std::string input, T& output) {
+    logit("Direct lexical cast: " + input);
+    output = input;
+    return true;
+}
+
+enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
+
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new Program() instance with argc, argv, and a help discription. The templated
@@ -210,19 +307,31 @@ public:
 
 protected:
     
-    std::string desc;
+    std::string name;
+    std::string discription;
     std::vector<Option> options;
     std::vector<std::string> missing_options;
     std::vector<std::string> positionals;
+    std::vector<App> subcommands;
+    bool parsed{false};
+    App* subcommand = nullptr;
 
 public:
 
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string discription)
-        : desc(discription) {
+    App(std::string discription="")
+        : discription(discription) {
+
+            add_flag("h,help", "Print this help message and exit");
+
     }
-    
+
+    App& add_subcommand(std::string name) {
+        subcommands.emplace_back();
+        subcommands.back().name = name;
+        return subcommands.back();
+    }
     /// Add an option, will automatically understand the type for common types.
     /** To use, create a variable with the expected type, and pass it in after the name.
      * After start is called, you can use count to see if the value was passed, and
@@ -242,23 +351,27 @@ public:
             std::string discription="", ///< Discription string
             Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
-
         Option myopt{name, discription, opts, callback};
         if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
             options.push_back(myopt);
         else
-            throw OptionAlreadyAdded(myopt.getName());
+            throw OptionAlreadyAdded(myopt.get_name());
 
     }
 
     /// Add option for string
-    void add_option(
+    template<typename T>
+    typename std::enable_if<!std::is_array<T>::value, void>::type
+    add_option(
             std::string name,           ///< The name, long,short
-            std::string &variable,      ///< The variable to set
+            T &variable,                ///< The variable to set
             std::string discription="", ///< Discription string
             Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
+        
+        if(opts.num!=1)
+            throw IncorrectConstruction("Must have ARGS(1) or be a vector.");
         CLI::callback_t fun = [&variable](CLI::results_t res){
             if(res.size()!=1) {
                 return false;
@@ -266,8 +379,33 @@ public:
             if(res[0].size()!=1) {
                 return false;
             }
-            variable = res[0][0];
-            return true;
+            return lexical_cast(res[0][0], variable);
+        };
+
+        add_option(name, fun, discription, opts);
+    }
+
+    /// Add option for vector of results
+    template<typename T>
+    void add_option(
+            std::string name,           ///< The name, long,short
+            std::vector<T> &variable,   ///< The variable to set
+            std::string discription="", ///< Discription string
+            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            ) {
+
+        if(opts.num==0)
+            throw IncorrectConstruction("Must have ARGS(1) or be a vector.");
+        CLI::callback_t fun = [&variable](CLI::results_t res){
+            bool retval = true;
+            int count = 0;
+            variable.clear();
+            for(const auto &a : res)
+                for(const auto &b : a) {
+                    variable.emplace_back();
+                    retval &= lexical_cast(b, variable.back());
+                }
+            return count != 0 && retval;
         };
 
         add_option(name, fun, discription, opts);
@@ -279,7 +417,6 @@ public:
             std::string name,           ///< The name, short,long
             std::string discription=""  ///< Discription string
             ) {
-
         CLI::callback_t fun = [](CLI::results_t res){
             return true;
         };
@@ -298,141 +435,244 @@ public:
 
         count = 0;
         CLI::callback_t fun = [&count](CLI::results_t res){
-            count = res.size();
+            count = (T) res.size();
             return true;
         };
         
         add_option(name, fun, discription, NOTHING);
     }
+
+    /// Add set of options
+    template<typename T>
+    void add_set(
+            std::string name,              ///< The name, short,long
+            T &member,                     ///< The selected member of the set
+            std::unordered_set<T> options, ///< The set of posibilities
+            std::string discription="",    ///< Discription string
+            Combiner opts=ARGS             ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            ) {
+
+        CLI::callback_t fun = [&member, options](CLI::results_t res){
+            if(res.size()!=1) {
+                return false;
+            }
+            if(res[0].size()!=1) {
+                return false;
+            }
+            bool retval = lexical_cast(res[0][0], member);
+            if(!retval)
+                return false;
+            return std::find(std::begin(options), std::end(options), retval) != std::end(options);
+        };
+
+        add_option(name, fun, discription, opts);
+    }
+
     
 
     /// Parses the command line - throws errors
-    void parse(int argc, char **argv) throw(CallForHelp, ParseError) {
+    void parse(int argc, char **argv) {
         std::vector<std::string> args;
         for(int i=1; i<argc; i++)
             args.emplace_back(argv[i]);
         parse(args);
     }
 
-    void parse(std::vector<std::string> args) throw(CallForHelp, ParseError) {
+    void parse(std::vector<std::string> args) {
+        parsed = true;
         std::reverse(args.begin(), args.end());
 
         bool positional_only = false;
         
         while(args.size()>0) {
 
-            if(args.back() == "--") {
+            logit(join(args));
+
+            Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
+            switch(classifer) {
+            case Classifer::POSITIONAL_MARK:
                 args.pop_back();
                 positional_only = true;
-            } else if(positional_only || (!_parse_long(args) && !_parse_short(args))) {
-
+                break;
+            case Classifer::SUBCOMMAND:
+                _parse_subcommand(args);
+                break;
+            case Classifer::LONG:
+                _parse_long(args);
+                break;
+            case Classifer::SHORT:
+                _parse_short(args);
+                break;
+            case Classifer::NONE:
                 logit("Positional: "+args.back());
                 positionals.push_back(args.back());
                 args.pop_back();
             }
         }
 
-        for(Option& opt : options)
+        if (count("help") > 0) {
+            throw CallForHelp();
+        }
+
+        bool success = true;
+        for(Option& opt : options) {
+            while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
+                opt.get_new();
+                opt.add_result(0, positionals.back());
+                positionals.pop_back();
+            }
+            if (opt.required() && opt.count() < opt.expected())
+                throw RequiredError(opt.get_name());
             if (opt.count() > 0) {
-                logit(opt.string());
-                if(!opt.run_callback())
-                    logit("Failed");
+                success &= opt.run_callback();
             }
 
-        //TODO: Check for false callbacks
+        }
+        if(!success)
+            throw ParseError();
+        if(positionals.size()>0)
+            throw ExtraPositionalsError();
+    }
+
+    void _parse_subcommand(std::vector<std::string> &args) {
+        for(App &com : subcommands) {
+            if(com.name == args.back()){ 
+                args.pop_back();
+                com.parse(args);
+                subcommand = &com;
+                return;
+            }
+        }
+        throw HorribleError("Subcommand");
     }
  
-    bool _parse_short(std::vector<std::string> &args) {
+    void _parse_short(std::vector<std::string> &args) {
         std::string current = args.back();
         std::smatch match;
 
         if(!std::regex_match(current, match, reg_short))
-            return false;
+            throw HorribleError("Subcommand");
         
         args.pop_back();
         std::string name = match[1];
         std::string rest = match[2];
 
-        logit("Working on short:");
-        logit(name);
-        logit(rest);
+        logit("Working on short: " + name + " (" + rest + ")");
 
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_sname(name);});
 
         if(op == std::end(options)) {
             missing_options.push_back("-" + op->get_sname());
-            return true;
+            return;
         }
 
         int vnum = op->get_new();
-        int num = op->get_num();
-        
-
-        if(rest != "" && num > 0) {
-            num--;
+        int num = op->expected();
+       
+        if(num == 0)
+            op->add_result(vnum, "");
+        else if(rest!="") {
+            if (num > 0)
+                num--;
             op->add_result(vnum, rest);
             rest = "";
         }
 
-        while(num>0) {
+
+        if(num == -1) {
+            std::string current = args.back();
+            while(_recognize(current) == Classifer::NONE) {
+                std::string current = args.back();
+                args.pop_back();
+                op->add_result(vnum,current);
+                if(args.size()==0)
+                    return;
+
+            }
+        } else while(num>0) {
             num--;
             std::string current = args.back();
             logit("Adding: "+current);
             args.pop_back();
             op->add_result(vnum,current);
             if(args.size()==0)
-                return true;
+                return;
         }
 
         if(rest != "") {
             rest = "-" + rest;
             args.push_back(rest);
         }
-        return true;
     }
 
-    bool _parse_long(std::vector<std::string> &args) {
+    Classifer _recognize(std::string current) const {
+        if(current == "--")
+            return Classifer::POSITIONAL_MARK;
+        for(const App &com : subcommands) {
+            if(com.name == current)
+                return Classifer::SUBCOMMAND;
+        }
+        if(std::regex_match(current, reg_long))
+            return Classifer::LONG;
+        if(std::regex_match(current, reg_short))
+            return Classifer::SHORT;
+        return Classifer::NONE;
+            
+
+    }
+
+    void _parse_long(std::vector<std::string> &args) {
         std::string current = args.back();
         std::smatch match;
 
         if(!std::regex_match(current, match, reg_long))
-            return false;
-        
+            throw HorribleError("Long");
+
         args.pop_back();
         std::string name = match[1];
         std::string value = match[2];
 
 
-        logit("Working on long:");
-        logit(name);
-        logit(value);
+        logit("Working on long: " + name + " (" + value + ")");
 
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_lname(name);});
 
         if(op == std::end(options)) {
             missing_options.push_back("--" + op->get_lname());
-            return true;
+            return;
         }
 
 
         int vnum = op->get_new();
-        int num = op->get_num();
+        int num = op->expected();
         
 
         if(value != "") {
-            num--;
+            if(num!=-1) num--;
             op->add_result(vnum, value);
+        } else if (num == 0) {
+            op->add_result(vnum, "");
         }
 
-        while(num>0) {
+        if(num == -1) {
+            std::string current = args.back();
+            while(_recognize(current) == Classifer::NONE) {
+                std::string current = args.back();
+                args.pop_back();
+                op->add_result(vnum,current);
+                if(args.size()==0)
+                    return;
+
+            }
+        } else while(num>0) {
             num--;
             std::string current = args.back();
             args.pop_back();
             op->add_result(vnum,current);
             if(args.size()==0)
-                return true;
+                return;
         }
-        return true;
+        return;
     }
 
     /// This must be called after the options are in but before the rest of the program.
@@ -444,7 +684,7 @@ public:
         } catch(const CallForHelp &e) {
             std::cout << help() << std::endl;
             exit(0);
-        } catch(const ParseError &e) {
+        } catch(const Error &e) {
             std::cerr << "ERROR:" << std::endl;
             std::cerr << e.what() << std::endl;
             std::cerr << help() << std::endl;
@@ -455,11 +695,43 @@ public:
 
     /// Counts the number of times the given option was passed.
     int count(std::string name) const {
-        return 0;
+        for(const Option &opt : options) {
+            logit("Computing: " + opt.get_name());
+            if(opt.check_name(name)) {
+                logit("Counting: " + opt.get_name() + std::to_string(opt.count()));
+                return opt.count();
+            }
+        }
+        throw OptionNotFound(name);
     }
 
-    std::string help() const {return "";}
+    std::string help() const {
+        std::stringstream out;
+        out << discription << std::endl;
+        int len = std::accumulate(std::begin(options), std::end(options), 0,
+                [](int val, const Option &opt){
+                    return std::max(opt.help_len(), val);});
+        for(const Option &opt : options) {
+            out << opt.help(len) << std::endl;
+        }
+        if(subcommands.size()> 0) {
+            out << "Subcommands: ";
+            for(const App &com : subcommands) {
+                if(&com != &subcommands[0])
+                    out << ", ";
+                std::cout << com.get_name();
+            }
+            out << std::endl;
+        }
+        return out.str();
+    }
     
+    App* get_subcommand() {
+        return subcommand;
+    }
     
+    std::string get_name() const {
+        return name;
+    }
 };
 }
