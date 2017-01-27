@@ -112,3 +112,16 @@ TEST_F(TApp, DefaultStringAgain) {
     EXPECT_EQ(0, app.count("string"));
     EXPECT_EQ(str, "previous");
 }
+
+TEST_F(TApp, LotsOfFlags) {
+
+    app.add_flag("a");
+    app.add_flag("A");
+    app.add_flag("b");
+
+    args = {"-a","-b","-aA"};
+    run();
+    EXPECT_EQ(2, app.count("a"));
+    EXPECT_EQ(1, app.count("b"));
+    EXPECT_EQ(1, app.count("A"));
+}
