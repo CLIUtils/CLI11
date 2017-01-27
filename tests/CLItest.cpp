@@ -170,10 +170,8 @@ TEST_F(TApp, Reset) {
 
 }
 
-struct TSubcom : public TApp {
-};
 
-TEST_F(TSubcom, Basic) {
+TEST_F(TApp, Basic) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
@@ -192,3 +190,55 @@ TEST_F(TSubcom, Basic) {
     run();
     EXPECT_EQ(sub2, app.get_subcommand());
 }
+
+
+struct SubcommandProgram : public TApp {
+
+    CLI::App* start;
+    CLI::App* stop;
+
+    int dummy;
+    std::string file;
+    int count;
+
+    SubcommandProgram() {
+        start = app.add_subcommand("start", "Start prog");
+        stop = app.add_subcommand("stop", "Stop prog");
+            
+        app.add_flag("d", dummy, "My dummy var");
+        start->add_option("f,file", file, "File name");
+        stop->add_flag("c,count", count, "Some flag opt");
+    }
+};
+
+TEST_F(SubcommandProgram, Working) {
+    args = {"-d", "start", "-ffilename"};
+
+    run();
+
+    EXPECT_EQ(1, dummy);
+    EXPECT_EQ(start, app.get_subcommand());
+    EXPECT_EQ("filename", file);
+}
+
+
+TEST_F(SubcommandProgram, Spare) {
+    args = {"extra", "-d", "start", "-ffilename"};
+
+    EXPECT_THROW(run(), CLI::ExtraPositionalsError);
+}
+
+TEST_F(SubcommandProgram, SpareSub) {
+    args = {"-d", "start", "spare", "-ffilename"};
+
+    EXPECT_THROW(run(), CLI::ExtraPositionalsError);
+}
+
+// TODO: Add positionals
+// TODO: Add vector arguments
+// TODO: Maybe add function to call on subcommand parse?
+// TODO: Check help output
+// TODO: Add default/type info to help
+// TODO: Add set checking
+// TODO: Try all of the options together
+

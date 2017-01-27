@@ -62,52 +62,42 @@ struct Combiner {
 
 namespace CLI {
 
-class Error : public std::runtime_error {
-public:
+struct Error : public std::runtime_error {
     Error(std::string parent, std::string name) : runtime_error(parent + ": " + name) {}
 };
 
-class BadNameString : public Error {
-public:
+struct BadNameString : public Error {
     BadNameString(std::string name) : Error("BadNameString", name) {}
 };
 
-class CallForHelp : public Error {
-public:
+struct CallForHelp : public Error {
     CallForHelp() : Error("CallForHelp","") {}
 };
 
-class ParseError : public Error {
-public:
+struct ParseError : public Error {
     ParseError(std::string name) : Error("ParseError", name) {}
 };
 
-class OptionAlreadyAdded : public Error {
-public:
+struct OptionAlreadyAdded : public Error {
     OptionAlreadyAdded(std::string name) : Error("OptionAlreadyAdded", name) {}
 };
 
-class OptionNotFound : public Error {
-public:
+struct OptionNotFound : public Error {
     OptionNotFound(std::string name) : Error("OptionNotFound", name) {}
 };
 
-class RequiredError : public Error {
-public:
+struct RequiredError : public Error {
     RequiredError(std::string name) : Error("RequiredError", name) {}
 };
 
-class ExtraPositionalsError : public Error {
-public:
+struct ExtraPositionalsError : public Error {
     ExtraPositionalsError(std::string name) : Error("ExtraPositionalsError", name) {}
 };
 
-class HorribleError : public Error {
-public:
+struct HorribleError : public Error {
     HorribleError(std::string name) : Error("HorribleError", "(You should never see this error) " + name) {}
 };
-class IncorrectConstruction : public Error {
-public:
+struct IncorrectConstruction : public Error {
     IncorrectConstruction(std::string name) : Error("IncorrectConstruction", name) {}
 };
 
