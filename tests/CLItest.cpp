@@ -125,3 +125,70 @@ TEST_F(TApp, LotsOfFlags) {
     EXPECT_EQ(1, app.count("b"));
     EXPECT_EQ(1, app.count("A"));
 }
+
+TEST_F(TApp, ShortOpts) {
+
+    unsigned long long funnyint;
+    std::string someopt;
+    app.add_flag("z", funnyint);
+    app.add_option("y", someopt);
+
+    args = {"-zzyzyz",};
+
+    run();
+
+    EXPECT_EQ(2, app.count("z"));
+    EXPECT_EQ(1, app.count("y"));
+    EXPECT_EQ((unsigned long long) 2, funnyint);
+    EXPECT_EQ("zyz", someopt);
+}
+
+TEST_F(TApp, Reset) {
+
+    app.add_flag("simple");
+    double doub;
+    app.add_option("d,double", doub);
+
+    args = {"--simple", "--double", "1.2"};
+
+    run();
+
+    EXPECT_EQ(1, app.count("simple"));
+    EXPECT_EQ(1, app.count("d"));
+    EXPECT_FLOAT_EQ(1.2, doub);
+
+    app.reset();
+
+    EXPECT_EQ(0, app.count("simple"));
+    EXPECT_EQ(0, app.count("d"));
+    
+    run();
+
+    EXPECT_EQ(1, app.count("simple"));
+    EXPECT_EQ(1, app.count("d"));
+    EXPECT_FLOAT_EQ(1.2, doub);
+
+}
+
+struct TSubcom : public TApp {
+};
+
+TEST_F(TSubcom, Basic) {
+    auto sub1 = app.add_subcommand("sub1");
+    auto sub2 = app.add_subcommand("sub2");
+
+    run();
+    EXPECT_EQ(nullptr, app.get_subcommand());
+    
+    app.reset();
+    args = {"sub1"};
+    run();
+    EXPECT_EQ(sub1, app.get_subcommand());
+
+    app.reset();
+    EXPECT_EQ(nullptr, app.get_subcommand());
+
+    args = {"sub2"};
+    run();
+    EXPECT_EQ(sub2, app.get_subcommand());
+}

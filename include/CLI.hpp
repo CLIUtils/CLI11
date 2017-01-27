@@ -158,6 +158,10 @@ public:
         std::tie(sname, lname) = split(name);
     }
 
+    void clear() {
+        results.clear();
+    }
+
     bool required() const {
         return opts.required;
     }
@@ -320,6 +324,20 @@ protected:
 
 public:
 
+
+    /// Reset the parsed data
+    void reset() {
+
+        parsed = false;
+        subcommand = nullptr;
+
+        for(Option& opt : options) {
+            opt.clear();
+        }
+        for(App* app : subcommands) {
+            app->reset();
+        }
+    }
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
     App(std::string prog_discription="")
