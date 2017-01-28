@@ -19,7 +19,8 @@ add_compile_options(-pedantic -Wall -Wextra)
 
 include_directories(include)
 set(headers "${PROJECT_SOURCE_DIR}/include/CLI.hpp")
-enable_testing()
 
+enable_testing()
 add_subdirectory(tests)
+
 add_subdirectory(examples)
