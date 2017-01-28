@@ -32,6 +32,9 @@ std::string join(const T& v, std::string delim = ",") {
     return s.str();
 }
 
+}
+
+namespace CLI {
 
 struct Combiner {
     int num;
@@ -57,10 +60,6 @@ struct Combiner {
         return *this | b;
     }
 };
-}
-
-
-namespace CLI {
 
 struct Error : public std::runtime_error {
     Error(std::string parent, std::string name) : runtime_error(parent + ": " + name) {}
