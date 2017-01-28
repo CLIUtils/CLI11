@@ -1,0 +1,33 @@
+language: cpp
+sudo: false
+
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/deps/cmake
+
+addons:
+  apt:
+    packages:
+    - g++-4.8
+    - gcc-4.8
+    - ubuntu-toolchain-r-test
+
+install:
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+    - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+    - cd "${DEPS_DIR}"
+    - | 
+      if [[ ! -f "${DEPS_DIR}/cmake/bin/cmake" ]] ; then
+        echo "Downloading CMake"
+        mkdir -p cmake
+        travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
+      fi
+    
+    - export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
+    - cd "${DEPS_DIR}"
+
+script:
+    - cd "${TRAVIS_BUILD_DIR}"
+    - .ci/travis.sh
+
