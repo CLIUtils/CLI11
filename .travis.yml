@@ -10,6 +10,7 @@ addons:
     packages:
     - g++-4.8
     - gcc-4.8
+    sources:
     - ubuntu-toolchain-r-test
 
 install:
