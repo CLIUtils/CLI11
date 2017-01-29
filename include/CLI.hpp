@@ -42,11 +42,12 @@ namespace detail {
 }
 constexpr detail::enabler dummy = {};
 
-template <typename Condition>
-using EnableIf = typename std::enable_if<Condition::value, detail::enabler>::type;
-template <typename Condition>
-using DisableIf = typename std::enable_if<!Condition::value, detail::enabler>::type;
+// Copied from C++14
+// template< bool B, class T = void >
+// using enable_if_t = typename std::enable_if<B,T>::type;
 
+template <bool Condition>
+using EnableIf = typename std::enable_if<Condition, detail::enabler>::type;
 
 struct Combiner {
     int num;
@@ -264,7 +265,7 @@ public:
 };
 
 
-template<typename T, EnableIf<std::is_integral<T>> = dummy>
+template<typename T, EnableIf<std::is_integral<T>::value> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Int lexical cast " + input);
     try{
@@ -277,7 +278,7 @@ bool lexical_cast(std::string input, T& output) {
     }
 }
     
-template<typename T, EnableIf<std::is_floating_point<T>> = dummy>
+template<typename T, EnableIf<std::is_floating_point<T>::value> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Floating lexical cast " + input);
     try{
@@ -292,7 +293,7 @@ bool lexical_cast(std::string input, T& output) {
 
 // String and similar
 template<typename T, 
-typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value, detail::enabler>::type = dummy>
+EnableIf<!std::is_floating_point<T>::value && !std::is_integral<T>::value> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Direct lexical cast: " + input);
     output = input;
@@ -383,7 +384,7 @@ public:
     }
 
     /// Add option for string
-    template<typename T, DisableIf<std::is_array<T>> = dummy>
+    template<typename T, EnableIf<!std::is_array<T>::value> = dummy>
     void add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
@@ -447,7 +448,7 @@ public:
     }
 
     /// Add option for flag
-    template<typename T, EnableIf<std::is_integral<T>> = dummy>
+    template<typename T, EnableIf<std::is_integral<T>::value> = dummy>
     void add_flag(
             std::string name,           ///< The name, short,long
                 T  &count,              ///< A varaible holding the count
