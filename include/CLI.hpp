@@ -43,11 +43,11 @@ namespace detail {
 constexpr detail::enabler dummy = {};
 
 // Copied from C++14
-// template< bool B, class T = void >
-// using enable_if_t = typename std::enable_if<B,T>::type;
+template< bool B, class T = void >
+using enable_if_t = typename std::enable_if<B,T>::type;
 
 template <bool Condition>
-using EnableIf = typename std::enable_if<Condition, detail::enabler>::type;
+using EnableIf = enable_if_t<Condition, detail::enabler>;
 
 struct Combiner {
     int num;
