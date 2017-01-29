@@ -13,13 +13,18 @@
 #include <iomanip>
 #include <numeric>
 
-// This is unreachable outside this file; you should not use Combiner directly
-namespace {
+//#define CLI_LOG 1
 
+namespace CLI {
+
+/// Log a message, can be enabled with CLI_LOG
 void logit(std::string) {
-    //std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
+#ifdef CLI_LOG
+    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
+#endif
 }
 
+/// Simple fucntion to join a string
 template <typename T>
 std::string join(const T& v, std::string delim = ",") {
     std::ostringstream s;
@@ -32,22 +37,23 @@ std::string join(const T& v, std::string delim = ",") {
     return s.str();
 }
 
-}
-
-namespace CLI {
-
 // Based generally on https://rmf.io/cxx11/almost-static-if
 namespace detail {
+    /// Simple empty scoped class
     enum class enabler {};
 }
+
+/// An instance to use in EnableIf
 constexpr detail::enabler dummy = {};
 
 // Copied from C++14
+#if __cplusplus < 201402L
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B,T>::type;
-
-template <bool Condition>
-using EnableIf = enable_if_t<Condition, detail::enabler>;
+#else
+using std::enable_if_t;
+#endif
+// If your compiler supports C++14, you can use that definition instead
 
 struct Combiner {
     int num;
@@ -265,7 +271,7 @@ public:
 };
 
 
-template<typename T, EnableIf<std::is_integral<T>::value> = dummy>
+template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Int lexical cast " + input);
     try{
@@ -278,7 +284,7 @@ bool lexical_cast(std::string input, T& output) {
     }
 }
     
-template<typename T, EnableIf<std::is_floating_point<T>::value> = dummy>
+template<typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Floating lexical cast " + input);
     try{
@@ -293,7 +299,7 @@ bool lexical_cast(std::string input, T& output) {
 
 // String and similar
 template<typename T, 
-EnableIf<!std::is_floating_point<T>::value && !std::is_integral<T>::value> = dummy>
+enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value, detail::enabler> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Direct lexical cast: " + input);
     output = input;
@@ -384,7 +390,7 @@ public:
     }
 
     /// Add option for string
-    template<typename T, EnableIf<!std::is_array<T>::value> = dummy>
+    template<typename T, enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
     void add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
@@ -448,7 +454,7 @@ public:
     }
 
     /// Add option for flag
-    template<typename T, EnableIf<std::is_integral<T>::value> = dummy>
+    template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = dummy>
     void add_flag(
             std::string name,           ///< The name, short,long
                 T  &count,              ///< A varaible holding the count
