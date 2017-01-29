@@ -36,6 +36,18 @@ std::string join(const T& v, std::string delim = ",") {
 
 namespace CLI {
 
+// Based generally on https://rmf.io/cxx11/almost-static-if
+namespace detail {
+    enum class enabler {};
+}
+constexpr detail::enabler dummy = {};
+
+template <typename Condition>
+using EnableIf = typename std::enable_if<Condition::value, detail::enabler>::type;
+template <typename Condition>
+using DisableIf = typename std::enable_if<!Condition::value, detail::enabler>::type;
+
+
 struct Combiner {
     int num;
     bool positional;
@@ -252,9 +264,8 @@ public:
 };
 
 
-template<typename T>
-typename std::enable_if<std::is_integral<T>::value, bool>::type
-lexical_cast(std::string input, T& output) {
+template<typename T, EnableIf<std::is_integral<T>> = dummy>
+bool lexical_cast(std::string input, T& output) {
     logit("Int lexical cast " + input);
     try{
         output = (T) std::stoll(input);
@@ -266,9 +277,8 @@ lexical_cast(std::string input, T& output) {
     }
 }
     
-template<typename T>
-typename std::enable_if<std::is_floating_point<T>::value, bool>::type
-lexical_cast(std::string input, T& output) {
+template<typename T, EnableIf<std::is_floating_point<T>> = dummy>
+bool lexical_cast(std::string input, T& output) {
     logit("Floating lexical cast " + input);
     try{
         output = (T) std::stold(input);
@@ -281,11 +291,9 @@ lexical_cast(std::string input, T& output) {
 }
 
 // String and similar
-template<typename T>
-typename std::enable_if<
-  !std::is_floating_point<T>::value
-  && !std::is_integral<T>::value, bool>::type
-lexical_cast(std::string input, T& output) {
+template<typename T, 
+typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value, detail::enabler>::type = dummy>
+bool lexical_cast(std::string input, T& output) {
     logit("Direct lexical cast: " + input);
     output = input;
     return true;
@@ -375,9 +383,8 @@ public:
     }
 
     /// Add option for string
-    template<typename T>
-    typename std::enable_if<!std::is_array<T>::value, void>::type
-    add_option(
+    template<typename T, DisableIf<std::is_array<T>> = dummy>
+    void add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
             std::string discription="", ///< Discription string
@@ -440,11 +447,10 @@ public:
     }
 
     /// Add option for flag
-    template<typename T>
-    typename std::enable_if<std::is_integral<T>::value, void>::type
-    add_flag(
+    template<typename T, EnableIf<std::is_integral<T>> = dummy>
+    void add_flag(
             std::string name,           ///< The name, short,long
-                    T  &count,              ///< A varaible holding the count
+                T  &count,              ///< A varaible holding the count
             std::string discription=""  ///< Discription string
             ) {
 
