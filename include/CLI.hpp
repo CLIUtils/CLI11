@@ -87,7 +87,7 @@ struct Combiner {
     Combiner operator() (int n) const {
         Combiner self = *this;
         self.num = n;
-        return *this;
+        return self;
     }
     /// Call to give a validator
     Combiner operator() (std::function<bool(std::string)> func) const {
@@ -182,8 +182,7 @@ const Combiner NOTHING    {0, false,false,false, {}};
 const Combiner REQUIRED   {1, false,true, false, {}};
 const Combiner DEFAULT    {1, false,false,true, {}};
 const Combiner POSITIONAL {1, true, false,false, {}};
-const Combiner ARGS       {1, false,false,false, {}};
-const Combiner UNLIMITED  {-1,false,false,false, {}};
+const Combiner ARGS       {-1, false,false,false, {}};
 const Combiner VALIDATORS {1, false, false, false, {}};
 
 // Warning about using these validators:
@@ -195,6 +194,8 @@ const Combiner NonexistentPath {1, false, false, false, {_NonexistentPath}};
 
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
+
+
 
 class Option {
 public:
@@ -433,27 +434,28 @@ public:
      *     std::string filename
      *     program.add_option("filename", filename, "discription of filename");
      */
-    void add_option(
+    Option* add_option(
             std::string name,           ///< The name, long,short
             callback_t callback,        ///< The callback
             std::string discription="", ///< Discription string
-            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
         Option myopt{name, discription, opts, callback};
         if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
             options.push_back(myopt);
         else
             throw OptionAlreadyAdded(myopt.get_name());
+        return &options.back();
 
     }
 
     /// Add option for string
     template<typename T, enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
-    void add_option(
+    Option* add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
             std::string discription="", ///< Discription string
-            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         
@@ -469,38 +471,37 @@ public:
             return lexical_cast(res[0][0], variable);
         };
 
-        add_option(name, fun, discription, opts);
+        return add_option(name, fun, discription, opts);
     }
 
     /// Add option for vector of results
     template<typename T>
-    void add_option(
+    Option* add_option(
             std::string name,           ///< The name, long,short
             std::vector<T> &variable,   ///< The variable to set
             std::string discription="", ///< Discription string
-            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         if(opts.num==0)
-            throw IncorrectConstruction("Must have ARGS(1) or be a vector.");
+            throw IncorrectConstruction("Must have ARGS or be a vector.");
         CLI::callback_t fun = [&variable](CLI::results_t res){
             bool retval = true;
-            int count = 0;
             variable.clear();
             for(const auto &a : res)
                 for(const auto &b : a) {
                     variable.emplace_back();
                     retval &= lexical_cast(b, variable.back());
                 }
-            return count != 0 && retval;
+            return variable.size() > 0 && retval;
         };
 
-        add_option(name, fun, discription, opts);
+        return add_option(name, fun, discription, opts);
     }
 
 
     /// Add option for flag
-    void add_flag(
+    Option* add_flag(
             std::string name,           ///< The name, short,long
             std::string discription=""  ///< Discription string
             ) {
@@ -508,12 +509,12 @@ public:
             return true;
         };
         
-        add_option(name, fun, discription, NOTHING);
+        return add_option(name, fun, discription, NOTHING);
     }
 
     /// Add option for flag
     template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = dummy>
-    void add_flag(
+    Option* add_flag(
             std::string name,           ///< The name, short,long
                 T  &count,              ///< A varaible holding the count
             std::string discription=""  ///< Discription string
@@ -525,18 +526,21 @@ public:
             return true;
         };
         
-        add_option(name, fun, discription, NOTHING);
+        return add_option(name, fun, discription, NOTHING);
     }
 
     /// Add set of options
     template<typename T>
-    void add_set(
+    Option* add_set(
             std::string name,              ///< The name, short,long
             T &member,                     ///< The selected member of the set
             std::unordered_set<T> options, ///< The set of posibilities
             std::string discription="",    ///< Discription string
-            Combiner opts=ARGS             ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
+
+        if(opts.num!=1)
+            throw IncorrectConstruction("Must have ARGS(1).");
 
         CLI::callback_t fun = [&member, options](CLI::results_t res){
             if(res.size()!=1) {
@@ -551,7 +555,7 @@ public:
             return std::find(std::begin(options), std::end(options), retval) != std::end(options);
         };
 
-        add_option(name, fun, discription, opts);
+        return add_option(name, fun, discription, opts);
     }
 
     

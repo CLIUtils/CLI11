@@ -249,10 +249,37 @@ TEST_F(TApp, FileExists) {
     EXPECT_FALSE(CLI::_ExistingFile(myfile));
 }
 
+TEST_F(TApp, VectorFixedString) {
+    std::vector<std::string> strvec;
+    std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
-// TODO: Add directory test
+    CLI::Option* opt = app.add_option("s,string", strvec, "", CLI::ARGS(3));
+    EXPECT_EQ(3, opt->expected());
+    
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ(3, app.count("string"));
+    EXPECT_EQ(answer, strvec);
+}
 
-TEST_F(TApp, Basic) {
+
+
+TEST_F(TApp, VectorUnlimString) {
+    std::vector<std::string> strvec;
+    std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
+
+    CLI::Option* opt = app.add_option("s,string", strvec, "", CLI::ARGS);
+    EXPECT_EQ(-1, opt->expected());
+
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(3, app.count("string"));
+    EXPECT_EQ(answer, strvec);
+}
+
+
+
+TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
@@ -271,6 +298,9 @@ TEST_F(TApp, Basic) {
     EXPECT_NO_THROW(run());
     EXPECT_EQ(sub2, app.get_subcommand());
 }
+
+// TODO: Add directory test
+
 
 
 struct SubcommandProgram : public TApp {
@@ -316,7 +346,7 @@ TEST_F(SubcommandProgram, SpareSub) {
 }
 
 // TODO: Add vector arguments
-// TODO: Maybe add function to call on subcommand parse?
+// TODO: Maybe add function to call on subcommand parse? Stashed.
 // TODO: Check help output
 // TODO: Add default/type info to help
 // TODO: Add set checking
