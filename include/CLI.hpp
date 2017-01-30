@@ -62,6 +62,15 @@ using std::enable_if_t;
 #endif
 // If your compiler supports C++14, you can use that definition instead
 
+enum class Return {
+    Continue = -1,
+    Success = 0,
+    ParseError = 1,
+    PositionalError = 2,
+    RequiredError = 3,
+    GeneralError = 4
+};
+
 struct Combiner {
     int num;
     bool positional;
@@ -147,8 +156,8 @@ struct RequiredError : public Error {
     RequiredError(std::string name) : Error("RequiredError", name) {}
 };
 
-struct ExtraPositionalsError : public Error {
-    ExtraPositionalsError(std::string name) : Error("ExtraPositionalsError", name) {}
+struct PositionalError : public Error {
+    PositionalError(std::string name) : Error("PositionalError", name) {}
 };
 
 struct HorribleError : public Error {
@@ -617,7 +626,7 @@ public:
 
         }
         if(positionals.size()>0)
-            throw ExtraPositionalsError("[" + join(positionals) + "]");
+            throw PositionalError("[" + join(positionals) + "]");
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
@@ -762,21 +771,32 @@ public:
     }
 
     /// This must be called after the options are in but before the rest of the program.
-    /** Instead of throwing erros, causes the program to exit
-     * if -h or an invalid option is passed. */
-    void start(int argc, char** argv) {
-        try {
-            parse(argc, argv);
-        } catch(const CallForHelp &e) {
-            std::cout << help() << std::endl;
-            exit(0);
-        } catch(const Error &e) {
+    /** Instead of throwing erros, this gives an error code
+     * if -h or an invalid option is passed. Continue with your program if returns -1 */
+    Return start(int argc, char** argv) {
+
+        std::function<void(const Error&)> msg_fun{[this](const Error &e){
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             std::cerr << help() << std::endl;
-            exit(1);
-        }
+        }};
 
+        try {
+            parse(argc, argv);
+            return Return::Continue;
+        } catch(const CallForHelp &e) {
+            std::cout << help() << std::endl;
+            return Return::Success;
+        } catch(const ParseError &e) {
+            msg_fun(e);
+            return Return::ParseError;
+        } catch(const PositionalError &e) {
+            msg_fun(e);
+            return Return::RequiredError;
+        } catch(const Error &e) {
+            msg_fun(e);
+            return Return::GeneralError;
+        }
     }
 
     /// Counts the number of times the given option was passed.

@@ -14,7 +14,9 @@ int main (int argc, char** argv) {
     int count;
     stop->add_flag("c,count", count, "File name");
 
-    app.start(argc, argv);
+    CLI::Return ret = app.start(argc, argv);
+    if(ret != CLI::Return::Continue)
+        return (int) ret;
 
     std::cout << "Working on file: " << file << ", direct count: " << start->count("file") << std::endl;
     std::cout << "Working on count: " << count << ", direct count: " << stop->count("count") << std::endl;

@@ -15,7 +15,7 @@ TEST(Basic, Empty) {
     {
     CLI::App app;
     input_t spare = {"spare"};
-    EXPECT_THROW(app.parse(spare), CLI::ExtraPositionalsError);
+    EXPECT_THROW(app.parse(spare), CLI::PositionalError);
     }
     {
     CLI::App app;
@@ -248,6 +248,10 @@ TEST_F(TApp, FileExists) {
     std::remove(myfile.c_str());
     EXPECT_FALSE(CLI::_ExistingFile(myfile));
 }
+
+
+// TODO: Add directory test
+
 TEST_F(TApp, Basic) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
@@ -302,16 +306,15 @@ TEST_F(SubcommandProgram, Working) {
 TEST_F(SubcommandProgram, Spare) {
     args = {"extra", "-d", "start", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::ExtraPositionalsError);
+    EXPECT_THROW(run(), CLI::PositionalError);
 }
 
 TEST_F(SubcommandProgram, SpareSub) {
     args = {"-d", "start", "spare", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::ExtraPositionalsError);
+    EXPECT_THROW(run(), CLI::PositionalError);
 }
 
-// TODO: Add positionals
 // TODO: Add vector arguments
 // TODO: Maybe add function to call on subcommand parse?
 // TODO: Check help output
