@@ -62,15 +62,6 @@ using std::enable_if_t;
 #endif
 // If your compiler supports C++14, you can use that definition instead
 
-enum class Return {
-    Continue = -1,
-    Success = 0,
-    ParseError = 1,
-    PositionalError = 2,
-    RequiredError = 3,
-    GeneralError = 4
-};
-
 struct Combiner {
     int num;
     bool positional;
@@ -129,42 +120,44 @@ bool _NonexistentPath(std::string filename) {
 }
 
 struct Error : public std::runtime_error {
-    Error(std::string parent, std::string name) : runtime_error(parent + ": " + name) {}
-};
-
-struct BadNameString : public Error {
-    BadNameString(std::string name) : Error("BadNameString", name) {}
+    int exit_code;
+    Error(std::string parent, std::string name, int exit_code=255) : runtime_error(parent + ": " + name), exit_code(exit_code) {}
 };
 
 struct CallForHelp : public Error {
-    CallForHelp() : Error("CallForHelp","") {}
+    CallForHelp() : Error("CallForHelp","", 0) {}
 };
 
+struct BadNameString : public Error {
+    BadNameString(std::string name) : Error("BadNameString", name, 1) {}
+};
+
+
 struct ParseError : public Error {
-    ParseError(std::string name) : Error("ParseError", name) {}
+    ParseError(std::string name) : Error("ParseError", name, 2) {}
 };
 
 struct OptionAlreadyAdded : public Error {
-    OptionAlreadyAdded(std::string name) : Error("OptionAlreadyAdded", name) {}
+    OptionAlreadyAdded(std::string name) : Error("OptionAlreadyAdded", name, 3) {}
 };
 
 struct OptionNotFound : public Error {
-    OptionNotFound(std::string name) : Error("OptionNotFound", name) {}
+    OptionNotFound(std::string name) : Error("OptionNotFound", name, 4) {}
 };
 
 struct RequiredError : public Error {
-    RequiredError(std::string name) : Error("RequiredError", name) {}
+    RequiredError(std::string name) : Error("RequiredError", name, 5) {}
 };
 
 struct PositionalError : public Error {
-    PositionalError(std::string name) : Error("PositionalError", name) {}
+    PositionalError(std::string name) : Error("PositionalError", name, 6) {}
 };
 
 struct HorribleError : public Error {
-    HorribleError(std::string name) : Error("HorribleError", "(You should never see this error) " + name) {}
+    HorribleError(std::string name) : Error("HorribleError", "(You should never see this error) " + name, 7) {}
 };
 struct IncorrectConstruction : public Error {
-    IncorrectConstruction(std::string name) : Error("IncorrectConstruction", name) {}
+    IncorrectConstruction(std::string name) : Error("IncorrectConstruction", name, 8) {}
 };
 
 const std::regex reg_split{R"regex((?:([a-zA-Z0-9]?)(?:,|$)|^)([a-zA-Z0-9][a-zA-Z0-9_\-]*)?)regex"};
@@ -773,30 +766,19 @@ public:
     /// This must be called after the options are in but before the rest of the program.
     /** Instead of throwing erros, this gives an error code
      * if -h or an invalid option is passed. Continue with your program if returns -1 */
-    Return start(int argc, char** argv) {
+    void run(int argc, char** argv) {
+        parse(argc, argv);
+    }
 
-        std::function<void(const Error&)> msg_fun{[this](const Error &e){
+    int exit(const Error& e) const {
+        if(e.exit_code != 0) {
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             std::cerr << help() << std::endl;
-        }};
-
-        try {
-            parse(argc, argv);
-            return Return::Continue;
-        } catch(const CallForHelp &e) {
+        } else {
             std::cout << help() << std::endl;
-            return Return::Success;
-        } catch(const ParseError &e) {
-            msg_fun(e);
-            return Return::ParseError;
-        } catch(const PositionalError &e) {
-            msg_fun(e);
-            return Return::RequiredError;
-        } catch(const Error &e) {
-            msg_fun(e);
-            return Return::GeneralError;
         }
+        return e.exit_code;
     }
 
     /// Counts the number of times the given option was passed.
