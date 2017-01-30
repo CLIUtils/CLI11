@@ -1,5 +1,7 @@
 #include "CLI.hpp"
 #include "gtest/gtest.h"
+#include <cstdio>
+#include <fstream>
 
 
 TEST(Split, GoodStrings) {
@@ -40,4 +42,26 @@ TEST(Split, BadStrings) {
     }
 
     
+}
+
+TEST(Validators, FileExists) {
+    std::string myfile{"TestFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_TRUE(CLI::_ExistingFile(myfile));
+
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+}
+
+TEST(Validators, FileNotExists) {
+    std::string myfile{"TestFileNotUsed.txt"};
+    EXPECT_TRUE(CLI::_NonexistentPath(myfile));
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_FALSE(CLI::_NonexistentPath(myfile));
+
+    std::remove(myfile.c_str());
+    EXPECT_TRUE(CLI::_NonexistentPath(myfile));
 }

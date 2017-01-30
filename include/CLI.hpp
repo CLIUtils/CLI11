@@ -14,6 +14,12 @@
 #include <iomanip>
 #include <numeric>
 
+// C standard library
+// Only needed for existence checking
+// Could be swapped for filesystem in C++17
+#include <sys/types.h>
+#include <sys/stat.h>
+
 //#define CLI_LOG 1
 
 namespace CLI {
@@ -61,6 +67,7 @@ struct Combiner {
     bool positional;
     bool required;
     bool defaulted;
+    std::vector<std::function<bool(std::string)>> validators;
 
     /// Can be or-ed together
     Combiner operator | (Combiner b) const {
@@ -69,17 +76,48 @@ struct Combiner {
         self.positional = positional || b.positional;
         self.required = required || b.required;
         self.defaulted = defaulted || b.defaulted;
+        self.validators.reserve(validators.size() + b.validators.size());
+        self.validators.insert(self.validators.end(), validators.begin(), validators.end());
+        self.validators.insert(self.validators.end(), b.validators.begin(), b.validators.end());
         return self;
     }
 
     /// Call to give the number of arguments expected on cli
     Combiner operator() (int n) const {
-        return Combiner{n, positional, required, defaulted};
+        Combiner self = *this;
+        self.num = n;
+        return *this;
+    }
+    /// Call to give a validator
+    Combiner operator() (std::function<bool(std::string)> func) const {
+        Combiner self = *this;
+        self.validators.push_back(func);
+        return self;
     }
     Combiner operator, (Combiner b) const {
         return *this | b;
     }
 };
+
+bool _ExistingFile(std::string filename) {
+//    std::fstream f(name.c_str());
+//    return f.good();
+//    Fastest way according to http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
+    struct stat buffer;   
+    return (stat(filename.c_str(), &buffer) == 0); 
+}
+
+bool _ExistingDirectory(std::string filename) {
+    struct stat buffer;   
+    if(stat(filename.c_str(), &buffer) == 0 && (buffer.st_mode & S_IFDIR) )
+        return true;
+    return false;
+}
+
+bool _NonexistentPath(std::string filename) {
+    struct stat buffer;
+    return stat(filename.c_str(), &buffer) != 0;
+}
 
 struct Error : public std::runtime_error {
     Error(std::string parent, std::string name) : runtime_error(parent + ": " + name) {}
@@ -137,12 +175,20 @@ std::tuple<std::string, std::string> split(std::string fullname) {
     } else throw BadNameString(fullname);
 }
 
-const Combiner NOTHING   {0, false,false,false};
-const Combiner REQUIRED  {1, false,true, false};
-const Combiner DEFAULT   {1, false,false,true};
-const Combiner POSITIONAL{1, true, false,false};
-const Combiner ARGS      {1, false,false,false};
-const Combiner UNLIMITED {-1,false,false,false};
+const Combiner NOTHING    {0, false,false,false, {}};
+const Combiner REQUIRED   {1, false,true, false, {}};
+const Combiner DEFAULT    {1, false,false,true, {}};
+const Combiner POSITIONAL {1, true, false,false, {}};
+const Combiner ARGS       {1, false,false,false, {}};
+const Combiner UNLIMITED  {-1,false,false,false, {}};
+const Combiner VALIDATORS {1, false, false, false, {}};
+
+// Warning about using these validators:
+// The files could be added/deleted after the validation. This is not common,
+// but if this is a possibility, check the file you open afterwards
+const Combiner ExistingFile {1, false, false, false, {_ExistingFile}};
+const Combiner ExistingDirectory {1, false, false, false, {_ExistingDirectory}};
+const Combiner NonexistentPath {1, false, false, false, {_NonexistentPath}};
 
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
