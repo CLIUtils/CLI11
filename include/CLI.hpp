@@ -541,6 +541,9 @@ public:
             throw CallForHelp();
         }
 
+        // Positionals end up being inserted in the correct order, but we want to pop them off the back end
+        std::reverse(std::begin(positionals), std::end(positionals));
+
         for(Option& opt : options) {
             while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
                 opt.get_new();

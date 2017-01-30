@@ -143,6 +143,40 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ("zyz", someopt);
 }
 
+TEST_F(TApp, Positionals) {
+
+    std::string posit1;
+    std::string posit2;
+    app.add_option("posit1", posit1, "", CLI::POSITIONAL);
+    app.add_option("posit2", posit2, "", CLI::POSITIONAL);
+
+    args = {"thing1","thing2"};
+
+    run();
+
+    EXPECT_EQ(1, app.count("posit1"));
+    EXPECT_EQ(1, app.count("posit2"));
+    EXPECT_EQ("thing1", posit1);
+    EXPECT_EQ("thing2", posit2);
+}
+
+TEST_F(TApp, MixedPositionals) {
+
+    int positional_int;
+    std::string positional_string;
+    app.add_option("posit1", positional_int, "", CLI::POSITIONAL);
+    app.add_option("posit2", positional_string, "", CLI::POSITIONAL);
+
+    args = {"--posit2","thing2","7"};
+
+    run();
+
+    EXPECT_EQ(1, app.count("posit2"));
+    EXPECT_EQ(1, app.count("posit1"));
+    EXPECT_EQ(7, positional_int);
+    EXPECT_EQ("thing2", positional_string);
+}
+
 TEST_F(TApp, Reset) {
 
     app.add_flag("simple");
@@ -241,4 +275,4 @@ TEST_F(SubcommandProgram, SpareSub) {
 // TODO: Add default/type info to help
 // TODO: Add set checking
 // TODO: Try all of the options together
-
+// TODO: Add make_option alternative with type
