@@ -2,6 +2,7 @@
 
 #include <string>
 #include <regex>
+#include <memory>
 #include <deque>
 #include <iostream>
 #include <functional>
@@ -384,7 +385,7 @@ protected:
     std::vector<Option> options;
     std::vector<std::string> missing_options;
     std::deque<std::string> positionals;
-    std::vector<App*> subcommands;
+    std::vector<std::unique_ptr<App>> subcommands;
     bool parsed{false};
     App* subcommand = nullptr;
 
@@ -400,7 +401,7 @@ public:
         for(Option& opt : options) {
             opt.clear();
         }
-        for(App* app : subcommands) {
+        for(std::unique_ptr<App> &app : subcommands) {
             app->reset();
         }
     }
@@ -413,16 +414,11 @@ public:
 
     }
 
-    ~App() {
-        for(App* app : subcommands)
-            delete app;
-    }
-
     App* add_subcommand(std::string name, std::string discription="") {
-        subcommands.push_back(new App(discription));
+        subcommands.emplace_back(new App(discription));
         subcommands.back()->name = name;
         logit(subcommands.back()->name);
-        return subcommands.back();
+        return subcommands.back().get();
     }
     /// Add an option, will automatically understand the type for common types.
     /** To use, create a variable with the expected type, and pass it in after the name.
@@ -623,11 +619,11 @@ public:
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
-        for(App *com : subcommands) {
+        for(std::unique_ptr<App> &com : subcommands) {
             if(com->name == args.back()){ 
                 args.pop_back();
                 com->parse(args);
-                subcommand = com;
+                subcommand = com.get();
                 return;
             }
         }
@@ -696,7 +692,7 @@ public:
     Classifer _recognize(std::string current) const {
         if(current == "--")
             return Classifer::POSITIONAL_MARK;
-        for(const App* com : subcommands) {
+        for(const std::unique_ptr<App> &com : subcommands) {
             if(com->name == current)
                 return Classifer::SUBCOMMAND;
         }
@@ -807,8 +803,8 @@ public:
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
             int max = std::accumulate(std::begin(subcommands), std::end(subcommands), 0,
-                    [](int i, const App* j){return std::max(i, (int) j->get_name().length()+1);});
-            for(const App* com : subcommands) {
+                    [](int i, const std::unique_ptr<App> &j){return std::max(i, (int) j->get_name().length()+1);});
+            for(const std::unique_ptr<App> &com : subcommands) {
                 out << std::setw(max) << std::left << com->get_name() << " " << com->prog_discription << std::endl;
             }
         }
