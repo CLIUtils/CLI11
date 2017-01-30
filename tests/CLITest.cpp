@@ -39,7 +39,7 @@ struct TApp : public ::testing::Test {
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("c,count");
     args = {"-c"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("c"));
     EXPECT_EQ(1, app.count("count"));
 }
@@ -47,7 +47,7 @@ TEST_F(TApp, OneFlagShort) {
 TEST_F(TApp, OneFlagLong) {
     app.add_flag("c,count");
     args = {"--count"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("c"));
     EXPECT_EQ(1, app.count("count"));
 }
@@ -56,7 +56,7 @@ TEST_F(TApp, OneFlagRef) {
     int ref;
     app.add_flag("c,count", ref);
     args = {"--count"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("c"));
     EXPECT_EQ(1, app.count("count"));
     EXPECT_EQ(1, ref);
@@ -66,7 +66,7 @@ TEST_F(TApp, OneString) {
     std::string str;
     app.add_option("s,string", str);
     args = {"--string", "mystring"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("s"));
     EXPECT_EQ(1, app.count("string"));
     EXPECT_EQ(str, "mystring");
@@ -77,7 +77,7 @@ TEST_F(TApp, TogetherInt) {
     int i;
     app.add_option("i,int", i);
     args = {"-i4"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("int"));
     EXPECT_EQ(1, app.count("i"));
     EXPECT_EQ(i, 4);
@@ -87,7 +87,7 @@ TEST_F(TApp, SepInt) {
     int i;
     app.add_option("i,int", i);
     args = {"-i","4"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("int"));
     EXPECT_EQ(1, app.count("i"));
     EXPECT_EQ(i, 4);
@@ -97,7 +97,7 @@ TEST_F(TApp, OneStringAgain) {
     std::string str;
     app.add_option("s,string", str);
     args = {"--string", "mystring"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(1, app.count("s"));
     EXPECT_EQ(1, app.count("string"));
     EXPECT_EQ(str, "mystring");
@@ -107,7 +107,7 @@ TEST_F(TApp, OneStringAgain) {
 TEST_F(TApp, DefaultStringAgain) {
     std::string str = "previous";
     app.add_option("s,string", str);
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(0, app.count("s"));
     EXPECT_EQ(0, app.count("string"));
     EXPECT_EQ(str, "previous");
@@ -120,7 +120,7 @@ TEST_F(TApp, LotsOfFlags) {
     app.add_flag("b");
 
     args = {"-a","-b","-aA"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(2, app.count("a"));
     EXPECT_EQ(1, app.count("b"));
     EXPECT_EQ(1, app.count("A"));
@@ -135,7 +135,7 @@ TEST_F(TApp, ShortOpts) {
 
     args = {"-zzyzyz",};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(2, app.count("z"));
     EXPECT_EQ(1, app.count("y"));
@@ -152,7 +152,7 @@ TEST_F(TApp, Positionals) {
 
     args = {"thing1","thing2"};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("posit1"));
     EXPECT_EQ(1, app.count("posit2"));
@@ -169,7 +169,7 @@ TEST_F(TApp, MixedPositionals) {
 
     args = {"--posit2","thing2","7"};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("posit2"));
     EXPECT_EQ(1, app.count("posit1"));
@@ -185,7 +185,7 @@ TEST_F(TApp, Reset) {
 
     args = {"--simple", "--double", "1.2"};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("simple"));
     EXPECT_EQ(1, app.count("d"));
@@ -196,7 +196,7 @@ TEST_F(TApp, Reset) {
     EXPECT_EQ(0, app.count("simple"));
     EXPECT_EQ(0, app.count("d"));
     
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("simple"));
     EXPECT_EQ(1, app.count("d"));
@@ -213,7 +213,7 @@ TEST_F(TApp, FileNotExists) {
     app.add_option("file", filename, "", CLI::NonexistentPath);
     args = {"--file", myfile};
 
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(myfile, filename);
 
     app.reset();
@@ -227,23 +227,44 @@ TEST_F(TApp, FileNotExists) {
     EXPECT_FALSE(CLI::_ExistingFile(myfile));
 }
 
+TEST_F(TApp, FileExists) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+
+    std::string filename = "Failed";
+    app.add_option("file", filename, "", CLI::ExistingFile);
+    args = {"--file", myfile};
+
+    EXPECT_THROW(run(), CLI::ParseError);
+    EXPECT_EQ("Failed", filename);
+
+    app.reset();
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(myfile, filename);
+
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+}
 TEST_F(TApp, Basic) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(nullptr, app.get_subcommand());
     
     app.reset();
     args = {"sub1"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(sub1, app.get_subcommand());
 
     app.reset();
     EXPECT_EQ(nullptr, app.get_subcommand());
 
     args = {"sub2"};
-    run();
+    EXPECT_NO_THROW(run());
     EXPECT_EQ(sub2, app.get_subcommand());
 }
 
@@ -270,7 +291,7 @@ struct SubcommandProgram : public TApp {
 TEST_F(SubcommandProgram, Working) {
     args = {"-d", "start", "-ffilename"};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, dummy);
     EXPECT_EQ(start, app.get_subcommand());

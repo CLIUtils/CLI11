@@ -115,11 +115,8 @@ bool _ExistingDirectory(std::string filename) {
 }
 
 bool _NonexistentPath(std::string filename) {
-    std::cout << "Validating: " << filename << std::endl;
     struct stat buffer;
-    bool out = stat(filename.c_str(), &buffer) != 0;
-    std::cout << (out ? "Passed" : "Failed") << std::endl;
-    return out;
+    return stat(filename.c_str(), &buffer) != 0;
 }
 
 struct Error : public std::runtime_error {
