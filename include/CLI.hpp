@@ -2,6 +2,7 @@
 
 #include <string>
 #include <regex>
+#include <deque>
 #include <iostream>
 #include <functional>
 #include <tuple>
@@ -321,7 +322,7 @@ protected:
     std::string prog_discription;
     std::vector<Option> options;
     std::vector<std::string> missing_options;
-    std::vector<std::string> positionals;
+    std::deque<std::string> positionals;
     std::vector<App*> subcommands;
     bool parsed{false};
     App* subcommand = nullptr;
@@ -541,14 +542,12 @@ public:
             throw CallForHelp();
         }
 
-        // Positionals end up being inserted in the correct order, but we want to pop them off the back end
-        std::reverse(std::begin(positionals), std::end(positionals));
 
         for(Option& opt : options) {
             while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
                 opt.get_new();
-                opt.add_result(0, positionals.back());
-                positionals.pop_back();
+                opt.add_result(0, positionals.front());
+                positionals.pop_front();
             }
             if (opt.required() && opt.count() < opt.expected())
                 throw RequiredError(opt.get_name());
