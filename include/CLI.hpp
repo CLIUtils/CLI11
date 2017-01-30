@@ -160,6 +160,9 @@ struct HorribleError : public Error {
 struct IncorrectConstruction : public Error {
     IncorrectConstruction(std::string name) : Error("IncorrectConstruction", name, 8) {}
 };
+struct EmptyError : public Error {
+    EmptyError(std::string name) : Error("EmptyError", name, 9) {}
+};
 
 const std::regex reg_split{R"regex((?:([a-zA-Z0-9]?)(?:,|$)|^)([a-zA-Z0-9][a-zA-Z0-9_\-]*)?)regex"};
 const std::regex reg_short{R"regex(-([^-])(.*))regex"};
@@ -372,7 +375,31 @@ bool lexical_cast(std::string input, T& output) {
 
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 
+
 class App;
+
+// Prototype return value test
+template <typename T>
+class Value {
+    friend App;
+protected:
+    std::unique_ptr<std::unique_ptr<T>> value {new std::unique_ptr<T>()};
+    std::string name;
+public:
+    Value(std::string name) : name(name) {}
+    operator bool() const {return (bool) *value;}
+    //explicit operator T () const {return **this;}
+    T operator *() const {
+        if(*value) {
+            //std::cout << "Succ" << std::endl;
+            return **value;
+        }
+        else {
+            //std::cout << "Throwing!!!" << std::endl;
+            throw EmptyError(name);
+        }
+    }
+};
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new Program() instance with argc, argv, and a help discription. The templated
@@ -558,6 +585,30 @@ public:
         return add_option(name, fun, discription, opts);
     }
 
+    /// Prototype for new output style
+    template<typename T = std::string>
+    Value<T> make_option(
+            std::string name,              ///< The name, short,long
+            std::string discription="",
+            Combiner opts=VALIDATORS
+            ) {
+
+        Value<T> out(name);
+        std::unique_ptr<T> *ptr = out.value.get();
+
+        CLI::callback_t fun = [ptr](CLI::results_t res){
+            if(res.size()!=1) {
+                return false;
+            }
+            if(res[0].size()!=1) {
+                return false;
+            }
+            ptr->reset(new T());
+            return lexical_cast(res[0][0], **ptr);
+        };
+        add_option(name, fun, discription, opts);
+        return std::move(out);
+    }
     
 
     /// Parses the command line - throws errors

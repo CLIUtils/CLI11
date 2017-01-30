@@ -345,10 +345,31 @@ TEST_F(SubcommandProgram, SpareSub) {
     EXPECT_THROW(run(), CLI::PositionalError);
 }
 
+class TAppValue : public TApp {};
+
+TEST_F(TAppValue, OneString) {
+    auto str = app.make_option("s,string");
+    std::string v;
+    args = {"--string", "mystring"};
+    EXPECT_FALSE((bool) str);
+    EXPECT_THROW(v = *str, CLI::EmptyError);
+    //EXPECT_THROW(v = str, CLI::EmptyError);
+    EXPECT_FALSE((bool) str);
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE((bool) str);
+    EXPECT_NO_THROW(v = *str);
+    EXPECT_NO_THROW(v = str);
+    
+    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(*str, "mystring");
+
+}
+
 // TODO: Add vector arguments
 // TODO: Maybe add function to call on subcommand parse? Stashed.
 // TODO: Check help output
 // TODO: Add default/type info to help
 // TODO: Add set checking
 // TODO: Try all of the options together
-// TODO: Add make_option alternative with type
+// TODO: Add make_option alternative with type? Cancelled for now
