@@ -115,8 +115,11 @@ bool _ExistingDirectory(std::string filename) {
 }
 
 bool _NonexistentPath(std::string filename) {
+    std::cout << "Validating: " << filename << std::endl;
     struct stat buffer;
-    return stat(filename.c_str(), &buffer) != 0;
+    bool out = stat(filename.c_str(), &buffer) != 0;
+    std::cout << (out ? "Passed" : "Failed") << std::endl;
+    return out;
 }
 
 struct Error : public std::runtime_error {
@@ -235,6 +238,12 @@ public:
 
     /// Process the callback
     bool run_callback() const {
+        if(opts.validators.size()>0) {
+            for(const std::string & result : flatten_results())
+                for(const std::function<bool(std::string)> &vali : opts.validators)
+                    if(!vali(result))
+                        return false;
+        }
         return callback(results);
     }
 
@@ -313,6 +322,13 @@ public:
         std::stringstream out;
         out << std::setw(len) << std::left << get_name() << discription;
         return out.str();
+    }
+
+    std::vector<std::string> flatten_results() const {
+        std::vector<std::string> output;
+        for(const std::vector<std::string> result : results)
+            output.insert(std::end(output), std::begin(result), std::end(result));
+        return output;
     }
 
 };

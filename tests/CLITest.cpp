@@ -1,7 +1,7 @@
 
 #include "CLI.hpp"
 #include "gtest/gtest.h"
-
+#include <fstream>
 
 typedef std::vector<std::string> input_t;
 
@@ -204,6 +204,28 @@ TEST_F(TApp, Reset) {
 
 }
 
+
+TEST_F(TApp, FileNotExists) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_TRUE(CLI::_NonexistentPath(myfile));
+
+    std::string filename;
+    app.add_option("file", filename, "", CLI::NonexistentPath);
+    args = {"--file", myfile};
+
+    run();
+    EXPECT_EQ(myfile, filename);
+
+    app.reset();
+
+    
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_THROW(run(), CLI::ParseError);
+
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+}
 
 TEST_F(TApp, Basic) {
     auto sub1 = app.add_subcommand("sub1");
