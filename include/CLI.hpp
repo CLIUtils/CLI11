@@ -63,6 +63,17 @@ using std::enable_if_t;
 #endif
 // If your compiler supports C++14, you can use that definition instead
 
+template <typename T>
+struct is_vector {
+  static const bool value = false;
+};
+
+
+template<class T, class A>
+struct is_vector<std::vector<T, A> > {
+  static bool const value = true;
+};
+
 struct Combiner {
     int num;
     bool positional;
@@ -366,7 +377,20 @@ bool lexical_cast(std::string input, T& output) {
 
 // String and similar
 template<typename T, 
-enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value, detail::enabler> = dummy>
+enable_if_t<is_vector<T>::value, detail::enabler> = dummy>
+bool lexical_cast(std::string input, T& output) {
+    logit("vector lexical cast: " + input);
+    if(output.size() == input.size())
+        output.resize(input.size());
+    for(size_t i=0; i<input.size(); i++)
+        output[i] = input[i];
+    return true;
+}
+
+// String and similar
+template<typename T, 
+enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
+, detail::enabler> = dummy>
 bool lexical_cast(std::string input, T& output) {
     logit("Direct lexical cast: " + input);
     output = input;
@@ -483,7 +507,7 @@ public:
     }
 
     /// Add option for string
-    template<typename T, enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
+    template<typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
     Option* add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
@@ -598,12 +622,15 @@ public:
 
     /// Prototype for new output style
     template<typename T = std::string,
-        enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
+        enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             std::string discription="",
             Combiner opts=VALIDATORS
             ) {
+
+        if(opts.num!=1)
+            throw IncorrectConstruction("Must have ARGS(1).");
 
         Value<T> out(name);
         std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
@@ -623,14 +650,17 @@ public:
     }
 
     /// Prototype for new output style with default
-    template<typename T = std::string,
-        enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
+    template<typename T,
+        enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             const T& default_value,
             std::string discription="",
             Combiner opts=VALIDATORS
             ) {
+
+        if(opts.num!=1)
+            throw IncorrectConstruction("Must have ARGS(1).");
 
         Value<T> out(name);
         std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
@@ -650,9 +680,10 @@ public:
         return out;
     }
     
-    /// Prototype for new output style
-    template<typename T>
-    Value<std::vector<T>> make_option(
+    /// Prototype for new output style, vector
+    template<typename T,
+        enable_if_t<is_vector<T>::value, detail::enabler> = dummy>
+    Value<T> make_option(
             std::string name,              ///< The name, short,long
             std::string discription="",
             Combiner opts=VALIDATORS
@@ -661,11 +692,11 @@ public:
         if(opts.num==0)
             throw IncorrectConstruction("Must have ARGS or be a vector.");
 
-        Value<std::vector<T>> out(name);
-        std::shared_ptr<std::unique_ptr<std::vector<T> >> ptr = out.value;
+        Value<T> out(name);
+        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
 
         CLI::callback_t fun = [ptr](CLI::results_t res){
-            ptr->reset(new std::vector<T>()); // resets the internal ptr
+            ptr->reset(new T()); // resets the internal ptr
             bool retval = true;
             for(const auto &a : res)
                 for(const auto &b : a) {
@@ -841,23 +872,17 @@ public:
 
 
         if(num == -1) {
-            std::string current = args.back();
-            while(_recognize(current) == Classifer::NONE) {
-                std::string current = args.back();
+            while(args.size()>0 && _recognize(args.back()) == Classifer::NONE) {
+                op->add_result(vnum, args.back());
                 args.pop_back();
-                op->add_result(vnum,current);
-                if(args.size()==0)
-                    return;
 
             }
-        } else while(num>0) {
+        } else while(num>0 && args.size() > 0) {
             num--;
             std::string current = args.back();
             logit("Adding: "+current);
             args.pop_back();
             op->add_result(vnum,current);
-            if(args.size()==0)
-                return;
         }
 
         if(rest != "") {
@@ -916,22 +941,14 @@ public:
         }
 
         if(num == -1) {
-            std::string current = args.back();
-            while(_recognize(current) == Classifer::NONE) {
-                std::string current = args.back();
+            while(args.size() > 0 && _recognize(args.back()) == Classifer::NONE) {
+                op->add_result(vnum, args.back());
                 args.pop_back();
-                op->add_result(vnum,current);
-                if(args.size()==0)
-                    return;
-
             }
-        } else while(num>0) {
+        } else while(num>0 && args.size()>0) {
             num--;
-            std::string current = args.back();
+            op->add_result(vnum,args.back());
             args.pop_back();
-            op->add_result(vnum,current);
-            if(args.size()==0)
-                return;
         }
         return;
     }

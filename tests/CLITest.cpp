@@ -382,9 +382,64 @@ TEST_F(TAppValue, OneString) {
 
 }
 
+TEST_F(TAppValue, SeveralInts) {
+    auto value = app.make_option<int>("first");
+    CLI::Value<int> value2 = app.make_option<int>("s");
+    int v;
+    args = {"--first", "12", "-s", "19"};
+    EXPECT_FALSE((bool) value);
+    EXPECT_FALSE((bool) value2);
+
+    EXPECT_THROW(v = *value, CLI::EmptyError);
+    //EXPECT_THROW(v = str, CLI::EmptyError);
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE((bool) value);
+    EXPECT_NO_THROW(v = *value);
+    EXPECT_NO_THROW(v = value);
+    
+    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(1, app.count("first"));
+    EXPECT_EQ(*value, 12);
+    EXPECT_EQ(*value2, 19);
+
+}
+
+TEST_F(TAppValue, Vector) {
+    auto value = app.make_option<std::vector<int>>("first", "", CLI::ARGS);
+    auto value2 = app.make_option<std::vector<std::string>>("second", "", CLI::ARGS);
+
+    std::vector<int> i;
+    std::vector<std::string> s;
+
+    args = {"--first", "12", "3", "9", "--second", "thing", "try"};
+
+    EXPECT_FALSE((bool) value);
+    EXPECT_FALSE((bool) value2);
+
+    EXPECT_THROW(i = *value, CLI::EmptyError);
+    EXPECT_THROW(s = *value2, CLI::EmptyError);
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_TRUE((bool) value);
+    EXPECT_TRUE((bool) value2);
+
+    EXPECT_NO_THROW(i = *value);
+    //EXPECT_NO_THROW(i = value);
+    
+    EXPECT_NO_THROW(s = *value2);
+    //EXPECT_NO_THROW(s = value2);
+
+    EXPECT_EQ(3, app.count("first"));
+    EXPECT_EQ(2, app.count("second"));
+
+    EXPECT_EQ(*value, std::vector<int>({12,3,9}));
+    EXPECT_EQ(*value2, std::vector<std::string>({"thing", "try"}));
+
+}
+
 // TODO: Maybe add function to call on subcommand parse? Stashed.
 // TODO: Check help output
 // TODO: Add default/type info to help
 // TODO: Add set checking
 // TODO: Try all of the options together
-// TODO: Add make_option alternative with type? Cancelled for now
