@@ -178,8 +178,8 @@ struct EmptyError : public Error {
     EmptyError(std::string name) : Error("EmptyError", name, 9) {}
 };
 
-const std::regex reg_split{R"regex((?:([a-zA-Z0-9]?)(?:,|$)|^)([a-zA-Z0-9][a-zA-Z0-9_\-]*)?)regex"};
-const std::regex reg_short{R"regex(-([^-])(.*))regex"};
+const std::regex reg_split{R"regex((?:([a-zA-Z_]?)(?:,|$)|^)([a-zA-Z0-9_][a-zA-Z0-9_\-]*)?)regex"};
+const std::regex reg_short{R"regex(-([a-zA-Z_])(.*))regex"};
 const std::regex reg_long{R"regex(--([^-^=][^=]*)=?(.*))regex"};
 
 

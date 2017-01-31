@@ -433,13 +433,30 @@ TEST_F(TAppValue, Vector) {
     EXPECT_EQ(3, app.count("first"));
     EXPECT_EQ(2, app.count("second"));
 
-    EXPECT_EQ(*value, std::vector<int>({12,3,9}));
-    EXPECT_EQ(*value2, std::vector<std::string>({"thing", "try"}));
+    EXPECT_EQ(std::vector<int>({12,3,9}), *value);
+    EXPECT_EQ(std::vector<std::string>({"thing", "try"}), *value2);
 
 }
 
+TEST_F(TAppValue, DoubleVector) {
+    auto value = app.make_option<std::vector<double>>("simple", "", CLI::ARGS);
+    std::vector<double> d;
+
+    args = {"--simple", "1.2", "3.4", "-1"};
+
+    EXPECT_THROW(d = *value, CLI::EmptyError);
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_NO_THROW(d = *value);
+
+    EXPECT_EQ(3, app.count("simple"));
+    EXPECT_EQ(std::vector<double>({1.2, 3.4, -1}), *value);
+}
+
 // TODO: Maybe add function to call on subcommand parse? Stashed.
-// TODO: Check help output
+// TODO: Check help output, better formatting
 // TODO: Add default/type info to help
-// TODO: Add set checking
-// TODO: Try all of the options together
+// TODO: Add regex replacement function (GCC 4.8 support)
+// TODO: Add README
+// TODO: Change format of option specifications?
