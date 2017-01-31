@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <type_traits>
-#include <unordered_set>
+#include <set>
 #include <iomanip>
 #include <numeric>
 
@@ -450,6 +450,10 @@ public:
         logit(subcommands.back()->name);
         return subcommands.back().get();
     }
+
+
+    //------------ ADD STYLE ---------//
+
     /// Add an option, will automatically understand the type for common types.
     /** To use, create a variable with the expected type, and pass it in after the name.
      * After start is called, you can use count to see if the value was passed, and
@@ -563,7 +567,7 @@ public:
     Option* add_set(
             std::string name,              ///< The name, short,long
             T &member,                     ///< The selected member of the set
-            std::unordered_set<T> options, ///< The set of posibilities
+            std::set<T> options, ///< The set of posibilities
             std::string discription="",    ///< Discription string
             Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
@@ -581,14 +585,20 @@ public:
             bool retval = lexical_cast(res[0][0], member);
             if(!retval)
                 return false;
-            return std::find(std::begin(options), std::end(options), retval) != std::end(options);
+            return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
         return add_option(name, fun, discription, opts);
     }
 
+
+
+
+    //------------ MAKE STYLE ---------//
+
     /// Prototype for new output style
-    template<typename T = std::string>
+    template<typename T = std::string,
+        enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             std::string discription="",
@@ -611,7 +621,117 @@ public:
         add_option(name, fun, discription, opts);
         return out;
     }
+
+    /// Prototype for new output style with default
+    template<typename T = std::string,
+        enable_if_t<!std::is_array<T>::value, detail::enabler> = dummy>
+    Value<T> make_option(
+            std::string name,              ///< The name, short,long
+            const T& default_value,
+            std::string discription="",
+            Combiner opts=VALIDATORS
+            ) {
+
+        Value<T> out(name);
+        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
+        ptr->reset(new T(default_value)); // resets the internal ptr
+
+        CLI::callback_t fun = [ptr](CLI::results_t res){
+            if(res.size()!=1) {
+                return false;
+            }
+            if(res[0].size()!=1) {
+                return false;
+            }
+            ptr->reset(new T()); // resets the internal ptr
+            return lexical_cast(res[0][0], **ptr);
+        };
+        add_option(name, fun, discription, opts);
+        return out;
+    }
     
+    /// Prototype for new output style
+    template<typename T>
+    Value<std::vector<T>> make_option(
+            std::string name,              ///< The name, short,long
+            std::string discription="",
+            Combiner opts=VALIDATORS
+            ) {
+
+        if(opts.num==0)
+            throw IncorrectConstruction("Must have ARGS or be a vector.");
+
+        Value<std::vector<T>> out(name);
+        std::shared_ptr<std::unique_ptr<std::vector<T> >> ptr = out.value;
+
+        CLI::callback_t fun = [ptr](CLI::results_t res){
+            ptr->reset(new std::vector<T>()); // resets the internal ptr
+            bool retval = true;
+            for(const auto &a : res)
+                for(const auto &b : a) {
+                    (*ptr)->emplace_back();
+                    retval &= lexical_cast(b, (*ptr)->back());
+                }
+            return (*ptr)->size() > 0 && retval;
+        };
+        add_option(name, fun, discription, opts);
+        return out;
+    }
+
+
+    /// Prototype for new output style: flag
+    Value<int> make_flag(
+            std::string name,              ///< The name, short,long
+            std::string discription=""
+            ) {
+
+        Value<int> out(name);
+        std::shared_ptr<std::unique_ptr<int>> ptr = out.value;
+        ptr->reset(new int()); // resets the internal ptr
+        **ptr = 0;
+
+        CLI::callback_t fun = [ptr](CLI::results_t res){
+            **ptr = (int) res.size();
+            return true;
+        };
+        add_option(name, fun, discription, NOTHING);
+        return out;
+    }
+
+    /// Add set of options
+    template<typename T>
+    Value<T> make_set(
+            std::string name,              ///< The name, short,long
+            std::set<T> options,           ///< The set of posibilities
+            std::string discription="",    ///< Discription string
+            Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            ) {
+
+        Value<T> out(name);
+        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
+
+        if(opts.num!=1)
+            throw IncorrectConstruction("Must have ARGS(1).");
+
+        CLI::callback_t fun = [ptr, options](CLI::results_t res){
+            if(res.size()!=1) {
+                return false;
+            }
+            if(res[0].size()!=1) {
+                return false;
+            }
+            ptr->reset(new T());
+            bool retval = lexical_cast(res[0][0], **ptr);
+            if(!retval)
+                return false;
+            return std::find(std::begin(options), std::end(options), **ptr) != std::end(options);
+        };
+
+        add_option(name, fun, discription, opts);
+        return out;
+    }
+
+
 
     /// Parses the command line - throws errors
     void parse(int argc, char **argv) {

@@ -249,6 +249,22 @@ TEST_F(TApp, FileExists) {
     EXPECT_FALSE(CLI::_ExistingFile(myfile));
 }
 
+TEST_F(TApp, InSet) {
+
+    std::string choice;
+    app.add_set("q,quick", choice, {"one", "two", "three"});
+    
+    args = {"--quick", "two"};
+
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ("two", choice);
+
+    app.reset();
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ParseError);
+}
+
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
@@ -366,7 +382,6 @@ TEST_F(TAppValue, OneString) {
 
 }
 
-// TODO: Add vector arguments
 // TODO: Maybe add function to call on subcommand parse? Stashed.
 // TODO: Check help output
 // TODO: Add default/type info to help
