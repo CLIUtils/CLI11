@@ -33,13 +33,14 @@ TEST(Split, GoodStrings) {
     }
 
 TEST(Split, BadStrings) {
-    std::vector<std::string> test_fails= {"a,,boo", "a,b,c", "ssd,sfd", "-a", "", ",", "one two"};
 
-    for(std::string name : test_fails) {
-        EXPECT_THROW(CLI::split(name), CLI::BadNameString);
-    }
-
-    
+    EXPECT_THROW(CLI::split("a,,boo"), CLI::BadNameString);
+    EXPECT_THROW(CLI::split("a,b,c"), CLI::BadNameString);
+    EXPECT_THROW(CLI::split("ssd,sfd"), CLI::BadNameString);
+    EXPECT_THROW(CLI::split("-a"), CLI::BadNameString);
+    EXPECT_THROW(CLI::split(""), CLI::BadNameString);
+    EXPECT_THROW(CLI::split(","), CLI::BadNameString);
+    EXPECT_THROW(CLI::split("one two"), CLI::BadNameString);
 }
 
 TEST(Validators, FileExists) {

@@ -189,7 +189,6 @@ struct EmptyError : public Error {
     EmptyError(std::string name) : Error("EmptyError", name, 9) {}
 };
 
-const std::regex reg_split{R"regex((?:([a-zA-Z_]?)(?:,|$)|^)([a-zA-Z0-9_][a-zA-Z0-9_\-]*)?)regex"};
 const std::regex reg_short{R"regex(-([a-zA-Z_])(.*))regex"};
 const std::regex reg_long{R"regex(--([^-^=][^=]*)=?(.*))regex"};
 
@@ -215,20 +214,7 @@ inline bool split_long(const std::string &current, std::string &name, std::strin
         return false;
 }
 
-// Splits a string into long and short names
-inline std::tuple<std::string, std::string> split(std::string fullname) {
-
-    std::smatch match;
-    if (std::regex_match(fullname, match, reg_split)) {
-        std::string sname = match[1];
-        std::string lname = match[2];
-        if(sname == "" and lname == "")
-            throw BadNameString("EMPTY");
-        return std::tuple<std::string, std::string>(sname, lname);
-    } else throw BadNameString(fullname);
-}
-
-// Splits a string into multiple long and short names (not implemented)
+// Splits a string into multiple long and short names
 inline std::vector<std::string> split_names(std::string current) {
     std::vector<std::string> output;
     size_t val;
@@ -240,6 +226,48 @@ inline std::vector<std::string> split_names(std::string current) {
     return output;
 
 }
+
+// Currently just throws an error if name is incorrect. May clean later.
+inline void cleanup_names(const std::vector<std::string> &input) {
+
+    for(const std::string &name : input) {
+        if(name.compare(0, 2, "--") == 0)
+            //output = output.substring(2);
+            throw BadNameString(name);
+        else if(name.compare(0, 1, std::string("-")) == 0)
+            throw BadNameString(name);
+            //output = output.substring(1);
+    }
+}
+
+// Splits a string into long and short names
+inline std::tuple<std::string, std::string> split(std::string fullname) {
+    if(fullname.find(" ") != std::string::npos)
+        throw BadNameString("Cannot have space in name string: "+fullname);
+    std::vector<std::string> output = split_names(fullname);
+    cleanup_names(output);
+
+    if(output.size() > 2)
+        throw BadNameString(fullname);
+    else if (output.size() == 2) {
+        if(output[0].length()==0 && output[1].length()==0)
+            throw BadNameString("EMPTY");
+        else if(output[0].length()<2)
+            return std::tuple<std::string,std::string>(output[0], output[1]);
+        else if(output[1].length() < 2)
+            return std::tuple<std::string,std::string>(output[0], output[1]);
+        else
+            throw BadNameString(fullname);
+    } else {
+        if(output[0].length()==0)
+            throw BadNameString("EMPTY");
+        else if(output[0].length() == 1)
+            return std::tuple<std::string,std::string>(output[0], "");
+        else
+            return std::tuple<std::string,std::string>("", output[0]);
+    }
+}
+
 
 const Combiner NOTHING    {0, false,false,false, {}};
 const Combiner REQUIRED   {1, false,true, false, {}};
