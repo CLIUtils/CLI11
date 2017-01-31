@@ -23,6 +23,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <locale>
+
 // GCC 4.7 and 4.8 have an non-working implementation of regex
 #include <regex>
 #if __cplusplus >= 201103L \
@@ -224,6 +226,58 @@ inline std::vector<std::string> split_names(std::string current) {
     }
     output.push_back(current);
     return output;
+
+}
+
+template<typename T>
+bool valid_first_char(T c) {
+    return std::isalpha(c) || c=='_';
+}
+
+template<typename T>
+bool valid_later_char(T c) {
+    return std::isalnum(c) || c=='_' || c=='.' || c=='-';
+}
+
+inline bool valid_name_string(const std::string &str) {
+    if(str.size()<1 || !valid_first_char(str[0]))
+        return false;
+    for(auto c : str.substr(1))
+        if(!valid_later_char(c))
+            return false;
+    return true;
+}
+
+inline std::tuple<std::vector<std::string>,std::vector<std::string>> get_names(const std::vector<std::string> &input) {
+    std::vector<std::string> short_names;
+    std::vector<std::string> long_names;
+
+    for(std::string name : input) {
+        if(name.length() == 0)
+            continue;
+        else if(name.length() == 1)
+            if(valid_first_char(name[0]))
+                short_names.push_back(name);
+            else
+                throw BadNameString("Invalid one char name: "+name);
+        else if(name.length() == 2 && name[0] == '-' && name[1] != '-') {
+            if(valid_first_char(name[1]))
+                short_names.push_back(std::string(1,name[1]));
+            else
+                throw BadNameString("Invalid one char name: "+name);
+        } else {
+
+            if(name.substr(0,2) == "--")
+                name = name.substr(2);
+            if(valid_name_string(name))
+                long_names.push_back(name);
+            else
+                throw BadNameString("Bad long name"+name);
+
+        }
+    }
+      
+    return {short_names, long_names};
 
 }
 

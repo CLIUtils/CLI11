@@ -120,3 +120,22 @@ TEST(RegEx, Longs) {
     EXPECT_FALSE(CLI::split_long("--", name, value));
 
 }
+
+TEST(Regex, SplittingNew) {
+
+    std::vector<std::string> shorts;
+    std::vector<std::string> longs;
+
+    EXPECT_NO_THROW(std::tie(shorts, longs) = CLI::get_names({"--long", "s", "-q", "also-long"}));
+    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
+    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
+
+    EXPECT_NO_THROW(std::tie(shorts, longs) = CLI::get_names({"--long", "", "s", "-q", "", "also-long"}));
+    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
+    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
+
+    EXPECT_THROW(std::tie(shorts, longs) = CLI::get_names({"-"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs) = CLI::get_names({"--"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs) = CLI::get_names({"-hi"}), CLI::BadNameString);
+
+}
