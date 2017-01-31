@@ -1,5 +1,8 @@
 #pragma once
 
+// Distributed under the LGPL version 3.0 license.  See accompanying
+// file LICENSE or https://github.com/henryiii/CLI11 for details.
+
 #include <string>
 #include <regex>
 #include <memory>
