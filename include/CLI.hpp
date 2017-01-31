@@ -383,13 +383,15 @@ template <typename T>
 class Value {
     friend App;
 protected:
-    std::unique_ptr<std::unique_ptr<T>> value {new std::unique_ptr<T>()};
+    std::shared_ptr<std::unique_ptr<T>> value {new std::unique_ptr<T>()};
     std::string name;
 public:
     Value(std::string name) : name(name) {}
     operator bool() const {return (bool) *value;}
-    //explicit operator T () const {return **this;}
-    T operator *() const {
+    /// Note this does not throw on assignment, though
+    /// afterwards it seems to work fine. Best to use
+    /// explicit * notation.
+    T& operator *() const {
         if(*value) {
             //std::cout << "Succ" << std::endl;
             return **value;
@@ -594,7 +596,7 @@ public:
             ) {
 
         Value<T> out(name);
-        std::unique_ptr<T> *ptr = out.value.get();
+        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
 
         CLI::callback_t fun = [ptr](CLI::results_t res){
             if(res.size()!=1) {
@@ -603,11 +605,11 @@ public:
             if(res[0].size()!=1) {
                 return false;
             }
-            ptr->reset(new T());
+            ptr->reset(new T()); // resets the internal ptr
             return lexical_cast(res[0][0], **ptr);
         };
         add_option(name, fun, discription, opts);
-        return std::move(out);
+        return out;
     }
     
 
