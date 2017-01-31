@@ -4,7 +4,6 @@
 // file LICENSE or https://github.com/henryiii/CLI11 for details.
 
 #include <string>
-#include <regex>
 #include <memory>
 #include <deque>
 #include <iostream>
@@ -23,6 +22,18 @@
 // Could be swapped for filesystem in C++17
 #include <sys/types.h>
 #include <sys/stat.h>
+
+// GCC 4.7 and 4.8 have an non-working implementation of regex
+#include <regex>
+#if __cplusplus >= 201103L \
+    && (!defined(__GLIBCXX__) \
+       || (defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE>4) \
+       || (__cplusplus >= 201402L) \
+       || (defined(_GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT) || defined(_GLIBCXX_REGEX_STATE_LIMIT)))
+#define HAVE_WORKING_REGEX 1
+#else
+#define HAVE_WORKING_REGEX 0
+#endif
 
 //#define CLI_LOG 1
 
@@ -182,8 +193,30 @@ const std::regex reg_split{R"regex((?:([a-zA-Z_]?)(?:,|$)|^)([a-zA-Z0-9_][a-zA-Z
 const std::regex reg_short{R"regex(-([a-zA-Z_])(.*))regex"};
 const std::regex reg_long{R"regex(--([^-^=][^=]*)=?(.*))regex"};
 
+// Returns false if not a short option. Otherwise, sets opt name and rest and returns true
+inline bool split_short(const std::string &current, std::string &name, std::string &rest) {
+    std::smatch match;
+    if(std::regex_match(current, match, reg_short)) {
+        name = match[1];
+        rest = match[2];
+        return true;
+    } else
+        return false;
+}
 
-std::tuple<std::string, std::string> split(std::string fullname) {
+// Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
+inline bool split_long(const std::string &current, std::string &name, std::string &value) {
+    std::smatch match;
+    if(std::regex_match(current, match, reg_long)) {
+        name = match[1];
+        value = match[2];
+        return true;
+    } else
+        return false;
+}
+
+// Splits a string into long and short names
+inline std::tuple<std::string, std::string> split(std::string fullname) {
 
     std::smatch match;
     if (std::regex_match(fullname, match, reg_split)) {
@@ -193,6 +226,19 @@ std::tuple<std::string, std::string> split(std::string fullname) {
             throw BadNameString("EMPTY");
         return std::tuple<std::string, std::string>(sname, lname);
     } else throw BadNameString(fullname);
+}
+
+// Splits a string into multiple long and short names (not implemented)
+inline std::vector<std::string> split_names(std::string current) {
+    std::vector<std::string> output;
+    size_t val;
+    while((val = current.find(",")) != std::string::npos) {
+        output.push_back(current.substr(0,val));
+        current = current.substr(val+1);
+    }
+    output.push_back(current);
+    return output;
+
 }
 
 const Combiner NOTHING    {0, false,false,false, {}};
@@ -843,14 +889,12 @@ public:
  
     void _parse_short(std::vector<std::string> &args) {
         std::string current = args.back();
-        std::smatch match;
 
-        if(!std::regex_match(current, match, reg_short))
+        std::string name;
+        std::string rest;
+        if(!split_short(current, name, rest))
             throw HorribleError("Short");
-        
         args.pop_back();
-        std::string name = match[1];
-        std::string rest = match[2];
 
         logit("Working on short: " + name + " (" + rest + ")");
 
@@ -895,31 +939,29 @@ public:
     }
 
     Classifer _recognize(std::string current) const {
+        std::string dummy1, dummy2;
+
         if(current == "--")
             return Classifer::POSITIONAL_MARK;
         for(const std::unique_ptr<App> &com : subcommands) {
             if(com->name == current)
                 return Classifer::SUBCOMMAND;
         }
-        if(std::regex_match(current, reg_long))
+        if(split_long(current, dummy1, dummy2))
             return Classifer::LONG;
-        if(std::regex_match(current, reg_short))
+        if(split_short(current, dummy1, dummy2))
             return Classifer::SHORT;
         return Classifer::NONE;
-            
-
     }
 
     void _parse_long(std::vector<std::string> &args) {
         std::string current = args.back();
-        std::smatch match;
 
-        if(!std::regex_match(current, match, reg_long))
+        std::string name;
+        std::string value;
+        if(!split_long(current, name, value))
             throw HorribleError("Long");
-
         args.pop_back();
-        std::string name = match[1];
-        std::string value = match[2];
 
 
         logit("Working on long: " + name + " (" + value + ")");
