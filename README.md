@@ -7,10 +7,10 @@ Why write another CLI parser?
 
 The following attributes were deemed most important in a CLI parser library:
 
-* Easy to include (i.e., header only, one file if possible): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
+* Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
 * Work with GCC 4.8 (CentOS 7) or above, or MacOS Clang (C++11)
-* Well tested
+* Well tested using Travis
 * Good help printing (in progress)
 * Standard idioms supported naturally, like flags
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.

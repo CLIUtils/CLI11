@@ -23,6 +23,14 @@ matrix:
                   packages:
                       - g++-4.8
           env: COMPILER=4.8
+        - compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-4.7
+          env: COMPILER=4.7
         - compiler: clang
           addons:
               apt:
