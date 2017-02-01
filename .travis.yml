@@ -13,6 +13,22 @@ matrix:
                   sources:
                       - ubuntu-toolchain-r-test
                   packages:
+                      - g++-6
+          env: COMPILER=6
+        - compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-5
+          env: COMPILER=5
+        - compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
                       - g++-4.9
           env: COMPILER=4.9
         - compiler: gcc
