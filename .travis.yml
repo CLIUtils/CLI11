@@ -14,9 +14,7 @@ matrix:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.9
-          env:
-            - CC=gcc-4.8
-            - CXX=g++-4.8
+          env: COMPILER=4.9
         - compiler: gcc
           addons:
               apt:
@@ -24,9 +22,7 @@ matrix:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.8
-          env:
-            - CC=gcc-4.8
-            - CXX=g++-4.8
+          env: COMPILER=4.8
         - compiler: clang
           addons:
               apt:
@@ -37,6 +33,7 @@ matrix:
                       - clang-3.6
 
 install:
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
     - cd "${DEPS_DIR}"
