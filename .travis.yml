@@ -7,21 +7,23 @@ cache:
 
 matrix:
     include:
-        - compiler: gcc-4.9
+        - compiler: gcc
           addons:
               apt:
                   sources:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.9
-        - compiler: gcc-4.8
+          env: CXX=g++-4.9
+        - compiler: gcc
           addons:
               apt:
                   sources:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.8
-        - compiler: clang-3.6
+          env: CXX=g++-4.8
+        - compiler: clang
           addons:
               apt:
                   sources:
@@ -29,6 +31,7 @@ matrix:
                       - llvm-toolchain-precise-3.6
                   packages:
                       - clang-3.6
+          env: CXX=clang-3.6
 
 install:
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
