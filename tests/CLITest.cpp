@@ -222,7 +222,7 @@ TEST_F(TApp, Reset) {
 
 TEST_F(TApp, FileNotExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::_NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::detail::_NonexistentPath(myfile));
 
     std::string filename;
     app.add_option("file", filename, "", CLI::NonexistentPath);
@@ -239,12 +239,12 @@ TEST_F(TApp, FileNotExists) {
     EXPECT_THROW(run(), CLI::ParseError);
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+    EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
 }
 
 TEST_F(TApp, FileExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+    EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
 
     std::string filename = "Failed";
     app.add_option("file", filename, "", CLI::ExistingFile);
@@ -261,7 +261,7 @@ TEST_F(TApp, FileExists) {
     EXPECT_EQ(myfile, filename);
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::_ExistingFile(myfile));
+    EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
 }
 
 TEST_F(TApp, InSet) {

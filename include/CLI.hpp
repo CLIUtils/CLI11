@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <numeric>
 #include <vector>
+#include <locale>
 
 // C standard library
 // Only needed for existence checking
@@ -25,118 +26,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <locale>
-
-
-//#define CLI_LOG 1
 
 namespace CLI {
 
-/// Log a message, can be enabled with CLI_LOG
-void logit(std::string) {
-#ifdef CLI_LOG
-    std::cout << "\033[1;31m" << output << "\033[0m" << std::endl;
-#endif
-}
 
-/// Simple fucntion to join a string
-template <typename T>
-std::string join(const T& v, std::string delim = ",") {
-    std::ostringstream s;
-    for (const auto& i : v) {
-        if (&i != &v[0]) {
-            s << delim;
-        }
-        s << i;
-    }
-    return s.str();
-}
-
-// Based generally on https://rmf.io/cxx11/almost-static-if
-namespace detail {
-    /// Simple empty scoped class
-    enum class enabler {};
-}
-
-/// An instance to use in EnableIf
-constexpr detail::enabler dummy = {};
-
-// Copied from C++14
-#if __cplusplus < 201402L
-template< bool B, class T = void >
-using enable_if_t = typename std::enable_if<B,T>::type;
-#else
-using std::enable_if_t;
-#endif
-// If your compiler supports C++14, you can use that definition instead
-
-template <typename T>
-struct is_vector {
-  static const bool value = false;
-};
-
-
-template<class T, class A>
-struct is_vector<std::vector<T, A> > {
-  static bool const value = true;
-};
-
-struct Combiner {
-    int num;
-    bool positional;
-    bool required;
-    bool defaulted;
-    std::vector<std::function<bool(std::string)>> validators;
-
-    /// Can be or-ed together
-    Combiner operator | (Combiner b) const {
-        Combiner self;
-        self.num = std::min(num, b.num) == -1 ? -1 : std::max(num, b.num);
-        self.positional = positional || b.positional;
-        self.required = required || b.required;
-        self.defaulted = defaulted || b.defaulted;
-        self.validators.reserve(validators.size() + b.validators.size());
-        self.validators.insert(self.validators.end(), validators.begin(), validators.end());
-        self.validators.insert(self.validators.end(), b.validators.begin(), b.validators.end());
-        return self;
-    }
-
-    /// Call to give the number of arguments expected on cli
-    Combiner operator() (int n) const {
-        Combiner self = *this;
-        self.num = n;
-        return self;
-    }
-    /// Call to give a validator
-    Combiner operator() (std::function<bool(std::string)> func) const {
-        Combiner self = *this;
-        self.validators.push_back(func);
-        return self;
-    }
-    Combiner operator, (Combiner b) const {
-        return *this | b;
-    }
-};
-
-bool _ExistingFile(std::string filename) {
-//    std::fstream f(name.c_str());
-//    return f.good();
-//    Fastest way according to http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
-    struct stat buffer;   
-    return (stat(filename.c_str(), &buffer) == 0); 
-}
-
-bool _ExistingDirectory(std::string filename) {
-    struct stat buffer;   
-    if(stat(filename.c_str(), &buffer) == 0 && (buffer.st_mode & S_IFDIR) )
-        return true;
-    return false;
-}
-
-bool _NonexistentPath(std::string filename) {
-    struct stat buffer;
-    return stat(filename.c_str(), &buffer) != 0;
-}
+// Error definitions
 
 struct Error : public std::runtime_error {
     int exit_code;
@@ -183,125 +77,262 @@ struct EmptyError : public Error {
 };
 
 
-template<typename T>
-bool valid_first_char(T c) {
-    return std::isalpha(c) || c=='_';
-}
+// Type tools
+//
+// Copied from C++14
+#if __cplusplus < 201402L
+template< bool B, class T = void >
+using enable_if_t = typename std::enable_if<B,T>::type;
+#else
+using std::enable_if_t;
+#endif
+// If your compiler supports C++14, you can use that definition instead
 
-template<typename T>
-bool valid_later_char(T c) {
-    return std::isalnum(c) || c=='_' || c=='.' || c=='-';
-}
+template <typename T>
+struct is_vector {
+  static const bool value = false;
+};
 
-inline bool valid_name_string(const std::string &str) {
-    if(str.size()<1 || !valid_first_char(str[0]))
+
+template<class T, class A>
+struct is_vector<std::vector<T, A> > {
+  static bool const value = true;
+};
+
+namespace detail {
+    // Based generally on https://rmf.io/cxx11/almost-static-if
+    /// Simple empty scoped class
+    enum class enabler {};
+
+    /// An instance to use in EnableIf
+    constexpr enabler dummy = {};
+
+    /// Simple function to join a string
+    template <typename T>
+    std::string join(const T& v, std::string delim = ",") {
+        std::ostringstream s;
+        for (const auto& i : v) {
+            if (&i != &v[0]) {
+                s << delim;
+            }
+            s << i;
+        }
+        return s.str();
+    }
+
+    struct Combiner {
+        int num;
+        bool positional;
+        bool required;
+        bool defaulted;
+        std::vector<std::function<bool(std::string)>> validators;
+
+        /// Can be or-ed together
+        Combiner operator | (Combiner b) const {
+            Combiner self;
+            self.num = std::min(num, b.num) == -1 ? -1 : std::max(num, b.num);
+            self.positional = positional || b.positional;
+            self.required = required || b.required;
+            self.defaulted = defaulted || b.defaulted;
+            self.validators.reserve(validators.size() + b.validators.size());
+            self.validators.insert(self.validators.end(), validators.begin(), validators.end());
+            self.validators.insert(self.validators.end(), b.validators.begin(), b.validators.end());
+            return self;
+        }
+
+        /// Call to give the number of arguments expected on cli
+        Combiner operator() (int n) const {
+            Combiner self = *this;
+            self.num = n;
+            return self;
+        }
+        /// Call to give a validator
+        Combiner operator() (std::function<bool(std::string)> func) const {
+            Combiner self = *this;
+            self.validators.push_back(func);
+            return self;
+        }
+        Combiner operator, (Combiner b) const {
+            return *this | b;
+        }
+    };
+
+    bool _ExistingFile(std::string filename) {
+    //    std::fstream f(name.c_str());
+    //    return f.good();
+    //    Fastest way according to http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
+        struct stat buffer;   
+        return (stat(filename.c_str(), &buffer) == 0); 
+    }
+
+    bool _ExistingDirectory(std::string filename) {
+        struct stat buffer;   
+        if(stat(filename.c_str(), &buffer) == 0 && (buffer.st_mode & S_IFDIR) )
+            return true;
         return false;
-    for(auto c : str.substr(1))
-        if(!valid_later_char(c))
+    }
+
+    bool _NonexistentPath(std::string filename) {
+        struct stat buffer;
+        return stat(filename.c_str(), &buffer) != 0;
+    }
+
+
+    template<typename T>
+    bool valid_first_char(T c) {
+        return std::isalpha(c) || c=='_';
+    }
+
+    template<typename T>
+    bool valid_later_char(T c) {
+        return std::isalnum(c) || c=='_' || c=='.' || c=='-';
+    }
+
+    inline bool valid_name_string(const std::string &str) {
+        if(str.size()<1 || !valid_first_char(str[0]))
             return false;
-    return true;
-}
-
-// Returns false if not a short option. Otherwise, sets opt name and rest and returns true
-inline bool split_short(const std::string &current, std::string &name, std::string &rest) {
-    if(current.size()>1 && current[0] == '-' && valid_first_char(current[1])) {
-        name = current.substr(1,1);
-        rest = current.substr(2);
+        for(auto c : str.substr(1))
+            if(!valid_later_char(c))
+                return false;
         return true;
-    } else
-        return false;
-}
+    }
 
-// Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
-inline bool split_long(const std::string &current, std::string &name, std::string &value) {
-    if(current.size()>2 && current.substr(0,2) == "--" && valid_first_char(current[2])) {
-        auto loc = current.find("=");
-        if(loc != std::string::npos) {
-            name = current.substr(2,loc-2);
-            value = current.substr(loc+1);
-        } else {
-            name = current.substr(2);
-            value = "";
+    // Returns false if not a short option. Otherwise, sets opt name and rest and returns true
+    inline bool split_short(const std::string &current, std::string &name, std::string &rest) {
+        if(current.size()>1 && current[0] == '-' && valid_first_char(current[1])) {
+            name = current.substr(1,1);
+            rest = current.substr(2);
+            return true;
+        } else
+            return false;
+    }
+
+    // Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
+    inline bool split_long(const std::string &current, std::string &name, std::string &value) {
+        if(current.size()>2 && current.substr(0,2) == "--" && valid_first_char(current[2])) {
+            auto loc = current.find("=");
+            if(loc != std::string::npos) {
+                name = current.substr(2,loc-2);
+                value = current.substr(loc+1);
+            } else {
+                name = current.substr(2);
+                value = "";
+            }
+            return true;
+        } else
+            return false;
+    }
+
+    // Splits a string into multiple long and short names
+    inline std::vector<std::string> split_names(std::string current) {
+        std::vector<std::string> output;
+        size_t val;
+        while((val = current.find(",")) != std::string::npos) {
+            output.push_back(current.substr(0,val));
+            current = current.substr(val+1);
         }
+        output.push_back(current);
+        return output;
+
+    }
+
+
+    inline std::tuple<std::vector<std::string>,std::vector<std::string>> get_names(const std::vector<std::string> &input) {
+        std::vector<std::string> short_names;
+        std::vector<std::string> long_names;
+
+        for(std::string name : input) {
+            if(name.length() == 0)
+                continue;
+            else if(name.length() == 1)
+                if(valid_first_char(name[0]))
+                    short_names.push_back(name);
+                else
+                    throw BadNameString("Invalid one char name: "+name);
+            else if(name.length() == 2 && name[0] == '-' && name[1] != '-') {
+                if(valid_first_char(name[1]))
+                    short_names.push_back(std::string(1,name[1]));
+                else
+                    throw BadNameString("Invalid one char name: "+name);
+            } else {
+
+                if(name.substr(0,2) == "--")
+                    name = name.substr(2);
+                if(valid_name_string(name))
+                    long_names.push_back(name);
+                else
+                    throw BadNameString("Bad long name"+name);
+
+            }
+        }
+          
+        return std::tuple<std::vector<std::string>,std::vector<std::string>>(short_names, long_names);
+    }
+
+
+    template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
+    bool lexical_cast(std::string input, T& output) {
+        try{
+            output = (T) std::stoll(input);
+            return true;
+        } catch (std::invalid_argument) {
+            return false;
+        } catch (std::out_of_range) {
+            return false;
+        }
+    }
+        
+    template<typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
+    bool lexical_cast(std::string input, T& output) {
+        try{
+            output = (T) std::stold(input);
+            return true;
+        } catch (std::invalid_argument) {
+            return false;
+        } catch (std::out_of_range) {
+            return false;
+        }
+    }
+
+    // String and similar
+    template<typename T, 
+    enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
+    bool lexical_cast(std::string input, T& output) {
+        if(output.size() == input.size())
+            output.resize(input.size());
+        for(size_t i=0; i<input.size(); i++)
+            output[i] = input[i];
         return true;
-    } else
-        return false;
-}
-
-// Splits a string into multiple long and short names
-inline std::vector<std::string> split_names(std::string current) {
-    std::vector<std::string> output;
-    size_t val;
-    while((val = current.find(",")) != std::string::npos) {
-        output.push_back(current.substr(0,val));
-        current = current.substr(val+1);
     }
-    output.push_back(current);
-    return output;
 
-}
-
-
-inline std::tuple<std::vector<std::string>,std::vector<std::string>> get_names(const std::vector<std::string> &input) {
-    std::vector<std::string> short_names;
-    std::vector<std::string> long_names;
-
-    for(std::string name : input) {
-        if(name.length() == 0)
-            continue;
-        else if(name.length() == 1)
-            if(valid_first_char(name[0]))
-                short_names.push_back(name);
-            else
-                throw BadNameString("Invalid one char name: "+name);
-        else if(name.length() == 2 && name[0] == '-' && name[1] != '-') {
-            if(valid_first_char(name[1]))
-                short_names.push_back(std::string(1,name[1]));
-            else
-                throw BadNameString("Invalid one char name: "+name);
-        } else {
-
-            if(name.substr(0,2) == "--")
-                name = name.substr(2);
-            if(valid_name_string(name))
-                long_names.push_back(name);
-            else
-                throw BadNameString("Bad long name"+name);
-
-        }
-    }
-      
-    return std::tuple<std::vector<std::string>,std::vector<std::string>>(short_names, long_names);
-
-}
-
-// Currently just throws an error if name is incorrect. May clean later.
-inline void cleanup_names(const std::vector<std::string> &input) {
-
-    for(const std::string &name : input) {
-        if(name.compare(0, 2, "--") == 0)
-            //output = output.substring(2);
-            throw BadNameString(name);
-        else if(name.compare(0, 1, std::string("-")) == 0)
-            throw BadNameString(name);
-            //output = output.substring(1);
+    // String and similar
+    template<typename T, 
+    enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
+    , detail::enabler> = detail::dummy>
+    bool lexical_cast(std::string input, T& output) {
+        output = input;
+        return true;
     }
 }
 
 
-const Combiner NOTHING    {0, false,false,false, {}};
-const Combiner REQUIRED   {1, false,true, false, {}};
-const Combiner DEFAULT    {1, false,false,true, {}};
-const Combiner POSITIONAL {1, true, false,false, {}};
-const Combiner ARGS       {-1, false,false,false, {}};
-const Combiner VALIDATORS {1, false, false, false, {}};
+
+// Defines for common Combiners (don't use combiners directly)
+
+
+const detail::Combiner NOTHING    {0, false,false,false, {}};
+const detail::Combiner REQUIRED   {1, false,true, false, {}};
+const detail::Combiner DEFAULT    {1, false,false,true, {}};
+const detail::Combiner POSITIONAL {1, true, false,false, {}};
+const detail::Combiner ARGS       {-1, false,false,false, {}};
+const detail::Combiner VALIDATORS {1, false, false, false, {}};
 
 // Warning about using these validators:
 // The files could be added/deleted after the validation. This is not common,
 // but if this is a possibility, check the file you open afterwards
-const Combiner ExistingFile {1, false, false, false, {_ExistingFile}};
-const Combiner ExistingDirectory {1, false, false, false, {_ExistingDirectory}};
-const Combiner NonexistentPath {1, false, false, false, {_NonexistentPath}};
+const detail::Combiner ExistingFile {1, false, false, false, {detail::_ExistingFile}};
+const detail::Combiner ExistingDirectory {1, false, false, false, {detail::_ExistingDirectory}};
+const detail::Combiner NonexistentPath {1, false, false, false, {detail::_NonexistentPath}};
 
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
@@ -314,7 +345,7 @@ protected:
     // Config
     std::vector<std::string> snames;
     std::vector<std::string> lnames;
-    Combiner opts;
+    detail::Combiner opts;
     std::string discription;
     callback_t callback;
 
@@ -323,9 +354,9 @@ protected:
 
 
 public:
-    Option(std::string name, std::string discription = "", Combiner opts=NOTHING, std::function<bool(results_t)> callback=[](results_t){return true;}) :
+    Option(std::string name, std::string discription = "", detail::Combiner opts=NOTHING, std::function<bool(results_t)> callback=[](results_t){return true;}) :
       opts(opts), discription(discription), callback(callback){
-        std::tie(snames, lnames) = get_names(split_names(name));
+        std::tie(snames, lnames) = detail::get_names(detail::split_names(name));
     }
 
     void clear() {
@@ -378,7 +409,7 @@ public:
             name_list.push_back("-"+sname);
         for(const std::string& lname : lnames)
             name_list.push_back("--"+lname);
-        return join(name_list);
+        return detail::join(name_list);
     }
 
     bool check_name(std::string name) const {
@@ -399,7 +430,6 @@ public:
 
 
     void add_result(int r, std::string s) {
-        logit("Adding result: " + s);
         results.at(r).push_back(s);
     }
     int get_new() {
@@ -420,7 +450,7 @@ public:
         for(const auto& item : results) {
             if(&item!=&results[0])
                 val+="],[";
-            val += join(item);
+            val += detail::join(item);
         }
         val += "]";
         return val;
@@ -446,56 +476,8 @@ public:
 };
 
 
-template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = dummy>
-bool lexical_cast(std::string input, T& output) {
-    logit("Int lexical cast " + input);
-    try{
-        output = (T) std::stoll(input);
-        return true;
-    } catch (std::invalid_argument) {
-        return false;
-    } catch (std::out_of_range) {
-        return false;
-    }
-}
-    
-template<typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = dummy>
-bool lexical_cast(std::string input, T& output) {
-    logit("Floating lexical cast " + input);
-    try{
-        output = (T) std::stold(input);
-        return true;
-    } catch (std::invalid_argument) {
-        return false;
-    } catch (std::out_of_range) {
-        return false;
-    }
-}
-
-// String and similar
-template<typename T, 
-enable_if_t<is_vector<T>::value, detail::enabler> = dummy>
-bool lexical_cast(std::string input, T& output) {
-    logit("vector lexical cast: " + input);
-    if(output.size() == input.size())
-        output.resize(input.size());
-    for(size_t i=0; i<input.size(); i++)
-        output[i] = input[i];
-    return true;
-}
-
-// String and similar
-template<typename T, 
-enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
-, detail::enabler> = dummy>
-bool lexical_cast(std::string input, T& output) {
-    logit("Direct lexical cast: " + input);
-    output = input;
-    return true;
-}
 
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
-
 
 class App;
 
@@ -514,18 +496,16 @@ public:
     /// explicit * notation.
     T& operator *() const {
         if(*value) {
-            //std::cout << "Succ" << std::endl;
             return **value;
         }
         else {
-            //std::cout << "Throwing!!!" << std::endl;
             throw EmptyError(name);
         }
     }
 };
 
 /// Creates a command line program, with very few defaults.
-/** To use, create a new Program() instance with argc, argv, and a help discription. The templated
+/** To use, create a new Program() instance with argc, argv, and a help description. The templated
 *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
 * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
@@ -568,7 +548,6 @@ public:
     App* add_subcommand(std::string name, std::string discription="") {
         subcommands.emplace_back(new App(discription));
         subcommands.back()->name = name;
-        logit(subcommands.back()->name);
         return subcommands.back().get();
     }
 
@@ -592,7 +571,7 @@ public:
             std::string name,           ///< The name, long,short
             callback_t callback,        ///< The callback
             std::string discription="", ///< Discription string
-            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
         Option myopt{name, discription, opts, callback};
         if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
@@ -604,12 +583,12 @@ public:
     }
 
     /// Add option for string
-    template<typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
+    template<typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Option* add_option(
             std::string name,           ///< The name, long,short
             T &variable,                ///< The variable to set
             std::string discription="", ///< Discription string
-            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         
@@ -622,7 +601,7 @@ public:
             if(res[0].size()!=1) {
                 return false;
             }
-            return lexical_cast(res[0][0], variable);
+            return detail::lexical_cast(res[0][0], variable);
         };
 
         return add_option(name, fun, discription, opts);
@@ -634,7 +613,7 @@ public:
             std::string name,           ///< The name, long,short
             std::vector<T> &variable,   ///< The variable to set
             std::string discription="", ///< Discription string
-            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         if(opts.num==0)
@@ -645,7 +624,7 @@ public:
             for(const auto &a : res)
                 for(const auto &b : a) {
                     variable.emplace_back();
-                    retval &= lexical_cast(b, variable.back());
+                    retval &= detail::lexical_cast(b, variable.back());
                 }
             return variable.size() > 0 && retval;
         };
@@ -667,7 +646,7 @@ public:
     }
 
     /// Add option for flag
-    template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = dummy>
+    template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
     Option* add_flag(
             std::string name,           ///< The name, short,long
                 T  &count,              ///< A varaible holding the count
@@ -690,7 +669,7 @@ public:
             T &member,                     ///< The selected member of the set
             std::set<T> options, ///< The set of posibilities
             std::string discription="",    ///< Discription string
-            Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         if(opts.num!=1)
@@ -703,7 +682,7 @@ public:
             if(res[0].size()!=1) {
                 return false;
             }
-            bool retval = lexical_cast(res[0][0], member);
+            bool retval = detail::lexical_cast(res[0][0], member);
             if(!retval)
                 return false;
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
@@ -719,11 +698,11 @@ public:
 
     /// Prototype for new output style
     template<typename T = std::string,
-        enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
+        enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             std::string discription="",
-            Combiner opts=VALIDATORS
+            detail::Combiner opts=VALIDATORS
             ) {
 
         if(opts.num!=1)
@@ -740,7 +719,7 @@ public:
                 return false;
             }
             ptr->reset(new T()); // resets the internal ptr
-            return lexical_cast(res[0][0], **ptr);
+            return detail::lexical_cast(res[0][0], **ptr);
         };
         add_option(name, fun, discription, opts);
         return out;
@@ -748,12 +727,12 @@ public:
 
     /// Prototype for new output style with default
     template<typename T,
-        enable_if_t<!is_vector<T>::value, detail::enabler> = dummy>
+        enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             const T& default_value,
             std::string discription="",
-            Combiner opts=VALIDATORS
+            detail::Combiner opts=VALIDATORS
             ) {
 
         if(opts.num!=1)
@@ -771,7 +750,7 @@ public:
                 return false;
             }
             ptr->reset(new T()); // resets the internal ptr
-            return lexical_cast(res[0][0], **ptr);
+            return detail::lexical_cast(res[0][0], **ptr);
         };
         add_option(name, fun, discription, opts);
         return out;
@@ -779,11 +758,11 @@ public:
     
     /// Prototype for new output style, vector
     template<typename T,
-        enable_if_t<is_vector<T>::value, detail::enabler> = dummy>
+        enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     Value<T> make_option(
             std::string name,              ///< The name, short,long
             std::string discription="",
-            Combiner opts=VALIDATORS
+            detail::Combiner opts=VALIDATORS
             ) {
 
         if(opts.num==0)
@@ -798,7 +777,7 @@ public:
             for(const auto &a : res)
                 for(const auto &b : a) {
                     (*ptr)->emplace_back();
-                    retval &= lexical_cast(b, (*ptr)->back());
+                    retval &= detail::lexical_cast(b, (*ptr)->back());
                 }
             return (*ptr)->size() > 0 && retval;
         };
@@ -832,7 +811,7 @@ public:
             std::string name,              ///< The name, short,long
             std::set<T> options,           ///< The set of posibilities
             std::string discription="",    ///< Discription string
-            Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts=VALIDATORS       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         Value<T> out(name);
@@ -849,7 +828,7 @@ public:
                 return false;
             }
             ptr->reset(new T());
-            bool retval = lexical_cast(res[0][0], **ptr);
+            bool retval = detail::lexical_cast(res[0][0], **ptr);
             if(!retval)
                 return false;
             return std::find(std::begin(options), std::end(options), **ptr) != std::end(options);
@@ -876,7 +855,6 @@ public:
         
         while(args.size()>0) {
 
-            logit("Parse: ["+join(args)+"]");
 
             Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
             switch(classifer) {
@@ -894,7 +872,6 @@ public:
                 _parse_short(args);
                 break;
             case Classifer::NONE:
-                logit("Positional: "+args.back());
                 positionals.push_back(args.back());
                 args.pop_back();
             }
@@ -920,7 +897,7 @@ public:
 
         }
         if(positionals.size()>0)
-            throw PositionalError("[" + join(positionals) + "]");
+            throw PositionalError("[" + detail::join(positionals) + "]");
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
@@ -940,11 +917,9 @@ public:
 
         std::string name;
         std::string rest;
-        if(!split_short(current, name, rest))
+        if(!detail::split_short(current, name, rest))
             throw HorribleError("Short");
         args.pop_back();
-
-        logit("Working on short: " + name + " (" + rest + ")");
 
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_sname(name);});
 
@@ -975,7 +950,6 @@ public:
         } else while(num>0 && args.size() > 0) {
             num--;
             std::string current = args.back();
-            logit("Adding: "+current);
             args.pop_back();
             op->add_result(vnum,current);
         }
@@ -995,9 +969,9 @@ public:
             if(com->name == current)
                 return Classifer::SUBCOMMAND;
         }
-        if(split_long(current, dummy1, dummy2))
+        if(detail::split_long(current, dummy1, dummy2))
             return Classifer::LONG;
-        if(split_short(current, dummy1, dummy2))
+        if(detail::split_short(current, dummy1, dummy2))
             return Classifer::SHORT;
         return Classifer::NONE;
     }
@@ -1007,12 +981,9 @@ public:
 
         std::string name;
         std::string value;
-        if(!split_long(current, name, value))
+        if(!detail::split_long(current, name, value))
             throw HorribleError("Long");
         args.pop_back();
-
-
-        logit("Working on long: " + name + " (" + value + ")");
 
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_lname(name);});
 
@@ -1067,9 +1038,7 @@ public:
     /// Counts the number of times the given option was passed.
     int count(std::string name) const {
         for(const Option &opt : options) {
-            logit("Computing: " + opt.get_name());
             if(opt.check_name(name)) {
-                logit("Counting: " + opt.get_name() + std::to_string(opt.count()));
                 return opt.count();
             }
         }
