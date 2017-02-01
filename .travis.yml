@@ -14,7 +14,7 @@ addons:
     - ubuntu-toolchain-r-test
 
 install:
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
     - cd "${DEPS_DIR}"
