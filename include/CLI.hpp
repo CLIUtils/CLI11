@@ -287,34 +287,6 @@ inline void cleanup_names(const std::vector<std::string> &input) {
     }
 }
 
-// Splits a string into long and short names
-inline std::tuple<std::string, std::string> split(std::string fullname) {
-    if(fullname.find(" ") != std::string::npos)
-        throw BadNameString("Cannot have space in name string: "+fullname);
-    std::vector<std::string> output = split_names(fullname);
-    cleanup_names(output);
-
-    if(output.size() > 2)
-        throw BadNameString(fullname);
-    else if (output.size() == 2) {
-        if(output[0].length()==0 && output[1].length()==0)
-            throw BadNameString("EMPTY");
-        else if(output[0].length()<2)
-            return std::tuple<std::string,std::string>(output[0], output[1]);
-        else if(output[1].length() < 2)
-            return std::tuple<std::string,std::string>(output[0], output[1]);
-        else
-            throw BadNameString(fullname);
-    } else {
-        if(output[0].length()==0)
-            throw BadNameString("EMPTY");
-        else if(output[0].length() == 1)
-            return std::tuple<std::string,std::string>(output[0], "");
-        else
-            return std::tuple<std::string,std::string>("", output[0]);
-    }
-}
-
 
 const Combiner NOTHING    {0, false,false,false, {}};
 const Combiner REQUIRED   {1, false,true, false, {}};
@@ -339,8 +311,8 @@ class Option {
 public:
 protected:
     // Config
-    std::string sname;
-    std::string lname;
+    std::vector<std::string> snames;
+    std::vector<std::string> lnames;
     Combiner opts;
     std::string discription;
     callback_t callback;
@@ -352,7 +324,7 @@ protected:
 public:
     Option(std::string name, std::string discription = "", Combiner opts=NOTHING, std::function<bool(results_t)> callback=[](results_t){return true;}) :
       opts(opts), discription(discription), callback(callback){
-        std::tie(sname, lname) = split(name);
+        std::tie(snames, lnames) = get_names(split_names(name));
     }
 
     void clear() {
@@ -386,44 +358,44 @@ public:
         return callback(results);
     }
 
-    /// Indistinguishible options are equal
+    /// If options share any of the same names, they are equal
     bool operator== (const Option& other) const {
-        if(sname=="" && other.sname=="") 
-            return lname==other.lname;
-        else if(lname=="" && other.lname=="")
-            return sname==other.sname;
-        else
-            return sname==other.sname || lname==other.lname;
+        for(const std::string &sname : snames)
+            for(const std::string &othersname : other.snames)
+                if(sname == othersname)
+                    return true;
+        for(const std::string &lname : lnames)
+            for(const std::string &otherlname : other.lnames)
+                if(lname == otherlname)
+                    return true;
+        return false;
     }
 
     std::string get_name() const {
-        if(sname=="")
-            return "--" + lname;
-        else if (lname=="")
-            return "-" + sname;
-        else
-            return "-" + sname + ", --" + lname;
+        std::vector<std::string> name_list;
+        for(const std::string& sname : snames)
+            name_list.push_back("-"+sname);
+        for(const std::string& lname : lnames)
+            name_list.push_back("--"+lname);
+        return join(name_list);
     }
 
-    bool check_name(const std::string& name) const {
-        return name == sname || name == lname || name == sname + "," + lname;
+    bool check_name(std::string name) const {
+        for(int i=0; i<2; i++)
+            if(name.length()>2 && name[0] == '-')
+                name = name.substr(1);
+
+        return check_sname(name) || check_lname(name);
     }
 
     bool check_sname(const std::string& name) const {
-        return name == sname;
+        return std::find(std::begin(snames), std::end(snames), name) != std::end(snames);
     }
 
     bool check_lname(const std::string& name) const {
-        return name == lname;
+        return std::find(std::begin(lnames), std::end(lnames), name) != std::end(lnames);
     }
 
-    std::string get_sname() const {
-        return sname;
-    }
-
-    std::string get_lname() const {
-        return lname;
-    }
 
     void add_result(int r, std::string s) {
         logit("Adding result: " + s);
@@ -976,7 +948,7 @@ public:
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_sname(name);});
 
         if(op == std::end(options)) {
-            missing_options.push_back("-" + op->get_sname());
+            missing_options.push_back("-" + name);
             return;
         }
 
@@ -1044,7 +1016,7 @@ public:
         auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_lname(name);});
 
         if(op == std::end(options)) {
-            missing_options.push_back("--" + op->get_lname());
+            missing_options.push_back("--" + name);
             return;
         }
 

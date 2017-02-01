@@ -52,6 +52,21 @@ TEST_F(TApp, OneFlagLong) {
     EXPECT_EQ(1, app.count("count"));
 }
 
+TEST_F(TApp, DashedOptions) {
+    app.add_flag("-c");
+    app.add_flag("--q");
+    app.add_flag("--this,--that");
+
+    args = {"-c", "--q", "--this", "--that"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(1, app.count("c"));
+    EXPECT_EQ(1, app.count("q"));
+    EXPECT_EQ(2, app.count("this"));
+    EXPECT_EQ(2, app.count("--that"));
+
+}
+
+
 TEST_F(TApp, OneFlagRef) {
     int ref;
     app.add_flag("c,count", ref);
@@ -454,9 +469,6 @@ TEST_F(TAppValue, DoubleVector) {
     EXPECT_EQ(std::vector<double>({1.2, 3.4, -1}), *value);
 }
 
-// TODO: Maybe add function to call on subcommand parse? Stashed.
 // TODO: Check help output, better formatting
 // TODO: Add default/type info to help
-// TODO: Add regex replacement function (GCC 4.8 support)
 // TODO: Add README
-// TODO: Change format of option specifications?
