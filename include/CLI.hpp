@@ -277,7 +277,7 @@ inline std::tuple<std::vector<std::string>,std::vector<std::string>> get_names(c
         }
     }
       
-    return {short_names, long_names};
+    return std::tuple<std::vector<std::string>,std::vector<std::string>>(short_names, long_names);
 
 }
 
