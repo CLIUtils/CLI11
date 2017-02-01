@@ -5,16 +5,35 @@ cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/cmake
 
-addons:
-  apt:
-    packages:
-    - g++-4.9
-    - gcc-4.9
-    sources:
-    - ubuntu-toolchain-r-test
+matrix:
+    include:
+        - compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-testt
+                  packages:
+                      - g++-4.9
+          env: COMPILER=g++-4.9
+        - compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-testt
+                  packages:
+                      - g++-4.8
+          env: COMPILER=g++-4.8
+        - compiler: clang
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-testt
+                      - llvm-toolchain-precise-3.6
+                  packages:
+                      - clang-3.6
+          env: COMPILER=g++-5
 
 install:
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
     - cd "${DEPS_DIR}"
