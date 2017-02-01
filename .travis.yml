@@ -23,7 +23,7 @@ matrix:
                   packages:
                       - g++-4.8
           env: COMPILER=g++-4.8
-        - compiler: clang
+        - compiler: clang-3.6
           addons:
               apt:
                   sources:
@@ -31,7 +31,7 @@ matrix:
                       - llvm-toolchain-precise-3.6
                   packages:
                       - clang-3.6
-          env: COMPILER=g++-5
+          env: COMPILER=clang-3.6
 
 install:
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
