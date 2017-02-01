@@ -14,7 +14,9 @@ matrix:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.9
-          env: CXX=g++-4.9
+          env:
+            - CC=gcc-4.8
+            - CXX=g++-4.8
         - compiler: gcc
           addons:
               apt:
@@ -22,7 +24,9 @@ matrix:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-4.8
-          env: CXX=g++-4.8
+          env:
+            - CC=gcc-4.8
+            - CXX=g++-4.8
         - compiler: clang
           addons:
               apt:
@@ -31,7 +35,6 @@ matrix:
                       - llvm-toolchain-precise-3.6
                   packages:
                       - clang-3.6
-          env: CXX=clang-3.6
 
 install:
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
