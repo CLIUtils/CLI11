@@ -633,7 +633,7 @@ public:
             std::string name,           ///< The name, long,short
             std::vector<T> &variable,   ///< The variable to set
             std::string discription="", ///< Discription string
-            Combiner opts=VALIDATORS    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            Combiner opts=ARGS          ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
             ) {
 
         if(opts.num==0)
