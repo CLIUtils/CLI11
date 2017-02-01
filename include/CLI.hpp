@@ -16,6 +16,7 @@
 #include <set>
 #include <iomanip>
 #include <numeric>
+#include <vector>
 
 // C standard library
 // Only needed for existence checking
@@ -25,17 +26,6 @@
 
 #include <locale>
 
-// GCC 4.7 and 4.8 have an non-working implementation of regex
-#include <regex>
-#if __cplusplus >= 201103L \
-    && (!defined(__GLIBCXX__) \
-       || (defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE>4) \
-       || (__cplusplus >= 201402L) \
-       || (defined(_GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT) || defined(_GLIBCXX_REGEX_STATE_LIMIT)))
-#define HAVE_WORKING_REGEX 1
-#else
-#define HAVE_WORKING_REGEX 0
-#endif
 
 //#define CLI_LOG 1
 
@@ -191,43 +181,6 @@ struct EmptyError : public Error {
     EmptyError(std::string name) : Error("EmptyError", name, 9) {}
 };
 
-const std::regex reg_short{R"regex(-([a-zA-Z_])(.*))regex"};
-const std::regex reg_long{R"regex(--([^-^=][^=]*)=?(.*))regex"};
-
-// Returns false if not a short option. Otherwise, sets opt name and rest and returns true
-inline bool split_short(const std::string &current, std::string &name, std::string &rest) {
-    std::smatch match;
-    if(std::regex_match(current, match, reg_short)) {
-        name = match[1];
-        rest = match[2];
-        return true;
-    } else
-        return false;
-}
-
-// Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
-inline bool split_long(const std::string &current, std::string &name, std::string &value) {
-    std::smatch match;
-    if(std::regex_match(current, match, reg_long)) {
-        name = match[1];
-        value = match[2];
-        return true;
-    } else
-        return false;
-}
-
-// Splits a string into multiple long and short names
-inline std::vector<std::string> split_names(std::string current) {
-    std::vector<std::string> output;
-    size_t val;
-    while((val = current.find(",")) != std::string::npos) {
-        output.push_back(current.substr(0,val));
-        current = current.substr(val+1);
-    }
-    output.push_back(current);
-    return output;
-
-}
 
 template<typename T>
 bool valid_first_char(T c) {
@@ -247,6 +200,46 @@ inline bool valid_name_string(const std::string &str) {
             return false;
     return true;
 }
+
+// Returns false if not a short option. Otherwise, sets opt name and rest and returns true
+inline bool split_short(const std::string &current, std::string &name, std::string &rest) {
+    if(current.size()>1 && current[0] == '-' && valid_first_char(current[1])) {
+        name = current.substr(1,1);
+        rest = current.substr(2);
+        return true;
+    } else
+        return false;
+}
+
+// Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
+inline bool split_long(const std::string &current, std::string &name, std::string &value) {
+    if(current.size()>2 && current.substr(0,2) == "--" && valid_first_char(current[2])) {
+        auto loc = current.find("=");
+        if(loc != std::string::npos) {
+            name = current.substr(2,loc-2);
+            value = current.substr(loc+1);
+        } else {
+            name = current.substr(2);
+            value = "";
+        }
+        return true;
+    } else
+        return false;
+}
+
+// Splits a string into multiple long and short names
+inline std::vector<std::string> split_names(std::string current) {
+    std::vector<std::string> output;
+    size_t val;
+    while((val = current.find(",")) != std::string::npos) {
+        output.push_back(current.substr(0,val));
+        current = current.substr(val+1);
+    }
+    output.push_back(current);
+    return output;
+
+}
+
 
 inline std::tuple<std::vector<std::string>,std::vector<std::string>> get_names(const std::vector<std::string> &input) {
     std::vector<std::string> short_names;
