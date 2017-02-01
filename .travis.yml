@@ -15,30 +15,7 @@ matrix:
                   packages:
                       - g++-6
           env: COMPILER=6
-        - compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-5
-          env: COMPILER=5
-        - compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-4.9
-          env: COMPILER=4.9
-        - compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-4.8
-          env: COMPILER=4.8
+
         - compiler: gcc
           addons:
               apt:
@@ -47,14 +24,8 @@ matrix:
                   packages:
                       - g++-4.7
           env: COMPILER=4.7
+
         - compiler: clang
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                      - llvm-toolchain-precise-3.6
-                  packages:
-                      - clang-3.6
 
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
