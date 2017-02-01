@@ -10,6 +10,7 @@
 #include <functional>
 #include <tuple>
 #include <exception>
+#include <stdexcept>
 #include <algorithm>
 #include <sstream>
 #include <type_traits>
