@@ -38,7 +38,7 @@ struct Error : public std::runtime_error {
 };
 
 struct CallForHelp : public Error {
-    CallForHelp() : Error("CallForHelp","", 0) {}
+    CallForHelp() : Error("CallForHelp","This should be caught in your main function, see examples", 0) {}
 };
 
 struct BadNameString : public Error {
