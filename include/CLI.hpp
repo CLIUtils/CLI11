@@ -596,9 +596,16 @@ protected:
     std::function<void(App*)> app_callback;
 
 public:
-
-    void set_callback(std::function<void(App*)> callback) {
+    /// Set a callback to run at the end of parsing 
+    App* set_callback(std::function<void(App*)> callback) {
         app_callback = callback;
+        return this;
+    }
+
+    /// Don't have to worry about explicit App* in argument
+    App* set_callback(std::function<void()> callback) {
+        app_callback = [callback](App*){callback();};
+        return this;
     }
 
     void run_callback() {

@@ -338,10 +338,9 @@ TEST_F(TApp, Callbacks) {
             });
     auto sub2 = app.add_subcommand("sub2");
     bool val = false;
-    sub2->set_callback([&val](CLI::App*){
+    sub2->set_callback([&val](){
             val = true;
             });
-
     
     app.reset();
     args = {"sub2"};
