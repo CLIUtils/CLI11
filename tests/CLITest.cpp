@@ -330,6 +330,27 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_EQ(sub2, app.get_subcommand());
 }
 
+
+TEST_F(TApp, Callbacks) {
+    auto sub1 = app.add_subcommand("sub1");
+    sub1->set_callback([](CLI::App*){
+            throw CLI::Success();
+            });
+    auto sub2 = app.add_subcommand("sub2");
+    bool val = false;
+    sub2->set_callback([&val](CLI::App*){
+            val = true;
+            });
+
+    
+    app.reset();
+    args = {"sub2"};
+    EXPECT_FALSE(val);
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(val);
+
+}
+
 // TODO: Add directory test
 
 

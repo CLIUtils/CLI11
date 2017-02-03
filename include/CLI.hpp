@@ -34,11 +34,16 @@ namespace CLI {
 
 struct Error : public std::runtime_error {
     int exit_code;
-    Error(std::string parent, std::string name, int exit_code=255) : runtime_error(parent + ": " + name), exit_code(exit_code) {}
+    bool print_help;
+    Error(std::string parent, std::string name, int exit_code=255, bool print_help=true) : runtime_error(parent + ": " + name), exit_code(exit_code), print_help(print_help) {}
+};
+
+struct Success : public Error {
+    Success() : Error("Success", "Successfully completed, should be caught and quit", 0, false) {}
 };
 
 struct CallForHelp : public Error {
-    CallForHelp() : Error("CallForHelp","This should be caught in your main function, see examples", 0) {}
+    CallForHelp() : Error("CallForHelp", "This should be caught in your main function, see examples", 0) {}
 };
 
 struct BadNameString : public Error {
@@ -588,8 +593,18 @@ protected:
     bool parsed{false};
     App* subcommand = nullptr;
 
+    std::function<void(App*)> app_callback;
+
 public:
 
+    void set_callback(std::function<void(App*)> callback) {
+        app_callback = callback;
+    }
+
+    void run_callback() {
+        if(app_callback)
+            app_callback(this);
+    }
 
     /// Reset the parsed data
     void reset() {
@@ -978,6 +993,7 @@ public:
         }
 
 
+
         for(Option& opt : options) {
             while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
                 opt.get_new();
@@ -994,6 +1010,8 @@ public:
         }
         if(positionals.size()>0)
             throw PositionalError("[" + detail::join(positionals) + "]");
+
+        run_callback();
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
@@ -1124,9 +1142,11 @@ public:
         if(e.exit_code != 0) {
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
-            std::cerr << help() << std::endl;
+            if(e.print_help)
+                std::cerr << help() << std::endl;
         } else {
-            std::cout << help() << std::endl;
+            if(e.print_help)
+                std::cout << help() << std::endl;
         }
         return e.exit_code;
     }
