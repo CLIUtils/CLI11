@@ -12,7 +12,7 @@ int main (int argc, char** argv) {
     start->add_option("f,file", file, "File name");
     
     int count;
-    stop->add_flag("c,count", count, "File name");
+    stop->add_flag("c,count", count, "Counter");
 
     try {
         app.run(argc, argv);

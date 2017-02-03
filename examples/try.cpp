@@ -9,7 +9,10 @@ int main (int argc, char** argv) {
     app.add_option("f,file", file, "File name");
     
     int count;
-    app.add_flag("c,count", count, "File name");
+    app.add_flag("c,count", count, "Counter");
+
+    double value = 3.14;
+    app.add_option("-d,--double", value, "Some Value", CLI::DEFAULT);
 
     try {
         app.run(argc, argv);
@@ -19,6 +22,7 @@ int main (int argc, char** argv) {
 
     std::cout << "Working on file: " << file << ", direct count: " << app.count("file") << std::endl;
     std::cout << "Working on count: " << count << ", direct count: " << app.count("count") << std::endl;
+    std::cout << "Some value: " << value << std::endl;
 
     return 0;
 }

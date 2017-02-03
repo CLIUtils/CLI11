@@ -111,14 +111,55 @@ namespace detail {
     template <typename T>
     std::string join(const T& v, std::string delim = ",") {
         std::ostringstream s;
+        size_t start = 0;
         for (const auto& i : v) {
-            if (&i != &v[0]) {
+            if(start++ > 0)
                 s << delim;
-            }
             s << i;
         }
         return s.str();
     }
+
+    /// Was going to be based on
+    ///  http://stackoverflow.com/questions/1055452/c-get-name-of-type-in-template
+    /// But this is cleaner and works better in this case
+    
+    template<typename T,
+    enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
+    constexpr const char* type_name() {
+        return "INT";
+	}
+
+    template<typename T,
+    enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+    constexpr const char* type_name() {
+        return "UINT";
+	}
+    
+        
+    template<typename T,
+    enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
+    constexpr const char* type_name() {
+        return "FLOAT";
+	}
+    
+    
+    /// This one should not be used, since vector types print the internal type
+    template<typename T,
+    enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
+    constexpr const char* type_name() {
+        return "VECTOR";
+	}
+
+
+	template<typename T,
+    enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
+    , detail::enabler> = detail::dummy>
+    constexpr const char* type_name() {
+        return "STRING";
+	}
+
+
 
     struct Combiner {
         int num;
@@ -269,7 +310,7 @@ namespace detail {
         return std::tuple<std::vector<std::string>,std::vector<std::string>>(short_names, long_names);
     }
 
-
+    // Integers
     template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
         try{
@@ -282,6 +323,7 @@ namespace detail {
         }
     }
         
+    // Floats
     template<typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
         try{
@@ -294,7 +336,7 @@ namespace detail {
         }
     }
 
-    // String and similar
+    // Vector
     template<typename T, 
     enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
@@ -319,7 +361,6 @@ namespace detail {
 
 // Defines for common Combiners (don't use combiners directly)
 
-
 const detail::Combiner NOTHING    {0, false,false,false, {}};
 const detail::Combiner REQUIRED   {1, false,true, false, {}};
 const detail::Combiner DEFAULT    {1, false,false,true, {}};
@@ -338,9 +379,10 @@ typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
 
 
+class App;
 
 class Option {
-public:
+    friend App;
 protected:
     // Config
     std::vector<std::string> snames;
@@ -348,6 +390,10 @@ protected:
     detail::Combiner opts;
     std::string discription;
     callback_t callback;
+
+    // These are for help strings
+    std::string defaultval;
+    std::string typeval;
 
     // Results
     results_t results {};
@@ -456,13 +502,36 @@ public:
         return val;
     }
 
+    std::string help_name() const {
+        std::stringstream out;
+        out << "  " << get_name();
+        if(expected() != 0) {
+            if(typeval != "")
+                out << " " << typeval;
+            if(defaultval != "")
+                out << "=" << defaultval; 
+            if(expected() > 1)
+                out << " x " << expected();
+            if(expected() == -1)
+                out << " ...";
+        }
+        return out.str();
+    }
+
     int help_len() const {
-        return std::min((int) get_name().length(), 40);
+        return help_name().length();
     }
 
     std::string help(int len = 0) const {
         std::stringstream out;
-        out << std::setw(len) << std::left << get_name() << discription;
+        if(help_len() > len) {
+            out << help_name() << "\n";
+            out << std::setw(len) << " ";
+
+        } else {
+            out << std::setw(len) << std::left << help_name();
+        }
+        out << discription;
         return out.str();
     }
 
@@ -479,7 +548,6 @@ public:
 
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 
-class App;
 
 // Prototype return value test
 template <typename T>
@@ -604,7 +672,14 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        return add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
+        if(opts.defaulted) {
+            std::stringstream out;
+            out << variable;
+            retval->defaultval = out.str();
+        }
+        return retval;
     }
 
     /// Add option for vector of results
@@ -629,7 +704,12 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        return add_option(name, fun, discription, opts);
+        Option* retval =  add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
+        if(opts.defaulted) {
+            retval->defaultval =  "[" + detail::join(variable) + "]";
+        }
+        return retval;
     }
 
 
@@ -688,7 +768,15 @@ public:
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        return add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
+        retval->typeval += " in {" + detail::join(options) + "}";
+        if(opts.defaulted) {
+            std::stringstream out;
+            out << member;
+            retval->defaultval = out.str();
+        }
+        return retval;
     }
 
 
@@ -721,7 +809,8 @@ public:
             ptr->reset(new T()); // resets the internal ptr
             return detail::lexical_cast(res[0][0], **ptr);
         };
-        add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
         return out;
     }
 
@@ -752,7 +841,11 @@ public:
             ptr->reset(new T()); // resets the internal ptr
             return detail::lexical_cast(res[0][0], **ptr);
         };
-        add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
+        std::stringstream ot;
+        ot << default_value;
+        retval->defaultval = ot.str();
         return out;
     }
     
@@ -781,7 +874,8 @@ public:
                 }
             return (*ptr)->size() > 0 && retval;
         };
-        add_option(name, fun, discription, opts);
+        Option* retval =  add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
         return out;
     }
 
@@ -834,7 +928,9 @@ public:
             return std::find(std::begin(options), std::end(options), **ptr) != std::end(options);
         };
 
-        add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, discription, opts);
+        retval->typeval = detail::type_name<T>();
+        retval->typeval += " in {" + detail::join(options) + "}";
         return out;
     }
 
@@ -1052,14 +1148,14 @@ public:
         out << prog_discription << std::endl;
         int len = std::accumulate(std::begin(options), std::end(options), 0,
                 [](int val, const Option &opt){
-                    return std::max(opt.help_len()+1, val);});
+                    return std::max(opt.help_len()+3, val);});
         for(const Option &opt : options) {
             out << opt.help(len) << std::endl;
         }
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
             int max = std::accumulate(std::begin(subcommands), std::end(subcommands), 0,
-                    [](int i, const std::unique_ptr<App> &j){return std::max(i, (int) j->get_name().length()+1);});
+                    [](int i, const std::unique_ptr<App> &j){return std::max(i, (int) j->get_name().length()+3);});
             for(const std::unique_ptr<App> &com : subcommands) {
                 out << std::setw(max) << std::left << com->get_name() << " " << com->prog_discription << std::endl;
             }
