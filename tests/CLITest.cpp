@@ -37,19 +37,19 @@ struct TApp : public ::testing::Test {
 };
 
 TEST_F(TApp, OneFlagShort) {
-    app.add_flag("c,count");
+    app.add_flag("-c,--count");
     args = {"-c"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("c"));
-    EXPECT_EQ(1, app.count("count"));
+    EXPECT_EQ(1, app.count("-c"));
+    EXPECT_EQ(1, app.count("--count"));
 }
 
 TEST_F(TApp, OneFlagLong) {
-    app.add_flag("c,count");
+    app.add_flag("-c,--count");
     args = {"--count"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("c"));
-    EXPECT_EQ(1, app.count("count"));
+    EXPECT_EQ(1, app.count("-c"));
+    EXPECT_EQ(1, app.count("--count"));
 }
 
 TEST_F(TApp, DashedOptions) {
@@ -59,9 +59,9 @@ TEST_F(TApp, DashedOptions) {
 
     args = {"-c", "--q", "--this", "--that"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("c"));
-    EXPECT_EQ(1, app.count("q"));
-    EXPECT_EQ(2, app.count("this"));
+    EXPECT_EQ(1, app.count("-c"));
+    EXPECT_EQ(1, app.count("--q"));
+    EXPECT_EQ(2, app.count("--this"));
     EXPECT_EQ(2, app.count("--that"));
 
 }
@@ -69,76 +69,76 @@ TEST_F(TApp, DashedOptions) {
 
 TEST_F(TApp, OneFlagRef) {
     int ref;
-    app.add_flag("c,count", ref);
+    app.add_flag("-c,--count", ref);
     args = {"--count"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("c"));
-    EXPECT_EQ(1, app.count("count"));
+    EXPECT_EQ(1, app.count("-c"));
+    EXPECT_EQ(1, app.count("--count"));
     EXPECT_EQ(1, ref);
 }
 
 TEST_F(TApp, OneString) {
     std::string str;
-    app.add_option("s,string", str);
+    app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("s"));
-    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
 }
 
 
 TEST_F(TApp, TogetherInt) {
     int i;
-    app.add_option("i,int", i);
+    app.add_option("-i,--int", i);
     args = {"-i4"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("int"));
-    EXPECT_EQ(1, app.count("i"));
+    EXPECT_EQ(1, app.count("--int"));
+    EXPECT_EQ(1, app.count("-i"));
     EXPECT_EQ(i, 4);
 }
 
 TEST_F(TApp, SepInt) {
     int i;
-    app.add_option("i,int", i);
+    app.add_option("-i,--int", i);
     args = {"-i","4"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("int"));
-    EXPECT_EQ(1, app.count("i"));
+    EXPECT_EQ(1, app.count("--int"));
+    EXPECT_EQ(1, app.count("-i"));
     EXPECT_EQ(i, 4);
 }
 
 TEST_F(TApp, OneStringAgain) {
     std::string str;
-    app.add_option("s,string", str);
+    app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(1, app.count("s"));
-    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
 }
 
 
 TEST_F(TApp, DefaultStringAgain) {
     std::string str = "previous";
-    app.add_option("s,string", str);
+    app.add_option("-s,--string", str);
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(0, app.count("s"));
-    EXPECT_EQ(0, app.count("string"));
+    EXPECT_EQ(0, app.count("-s"));
+    EXPECT_EQ(0, app.count("--string"));
     EXPECT_EQ(str, "previous");
 }
 
 TEST_F(TApp, LotsOfFlags) {
 
-    app.add_flag("a");
-    app.add_flag("A");
-    app.add_flag("b");
+    app.add_flag("-a");
+    app.add_flag("-A");
+    app.add_flag("-b");
 
     args = {"-a","-b","-aA"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(2, app.count("a"));
-    EXPECT_EQ(1, app.count("b"));
-    EXPECT_EQ(1, app.count("A"));
+    EXPECT_EQ(2, app.count("-a"));
+    EXPECT_EQ(1, app.count("-b"));
+    EXPECT_EQ(1, app.count("-A"));
 }
 
 
@@ -148,9 +148,9 @@ TEST_F(TApp, BoolAndIntFlags) {
     int iflag;
     unsigned int uflag;
 
-    app.add_flag("b", bflag);
-    app.add_flag("i", iflag);
-    app.add_flag("u", uflag);
+    app.add_flag("-b", bflag);
+    app.add_flag("-i", iflag);
+    app.add_flag("-u", uflag);
 
     args = {"-b", "-i", "-u"};
     EXPECT_NO_THROW(run());
@@ -177,15 +177,15 @@ TEST_F(TApp, ShortOpts) {
 
     unsigned long long funnyint;
     std::string someopt;
-    app.add_flag("z", funnyint);
-    app.add_option("y", someopt);
+    app.add_flag("-z", funnyint);
+    app.add_option("-y", someopt);
 
     args = {"-zzyzyz",};
 
     EXPECT_NO_THROW(run());
 
-    EXPECT_EQ(2, app.count("z"));
-    EXPECT_EQ(1, app.count("y"));
+    EXPECT_EQ(2, app.count("-z"));
+    EXPECT_EQ(1, app.count("-y"));
     EXPECT_EQ((unsigned long long) 2, funnyint);
     EXPECT_EQ("zyz", someopt);
 }
@@ -195,15 +195,15 @@ TEST_F(TApp, Flags) {
     int i = 3;
     std::string s = "HI";
 
-    app.add_option("-i", i, "", CLI::DEFAULT, CLI::POSITIONAL);
-    app.add_option("-s", s, "", CLI::DEFAULT, CLI::POSITIONAL);
+    app.add_option("-i,i", i, "", CLI::Default);
+    app.add_option("-s,s", s, "", CLI::Default);
 
     args = {"-i2", "9"};
 
     EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("i"));
-    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(1, app.count("-s"));
     EXPECT_EQ(2, i);
     EXPECT_EQ("9", s);
 }
@@ -212,8 +212,8 @@ TEST_F(TApp, Positionals) {
 
     std::string posit1;
     std::string posit2;
-    app.add_option("posit1", posit1, "", CLI::POSITIONAL);
-    app.add_option("posit2", posit2, "", CLI::POSITIONAL);
+    app.add_option("posit1", posit1);
+    app.add_option("posit2", posit2);
 
     args = {"thing1","thing2"};
 
@@ -229,42 +229,42 @@ TEST_F(TApp, MixedPositionals) {
 
     int positional_int;
     std::string positional_string;
-    app.add_option("posit1", positional_int, "", CLI::POSITIONAL);
-    app.add_option("posit2", positional_string, "", CLI::POSITIONAL);
+    app.add_option("posit1,--posit1", positional_int, "");
+    app.add_option("posit2,--posit2", positional_string, "");
 
     args = {"--posit2","thing2","7"};
 
     EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, app.count("posit2"));
-    EXPECT_EQ(1, app.count("posit1"));
+    EXPECT_EQ(1, app.count("--posit1"));
     EXPECT_EQ(7, positional_int);
     EXPECT_EQ("thing2", positional_string);
 }
 
 TEST_F(TApp, Reset) {
 
-    app.add_flag("simple");
+    app.add_flag("--simple");
     double doub;
-    app.add_option("d,double", doub);
+    app.add_option("-d,--double", doub);
 
     args = {"--simple", "--double", "1.2"};
 
     EXPECT_NO_THROW(run());
 
-    EXPECT_EQ(1, app.count("simple"));
-    EXPECT_EQ(1, app.count("d"));
+    EXPECT_EQ(1, app.count("--simple"));
+    EXPECT_EQ(1, app.count("-d"));
     EXPECT_FLOAT_EQ(1.2, doub);
 
     app.reset();
 
-    EXPECT_EQ(0, app.count("simple"));
-    EXPECT_EQ(0, app.count("d"));
+    EXPECT_EQ(0, app.count("--simple"));
+    EXPECT_EQ(0, app.count("-d"));
     
     EXPECT_NO_THROW(run());
 
-    EXPECT_EQ(1, app.count("simple"));
-    EXPECT_EQ(1, app.count("d"));
+    EXPECT_EQ(1, app.count("--simple"));
+    EXPECT_EQ(1, app.count("-d"));
     EXPECT_FLOAT_EQ(1.2, doub);
 
 }
@@ -275,7 +275,7 @@ TEST_F(TApp, FileNotExists) {
     EXPECT_TRUE(CLI::detail::_NonexistentPath(myfile));
 
     std::string filename;
-    app.add_option("file", filename, "", CLI::NonexistentPath);
+    app.add_option("--file", filename, "", CLI::NonexistentPath);
     args = {"--file", myfile};
 
     EXPECT_NO_THROW(run());
@@ -297,7 +297,7 @@ TEST_F(TApp, FileExists) {
     EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
 
     std::string filename = "Failed";
-    app.add_option("file", filename, "", CLI::ExistingFile);
+    app.add_option("--file", filename, "", CLI::ExistingFile);
     args = {"--file", myfile};
 
     EXPECT_THROW(run(), CLI::ParseError);
@@ -317,7 +317,7 @@ TEST_F(TApp, FileExists) {
 TEST_F(TApp, InSet) {
 
     std::string choice;
-    app.add_set("q,quick", choice, {"one", "two", "three"});
+    app.add_set("-q,--quick", choice, {"one", "two", "three"});
     
     args = {"--quick", "two"};
 
@@ -334,12 +334,12 @@ TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
-    CLI::Option* opt = app.add_option("s,string", strvec, "", CLI::ARGS(3));
+    CLI::Option* opt = app.add_option("-s,--string", strvec, "", CLI::Args(3));
     EXPECT_EQ(3, opt->expected());
     
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3, app.count("string"));
+    EXPECT_EQ(3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
 
@@ -349,12 +349,12 @@ TEST_F(TApp, VectorUnlimString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
-    CLI::Option* opt = app.add_option("s,string", strvec, "", CLI::ARGS);
+    CLI::Option* opt = app.add_option("-s,--string", strvec);
     EXPECT_EQ(-1, opt->expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(3, app.count("string"));
+    EXPECT_EQ(3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
 
@@ -417,9 +417,9 @@ struct SubcommandProgram : public TApp {
         start = app.add_subcommand("start", "Start prog");
         stop = app.add_subcommand("stop", "Stop prog");
             
-        app.add_flag("d", dummy, "My dummy var");
-        start->add_option("f,file", file, "File name");
-        stop->add_flag("c,count", count, "Some flag opt");
+        app.add_flag("-d", dummy, "My dummy var");
+        start->add_option("-f,--file", file, "File name");
+        stop->add_flag("-c,--count", count, "Some flag opt");
     }
 };
 
@@ -449,7 +449,7 @@ TEST_F(SubcommandProgram, SpareSub) {
 class TAppValue : public TApp {};
 
 TEST_F(TAppValue, OneString) {
-    auto str = app.make_option("s,string");
+    auto str = app.make_option("-s,--string");
     std::string v;
     args = {"--string", "mystring"};
     EXPECT_FALSE((bool) str);
@@ -461,15 +461,15 @@ TEST_F(TAppValue, OneString) {
     EXPECT_NO_THROW(v = *str);
     EXPECT_NO_THROW(v = str);
     
-    EXPECT_EQ(1, app.count("s"));
-    EXPECT_EQ(1, app.count("string"));
+    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(*str, "mystring");
 
 }
 
 TEST_F(TAppValue, SeveralInts) {
-    auto value = app.make_option<int>("first");
-    CLI::Value<int> value2 = app.make_option<int>("s");
+    auto value = app.make_option<int>("--first");
+    CLI::Value<int> value2 = app.make_option<int>("-s");
     int v;
     args = {"--first", "12", "-s", "19"};
     EXPECT_FALSE((bool) value);
@@ -482,16 +482,16 @@ TEST_F(TAppValue, SeveralInts) {
     EXPECT_NO_THROW(v = *value);
     EXPECT_NO_THROW(v = value);
     
-    EXPECT_EQ(1, app.count("s"));
-    EXPECT_EQ(1, app.count("first"));
+    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ(1, app.count("--first"));
     EXPECT_EQ(*value, 12);
     EXPECT_EQ(*value2, 19);
 
 }
 
 TEST_F(TAppValue, Vector) {
-    auto value = app.make_option<std::vector<int>>("first", "", CLI::ARGS);
-    auto value2 = app.make_option<std::vector<std::string>>("second", "", CLI::ARGS);
+    auto value = app.make_option<std::vector<int>>("--first", "", CLI::Args);
+    auto value2 = app.make_option<std::vector<std::string>>("--second");
 
     std::vector<int> i;
     std::vector<std::string> s;
@@ -515,8 +515,8 @@ TEST_F(TAppValue, Vector) {
     EXPECT_NO_THROW(s = *value2);
     //EXPECT_NO_THROW(s = value2);
 
-    EXPECT_EQ(3, app.count("first"));
-    EXPECT_EQ(2, app.count("second"));
+    EXPECT_EQ(3, app.count("--first"));
+    EXPECT_EQ(2, app.count("--second"));
 
     EXPECT_EQ(std::vector<int>({12,3,9}), *value);
     EXPECT_EQ(std::vector<std::string>({"thing", "try"}), *value2);
@@ -524,7 +524,7 @@ TEST_F(TAppValue, Vector) {
 }
 
 TEST_F(TAppValue, DoubleVector) {
-    auto value = app.make_option<std::vector<double>>("simple", "", CLI::ARGS);
+    auto value = app.make_option<std::vector<double>>("--simple");
     std::vector<double> d;
 
     args = {"--simple", "1.2", "3.4", "-1"};
@@ -535,7 +535,7 @@ TEST_F(TAppValue, DoubleVector) {
 
     EXPECT_NO_THROW(d = *value);
 
-    EXPECT_EQ(3, app.count("simple"));
+    EXPECT_EQ(3, app.count("--simple"));
     EXPECT_EQ(std::vector<double>({1.2, 3.4, -1}), *value);
 }
 

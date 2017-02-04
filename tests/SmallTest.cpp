@@ -87,17 +87,20 @@ TEST(Regex, SplittingNew) {
 
     std::vector<std::string> shorts;
     std::vector<std::string> longs;
+    std::string pname;
 
-    EXPECT_NO_THROW(std::tie(shorts, longs) = CLI::detail::get_names({"--long", "s", "-q", "also-long"}));
+    EXPECT_NO_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}));
+    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
+    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
+    EXPECT_EQ("", pname);
+
+    EXPECT_NO_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"}));
     EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
     EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
 
-    EXPECT_NO_THROW(std::tie(shorts, longs) = CLI::detail::get_names({"--long", "", "s", "-q", "", "also-long"}));
-    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
-    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
-
-    EXPECT_THROW(std::tie(shorts, longs) = CLI::detail::get_names({"-"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs) = CLI::detail::get_names({"--"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs) = CLI::detail::get_names({"-hi"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"one","two"}), CLI::BadNameString);
 
 }

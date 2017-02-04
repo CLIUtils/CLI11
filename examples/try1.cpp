@@ -9,10 +9,10 @@ int main (int argc, char** argv) {
 
     std::cout << app.help();
     std::string file;
-    start->add_option("f,file", file, "File name");
+    start->add_option("-f,--file", file, "File name");
     
     int count;
-    stop->add_flag("c,count", count, "Counter");
+    stop->add_flag("-c,--count", count, "Counter");
 
     try {
         app.run(argc, argv);
@@ -20,8 +20,8 @@ int main (int argc, char** argv) {
         return app.exit(e);
     }
 
-    std::cout << "Working on file: " << file << ", direct count: " << start->count("file") << std::endl;
-    std::cout << "Working on count: " << count << ", direct count: " << stop->count("count") << std::endl;
+    std::cout << "Working on file: " << file << ", direct count: " << start->count("--file") << std::endl;
+    std::cout << "Working on count: " << count << ", direct count: " << stop->count("--count") << std::endl;
     if(app.get_subcommand() != nullptr)
         std::cout << "Subcommand:" << app.get_subcommand()->get_name() << std::endl;
 
