@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 
 from plumbum import local, cli, FG
+from plumbum.cmd import curl
 
 FILES = [ 'https://raw.githubusercontent.com/Crascit/DownloadProject/master/DownloadProject.cmake',
           'https://raw.githubusercontent.com/Crascit/DownloadProject/master/DownloadProject.CMakeLists.cmake.in']
@@ -10,14 +11,8 @@ FILES = [ 'https://raw.githubusercontent.com/Crascit/DownloadProject/master/Down
 DIR = local.path(__file__).dirname
 
 def download_file(path):
-    try:
-        from plumbum.cmd import wget
-        wget[path] & FG
-
-    except ImportError:
-        from plumbum.cmd import curl
-        name = path.split('/')[-1]
-        (curl[path] > name) & FG
+    name = path.split('/')[-1]
+    (curl[path] > name) & FG
 
 class UpdateDownloadProj(cli.Application):
     def main(self):
