@@ -573,7 +573,7 @@ public:
     /// The first half of the help print, name plus default, etc
     std::string help_name() const {
         std::stringstream out;
-        out <<  get_name();
+        out << get_name();
         if(expected() != 0) {
             if(typeval != "")
                 out << " " << typeval;
@@ -1170,8 +1170,8 @@ public:
         for(std::unique_ptr<App> &com : subcommands) {
             if(com->name == args.back()){ 
                 args.pop_back();
-                com->parse(args);
                 subcommand = com.get();
+                com->parse(args);
                 return;
             }
         }
@@ -1313,12 +1313,19 @@ public:
         throw OptionNotFound(name);
     }
 
-    std::string help(size_t wid=30) const {
+    std::string help(size_t wid=30, std::string prev="") const {
+        // Delegate to subcommand if needed
+        if(prev == "")
+            prev = progname;
+        else
+            prev += " " + name;
+
+        if(subcommand != nullptr)
+            return subcommand->help(wid, prev);
+
         std::stringstream out;
-        if(name != "")
-            out << "Subcommand: " << name << " ";
         out << prog_discription << std::endl;
-        out << "Usage: " << progname;
+        out << "Usage: " << prev;
         
         // Check for options
         bool npos = false;
