@@ -177,9 +177,11 @@ namespace detail {
     void format_help(std::stringstream &out, std::string name, std::string discription, size_t wid) {
         name = "  " + name;
         out << std::setw(wid) << std::left << name;
-        if(name.length()>=wid)
-            out << std::endl << std::setw(wid) << "";
-        out << discription << std::endl;
+        if(discription != "") {
+            if(name.length()>=wid)
+                out << std::endl << std::setw(wid) << "";
+            out << discription << std::endl;
+        }
     }
 
     struct Combiner {
