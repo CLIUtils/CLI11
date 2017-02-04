@@ -603,24 +603,22 @@ protected:
     bool parsed{false};
     App* subcommand = nullptr;
 
-    std::function<void(App*)> app_callback;
+    std::function<void()> app_callback;
 
 public:
-    /// Set a callback to run at the end of parsing 
-    App* set_callback(std::function<void(App*)> callback) {
-        app_callback = callback;
-        return this;
-    }
 
-    /// Don't have to worry about explicit App* in argument
+    /// Set a callback for the end of parsing. Due to a bug in c++11,
+    /// it is not possible to overload on std::function (fixed in c++14
+    /// and backported to c++11 on newer compilers). Use capture by reference
+    /// to get a pointer to App if needed.
     App* set_callback(std::function<void()> callback) {
-        app_callback = [callback](App*){callback();};
+        app_callback = callback;
         return this;
     }
 
     void run_callback() {
         if(app_callback)
-            app_callback(this);
+            app_callback();
     }
 
     /// Reset the parsed data

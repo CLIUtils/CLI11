@@ -383,7 +383,7 @@ TEST_F(TApp, BasicSubcommands) {
 
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
-    sub1->set_callback([](CLI::App*){
+    sub1->set_callback([](){
             throw CLI::Success();
             });
     auto sub2 = app.add_subcommand("sub2");
