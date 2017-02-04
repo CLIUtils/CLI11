@@ -844,6 +844,18 @@ public:
     }
 
 
+    template<typename T, typename... Args>
+    Option* add_set(
+            std::string name,              ///< The name, short,long
+            T &member,                     ///< The selected member of the set
+            std::set<T> options, ///< The set of posibilities
+            std::string discription,    ///< Discription string
+            detail::Combiner opts,       ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts2,
+            Args... args
+            ) {
+        return add_set(name, member, options, discription, opts|opts2, args...);
+    }
 
 
     //------------ MAKE STYLE ---------//
@@ -876,6 +888,17 @@ public:
         Option* retval = add_option(name, fun, discription, opts);
         retval->typeval = detail::type_name<T>();
         return out;
+    }
+    
+    template<typename T = std::string, typename... Args>
+    Value<T> make_option(
+            std::string name,              ///< The name, short,long
+            std::string discription,
+            detail::Combiner opts,
+            detail::Combiner opts2,
+            Args... args
+            ) {
+        return make_option(name, discription, opts|opts2, args...);
     }
 
     /// Prototype for new output style with default
@@ -912,7 +935,7 @@ public:
         retval->defaultval = ot.str();
         return out;
     }
-    
+
     /// Prototype for new output style, vector
     template<typename T,
         enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
@@ -943,6 +966,18 @@ public:
         return out;
     }
 
+    
+    template<typename T, typename... Args>
+    Value<T> make_option(
+            std::string name,              ///< The name, short,long
+            const T& default_value,
+            std::string discription,
+            detail::Combiner opts,
+            detail::Combiner opts2,
+            Args... args
+            ) {
+        return make_option(name, default_value, discription, opts|opts2, args...);
+    }
 
     /// Prototype for new output style: flag
     Value<int> make_flag(
@@ -998,7 +1033,18 @@ public:
         return out;
     }
 
-
+    
+    template<typename T, typename... Args>
+    Value<T> make_set(
+            std::string name,
+            std::set<T> options,
+            std::string discription,
+            detail::Combiner opts,
+            detail::Combiner opts2,
+            Args... args
+            ) {
+        return make_set(name, options, discription, opts|opts2, args...);
+    }
 
     /// Parses the command line - throws errors
     void parse(int argc, char **argv) {
