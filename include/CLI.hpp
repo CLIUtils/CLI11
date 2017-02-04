@@ -1111,6 +1111,9 @@ public:
         return make_set(name, options, discription, opts|opts2, args...);
     }
 
+    /// This allows subclasses to inject code before callbacks but after parse
+    virtual void pre_callback() {}
+
     /// Parses the command line - throws errors
     void parse(int argc, char **argv) {
         progname = argv[0];
@@ -1172,6 +1175,7 @@ public:
         if(positionals.size()>0)
             throw PositionalError("[" + detail::join(positionals) + "]");
 
+        pre_callback();
         run_callback();
     }
 
