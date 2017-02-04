@@ -190,6 +190,24 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ("zyz", someopt);
 }
 
+TEST_F(TApp, Flags) {
+
+    int i = 3;
+    std::string s = "HI";
+
+    app.add_option("-i", i, "", CLI::DEFAULT, CLI::POSITIONAL);
+    app.add_option("-s", s, "", CLI::DEFAULT, CLI::POSITIONAL);
+
+    args = {"-i2", "9"};
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(1, app.count("i"));
+    EXPECT_EQ(1, app.count("s"));
+    EXPECT_EQ(2, i);
+    EXPECT_EQ("9", s);
+}
+
 TEST_F(TApp, Positionals) {
 
     std::string posit1;

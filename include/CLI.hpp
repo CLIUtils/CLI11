@@ -208,9 +208,6 @@ namespace detail {
             self.validators.push_back(func);
             return self;
         }
-        Combiner operator, (Combiner b) const {
-            return *this | b;
-        }
     };
 
     bool _ExistingFile(std::string filename) {
@@ -573,17 +570,20 @@ protected:
     std::string name;
 public:
     Value(std::string name) : name(name) {}
+
     operator bool() const {return (bool) *value;}
+
+    T& get() const {
+        if(*value)
+            return **value;
+        else
+            throw EmptyError(name);
+    }
     /// Note this does not throw on assignment, though
     /// afterwards it seems to work fine. Best to use
     /// explicit * notation.
     T& operator *() const {
-        if(*value) {
-            return **value;
-        }
-        else {
-            throw EmptyError(name);
-        }
+        return get();
     }
 };
 
@@ -745,6 +745,18 @@ public:
     }
 
 
+    /// Multiple options are supported
+    template<typename T, typename... Args>
+    Option* add_option(
+            std::string name,           ///< The name, long,short
+            T &variable,                ///< The variable to set
+            std::string discription, ///< Discription string
+            detail::Combiner opts,    ///< The options (REQUIRED, DEFAULT, POSITIONAL, ARGS())
+            detail::Combiner opts2,
+            Args... args                 ///< More options
+            ) {
+        return add_option(name, variable, discription, opts|opts2, args...);
+    }
     /// Add option for flag
     Option* add_flag(
             std::string name,           ///< The name, short,long
