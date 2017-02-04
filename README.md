@@ -9,11 +9,13 @@ The following attributes were deemed most important in a CLI parser library:
 
 * Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
-* Work with GCC 4.8 (CentOS 7) or above, or MacOS Clang (C++11)
-* Well tested using Travis
-* Good help printing (in progress)
-* Standard idioms supported naturally, like flags
+* Work with GCC 4.8 (CentOS 7) or above, or MacOS Clang (C++11).
+* Well tested using Travis.
+* Good help printing (in progress).
+* Standard idioms supported naturally, like flags.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
+* Easy to extend as part of a framework that provides "applications".
+* Simple support for subcommands,
 
 The major CLI parsers out there include:
 
@@ -55,7 +57,7 @@ try {
 }
 ```
 
-The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code. (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("file")`.
+The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code. (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
 
 The supported values are:
 
@@ -74,14 +76,19 @@ app.add_set(option_name,
             set_of_possible_options,
             flags, ...)
 
+App* subcom = app.add_subcommand(name, discription);
+
 ```
+
 
 There are several flags:
 
-* `CLI::DEFAULT`: Print the default value in help
-* `CLI::POSITIONAL`: Accept this option also as positional (or only as positional, if nameless)
-* `CLI::REQUIRED`: The program will quit if this option is not present
-* `CLI::OPTS(N)`: Take `N` values instead of as many as possible, only for vector args
+* `CLI::Default`: Print the default value in help
+* `CLI::Required`: The program will quit if this option is not present
+* `CLI::Opts(N)`: Take `N` values instead of as many as possible, only for vector args
+* `CLI::ExistingFile`: Requires that the file exists if given
+* `CLI::ExistingDirectory`: Requires that the directory exists
+* `CLI::NonexistentPath`: Requires that the path does not exist
 
 Options can be given as:
 
@@ -94,15 +101,31 @@ Options can be given as:
 * `--file filename` (space)
 * `--file=filename` (equals)
 
-An option must start with a alphabetic character or underscore. For long options, anything but an equals sign is valid after that. Names are given as a comma separated string, with optional dash or dashes (the only way to get a one char long name is to be explicit with the dashes, however). An option or flag can have as many as you want, and afterward, using `count`, you can use any of the names, with optional dashes, to count the options.
+An option must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form.
 
-Extra positional arguments will cause the program to exit, so at least one `CLI::POSITIONAL` option with a vector is recommended if you want to allow extraneous arguments
+Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments
 If `--` is present in the command line,
 everything after that is positional only.
 
-## Syntax 2
 
-The second syntax looks like this:
+## Subcommands
+
+Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands.
+
+All `App`s have a `get_subcommand()` method, which returns a pointer to the subcommand passed on the command line, or `nullptr` if no subcommand was given. A simple compare of this pointer to each subcommand allows choosing based on subcommand. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw CLI::Success, you can
+even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
+
+
+
+> ## Subclassing
+> 
+> The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain `App`'s, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`.
+>
+> Also, in a related note, the `App`s you get a pointer to are stored in the parent `App` and cannot be deleted.
+
+## Make syntax
+ 
+A second, provisional syntax looks like this:
 
 ```cpp
 CLI::App app{"App description"};
@@ -121,7 +144,7 @@ std::cout << "This will throw an error if int not passed: " << *int_value << std
 ```
 
 
-Internally, it uses the same mechanism to work, it just provides a single line definition, but requires a template argument for non-strings, and creates an object that must be dereferenced to be used. This object (CLI::Value<type>) supports conversion to bool, allowing you to easily check if an option was passed without resorting to count. Dereferencing will also throw an error if no value was passed and no default was given.
+Internally, it uses the same mechanism to work, it just provides a single line definition, but requires a template argument for non-strings, and creates an object that must be dereferenced to be used. This object (`CLI::Value<type>`) supports conversion to bool, allowing you to easily check if an option was passed without resorting to count. Dereferencing will also throw an error if no value was passed and no default was given.
 
 The same functions as the first syntax are supported, only with `make` instead of `add`, and with the variable to bind to replaced by the default value (optional). If you want to use something other than a string option and do not want to give a default, you need to give a template parameter with the type.
 

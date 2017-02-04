@@ -174,13 +174,13 @@ namespace detail {
         return "STRING";
 	}
 
-    void format_help(std::stringstream &out, std::string name, std::string discription, size_t wid) {
+    void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
         name = "  " + name;
         out << std::setw(wid) << std::left << name;
-        if(discription != "") {
+        if(description != "") {
             if(name.length()>=wid)
                 out << std::endl << std::setw(wid) << "";
-            out << discription << std::endl;
+            out << description << std::endl;
         }
     }
 
@@ -410,7 +410,7 @@ protected:
     std::string pname;
 
     detail::Combiner opts;
-    std::string discription;
+    std::string description;
     callback_t callback;
 
     // These are for help strings
@@ -422,8 +422,8 @@ protected:
 
 
 public:
-    Option(std::string name, std::string discription = "", detail::Combiner opts=Nothing, std::function<bool(results_t)> callback=[](results_t){return true;}) :
-      opts(opts), discription(discription), callback(callback){
+    Option(std::string name, std::string description = "", detail::Combiner opts=Nothing, std::function<bool(results_t)> callback=[](results_t){return true;}) :
+      opts(opts), description(description), callback(callback){
         std::tie(snames, lnames, pname) = detail::get_names(detail::split_names(name));
     }
 
@@ -457,14 +457,14 @@ public:
         return opts.defaulted;
     }
 
-    /// True if option has discription
-    bool has_discription() const {
-        return discription.length() > 0;
+    /// True if option has description
+    bool has_description() const {
+        return description.length() > 0;
     }
 
-    /// Get the discription
-    const std::string& get_discription() const {
-        return discription;
+    /// Get the description
+    const std::string& get_description() const {
+        return description;
     }
 
     /// The name and any extras needed for positionals
@@ -561,7 +561,7 @@ public:
     /// Diagnostic representation
     std::string string() const {
         std::string val = "Option: " + get_name() + "\n"
-             + "  " + discription + "\n"
+             + "  " + description + "\n"
              + "  [";
         for(const auto& item : results) {
             if(&item!=&results[0])
@@ -638,7 +638,7 @@ class App {
 protected:
     
     std::string name;
-    std::string prog_discription;
+    std::string prog_description;
     std::vector<Option> options;
     std::vector<std::string> missing_options;
     std::deque<std::string> positionals;
@@ -680,15 +680,15 @@ public:
     }
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string prog_discription="")
-        : prog_discription(prog_discription) {
+    App(std::string prog_description="")
+        : prog_description(prog_description) {
 
             add_flag("-h,--help", "Print this help message and exit");
 
     }
 
-    App* add_subcommand(std::string name, std::string discription="") {
-        subcommands.emplace_back(new App(discription));
+    App* add_subcommand(std::string name, std::string description="") {
+        subcommands.emplace_back(new App(description));
         subcommands.back()->name = name;
         return subcommands.back().get();
     }
@@ -707,15 +707,15 @@ public:
      * For example,
      *
      *     std::string filename
-     *     program.add_option("filename", filename, "discription of filename");
+     *     program.add_option("filename", filename, "description of filename");
      */
     Option* add_option(
             std::string name,
             callback_t callback,
-            std::string discription="", 
+            std::string description="", 
             detail::Combiner opts=Validators
             ) {
-        Option myopt{name, discription, opts, callback};
+        Option myopt{name, description, opts, callback};
         if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
             options.push_back(myopt);
         else
@@ -729,7 +729,7 @@ public:
     Option* add_option(
             std::string name,
             T &variable,                ///< The variable to set
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Validators
             ) {
 
@@ -746,7 +746,7 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        Option* retval = add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         if(opts.defaulted) {
             std::stringstream out;
@@ -761,7 +761,7 @@ public:
     Option* add_option(
             std::string name,
             std::vector<T> &variable,   ///< The variable vector to set
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Args
             ) {
 
@@ -778,7 +778,7 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        Option* retval =  add_option(name, fun, discription, opts);
+        Option* retval =  add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         if(opts.defaulted) {
             retval->defaultval =  "[" + detail::join(variable) + "]";
@@ -792,23 +792,23 @@ public:
     Option* add_option(
             std::string name,
             T &variable,                ///< The variable to set
-            std::string discription,
+            std::string description,
             detail::Combiner opts,
             detail::Combiner opts2,
             Args... args                 ///< More options
             ) {
-        return add_option(name, variable, discription, opts|opts2, args...);
+        return add_option(name, variable, description, opts|opts2, args...);
     }
     /// Add option for flag
     Option* add_flag(
             std::string name,
-            std::string discription=""
+            std::string description=""
             ) {
         CLI::callback_t fun = [](CLI::results_t){
             return true;
         };
         
-        Option* opt = add_option(name, fun, discription, Nothing);
+        Option* opt = add_option(name, fun, description, Nothing);
         if(opt->positional())
             throw IncorrectConstruction("Flags cannot be positional");
         return opt;
@@ -820,7 +820,7 @@ public:
     Option* add_flag(
             std::string name,
             T &count,                   ///< A varaible holding the count
-            std::string discription=""
+            std::string description=""
             ) {
 
         count = 0;
@@ -829,7 +829,7 @@ public:
             return true;
         };
         
-        Option* opt = add_option(name, fun, discription, Nothing);
+        Option* opt = add_option(name, fun, description, Nothing);
         if(opt->positional())
             throw IncorrectConstruction("Flags cannot be positional");
         return opt;
@@ -841,7 +841,7 @@ public:
     Option* add_flag(
             std::string name,
             T &count,                   ///< A varaible holding true if passed
-            std::string discription=""
+            std::string description=""
             ) {
 
         count = false;
@@ -850,7 +850,7 @@ public:
             return res.size() == 1;
         };
         
-        Option* opt = add_option(name, fun, discription, Nothing);
+        Option* opt = add_option(name, fun, description, Nothing);
         if(opt->positional())
             throw IncorrectConstruction("Flags cannot be positional");
         return opt;
@@ -863,7 +863,7 @@ public:
             std::string name,
             T &member,                     ///< The selected member of the set
             std::set<T> options,           ///< The set of posibilities
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Validators
             ) {
 
@@ -883,7 +883,7 @@ public:
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option* retval = add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         retval->typeval += " in {" + detail::join(options) + "}";
         if(opts.defaulted) {
@@ -900,12 +900,12 @@ public:
             std::string name,
             T &member,
             std::set<T> options,           ///< The set of posibilities
-            std::string discription,
+            std::string description,
             detail::Combiner opts,
             detail::Combiner opts2,
             Args... args
             ) {
-        return add_set(name, member, options, discription, opts|opts2, args...);
+        return add_set(name, member, options, description, opts|opts2, args...);
     }
 
 
@@ -916,7 +916,7 @@ public:
         enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Value<T> make_option(
             std::string name,
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Validators
             ) {
 
@@ -936,7 +936,7 @@ public:
             ptr->reset(new T()); // resets the internal ptr
             return detail::lexical_cast(res[0][0], **ptr);
         };
-        Option* retval = add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         return out;
     }
@@ -944,12 +944,12 @@ public:
     template<typename T = std::string, typename... Args>
     Value<T> make_option(
             std::string name,
-            std::string discription,
+            std::string description,
             detail::Combiner opts,
             detail::Combiner opts2,
             Args... args
             ) {
-        return make_option(name, discription, opts|opts2, args...);
+        return make_option(name, description, opts|opts2, args...);
     }
 
     /// Prototype for new output style with default
@@ -958,7 +958,7 @@ public:
     Value<T> make_option(
             std::string name,
             const T& default_value,
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Validators
             ) {
 
@@ -979,7 +979,7 @@ public:
             ptr->reset(new T()); // resets the internal ptr
             return detail::lexical_cast(res[0][0], **ptr);
         };
-        Option* retval = add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         std::stringstream ot;
         ot << default_value;
@@ -992,7 +992,7 @@ public:
         enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     Value<T> make_option(
             std::string name,
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Args
             ) {
 
@@ -1012,7 +1012,7 @@ public:
                 }
             return (*ptr)->size() > 0 && retval;
         };
-        Option* retval =  add_option(name, fun, discription, opts);
+        Option* retval =  add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         return out;
     }
@@ -1022,18 +1022,18 @@ public:
     Value<T> make_option(
             std::string name,
             const T& default_value,
-            std::string discription,
+            std::string description,
             detail::Combiner opts,
             detail::Combiner opts2,
             Args... args
             ) {
-        return make_option(name, default_value, discription, opts|opts2, args...);
+        return make_option(name, default_value, description, opts|opts2, args...);
     }
 
     /// Prototype for new output style: flag
     Value<int> make_flag(
             std::string name,
-            std::string discription=""
+            std::string description=""
             ) {
 
         Value<int> out(name);
@@ -1046,7 +1046,7 @@ public:
             return true;
         };
 
-        Option* opt = add_option(name, fun, discription, Nothing);
+        Option* opt = add_option(name, fun, description, Nothing);
         if(opt->positional())
             throw IncorrectConstruction("Flags cannot be positional");
         return out;
@@ -1057,7 +1057,7 @@ public:
     Value<T> make_set(
             std::string name,
             std::set<T> options,           ///< The set of posibilities
-            std::string discription="",
+            std::string description="",
             detail::Combiner opts=Validators
             ) {
 
@@ -1081,7 +1081,7 @@ public:
             return std::find(std::begin(options), std::end(options), **ptr) != std::end(options);
         };
 
-        Option* retval = add_option(name, fun, discription, opts);
+        Option* retval = add_option(name, fun, description, opts);
         retval->typeval = detail::type_name<T>();
         retval->typeval += " in {" + detail::join(options) + "}";
         return out;
@@ -1092,12 +1092,12 @@ public:
     Value<T> make_set(
             std::string name,
             std::set<T> options,
-            std::string discription,
+            std::string description,
             detail::Combiner opts,
             detail::Combiner opts2,
             Args... args
             ) {
-        return make_set(name, options, discription, opts|opts2, args...);
+        return make_set(name, options, description, opts|opts2, args...);
     }
 
     /// This allows subclasses to inject code before callbacks but after parse
@@ -1326,7 +1326,7 @@ public:
             return subcommand->help(wid, prev);
 
         std::stringstream out;
-        out << prog_discription << std::endl;
+        out << prog_description << std::endl;
         out << "Usage: " << prev;
         
         // Check for options
@@ -1346,18 +1346,18 @@ public:
         for(const Option &opt : options)
             if(opt.positional()) {
                 out << " " << opt.help_positional();
-                if(opt.has_discription())
+                if(opt.has_description())
                     pos=true;
             }
 
         out << std::endl << std::endl;
 
-        // Positional discriptions
+        // Positional descriptions
         if(pos) {
             out << "Positionals:" << std::endl;
             for(const Option &opt : options)
-                if(opt.positional() && opt.has_discription())
-                    detail::format_help(out, opt.get_pname(), opt.get_discription(), wid);
+                if(opt.positional() && opt.has_description())
+                    detail::format_help(out, opt.get_pname(), opt.get_description(), wid);
             out << std::endl;
 
         }
@@ -1368,7 +1368,7 @@ public:
             out << "Options:" << std::endl;
             for(const Option &opt : options) {
                 if(opt.nonpositional())
-                    detail::format_help(out, opt.help_name(), opt.get_discription(), wid);
+                    detail::format_help(out, opt.help_name(), opt.get_description(), wid);
                 
             }
             out << std::endl;
@@ -1378,7 +1378,7 @@ public:
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
             for(const std::unique_ptr<App> &com : subcommands)
-                detail::format_help(out, com->get_name(), com->prog_discription, wid);
+                detail::format_help(out, com->get_name(), com->prog_description, wid);
         }
         return out.str();
     }
