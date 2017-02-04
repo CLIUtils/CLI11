@@ -141,6 +141,38 @@ TEST_F(TApp, LotsOfFlags) {
     EXPECT_EQ(1, app.count("A"));
 }
 
+
+TEST_F(TApp, BoolAndIntFlags) {
+
+    bool bflag;
+    int iflag;
+    unsigned int uflag;
+
+    app.add_flag("b", bflag);
+    app.add_flag("i", iflag);
+    app.add_flag("u", uflag);
+
+    args = {"-b", "-i", "-u"};
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(bflag);
+    EXPECT_EQ(1, iflag);
+    EXPECT_EQ((unsigned int) 1, uflag);
+
+    app.reset();
+
+    args = {"-b", "-b"};
+    EXPECT_THROW(run(), CLI::ParseError);
+
+    app.reset();
+    bflag = false;
+
+    args = {"-iiiuu"};
+    EXPECT_NO_THROW(run());
+    EXPECT_FALSE(bflag);
+    EXPECT_EQ(3, iflag);
+    EXPECT_EQ((unsigned int) 2, uflag);
+}
+
 TEST_F(TApp, ShortOpts) {
 
     unsigned long long funnyint;

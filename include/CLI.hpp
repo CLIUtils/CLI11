@@ -104,6 +104,16 @@ struct is_vector<std::vector<T, A> > {
   static bool const value = true;
 };
 
+template <typename T>
+struct is_bool {
+  static const bool value = false;
+};
+
+template<>
+struct is_bool<bool> {
+  static bool const value = true;
+};
+
 namespace detail {
     // Based generally on https://rmf.io/cxx11/almost-static-if
     /// Simple empty scoped class
@@ -748,10 +758,11 @@ public:
     }
 
     /// Add option for flag
-    template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
+    template<typename T,
+        enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option* add_flag(
             std::string name,           ///< The name, short,long
-                T  &count,              ///< A varaible holding the count
+            T &count,                   ///< A varaible holding the count
             std::string discription=""  ///< Discription string
             ) {
 
@@ -763,6 +774,25 @@ public:
         
         return add_option(name, fun, discription, NOTHING);
     }
+
+    /// Bool version only allows the flag once
+    template<typename T,
+        enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
+    Option* add_flag(
+            std::string name,           ///< The name, short,long
+            T &count,                ///< A varaible holding true if passed
+            std::string discription=""  ///< Discription string
+            ) {
+
+        count = false;
+        CLI::callback_t fun = [&count](CLI::results_t res){
+            count = true;
+            return res.size() == 1;
+        };
+        
+        return add_option(name, fun, discription, NOTHING);
+    }
+
 
     /// Add set of options
     template<typename T>
