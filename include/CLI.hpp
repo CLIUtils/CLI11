@@ -174,7 +174,13 @@ namespace detail {
         return "STRING";
 	}
 
-
+    void format_help(std::stringstream &out, std::string name, std::string discription, size_t wid) {
+        name = "  " + name;
+        out << std::setw(wid) << std::left << name;
+        if(name.length()>=wid)
+            out << std::endl << std::setw(wid) << "";
+        out << discription << std::endl;
+    }
 
     struct Combiner {
         int num;
@@ -567,7 +573,7 @@ public:
     /// The first half of the help print, name plus default, etc
     std::string help_name() const {
         std::stringstream out;
-        out << "  " << get_name();
+        out <<  get_name();
         if(expected() != 0) {
             if(typeval != "")
                 out << " " << typeval;
@@ -578,25 +584,6 @@ public:
             if(expected() == -1)
                 out << " ...";
         }
-        return out.str();
-    }
-
-    /// The length of the name part of the help, for formatting
-    int help_len() const {
-        return help_name().length();
-    }
-
-    /// Make a help string, adjustable len.
-    std::string help(int len = 0) const {
-        std::stringstream out;
-        if(help_len() > len) {
-            out << help_name() << "\n";
-            out << std::setw(len) << " ";
-
-        } else {
-            out << std::setw(len) << std::left << help_name();
-        }
-        out << discription;
         return out.str();
     }
 
@@ -1326,7 +1313,7 @@ public:
         throw OptionNotFound(name);
     }
 
-    std::string help() const {
+    std::string help(size_t wid=30) const {
         std::stringstream out;
         if(name != "")
             out << "Subcommand: " << name << " ";
@@ -1354,17 +1341,14 @@ public:
                     pos=true;
             }
 
-
         out << std::endl << std::endl;
 
         // Positional discriptions
         if(pos) {
             out << "Positionals:" << std::endl;
             for(const Option &opt : options)
-                if(opt.positional() && opt.has_discription()) {
-                    out << std::setw(30) << std::left <<  "  " + opt.get_pname();
-                    out << opt.get_discription() << std::endl;
-                }
+                if(opt.positional() && opt.has_discription())
+                    detail::format_help(out, opt.get_pname(), opt.get_discription(), wid);
             out << std::endl;
 
         }
@@ -1374,9 +1358,9 @@ public:
         if(npos) {
             out << "Options:" << std::endl;
             for(const Option &opt : options) {
-                if(opt.nonpositional()) {
-                    out << opt.help(30) << std::endl;
-                }
+                if(opt.nonpositional())
+                    detail::format_help(out, opt.help_name(), opt.get_discription(), wid);
+                
             }
             out << std::endl;
         }
@@ -1384,11 +1368,8 @@ public:
         // Subcommands
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
-            int max = std::accumulate(std::begin(subcommands), std::end(subcommands), 0,
-                    [](int i, const std::unique_ptr<App> &j){return std::max(i, (int) j->get_name().length()+3);});
-            for(const std::unique_ptr<App> &com : subcommands) {
-                out << std::setw(max) << std::left << com->get_name() << " " << com->prog_discription << std::endl;
-            }
+            for(const std::unique_ptr<App> &com : subcommands)
+                detail::format_help(out, com->get_name(), com->prog_discription, wid);
         }
         return out.str();
     }

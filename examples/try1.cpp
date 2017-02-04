@@ -4,10 +4,10 @@
 int main (int argc, char** argv) {
 
     CLI::App app("K3Pi goofit fitter");
-    CLI::App* start = app.add_subcommand("start");
-    CLI::App* stop = app.add_subcommand("stop");
+    app.add_flag("--random", "Some random flag");
+    CLI::App* start = app.add_subcommand("start", "A great subcommand");
+    CLI::App* stop = app.add_subcommand("stop", "Do you really want to stop?");
 
-    std::cout << app.help();
     std::string file;
     start->add_option("-f,--file", file, "File name");
     
