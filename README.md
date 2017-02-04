@@ -5,17 +5,17 @@
 Why write another CLI parser?
 
 
-The following attributes were deemed most important in a CLI parser library:
+The following attributes are what I believe are important in a CLI parser library:
 
 * Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
-* Work with GCC 4.8 (CentOS 7) or above, or MacOS Clang (C++11).
+* Work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.4+. Should work on Linux and MacOS.
 * Well tested using Travis.
 * Good help printing (in progress).
-* Standard idioms supported naturally, like flags.
+* Standard idioms supported naturally, like grouping flags, the positional seperator, etc.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
 * Easy to extend as part of a framework that provides "applications".
-* Simple support for subcommands,
+* Simple support for subcommands.
 
 The major CLI parsers out there include:
 
@@ -24,7 +24,7 @@ The major CLI parsers out there include:
 * [TCLAP](http://tclap.sourceforge.net): Not quite standard command line parsing, seems to not be well supported anymore. Header only, but in quite a few files. Not even moved to GitHub yet.
 * [Cxxopts](https://github.com/jarro2783/cxxopts): C++ 11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO.
 
-So, this library is an attempt to provide a great syntax, good compatibility, and minimal installation.
+So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
 ## Installing
 
@@ -40,9 +40,9 @@ make
 GTEST_COLOR=1 CTEST_OUTPUT_ON_FAILURE=1 make test
 ```
 
-## Syntax 1
+## Adding options
 
-There are currently two supported syntaxes. I have not decided which is the most useful yet, and would be open to comments. The first syntax is:
+To set up, add options, and run, your main function will look something like this:
 
 ```cpp
 CLI::App app{"App description"};
@@ -112,7 +112,7 @@ everything after that is positional only.
 
 Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands.
 
-All `App`s have a `get_subcommand()` method, which returns a pointer to the subcommand passed on the command line, or `nullptr` if no subcommand was given. A simple compare of this pointer to each subcommand allows choosing based on subcommand. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw CLI::Success, you can
+All `App`s have a `get_subcommand()` method, which returns a pointer to the subcommand passed on the command line, or `nullptr` if no subcommand was given. A simple compare of this pointer to each subcommand allows choosing based on subcommand. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 
 
@@ -148,7 +148,7 @@ Internally, it uses the same mechanism to work, it just provides a single line d
 
 The same functions as the first syntax are supported, only with `make` instead of `add`, and with the variable to bind to replaced by the default value (optional). If you want to use something other than a string option and do not want to give a default, you need to give a template parameter with the type.
 
-Value wraps a `shared_ptr` to a `unique_ptr` to a value, so it lasts even if the `App` object is destructed.
+`Value` wraps a `shared_ptr` to a `unique_ptr` to a value, so it lasts even if the `App` object is destructed.
 
 ## How it works
 
