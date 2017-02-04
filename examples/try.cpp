@@ -6,7 +6,7 @@ int main (int argc, char** argv) {
     CLI::App app("K3Pi goofit fitter");
 
     std::string file;
-    app.add_option("-f,--file", file, "File name");
+    app.add_option("-f,--file,file", file, "File name");
     
     int count;
     app.add_flag("-c,--count", count, "Counter");

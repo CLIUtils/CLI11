@@ -470,6 +470,11 @@ public:
         return out;
     }
 
+    // Just the pname
+    std::string get_pname() const {
+        return pname;
+    }
+
     /// Process the callback
     bool run_callback() const {
         if(opts.validators.size()>0) {
@@ -1299,10 +1304,10 @@ public:
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             if(e.print_help)
-                std::cerr << help() << std::endl;
+                std::cerr << help();
         } else {
             if(e.print_help)
-                std::cout << help() << std::endl;
+                std::cout << help();
         }
         return e.exit_code;
     }
@@ -1323,6 +1328,18 @@ public:
             out << "Subcommand: " << name << " ";
         out << prog_discription << std::endl;
         out << "Usage: " << progname;
+        
+        // Check for options
+        bool npos = false;
+        for(const Option &opt : options) {
+            if(opt.nonpositional()) {
+                npos = true;
+                break;
+            }
+        }
+
+        if(npos)
+            out << " [OPTIONS...]";
 
         // Positionals
         bool pos=false;
@@ -1332,6 +1349,8 @@ public:
                 if(opt.has_discription())
                     pos=true;
             }
+
+
         out << std::endl << std::endl;
 
         // Positional discriptions
@@ -1339,7 +1358,7 @@ public:
             out << "Positionals:" << std::endl;
             for(const Option &opt : options)
                 if(opt.positional() && opt.has_discription()) {
-                    out << "  " << std::setw(30) << std::right << opt.help_positional();
+                    out << std::setw(30) << std::left <<  "  " + opt.get_pname();
                     out << opt.get_discription() << std::endl;
                 }
             out << std::endl;
@@ -1348,21 +1367,14 @@ public:
 
 
         // Options
-        int len = std::accumulate(std::begin(options), std::end(options), 0,
-                [](int val, const Option &opt){
-                    return std::max(opt.help_len()+3, val);});
-
-        bool npos = false;
-        for(const Option &opt : options) {
-            if(opt.nonpositional()) {
-                if(!npos) {
-                    out << "Options:" << std::endl;
-                    npos=true;
+        if(npos) {
+            out << "Options:" << std::endl;
+            for(const Option &opt : options) {
+                if(opt.nonpositional()) {
+                    out << opt.help(30) << std::endl;
                 }
-                out << opt.help(len) << std::endl;
             }
-            if(npos)
-                out << std::endl;
+            out << std::endl;
         }
 
         // Subcommands
