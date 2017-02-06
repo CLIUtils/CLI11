@@ -2,35 +2,36 @@
 
 # Requires Python 3.6
 
-from plumbum import local, cli, FG
 import re
+import argparse
+from pathlib import Path
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
 
-DIR = local.path(__file__).dirname
-BDIR = DIR / '../include'
+DIR = Path(__file__).resolve().parent
+BDIR = DIR.parent / 'include'
 
-class MakeHeader(cli.Application):
+def MakeHeader(out):
+    main_header = BDIR / 'CLI/CLI.hpp'
+    with main_header.open() as f:
+        header = f.read()
 
-    def main(self, out : cli.NonexistentPath = BDIR / 'CLI11.hpp'):
-        main_header = BDIR / 'CLI/CLI.hpp'
-        header = main_header.read()
+    include_files = includes_local.findall(header)
 
-        include_files = includes_local.findall(header)
+    headers = set()
+    output = ''
+    with open('output.hpp', 'w') as f:
+        for inc in include_files:
+            with (BDIR / inc).open() as f:
+                inner = f.read()
+            headers |= set(includes_system.findall(inner))
+            output += f'\n// From {inc}\n\n'
+            output += inner[inner.find('namespace'):]
 
-        headers = set()
-        output = ''
-        with open('output.hpp', 'w') as f:
-            for inc in include_files:
-                inner = (BDIR / inc).read()
-                headers |= set(includes_system.findall(inner))
-                output += f'\n// From {inc}\n\n'
-                output += inner[inner.find('namespace'):]
+    header_list = '\n'.join(f'#include <{h}>' for h in headers)
 
-        header_list = '\n'.join(f'#include <{h}>' for h in headers)
-
-        output = f'''\
+    output = f'''\
 #pragma once
 
 // Distributed under the LGPL version 3.0 license.  See accompanying
@@ -42,12 +43,14 @@ class MakeHeader(cli.Application):
 {header_list}
 {output}'''
 
-        with out.open('w') as f:
-            f.write(output)
+    with Path(out).open('w') as f:
+        f.write(output)
 
-        print(f"Created {out}")
+    print(f"Created {out}")
+
 
 if __name__ == '__main__':
-    MakeHeader()
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output", nargs='?', default=BDIR / 'CLI11.hpp')
+    args = parser.parse_args()
+    MakeHeader(args.output)

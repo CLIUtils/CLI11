@@ -1,5 +1,9 @@
-
+#ifdef CLI_SINGLE_FILE
+#include "CLI11.hpp"
+#else
 #include "CLI/CLI.hpp"
+#endif
+
 #include "gtest/gtest.h"
 #include <fstream>
 

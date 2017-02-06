@@ -32,7 +32,7 @@ include_directories(${gtest_SOURCE_DIR}/include)
 
 # Target must already exist
 macro(add_gtest TESTNAME)
-    target_link_libraries(${TESTNAME} gtest gtest_main)
+    target_link_libraries(${TESTNAME} PUBLIC gtest gtest_main)
     add_test(${TESTNAME} ${TESTNAME})
 endmacro()
 

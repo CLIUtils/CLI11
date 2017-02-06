@@ -1,26 +1,51 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 project(CLI11 CXX)
 
 SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-# C++11 without GNU extensions
-# Requires CMAKE 3.1+ for Mac
-if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 3.1)
-    add_compile_options(-std=c++11)
-else()
-    cmake_policy(VERSION 3.1) # Needed for Mac
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(CUR_PROJ ON)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+    set(CUR_PROJ OFF)
 endif()
-# be moderately paranoid with flags
+
+# Be moderately paranoid with flags
+# But only globally, don't inherit
 add_compile_options(-pedantic -Wall -Wextra)
 
-include_directories(include)
-set(headers "${PROJECT_SOURCE_DIR}/include/CLI.hpp")
+add_library(CLI INTERFACE)
+target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-enable_testing()
-add_subdirectory(tests)
+# Single file test
+option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CUR_PROJ})
+if(CLI_SINGLE_FILE)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
+    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
+        COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp"
+        IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp"
+        )
+    add_custom_target(generate_cli_single_file
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
 
-add_subdirectory(examples)
+    add_library(CLI_SINGLE INTERFACE)
+    target_link_libraries(CLI_SINGLE INTERFACE CLI)
+    add_dependencies(CLI_SINGLE generate_cli_single_file)
+    target_compile_definitions(CLI_SINGLE INTERFACE -DCLI_SINGLE_FILE)
+    target_include_directories(CLI_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
+endif()
+
+option(CLI_TESTING "Build the tests and add them" ${CUR_PROJ})
+if(CLI_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
+if(CLI_EXAMPLES)
+    add_subdirectory(examples)
+endif()
