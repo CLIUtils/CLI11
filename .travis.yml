@@ -1,7 +1,5 @@
-language: python
+language: cpp
 sudo: false
-python:
-    - "3.6"
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/cmake
@@ -29,6 +27,7 @@ matrix:
         - compiler: clang
 
 install:
+    - echo "Python version: " && python -c 'import sys; print(sys.version_info[:])'
     - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
@@ -42,6 +41,7 @@ install:
     
     - export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     - cd "${DEPS_DIR}"
+    - [[ $(python -c 'import sys; print(sys.version_info[0])') == 2 ]] && pip install pathlib
 
 script:
     - cd "${TRAVIS_BUILD_DIR}"

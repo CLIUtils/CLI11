@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Requires Python 3.6
+# Requires pathlib on python 2
 
 import re
 import argparse
@@ -26,12 +26,12 @@ def MakeHeader(out):
             with (BDIR / inc).open() as f:
                 inner = f.read()
             headers |= set(includes_system.findall(inner))
-            output += f'\n// From {inc}\n\n'
+            output += '\n// From {inc}\n\n'.format(inc=inc)
             output += inner[inner.find('namespace'):]
 
-    header_list = '\n'.join(f'#include <{h}>' for h in headers)
+    header_list = '\n'.join(f'#include <'+h+'>' for h in headers)
 
-    output = f'''\
+    output = '''\
 #pragma once
 
 // Distributed under the LGPL version 3.0 license.  See accompanying
@@ -41,12 +41,12 @@ def MakeHeader(out):
 // This has the complete CLI library in one file.
 
 {header_list}
-{output}'''
+{output}'''.format(header_list=header_list, output=output)
 
     with Path(out).open('w') as f:
         f.write(output)
 
-    print(f"Created {out}")
+    print("Created {out}".format(out=out))
 
 
 if __name__ == '__main__':
