@@ -1,48 +1,52 @@
 language: cpp
 sudo: false
 cache:
-    directories:
-        - ${TRAVIS_BUILD_DIR}/deps/cmake
-
+  directories:
+  - ${TRAVIS_BUILD_DIR}/deps/cmake
 matrix:
-    include:
-        - compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-6
-          env: COMPILER=6
-
-        - compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-4.7
-          env: COMPILER=4.7
-
-        - compiler: clang
-
+  include:
+  - compiler: gcc
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-6
+    env: COMPILER=6
+  - compiler: gcc
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-4.7
+    env: COMPILER=4.7
+  - compiler: clang
 install:
-    - python -c 'import sys; print(sys.version_info[:])'
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
-    - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-    - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
-    - cd "${DEPS_DIR}"
-    - |
-      if [[ ! -f "${DEPS_DIR}/cmake/bin/cmake" ]] ; then
-        echo "Downloading CMake"
-        mkdir -p cmake
-        travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
-      fi
-
-    - export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
-    - cd "${DEPS_DIR}"
-    - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip install --user pathlib; fi
-
+- python -c 'import sys; print(sys.version_info[:])'
+- if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
+- DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+- CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+- cd "${DEPS_DIR}"
+- |
+  if [[ ! -f "${DEPS_DIR}/cmake/bin/cmake" ]] ; then
+    echo "Downloading CMake"
+    mkdir -p cmake
+    travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
+  fi
+- export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
+- cd "${DEPS_DIR}"
+- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip
+  install --user pathlib; fi
 script:
-    - cd "${TRAVIS_BUILD_DIR}"
-    - .ci/travis.sh
+- cd "${TRAVIS_BUILD_DIR}"
+- .ci/travis.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: bMRTGeFlCmLUJ9EAxCSDPzd5MYGq8Ns2sCr2dCMK/6UL/WeEnwFMkvkBpXvKuG5BHfPft3uttxXI9gtpgTfTym0HCid3QHI5ibl1rKwGXdSx/n++OzZOpwcAgBeM1xSy3qlUSRyZ2zbSgI5KABg4dHezXPRg4S60NFmRNIJtn9zDE847iyGxM7mYtC7aKEZ5KkJAV5MMI8EkicJzBcpREN54NrF8PSw8peCZABIXU27gKvTVf8hxNAwbUzWkUp+YQ693ZA4KGDXIGGN3bngJ2rdxyoLquCEIBDh3Camub+M2PFsKjjHsLRBkVkKXR1BXEJMbROlr9ovlGxL90p7BMZULvVEmGRj2t6ClQdgc8gqyuAaQirr6LpWlXpKjREDgc130ZsEAMY2wTwlaIwjDEIKEyDcEEK4sglCrAg6xQzsNBPMDHYGc6mgbazmvy84UygLl+xXJe2vl/Z875RJBMekBLCKlwgMe+PDO1KGpPOpsLDHwj/Fq3G2+X/WL2ZInaJMhuuvaVJI/AspvEhWWFC6RaoK2q21aTNaDaLFpr0npKKyizcVbdjzEAARL2/sSWka8SWozPCCwDcm2AcunAwnHLylPqZ+Dk2wmrbdztqiALO6GpkMM1ARUIP+laUccVPmCVZeUoTzGLac/QFf6ip+DUG2uQ77q1NjIA6IXCzM=
+  file: ${TRAVIS_BUILD_DIR}/include/CLI11.hpp
+  skip_cleanup: true
+  on:
+    repo: henryiii/CLI11
+    tags: true
