@@ -1,4 +1,4 @@
-#include "CLI.hpp"
+#include "CLI/CLI.hpp"
 #include "gtest/gtest.h"
 #include <cstdio>
 #include <fstream>
