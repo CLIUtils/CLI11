@@ -7,12 +7,15 @@ from __future__ import print_function, unicode_literals
 import re
 import argparse
 from pathlib import Path
+from subprocess import check_output
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
 
 DIR = Path(__file__).resolve().parent
 BDIR = DIR.parent / 'include'
+
+TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
 
 def MakeHeader(out):
     main_header = BDIR / 'CLI/CLI.hpp'
@@ -40,10 +43,11 @@ def MakeHeader(out):
 // file LICENSE or https://github.com/henryiii/CLI11 for details.
 
 // This file was generated using MakeSingleHeader.py in CLI11/scripts
+// from: {tag}
 // This has the complete CLI library in one file.
 
 {header_list}
-{output}'''.format(header_list=header_list, output=output)
+{output}'''.format(header_list=header_list, output=output, tag=TAG)
 
     with Path(out).open('w') as f:
         f.write(output)

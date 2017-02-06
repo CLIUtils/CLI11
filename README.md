@@ -28,7 +28,9 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 
 ## Installing
 
-To use, copy CLI11.hpp into your include directory, and you are set. This is combined from the source files for every release.
+To use, there are two methods.
+1. Copy `CLI11.hpp` from the [most recent release](https://github.com/henryiii/CLI11/releases) into your include directory, and you are set. This is combined from the source files  for every release.
+2. To be added.
 
 To build the tests, get the entire directory and use CMake:
 
