@@ -1,8 +1,8 @@
 language: cpp
 sudo: false
 cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/deps/cmake
+    directories:
+        - ${TRAVIS_BUILD_DIR}/deps/cmake
 
 matrix:
     include:
@@ -17,33 +17,32 @@ matrix:
 
         - compiler: gcc
           addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-4.7
+          apt:
+              sources:
+                  - ubuntu-toolchain-r-test
+              packages:
+                  - g++-4.7
           env: COMPILER=4.7
 
         - compiler: clang
 
 install:
-    - echo "Python version: " && python -c 'import sys; print(sys.version_info[:])'
+    - echo "Python version: $(python -c 'import sys; print(sys.version_info[:])')"
     - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
     - cd "${DEPS_DIR}"
-    - | 
+    - |
       if [[ ! -f "${DEPS_DIR}/cmake/bin/cmake" ]] ; then
         echo "Downloading CMake"
         mkdir -p cmake
         travis_retry wget --no-check-certificate --quiet -O - "${CMAKE_URL}" | tar --strip-components=1 -xz -C cmake
       fi
-    
+
     - export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     - cd "${DEPS_DIR}"
-    - [[ $(python -c 'import sys; print(sys.version_info[0])') == 2 ]] && pip install pathlib
+    - if [[ $(python -c 'import sys; print(sys.version_info[0])') == 2 ]]; then pip install pathlib; fi
 
 script:
     - cd "${TRAVIS_BUILD_DIR}"
     - .ci/travis.sh
-
