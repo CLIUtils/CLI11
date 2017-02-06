@@ -22,6 +22,7 @@ matrix:
         - g++-4.7
     env: COMPILER=4.7
   - compiler: clang
+    env: DEPLOY_MAT=yes
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
@@ -45,8 +46,9 @@ deploy:
   provider: releases
   api_key:
     secure: bMRTGeFlCmLUJ9EAxCSDPzd5MYGq8Ns2sCr2dCMK/6UL/WeEnwFMkvkBpXvKuG5BHfPft3uttxXI9gtpgTfTym0HCid3QHI5ibl1rKwGXdSx/n++OzZOpwcAgBeM1xSy3qlUSRyZ2zbSgI5KABg4dHezXPRg4S60NFmRNIJtn9zDE847iyGxM7mYtC7aKEZ5KkJAV5MMI8EkicJzBcpREN54NrF8PSw8peCZABIXU27gKvTVf8hxNAwbUzWkUp+YQ693ZA4KGDXIGGN3bngJ2rdxyoLquCEIBDh3Camub+M2PFsKjjHsLRBkVkKXR1BXEJMbROlr9ovlGxL90p7BMZULvVEmGRj2t6ClQdgc8gqyuAaQirr6LpWlXpKjREDgc130ZsEAMY2wTwlaIwjDEIKEyDcEEK4sglCrAg6xQzsNBPMDHYGc6mgbazmvy84UygLl+xXJe2vl/Z875RJBMekBLCKlwgMe+PDO1KGpPOpsLDHwj/Fq3G2+X/WL2ZInaJMhuuvaVJI/AspvEhWWFC6RaoK2q21aTNaDaLFpr0npKKyizcVbdjzEAARL2/sSWka8SWozPCCwDcm2AcunAwnHLylPqZ+Dk2wmrbdztqiALO6GpkMM1ARUIP+laUccVPmCVZeUoTzGLac/QFf6ip+DUG2uQ77q1NjIA6IXCzM=
-  file: ${TRAVIS_BUILD_DIR}/include/CLI11.hpp
   skip_cleanup: true
+  file: include/CLI11.hpp
   on:
     repo: henryiii/CLI11
     tags: true
+    condition: $DEPLOY_MAT = yes
