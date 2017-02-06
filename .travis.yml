@@ -17,11 +17,11 @@ matrix:
 
         - compiler: gcc
           addons:
-          apt:
-              sources:
-                  - ubuntu-toolchain-r-test
-              packages:
-                  - g++-4.7
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-4.7
           env: COMPILER=4.7
 
         - compiler: clang
@@ -41,7 +41,7 @@ install:
 
     - export PATH="${DEPS_DIR}/cmake/bin:${PATH}"
     - cd "${DEPS_DIR}"
-    - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip install pathlib; fi
+    - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip install --user pathlib; fi
 
 script:
     - cd "${TRAVIS_BUILD_DIR}"
