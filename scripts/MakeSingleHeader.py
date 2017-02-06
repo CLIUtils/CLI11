@@ -26,13 +26,12 @@ def MakeHeader(out):
 
     headers = set()
     output = ''
-    with open('output.hpp', 'w') as f:
-        for inc in include_files:
-            with (BDIR / inc).open() as f:
-                inner = f.read()
-            headers |= set(includes_system.findall(inner))
-            output += '\n// From {inc}\n\n'.format(inc=inc)
-            output += inner[inner.find('namespace'):]
+    for inc in include_files:
+        with (BDIR / inc).open() as f:
+            inner = f.read()
+        headers |= set(includes_system.findall(inner))
+        output += '\n// From {inc}\n\n'.format(inc=inc)
+        output += inner[inner.find('namespace'):]
 
     header_list = '\n'.join('#include <'+h+'>' for h in headers)
 
