@@ -2,6 +2,8 @@
 
 # Requires pathlib on python 2
 
+from __future__ import print_function, unicode_literals
+
 import re
 import argparse
 from pathlib import Path
