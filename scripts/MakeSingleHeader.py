@@ -29,7 +29,7 @@ def MakeHeader(out):
             output += '\n// From {inc}\n\n'.format(inc=inc)
             output += inner[inner.find('namespace'):]
 
-    header_list = '\n'.join(f'#include <'+h+'>' for h in headers)
+    header_list = '\n'.join('#include <'+h+'>' for h in headers)
 
     output = '''\
 #pragma once
