@@ -16,6 +16,15 @@ download_project(PROJ                googletest
 
 add_subdirectory(${googletest_SOURCE_DIR}/googletest ${googletest_SOURCE_DIR})
 
+mark_as_advanced(
+    gtest_build_samples
+    gtest_build_tests
+    gtest_disable_pthreads
+    gtest_force_shared_crt
+    gtest_hide_internal_symbols
+    BUILD_SHARED_LIBS
+)
+
 if (CMAKE_CONFIGURATION_TYPES)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure 
