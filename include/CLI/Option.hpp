@@ -135,7 +135,6 @@ public:
     std::string get_pname() const {
         return pname;
     }
-
     /// Process the callback
     bool run_callback() const {
         if(_validators.size()>0) {
@@ -239,6 +238,21 @@ public:
             if(get_expected() == -1)
                 out << " ...";
         }
+        return out.str();
+    }
+    
+    /// pname with type info
+    std::string help_pname() const {
+        std::stringstream out;
+        out << get_pname();
+        if(typeval != "")
+            out << " " << typeval;
+        if(defaultval != "")
+            out << "=" << defaultval; 
+        if(get_expected() > 1)
+            out << " x " << get_expected();
+        if(get_expected() == -1)
+            out << " ...";
         return out.str();
     }
 

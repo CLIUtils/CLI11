@@ -1,7 +1,7 @@
 ## Version 0.3 (in progress)
 
 * Supports GCC 4.7 again
-* TODO: Support type and set syntax in positionals
+* Support type and set syntax in positionals
 * Changes `setup` for an explicit help bool in constructor/`add_subcommand`
 
 

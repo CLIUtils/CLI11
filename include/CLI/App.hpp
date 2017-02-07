@@ -547,7 +547,7 @@ public:
             out << "Positionals:" << std::endl;
             for(const Option_p &opt : options)
                 if(opt->get_positional() && opt->has_description())
-                    detail::format_help(out, opt->get_pname(), opt->get_description(), wid);
+                    detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
             out << std::endl;
 
         }
