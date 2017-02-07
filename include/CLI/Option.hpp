@@ -9,15 +9,14 @@
 #include <tuple>
 #include <algorithm>
 
+#include "CLI/Error.hpp"
 #include "CLI/StringTools.hpp"
 #include "CLI/Split.hpp"
-#include "CLI/Combiner.hpp"
 
 namespace CLI {
 
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
-
 
 class App;
 
@@ -29,7 +28,6 @@ protected:
     std::vector<std::string> lnames;
     std::string pname;
 
-    detail::Combiner opts;
     std::string description;
     callback_t callback;
 
@@ -37,14 +35,27 @@ protected:
     std::string defaultval;
     std::string typeval;
 
+
+    bool _default {false};
+    bool _required {false};
+    int _expected {1};
+    bool allow_vector {false};
+    std::vector<std::function<bool(std::string)>> _validators;
+
     // Results
     results_t results {};
 
 
 public:
-    Option(std::string name, std::string description = "", detail::Combiner opts=Nothing, std::function<bool(results_t)> callback=[](results_t){return true;}) :
-      opts(opts), description(description), callback(callback){
+    Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool _default=true) :
+      description(description), callback(callback), _default(_default) {
         std::tie(snames, lnames, pname) = detail::get_names(detail::split_names(name));
+    }
+
+
+    // This class is "true" if optio passed.
+    operator bool() const {
+        return results.size() > 0;
     }
 
     /// Clear the parsed results (mostly for testing)
@@ -52,18 +63,38 @@ public:
         results.clear();
     }
 
-    /// True if option is required
-    bool required() const {
-        return opts.required;
+    /// Set the option as required
+    Option* required(bool value = true) {
+        _required = value;
+        return this;
+    }
+
+    bool get_required() const {
+        return _required;
+    }
+
+    /// Set the number of expected arguments (Flags bypass this)
+    Option* expected(int value) {
+        if(value == 0)
+            throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
+        if(!allow_vector && value != 1)
+            throw IncorrectConstruction("You can only change the Expected arguments for vectors");
+        _expected = value;
+        return this;
     }
 
     /// The number of arguments the option expects
-    int expected() const {
-        return opts.num;
+    int get_expected() const {
+        return _expected;
+    }
+
+    /// True if this has a default value
+    int get_default() const {
+        return _default;
     }
 
     /// True if the argument can be given directly
-    bool positional() const {
+    bool get_positional() const {
         return pname.length() > 0;
     }
 
@@ -72,14 +103,16 @@ public:
         return (snames.size() + lnames.size()) > 0;
     }
 
-    /// True if this should print the default string
-    bool defaulted() const {
-        return opts.defaulted;
-    }
-
     /// True if option has description
     bool has_description() const {
         return description.length() > 0;
+    }
+
+    /// Adds a validator
+    Option* check(std::function<bool(std::string)> validator) {
+
+        _validators.push_back(validator);
+        return this;
     }
 
     /// Get the description
@@ -90,11 +123,11 @@ public:
     /// The name and any extras needed for positionals
     std::string help_positional() const {
         std::string out = pname;
-        if(expected()<1)
-            out = out + "x" + std::to_string(expected());
-        else if(expected()==-1)
+        if(get_expected()<1)
+            out = out + "x" + std::to_string(get_expected());
+        else if(get_expected()==-1)
             out = out + "...";
-        out = required() ? out : "["+out+"]";
+        out = get_required() ? out : "["+out+"]";
         return out;
     }
 
@@ -105,9 +138,9 @@ public:
 
     /// Process the callback
     bool run_callback() const {
-        if(opts.validators.size()>0) {
+        if(_validators.size()>0) {
             for(const std::string & result : flatten_results())
-                for(const std::function<bool(std::string)> &vali : opts.validators)
+                for(const std::function<bool(std::string)> &vali : _validators)
                     if(!vali(result))
                         return false;
         }
@@ -196,14 +229,14 @@ public:
     std::string help_name() const {
         std::stringstream out;
         out << get_name();
-        if(expected() != 0) {
+        if(get_expected() != 0) {
             if(typeval != "")
                 out << " " << typeval;
             if(defaultval != "")
                 out << "=" << defaultval; 
-            if(expected() > 1)
-                out << " x " << expected();
-            if(expected() == -1)
+            if(get_expected() > 1)
+                out << " x " << get_expected();
+            if(get_expected() == -1)
                 out << " ...";
         }
         return out.str();

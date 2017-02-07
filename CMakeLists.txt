@@ -20,14 +20,15 @@ add_compile_options(-pedantic -Wall -Wextra)
 add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
+
 # Single file test
 option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CUR_PROJ})
 if(CLI_SINGLE_FILE)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp"
-        IMPLICIT_DEPENDS CXX "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI_headers}
         )
     add_custom_target(generate_cli_single_file
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")

@@ -12,7 +12,7 @@ int main (int argc, char** argv) {
     app.add_flag("-c,--count", count, "Counter");
 
     double value = 3.14;
-    app.add_option("-d,--double", value, "Some Value", CLI::Default);
+    app.add_option("-d,--double", value, "Some Value", false);
 
     try {
         app.run(argc, argv);

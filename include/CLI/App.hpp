@@ -20,9 +20,7 @@
 #include "CLI/TypeTools.hpp"
 #include "CLI/StringTools.hpp"
 #include "CLI/Split.hpp"
-#include "CLI/Combiner.hpp"
 #include "CLI/Option.hpp"
-#include "CLI/Value.hpp"
 
 namespace CLI {
 
@@ -92,8 +90,6 @@ public:
     }
 
 
-    //------------ ADD STYLE ---------//
-
     /// Add an option, will automatically understand the type for common types.
     /** To use, create a variable with the expected type, and pass it in after the name.
      * After start is called, you can use count to see if the value was passed, and
@@ -111,9 +107,9 @@ public:
             std::string name,
             callback_t callback,
             std::string description="", 
-            detail::Combiner opts=Validators
+            bool defaulted=true
             ) {
-        Option myopt{name, description, opts, callback};
+        Option myopt{name, description, callback, defaulted};
         if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
             options.push_back(myopt);
         else
@@ -128,12 +124,10 @@ public:
             std::string name,
             T &variable,                ///< The variable to set
             std::string description="",
-            detail::Combiner opts=Validators
+            bool defaulted=true
             ) {
 
         
-        if(opts.num!=1)
-            throw IncorrectConstruction("Must have Args(1) or be a vector.");
         CLI::callback_t fun = [&variable](CLI::results_t res){
             if(res.size()!=1) {
                 return false;
@@ -144,9 +138,9 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        Option* retval = add_option(name, fun, description, opts);
+        Option* retval = add_option(name, fun, description, defaulted);
         retval->typeval = detail::type_name<T>();
-        if(opts.defaulted) {
+        if(defaulted) {
             std::stringstream out;
             out << variable;
             retval->defaultval = out.str();
@@ -160,11 +154,9 @@ public:
             std::string name,
             std::vector<T> &variable,   ///< The variable vector to set
             std::string description="",
-            detail::Combiner opts=Args
+            bool defaulted=true
             ) {
 
-        if(opts.num==0)
-            throw IncorrectConstruction("Must have Args or be a vector.");
         CLI::callback_t fun = [&variable](CLI::results_t res){
             bool retval = true;
             variable.clear();
@@ -176,27 +168,16 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        Option* retval =  add_option(name, fun, description, opts);
+        Option* retval =  add_option(name, fun, description, defaulted);
+        retval->allow_vector = true;
+        retval->_expected = -1;
         retval->typeval = detail::type_name<T>();
-        if(opts.defaulted) {
+        if(defaulted)
             retval->defaultval =  "[" + detail::join(variable) + "]";
-        }
         return retval;
     }
 
 
-    /// Multiple options are supported
-    template<typename T, typename... Args>
-    Option* add_option(
-            std::string name,
-            T &variable,                ///< The variable to set
-            std::string description,
-            detail::Combiner opts,
-            detail::Combiner opts2,
-            Args... args                 ///< More options
-            ) {
-        return add_option(name, variable, description, opts|opts2, args...);
-    }
     /// Add option for flag
     Option* add_flag(
             std::string name,
@@ -206,9 +187,10 @@ public:
             return true;
         };
         
-        Option* opt = add_option(name, fun, description, Nothing);
-        if(opt->positional())
+        Option* opt = add_option(name, fun, description, false);
+        if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
+        opt->_expected = 0;
         return opt;
     }
 
@@ -227,9 +209,10 @@ public:
             return true;
         };
         
-        Option* opt = add_option(name, fun, description, Nothing);
-        if(opt->positional())
+        Option* opt = add_option(name, fun, description, false);
+        if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
+        opt->_expected = 0;
         return opt;
     }
 
@@ -248,9 +231,10 @@ public:
             return res.size() == 1;
         };
         
-        Option* opt = add_option(name, fun, description, Nothing);
-        if(opt->positional())
+        Option* opt = add_option(name, fun, description, false);
+        if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
+        opt->_expected = 0;
         return opt;
     }
 
@@ -262,11 +246,8 @@ public:
             T &member,                     ///< The selected member of the set
             std::set<T> options,           ///< The set of posibilities
             std::string description="",
-            detail::Combiner opts=Validators
+            bool defaulted=true
             ) {
-
-        if(opts.num!=1)
-            throw IncorrectConstruction("Must have Args(1).");
 
         CLI::callback_t fun = [&member, options](CLI::results_t res){
             if(res.size()!=1) {
@@ -281,222 +262,15 @@ public:
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option* retval = add_option(name, fun, description, opts);
+        Option* retval = add_option(name, fun, description, defaulted);
         retval->typeval = detail::type_name<T>();
         retval->typeval += " in {" + detail::join(options) + "}";
-        if(opts.defaulted) {
-            std::stringstream out;
-            out << member;
-            retval->defaultval = out.str();
-        }
+        std::stringstream out;
+        out << member;
+        retval->defaultval = out.str();
         return retval;
     }
 
-
-    template<typename T, typename... Args>
-    Option* add_set(
-            std::string name,
-            T &member,
-            std::set<T> options,           ///< The set of posibilities
-            std::string description,
-            detail::Combiner opts,
-            detail::Combiner opts2,
-            Args... args
-            ) {
-        return add_set(name, member, options, description, opts|opts2, args...);
-    }
-
-
-    //------------ MAKE STYLE ---------//
-
-    /// Prototype for new output style
-    template<typename T = std::string,
-        enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
-    Value<T> make_option(
-            std::string name,
-            std::string description="",
-            detail::Combiner opts=Validators
-            ) {
-
-        if(opts.num!=1)
-            throw IncorrectConstruction("Must have Args(1).");
-
-        Value<T> out(name);
-        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
-
-        CLI::callback_t fun = [ptr](CLI::results_t res){
-            if(res.size()!=1) {
-                return false;
-            }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            ptr->reset(new T()); // resets the internal ptr
-            return detail::lexical_cast(res[0][0], **ptr);
-        };
-        Option* retval = add_option(name, fun, description, opts);
-        retval->typeval = detail::type_name<T>();
-        return out;
-    }
-    
-    template<typename T = std::string, typename... Args>
-    Value<T> make_option(
-            std::string name,
-            std::string description,
-            detail::Combiner opts,
-            detail::Combiner opts2,
-            Args... args
-            ) {
-        return make_option(name, description, opts|opts2, args...);
-    }
-
-    /// Prototype for new output style with default
-    template<typename T,
-        enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
-    Value<T> make_option(
-            std::string name,
-            const T& default_value,
-            std::string description="",
-            detail::Combiner opts=Validators
-            ) {
-
-        if(opts.num!=1)
-            throw IncorrectConstruction("Must have Args(1).");
-
-        Value<T> out(name);
-        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
-        ptr->reset(new T(default_value)); // resets the internal ptr
-
-        CLI::callback_t fun = [ptr](CLI::results_t res){
-            if(res.size()!=1) {
-                return false;
-            }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            ptr->reset(new T()); // resets the internal ptr
-            return detail::lexical_cast(res[0][0], **ptr);
-        };
-        Option* retval = add_option(name, fun, description, opts);
-        retval->typeval = detail::type_name<T>();
-        std::stringstream ot;
-        ot << default_value;
-        retval->defaultval = ot.str();
-        return out;
-    }
-
-    /// Prototype for new output style, vector
-    template<typename T,
-        enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
-    Value<T> make_option(
-            std::string name,
-            std::string description="",
-            detail::Combiner opts=Args
-            ) {
-
-        if(opts.num==0)
-            throw IncorrectConstruction("Must have Args or be a vector.");
-
-        Value<T> out(name);
-        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
-
-        CLI::callback_t fun = [ptr](CLI::results_t res){
-            ptr->reset(new T()); // resets the internal ptr
-            bool retval = true;
-            for(const auto &a : res)
-                for(const auto &b : a) {
-                    (*ptr)->emplace_back();
-                    retval &= detail::lexical_cast(b, (*ptr)->back());
-                }
-            return (*ptr)->size() > 0 && retval;
-        };
-        Option* retval =  add_option(name, fun, description, opts);
-        retval->typeval = detail::type_name<T>();
-        return out;
-    }
-
-    
-    template<typename T, typename... Args>
-    Value<T> make_option(
-            std::string name,
-            const T& default_value,
-            std::string description,
-            detail::Combiner opts,
-            detail::Combiner opts2,
-            Args... args
-            ) {
-        return make_option(name, default_value, description, opts|opts2, args...);
-    }
-
-    /// Prototype for new output style: flag
-    Value<int> make_flag(
-            std::string name,
-            std::string description=""
-            ) {
-
-        Value<int> out(name);
-        std::shared_ptr<std::unique_ptr<int>> ptr = out.value;
-        ptr->reset(new int()); // resets the internal ptr
-        **ptr = 0;
-
-        CLI::callback_t fun = [ptr](CLI::results_t res){
-            **ptr = (int) res.size();
-            return true;
-        };
-
-        Option* opt = add_option(name, fun, description, Nothing);
-        if(opt->positional())
-            throw IncorrectConstruction("Flags cannot be positional");
-        return out;
-    }
-
-    /// Add set of options
-    template<typename T>
-    Value<T> make_set(
-            std::string name,
-            std::set<T> options,           ///< The set of posibilities
-            std::string description="",
-            detail::Combiner opts=Validators
-            ) {
-
-        Value<T> out(name);
-        std::shared_ptr<std::unique_ptr<T>> ptr = out.value;
-
-        if(opts.num!=1)
-            throw IncorrectConstruction("Must have Args(1).");
-
-        CLI::callback_t fun = [ptr, options](CLI::results_t res){
-            if(res.size()!=1) {
-                return false;
-            }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            ptr->reset(new T());
-            bool retval = detail::lexical_cast(res[0][0], **ptr);
-            if(!retval)
-                return false;
-            return std::find(std::begin(options), std::end(options), **ptr) != std::end(options);
-        };
-
-        Option* retval = add_option(name, fun, description, opts);
-        retval->typeval = detail::type_name<T>();
-        retval->typeval += " in {" + detail::join(options) + "}";
-        return out;
-    }
-
-    
-    template<typename T, typename... Args>
-    Value<T> make_set(
-            std::string name,
-            std::set<T> options,
-            std::string description,
-            detail::Combiner opts,
-            detail::Combiner opts2,
-            Args... args
-            ) {
-        return make_set(name, options, description, opts|opts2, args...);
-    }
 
     /// This allows subclasses to inject code before callbacks but after parse
     virtual void pre_callback() {}
@@ -510,6 +284,7 @@ public:
         parse(args);
     }
 
+    /// The real work is done here. Expects a reversed vector
     void parse(std::vector<std::string> & args) {
         parsed = true;
 
@@ -546,16 +321,16 @@ public:
 
 
         for(Option& opt : options) {
-            while (opt.positional() && opt.count() < opt.expected() && positionals.size() > 0) {
+            while (opt.get_positional() && opt.count() < opt.get_expected() && positionals.size() > 0) {
                 opt.get_new();
                 opt.add_result(0, positionals.front());
                 positionals.pop_front();
             }
-            if (opt.required() && opt.count() < opt.expected())
+            if (opt.get_required() && opt.count() < opt.get_expected())
                 throw RequiredError(opt.get_name());
             if (opt.count() > 0) {
                 if(!opt.run_callback())
-                    throw ParseError(opt.get_name());
+                    throw ConversionError(opt.get_name());
             }
 
         }
@@ -595,7 +370,7 @@ public:
         }
 
         int vnum = op->get_new();
-        int num = op->expected();
+        int num = op->get_expected();
        
         if(num == 0)
             op->add_result(vnum, "");
@@ -660,7 +435,7 @@ public:
 
 
         int vnum = op->get_new();
-        int num = op->expected();
+        int num = op->get_expected();
         
 
         if(value != "") {
@@ -742,7 +517,7 @@ public:
         // Positionals
         bool pos=false;
         for(const Option &opt : options)
-            if(opt.positional()) {
+            if(opt.get_positional()) {
                 out << " " << opt.help_positional();
                 if(opt.has_description())
                     pos=true;
@@ -754,7 +529,7 @@ public:
         if(pos) {
             out << "Positionals:" << std::endl;
             for(const Option &opt : options)
-                if(opt.positional() && opt.has_description())
+                if(opt.get_positional() && opt.has_description())
                     detail::format_help(out, opt.get_pname(), opt.get_description(), wid);
             out << std::endl;
 

@@ -11,24 +11,24 @@
 
 TEST(Validators, FileExists) {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile));
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_TRUE(CLI::detail::_ExistingFile(myfile));
+    EXPECT_TRUE(CLI::ExistingFile(myfile));
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::detail::_ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile));
 }
 
 TEST(Validators, FileNotExists) {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::detail::_NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile));
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_FALSE(CLI::detail::_NonexistentPath(myfile));
+    EXPECT_FALSE(CLI::NonexistentPath(myfile));
 
     std::remove(myfile.c_str());
-    EXPECT_TRUE(CLI::detail::_NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile));
 }
 
 TEST(Split, StringList) {
