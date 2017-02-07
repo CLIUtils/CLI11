@@ -380,7 +380,7 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_THROW(run(), CLI::RequiredError);
 
     app.reset();
-    EXPECT_THROW(run(), CLI::ConstructionError);
+    EXPECT_THROW(run(), CLI::ParseError);
 }
 
 
