@@ -168,6 +168,9 @@ public:
             return variable.size() > 0 && retval;
         };
 
+        if(variable.size() == 0)
+            defaulted = false;
+
         Option* retval =  add_option(name, fun, description, defaulted);
         retval->allow_vector = true;
         retval->_expected = -1;
