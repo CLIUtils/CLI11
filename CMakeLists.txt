@@ -15,7 +15,7 @@ endif()
 
 # Be moderately paranoid with flags
 # But only globally, don't inherit
-add_compile_options(-pedantic -Wall -Wextra)
+add_compile_options(-pedantic -Wall -Wextra -O0)
 
 add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")

@@ -26,6 +26,11 @@ namespace CLI {
 
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 
+class App;
+
+typedef std::unique_ptr<Option> Option_p;
+typedef std::unique_ptr<App> App_p;
+
 /// Creates a command line program, with very few defaults.
 /** To use, create a new Program() instance with argc, argv, and a help description. The templated
 *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
@@ -35,14 +40,14 @@ protected:
     
     std::string name;
     std::string prog_description;
-    std::vector<Option> options;
-    Option* help_flag {nullptr};
+    std::vector<Option_p> options;
     std::vector<std::string> missing_options;
     std::deque<std::string> positionals;
-    std::vector<std::unique_ptr<App>> subcommands;
+    std::vector<App_p> subcommands;
     bool parsed{false};
     App* subcommand{nullptr};
     std::string progname{"program"};
+    Option* help_flag {nullptr};
 
     std::function<void()> app_callback;
 
@@ -67,10 +72,10 @@ public:
         parsed = false;
         subcommand = nullptr;
 
-        for(Option& opt : options) {
-            opt.clear();
+        for(const Option_p &opt : options) {
+            opt->clear();
         }
-        for(std::unique_ptr<App> &app : subcommands) {
+        for(const App_p &app : subcommands) {
             app->reset();
         }
     }
@@ -100,8 +105,8 @@ public:
      * After start is called, you can use count to see if the value was passed, and
      * the value will be initialized properly. 
      *
-     * Program::Required, Program::Default, and the validators are options, and can be `|`
-     * together. The positional options take an optional number of arguments.
+     * ->required(), ->default, and the validators are options, 
+     * The positional options take an optional number of arguments.
      *
      * For example,
      *
@@ -112,14 +117,17 @@ public:
             std::string name,
             callback_t callback,
             std::string description="", 
-            bool defaulted=true
+            bool defaulted=false
             ) {
         Option myopt{name, description, callback, defaulted};
-        if(std::find(std::begin(options), std::end(options), myopt) == std::end(options))
-            options.push_back(myopt);
-        else
+        if(std::find_if(std::begin(options), std::end(options),
+                    [&myopt](const Option_p &v){return *v == myopt;}) == std::end(options)) {
+            options.emplace_back();
+            Option_p& option = options.back();
+            option.reset(new Option(name, description, callback, defaulted));
+            return option.get();
+        } else
             throw OptionAlreadyAdded(myopt.get_name());
-        return &options.back();
 
     }
 
@@ -129,7 +137,7 @@ public:
             std::string name,
             T &variable,                ///< The variable to set
             std::string description="",
-            bool defaulted=true
+            bool defaulted=false
             ) {
 
         
@@ -159,7 +167,7 @@ public:
             std::string name,
             std::vector<T> &variable,   ///< The variable vector to set
             std::string description="",
-            bool defaulted=true
+            bool defaulted=false
             ) {
 
         CLI::callback_t fun = [&variable](CLI::results_t res){
@@ -172,9 +180,6 @@ public:
                 }
             return variable.size() > 0 && retval;
         };
-
-        if(variable.size() == 0)
-            defaulted = false;
 
         Option* retval =  add_option(name, fun, description, defaulted);
         retval->allow_vector = true;
@@ -252,12 +257,12 @@ public:
     Option* add_set(
             std::string name,
             T &member,                     ///< The selected member of the set
-            std::set<T> options,           ///< The set of posibilities
+            std::set<T> _options,           ///< The set of posibilities
             std::string description="",
-            bool defaulted=true
+            bool defaulted=false
             ) {
 
-        CLI::callback_t fun = [&member, options](CLI::results_t res){
+        CLI::callback_t fun = [&member, _options](CLI::results_t res){
             if(res.size()!=1) {
                 return false;
             }
@@ -267,15 +272,17 @@ public:
             bool retval = detail::lexical_cast(res[0][0], member);
             if(!retval)
                 return false;
-            return std::find(std::begin(options), std::end(options), member) != std::end(options);
+            return std::find(std::begin(_options), std::end(_options), member) != std::end(_options);
         };
 
         Option* retval = add_option(name, fun, description, defaulted);
         retval->typeval = detail::type_name<T>();
-        retval->typeval += " in {" + detail::join(options) + "}";
-        std::stringstream out;
-        out << member;
-        retval->defaultval = out.str();
+        retval->typeval += " in {" + detail::join(_options) + "}";
+        if(defaulted) {
+            std::stringstream out;
+            out << member;
+            retval->defaultval = out.str();
+        }
         return retval;
     }
 
@@ -328,17 +335,17 @@ public:
 
 
 
-        for(Option& opt : options) {
-            while (opt.get_positional() && opt.count() < opt.get_expected() && positionals.size() > 0) {
-                opt.get_new();
-                opt.add_result(0, positionals.front());
+        for(const Option_p& opt : options) {
+            while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
+                opt->get_new();
+                opt->add_result(0, positionals.front());
                 positionals.pop_front();
             }
-            if (opt.get_required() && opt.count() < opt.get_expected())
-                throw RequiredError(opt.get_name());
-            if (opt.count() > 0) {
-                if(!opt.run_callback())
-                    throw ConversionError(opt.get_name());
+            if (opt->get_required() && opt->count() < opt->get_expected())
+                throw RequiredError(opt->get_name());
+            if (opt->count() > 0) {
+                if(!opt->run_callback())
+                    throw ConversionError(opt->get_name());
             }
 
         }
@@ -350,7 +357,7 @@ public:
     }
 
     void _parse_subcommand(std::vector<std::string> &args) {
-        for(std::unique_ptr<App> &com : subcommands) {
+        for(const App_p &com : subcommands) {
             if(com->name == args.back()){ 
                 args.pop_back();
                 subcommand = com.get();
@@ -370,12 +377,15 @@ public:
             throw HorribleError("Short");
         args.pop_back();
 
-        auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_sname(name);});
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &opt){return opt->check_sname(name);});
 
-        if(op == std::end(options)) {
+        if(op_ptr == std::end(options)) {
             missing_options.push_back("-" + name);
             return;
         }
+
+        // Get a reference to the pointer to make syntax bearable
+        Option_p& op = *op_ptr;
 
         int vnum = op->get_new();
         int num = op->get_expected();
@@ -414,7 +424,7 @@ public:
 
         if(current == "--")
             return Classifer::POSITIONAL_MARK;
-        for(const std::unique_ptr<App> &com : subcommands) {
+        for(const App_p &com : subcommands) {
             if(com->name == current)
                 return Classifer::SUBCOMMAND;
         }
@@ -434,13 +444,15 @@ public:
             throw HorribleError("Long");
         args.pop_back();
 
-        auto op = std::find_if(std::begin(options), std::end(options), [name](const Option &v){return v.check_lname(name);});
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &v){return v->check_lname(name);});
 
-        if(op == std::end(options)) {
+        if(op_ptr == std::end(options)) {
             missing_options.push_back("--" + name);
             return;
         }
 
+        // Get a reference to the pointer to make syntax bearable
+        Option_p& op = *op_ptr;
 
         int vnum = op->get_new();
         int num = op->get_expected();
@@ -488,9 +500,9 @@ public:
 
     /// Counts the number of times the given option was passed.
     int count(std::string name) const {
-        for(const Option &opt : options) {
-            if(opt.check_name(name)) {
-                return opt.count();
+        for(const Option_p &opt : options) {
+            if(opt->check_name(name)) {
+                return opt->count();
             }
         }
         throw OptionNotFound(name);
@@ -512,8 +524,8 @@ public:
         
         // Check for options
         bool npos = false;
-        for(const Option &opt : options) {
-            if(opt.nonpositional()) {
+        for(const Option_p &opt : options) {
+            if(opt->nonpositional()) {
                 npos = true;
                 break;
             }
@@ -524,10 +536,10 @@ public:
 
         // Positionals
         bool pos=false;
-        for(const Option &opt : options)
-            if(opt.get_positional()) {
-                out << " " << opt.help_positional();
-                if(opt.has_description())
+        for(const Option_p &opt : options)
+            if(opt->get_positional()) {
+                out << " " << opt->help_positional();
+                if(opt->has_description())
                     pos=true;
             }
 
@@ -536,9 +548,9 @@ public:
         // Positional descriptions
         if(pos) {
             out << "Positionals:" << std::endl;
-            for(const Option &opt : options)
-                if(opt.get_positional() && opt.has_description())
-                    detail::format_help(out, opt.get_pname(), opt.get_description(), wid);
+            for(const Option_p &opt : options)
+                if(opt->get_positional() && opt->has_description())
+                    detail::format_help(out, opt->get_pname(), opt->get_description(), wid);
             out << std::endl;
 
         }
@@ -547,9 +559,9 @@ public:
         // Options
         if(npos) {
             out << "Options:" << std::endl;
-            for(const Option &opt : options) {
-                if(opt.nonpositional())
-                    detail::format_help(out, opt.help_name(), opt.get_description(), wid);
+            for(const Option_p &opt : options) {
+                if(opt->nonpositional())
+                    detail::format_help(out, opt->help_name(), opt->get_description(), wid);
                 
             }
             out << std::endl;
@@ -558,7 +570,7 @@ public:
         // Subcommands
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
-            for(const std::unique_ptr<App> &com : subcommands)
+            for(const App_p &com : subcommands)
                 detail::format_help(out, com->get_name(), com->prog_description, wid);
         }
         return out.str();

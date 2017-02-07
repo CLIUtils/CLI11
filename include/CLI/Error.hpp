@@ -18,16 +18,6 @@ struct Error : public std::runtime_error {
     Error(std::string parent, std::string name, int exit_code=255, bool print_help=true) : runtime_error(parent + ": " + name), exit_code(exit_code), print_help(print_help) {}
 };
 
-/// This is a successful completion on parsing, supposed to exit
-struct Success : public Error {
-    Success() : Error("Success", "Successfully completed, should be caught and quit", 0, false) {}
-};
-
-/// -h or --help on command line
-struct CallForHelp : public Error {
-    CallForHelp() : Error("CallForHelp", "This should be caught in your main function, see examples", 0) {}
-};
-
 // Construction errors (not in parsing)
 
 struct ConstructionError : public Error {
@@ -51,9 +41,23 @@ struct OptionAlreadyAdded : public ConstructionError {
 
 // Parsing errors
 
+/// Anything that can error in Parse
 struct ParseError : public Error {
     using Error::Error;
 };
+
+// Not really "errors"
+
+/// This is a successful completion on parsing, supposed to exit
+struct Success : public ParseError {
+    Success() : ParseError("Success", "Successfully completed, should be caught and quit", 0, false) {}
+};
+
+/// -h or --help on command line
+struct CallForHelp : public ParseError {
+    CallForHelp() : ParseError("CallForHelp", "This should be caught in your main function, see examples", 0) {}
+};
+
 
 /// Thrown when conversion call back fails, such as when an int fails to coerse to a string
 struct ConversionError : public ParseError {
@@ -74,6 +78,8 @@ struct PositionalError : public ParseError {
 struct HorribleError : public ParseError {
     HorribleError(std::string name) : ParseError("HorribleError", "(You should never see this error) " + name, 7) {}
 };
+
+// After parsing
 
 /// Thrown when counting a non-existent option
 struct OptionNotFound : public Error {

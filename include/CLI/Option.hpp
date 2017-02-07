@@ -43,7 +43,7 @@ protected:
     std::vector<std::function<bool(std::string)>> _validators;
 
     // Results
-    results_t results {};
+    results_t results;
 
 
 public:
@@ -206,8 +206,8 @@ public:
     /// Count the total number of times an option was passed
     int count() const {
         int out = 0;
-        for(const std::vector<std::string>& v : results)
-            out += v.size();
+        for(const std::vector<std::string>& vec : results)
+            out += vec.size();
         return out;
     }
 
