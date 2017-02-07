@@ -21,12 +21,13 @@ struct Error : public std::runtime_error {
 // Construction errors (not in parsing)
 
 struct ConstructionError : public Error {
-    using Error::Error;
+    // Using Error::Error constructors seem to not work on GCC 4.7
+    ConstructionError(std::string parent, std::string name, int exit_code=255, bool print_help=true) : Error(parent, name, exit_code, print_help) {}
 };
 
 /// Thrown when an option is set to conflicting values (non-vector and multi args, for example)
 struct IncorrectConstruction : public ConstructionError {
-    IncorrectConstruction(std::string name) : ConstructionError("ConstructionError", name, 8) {}
+    IncorrectConstruction(std::string name) : ConstructionError("IncorrectConstruction", name, 8) {}
 };
 
 /// Thrown on construction of a bad name
@@ -43,7 +44,7 @@ struct OptionAlreadyAdded : public ConstructionError {
 
 /// Anything that can error in Parse
 struct ParseError : public Error {
-    using Error::Error;
+    ParseError(std::string parent, std::string name, int exit_code=255, bool print_help=true) : Error(parent, name, exit_code, print_help) {}
 };
 
 // Not really "errors"
