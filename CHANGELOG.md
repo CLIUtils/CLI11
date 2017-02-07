@@ -1,3 +1,10 @@
+## Version 0.3 (in progress)
+
+* Supports GCC 4.7 again
+* TODO: Support type and set syntax in positionals
+* Changes `setup` for an explicit help bool in constructor/`add_subcommand`
+
+
 ## Version 0.2
 
 * Moved to simpler syntax, where `Option` pointers are returned and operated on

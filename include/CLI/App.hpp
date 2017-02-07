@@ -81,20 +81,17 @@ public:
     }
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string prog_description="")
+    App(std::string prog_description="", bool help=true)
         : prog_description(prog_description) {
 
-        setup();
+        if(help)
+            help_flag = add_flag("-h,--help", "Print this help message and exit");
 
     }
 
-    /// Setup help flag. Virtual to allow customization.
-    virtual void setup() {
-        help_flag = add_flag("-h,--help", "Print this help message and exit");
-    }
-
-    App* add_subcommand(std::string name, std::string description="") {
-        subcommands.emplace_back(new App(description));
+    /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
+    App* add_subcommand(std::string name, std::string description="", bool help=true) {
+        subcommands.emplace_back(new App(description, help));
         subcommands.back()->name = name;
         return subcommands.back().get();
     }

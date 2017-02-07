@@ -128,9 +128,9 @@ even exit the program through the callback. The main `App` has a callback slot, 
 
 
 
-> ## Subclassing
+> ### Subclassing
 > 
-> The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain `App`'s, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help` through the `virtual void setup()` method. If you only want to change this flag, override this method. Since subcommands are always the built in `App` object, they must have a normal help flag.
+> The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain `App`'s, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`). 
 >
 > Also, in a related note, the `App`s you get a pointer to are stored in the parent `App` in `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
 
