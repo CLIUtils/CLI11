@@ -36,12 +36,13 @@ protected:
     std::string name;
     std::string prog_description;
     std::vector<Option> options;
+    Option* help_flag {nullptr};
     std::vector<std::string> missing_options;
     std::deque<std::string> positionals;
     std::vector<std::unique_ptr<App>> subcommands;
     bool parsed{false};
-    App* subcommand = nullptr;
-    std::string progname = "program";
+    App* subcommand{nullptr};
+    std::string progname{"program"};
 
     std::function<void()> app_callback;
 
@@ -51,9 +52,8 @@ public:
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
-    App* set_callback(std::function<void()> callback) {
+    void set_callback(std::function<void()> callback) {
         app_callback = callback;
-        return this;
     }
 
     void run_callback() {
@@ -79,8 +79,13 @@ public:
     App(std::string prog_description="")
         : prog_description(prog_description) {
 
-            add_flag("-h,--help", "Print this help message and exit");
+        setup();
 
+    }
+
+    /// Setup help flag. Virtual to allow customization.
+    virtual void setup() {
+        help_flag = add_flag("-h,--help", "Print this help message and exit");
     }
 
     App* add_subcommand(std::string name, std::string description="") {
@@ -317,7 +322,7 @@ public:
             }
         }
 
-        if (count("--help") > 0) {
+        if (help_flag != nullptr && help_flag->count() > 0) {
             throw CallForHelp();
         }
 
