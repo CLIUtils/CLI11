@@ -16,19 +16,21 @@ The following attributes are what I believe are important in a CLI parser librar
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
 * Easy to extend as part of a framework that provides "applications".
 * Human readable support for subcommands.
+* Produce real values that can be used directly in code, not something you have pay compute time to look up.
 
 The major CLI parsers out there include:
 
-* [Boost Program Options](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html): A great library if you already depend on Boost, it's pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented. A simple wrapper for the Boost library (Program.hpp) is provided in this package if you already link to Boost.
+* [Boost Program Options](http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html): A great library if you already depend on Boost, its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented. A simple wrapper for the Boost library (Program.hpp) was originally developed, but has been discarded in favor of CLI11.
 * [The Lean Mean C++ Option Parser](http://optionparser.sourceforge.net): One header file is great, but the syntax is atrocious, IMO.
 * [TCLAP](http://tclap.sourceforge.net): Not quite standard command line parsing, seems to not be well supported anymore. Header only, but in quite a few files. Not even moved to GitHub yet.
-* [Cxxopts](https://github.com/jarro2783/cxxopts): C++ 11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO.
+* [Cxxopts](https://github.com/jarro2783/cxxopts): C++ 11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar.
 
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
 ## Installing
 
-To use, there are two methods.
+To use, there are two methods:
+
 1. Copy `CLI11.hpp` from the [most recent release](https://github.com/henryiii/CLI11/releases) into your include directory, and you are set. This is combined from the source files  for every release.
 2. Checkout the repository and add as a subdirectory for CMake. You can use the CLI interface target. (CMake 3.4+ recommended)
 
