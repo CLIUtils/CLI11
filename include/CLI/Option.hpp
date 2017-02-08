@@ -162,6 +162,8 @@ public:
     /// Gets a , sep list of names. Does not include the positional name.
     std::string get_name() const {
         std::vector<std::string> name_list;
+        if(pname.length() > 0)
+            name_list.push_back(pname);
         for(const std::string& sname : snames)
             name_list.push_back("-"+sname);
         for(const std::string& lname : lnames)
