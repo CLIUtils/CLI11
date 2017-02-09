@@ -7,6 +7,24 @@
 #include <cstdio>
 #include <fstream>
 
+TEST(Trim, Various) {
+    std::string s1{"  sdlfkj sdflk sd s  "};
+    std::string a1{"sdlfkj sdflk sd s"};
+    CLI::detail::trim(s1);
+    EXPECT_EQ(a1, s1);
+    
+    std::string s2{" a \t"};
+    CLI::detail::trim(s2);
+    EXPECT_EQ("a", s2);
+
+    std::string s3{" a \n"};
+    CLI::detail::trim(s3);
+    EXPECT_EQ("a", s3);
+
+    std::string s4{" a b "};
+    EXPECT_EQ("a b", CLI::detail::trim(s4));
+
+}
 
 
 TEST(Validators, FileExists) {

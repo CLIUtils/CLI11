@@ -60,6 +60,11 @@ struct CallForHelp : public ParseError {
 };
 
 
+/// Thrown when parsing an INI file and it is missing
+struct FileError : public ParseError {
+    FileError (std::string name) : ParseError("FileError", name, 10) {}
+};
+
 /// Thrown when conversion call back fails, such as when an int fails to coerse to a string
 struct ConversionError : public ParseError {
     ConversionError(std::string name) : ParseError("ConversionError", name, 2) {}

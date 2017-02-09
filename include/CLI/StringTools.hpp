@@ -26,6 +26,33 @@ std::string join(const T& v, std::string delim = ",") {
     return s.str();
 }
 
+// Based on http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
+
+/// Trim whitespace from left of string
+std::string& ltrim(std::string &str) {
+    auto it2 =  std::find_if( str.begin() , str.end() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
+    str.erase( str.begin() , it2);
+    return str;   
+}
+
+/// Trim whitespace from right of string
+std::string& rtrim(std::string &str) {
+    auto it1 =  std::find_if( str.rbegin() , str.rend() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
+    str.erase( it1.base() , str.end() );
+    return str;   
+}
+
+/// Trim whitespace from string
+std::string& trim(std::string &str) {
+    return ltrim(rtrim(str));
+}
+
+/// Make a copy of the string and then trim it
+std::string trim_copy(const std::string &str) {
+    std::string s = str;
+    return ltrim(rtrim(s));
+}
+
 /// Print a two part "help" string
 void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;

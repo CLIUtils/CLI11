@@ -1,21 +1,20 @@
 include(AddGoogletest)
 
-add_executable(CLITest CLITest.cpp)
-target_link_libraries(CLITest PUBLIC CLI)
-add_gtest(CLITest)
+set(CLI_TESTS SmallTest IniTest CLITest)
 
-add_executable(SmallTest SmallTest.cpp)
-target_link_libraries(SmallTest PUBLIC CLI)
-add_gtest(SmallTest)
+foreach(T ${CLI_TESTS})
 
-if(CLI_SINGLE_FILE)
+    add_executable(${T} ${T}.cpp)
+    target_link_libraries(${T} PUBLIC CLI)
+    add_gtest(${T})
 
-    add_executable(CLISingleTest CLITest.cpp)
-    target_link_libraries(CLISingleTest PUBLIC CLI_SINGLE)
-    add_gtest(CLISingleTest)
+    if(CLI_SINGLE_FILE)
 
-    add_executable(SmallSingleTest SmallTest.cpp)
-    target_link_libraries(SmallSingleTest PUBLIC CLI_SINGLE)
-    add_gtest(SmallSingleTest)
+        add_executable(${T}_Single ${T}.cpp)
+        target_link_libraries(${T}_Single PUBLIC CLI_SINGLE)
+        add_gtest(${T}_Single)
 
-endif()
+    endif()
+
+endforeach()
+
