@@ -29,9 +29,9 @@ std::vector<std::string> parse_ini(std::istream &input) {
             std::transform(std::begin(section), std::end(section), std::begin(section), ::tolower);
         } else if (len > 0) {
             if(section == "default")
-                output.push_back(line);
+                output.push_back("--" + line);
             else
-                output.push_back(section + "." + line);
+                output.push_back("--" + section + "." + line);
         }
     }
     return output;

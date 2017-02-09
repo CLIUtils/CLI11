@@ -19,7 +19,7 @@ TEST(StringBased, First) {
 
     std::vector<std::string> output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"one=three", "two=four"};
+    std::vector<std::string> answer = {"--one=three", "--two=four"};
 
     EXPECT_EQ(answer, output);
     
@@ -37,7 +37,7 @@ TEST(StringBased, Sections) {
 
     std::vector<std::string> output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"one=three", "second.two=four"};
+    std::vector<std::string> answer = {"--one=three", "--second.two=four"};
 
     EXPECT_EQ(answer, output);
     
@@ -57,7 +57,7 @@ TEST(StringBased, SpacesSections) {
 
     std::vector<std::string> output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"one=three", "second.two=four"};
+    std::vector<std::string> answer = {"--one=three", "--second.two=four"};
 
     EXPECT_EQ(answer, output);
     
