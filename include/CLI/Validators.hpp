@@ -4,6 +4,7 @@
 // file LICENSE or https://github.com/henryiii/CLI11 for details.
 
 #include <string>
+#include <iostream>
 
 
 // C standard library
@@ -17,25 +18,47 @@ namespace CLI {
 
 /// Check for an existing file
 bool ExistingFile(std::string filename) {
-//    std::fstream f(name.c_str());
-//    return f.good();
-//    Fastest way according to http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
     struct stat buffer;   
-    return (stat(filename.c_str(), &buffer) == 0); 
+    bool exist = stat(filename.c_str(), &buffer) == 0; 
+    bool is_dir = buffer.st_mode & S_IFDIR;
+    if(!exist) {
+        std::cerr << "File does not exist: " << filename << std::endl;
+        return false;
+    } else if (is_dir) {
+        std::cerr << "File is actually a directory: " << filename << std::endl;
+        return false;
+    } else {
+        return true;
+    }
 }
 
 /// Check for an existing directory
 bool ExistingDirectory(std::string filename) {
     struct stat buffer;   
-    if(stat(filename.c_str(), &buffer) == 0 && (buffer.st_mode & S_IFDIR) )
+    bool exist = stat(filename.c_str(), &buffer) == 0; 
+    bool is_dir = buffer.st_mode & S_IFDIR;
+    if(!exist) {
+        std::cerr << "Directory does not exist: " << filename << std::endl;
+        return false;
+    } else if (is_dir) {
         return true;
-    return false;
+    } else {
+        std::cerr << "Directory is actually a file: " << filename << std::endl;
+        return true;
+    }
 }
+
 
 /// Check for a non-existing path
 bool NonexistentPath(std::string filename) {
-    struct stat buffer;
-    return stat(filename.c_str(), &buffer) != 0;
+    struct stat buffer;   
+    bool exist = stat(filename.c_str(), &buffer) == 0; 
+    if(!exist) {
+        return true;
+    } else {
+        std::cerr << "Path exists: " << filename << std::endl;
+        return false;
+    }
 }
 
 
