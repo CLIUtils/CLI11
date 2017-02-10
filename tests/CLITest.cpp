@@ -91,6 +91,16 @@ TEST_F(TApp, OneString) {
     EXPECT_EQ(str, "mystring");
 }
 
+TEST_F(TApp, OneStringEqualVersion) {
+    std::string str;
+    app.add_option("-s,--string", str);
+    args = {"--string=mystring"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ(1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
 
 TEST_F(TApp, TogetherInt) {
     int i;
@@ -383,8 +393,63 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_THROW(run(), CLI::ParseError);
 }
 
+struct TIni : public TApp {
+
+    std::ofstream f{"IniParseSimple.ini"};
+
+    void run() {
+        f.close();
+        TApp::run();
+    }
+
+    ~TIni() {
+        f.close();
+        std::remove("IniParseSimple.ini");
+    }
+
+};
 
 
+
+TEST_F(TIni, IniParseSimple) {
+
+    int x;
+    std::string y;
+    
+    app.add_option("--something", x);
+    app.add_option("--else", y);
+
+    app.add_config("--config","", "", true);
+
+    args = {"--config=IniParseSimple.ini"};
+
+
+    ASSERT_TRUE(f.good());
+
+    f << "[default]" << std::endl;
+    f << "" << std::endl;
+    f << "something=7" << std::endl;
+    f << "else=seven" << std::endl;
+
+    //EXPECT_NO_THROW
+        (run());
+
+    EXPECT_EQ(7, x);
+    EXPECT_EQ("seven", y);
+}
+
+
+TEST(Ini, IniDoubleAdd) {
+
+    CLI::App app;
+
+    app.add_config("--first");
+    app.add_config("--second");
+
+    EXPECT_NO_THROW(app.count("--second"));
+    EXPECT_THROW(app.count("--first"), CLI::OptionNotFound);
+
+}
 TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");

@@ -21,6 +21,7 @@
 #include "CLI/StringTools.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/Option.hpp"
+#include "CLI/Ini.hpp"
 
 namespace CLI {
 
@@ -44,12 +45,16 @@ protected:
     std::vector<std::string> missing_options;
     std::deque<std::string> positionals;
     std::vector<App_p> subcommands;
-    bool parsed{false};
-    App* subcommand{nullptr};
-    std::string progname{"program"};
+    bool parsed {false};
+    App* subcommand {nullptr};
+    std::string progname {"program"};
     Option* help_flag {nullptr};
 
     std::function<void()> app_callback;
+
+    std::string ini_file;
+    bool ini_required {false};
+    Option* ini_setting {nullptr};
 
 public:
 
@@ -284,6 +289,25 @@ public:
     }
 
 
+    /// Add a configuration ini file option
+    void add_config(std::string name="--config",
+                 std::string default_filename="",
+                 std::string help="Read an ini file",
+                 bool required=false) {
+
+        // Remove existing config if present
+        if(ini_setting != nullptr) {
+            auto iterator = std::find_if(std::begin(options), std::end(options),
+                    [this](const Option_p &v){return v.get() == ini_setting;});
+            if (iterator != std::end(options)) {
+                options.erase(iterator);
+            }
+        }
+        ini_file = default_filename;
+        ini_required = required;
+        ini_setting = add_option(name, ini_file, help, default_filename!="");
+    }
+
     /// This allows subclasses to inject code before callbacks but after parse
     virtual void pre_callback() {}
 
@@ -297,7 +321,7 @@ public:
     }
 
     /// The real work is done here. Expects a reversed vector
-    void parse(std::vector<std::string> & args) {
+    void parse(std::vector<std::string> & args, bool first_parse=true) {
         parsed = true;
 
         bool positional_only = false;
@@ -331,21 +355,36 @@ public:
         }
 
 
-
         for(const Option_p& opt : options) {
             while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
                 opt->get_new();
                 opt->add_result(0, positionals.front());
                 positionals.pop_front();
             }
-            if (opt->get_required() && opt->count() < opt->get_expected())
-                throw RequiredError(opt->get_name());
             if (opt->count() > 0) {
                 if(!opt->run_callback())
-                    throw ConversionError(opt->get_name());
+                    throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
             }
-
         }
+
+        if (first_parse && ini_setting != nullptr && ini_file != "") {
+            try {
+                std::vector<std::string> values = detail::parse_ini(ini_file);
+                std::reverse(std::begin(values), std::end(values));
+                
+                values.insert(std::begin(values), std::begin(positionals), std::end(positionals));
+                return parse(values, false);
+            } catch (const FileError &e) {
+                if(ini_required)
+                    throw;
+            }
+        }
+
+        for(const Option_p& opt : options) {
+            if (opt->get_required() && opt->count() < opt->get_expected())
+                throw RequiredError(opt->get_name());
+        }
+
         if(positionals.size()>0)
             throw PositionalError("[" + detail::join(positionals) + "]");
 
@@ -401,7 +440,6 @@ public:
             while(args.size()>0 && _recognize(args.back()) == Classifer::NONE) {
                 op->add_result(vnum, args.back());
                 args.pop_back();
-
             }
         } else while(num>0 && args.size() > 0) {
             num--;
