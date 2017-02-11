@@ -1,6 +1,6 @@
 include(AddGoogletest)
 
-set(CLI_TESTS SmallTest IniTest CLITest)
+set(CLI_TESTS SmallTest IniTest CLITest HelpTest)
 
 foreach(T ${CLI_TESTS})
 

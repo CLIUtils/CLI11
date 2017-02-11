@@ -34,7 +34,7 @@ protected:
     // These are for help strings
     std::string defaultval;
     std::string typeval;
-
+    std::string _group {"Options"};
 
     bool _default {false};
     bool _required {false};
@@ -113,6 +113,15 @@ public:
 
         _validators.push_back(validator);
         return this;
+    }
+
+    Option* group(std::string name) {
+        _group = name;
+        return this;
+    }
+
+    const std::string& get_group() const {
+        return _group;
     }
 
     /// Get the description

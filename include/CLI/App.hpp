@@ -559,15 +559,16 @@ public:
         
         // Check for options
         bool npos = false;
+        std::set<std::string> groups;
         for(const Option_p &opt : options) {
             if(opt->nonpositional()) {
                 npos = true;
-                break;
+                groups.insert(opt->get_group());
             }
         }
 
         if(npos)
-            out << " [OPTIONS...]";
+            out << " [OPTIONS]";
 
         // Positionals
         bool pos=false;
@@ -593,13 +594,15 @@ public:
 
         // Options
         if(npos) {
-            out << "Options:" << std::endl;
-            for(const Option_p &opt : options) {
-                if(opt->nonpositional())
-                    detail::format_help(out, opt->help_name(), opt->get_description(), wid);
-                
+            for (const std::string& group : groups) {
+                out << group << ":" << std::endl;
+                for(const Option_p &opt : options) {
+                    if(opt->nonpositional() && opt->get_group() == group)
+                        detail::format_help(out, opt->help_name(), opt->get_description(), wid);
+                    
+                }
+                out << std::endl;
             }
-            out << std::endl;
         }
 
         // Subcommands
