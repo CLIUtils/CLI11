@@ -9,7 +9,7 @@ The following attributes are what I believe are important in a CLI parser librar
 
 * Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
-* Work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.4+. Should work on Linux and MacOS.
+* Work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.4+. (3.5 stdlib is required to build googlemock test) Works on Linux and MacOS.
 * Well tested using Travis.
 * Good help printing (in progress).
 * Standard idioms supported naturally, like grouping flags, the positional seperator, etc.
