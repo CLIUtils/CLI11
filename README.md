@@ -81,11 +81,18 @@ app.add_set(option_name,
             help_string="",
             default=false)
 
+app.add_config(option_name,
+               default_file_name="",
+               help_string="Read an ini file",
+               required=false)
+
 App* subcom = app.add_subcommand(name, discription);
 
 ```
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form.
+
+Adding a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless required is `true`.
 
 > ### Example
 >
@@ -98,11 +105,12 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 
 * `->required()`: The program will quit if this option is not present
 * `->expected(N)`: Take `N` values instead of as many as possible, only for vector args
+* `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`.
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`.
 
 
 On the command line, options can be given as:

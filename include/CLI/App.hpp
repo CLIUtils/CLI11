@@ -84,6 +84,17 @@ public:
             app->reset();
         }
     }
+
+    /// Get a pointer to the help flag.
+    Option* get_help_ptr() {
+        return help_flag;
+    }
+
+    /// Get a pointer to the config option.
+    Option* get_config_ptr() {
+        return ini_setting;
+    }
+
     
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
     App(std::string prog_description="", bool help=true)
@@ -290,22 +301,29 @@ public:
 
 
     /// Add a configuration ini file option
-    void add_config(std::string name="--config",
+    Option* add_config(std::string name="--config",
                  std::string default_filename="",
                  std::string help="Read an ini file",
                  bool required=false) {
 
         // Remove existing config if present
-        if(ini_setting != nullptr) {
-            auto iterator = std::find_if(std::begin(options), std::end(options),
-                    [this](const Option_p &v){return v.get() == ini_setting;});
-            if (iterator != std::end(options)) {
-                options.erase(iterator);
-            }
-        }
+        if(ini_setting != nullptr)
+            remove_option(ini_setting);
         ini_file = default_filename;
         ini_required = required;
         ini_setting = add_option(name, ini_file, help, default_filename!="");
+        return ini_setting;
+    }
+
+    /// Removes an option from the App. Takes an option pointer. Returns true if found and removed.
+    bool remove_option(Option* opt) {
+        auto iterator = std::find_if(std::begin(options), std::end(options),
+                [opt](const Option_p &v){return v.get() == opt;});
+        if (iterator != std::end(options)) {
+            options.erase(iterator);
+            return true;
+        }
+        return false;
     }
 
     /// This allows subclasses to inject code before callbacks but after parse

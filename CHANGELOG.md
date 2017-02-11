@@ -1,7 +1,10 @@
 ## Version 0.3 (in progress)
 
+* More tests for Help strings, improvements in formatting
+* Support type and set syntax in positionals help strings
+* Added help groups, with `->group("name")` syntax
+* Added initial support for ini file reading with `add_config` option.
 * Supports GCC 4.7 again
-* Support type and set syntax in positionals
 * Changes `setup` for an explicit help bool in constructor/`add_subcommand`
 
 
