@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include "CLI/StringTools.hpp"
 

@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <locale>
 #include <type_traits>
+#include <algorithm>
 
 namespace CLI {
 namespace detail {
