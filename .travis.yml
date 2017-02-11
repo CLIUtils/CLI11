@@ -14,6 +14,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - clang-3.5
+    env: COMPILER=3.5
   - compiler: gcc
     addons:
       apt:
@@ -33,6 +34,7 @@ matrix:
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
+- if [ "$CXX" = "clang++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="clang++-$COMPILER" CC="clang-$COMPILER"; fi
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
 - cd "${DEPS_DIR}"
