@@ -1,4 +1,5 @@
 #include "app_helper.hpp"
+#include <stdlib.h>
 
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
@@ -487,6 +488,24 @@ TEST_F(TApp, RequiresChainedFlags) {
     EXPECT_NO_THROW(run());
 }
 
+TEST_F(TApp, Env) {
 
+    setenv("CLI11_TEST_ENV_TMP", "2", true);
 
-// TODO: add tests for envname
+    int val=1;
+    CLI::Option* vopt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_TMP");
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(1, vopt->count());
+
+    app.reset();
+    vopt->required();
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    unsetenv("CLI11_TEST_ENV_TMP");
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+

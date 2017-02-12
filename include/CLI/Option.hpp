@@ -275,7 +275,21 @@ public:
     /// The first half of the help print, name plus default, etc
     std::string help_name() const {
         std::stringstream out;
-        out << get_name(true);
+        out << get_name(true) << _help_aftername();
+        return out.str();
+    }
+    
+    /// pname with type info
+    std::string help_pname() const {
+        std::stringstream out;
+        out << get_pname() << _help_aftername();
+        return out.str();
+    }
+
+    /// This is the part after the name is printed but before the description
+    std::string _help_aftername() const {
+        std::stringstream out;
+
         if(get_expected() != 0) {
             if(typeval != "")
                 out << " " << typeval;
@@ -286,22 +300,20 @@ public:
             if(get_expected() == -1)
                 out << " ...";
         }
+        if(_envname != "")
+            out << " (env:" << _envname << ")";
+        if(_requires.size() > 0) {
+            out << " Requires:";
+            for(const Option* opt : _requires)
+                out << " " << opt->get_name();
+        }
+        if(_excludes.size() > 0) {
+            out << " Excludes:";
+            for(const Option* opt : _excludes)
+                out << " " << opt->get_name();
+        }
         return out.str();
-    }
-    
-    /// pname with type info
-    std::string help_pname() const {
-        std::stringstream out;
-        out << get_pname();
-        if(typeval != "")
-            out << " " << typeval;
-        if(defaultval != "")
-            out << "=" << defaultval; 
-        if(get_expected() > 1)
-            out << " x " << get_expected();
-        if(get_expected() == -1)
-            out << " ...";
-        return out.str();
+
     }
 
     /// Produce a flattened vector of results, vs. a vector of vectors.

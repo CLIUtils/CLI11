@@ -70,5 +70,39 @@ TEST(THelp, RequiredPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("Options:"));
     EXPECT_THAT(help, HasSubstr("Positionals:"));
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] something"));
+}
+
+TEST(THelp, EnvName) {
+    CLI::App app{"My prog"};
+    std::string input;
+    app.add_option("--something", input)->envname("SOME_ENV");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("SOME_ENV"));
+
+}
+
+TEST(THelp, Requires) {
+    CLI::App app{"My prog"};
+
+    CLI::Option* op1 = app.add_flag("--op1");
+    app.add_flag("--op2")->requires(op1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("Requires: --op1"));
+
+}
+
+TEST(THelp, Excludes) {
+    CLI::App app{"My prog"};
+
+    CLI::Option* op1 = app.add_flag("--op1");
+    app.add_flag("--op2")->excludes(op1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("Excludes: --op1"));
 
 }
