@@ -74,6 +74,11 @@ public:
         return this;
     }
 
+    /// Support Plubmum term
+    Option* mandatory(bool value = true) {
+        return required(value);
+    }
+
     /// True if this is a required option
     bool get_required() const {
         return _required;

@@ -413,7 +413,8 @@ public:
         // Verify required options 
         for(const Option_p& opt : options) {
             // Required
-            if (opt->get_required() && opt->count() < opt->get_expected())
+            if (opt->get_required()
+                    && (opt->count() < opt->get_expected() || opt->count() == 0))
                 throw RequiredError(opt->get_name());
             // Requires
             for (const Option* opt_req : opt->_requires)

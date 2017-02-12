@@ -164,7 +164,7 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ("zyz", someopt);
 }
 
-TEST_F(TApp, Flags) {
+TEST_F(TApp, DefaultOpts) {
 
     int i = 3;
     std::string s = "HI";
@@ -180,6 +180,27 @@ TEST_F(TApp, Flags) {
     EXPECT_EQ(1, app.count("-s"));
     EXPECT_EQ(2, i);
     EXPECT_EQ("9", s);
+}
+
+TEST_F(TApp, RequiredFlags) {
+    app.add_flag("-a")->required();
+    app.add_flag("-b")->mandatory(); // Alternate term
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+
+    args = {"-a"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"-b"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"-a", "-b"};
+    EXPECT_NO_THROW(run());
+
 }
 
 TEST_F(TApp, Positionals) {

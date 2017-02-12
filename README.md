@@ -103,7 +103,7 @@ Adding a configuration option is special. If it is present, it will be read alon
 
 The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used direcly to check for the count (`->count()`) after parsing to avoid a string based lookup. Before parsing, you can set the following options:
 
-* `->required()`: The program will quit if this option is not present. This is `manditory` in Plumbum, but required options seems to be a more standard term.
+* `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
 * `->expected(N)`: Take `N` values instead of as many as possible, only for vector args
 * `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer
 * `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer
