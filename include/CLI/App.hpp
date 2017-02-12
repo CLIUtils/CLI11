@@ -620,6 +620,9 @@ public:
                     pos=true;
             }
 
+        if(subcommands.size() > 0)
+            out << " [SUBCOMMANDS]";
+
         out << std::endl << std::endl;
 
         // Positional descriptions
