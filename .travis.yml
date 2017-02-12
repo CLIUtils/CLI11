@@ -6,7 +6,6 @@ cache:
 matrix:
   include:
   - compiler: clang
-    env: DEPLOY_MAT=yes
     addons:
       apt:
         sources:
@@ -14,7 +13,9 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - clang-3.5
-    env: COMPILER=3.5
+    env:
+      - COMPILER=3.5
+      - DEPLOY_MAT=yes
   - compiler: gcc
     addons:
       apt:
