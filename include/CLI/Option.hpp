@@ -8,6 +8,7 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <set>
 
 #include "CLI/Error.hpp"
 #include "CLI/StringTools.hpp"
@@ -42,6 +43,10 @@ protected:
     bool allow_vector {false};
     std::vector<std::function<bool(std::string)>> _validators;
 
+    std::set<Option*> _requires;
+    std::set<Option*> _excludes;
+    std::string _envname;
+
     // Results
     results_t results;
 
@@ -69,6 +74,7 @@ public:
         return this;
     }
 
+    /// True if this is a required option
     bool get_required() const {
         return _required;
     }
@@ -115,11 +121,13 @@ public:
         return this;
     }
 
+    /// Changes the group membership
     Option* group(std::string name) {
         _group = name;
         return this;
     }
 
+    /// Get the group of this option
     const std::string& get_group() const {
         return _group;
     }
@@ -127,6 +135,42 @@ public:
     /// Get the description
     const std::string& get_description() const {
         return description;
+    }
+
+    /// Sets required options
+    Option* requires(Option* opt) {
+        auto tup = _requires.insert(opt);
+        if(!tup.second)
+            throw OptionAlreadyAdded(get_name() + " requires " + opt->get_name());
+        return this;
+    }
+
+    /// Any number supported
+    template<typename... ARG>
+    Option* requires(Option* opt, Option* opt1, ARG... args) {
+        requires(opt);
+        return requires(opt1, args...);
+    }
+
+    /// Sets excluded options
+    Option* excludes(Option* opt) {
+        auto tup = _excludes.insert(opt);
+        if(!tup.second)
+            throw OptionAlreadyAdded(get_name() + " excludes " + opt->get_name());
+        return this;
+    }
+
+    /// Any number supported
+    template<typename... ARG>
+    Option* excludes(Option* opt, Option* opt1, ARG... args) {
+        excludes(opt);
+        return excludes(opt1, args...);
+    }
+
+    /// Sets environment variable to read if no option given
+    Option* envname(std::string name) {
+        _envname = name;
+        return this;
     }
 
     /// The name and any extras needed for positionals
@@ -144,6 +188,8 @@ public:
     std::string get_pname() const {
         return pname;
     }
+
+
     /// Process the callback
     bool run_callback() const {
         if(_validators.size()>0) {

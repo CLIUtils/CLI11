@@ -75,6 +75,16 @@ struct RequiredError : public ParseError {
     RequiredError(std::string name) : ParseError("RequiredError", name, 5) {}
 };
 
+/// Thrown when a requires option is missing
+struct RequiresError : public ParseError {
+    RequiresError(std::string name, std::string subname) : ParseError("RequiresError", name + " requires " + subname, 13) {}
+};
+
+/// Thrown when a exludes option is present
+struct ExcludesError : public ParseError {
+    ExcludesError(std::string name, std::string subname) : ParseError("ExcludesError", name + " excludes " + subname, 14) {}
+};
+
 /// Thrown when too many positionals are found
 struct PositionalError : public ParseError {
     PositionalError(std::string name) : ParseError("PositionalError", name, 6) {}

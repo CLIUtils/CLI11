@@ -55,6 +55,7 @@ protected:
     std::string ini_file;
     bool ini_required {false};
     Option* ini_setting {nullptr};
+    
 
 public:
 
@@ -379,12 +380,23 @@ public:
                 opt->add_result(0, positionals.front());
                 positionals.pop_front();
             }
+
+            if (first_parse && opt->count() == 0 && opt->_envname != "") {
+                // Will not interact very well with ini files
+                char *ename = std::getenv(opt->_envname.c_str());
+                if(ename != nullptr) {
+                    opt->get_new();
+                    opt->add_result(0, std::string(ename));
+                }
+            }
+
             if (opt->count() > 0) {
                 if(!opt->run_callback())
                     throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
             }
         }
 
+        // Process an INI file
         if (first_parse && ini_setting != nullptr && ini_file != "") {
             try {
                 std::vector<std::string> values = detail::parse_ini(ini_file);
@@ -398,9 +410,19 @@ public:
             }
         }
 
+        // Verify required options 
         for(const Option_p& opt : options) {
+            // Required
             if (opt->get_required() && opt->count() < opt->get_expected())
                 throw RequiredError(opt->get_name());
+            // Requires
+            for (const Option* opt_req : opt->_requires)
+                if (opt_req->count() == 0)
+                    throw RequiresError(opt->get_name(), opt_req->get_name());
+            // Excludes
+            for (const Option* opt_ex : opt->_excludes)
+                if (opt_ex->count() != 0)
+                    throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
         if(positionals.size()>0)

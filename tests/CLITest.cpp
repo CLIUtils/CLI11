@@ -537,4 +537,4 @@ TEST_F(SubcommandProgram, SpareSub) {
 }
 
 
-// TODO: Check help output and formatting
+// TODO: add tests for requires, excludes, envname
