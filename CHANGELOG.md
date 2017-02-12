@@ -1,3 +1,5 @@
+## Version 0.4 (in progress)
+
 ## Version 0.3
 
 * Added `->requires`, `->excludes`, and `->envname` from [Plumbum](http://plumbum.readthedocs.io/en/latest/)
