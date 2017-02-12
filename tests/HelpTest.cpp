@@ -80,7 +80,6 @@ TEST(THelp, EnvName) {
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("SOME_ENV"));
-
 }
 
 TEST(THelp, Requires) {
@@ -92,7 +91,6 @@ TEST(THelp, Requires) {
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("Requires: --op1"));
-
 }
 
 TEST(THelp, Excludes) {
@@ -104,5 +102,5 @@ TEST(THelp, Excludes) {
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("Excludes: --op1"));
-
 }
+

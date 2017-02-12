@@ -1,13 +1,14 @@
-## Version 0.3 (in progress)
+## Version 0.3
 
-* Added `->requires`, `->excludes`, and `->envname` from plumbum
-* More tests for Help strings, improvements in formatting
+* Added `->requires`, `->excludes`, and `->envname` from [Plumbum](http://plumbum.readthedocs.io/en/latest/)
+* Supports `->mandatory` from Plubmum
+* More tests for help strings, improvements in formatting
 * Support type and set syntax in positionals help strings
 * Added help groups, with `->group("name")` syntax
 * Added initial support for ini file reading with `add_config` option.
 * Supports GCC 4.7 again
+* Clang 3.5 now required for tests due to googlemock usage, 3.4 should still work otherwise
 * Changes `setup` for an explicit help bool in constructor/`add_subcommand`
-
 
 ## Version 0.2
 
