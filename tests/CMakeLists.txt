@@ -1,6 +1,15 @@
 include(AddGoogletest)
 
-set(CLI_TESTS SmallTest IniTest CLITest HelpTest)
+set(CLI_TESTS
+    HelpersTest
+    IniTest
+    SimpleTest
+    AppTest
+    SubcommandTest
+    HelpTest)
+
+# Only affects current directory, so safe
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(T ${CLI_TESTS})
 

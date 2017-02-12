@@ -3,6 +3,7 @@
 #else
 #include "CLI/CLI.hpp"
 #endif
+
 #include "gtest/gtest.h"
 #include <cstdio>
 #include <fstream>
