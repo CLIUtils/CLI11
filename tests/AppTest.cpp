@@ -353,6 +353,119 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_THROW(run(), CLI::ParseError);
 }
 
+TEST_F(TApp, RequiresFlags) {
+    CLI::Option* opt = app.add_flag("-s,--string");
+    app.add_flag("--both")->requires(opt);
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"-s"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"-s", "--both"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--both"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+}
 
 
-// TODO: add tests for requires, excludes, envname
+TEST_F(TApp, ExcludesFlags) {
+    CLI::Option* opt = app.add_flag("-s,--string");
+    app.add_flag("--nostr")->excludes(opt);
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"-s"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--nostr"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--nostr", "-s"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    app.reset();
+    args = {"--string", "--nostr"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+}
+
+
+TEST_F(TApp, RequiresMultiFlags) {
+    CLI::Option* opt1 = app.add_flag("--opt1");
+    CLI::Option* opt2 = app.add_flag("--opt2");
+    CLI::Option* opt3 = app.add_flag("--opt3");
+    app.add_flag("--optall")->requires(opt1, opt2, opt3);
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--opt1"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--opt2"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--optall"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt2", "--opt1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt1", "--opt2", "--opt3"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(TApp, RequiresChainedFlags) {
+    CLI::Option* opt1 = app.add_flag("--opt1");
+    CLI::Option* opt2 = app.add_flag("--opt2")->requires(opt1);
+    app.add_flag("--opt3")->requires(opt2);
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--opt1"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--opt2"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--opt3"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--opt3", "--opt2"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--opt3", "--opt1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--opt2", "--opt1"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--opt1", "--opt2", "--opt3"};
+    EXPECT_NO_THROW(run());
+}
+
+
+
+// TODO: add tests for envname

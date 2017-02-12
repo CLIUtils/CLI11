@@ -1,5 +1,6 @@
 ## Version 0.3 (in progress)
 
+* Added `->requires`, `->excludes`, and `->envname` from plumbum
 * More tests for Help strings, improvements in formatting
 * Support type and set syntax in positionals help strings
 * Added help groups, with `->group("name")` syntax

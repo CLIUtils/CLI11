@@ -417,11 +417,11 @@ public:
                 throw RequiredError(opt->get_name());
             // Requires
             for (const Option* opt_req : opt->_requires)
-                if (opt_req->count() == 0)
+                if (opt->count() > 0 && opt_req->count() == 0)
                     throw RequiresError(opt->get_name(), opt_req->get_name());
             // Excludes
             for (const Option* opt_ex : opt->_excludes)
-                if (opt_ex->count() != 0)
+                if (opt->count() > 0 && opt_ex->count() != 0)
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
