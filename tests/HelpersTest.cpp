@@ -56,6 +56,7 @@ TEST(AppHelper, TempfileCreated) {
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
     EXPECT_TRUE(CLI::ExistingFile(name));
+    EXPECT_THROW({TempFile otherfile(name);}, std::runtime_error);
     }
     EXPECT_FALSE(CLI::ExistingFile(name));
 }
@@ -68,6 +69,23 @@ TEST(AppHelper, TempfileNotCreated) {
     EXPECT_FALSE(CLI::ExistingFile(myfile));
     }
     EXPECT_FALSE(CLI::ExistingFile(name));
+}
+
+TEST(AppHelper, Ofstream) {
+
+    std::string name = "TestFileNotUsed.txt";
+    {
+    TempFile myfile(name);
+
+    {
+    std::ofstream out = myfile.ofstream();
+    out << "this is output" << std::endl;
+    }
+
+    EXPECT_TRUE(CLI::ExistingFile(myfile));
+    }
+    EXPECT_FALSE(CLI::ExistingFile(name));
+
 }
 
 TEST(Split, StringList) {
