@@ -94,3 +94,43 @@ TEST_F(TApp, IniNotRequired) {
     EXPECT_EQ(3, three);
 
 }
+
+TEST_F(TApp, IniRequired) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out = tmpini.ofstream();
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    int one=0, two=0, three=0;
+    app.add_option("--one", one)->required();
+    app.add_option("--two", two)->required();
+    app.add_option("--three", three)->required();
+
+    args = {"--one=1"};
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    one=two=three=0;
+    args = {"--one=1", "--two=2"};
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"--two=2"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+}
