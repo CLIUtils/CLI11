@@ -2,6 +2,9 @@
 
 #include <cstdio>
 #include <sstream>
+#include "gmock/gmock.h"
+ 
+using ::testing::HasSubstr;
 
 TEST(StringBased, First) {
     std::stringstream ofile;
@@ -132,5 +135,36 @@ TEST_F(TApp, IniRequired) {
     args = {"--two=2"};
 
     EXPECT_THROW(run(), CLI::RequiredError);
+
+}
+
+TEST_F(TApp, IniOutputSimple) {
+
+    int v;
+    app.add_option("--simple", v);
+
+    args = {"--simple=3"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("simple=3\n", str);
+
+}
+
+
+TEST_F(TApp, IniOutputFlag) {
+
+    int v;
+    app.add_option("--simple", v);
+    app.add_flag("--nothing");
+
+    args = {"--simple=3", "--nothing"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=3"));
+    EXPECT_THAT(str, HasSubstr("nothing="));
 
 }

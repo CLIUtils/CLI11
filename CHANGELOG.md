@@ -2,7 +2,9 @@
 
 * Updates to help print
 * Removed `run`, please use `parse` unless you subclass and add it
-* Supports ini files mixed with command line
+* Supports ini files mixed with command line, tested
+* Added Range for further Plumbum compatibility
+* Added function to print out ini file
 
 ## Version 0.3
 

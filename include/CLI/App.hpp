@@ -100,6 +100,15 @@ public:
         return ini_setting;
     }
 
+    /// Produce a string that could be read in as a config of the current values of the App
+    std::string config_to_str() const {
+        std::stringstream out;
+        for(const Option_p &opt : options) {
+            if(opt->lnames.size() > 0 && opt->count() > 0)
+                out << opt->lnames[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
+        }
+        return out.str();
+    }
     
     /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
     App* add_subcommand(std::string name, std::string description="", bool help=true) {
