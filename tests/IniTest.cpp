@@ -64,7 +64,7 @@ TEST_F(TApp, IniNotRequired) {
     app.add_config("--config", tmpini);
 
     {
-        std::ofstream out = tmpini.ofstream();
+        std::ofstream out{tmpini};
         out << "[default]" << std::endl;
         out << "two=99" << std::endl;
         out << "three=3" << std::endl;
@@ -102,7 +102,7 @@ TEST_F(TApp, IniRequired) {
     app.add_config("--config", tmpini);
 
     {
-        std::ofstream out = tmpini.ofstream();
+        std::ofstream out{tmpini};
         out << "[default]" << std::endl;
         out << "two=99" << std::endl;
         out << "three=3" << std::endl;

@@ -78,7 +78,7 @@ TEST(AppHelper, Ofstream) {
     TempFile myfile(name);
 
     {
-    std::ofstream out = myfile.ofstream();
+    std::ofstream out{myfile};
     out << "this is output" << std::endl;
     }
 
