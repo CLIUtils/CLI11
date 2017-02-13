@@ -337,7 +337,7 @@ public:
 
     /// The real work is done here. Expects a reversed vector
     void parse(std::vector<std::string> &args) {
-        return _parse(args, true);
+        return _parse(args);
     }
 
 
@@ -478,7 +478,7 @@ protected:
 
 
     /// Internal parse function
-    void _parse(std::vector<std::string> &args, bool first_parse) {
+    void _parse(std::vector<std::string> &args) {
         parsed = true;
 
         bool positional_only = false;
@@ -512,39 +512,46 @@ protected:
         }
 
 
+        // Collect positionals
         for(const Option_p& opt : options) {
             while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
                 opt->get_new();
                 opt->add_result(0, positionals.front());
                 positionals.pop_front();
             }
+        }
 
-            if (first_parse && opt->count() == 0 && opt->_envname != "") {
-                // Will not interact very well with ini files
+        // Process an INI file
+        if (ini_setting != nullptr && ini_file != "") {
+            try {
+                std::vector<std::string> values = detail::parse_ini(ini_file);
+                while(values.size() > 0) {
+                    _parse_long(values, false);
+                }
+                
+            } catch (const FileError &e) {
+                if(ini_required)
+                    throw;
+            }
+        }
+
+        
+        // Get envname options if not yet passed
+        for(const Option_p& opt : options) {
+            if (opt->count() == 0 && opt->_envname != "") {
                 char *ename = std::getenv(opt->_envname.c_str());
                 if(ename != nullptr) {
                     opt->get_new();
                     opt->add_result(0, std::string(ename));
                 }
             }
+        }
 
+        // Process callbacks
+        for(const Option_p& opt : options) {
             if (opt->count() > 0) {
                 if(!opt->run_callback())
                     throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
-            }
-        }
-
-        // Process an INI file
-        if (first_parse && ini_setting != nullptr && ini_file != "") {
-            try {
-                std::vector<std::string> values = detail::parse_ini(ini_file);
-                std::reverse(std::begin(values), std::end(values));
-                
-                values.insert(std::begin(values), std::begin(positionals), std::end(positionals));
-                return _parse(values, false);
-            } catch (const FileError &e) {
-                if(ini_required)
-                    throw;
             }
         }
 
@@ -636,7 +643,7 @@ protected:
     }
 
     /// Parse a long argument, must be at the top of the list
-    void _parse_long(std::vector<std::string> &args) {
+    void _parse_long(std::vector<std::string> &args, bool overwrite=true) {
         std::string current = args.back();
 
         std::string name;
@@ -654,6 +661,11 @@ protected:
 
         // Get a reference to the pointer to make syntax bearable
         Option_p& op = *op_ptr;
+
+
+        // Stop if not overwriting options (for ini parse)
+        if(!overwrite && op->count() > 0)
+            return;
 
         int vnum = op->get_new();
         int num = op->get_expected();

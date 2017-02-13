@@ -2,6 +2,7 @@
 
 * Updates to help print
 * Removed `run`, please use `parse` unless you subclass and add it
+* Supports ini files mixed with command line
 
 ## Version 0.3
 
