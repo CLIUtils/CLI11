@@ -282,7 +282,7 @@ TEST_F(TApp, FileNotExists) {
     
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ValidationError);
 
     std::remove(myfile.c_str());
     EXPECT_FALSE(CLI::ExistingFile(myfile));
@@ -296,8 +296,7 @@ TEST_F(TApp, FileExists) {
     app.add_option("--file", filename)->check(CLI::ExistingFile);
     args = {"--file", myfile};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
-    EXPECT_EQ("Failed", filename);
+    EXPECT_THROW(run(), CLI::ValidationError);
 
     app.reset();
 
@@ -507,5 +506,55 @@ TEST_F(TApp, Env) {
     app.reset();
     unsetenv("CLI11_TEST_ENV_TMP");
     EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(TApp, RangeInt) {
+    int x=0;
+    app.add_option("--one", x)->check(CLI::Range(3,6));
+
+    args = {"--one=1"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    app.reset();
+    args = {"--one=7"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    app.reset();
+    args = {"--one=3"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--one=5"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--one=6"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(TApp, RangeDouble) {
+
+    double x=0;
+    /// Note that this must be a double in Range, too
+    app.add_option("--one", x)->check(CLI::Range(3.0,6.0));
+
+    args = {"--one=1"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    app.reset();
+    args = {"--one=7"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    app.reset();
+    args = {"--one=3"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--one=5"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"--one=6"};
+    EXPECT_NO_THROW(run());
 }
 

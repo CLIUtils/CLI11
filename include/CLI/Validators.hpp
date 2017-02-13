@@ -5,7 +5,8 @@
 
 #include <string>
 #include <iostream>
-
+#include <functional>
+#include "CLI/TypeTools.hpp"
 
 // C standard library
 // Only needed for existence checking
@@ -61,5 +62,20 @@ bool NonexistentPath(std::string filename) {
     }
 }
 
+/// Produce a range validator function
+template<typename T>
+std::function<bool(std::string)> Range(T min, T max) {
+    return [min, max](std::string input){
+        T val;
+        detail::lexical_cast(input, val);
+        return val >= min && val <= max;
+    };
+}
+
+/// Range of one value is 0 to value
+template<typename T>
+std::function<bool(std::string)> Range(T max) {
+    return Range((T) 0, max);
+}
 
 }

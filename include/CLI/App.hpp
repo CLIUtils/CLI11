@@ -550,8 +550,7 @@ protected:
         // Process callbacks
         for(const Option_p& opt : options) {
             if (opt->count() > 0) {
-                if(!opt->run_callback())
-                    throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
+                opt->run_callback();
             }
         }
 

@@ -196,14 +196,15 @@ public:
 
 
     /// Process the callback
-    bool run_callback() const {
+    void run_callback() const {
+        if(!callback(results))
+            throw ConversionError(get_name() + "=" + detail::join(flatten_results()));
         if(_validators.size()>0) {
             for(const std::string & result : flatten_results())
                 for(const std::function<bool(std::string)> &vali : _validators)
                     if(!vali(result))
-                        return false;
+                        throw ValidationError(get_name() + "=" + result);
         }
-        return callback(results);
     }
 
     /// If options share any of the same names, they are equal (not counting positional)

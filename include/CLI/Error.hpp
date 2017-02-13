@@ -70,6 +70,11 @@ struct ConversionError : public ParseError {
     ConversionError(std::string name) : ParseError("ConversionError", name, 2) {}
 };
 
+/// Thrown when validation of results fails
+struct ValidationError : public ParseError {
+    ValidationError(std::string name) : ParseError("ValidationError", name, 2) {}
+};
+
 /// Thrown when a required option is missing
 struct RequiredError : public ParseError {
     RequiredError(std::string name) : ParseError("RequiredError", name, 5) {}
