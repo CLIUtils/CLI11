@@ -2,8 +2,10 @@
 
 # CLI11
 
-Why write another CLI parser?
+CLI11 provides all the features you expect in a powerful command line parser, with a beautiful, minimal syntax and no dependencies beyond C++11. It is header only, and comes in a single file form for easy inclusion in projects. It is easy to use for small projects, but powerful enough for complex command line projects, and can be customized for frameworks.
+It is tested on Travis with a suite of tests, and is being included in the [GooFit GPU fitting framework](https://github.com/GooFit/GooFit). It was inspired by [`plumbum.cli`](http://plumbum.readthedocs.io/en/latest/) for Python.
 
+### Why write another CLI parser?
 
 The following attributes are what I believe are important in a CLI parser library:
 
@@ -12,7 +14,7 @@ The following attributes are what I believe are important in a CLI parser librar
 * Work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.5+. (3.4 only fails because of tests, googlemock does not support it.) Works on Linux and MacOS.
 * Well tested using Travis.
 * Good help printing (in progress).
-* Standard idioms supported naturally, like grouping flags, the positional seperator, etc.
+* Standard idioms supported naturally, like grouping flags, the positional separator, etc.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
 * Easy to extend as part of a framework that provides "applications".
 * Human readable support for subcommands.
