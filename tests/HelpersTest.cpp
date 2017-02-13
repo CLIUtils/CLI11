@@ -1,10 +1,5 @@
-#ifdef CLI_SINGLE_FILE
-#include "CLI11.hpp"
-#else
-#include "CLI/CLI.hpp"
-#endif
+#include "app_helper.hpp"
 
-#include "gtest/gtest.h"
 #include <cstdio>
 #include <fstream>
 
@@ -48,6 +43,31 @@ TEST(Validators, FileNotExists) {
 
     std::remove(myfile.c_str());
     EXPECT_TRUE(CLI::NonexistentPath(myfile));
+}
+
+// Yes, this is testing an app_helper :)
+TEST(AppHelper, TempfileCreated) {
+    std::string name = "TestFileNotUsed.txt";
+    {
+    TempFile myfile{name};
+
+    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_TRUE(CLI::ExistingFile(name));
+    }
+    EXPECT_FALSE(CLI::ExistingFile(name));
+}
+
+TEST(AppHelper, TempfileNotCreated) {
+    std::string name = "TestFileNotUsed.txt";
+    {
+    TempFile myfile{name};
+
+    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    }
+    EXPECT_FALSE(CLI::ExistingFile(name));
 }
 
 TEST(Split, StringList) {

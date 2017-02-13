@@ -24,4 +24,21 @@ struct TApp : public ::testing::Test {
 };
 
 
+class TempFile {
+    std::string _name;
 
+public:
+
+    TempFile(std::string name) : _name(name) {
+        if(!CLI::NonexistentPath(_name))
+            throw std::runtime_error(_name);
+
+    }
+
+    ~TempFile() {
+        std::remove(_name.c_str()); // Doesn't matter if returns 0 or not
+    }
+
+    operator const std::string& () const {return _name;}
+    const char * c_str() const {return _name.c_str();}
+};
