@@ -57,7 +57,7 @@ std::string filename = "default";
 app.add_option("-f,--file", file, "A help string");
 
 try {
-    app.run(argc, argv);
+    app.parse(argc, argv);
 } catch (const CLI::ParseError &e) {
     return app.exit(e);
 }

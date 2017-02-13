@@ -1,6 +1,7 @@
 ## Version 0.4 (in progress)
 
 * Updates to help print
+* Removed `run`, please use `parse` unless you subclass and add it
 
 ## Version 0.3
 

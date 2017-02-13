@@ -58,6 +58,15 @@ protected:
     
 
 public:
+    /// Create a new program. Pass in the same arguments as main(), along with a help string.
+    App(std::string prog_description="", bool help=true)
+        : prog_description(prog_description) {
+
+        if(help)
+            help_flag = add_flag("-h,--help", "Print this help message and exit");
+
+    }
+
 
     /// Set a callback for the end of parsing. Due to a bug in c++11,
     /// it is not possible to overload on std::function (fixed in c++14
@@ -65,11 +74,6 @@ public:
     /// to get a pointer to App if needed.
     void set_callback(std::function<void()> callback) {
         app_callback = callback;
-    }
-
-    void run_callback() {
-        if(app_callback)
-            app_callback();
     }
 
     /// Reset the parsed data
@@ -97,15 +101,6 @@ public:
     }
 
     
-    /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string prog_description="", bool help=true)
-        : prog_description(prog_description) {
-
-        if(help)
-            help_flag = add_flag("-h,--help", "Print this help message and exit");
-
-    }
-
     /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
     App* add_subcommand(std::string name, std::string description="", bool help=true) {
         subcommands.emplace_back(new App(description, help));
@@ -331,6 +326,7 @@ public:
     virtual void pre_callback() {}
 
     /// Parses the command line - throws errors
+    /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, char **argv) {
         progname = argv[0];
         std::vector<std::string> args;
@@ -340,227 +336,12 @@ public:
     }
 
     /// The real work is done here. Expects a reversed vector
-    void parse(std::vector<std::string> & args, bool first_parse=true) {
-        parsed = true;
-
-        bool positional_only = false;
-        
-        while(args.size()>0) {
-
-
-            Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
-            switch(classifer) {
-            case Classifer::POSITIONAL_MARK:
-                args.pop_back();
-                positional_only = true;
-                break;
-            case Classifer::SUBCOMMAND:
-                _parse_subcommand(args);
-                break;
-            case Classifer::LONG:
-                _parse_long(args);
-                break;
-            case Classifer::SHORT:
-                _parse_short(args);
-                break;
-            case Classifer::NONE:
-                positionals.push_back(args.back());
-                args.pop_back();
-            }
-        }
-
-        if (help_flag != nullptr && help_flag->count() > 0) {
-            throw CallForHelp();
-        }
-
-
-        for(const Option_p& opt : options) {
-            while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
-                opt->get_new();
-                opt->add_result(0, positionals.front());
-                positionals.pop_front();
-            }
-
-            if (first_parse && opt->count() == 0 && opt->_envname != "") {
-                // Will not interact very well with ini files
-                char *ename = std::getenv(opt->_envname.c_str());
-                if(ename != nullptr) {
-                    opt->get_new();
-                    opt->add_result(0, std::string(ename));
-                }
-            }
-
-            if (opt->count() > 0) {
-                if(!opt->run_callback())
-                    throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
-            }
-        }
-
-        // Process an INI file
-        if (first_parse && ini_setting != nullptr && ini_file != "") {
-            try {
-                std::vector<std::string> values = detail::parse_ini(ini_file);
-                std::reverse(std::begin(values), std::end(values));
-                
-                values.insert(std::begin(values), std::begin(positionals), std::end(positionals));
-                return parse(values, false);
-            } catch (const FileError &e) {
-                if(ini_required)
-                    throw;
-            }
-        }
-
-        // Verify required options 
-        for(const Option_p& opt : options) {
-            // Required
-            if (opt->get_required()
-                    && (opt->count() < opt->get_expected() || opt->count() == 0))
-                throw RequiredError(opt->get_name());
-            // Requires
-            for (const Option* opt_req : opt->_requires)
-                if (opt->count() > 0 && opt_req->count() == 0)
-                    throw RequiresError(opt->get_name(), opt_req->get_name());
-            // Excludes
-            for (const Option* opt_ex : opt->_excludes)
-                if (opt->count() > 0 && opt_ex->count() != 0)
-                    throw ExcludesError(opt->get_name(), opt_ex->get_name());
-        }
-
-        if(positionals.size()>0)
-            throw PositionalError("[" + detail::join(positionals) + "]");
-
-        pre_callback();
-        run_callback();
+    void parse(std::vector<std::string> &args) {
+        return _parse(args, true);
     }
 
-    void _parse_subcommand(std::vector<std::string> &args) {
-        for(const App_p &com : subcommands) {
-            if(com->name == args.back()){ 
-                args.pop_back();
-                subcommand = com.get();
-                com->parse(args);
-                return;
-            }
-        }
-        throw HorribleError("Subcommand");
-    }
- 
-    void _parse_short(std::vector<std::string> &args) {
-        std::string current = args.back();
 
-        std::string name;
-        std::string rest;
-        if(!detail::split_short(current, name, rest))
-            throw HorribleError("Short");
-        args.pop_back();
-
-        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &opt){return opt->check_sname(name);});
-
-        if(op_ptr == std::end(options)) {
-            missing_options.push_back("-" + name);
-            return;
-        }
-
-        // Get a reference to the pointer to make syntax bearable
-        Option_p& op = *op_ptr;
-
-        int vnum = op->get_new();
-        int num = op->get_expected();
-       
-        if(num == 0)
-            op->add_result(vnum, "");
-        else if(rest!="") {
-            if (num > 0)
-                num--;
-            op->add_result(vnum, rest);
-            rest = "";
-        }
-
-
-        if(num == -1) {
-            while(args.size()>0 && _recognize(args.back()) == Classifer::NONE) {
-                op->add_result(vnum, args.back());
-                args.pop_back();
-            }
-        } else while(num>0 && args.size() > 0) {
-            num--;
-            std::string current = args.back();
-            args.pop_back();
-            op->add_result(vnum,current);
-        }
-
-        if(rest != "") {
-            rest = "-" + rest;
-            args.push_back(rest);
-        }
-    }
-
-    Classifer _recognize(std::string current) const {
-        std::string dummy1, dummy2;
-
-        if(current == "--")
-            return Classifer::POSITIONAL_MARK;
-        for(const App_p &com : subcommands) {
-            if(com->name == current)
-                return Classifer::SUBCOMMAND;
-        }
-        if(detail::split_long(current, dummy1, dummy2))
-            return Classifer::LONG;
-        if(detail::split_short(current, dummy1, dummy2))
-            return Classifer::SHORT;
-        return Classifer::NONE;
-    }
-
-    void _parse_long(std::vector<std::string> &args) {
-        std::string current = args.back();
-
-        std::string name;
-        std::string value;
-        if(!detail::split_long(current, name, value))
-            throw HorribleError("Long");
-        args.pop_back();
-
-        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &v){return v->check_lname(name);});
-
-        if(op_ptr == std::end(options)) {
-            missing_options.push_back("--" + name);
-            return;
-        }
-
-        // Get a reference to the pointer to make syntax bearable
-        Option_p& op = *op_ptr;
-
-        int vnum = op->get_new();
-        int num = op->get_expected();
-        
-
-        if(value != "") {
-            if(num!=-1) num--;
-            op->add_result(vnum, value);
-        } else if (num == 0) {
-            op->add_result(vnum, "");
-        }
-
-        if(num == -1) {
-            while(args.size() > 0 && _recognize(args.back()) == Classifer::NONE) {
-                op->add_result(vnum, args.back());
-                args.pop_back();
-            }
-        } else while(num>0 && args.size()>0) {
-            num--;
-            op->add_result(vnum,args.back());
-            args.pop_back();
-        }
-        return;
-    }
-
-    /// This must be called after the options are in but before the rest of the program.
-    /** Instead of throwing erros, this gives an error code
-     * if -h or an invalid option is passed. Continue with your program if returns -1 */
-    void run(int argc, char** argv) {
-        parse(argc, argv);
-    }
-
+    /// Print a nice error message and return the exit code
     int exit(const Error& e) const {
         if(e.exit_code != 0) {
             std::cerr << "ERROR: ";
@@ -584,6 +365,7 @@ public:
         throw OptionNotFound(name);
     }
 
+    /// Makes a help message, with a column `wid` for column 1
     std::string help(size_t wid=30, std::string prev="") const {
         // Delegate to subcommand if needed
         if(prev == "")
@@ -658,13 +440,245 @@ public:
         return out.str();
     }
     
+    /// Get a subcommand pointer to the currently selected subcommand (after parsing)
     App* get_subcommand() {
         return subcommand;
     }
     
+    /// Get the name of the current app
     std::string get_name() const {
         return name;
     }
+
+
+protected:
+
+    /// Internal function to run (App) callback
+    void run_callback() {
+        if(app_callback)
+            app_callback();
+    }
+
+    /// Selects a Classifer enum based on the type of the current argument
+    Classifer _recognize(std::string current) const {
+        std::string dummy1, dummy2;
+
+        if(current == "--")
+            return Classifer::POSITIONAL_MARK;
+        for(const App_p &com : subcommands) {
+            if(com->name == current)
+                return Classifer::SUBCOMMAND;
+        }
+        if(detail::split_long(current, dummy1, dummy2))
+            return Classifer::LONG;
+        if(detail::split_short(current, dummy1, dummy2))
+            return Classifer::SHORT;
+        return Classifer::NONE;
+    }
+
+
+    /// Internal parse function
+    void _parse(std::vector<std::string> &args, bool first_parse) {
+        parsed = true;
+
+        bool positional_only = false;
+        
+        while(args.size()>0) {
+
+
+            Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
+            switch(classifer) {
+            case Classifer::POSITIONAL_MARK:
+                args.pop_back();
+                positional_only = true;
+                break;
+            case Classifer::SUBCOMMAND:
+                _parse_subcommand(args);
+                break;
+            case Classifer::LONG:
+                _parse_long(args);
+                break;
+            case Classifer::SHORT:
+                _parse_short(args);
+                break;
+            case Classifer::NONE:
+                positionals.push_back(args.back());
+                args.pop_back();
+            }
+        }
+
+        if (help_flag != nullptr && help_flag->count() > 0) {
+            throw CallForHelp();
+        }
+
+
+        for(const Option_p& opt : options) {
+            while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
+                opt->get_new();
+                opt->add_result(0, positionals.front());
+                positionals.pop_front();
+            }
+
+            if (first_parse && opt->count() == 0 && opt->_envname != "") {
+                // Will not interact very well with ini files
+                char *ename = std::getenv(opt->_envname.c_str());
+                if(ename != nullptr) {
+                    opt->get_new();
+                    opt->add_result(0, std::string(ename));
+                }
+            }
+
+            if (opt->count() > 0) {
+                if(!opt->run_callback())
+                    throw ConversionError(opt->get_name() + "=" + detail::join(opt->flatten_results()));
+            }
+        }
+
+        // Process an INI file
+        if (first_parse && ini_setting != nullptr && ini_file != "") {
+            try {
+                std::vector<std::string> values = detail::parse_ini(ini_file);
+                std::reverse(std::begin(values), std::end(values));
+                
+                values.insert(std::begin(values), std::begin(positionals), std::end(positionals));
+                return _parse(values, false);
+            } catch (const FileError &e) {
+                if(ini_required)
+                    throw;
+            }
+        }
+
+        // Verify required options 
+        for(const Option_p& opt : options) {
+            // Required
+            if (opt->get_required()
+                    && (opt->count() < opt->get_expected() || opt->count() == 0))
+                throw RequiredError(opt->get_name());
+            // Requires
+            for (const Option* opt_req : opt->_requires)
+                if (opt->count() > 0 && opt_req->count() == 0)
+                    throw RequiresError(opt->get_name(), opt_req->get_name());
+            // Excludes
+            for (const Option* opt_ex : opt->_excludes)
+                if (opt->count() > 0 && opt_ex->count() != 0)
+                    throw ExcludesError(opt->get_name(), opt_ex->get_name());
+        }
+
+        if(positionals.size()>0)
+            throw PositionalError("[" + detail::join(positionals) + "]");
+
+        pre_callback();
+        run_callback();
+    }
+
+
+    void _parse_subcommand(std::vector<std::string> &args) {
+        for(const App_p &com : subcommands) {
+            if(com->name == args.back()){ 
+                args.pop_back();
+                subcommand = com.get();
+                com->parse(args);
+                return;
+            }
+        }
+        throw HorribleError("Subcommand");
+    }
+ 
+    /// Parse a short argument, must be at the top of the list
+    void _parse_short(std::vector<std::string> &args) {
+        std::string current = args.back();
+
+        std::string name;
+        std::string rest;
+        if(!detail::split_short(current, name, rest))
+            throw HorribleError("Short");
+        args.pop_back();
+
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &opt){return opt->check_sname(name);});
+
+        if(op_ptr == std::end(options)) {
+            missing_options.push_back("-" + name);
+            return;
+        }
+
+        // Get a reference to the pointer to make syntax bearable
+        Option_p& op = *op_ptr;
+
+        int vnum = op->get_new();
+        int num = op->get_expected();
+       
+        if(num == 0)
+            op->add_result(vnum, "");
+        else if(rest!="") {
+            if (num > 0)
+                num--;
+            op->add_result(vnum, rest);
+            rest = "";
+        }
+
+
+        if(num == -1) {
+            while(args.size()>0 && _recognize(args.back()) == Classifer::NONE) {
+                op->add_result(vnum, args.back());
+                args.pop_back();
+            }
+        } else while(num>0 && args.size() > 0) {
+            num--;
+            std::string current = args.back();
+            args.pop_back();
+            op->add_result(vnum,current);
+        }
+
+        if(rest != "") {
+            rest = "-" + rest;
+            args.push_back(rest);
+        }
+    }
+
+    /// Parse a long argument, must be at the top of the list
+    void _parse_long(std::vector<std::string> &args) {
+        std::string current = args.back();
+
+        std::string name;
+        std::string value;
+        if(!detail::split_long(current, name, value))
+            throw HorribleError("Long");
+        args.pop_back();
+
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &v){return v->check_lname(name);});
+
+        if(op_ptr == std::end(options)) {
+            missing_options.push_back("--" + name);
+            return;
+        }
+
+        // Get a reference to the pointer to make syntax bearable
+        Option_p& op = *op_ptr;
+
+        int vnum = op->get_new();
+        int num = op->get_expected();
+        
+
+        if(value != "") {
+            if(num!=-1) num--;
+            op->add_result(vnum, value);
+        } else if (num == 0) {
+            op->add_result(vnum, "");
+        }
+
+        if(num == -1) {
+            while(args.size() > 0 && _recognize(args.back()) == Classifer::NONE) {
+                op->add_result(vnum, args.back());
+                args.pop_back();
+            }
+        } else while(num>0 && args.size()>0) {
+            num--;
+            op->add_result(vnum,args.back());
+            args.pop_back();
+        }
+        return;
+    }
+
 };
 
 

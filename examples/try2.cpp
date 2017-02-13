@@ -18,7 +18,7 @@ int main (int argc, char** argv) {
         ->group("Other");
 
     try {
-        app.run(argc, argv);
+        app.parse(argc, argv);
     } catch (const CLI::Error &e) {
         return app.exit(e);
     }

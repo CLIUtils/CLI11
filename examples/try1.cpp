@@ -14,7 +14,7 @@ int main (int argc, char** argv) {
     CLI::Option* s = stop->add_flag("-c,--count", "Counter");
 
     try {
-        app.run(argc, argv);
+        app.parse(argc, argv);
     } catch (const CLI::Error &e) {
         return app.exit(e);
     }
