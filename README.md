@@ -114,6 +114,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist
+* `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`.
 

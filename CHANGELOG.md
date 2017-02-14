@@ -1,4 +1,4 @@
-## Version 0.4 (in progress)
+## Version 0.4
 
 * Updates to help print
 * Removed `run`, please use `parse` unless you subclass and add it
