@@ -1,6 +1,7 @@
 ## Version 0.5 (in progress)
 
 * Added `require_subcommand` to `App`, to simplify forcing subcommands. Do not "chain" with `add_subcommand`, since that is the subcommand, not the master `App`. Untested.
+* Added printout of ini file text given parsed options, skips flags.
 
 ## Version 0.4
 

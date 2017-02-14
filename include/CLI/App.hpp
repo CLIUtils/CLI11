@@ -105,7 +105,7 @@ public:
     std::string config_to_str() const {
         std::stringstream out;
         for(const Option_p &opt : options) {
-            if(opt->lnames.size() > 0 && opt->count() > 0)
+            if(opt->lnames.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
                 out << opt->lnames[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
         }
         return out.str();

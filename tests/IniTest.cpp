@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
  
 using ::testing::HasSubstr;
+using ::testing::Not;
 
 TEST(StringBased, First) {
     std::stringstream ofile;
@@ -165,6 +166,6 @@ TEST_F(TApp, IniOutputFlag) {
 
     std::string str = app.config_to_str();
     EXPECT_THAT(str, HasSubstr("simple=3"));
-    EXPECT_THAT(str, HasSubstr("nothing="));
+    EXPECT_THAT(str, Not(HasSubstr("nothing=")));
 
 }
