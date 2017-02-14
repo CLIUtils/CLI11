@@ -30,7 +30,7 @@ if(CLI_SINGLE_FILE)
         COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI_headers}
         )
-    add_custom_target(generate_cli_single_file
+    add_custom_target(generate_cli_single_file ALL
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
 
     add_library(CLI_SINGLE INTERFACE)
