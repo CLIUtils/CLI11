@@ -1,3 +1,7 @@
+## Version 0.5 (in progress)
+
+* Added `require_subcommand` to `App`, to simplify forcing subcommands. Do not "chain" with `add_subcommand`, since that is the subcommand, not the master `App`. Untested.
+
 ## Version 0.4
 
 * Updates to help print
