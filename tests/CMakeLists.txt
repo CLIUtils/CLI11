@@ -17,12 +17,10 @@ foreach(T ${CLI_TESTS})
     target_link_libraries(${T} PUBLIC CLI)
     add_gtest(${T})
 
-    if(CLI_SINGLE_FILE)
-
+    if(CLI_SINGLE_FILE AND CLI_SINGLE_FILE_TESTS)
         add_executable(${T}_Single ${T}.cpp)
         target_link_libraries(${T}_Single PUBLIC CLI_SINGLE)
         add_gtest(${T}_Single)
-
     endif()
 
 endforeach()

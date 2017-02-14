@@ -40,6 +40,8 @@ if(CLI_SINGLE_FILE)
     target_include_directories(CLI_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
 endif()
 
+option(CLI_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF)
+
 option(CLI_TESTING "Build the tests and add them" ${CUR_PROJ})
 if(CLI_TESTING)
     enable_testing()
