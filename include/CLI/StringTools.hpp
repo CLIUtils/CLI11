@@ -61,8 +61,9 @@ void format_help(std::stringstream &out, std::string name, std::string descripti
     if(description != "") {
         if(name.length()>=wid)
             out << std::endl << std::setw(wid) << "";
-        out << description << std::endl;
+        out << description;
     }
+    out << std::endl;
 }
 
 /// Verify the first character of an option
