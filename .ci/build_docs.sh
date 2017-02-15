@@ -44,8 +44,9 @@ GH_REPO_REF="github.com/$GH_REPO_ORG/$GH_REPO_NAME.git"
 
 # Create a clean working directory for this script.
 # Get the current gh-pages branch
-git clone -b gh-pages https://git@$GH_REPO_REF code_docs
-cd code_docs
+cd docs
+git clone -b gh-pages https://git@$GH_REPO_REF html
+cd html
 
 ##### Configure git.
 # Set the push default to simple i.e. push only the current branch.
@@ -71,6 +72,7 @@ echo "" > .nojekyll
 ##### Generate the Doxygen code documentation and log the output.          #####
 echo 'Generating Doxygen code documentation...'
 # Redirect both stderr and stdout to the log file AND the console.
+cd ..
 doxygen $DOXYFILE 2>&1 | tee doxygen.log
 
 ################################################################################
@@ -80,6 +82,7 @@ doxygen $DOXYFILE 2>&1 | tee doxygen.log
 # both exist. This is a good indication that Doxygen did it's work.
 if [ -d "html" ] && [ -f "html/index.html" ]; then
 
+    cd html
     echo 'Uploading documentation to the gh-pages branch...'
     # Add everything in this directory (the Doxygen code documentation) to the
     # gh-pages branch.
