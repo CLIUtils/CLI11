@@ -4,16 +4,13 @@ branches:
   exclude:
     - gh-pages
 env:
-  - GH_REPO_NAME: CLI11
-  - DOXYFILE: $TRAVIS_BUILD_DIR/docs/Doxyfile
-  - GH_REPO_REF: github.com/henryiii/CLI11.git
-  - secure: yyNmKB1C1bDyvbI/GWkDoUbBoVI+CIuCgftZ/RKnrynfjOe2uaJSVqo9s1L03Pth0mKsBFRAdq4rzLQ/q9v1FG+zVXwyP+gHqbb5SpvY1rNSjfS0JWjF2ZPNVEZ5ewJiV1adfvqen1ri+KB3CDXXi6BdXvmb0+g6ylnO5JuC3zvs60kXLUpAvRnfVMW8mDllEdVRvEVdjAnstiDd+G5U1WGK60JlBosOuvinkKiqTgcqfKHFojlYfoxTOkCtth4sP8fsxCQRP4kNmS7U9w8prFntWZP7n+kXKWfwLTvKg4RWntMt/f6jkQmMH2nDdvsPXvJzS0khPpQSQCIXIrLIcaHJRRTGv8Fg502RUrysgiOxdrcgRvH9AqFn9e48Sal1tkIHygvld7tifv92XowOsQ4VTiFI5PuZ8Ljr3L+SefwowTRK2R1Iz8flIgXHuWsDYbASi3oLPHMzsTXyLJxyoPKFNaXx2TM9S+73PXQcLUlQSdsvDb5AqqSDd5DUwBDSkixXACI+r33iDs64b8DQj8y7Ko0TTahPdmPjY+J9GPy4tLMeuhzvCy4Nfxiqhrf+wRcdWbKcOZsVDtMJPD4f1o1NZ8M8mRMR3YNU7WDbHAivULei01PZrtn0pPlHS8UO+MeCLB0W5KEQNo3CI0/nyuYwGAyytBwNaNwtaiKgMFY=
 cache:
   directories:
   - ${TRAVIS_BUILD_DIR}/deps/cmake
 matrix:
   include:
   - os: osx
+
   - compiler: clang
     addons:
       apt:
@@ -25,6 +22,9 @@ matrix:
     env:
       - COMPILER=3.5
       - DEPLOY_MAT=yes
+      - DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
+    secure: "Tdqt9SFIri3bu3B0D1aJqkYr5Zhy1yuBgvL5xC84w96DX45/gq27q51jEHxZdyhAo71D5UNxd9It7aRDMixoYmHj9VvPmhX3o34JKcXsXTFmK6Mks55E8gVr8FJfX7Efl8TSrZ677c51aUeScIaLnpL7G2VoKAqp8GA15foBgggQYjMC6h0ciDRh39GEKUWc/aZa1+uqsTw8rYfDTUn6fQ4GQqVaFhcN14V4vDOleeHM17GgOSoZTPXMi/9qAgRkASARvkdndWYwAIu8XFgu7Za8mWqpn2lpl9Yfv/YbRoPTm8FC9yH4VSbS1YKUw2vS6ehdpgqp8c8ANqoCKp4nUTY6O+5HYJO8bq3pvYOdz2Uz99gSagzIQ/JHxPHQ6GH/3j7e79OWI810FLtG7jJ4SCnBrN8tSCWeDlCatDEMyAchXB2bAns61Tcu5Welf9wLYDgFWYlYl20X6Y/a1B44yczvu8h+McptcNCPola2xLj+TVTc5EewgjAFgpugtx39XMC/GLaY74wv+Q4rX0o1V4AQgZ42fXPKpUeum2JXzBD+Sw0Qzp8cu+qGMjLv2i0BoKcOtQ6LuJsftq/0p/EjnlZCupHeV0aiujNHqB1KkKdTX/aerPNef0Xz3ZL+eukGTwTbFUxng4zkV4JL+3f9RykzJ0TJDMavZSPggXXP4P0="
+
   - compiler: gcc
     addons:
       apt:
@@ -33,6 +33,7 @@ matrix:
         packages:
         - g++-6
     env: COMPILER=6
+
   - compiler: gcc
     addons:
       apt:
