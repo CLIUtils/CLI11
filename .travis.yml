@@ -1,5 +1,13 @@
 language: cpp
 sudo: false
+branches:
+  exclude:
+    - gh-pages
+env:
+  - GH_REPO_NAME: CLI11
+  - DOXYFILE: $TRAVIS_BUILD_DIR/docs/Doxyfile
+  - GH_REPO_REF: github.com/henryiii/CLI11.git
+  - secure: yyNmKB1C1bDyvbI/GWkDoUbBoVI+CIuCgftZ/RKnrynfjOe2uaJSVqo9s1L03Pth0mKsBFRAdq4rzLQ/q9v1FG+zVXwyP+gHqbb5SpvY1rNSjfS0JWjF2ZPNVEZ5ewJiV1adfvqen1ri+KB3CDXXi6BdXvmb0+g6ylnO5JuC3zvs60kXLUpAvRnfVMW8mDllEdVRvEVdjAnstiDd+G5U1WGK60JlBosOuvinkKiqTgcqfKHFojlYfoxTOkCtth4sP8fsxCQRP4kNmS7U9w8prFntWZP7n+kXKWfwLTvKg4RWntMt/f6jkQmMH2nDdvsPXvJzS0khPpQSQCIXIrLIcaHJRRTGv8Fg502RUrysgiOxdrcgRvH9AqFn9e48Sal1tkIHygvld7tifv92XowOsQ4VTiFI5PuZ8Ljr3L+SefwowTRK2R1Iz8flIgXHuWsDYbASi3oLPHMzsTXyLJxyoPKFNaXx2TM9S+73PXQcLUlQSdsvDb5AqqSDd5DUwBDSkixXACI+r33iDs64b8DQj8y7Ko0TTahPdmPjY+J9GPy4tLMeuhzvCy4Nfxiqhrf+wRcdWbKcOZsVDtMJPD4f1o1NZ8M8mRMR3YNU7WDbHAivULei01PZrtn0pPlHS8UO+MeCLB0W5KEQNo3CI0/nyuYwGAyytBwNaNwtaiKgMFY=
 cache:
   directories:
   - ${TRAVIS_BUILD_DIR}/deps/cmake
