@@ -5,6 +5,7 @@ cache:
   - ${TRAVIS_BUILD_DIR}/deps/cmake
 matrix:
   include:
+  - os: osx
   - compiler: clang
     addons:
       apt:
