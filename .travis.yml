@@ -53,6 +53,12 @@ install:
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - .ci/travis.sh
+
+after_success:
+- echo "${TRAVIS_BRANCH}"
+- echo "${TRAVIS_PULL_REQUEST}"
+- if [[ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && "$DEPLOY_MAT" == "yes"]] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh ; fi
+
 deploy:
   provider: releases
   api_key:

@@ -17,6 +17,12 @@
 namespace CLI {
 
 
+/// @defgroup validator_group Validators
+/// @brief Some validators that are provided
+///
+/// These are simple `bool(std::string)` validators that are useful.
+/// @{
+
 /// Check for an existing file
 bool ExistingFile(std::string filename) {
     struct stat buffer;   
@@ -77,5 +83,7 @@ template<typename T>
 std::function<bool(std::string)> Range(T max) {
     return Range((T) 0, max);
 }
+
+/// @}
 
 }

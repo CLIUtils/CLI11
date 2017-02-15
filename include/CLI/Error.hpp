@@ -11,6 +11,12 @@ namespace CLI {
 
 // Error definitions
 
+/// @defgroup error_group Errors
+/// @brief Errors thrown by CLI11
+///
+/// These are the errors that can be thrown. Some of them, like CLI::Success, are not really errors.
+/// @{
+
 /// All errors derive from this one
 struct Error : public std::runtime_error {
     int exit_code;
@@ -18,8 +24,7 @@ struct Error : public std::runtime_error {
     Error(std::string parent, std::string name, int exit_code=255, bool print_help=true) : runtime_error(parent + ": " + name), exit_code(exit_code), print_help(print_help) {}
 };
 
-// Construction errors (not in parsing)
-
+/// Construction errors (not in parsing)
 struct ConstructionError : public Error {
     // Using Error::Error constructors seem to not work on GCC 4.7
     ConstructionError(std::string parent, std::string name, int exit_code=255, bool print_help=true) : Error(parent, name, exit_code, print_help) {}
@@ -107,5 +112,6 @@ struct OptionNotFound : public Error {
     OptionNotFound(std::string name) : Error("OptionNotFound", name, 4) {}
 };
 
+/// @}
 
 }

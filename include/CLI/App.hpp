@@ -33,7 +33,7 @@ typedef std::unique_ptr<Option> Option_p;
 typedef std::unique_ptr<App> App_p;
 
 /// Creates a command line program, with very few defaults.
-/** To use, create a new Program() instance with argc, argv, and a help description. The templated
+/** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
 *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
 * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
