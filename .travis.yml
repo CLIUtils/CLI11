@@ -38,7 +38,8 @@ install:
 - if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
 - if [ "$CXX" = "clang++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="clang++-$COMPILER" CC="clang-$COMPILER"; fi
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz" \
+                                       else CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Darwin-x86_64.tar.gz" ; fi
 - cd "${DEPS_DIR}"
 - |
   if [[ ! -f "${DEPS_DIR}/cmake/bin/cmake" ]] ; then
