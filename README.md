@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/henryiii/CLI11.svg?branch=master)](https://travis-ci.org/henryiii/CLI11)
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby](https://badges.gitter.im/CLI11gitter/Lobby.svg)](https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 # CLI11: Command line parser for C++11
 
@@ -40,6 +40,9 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 * Improve documentation
 * Collect user feedback
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
+
+See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
+
 
 ## Installing
 
@@ -169,5 +172,5 @@ Every `add_` option you have seen so far depends on one method that takes a lamb
 
 ## Contributing
 
-To contribute, open an issue or pull request on GitHub.
+To contribute, open an [issue](https://github.com/henryiii/CLI11/issues) or [pull request](https://github.com/henryiii/CLI11/pulls) on GitHub, or ask a question on [gitter](https://gitter.im/CLI11gitter/Lobby).
 
