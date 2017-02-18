@@ -1,6 +1,6 @@
 #pragma once
 
-// Distributed under the MIT license.  See accompanying
+// Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/henryiii/CLI11 for details.
 
 // CLI Library includes

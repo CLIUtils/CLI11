@@ -38,7 +38,7 @@ def MakeHeader(out):
     output = '''\
 #pragma once
 
-// Distributed under the MIT license.  See accompanying
+// Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/henryiii/CLI11 for details.
 
 // This file was generated using MakeSingleHeader.py in CLI11/scripts
