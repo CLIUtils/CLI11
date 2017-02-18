@@ -19,7 +19,25 @@ TEST(Trim, Various) {
 
     std::string s4{" a b "};
     EXPECT_EQ("a b", CLI::detail::trim(s4));
+}
 
+
+TEST(Trim, VariousFilters) {
+    std::string s1{"  sdlfkj sdflk sd s  "};
+    std::string a1{"sdlfkj sdflk sd s"};
+    CLI::detail::trim(s1, " ");
+    EXPECT_EQ(a1, s1);
+    
+    std::string s2{" a \t"};
+    CLI::detail::trim(s2, " ");
+    EXPECT_EQ("a \t", s2);
+
+    std::string s3{"abdavda"};
+    CLI::detail::trim(s3, "a");
+    EXPECT_EQ("bdavd", s3);
+
+    std::string s4{"abcabcabc"};
+    EXPECT_EQ("cabcabc", CLI::detail::trim(s4, "ab"));
 }
 
 

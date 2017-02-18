@@ -37,8 +37,8 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 This library was built to supply the Application object for the GooFit CUDA/OMP fitting library. Before version 2.0 of GooFit is released, this library will reach version 1.0 status. The current tasks still planned are:
 
 * Expand tests to include a few more features
-    * Test config parser's support for spaces, etc in `ini` files
 * Collect user feedback
+    * Ini configuration support is basic (long options only, no vector support), is more needed?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
     * Add way for subclasses to return remaining options rather than throwing error
 

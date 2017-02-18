@@ -23,6 +23,39 @@ TEST(StringBased, First) {
     
 }
 
+TEST(StringBased, Quotes) {
+    std::stringstream ofile;
+
+    ofile << "one = \"three\"" << std::endl;
+    ofile << "two = \'four\'" << std::endl;
+    ofile << "five = \"six and seven\"" << std::endl;
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+
+    std::vector<std::string> answer = {"--one=three", "--two=four", "--five=six and seven"};
+
+    EXPECT_EQ(answer, output);
+    
+}
+
+
+TEST(StringBased, Spaces) {
+    std::stringstream ofile;
+
+    ofile << "one = three" << std::endl;
+    ofile << "two = four" << std::endl;
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+
+    std::vector<std::string> answer = {"--one=three", "--two=four"};
+
+    EXPECT_EQ(answer, output);
+    
+}
 
 TEST(StringBased, Sections) {
     std::stringstream ofile;
@@ -153,7 +186,7 @@ TEST_F(TApp, IniOutputSimple) {
 
 }
 
-
+/// Flags should not show up in config file
 TEST_F(TApp, IniOutputFlag) {
 
     int v;
@@ -167,5 +200,10 @@ TEST_F(TApp, IniOutputFlag) {
     std::string str = app.config_to_str();
     EXPECT_THAT(str, HasSubstr("simple=3"));
     EXPECT_THAT(str, Not(HasSubstr("nothing=")));
+
+}
+
+TEST_F(TApp, IniSpaces) {
+
 
 }

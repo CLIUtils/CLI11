@@ -29,6 +29,14 @@ std::vector<std::string> parse_ini(std::istream &input) {
             section = line.substr(1,len-2);
             std::transform(std::begin(section), std::end(section), std::begin(section), ::tolower);
         } else if (len > 0) {
+            // Find = in string, split and recombine
+            auto pos = line.find("=");
+            if(pos != std::string::npos) {
+                std::string name = detail::trim_copy(line.substr(0,pos));
+                std::string item = detail::trim_copy(line.substr(pos+1));
+                trim(item, "\"\'"); 
+                line = name + "=" + item;
+            }
             if(section == "default")
                 output.push_back("--" + line);
             else

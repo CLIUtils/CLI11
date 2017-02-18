@@ -31,15 +31,30 @@ std::string join(const T& v, std::string delim = ",") {
 
 /// Trim whitespace from left of string
 std::string& ltrim(std::string &str) {
-    auto it2 =  std::find_if( str.begin() , str.end() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
-    str.erase( str.begin() , it2);
+    auto it = std::find_if(str.begin(), str.end(), [](char ch){ return !std::isspace<char>(ch , std::locale::classic());});
+    str.erase(str.begin(), it);
     return str;   
 }
 
+/// Trim anything from left of string
+std::string& ltrim(std::string &str, const std::string &filter) {
+    auto it = std::find_if(str.begin(), str.end(), [&filter](char ch){return filter.find(ch) == std::string::npos;}); 
+    str.erase(str.begin(), it);
+    return str;
+}
+
+
 /// Trim whitespace from right of string
 std::string& rtrim(std::string &str) {
-    auto it1 =  std::find_if( str.rbegin() , str.rend() , [](char ch){ return !std::isspace<char>(ch , std::locale::classic() ) ; } );
-    str.erase( it1.base() , str.end() );
+    auto it = std::find_if(str.rbegin(), str.rend(), [](char ch){ return !std::isspace<char>(ch, std::locale::classic());});
+    str.erase(it.base() , str.end() );
+    return str;   
+}
+
+/// Trim anything from right of string
+std::string& rtrim(std::string &str, const std::string &filter) {
+    auto it = std::find_if(str.rbegin(), str.rend(), [&filter](char ch){return filter.find(ch) == std::string::npos;}); 
+    str.erase(it.base(), str.end());
     return str;   
 }
 
@@ -48,12 +63,22 @@ std::string& trim(std::string &str) {
     return ltrim(rtrim(str));
 }
 
+/// Trim anything from string
+std::string& trim(std::string &str, const std::string filter) {
+    return ltrim(rtrim(str, filter), filter);
+}
+
 /// Make a copy of the string and then trim it
 std::string trim_copy(const std::string &str) {
     std::string s = str;
-    return ltrim(rtrim(s));
+    return trim(s);
 }
 
+/// Make a copy of the string and then trim it, any filter string can be used (any char in string is filtered)
+std::string trim_copy(const std::string &str, const std::string &filter) {
+    std::string s = str;
+    return rtrim(s, filter);
+}
 /// Print a two part "help" string
 void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;
