@@ -5,6 +5,8 @@
 #
 #
 
+find_package(Threads REQUIRED)
+
 include(DownloadProject)
 download_project(PROJ                googletest
                  GIT_REPOSITORY      https://github.com/google/googletest.git
@@ -41,7 +43,21 @@ endif()
 
 # Target must already exist
 macro(add_gtest TESTNAME)
-    target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
+    if(NOT WIN32 OR MINGW)
+        target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
+    else()
+        target_link_libraries(${TESTNAME} PUBLIC
+            debug ${GMOCK_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gmock${CMAKE_FIND_LIBRARY_SUFFIXES}
+            optimized ${GMOCK_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gmock${CMAKE_FIND_LIBRARY_SUFFIXES}
+
+            debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
+            optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
+
+            debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
+            optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
+            )
+    endif()
+    target_link_libraries(${TESTNAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
     add_test(${TESTNAME} ${TESTNAME})
 endmacro()
 
