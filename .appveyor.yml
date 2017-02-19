@@ -8,7 +8,6 @@ environment:
   CTEST_OUPTUT_ON_FAILURE: ON
 
 build:
-  verbosity: detailed
 
 configuration:
   - Debug
@@ -38,11 +37,13 @@ before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
 
 build:
+  verbosity: detailed
+
+build_script:
   - mkdir build
   - cd build
   - cmake ..
   - cmake --build .
 
-test:
-  test_script:
-    - cmake --build --target test . 
+test_script:
+  - cmake --build --target test .
