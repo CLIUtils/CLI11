@@ -12,6 +12,7 @@ branches:
     - gh-pages
 
 install:
+  - set PATH=C:\Python36;%PATH%
   ############################################################################
   # All external dependencies are installed in C:\projects\deps
   ############################################################################
@@ -21,7 +22,7 @@ install:
   ############################################################################
   # Install a recent CMake
   ############################################################################
-  - set CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-win32-x86.zip"
+  - set CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-win32-x86.zip"
   - appveyor DownloadFile %CMAKE_URL% -FileName cmake.zip
   - 7z x cmake.zip -oC:\projects\deps\cmake > nul
   - set PATH=C:\projects\deps\cmake\bin;%PATH%
