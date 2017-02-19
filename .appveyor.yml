@@ -1,6 +1,3 @@
-os:
-  - Visual Studio 2015
-
 environment:
   CTEST_OUPTUT_ON_FAILURE: ON
 
@@ -12,13 +9,10 @@ install:
   - set PATH=C:\Python36;%PATH%
   - cmake --version
 
-before_build:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
-
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON
+  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_GENERATOR="Visual Studio 14 2015"
   - cmake --build .
 
 test_script:
