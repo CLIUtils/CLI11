@@ -21,4 +21,4 @@ build_script:
   - cmake --build .
 
 test_script:
-  - cmake --build --target test .
+  - cmake --build . --target test
