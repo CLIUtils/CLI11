@@ -44,8 +44,9 @@ matrix:
 
 install:
 - python -c 'import sys; print(sys.version_info[:])'
-- if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
+- if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
 - if [ "$CXX" = "clang++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="clang++-$COMPILER" CC="clang-$COMPILER"; fi
+- if ["$TRAVIS_OS_NAME" = "osx" ] ; then export CXX="clang++" CC="clang"; fi
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
