@@ -42,3 +42,20 @@ public:
     operator const std::string& () const {return _name;}
     const char* c_str() const {return _name.c_str();}
 };
+
+inline void put_env(std::string name, std::string value) {
+#ifdef _MSC_VER
+    _putenv_s(name.c_str(), value.c_str());
+#else
+    setenv(name.c_str(), value.c_str(), 1);
+#endif
+}
+
+inline void unset_env(std::string name) {
+#ifdef _MSC_VER
+    _putenv_s(name.c_str(), "");
+#else
+    unsetenv(name.c_str());
+#endif
+}
+

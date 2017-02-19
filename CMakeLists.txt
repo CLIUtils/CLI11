@@ -15,7 +15,7 @@ endif()
 
 # Be moderately paranoid with flags
 if(CMAKE_COMPILER_IS_GNUCC)
-    add_definitions("-Wall -Wextra")
+    add_definitions("-Wall -Wextra -pedantic")
 endif()
 if(MSVC)
     add_definitions("/W4")

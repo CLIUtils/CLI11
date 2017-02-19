@@ -94,13 +94,13 @@ void format_help(std::stringstream &out, std::string name, std::string descripti
 /// Verify the first character of an option
 template<typename T>
 bool valid_first_char(T c) {
-    return std::isalpha(c) || c=='_';
+    return std::isalpha(c, std::locale::classic()) || c=='_';
 }
 
 /// Verify following characters of an option
 template<typename T>
 bool valid_later_char(T c) {
-    return std::isalnum(c) || c=='_' || c=='.' || c=='-';
+    return std::isalnum(c, std::locale::classic()) || c=='_' || c=='.' || c=='-';
 }
 
 /// Verify an option name
