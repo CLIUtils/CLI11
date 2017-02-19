@@ -250,7 +250,7 @@ TEST_F(TApp, Reset) {
 
     EXPECT_EQ(1, app.count("--simple"));
     EXPECT_EQ(1, app.count("-d"));
-    EXPECT_FLOAT_EQ(1.2, doub);
+    EXPECT_DOUBLE_EQ(1.2, doub);
 
     app.reset();
 
@@ -261,7 +261,7 @@ TEST_F(TApp, Reset) {
 
     EXPECT_EQ(1, app.count("--simple"));
     EXPECT_EQ(1, app.count("-d"));
-    EXPECT_FLOAT_EQ(1.2, doub);
+    EXPECT_DOUBLE_EQ(1.2, doub);
 
 }
 
@@ -489,7 +489,7 @@ TEST_F(TApp, RequiresChainedFlags) {
 
 TEST_F(TApp, Env) {
 
-    setenv("CLI11_TEST_ENV_TMP", "2", true);
+    put_env("CLI11_TEST_ENV_TMP", "2");
 
     int val=1;
     CLI::Option* vopt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_TMP");
@@ -504,7 +504,7 @@ TEST_F(TApp, Env) {
     EXPECT_NO_THROW(run());
 
     app.reset();
-    unsetenv("CLI11_TEST_ENV_TMP");
+    unset_env("CLI11_TEST_ENV_TMP");
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 

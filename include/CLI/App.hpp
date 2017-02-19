@@ -112,9 +112,9 @@ public:
     }
     
     /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
-    App* add_subcommand(std::string name, std::string description="", bool help=true) {
+    App* add_subcommand(std::string name_, std::string description="", bool help=true) {
         subcommands.emplace_back(new App(description, help));
-        subcommands.back()->name = name;
+        subcommands.back()->name = name_;
         return subcommands.back().get();
     }
 
@@ -132,17 +132,17 @@ public:
      *     program.add_option("filename", filename, "description of filename");
      */
     Option* add_option(
-            std::string name,
+            std::string name_,
             callback_t callback,
             std::string description="", 
             bool defaulted=false
             ) {
-        Option myopt{name, description, callback, defaulted};
+        Option myopt{name_, description, callback, defaulted};
         if(std::find_if(std::begin(options), std::end(options),
                     [&myopt](const Option_p &v){return *v == myopt;}) == std::end(options)) {
             options.emplace_back();
             Option_p& option = options.back();
-            option.reset(new Option(name, description, callback, defaulted));
+            option.reset(new Option(name_, description, callback, defaulted));
             return option.get();
         } else
             throw OptionAlreadyAdded(myopt.get_name());
@@ -152,7 +152,7 @@ public:
     /// Add option for string
     template<typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Option* add_option(
-            std::string name,
+            std::string name_,
             T &variable,                ///< The variable to set
             std::string description="",
             bool defaulted=false
@@ -169,7 +169,7 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        Option* retval = add_option(name, fun, description, defaulted);
+        Option* retval = add_option(name_, fun, description, defaulted);
         retval->typeval = detail::type_name<T>();
         if(defaulted) {
             std::stringstream out;
@@ -182,7 +182,7 @@ public:
     /// Add option for vector of results
     template<typename T>
     Option* add_option(
-            std::string name,
+            std::string name_,
             std::vector<T> &variable,   ///< The variable vector to set
             std::string description="",
             bool defaulted=false
@@ -199,7 +199,7 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        Option* retval =  add_option(name, fun, description, defaulted);
+        Option* retval =  add_option(name_, fun, description, defaulted);
         retval->allow_vector = true;
         retval->_expected = -1;
         retval->typeval = detail::type_name<T>();
@@ -211,14 +211,14 @@ public:
 
     /// Add option for flag
     Option* add_flag(
-            std::string name,
+            std::string name_,
             std::string description=""
             ) {
         CLI::callback_t fun = [](CLI::results_t){
             return true;
         };
         
-        Option* opt = add_option(name, fun, description, false);
+        Option* opt = add_option(name_, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -229,7 +229,7 @@ public:
     template<typename T,
         enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option* add_flag(
-            std::string name,
+            std::string name_,
             T &count,                   ///< A varaible holding the count
             std::string description=""
             ) {
@@ -240,7 +240,7 @@ public:
             return true;
         };
         
-        Option* opt = add_option(name, fun, description, false);
+        Option* opt = add_option(name_, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -251,7 +251,7 @@ public:
     template<typename T,
         enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option* add_flag(
-            std::string name,
+            std::string name_,
             T &count,                   ///< A varaible holding true if passed
             std::string description=""
             ) {
@@ -262,7 +262,7 @@ public:
             return res.size() == 1;
         };
         
-        Option* opt = add_option(name, fun, description, false);
+        Option* opt = add_option(name_, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -273,7 +273,7 @@ public:
     /// Add set of options
     template<typename T>
     Option* add_set(
-            std::string name,
+            std::string name_,
             T &member,                     ///< The selected member of the set
             std::set<T> _options,           ///< The set of posibilities
             std::string description="",
@@ -293,7 +293,7 @@ public:
             return std::find(std::begin(_options), std::end(_options), member) != std::end(_options);
         };
 
-        Option* retval = add_option(name, fun, description, defaulted);
+        Option* retval = add_option(name_, fun, description, defaulted);
         retval->typeval = detail::type_name<T>();
         retval->typeval += " in {" + detail::join(_options) + "}";
         if(defaulted) {
@@ -306,7 +306,7 @@ public:
 
 
     /// Add a configuration ini file option
-    Option* add_config(std::string name="--config",
+    Option* add_config(std::string name_="--config",
                  std::string default_filename="",
                  std::string help="Read an ini file",
                  bool required=false) {
@@ -316,7 +316,7 @@ public:
             remove_option(ini_setting);
         ini_file = default_filename;
         ini_required = required;
-        ini_setting = add_option(name, ini_file, help, default_filename!="");
+        ini_setting = add_option(name_, ini_file, help, default_filename!="");
         return ini_setting;
     }
 
@@ -366,13 +366,13 @@ public:
     }
 
     /// Counts the number of times the given option was passed.
-    int count(std::string name) const {
+    int count(std::string name_) const {
         for(const Option_p &opt : options) {
-            if(opt->check_name(name)) {
+            if(opt->check_name(name_)) {
                 return opt->count();
             }
         }
-        throw OptionNotFound(name);
+        throw OptionNotFound(name_);
     }
 
     /// Makes a help message, with a column `wid` for column 1
@@ -547,7 +547,7 @@ protected:
                     _parse_long(values, false);
                 }
                 
-            } catch (const FileError &e) {
+            } catch (const FileError &) {
                 if(ini_required)
                     throw;
             }
@@ -615,16 +615,16 @@ protected:
     void _parse_short(std::vector<std::string> &args) {
         std::string current = args.back();
 
-        std::string name;
+        std::string name_;
         std::string rest;
-        if(!detail::split_short(current, name, rest))
+        if(!detail::split_short(current, name_, rest))
             throw HorribleError("Short");
         args.pop_back();
 
-        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &opt){return opt->check_sname(name);});
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name_](const Option_p &opt){return opt->check_sname(name_);});
 
         if(op_ptr == std::end(options)) {
-            missing_options.push_back("-" + name);
+            missing_options.push_back("-" + name_);
             return;
         }
 
@@ -651,9 +651,9 @@ protected:
             }
         } else while(num>0 && args.size() > 0) {
             num--;
-            std::string current = args.back();
+            std::string current_ = args.back();
             args.pop_back();
-            op->add_result(vnum,current);
+            op->add_result(vnum, current_);
         }
 
         if(rest != "") {
@@ -666,16 +666,16 @@ protected:
     void _parse_long(std::vector<std::string> &args, bool overwrite=true) {
         std::string current = args.back();
 
-        std::string name;
+        std::string name_;
         std::string value;
-        if(!detail::split_long(current, name, value))
+        if(!detail::split_long(current, name_, value))
             throw HorribleError("Long");
         args.pop_back();
 
-        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name](const Option_p &v){return v->check_lname(name);});
+        auto op_ptr = std::find_if(std::begin(options), std::end(options), [name_](const Option_p &v){return v->check_lname(name_);});
 
         if(op_ptr == std::end(options)) {
-            missing_options.push_back("--" + name);
+            missing_options.push_back("--" + name_);
             return;
         }
 

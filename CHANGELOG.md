@@ -3,6 +3,7 @@
 * Added `require_subcommand` to `App`, to simplify forcing subcommands. Do not "chain" with `add_subcommand`, since that is the subcommand, not the master `App`. Untested.
 * Added printout of ini file text given parsed options, skips flags.
 * Support for quotes and spaces in ini files
+* Support for Windows (added Appveyor) (Still use `--` syntax)
 
 ## Version 0.4
 

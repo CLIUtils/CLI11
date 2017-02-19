@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/henryiii/CLI11.svg?branch=master)](https://travis-ci.org/henryiii/CLI11)
+[![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/henryiii/CLI11?branch=master&svg=true)](https://ci.appveyor.com/project/HenrySchreiner/cli11)
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby](https://badges.gitter.im/CLI11gitter/Lobby.svg)](https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](./LICENSE)
 
@@ -13,9 +14,9 @@ An acceptable CLI parser library should be all of the following:
 
 * Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
-* C++11 or better: Should work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.5+. (Note: for CLI11, Clang 3.4 only fails because of tests, googlemock does not support it.)
-* Work at least on Linux and MacOS.
-* Well tested using Travis.
+* C++11 or better: Should work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.5+, or MSVC 2015+. (Note: for CLI11, Clang 3.4 only fails because of tests, googlemock does not support it.)
+* Work on Linux, MacOS, and Windows.
+* Well tested using Travis (Linux and Mac) and [Appveyor](https://ci.appveyor.com/project/HenrySchreiner/cli11) (Windows).
 * Clear help printing.
 * Standard shell idioms supported naturally, like grouping flags, a positional separator, etc.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.

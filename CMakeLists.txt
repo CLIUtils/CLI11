@@ -14,8 +14,12 @@ else()
 endif()
 
 # Be moderately paranoid with flags
-# But only globally, don't inherit
-add_compile_options(-pedantic -Wall -Wextra -O0)
+if(CMAKE_COMPILER_IS_GNUCC)
+    add_definitions("-Wall -Wextra -pedantic")
+endif()
+if(MSVC)
+    add_definitions("/W4")
+endif()
 
 add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")

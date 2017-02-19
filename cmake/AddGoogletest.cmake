@@ -4,6 +4,7 @@
 # gives output on failed tests without having to set an environment variable.
 #
 #
+set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
 
 include(DownloadProject)
 download_project(PROJ                googletest
@@ -13,6 +14,7 @@ download_project(PROJ                googletest
                  QUIET
 )
 
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR})
 
