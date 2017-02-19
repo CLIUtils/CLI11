@@ -7,9 +7,6 @@ os:
 environment:
   CTEST_OUPTUT_ON_FAILURE: ON
 
-configuration:
-  - Debug
-
 branches:
   except:
     - gh-pages
