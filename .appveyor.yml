@@ -13,27 +13,9 @@ branches:
 
 install:
   - set PATH=C:\Python36;%PATH%
-  ############################################################################
-  # All external dependencies are installed in C:\projects\deps
-  ############################################################################
-  - mkdir C:\projects\deps
-  - cd C:\projects\deps
-
-  ############################################################################
-  # Install a recent CMake
-  ############################################################################
-  - set CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-win32-x86.zip"
-  - appveyor DownloadFile %CMAKE_URL% -FileName cmake.zip
-  - 7z x cmake.zip -oC:\projects\deps\cmake > nul
-  - set PATH=C:\projects\deps\cmake\bin;%PATH%
-  - cmake --version
 
 before_build:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
-  - cd %APPVEYOR_BUILD_FOLDER%
-
-build:
-  verbosity: detailed
 
 build_script:
   - mkdir build
