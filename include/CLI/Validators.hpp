@@ -27,7 +27,7 @@ namespace CLI {
 bool ExistingFile(std::string filename) {
     struct stat buffer;   
     bool exist = stat(filename.c_str(), &buffer) == 0; 
-    bool is_dir = buffer.st_mode & S_IFDIR != 0;
+    bool is_dir = (buffer.st_mode & S_IFDIR != 0);
     if(!exist) {
         std::cerr << "File does not exist: " << filename << std::endl;
         return false;
@@ -43,7 +43,7 @@ bool ExistingFile(std::string filename) {
 bool ExistingDirectory(std::string filename) {
     struct stat buffer;   
     bool exist = stat(filename.c_str(), &buffer) == 0; 
-    bool is_dir = buffer.st_mode & S_IFDIR != 0;
+    bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
     if(!exist) {
         std::cerr << "Directory does not exist: " << filename << std::endl;
         return false;

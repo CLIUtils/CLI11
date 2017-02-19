@@ -489,7 +489,7 @@ TEST_F(TApp, RequiresChainedFlags) {
 
 TEST_F(TApp, Env) {
 
-    put_env("CLI11_TEST_ENV_TMP", "2", true);
+    put_env("CLI11_TEST_ENV_TMP", "2");
 
     int val=1;
     CLI::Option* vopt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_TMP");
