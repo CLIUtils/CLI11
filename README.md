@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/henryiii/CLI11.svg?branch=master)](https://travis-ci.org/henryiii/CLI11)
+[![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/henryiii/CLI11?branch=master&svg=true)](https://ci.appveyor.com/project/HenrySchreiner/cli11)
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby](https://badges.gitter.im/CLI11gitter/Lobby.svg)](https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](./LICENSE)
 

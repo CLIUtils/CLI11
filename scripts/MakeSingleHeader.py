@@ -15,6 +15,8 @@ includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
 DIR = Path(__file__).resolve().parent
 BDIR = DIR.parent / 'include'
 
+print("Git directory:", DIR)
+
 TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
 
 def MakeHeader(out):
