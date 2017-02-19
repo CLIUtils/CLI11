@@ -7,8 +7,6 @@ os:
 environment:
   CTEST_OUPTUT_ON_FAILURE: ON
 
-build:
-
 configuration:
   - Debug
 
