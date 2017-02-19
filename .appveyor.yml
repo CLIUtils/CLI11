@@ -9,13 +9,10 @@ install:
   - set PATH=C:\Python36;%PATH%
   - cmake --version
 
-before_build:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64
-
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON
+  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_GENERATOR="Visual Studio 12 2013"
   - cmake --build .
 
 test_script:
