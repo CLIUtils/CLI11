@@ -2,7 +2,7 @@
 shallow_clone: true 
 
 os:
-  - Visual Studio 2015 Update 2
+  - Visual Studio 2015
 
 environment:
   CTEST_OUPTUT_ON_FAILURE: ON
