@@ -37,7 +37,7 @@ build:
 build_script:
   - mkdir build
   - cd build
-  - cmake  -DGTEST_FORCE_SHARED_CRT=ON ..
+  - cmake ..
   - cmake --build .
 
 test_script:

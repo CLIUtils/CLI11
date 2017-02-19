@@ -56,6 +56,7 @@ macro(add_gtest TESTNAME)
             debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
             optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
             )
+        target_include_directories(${TESTNAME} PUBLIC ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     endif()
     target_link_libraries(${TESTNAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
     add_test(${TESTNAME} ${TESTNAME})
