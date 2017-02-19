@@ -40,14 +40,16 @@ matrix:
         packages:
         - g++-4.7
     env: COMPILER=4.7
+  - os: osx
 
 install:
 - python -c 'import sys; print(sys.version_info[:])'
-- if [ "$CXX" = "g++" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
+- if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="g++-$COMPILER" CC="gcc-$COMPILER"; fi
 - if [ "$CXX" = "clang++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="clang++-$COMPILER" CC="clang-$COMPILER"; fi
+- if ["$TRAVIS_OS_NAME" = "osx" ] ; then export CXX="clang++" CC="clang"; fi
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh
-- cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip
   install --user pathlib; fi
