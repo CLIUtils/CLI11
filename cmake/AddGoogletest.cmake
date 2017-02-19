@@ -4,8 +4,7 @@
 # gives output on failed tests without having to set an environment variable.
 #
 #
-
-find_package(Threads REQUIRED)
+set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
 
 include(DownloadProject)
 download_project(PROJ                googletest
@@ -15,6 +14,7 @@ download_project(PROJ                googletest
                  QUIET
 )
 
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR})
 
@@ -43,22 +43,7 @@ endif()
 
 # Target must already exist
 macro(add_gtest TESTNAME)
-    if(NOT WIN32 OR MINGW)
-        target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
-    else()
-        target_link_libraries(${TESTNAME} PUBLIC
-            debug ${GMOCK_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gmock${CMAKE_FIND_LIBRARY_SUFFIXES}
-            optimized ${GMOCK_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gmock${CMAKE_FIND_LIBRARY_SUFFIXES}
-
-            debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-            optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-
-            debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-            optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-            )
-        target_include_directories(${TESTNAME} PUBLIC ${gmock_SOURCE_DIR}/include ${gtest_SOURCE_DIR}/include)
-    endif()
-    target_link_libraries(${TESTNAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
     add_test(${TESTNAME} ${TESTNAME})
 endmacro()
 
