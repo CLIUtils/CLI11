@@ -89,6 +89,7 @@ public:
 
         parsed = false;
         selected_subcommands.clear();
+        missing.clear();
 
         for(const Option_p &opt : options) {
             opt->clear();

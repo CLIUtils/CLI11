@@ -162,7 +162,7 @@ TEST(RegEx, Longs) {
 
 }
 
-TEST(Regex, SplittingNew) {
+TEST(RegEx, SplittingNew) {
 
     std::vector<std::string> shorts;
     std::vector<std::string> longs;
@@ -182,4 +182,9 @@ TEST(Regex, SplittingNew) {
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}), CLI::BadNameString);
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"one","two"}), CLI::BadNameString);
 
+}
+
+TEST(String, ToLower) {
+
+    EXPECT_EQ("one and two", CLI::detail::to_lower("one And TWO"));
 }

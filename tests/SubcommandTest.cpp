@@ -98,4 +98,22 @@ TEST_F(SubcommandProgram, SpareSub) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(SubcommandProgram, CaseCheck) {
+    args = {"Start"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+
+    app.reset();
+    args = {"start"};
+    EXPECT_NO_THROW(run());
+
+
+    app.reset();
+    start->ignore_case();
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"Start"};
+    EXPECT_NO_THROW(run());
+}
 
