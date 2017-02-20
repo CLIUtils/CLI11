@@ -19,6 +19,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 if(MSVC)
     add_definitions("/W4")
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 add_library(CLI INTERFACE)

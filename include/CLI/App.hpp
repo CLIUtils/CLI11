@@ -519,9 +519,9 @@ public:
     }
 
     /// Check with name instead of pointer
-    bool got_subcommand(std::string name) const {
+    bool got_subcommand(std::string name_) const {
         for(const auto subcomptr : selected_subcommands)
-            if(subcomptr->check_name(name))
+            if(subcomptr->check_name(name_))
                 return true;
         return false;
     }
@@ -630,7 +630,7 @@ protected:
         // Collect positionals
         
         // Loop over all positionals
-        for(int i=0; i<missing.size(); i++) {
+        for(size_t i=0; i<missing.size(); i++) {
 
             // Skip non-positionals (speedup)
             if(missing.at(i).first != detail::Classifer::NONE)
