@@ -1,5 +1,6 @@
 ## Version 0.5 (in progress)
 
+* Added `->allow_extras()` to disable error on failure. Parse returns a vector of leftover options. Renamed error to `ExtrasError`, and now triggers on extra options too.
 * Added `require_subcommand` to `App`, to simplify forcing subcommands. Do not "chain" with `add_subcommand`, since that is the subcommand, not the master `App`.
 * Added printout of ini file text given parsed options, skips flags.
 * Support for quotes and spaces in ini files
