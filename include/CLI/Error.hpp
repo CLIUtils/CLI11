@@ -95,9 +95,9 @@ struct ExcludesError : public ParseError {
     ExcludesError(std::string name, std::string subname) : ParseError("ExcludesError", name + " excludes " + subname, 14) {}
 };
 
-/// Thrown when too many positionals are found
-struct PositionalError : public ParseError {
-    PositionalError(std::string name) : ParseError("PositionalError", name, 6) {}
+/// Thrown when too many positionals or options are found
+struct ExtrasError : public ParseError {
+    ExtrasError(std::string name) : ParseError("ExtrasError", name, 6) {}
 };
 
 /// This is just a safety check to verify selection and parsing match

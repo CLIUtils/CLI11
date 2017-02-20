@@ -89,13 +89,13 @@ TEST_F(SubcommandProgram, Working) {
 TEST_F(SubcommandProgram, Spare) {
     args = {"extra", "-d", "start", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::PositionalError);
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 TEST_F(SubcommandProgram, SpareSub) {
     args = {"-d", "start", "spare", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::PositionalError);
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 

@@ -18,7 +18,7 @@ TEST(Basic, Empty) {
     {
     CLI::App app;
     input_t spare = {"spare"};
-    EXPECT_THROW(app.parse(spare), CLI::PositionalError);
+    EXPECT_THROW(app.parse(spare), CLI::ExtrasError);
     }
     {
     CLI::App app;

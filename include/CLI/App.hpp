@@ -25,7 +25,9 @@
 
 namespace CLI {
 
+namespace detail {
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
+}
 
 class App;
 
@@ -42,8 +44,11 @@ protected:
     std::string name;
     std::string prog_description;
     std::vector<Option_p> options;
-    std::vector<std::string> missing_options;
-    std::deque<std::string> positionals;
+    
+    /// Pair of classifer, string for missing options. (extra detail is removed on returning from parse)
+    std::vector<std::pair<detail::Classifer, std::string>> missing;
+    bool no_extras {true};
+
     std::vector<App_p> subcommands;
     bool parsed {false};
     App* subcommand {nullptr};
@@ -115,6 +120,7 @@ public:
     App* add_subcommand(std::string name_, std::string description="", bool help=true) {
         subcommands.emplace_back(new App(description, help));
         subcommands.back()->name = name_;
+        subcommands.back()->allow_extras();
         return subcommands.back().get();
     }
 
@@ -337,17 +343,24 @@ public:
 
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
-    void parse(int argc, char **argv) {
+    std::vector<std::string> parse(int argc, char **argv) {
         progname = argv[0];
         std::vector<std::string> args;
         for(int i=argc-1; i>0; i--)
             args.push_back(argv[i]);
-        parse(args);
+        return parse(args);
+        
     }
 
-    /// The real work is done here. Expects a reversed vector
-    void parse(std::vector<std::string> &args) {
+    /// The real work is done here. Expects a reversed vector.
+    /// Changes the vector to the remaining options.
+    std::vector<std::string>& parse(std::vector<std::string> &args) {
         return _parse(args);
+    }
+
+    /// Remove the error when extras are left over on the command line.
+    void allow_extras (bool allow=true) {
+        no_extras = !allow;
     }
 
 
@@ -478,25 +491,25 @@ protected:
     }
 
     /// Selects a Classifer enum based on the type of the current argument
-    Classifer _recognize(std::string current) const {
+    detail::Classifer _recognize(std::string current) const {
         std::string dummy1, dummy2;
 
         if(current == "--")
-            return Classifer::POSITIONAL_MARK;
+            return detail::Classifer::POSITIONAL_MARK;
         for(const App_p &com : subcommands) {
             if(com->name == current)
-                return Classifer::SUBCOMMAND;
+                return detail::Classifer::SUBCOMMAND;
         }
         if(detail::split_long(current, dummy1, dummy2))
-            return Classifer::LONG;
+            return detail::Classifer::LONG;
         if(detail::split_short(current, dummy1, dummy2))
-            return Classifer::SHORT;
-        return Classifer::NONE;
+            return detail::Classifer::SHORT;
+        return detail::Classifer::NONE;
     }
 
 
     /// Internal parse function
-    void _parse(std::vector<std::string> &args) {
+    std::vector<std::string>& _parse(std::vector<std::string> &args) {
         parsed = true;
 
         bool positional_only = false;
@@ -504,23 +517,24 @@ protected:
         while(args.size()>0) {
 
 
-            Classifer classifer = positional_only ? Classifer::NONE : _recognize(args.back());
+            detail::Classifer classifer = positional_only ? detail::Classifer::NONE : _recognize(args.back());
             switch(classifer) {
-            case Classifer::POSITIONAL_MARK:
+            case detail::Classifer::POSITIONAL_MARK:
+                missing.emplace_back(classifer, args.back());
                 args.pop_back();
                 positional_only = true;
                 break;
-            case Classifer::SUBCOMMAND:
+            case detail::Classifer::SUBCOMMAND:
                 _parse_subcommand(args);
                 break;
-            case Classifer::LONG:
+            case detail::Classifer::LONG:
                 _parse_long(args);
                 break;
-            case Classifer::SHORT:
+            case detail::Classifer::SHORT:
                 _parse_short(args);
                 break;
-            case Classifer::NONE:
-                positionals.push_back(args.back());
+            case detail::Classifer::NONE:
+                missing.emplace_back(classifer, args.back());
                 args.pop_back();
             }
         }
@@ -531,11 +545,34 @@ protected:
 
 
         // Collect positionals
-        for(const Option_p& opt : options) {
-            while (opt->get_positional() && opt->count() < opt->get_expected() && positionals.size() > 0) {
-                opt->get_new();
-                opt->add_result(0, positionals.front());
-                positionals.pop_front();
+        
+        // Loop over all positionals
+        for(int i=0; i<missing.size(); i++) {
+
+            // Skip non-positionals (speedup)
+            if(missing.at(i).first != detail::Classifer::NONE)
+                continue; 
+
+            // Loop over all options
+            for(const Option_p& opt : options) {
+
+                // Eat options, one by one, until done
+                while (    opt->get_positional()
+                        && opt->count() < opt->get_expected()
+                        && i < missing.size()
+                        ) {
+
+                    // Skip options, only eat positionals
+                    if(missing.at(i).first != detail::Classifer::NONE) {
+                        i++;
+                        continue;
+                    }
+
+                    opt->get_new();
+                    opt->add_result(0, missing.at(i).second);
+                    missing.erase(missing.begin() + i); // Remove option that was eaten
+                    // Don't need to remove 1 from i since this while loop keeps reading i
+                }
             }
         }
 
@@ -591,11 +628,22 @@ protected:
         if(required_subcommand && subcommand == nullptr)
             throw RequiredError("Subcommand required");
 
-        if(positionals.size()>0)
-            throw PositionalError("[" + detail::join(positionals) + "]");
+        // Convert missing (pairs) to extras (string only)
+        args.resize(missing.size());
+        std::transform(std::begin(missing), std::end(missing), std::begin(args),
+                [](const std::pair<detail::Classifer, std::string>& val){return val.second;});
+        std::reverse(std::begin(args), std::end(args));
+
+        size_t num_left_over = std::count_if(std::begin(missing), std::end(missing),
+                [](std::pair<detail::Classifer, std::string>& val){return val.first != detail::Classifer::POSITIONAL_MARK;});
+
+        if(num_left_over>0 && no_extras)
+            throw ExtrasError("[" + detail::join(args, " ") + "]");
 
         pre_callback();
         run_callback();
+
+        return args;
     }
 
 
@@ -624,7 +672,7 @@ protected:
         auto op_ptr = std::find_if(std::begin(options), std::end(options), [name_](const Option_p &opt){return opt->check_sname(name_);});
 
         if(op_ptr == std::end(options)) {
-            missing_options.push_back("-" + name_);
+            missing.emplace_back(detail::Classifer::SHORT, "-" + name_);
             return;
         }
 
@@ -645,7 +693,7 @@ protected:
 
 
         if(num == -1) {
-            while(args.size()>0 && _recognize(args.back()) == Classifer::NONE) {
+            while(args.size()>0 && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(vnum, args.back());
                 args.pop_back();
             }
@@ -675,7 +723,7 @@ protected:
         auto op_ptr = std::find_if(std::begin(options), std::end(options), [name_](const Option_p &v){return v->check_lname(name_);});
 
         if(op_ptr == std::end(options)) {
-            missing_options.push_back("--" + name_);
+            missing.emplace_back(detail::Classifer::LONG, "--" + name_);
             return;
         }
 
@@ -699,7 +747,7 @@ protected:
         }
 
         if(num == -1) {
-            while(args.size() > 0 && _recognize(args.back()) == Classifer::NONE) {
+            while(args.size() > 0 && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(vnum, args.back());
                 args.pop_back();
             }
