@@ -90,7 +90,7 @@ namespace detail {
     enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
     , detail::enabler> = detail::dummy>
     constexpr const char* type_name() {
-        return "STRING";
+        return "TEXT";
 	}
 
 
