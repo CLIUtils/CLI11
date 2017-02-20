@@ -31,7 +31,7 @@ std::string join(const T& v, std::string delim = ",") {
 
 /// Trim whitespace from left of string
 std::string& ltrim(std::string &str) {
-    auto it = std::find_if(str.begin(), str.end(), [](char ch){ return !std::isspace<char>(ch , std::locale::classic());});
+    auto it = std::find_if(str.begin(), str.end(), [](char ch){ return !std::isspace<char>(ch , std::locale());});
     str.erase(str.begin(), it);
     return str;   
 }
@@ -46,7 +46,7 @@ std::string& ltrim(std::string &str, const std::string &filter) {
 
 /// Trim whitespace from right of string
 std::string& rtrim(std::string &str) {
-    auto it = std::find_if(str.rbegin(), str.rend(), [](char ch){ return !std::isspace<char>(ch, std::locale::classic());});
+    auto it = std::find_if(str.rbegin(), str.rend(), [](char ch){ return !std::isspace<char>(ch, std::locale());});
     str.erase(it.base() , str.end() );
     return str;   
 }
@@ -94,13 +94,13 @@ void format_help(std::stringstream &out, std::string name, std::string descripti
 /// Verify the first character of an option
 template<typename T>
 bool valid_first_char(T c) {
-    return std::isalpha(c, std::locale::classic()) || c=='_';
+    return std::isalpha(c, std::locale()) || c=='_';
 }
 
 /// Verify following characters of an option
 template<typename T>
 bool valid_later_char(T c) {
-    return std::isalnum(c, std::locale::classic()) || c=='_' || c=='.' || c=='-';
+    return std::isalnum(c, std::locale()) || c=='_' || c=='.' || c=='-';
 }
 
 /// Verify an option name
