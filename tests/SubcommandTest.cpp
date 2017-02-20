@@ -40,9 +40,21 @@ TEST_F(TApp, Callbacks) {
 
 }
 
-// TODO: Add directory test
+TEST_F(TApp, RequiredSubCom) {
+    auto sub1 = app.add_subcommand("sub1");
+    auto sub2 = app.add_subcommand("sub2");
 
+    app.require_subcommand();
 
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+
+    args = {"sub1"};
+
+    EXPECT_NO_THROW(run());
+
+}
 
 struct SubcommandProgram : public TApp {
 

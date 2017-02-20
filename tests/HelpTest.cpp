@@ -104,3 +104,18 @@ TEST(THelp, Excludes) {
     EXPECT_THAT(help, HasSubstr("Excludes: --op1"));
 }
 
+TEST(THelp, Subcom) {
+    CLI::App app{"My prog"};
+
+    app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [SUBCOMMAND]"));
+
+    app.require_subcommand();
+
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] SUBCOMMAND"));
+
+}
