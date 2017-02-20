@@ -41,6 +41,7 @@ protected:
     bool _required {false};
     int _expected {1};
     bool allow_vector {false};
+    bool case_insensitive {false};
     std::vector<std::function<bool(std::string)>> _validators;
 
     std::set<Option*> _requires;
@@ -232,6 +233,12 @@ public:
         return detail::join(name_list);
     }
 
+    /// Ignore case
+    Option* ignore_case(bool value = true) {
+        case_insensitive = value;
+        return this;
+    }
+
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
     bool check_name(std::string name) const {
 
@@ -239,18 +246,36 @@ public:
             return check_lname(name.substr(2));
         else if (name.length()>1 && name.substr(0,1) == "-")
             return check_sname(name.substr(1));
-        else
-            return name == pname;
+        else {
+            std::string local_pname = pname;
+            if(case_insensitive) {
+                local_pname = detail::to_lower(local_pname);
+                name = detail::to_lower(name);
+            }
+            return name == local_pname;
+        }
     }
 
     /// Requires "-" to be removed from string
-    bool check_sname(const std::string& name) const {
-        return std::find(std::begin(snames), std::end(snames), name) != std::end(snames);
+    bool check_sname(std::string name) const {
+        if(case_insensitive) {
+            name = detail::to_lower(name);
+            return std::find_if(std::begin(snames), std::end(snames), 
+                        [&name](std::string local_sname){return detail::to_lower(local_sname) == name;})
+                != std::end(snames);
+        } else
+            return std::find(std::begin(snames), std::end(snames), name) != std::end(snames);
     }
 
     /// Requires "--" to be removed from string
-    bool check_lname(const std::string& name) const {
-        return std::find(std::begin(lnames), std::end(lnames), name) != std::end(lnames);
+    bool check_lname(std::string name) const {
+         if(case_insensitive) {
+             name = detail::to_lower(name);
+            return std::find_if(std::begin(lnames), std::end(lnames), 
+                        [&name](std::string local_sname){return detail::to_lower(local_sname) == name;})
+                != std::end(lnames);
+        } else
+            return std::find(std::begin(lnames), std::end(lnames), name) != std::end(lnames);
     }
 
 

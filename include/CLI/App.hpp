@@ -123,6 +123,7 @@ public:
         subcommands.emplace_back(new App(description, help));
         subcommands.back()->name = name_;
         subcommands.back()->allow_extras();
+        subcommands.back()->case_insensitive = case_insensitive;
         return subcommands.back().get();
     }
 
@@ -308,6 +309,42 @@ public:
             std::stringstream out;
             out << member;
             retval->defaultval = out.str();
+        }
+        return retval;
+    }
+
+    /// Add set of options, string only, ignore case
+    Option* add_set_ignore_case(
+            std::string name_,
+            std::string &member,                      ///< The selected member of the set
+            std::set<std::string> _options,           ///< The set of posibilities
+            std::string description="",
+            bool defaulted=false
+            ) {
+
+        CLI::callback_t fun = [&member, _options](CLI::results_t res){
+            if(res.size()!=1) {
+                return false;
+            }
+            if(res[0].size()!=1) {
+                return false;
+            }
+            member = detail::to_lower(res.at(0).at(0));
+            auto iter = std::find_if(std::begin(_options), std::end(_options),
+                    [&member](std::string val){return detail::to_lower(val) == member;});
+            if(iter == std::end(_options))
+                return false;
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option* retval = add_option(name_, fun, description, defaulted);
+        retval->typeval = detail::type_name<std::string>();
+        retval->typeval += " in {" + detail::join(_options) + "}";
+        if(defaulted) {
+            retval->defaultval = detail::to_lower(member);
         }
         return retval;
     }
@@ -504,8 +541,8 @@ public:
         return local_name == name_to_check;
     }
 
-    /// Accept any case
-    App* anycase(bool value = true) {
+    /// Ignore case
+    App* ignore_case(bool value = true) {
         case_insensitive = value;
         return this;
     }

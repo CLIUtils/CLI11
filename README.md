@@ -102,6 +102,8 @@ app.add_set(option_name,
             help_string="",
             default=false)
 
+app.add_set_ignore_case(... // String only
+
 app.add_config(option_name,
                default_file_name="",
                help_string="Read an ini file",
@@ -125,14 +127,15 @@ Adding a configuration option is special. If it is present, it will be read alon
 The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup. Before parsing, you can set the following options:
 
 * `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
-* `->expected(N)`: Take `N` values instead of as many as possible, only for vector args
-* `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer
-* `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer
-* `->envname(name)`: Gets the value from the environment if present and not passed on the command line
+* `->expected(N)`: Take `N` values instead of as many as possible, only for vector args.
+* `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
+* `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
+* `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 * `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`.
-* `->check(CLI::ExistingFile)`: Requires that the file exists if given
-* `->check(CLI::ExistingDirectory)`: Requires that the directory exists
-* `->check(CLI::NonexistentPath)`: Requires that the path does not exist
+* `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
+* `->check(CLI::ExistingFile)`: Requires that the file exists if given.
+* `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
+* `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`.
@@ -157,7 +160,7 @@ everything after that is positional only.
 
 ## Subcommands
 
-Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands.
+Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent.
 
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
