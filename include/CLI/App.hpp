@@ -600,12 +600,23 @@ protected:
                 _parse_subcommand(args);
                 break;
             case detail::Classifer::LONG:
-                _parse_long(args);
+                // If already parsed a subcommand, don't accept options
+                if(selected_subcommands.size() > 0) {
+                    missing.emplace_back(classifer, args.back());
+                    args.pop_back();
+                } else
+                    _parse_long(args);
                 break;
             case detail::Classifer::SHORT:
-                _parse_short(args);
+                // If already parsed a subcommand, don't accept options
+                if(selected_subcommands.size() > 0) {
+                    missing.emplace_back(classifer, args.back());
+                    args.pop_back();
+                } else
+                    _parse_short(args);
                 break;
             case detail::Classifer::NONE:
+                // Probably a positional or something for a parent (sub)command
                 missing.emplace_back(classifer, args.back());
                 args.pop_back();
             }

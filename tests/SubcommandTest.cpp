@@ -18,6 +18,10 @@ TEST_F(TApp, BasicSubcommands) {
     args = {"sub2"};
     EXPECT_NO_THROW(run());
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
+
+    app.reset();
+    args = {"SUb2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 
@@ -98,6 +102,30 @@ TEST_F(SubcommandProgram, SpareSub) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(SubcommandProgram, Multiple) {
+    args = {"-d", "start", "-ffilename", "stop"};
+
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(2, app.get_subcommands().size());
+    EXPECT_EQ(1, dummy);
+    EXPECT_EQ("filename", file);
+}
+
+TEST_F(SubcommandProgram, MultipleOtherOrder) {
+    args = {"start", "-d", "-ffilename", "stop"};
+
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(SubcommandProgram, MultipleArgs) {
+    args = {"start", "stop"};
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(2, app.get_subcommands().size());
+
+}
+
 TEST_F(SubcommandProgram, CaseCheck) {
     args = {"Start"};
     EXPECT_THROW(run(), CLI::ExtrasError);
@@ -117,3 +145,35 @@ TEST_F(SubcommandProgram, CaseCheck) {
     EXPECT_NO_THROW(run());
 }
 
+TEST_F(TApp, SubcomInheritCaseCheck) {
+    app.ignore_case();
+    auto sub1 = app.add_subcommand("sub1");
+    auto sub2 = app.add_subcommand("sub2");
+
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(0, app.get_subcommands().size());
+    
+    app.reset();
+    args = {"SuB1"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(sub1, app.get_subcommands().at(0));
+
+    app.reset();
+    EXPECT_EQ(0, app.get_subcommands().size());
+
+    args = {"sUb2"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(sub2, app.get_subcommands().at(0));
+}
+
+TEST_F(SubcommandProgram, HelpOrder) {
+
+    args = {"-h"};
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"start", "-h"};
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"-h", "start"};
+    EXPECT_THROW(run(), CLI::CallForHelp);
+}

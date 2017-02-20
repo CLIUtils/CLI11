@@ -43,7 +43,6 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
     * Add tests: Add way for subclasses to return remaining options rather than throwing error
 * Chained subcommands are not tested, once a subcommand is given the rest of the options go to that subcommand, rather than allowing multiple subcommands. This is currently intentional behavior, but multiple base level subcommands, like [`Click`](http://click.pocoo.org) supports, might be considered in the future.
-* Test and refine support for case insensitive set and/or subcommands?
 * Throw error if `ignore_case` causes non-unique matches
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.

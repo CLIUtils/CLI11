@@ -1,6 +1,6 @@
 ## Version 0.5 (in progress)
 
-* `->ignore_case()` added to subcommands, options, and `add_set_ignore_case` (untested). Subcommand inherit setting from parent App on creation.
+* `->ignore_case()` added to subcommands, options, and `add_set_ignore_case`. Subcommand inherit setting from parent App on creation.
 * Subcommands now can be "chained", that is, left over arguments can now include subcommands that then get parsed. Subcommands are now a list (`get_subcommands`). Added `got_subcommand(App_or_name)` to check for subcommands. (untested)
 * Added `.allow_extras()` to disable error on failure. Parse returns a vector of leftover options. Renamed error to `ExtrasError`, and now triggers on extra options too. (untested)
 * Added `require_subcommand` to `App`, to simplify forcing subcommands. Do not "chain" with `add_subcommand`, since that is the subcommand, not the master `App`.

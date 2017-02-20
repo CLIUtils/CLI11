@@ -325,6 +325,47 @@ TEST_F(TApp, InSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, InIntSet) {
+
+    int choice;
+    app.add_set("-q,--quick", choice, {1, 2, 3});
+    
+    args = {"--quick", "2"};
+
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(2, choice);
+
+    app.reset();
+
+    args = {"--quick", "4"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, InSetIgnoreCase) {
+
+    std::string choice;
+    app.add_set_ignore_case("-q,--quick", choice, {"one", "Two", "THREE"});
+    
+    args = {"--quick", "One"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ("one", choice);
+
+    app.reset();
+    args = {"--quick", "two"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ("Two", choice); // Keeps caps from set
+
+    app.reset();
+    args = {"--quick", "ThrEE"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ("THREE", choice); // Keeps caps from set
+
+
+    app.reset();
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
