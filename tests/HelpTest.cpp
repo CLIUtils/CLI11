@@ -34,7 +34,7 @@ TEST(THelp, OptionalPositional) {
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
     EXPECT_THAT(help, HasSubstr("Positionals:"));
-    EXPECT_THAT(help, HasSubstr("something STRING"));
+    EXPECT_THAT(help, HasSubstr("something TEXT"));
     EXPECT_THAT(help, HasSubstr("My option here"));
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [something]"));
 
