@@ -41,8 +41,6 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 * Collect user feedback
     * Ini configuration support is basic (long options only, no vector support), is more needed?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
-    * Add tests: Add way for subclasses to return remaining options rather than throwing error
-* Chained subcommands are not tested, once a subcommand is given the rest of the options go to that subcommand, rather than allowing multiple subcommands. This is currently intentional behavior, but multiple base level subcommands, like [`Click`](http://click.pocoo.org) supports, might be considered in the future.
 * Throw error if `ignore_case` causes non-unique matches
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
@@ -164,7 +162,7 @@ Subcommands are naturally supported, with an infinite depth. To add a subcommand
 
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
-
+Multiple subcommands are allowed, to allow [`Click`](http://click.pocoo.org) like series of commands (order is preserved). If you want only one, throw `CLI::Success` or only process one.
 
 ## Subclassing
 

@@ -599,3 +599,35 @@ TEST_F(TApp, RangeDouble) {
     EXPECT_NO_THROW(run());
 }
 
+// Check to make sure progromatic access to left over is available
+TEST_F(TApp, AllowExtras) {
+
+    app.allow_extras();
+
+    bool val = true;
+    app.add_flag("-f", val);
+    EXPECT_FALSE(val);
+
+    args = {"-x", "-f"};
+    std::vector<std::string> left_over;
+    EXPECT_NO_THROW({left_over = run();});
+    EXPECT_TRUE(val);
+    EXPECT_EQ(std::vector<std::string>({"-x"}), left_over);
+    
+}
+
+TEST_F(TApp, AllowExtrasOrder) {
+
+    app.allow_extras();
+
+    args = {"-x", "-f"};
+    std::vector<std::string> left_over;
+    EXPECT_NO_THROW({left_over = run();});
+    EXPECT_EQ(std::vector<std::string>({"-f", "-x"}), left_over);
+    app.reset();
+
+    std::vector<std::string> left_over_2;
+    left_over_2 = app.parse(left_over);
+    EXPECT_EQ(left_over, left_over_2);
+
+}
