@@ -45,8 +45,8 @@ TEST_F(TApp, Callbacks) {
 }
 
 TEST_F(TApp, RequiredSubCom) {
-    auto sub1 = app.add_subcommand("sub1");
-    auto sub2 = app.add_subcommand("sub2");
+    app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
 
     app.require_subcommand();
 
