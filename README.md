@@ -41,7 +41,6 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 * Collect user feedback
     * Ini configuration support is basic (long options only, no vector support), is more needed?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
-* Throw error if `ignore_case` causes non-unique matches
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
 
@@ -158,7 +157,7 @@ everything after that is positional only.
 
 ## Subcommands
 
-Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent.
+Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore case).
 
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.

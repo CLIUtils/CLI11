@@ -1,0 +1,76 @@
+#include "app_helper.hpp"
+#include <stdlib.h>
+
+TEST_F(TApp, AddingExisting) {
+    app.add_flag("-c,--count");
+    EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingNoCase) {
+    app.add_flag("-C,--count")->ignore_case();
+    EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingNoCaseReversed) {
+    app.add_flag("-c,--count")->ignore_case();
+    EXPECT_THROW(app.add_flag("--cat,-C"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingWithCase) {
+    app.add_flag("-c,--count");
+    EXPECT_NO_THROW(app.add_flag("--Cat,-C"));
+}
+
+TEST_F(TApp, AddingExistingWithCaseAfter) {
+    auto count = app.add_flag("-c,--count");
+    app.add_flag("--Cat,-C");
+
+    EXPECT_THROW(count->ignore_case(), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingWithCaseAfter2) {
+    app.add_flag("-c,--count");
+    auto cat = app.add_flag("--Cat,-C");
+
+    EXPECT_THROW(cat->ignore_case(), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomMatching) {
+    app.add_subcommand("first");
+    app.add_subcommand("second");
+    app.add_subcommand("Second");
+    EXPECT_THROW(app.add_subcommand("first"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomMatchingWithCase) {
+    app.add_subcommand("first")->ignore_case();
+    EXPECT_THROW(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomMatchingWithCaseFirst) {
+    app.ignore_case();
+    app.add_subcommand("first");
+    EXPECT_THROW(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace) {
+    app.add_subcommand("first");
+    auto first = app.add_subcommand("fIrst");
+    
+    EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace2) {
+    auto first = app.add_subcommand("first");
+    app.add_subcommand("fIrst");
+    
+    EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, MultipleSubcomNoMatchingInplace2) {
+    auto first = app.add_subcommand("first");
+    auto second = app.add_subcommand("second");
+    
+    EXPECT_NO_THROW(first->ignore_case());
+    EXPECT_NO_THROW(second->ignore_case());
+}

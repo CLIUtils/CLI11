@@ -5,6 +5,7 @@ set(CLI_TESTS
     IniTest
     SimpleTest
     AppTest
+    CreationTest
     SubcommandTest
     HelpTest)
 

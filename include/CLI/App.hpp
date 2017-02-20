@@ -31,7 +31,6 @@ enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 
 class App;
 
-typedef std::unique_ptr<Option> Option_p;
 typedef std::unique_ptr<App> App_p;
 
 /// Creates a command line program, with very few defaults.
@@ -39,6 +38,7 @@ typedef std::unique_ptr<App> App_p;
 *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
 * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
+    friend Option;
 protected:
     
     std::string name;
@@ -63,6 +63,7 @@ protected:
     Option* ini_setting {nullptr};
 
     bool case_insensitive {false};
+    App* parent {nullptr};
    
 
 public:
@@ -124,7 +125,12 @@ public:
         subcommands.emplace_back(new App(description, help));
         subcommands.back()->name = name_;
         subcommands.back()->allow_extras();
+        subcommands.back()->parent = this;
         subcommands.back()->case_insensitive = case_insensitive;
+        for(const auto& subc : subcommands)
+            if(subc.get() != subcommands.back().get())
+                if(subc->check_name(subcommands.back()->name) || subcommands.back()->check_name(subc->name)) 
+                    throw OptionAlreadyAdded(subc->name);
         return subcommands.back().get();
     }
 
@@ -147,12 +153,13 @@ public:
             std::string description="", 
             bool defaulted=false
             ) {
-        Option myopt{name_, description, callback, defaulted};
+        Option myopt{name_, description, callback, defaulted, this};
+
         if(std::find_if(std::begin(options), std::end(options),
                     [&myopt](const Option_p &v){return *v == myopt;}) == std::end(options)) {
             options.emplace_back();
             Option_p& option = options.back();
-            option.reset(new Option(name_, description, callback, defaulted));
+            option.reset(new Option(name_, description, callback, defaulted, this));
             return option.get();
         } else
             throw OptionAlreadyAdded(myopt.get_name());
@@ -545,6 +552,12 @@ public:
     /// Ignore case
     App* ignore_case(bool value = true) {
         case_insensitive = value;
+        if(parent != nullptr) {
+            for(const auto &subc : parent->subcommands) {
+                if(subc.get() != this && (this->check_name(subc->name) || subc->check_name(this->name)))
+                    throw OptionAlreadyAdded(subc->name);
+            }
+        }
         return this;
     }
 

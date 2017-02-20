@@ -8,6 +8,7 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <memory>
 #include <set>
 
 #include "CLI/Error.hpp"
@@ -19,7 +20,11 @@ namespace CLI {
 typedef std::vector<std::vector<std::string>> results_t;
 typedef std::function<bool(results_t)> callback_t;
 
+class Option;
 class App;
+
+typedef std::unique_ptr<Option> Option_p;
+
 
 class Option {
     friend App;
@@ -48,16 +53,19 @@ protected:
     std::set<Option*> _excludes;
     std::string _envname;
 
-    // Results
+    /// Remember the parent app
+    App* parent;
+
+    /// Results of parsing
     results_t results;
 
-
-public:
-    Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool _default=true) :
-      description(description), callback(callback), _default(_default) {
+    /// Making an option by hand is not defined, it must be made by the App class
+    Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool _default=true, App* parent = nullptr) :
+      description(description), callback(callback), _default(_default), parent(parent) {
         std::tie(snames, lnames, pname) = detail::get_names(detail::split_names(name));
     }
 
+public:
 
     // This class is "true" if optio passed.
     operator bool() const {
@@ -211,13 +219,18 @@ public:
     /// If options share any of the same names, they are equal (not counting positional)
     bool operator== (const Option& other) const {
         for(const std::string &sname : snames)
-            for(const std::string &othersname : other.snames)
-                if(sname == othersname)
-                    return true;
+            if(other.check_sname(sname))
+                return true;
         for(const std::string &lname : lnames)
-            for(const std::string &otherlname : other.lnames)
-                if(lname == otherlname)
-                    return true;
+            if(other.check_lname(lname))
+                return true;
+        // We need to do the inverse, just in case we are ignore_case
+        for(const std::string &sname : other.snames)
+            if(check_sname(sname))
+                return true;
+        for(const std::string &lname : other.lnames)
+            if(check_lname(lname))
+                return true;
         return false;
     }
 
@@ -234,8 +247,14 @@ public:
     }
 
     /// Ignore case
+    /// The template hides the fact that we don't have the definition of App yet
+    /// You are never expected to add an argument to the template here
+    template<typename T=App>
     Option* ignore_case(bool value = true) {
         case_insensitive = value;
+        for(const Option_p& opt : dynamic_cast<T*>(parent)->options)
+            if(opt.get() != this && *opt == *this)
+                throw OptionAlreadyAdded(opt->get_name());
         return this;
     }
 
