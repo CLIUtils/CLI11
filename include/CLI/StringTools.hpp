@@ -113,7 +113,12 @@ inline bool valid_name_string(const std::string &str) {
     return true;
 }
 
-
+/// Return a lower case version of a string
+std::string inline to_lower(std::string str) {
+    std::transform(std::begin(str), std::end(str), std::begin(str),
+        [](const std::string::value_type x){return std::tolower(x,std::locale());});
+    return str;
+}
 
 }
 }

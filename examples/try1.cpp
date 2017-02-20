@@ -21,8 +21,8 @@ int main (int argc, char** argv) {
 
     std::cout << "Working on file: " << file << ", direct count: " << start->count("--file") << std::endl;
     std::cout << "Working on count: " << s->count() << ", direct count: " << stop->count("--count") << std::endl;
-    if(app.get_subcommand() != nullptr)
-        std::cout << "Subcommand:" << app.get_subcommand()->get_name() << std::endl;
+    for(auto subcom : app.get_subcommands())
+        std::cout << "Subcommand:" << subcom->get_name() << std::endl;
 
     return 0;
 }

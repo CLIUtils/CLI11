@@ -159,7 +159,7 @@ everything after that is positional only.
 
 Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands.
 
-All `App`s have a `get_subcommand()` method, which returns a pointer to the subcommand passed on the command line, or `nullptr` if no subcommand was given. A simple compare of this pointer to each subcommand allows choosing based on subcommand. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
+All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 
 

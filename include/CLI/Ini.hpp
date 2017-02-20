@@ -27,7 +27,7 @@ std::vector<std::string> parse_ini(std::istream &input) {
         size_t len = line.length();
         if(len > 1 && line[0] == '[' && line[len-1] == ']') {
             section = line.substr(1,len-2);
-            std::transform(std::begin(section), std::end(section), std::begin(section), ::tolower);
+            section = detail::to_lower(section);
         } else if (len > 0) {
             // Find = in string, split and recombine
             auto pos = line.find("=");

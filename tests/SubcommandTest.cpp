@@ -5,19 +5,19 @@ TEST_F(TApp, BasicSubcommands) {
     auto sub2 = app.add_subcommand("sub2");
 
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(nullptr, app.get_subcommand());
+    EXPECT_EQ(0, app.get_subcommands().size());
     
     app.reset();
     args = {"sub1"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(sub1, app.get_subcommand());
+    EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
-    EXPECT_EQ(nullptr, app.get_subcommand());
+    EXPECT_EQ(0, app.get_subcommands().size());
 
     args = {"sub2"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(sub2, app.get_subcommand());
+    EXPECT_EQ(sub2, app.get_subcommands().at(0));
 }
 
 
@@ -81,7 +81,7 @@ TEST_F(SubcommandProgram, Working) {
     EXPECT_NO_THROW(run());
 
     EXPECT_EQ(1, dummy);
-    EXPECT_EQ(start, app.get_subcommand());
+    EXPECT_EQ(start, app.get_subcommands().at(0));
     EXPECT_EQ("filename", file);
 }
 

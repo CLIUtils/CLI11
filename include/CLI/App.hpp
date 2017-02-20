@@ -51,7 +51,7 @@ protected:
 
     std::vector<App_p> subcommands;
     bool parsed {false};
-    App* subcommand {nullptr};
+    std::vector<App*> selected_subcommands;
     bool required_subcommand = false;
     std::string progname {"program"};
     Option* help_flag {nullptr};
@@ -61,6 +61,8 @@ protected:
     std::string ini_file;
     bool ini_required {false};
     Option* ini_setting {nullptr};
+
+    bool case_insensitive {false};
    
 
 public:
@@ -86,7 +88,7 @@ public:
     void reset() {
 
         parsed = false;
-        subcommand = nullptr;
+        selected_subcommands.clear();
 
         for(const Option_p &opt : options) {
             opt->clear();
@@ -396,8 +398,8 @@ public:
         else
             prev += " " + name;
 
-        if(subcommand != nullptr)
-            return subcommand->help(wid, prev);
+        if(selected_subcommands.size() > 0)
+            return selected_subcommands.at(0)->help(wid, prev);
 
         std::stringstream out;
         out << prog_description << std::endl;
@@ -467,9 +469,23 @@ public:
         return out.str();
     }
     
-    /// Get a subcommand pointer to the currently selected subcommand (after parsing)
-    App* get_subcommand() {
-        return subcommand;
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing)
+    std::vector<App*> get_subcommands() {
+        return selected_subcommands;
+    }
+
+
+    /// Check to see if selected subcommand in list
+    bool got_subcommand(App* subcom) const {
+        return std::find(std::begin(selected_subcommands), std::end(selected_subcommands), subcom) != std::end(selected_subcommands);
+    }
+
+    /// Check with name instead of pointer
+    bool got_subcommand(std::string name) const {
+        for(const auto subcomptr : selected_subcommands)
+            if(subcomptr->check_name(name))
+                return true;
+        return false;
     }
     
     /// Get the name of the current app
@@ -477,7 +493,25 @@ public:
         return name;
     }
 
+    /// Check the name, case insensitive if set
+    bool check_name(std::string name_to_check) const {
+        std::string local_name = name;
+        if(case_insensitive) {
+            local_name = detail::to_lower(name);
+            name_to_check = detail::to_lower(name_to_check);
+        }
+
+        return local_name == name_to_check;
+    }
+
+    /// Accept any case
+    App* anycase(bool value = true) {
+        case_insensitive = value;
+        return this;
+    }
+
     /// Require a subcommand to be given (does not affect help call)
+    /// Does not return a pointer since it is supposed to be called on the main App.
     void require_subcommand(bool value = true) {
         required_subcommand = value;
     }
@@ -497,7 +531,7 @@ protected:
         if(current == "--")
             return detail::Classifer::POSITIONAL_MARK;
         for(const App_p &com : subcommands) {
-            if(com->name == current)
+            if(com->check_name(current))
                 return detail::Classifer::SUBCOMMAND;
         }
         if(detail::split_long(current, dummy1, dummy2))
@@ -625,7 +659,7 @@ protected:
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
-        if(required_subcommand && subcommand == nullptr)
+        if(required_subcommand && selected_subcommands.size() == 0)
             throw RequiredError("Subcommand required");
 
         // Convert missing (pairs) to extras (string only)
@@ -647,11 +681,12 @@ protected:
     }
 
 
+    /// Parse a subcommand, modify args and continue
     void _parse_subcommand(std::vector<std::string> &args) {
         for(const App_p &com : subcommands) {
-            if(com->name == args.back()){ 
+            if(com->check_name(args.back())){ 
                 args.pop_back();
-                subcommand = com.get();
+                selected_subcommands.push_back(com.get());
                 com->parse(args);
                 return;
             }
