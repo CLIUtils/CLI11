@@ -467,6 +467,9 @@ public:
         bool pos=false;
         for(const Option_p &opt : options)
             if(opt->get_positional()) {
+                // A hidden positional should still show up in the usage statement
+                //if(detail::to_lower(opt->get_group()) == "hidden")
+                //    continue;
                 out << " " << opt->help_positional();
                 if(opt->has_description())
                     pos=true;
@@ -484,9 +487,12 @@ public:
         // Positional descriptions
         if(pos) {
             out << "Positionals:" << std::endl;
-            for(const Option_p &opt : options)
+            for(const Option_p &opt : options) {
+                if(detail::to_lower(opt->get_group()) == "hidden")
+                    continue;
                 if(opt->get_positional() && opt->has_description())
                     detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
+            }
             out << std::endl;
 
         }
@@ -495,6 +501,8 @@ public:
         // Options
         if(npos) {
             for (const std::string& group : groups) {
+                if(detail::to_lower(group) == "hidden")
+                    continue;
                 out << group << ":" << std::endl;
                 for(const Option_p &opt : options) {
                     if(opt->nonpositional() && opt->get_group() == group)

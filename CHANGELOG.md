@@ -1,5 +1,6 @@
 ## Version 0.5 (in progress)
 
+* Allow `Hidden` options.
 * Throw `OptionAlreadyAdded` errors for matching subcommands or options, with ignore-case included, tests
 * `->ignore_case()` added to subcommands, options, and `add_set_ignore_case`. Subcommands inherit setting from parent App on creation.
 * Subcommands now can be "chained", that is, left over arguments can now include subcommands that then get parsed. Subcommands are now a list (`get_subcommands`). Added `got_subcommand(App_or_name)` to check for subcommands.

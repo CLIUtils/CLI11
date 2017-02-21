@@ -9,6 +9,7 @@
 #include <fstream>
 
 using ::testing::HasSubstr;
+using ::testing::Not;
 
 TEST(THelp, Basic) {
     CLI::App app{"My prog"};
@@ -37,8 +38,28 @@ TEST(THelp, OptionalPositional) {
     EXPECT_THAT(help, HasSubstr("something TEXT"));
     EXPECT_THAT(help, HasSubstr("My option here"));
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [something]"));
-
 }
+
+TEST(THelp, Hidden) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("something", x, "My option here")
+        ->group("Hidden");
+    std::string y;
+    app.add_option("--another", y)
+        ->group("Hidden");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("-h,--help"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("[something]"));
+    EXPECT_THAT(help, Not(HasSubstr("something ")));
+    EXPECT_THAT(help, Not(HasSubstr("another")));
+}
+
 TEST(THelp, OptionalPositionalAndOptions) {
     CLI::App app{"My prog"};
     app.add_flag("-q,--quick");

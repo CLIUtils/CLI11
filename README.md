@@ -128,7 +128,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
 * `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
-* `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`.
+* `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print.
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
