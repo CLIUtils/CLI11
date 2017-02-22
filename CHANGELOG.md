@@ -1,4 +1,4 @@
-## Version 0.5 (in progress)
+## Version 0.5
 
 * Allow `Hidden` options.
 * Throw `OptionAlreadyAdded` errors for matching subcommands or options, with ignore-case included, tests
@@ -8,7 +8,7 @@
 * Added `require_subcommand` to `App`, to simplify forcing subcommands. Do **not** do `add_subcommand()->require_subcommand`, since that is the subcommand, not the master `App`.
 * Added printout of ini file text given parsed options, skips flags.
 * Support for quotes and spaces in ini files
-* Fixes to allow support for Windows (added Appveyor) (Use `-`, not `/` syntax)
+* Fixes to allow support for Windows (added Appveyor) (Uses `-`, not `/` syntax)
 
 ## Version 0.4
 
