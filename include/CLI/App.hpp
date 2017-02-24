@@ -132,8 +132,9 @@ public:
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
-    void set_callback(std::function<void()> callback) {
+    App* set_callback(std::function<void()> callback) {
         callback_ = callback;
+        return this;
     }
 
     /// Remove the error when extras are left over on the command line.
@@ -141,7 +142,7 @@ public:
         allow_extras_ = allow;
     }
 
-    /// Ignore case
+    /// Ignore case. Subcommand inherit value.
     App* ignore_case(bool value = true) {
         ignore_case_ = value;
         if(parent_ != nullptr) {
@@ -178,7 +179,7 @@ public:
     /// 
     ///     std::string filename
     ///     program.add_option("filename", filename, "description of filename");
-    
+    ///
     Option* add_option(
             std::string name,
             callback_t callback,
