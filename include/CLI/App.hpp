@@ -52,7 +52,7 @@ protected:
     std::vector<App_p> subcommands;
     bool parsed {false};
     std::vector<App*> selected_subcommands;
-    bool required_subcommand = false;
+    int required_subcommand = 0; ///< -1 for 1 or more, 0 for not required, # for exact number required
     std::string progname {"program"};
     Option* help_flag {nullptr};
 
@@ -476,7 +476,7 @@ public:
             }
 
         if(subcommands.size() > 0) {
-            if(required_subcommand)
+            if(required_subcommand != 0)
                 out << " SUBCOMMAND";
             else
                 out << " [SUBCOMMAND]";
@@ -571,7 +571,7 @@ public:
 
     /// Require a subcommand to be given (does not affect help call)
     /// Does not return a pointer since it is supposed to be called on the main App.
-    void require_subcommand(bool value = true) {
+    void require_subcommand(int value = -1) {
         required_subcommand = value;
     }
 
@@ -729,8 +729,10 @@ protected:
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
-        if(required_subcommand && selected_subcommands.size() == 0)
+        if(required_subcommand < 0 && selected_subcommands.size() == 0)
             throw RequiredError("Subcommand required");
+        else if(required_subcommand > 0 && selected_subcommands.size() != required_subcommand)
+            throw RequiredError(std::to_string(required_subcommand) + " subcommand(s) required");
 
         // Convert missing (pairs) to extras (string only)
         args.resize(missing.size());

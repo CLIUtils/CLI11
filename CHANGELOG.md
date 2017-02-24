@@ -1,3 +1,7 @@
+## Version 0.6
+
+* Added the ability to add a number to `.require_subcommand()`.
+
 ## Version 0.5
 
 * Allow `Hidden` options.

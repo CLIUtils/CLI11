@@ -60,6 +60,23 @@ TEST_F(TApp, RequiredSubCom) {
 
 }
 
+TEST_F(TApp, Required1SubCom) {
+    app.require_subcommand(1);
+    app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
+    app.add_subcommand("sub3");
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"sub1"};
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    args = {"sub1", "sub2"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App* start;
