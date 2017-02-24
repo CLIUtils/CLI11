@@ -116,6 +116,18 @@ protected:
 
 public:
 
+    /// @name Basic
+    ///@{
+
+    /// Count the total number of times an option was passed
+    int count() const {
+        int out = 0;
+        for(const std::vector<std::string>& vec : results_)
+            out += vec.size();
+        return out;
+    }
+
+    
     /// This class is true if option is passed.
     operator bool() const {
         return results_.size() > 0;
@@ -125,6 +137,10 @@ public:
     void clear() {
         results_.clear();
     }
+
+    ///@}
+    /// @name Configuration
+    ///@{
 
     /// Set the option as required
     Option* required(bool value = true) {
@@ -137,11 +153,6 @@ public:
         return required(value);
     }
 
-    /// True if this is a required option
-    bool get_required() const {
-        return required_;
-    }
-
     /// Set the number of expected arguments (Flags bypass this)
     Option* expected(int value) {
         if(value == 0)
@@ -150,31 +161,6 @@ public:
             throw IncorrectConstruction("You can only change the Expected arguments for vectors");
         expected_ = value;
         return this;
-    }
-
-    /// The number of arguments the option expects
-    int get_expected() const {
-        return expected_;
-    }
-
-    /// True if this has a default value
-    int get_default() const {
-        return default_;
-    }
-
-    /// True if the argument can be given directly
-    bool get_positional() const {
-        return pname_.length() > 0;
-    }
-
-    /// True if option has at least one non-positional name
-    bool nonpositional() const {
-        return (snames_.size() + lnames_.size()) > 0;
-    }
-
-    /// True if option has description
-    bool has_description() const {
-        return description_.length() > 0;
     }
 
     /// Adds a validator
@@ -190,15 +176,6 @@ public:
         return this;
     }
 
-    /// Get the group of this option
-    const std::string& get_group() const {
-        return group_;
-    }
-
-    /// Get the description
-    const std::string& get_description() const {
-        return description_;
-    }
 
     /// Sets required options
     Option* requires(Option* opt) {
@@ -236,6 +213,84 @@ public:
         return this;
     }
 
+    /// Ignore case
+    ///
+    /// The template hides the fact that we don't have the definition of App yet.
+    /// You are never expected to add an argument to the template here.
+    template<typename T=App>
+    Option* ignore_case(bool value = true) {
+        ignore_case_ = value;
+        for(const Option_p& opt : dynamic_cast<T*>(parent_)->options_)
+            if(opt.get() != this && *opt == *this)
+                throw OptionAlreadyAdded(opt->get_name());
+        return this;
+    }
+
+    ///@}
+    /// @name Accessors
+    ///@{
+    
+    /// True if this is a required option
+    bool get_required() const {
+        return required_;
+    }
+
+    /// The number of arguments the option expects
+    int get_expected() const {
+        return expected_;
+    }
+
+    /// True if this has a default value
+    int get_default() const {
+        return default_;
+    }
+
+    /// True if the argument can be given directly
+    bool get_positional() const {
+        return pname_.length() > 0;
+    }
+
+    /// True if option has at least one non-positional name
+    bool nonpositional() const {
+        return (snames_.size() + lnames_.size()) > 0;
+    }
+
+    /// True if option has description
+    bool has_description() const {
+        return description_.length() > 0;
+    }
+
+    /// Get the group of this option
+    const std::string& get_group() const {
+        return group_;
+    }
+
+    /// Get the description
+    const std::string& get_description() const {
+        return description_;
+    }
+
+    // Just the pname
+    std::string get_pname() const {
+        return pname_;
+    }
+    
+    ///@}
+    /// @name Help
+    ///@{
+
+    /// Gets a , sep list of names. Does not include the positional name if opt_only=true.
+    std::string get_name(bool opt_only=false) const {
+        std::vector<std::string> name_list;
+        if(!opt_only && pname_.length() > 0)
+            name_list.push_back(pname_);
+        for(const std::string& sname : snames_)
+            name_list.push_back("-"+sname);
+        for(const std::string& lname : lnames_)
+            name_list.push_back("--"+lname);
+        return detail::join(name_list);
+    }
+
     /// The name and any extras needed for positionals
     std::string help_positional() const {
         std::string out = pname_;
@@ -247,12 +302,54 @@ public:
         return out;
     }
 
-    // Just the pname
-    std::string get_pname() const {
-        return pname_;
+    /// The first half of the help print, name plus default, etc
+    std::string help_name() const {
+        std::stringstream out;
+        out << get_name(true) << help_aftername();
+        return out.str();
+    }
+    
+    /// pname with type info
+    std::string help_pname() const {
+        std::stringstream out;
+        out << get_pname() << help_aftername();
+        return out.str();
     }
 
+    /// This is the part after the name is printed but before the description
+    std::string help_aftername() const {
+        std::stringstream out;
 
+        if(get_expected() != 0) {
+            if(typeval_ != "")
+                out << " " << typeval_;
+            if(defaultval_ != "")
+                out << "=" << defaultval_; 
+            if(get_expected() > 1)
+                out << " x " << get_expected();
+            if(get_expected() == -1)
+                out << " ...";
+        }
+        if(envname_ != "")
+            out << " (env:" << envname_ << ")";
+        if(requires_.size() > 0) {
+            out << " Requires:";
+            for(const Option* opt : requires_)
+                out << " " << opt->get_name();
+        }
+        if(excludes_.size() > 0) {
+            out << " Excludes:";
+            for(const Option* opt : excludes_)
+                out << " " << opt->get_name();
+        }
+        return out.str();
+
+    }
+
+    ///@}
+    /// @name Parser tools
+    ///@{
+    
     /// Process the callback
     void run_callback() const {
         if(!callback_(results_))
@@ -281,31 +378,6 @@ public:
             if(check_lname(lname))
                 return true;
         return false;
-    }
-
-    /// Gets a , sep list of names. Does not include the positional name if opt_only=true.
-    std::string get_name(bool opt_only=false) const {
-        std::vector<std::string> name_list;
-        if(!opt_only && pname_.length() > 0)
-            name_list.push_back(pname_);
-        for(const std::string& sname : snames_)
-            name_list.push_back("-"+sname);
-        for(const std::string& lname : lnames_)
-            name_list.push_back("--"+lname);
-        return detail::join(name_list);
-    }
-
-    /// Ignore case
-    ///
-    /// The template hides the fact that we don't have the definition of App yet.
-    /// You are never expected to add an argument to the template here.
-    template<typename T=App>
-    Option* ignore_case(bool value = true) {
-        ignore_case_ = value;
-        for(const Option_p& opt : dynamic_cast<T*>(parent_)->options_)
-            if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name());
-        return this;
     }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
@@ -359,57 +431,6 @@ public:
         return results_.size() - 1;
     }
 
-    /// Count the total number of times an option was passed
-    int count() const {
-        int out = 0;
-        for(const std::vector<std::string>& vec : results_)
-            out += vec.size();
-        return out;
-    }
-
-    /// The first half of the help print, name plus default, etc
-    std::string help_name() const {
-        std::stringstream out;
-        out << get_name(true) << _help_aftername();
-        return out.str();
-    }
-    
-    /// pname with type info
-    std::string help_pname() const {
-        std::stringstream out;
-        out << get_pname() << _help_aftername();
-        return out.str();
-    }
-
-    /// This is the part after the name is printed but before the description
-    std::string _help_aftername() const {
-        std::stringstream out;
-
-        if(get_expected() != 0) {
-            if(typeval_ != "")
-                out << " " << typeval_;
-            if(defaultval_ != "")
-                out << "=" << defaultval_; 
-            if(get_expected() > 1)
-                out << " x " << get_expected();
-            if(get_expected() == -1)
-                out << " ...";
-        }
-        if(envname_ != "")
-            out << " (env:" << envname_ << ")";
-        if(requires_.size() > 0) {
-            out << " Requires:";
-            for(const Option* opt : requires_)
-                out << " " << opt->get_name();
-        }
-        if(excludes_.size() > 0) {
-            out << " Excludes:";
-            for(const Option* opt : excludes_)
-                out << " " << opt->get_name();
-        }
-        return out.str();
-
-    }
 
     /// Produce a flattened vector of results, vs. a vector of vectors.
     std::vector<std::string> flatten_results() const {
@@ -418,6 +439,8 @@ public:
             output.insert(std::end(output), std::begin(result), std::end(result));
         return output;
     }
+
+    ///@}
 
 };
 
