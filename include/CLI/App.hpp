@@ -109,10 +109,13 @@ protected:
     /// Pointer to the config option
     Option* config_ptr_ {nullptr};
 
-    ///@}
+    yy///@}
    
 
 public:
+    /// @name Basic
+    ///@{
+
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
     App(std::string description_="", bool help=true)
         : description_(description_) {
@@ -133,67 +136,49 @@ public:
         callback_ = callback;
     }
 
-    /// Reset the parsed data
-    void reset() {
-
-        selected_subcommands_.clear();
-        missing_.clear();
-
-        for(const Option_p &opt : options_) {
-            opt->clear();
-        }
-        for(const App_p &app : subcommands_) {
-            app->reset();
-        }
+    /// Remove the error when extras are left over on the command line.
+    void allow_extras (bool allow=true) {
+        allow_extras_ = allow;
     }
 
-    /// Get a pointer to the help flag.
-    Option* get_help_ptr() {
-        return help_ptr_;
-    }
-
-    /// Get a pointer to the config option.
-    Option* get_config_ptr() {
-        return config_ptr_;
-    }
-
-    /// Produce a string that could be read in as a config of the current values of the App
-    std::string config_to_str() const {
-        std::stringstream out;
-        for(const Option_p &opt : options_) {
-            if(opt->lnames.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
-                out << opt->lnames[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
-        }
-        return out.str();
-    }
-    
-    /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
-    App* add_subcommand(std::string name, std::string description="", bool help=true) {
-        subcommands_.emplace_back(new App(description, help));
-        subcommands_.back()->name_ = name;
-        subcommands_.back()->allow_extras();
-        subcommands_.back()->parent_ = this;
-        subcommands_.back()->ignore_case_ = ignore_case_;
-        for(const auto& subc : subcommands_)
-            if(subc.get() != subcommands_.back().get())
-                if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_)) 
+    /// Ignore case
+    App* ignore_case(bool value = true) {
+        ignore_case_ = value;
+        if(parent_ != nullptr) {
+            for(const auto &subc : parent_->subcommands_) {
+                if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
                     throw OptionAlreadyAdded(subc->name_);
-        return subcommands_.back().get();
+            }
+        }
+        return this;
     }
 
+    /// Require a subcommand to be given (does not affect help call)
+    /// Does not return a pointer since it is supposed to be called on the main App.
+    void require_subcommand(int value = -1) {
+        require_subcommand_ = value;
+    }
+
+
+
+    ///@}
+    /// @name Adding options
+    ///@{
+    
     /// Add an option, will automatically understand the type for common types.
-    /** To use, create a variable with the expected type, and pass it in after the name.
-     * After start is called, you can use count to see if the value was passed, and
-     * the value will be initialized properly. 
-     *
-     * ->required(), ->default, and the validators are options_, 
-     * The positional options take an optional number of arguments.
-     *
-     * For example,
-     *
-     *     std::string filename
-     *     program.add_option("filename", filename, "description of filename");
-     */
+    ///
+    /// To use, create a variable with the expected type, and pass it in after the name.
+    /// After start is called, you can use count to see if the value was passed, and
+    /// the value will be initialized properly. Numbers, vectors, and strings are supported.
+    /// 
+    /// ->required(), ->default, and the validators are options, 
+    /// The positional options take an optional number of arguments.
+    /// 
+    /// For example,
+    /// 
+    ///     std::string filename
+    ///     program.add_option("filename", filename, "description of filename");
+    
     Option* add_option(
             std::string name,
             callback_t callback,
@@ -213,7 +198,7 @@ public:
 
     }
 
-    /// Add option for string
+    /// Add option for non-vectors
     template<typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Option* add_option(
             std::string name,
@@ -243,7 +228,7 @@ public:
         return retval;
     }
 
-    /// Add option for vector of results
+    /// Add option for vectors
     template<typename T>
     Option* add_option(
             std::string name,
@@ -271,7 +256,6 @@ public:
             retval->defaultval =  "[" + detail::join(variable) + "]";
         return retval;
     }
-
 
     /// Add option for flag
     Option* add_flag(
@@ -430,10 +414,38 @@ public:
         }
         return false;
     }
+    
+    ///@}
+    /// @name Subcommmands
+    ///@{
+
+    /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
+    App* add_subcommand(std::string name, std::string description="", bool help=true) {
+        subcommands_.emplace_back(new App(description, help));
+        subcommands_.back()->name_ = name;
+        subcommands_.back()->allow_extras();
+        subcommands_.back()->parent_ = this;
+        subcommands_.back()->ignore_case_ = ignore_case_;
+        for(const auto& subc : subcommands_)
+            if(subc.get() != subcommands_.back().get())
+                if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_)) 
+                    throw OptionAlreadyAdded(subc->name_);
+        return subcommands_.back().get();
+    }
+
+
+
+    ///@}
+    /// @name Extras for subclassing
+    ///@{
 
     /// This allows subclasses to inject code before callbacks but after parse
     /// This does not run if any errors or help is thrown.
     virtual void pre_callback() {}
+
+    ///@}
+    /// @name Parsing
+    ///@{
 
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
@@ -452,12 +464,6 @@ public:
         return _parse(args);
     }
 
-    /// Remove the error when extras are left over on the command line.
-    void allow_extras (bool allow=true) {
-        allow_extras_ = allow;
-    }
-
-
     /// Print a nice error message and return the exit code
     int exit(const Error& e) const {
         if(e.exit_code != 0) {
@@ -472,6 +478,24 @@ public:
         return e.exit_code;
     }
 
+    /// Reset the parsed data
+    void reset() {
+
+        selected_subcommands_.clear();
+        missing_.clear();
+
+        for(const Option_p &opt : options_) {
+            opt->clear();
+        }
+        for(const App_p &app : subcommands_) {
+            app->reset();
+        }
+    }
+
+    ///@}
+    /// @name Post parsing
+    ///@{
+
     /// Counts the number of times the given option was passed.
     int count(std::string name) const {
         for(const Option_p &opt : options_) {
@@ -480,6 +504,41 @@ public:
             }
         }
         throw OptionNotFound(name);
+    }
+
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing)
+    std::vector<App*> get_subcommands() {
+        return selected_subcommands_;
+    }
+
+
+    /// Check to see if selected subcommand in list
+    bool got_subcommand(App* subcom) const {
+        return std::find(std::begin(selected_subcommands_),
+                         std::end(selected_subcommands_), subcom)
+                           != std::end(selected_subcommands_);
+    }
+
+    /// Check with name instead of pointer
+    bool got_subcommand(std::string name) const {
+        for(const auto subcomptr : selected_subcommands_)
+            if(subcomptr->check_name(name))
+                return true;
+        return false;
+    }
+    
+    ///@}
+    /// @name Help
+    ///@{
+
+    /// Produce a string that could be read in as a config of the current values of the App
+    std::string config_to_str() const {
+        std::stringstream out;
+        for(const Option_p &opt : options_) {
+            if(opt->lnames.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
+                out << opt->lnames[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
+        }
+        return out.str();
     }
 
     /// Makes a help message, with a column wid for column 1
@@ -568,34 +627,27 @@ public:
         }
         return out.str();
     }
-    
-    /// Get a subcommand pointer list to the currently selected subcommands (after parsing)
-    std::vector<App*> get_subcommands() {
-        return selected_subcommands_;
+
+    ///@}
+    /// @name Getters
+    ///@{
+
+    /// Get a pointer to the help flag.
+    Option* get_help_ptr() {
+        return help_ptr_;
     }
 
-
-    /// Check to see if selected subcommand in list
-    bool got_subcommand(App* subcom) const {
-        return std::find(std::begin(selected_subcommands_),
-                         std::end(selected_subcommands_), subcom)
-                           != std::end(selected_subcommands_);
+    /// Get a pointer to the config option.
+    Option* get_config_ptr() {
+        return config_ptr_;
     }
 
-    /// Check with name instead of pointer
-    bool got_subcommand(std::string name) const {
-        for(const auto subcomptr : selected_subcommands_)
-            if(subcomptr->check_name(name))
-                return true;
-        return false;
-    }
-    
     /// Get the name of the current app
     std::string get_name() const {
         return name_;
     }
 
-    /// Check the name_, case insensitive if set
+    /// Check the name, case insensitive if set
     bool check_name(std::string name_to_check) const {
         std::string local_name = name_;
         if(ignore_case_) {
@@ -606,23 +658,8 @@ public:
         return local_name == name_to_check;
     }
 
-    /// Ignore case
-    App* ignore_case(bool value = true) {
-        ignore_case_ = value;
-        if(parent_ != nullptr) {
-            for(const auto &subc : parent_->subcommands_) {
-                if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
-                    throw OptionAlreadyAdded(subc->name_);
-            }
-        }
-        return this;
-    }
+    ///@}
 
-    /// Require a subcommand to be given (does not affect help call)
-    /// Does not return a pointer since it is supposed to be called on the main App.
-    void require_subcommand(int value = -1) {
-        require_subcommand_ = value;
-    }
 
 protected:
 
