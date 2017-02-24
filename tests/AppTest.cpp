@@ -518,8 +518,8 @@ TEST_F(TApp, RequiresMultiFlags) {
 
 TEST_F(TApp, RequiresMixedFlags) {
     CLI::Option* opt1 = app.add_flag("--opt1");
-    CLI::Option* opt2 = app.add_flag("--opt2");
-    CLI::Option* opt3 = app.add_flag("--opt3");
+    app.add_flag("--opt2");
+    app.add_flag("--opt3");
     app.add_flag("--optall")->requires(opt1, "--opt2", "--opt3");
 
     EXPECT_NO_THROW(run());

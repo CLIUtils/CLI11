@@ -817,7 +817,7 @@ protected:
 
         if(require_subcommand_ < 0 && selected_subcommands_.size() == 0)
             throw RequiredError("Subcommand required");
-        else if(require_subcommand_ > 0 && selected_subcommands_.size() != require_subcommand_)
+        else if(require_subcommand_ > 0 && selected_subcommands_.size() != (int) require_subcommand_)
             throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
 
         // Convert missing (pairs) to extras (string only)
