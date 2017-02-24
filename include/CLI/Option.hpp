@@ -139,7 +139,7 @@ public:
     }
 
     ///@}
-    /// @name Configuration
+    /// @name Setting options
     ///@{
 
     /// Set the option as required
@@ -276,7 +276,7 @@ public:
     }
     
     ///@}
-    /// @name Help
+    /// @name Help tools
     ///@{
 
     /// Gets a , sep list of names. Does not include the positional name if opt_only=true.
