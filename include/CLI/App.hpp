@@ -109,7 +109,7 @@ protected:
     /// Pointer to the config option
     Option* config_ptr_ {nullptr};
 
-    yy///@}
+    ///@}
    
 
 public:
@@ -218,14 +218,14 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        Option* retval = add_option(name, fun, description, defaulted);
-        retval->typeval = detail::type_name<T>();
+        Option* opt = add_option(name, fun, description, defaulted);
+        opt->typeval_ = detail::type_name<T>();
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            retval->defaultval = out.str();
+            opt->defaultval_ = out.str();
         }
-        return retval;
+        return opt;
     }
 
     /// Add option for vectors
@@ -248,13 +248,13 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        Option* retval =  add_option(name, fun, description, defaulted);
-        retval->allow_vector = true;
-        retval->_expected = -1;
-        retval->typeval = detail::type_name<T>();
+        Option* opt =  add_option(name, fun, description, defaulted);
+        opt->allow_vector_ = true;
+        opt->expected_ = -1;
+        opt->typeval_ = detail::type_name<T>();
         if(defaulted)
-            retval->defaultval =  "[" + detail::join(variable) + "]";
-        return retval;
+            opt->defaultval_ =  "[" + detail::join(variable) + "]";
+        return opt;
     }
 
     /// Add option for flag
@@ -269,7 +269,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->_expected = 0;
+        opt->expected_ = 0;
         return opt;
     }
 
@@ -291,7 +291,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->_expected = 0;
+        opt->expected_ = 0;
         return opt;
     }
 
@@ -313,7 +313,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->_expected = 0;
+        opt->expected_ = 0;
         return opt;
     }
 
@@ -323,12 +323,12 @@ public:
     Option* add_set(
             std::string name,
             T &member,                     ///< The selected member of the set
-            std::set<T> _options,           ///< The set of posibilities
+            std::set<T> options,           ///< The set of posibilities
             std::string description="",
             bool defaulted=false
             ) {
 
-        CLI::callback_t fun = [&member, _options](CLI::results_t res){
+        CLI::callback_t fun = [&member, options](CLI::results_t res){
             if(res.size()!=1) {
                 return false;
             }
@@ -338,30 +338,30 @@ public:
             bool retval = detail::lexical_cast(res[0][0], member);
             if(!retval)
                 return false;
-            return std::find(std::begin(_options), std::end(_options), member) != std::end(_options);
+            return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option* retval = add_option(name, fun, description, defaulted);
-        retval->typeval = detail::type_name<T>();
-        retval->typeval += " in {" + detail::join(_options) + "}";
+        Option* opt = add_option(name, fun, description, defaulted);
+        opt->typeval_ = detail::type_name<T>();
+        opt->typeval_ += " in {" + detail::join(options) + "}";
         if(defaulted) {
             std::stringstream out;
             out << member;
-            retval->defaultval = out.str();
+            opt->defaultval_ = out.str();
         }
-        return retval;
+        return opt;
     }
 
     /// Add set of options, string only, ignore case
     Option* add_set_ignore_case(
             std::string name,
             std::string &member,                      ///< The selected member of the set
-            std::set<std::string> _options,           ///< The set of posibilities
+            std::set<std::string> options,           ///< The set of posibilities
             std::string description="",
             bool defaulted=false
             ) {
 
-        CLI::callback_t fun = [&member, _options](CLI::results_t res){
+        CLI::callback_t fun = [&member, options](CLI::results_t res){
             if(res.size()!=1) {
                 return false;
             }
@@ -369,9 +369,9 @@ public:
                 return false;
             }
             member = detail::to_lower(res.at(0).at(0));
-            auto iter = std::find_if(std::begin(_options), std::end(_options),
+            auto iter = std::find_if(std::begin(options), std::end(options),
                     [&member](std::string val){return detail::to_lower(val) == member;});
-            if(iter == std::end(_options))
+            if(iter == std::end(options))
                 return false;
             else {
                 member = *iter;
@@ -379,13 +379,13 @@ public:
             }
         };
 
-        Option* retval = add_option(name, fun, description, defaulted);
-        retval->typeval = detail::type_name<std::string>();
-        retval->typeval += " in {" + detail::join(_options) + "}";
+        Option* opt = add_option(name, fun, description, defaulted);
+        opt->typeval_ = detail::type_name<std::string>();
+        opt->typeval_ += " in {" + detail::join(options) + "}";
         if(defaulted) {
-            retval->defaultval = detail::to_lower(member);
+            opt->defaultval_ = detail::to_lower(member);
         }
-        return retval;
+        return opt;
     }
 
 
@@ -535,8 +535,8 @@ public:
     std::string config_to_str() const {
         std::stringstream out;
         for(const Option_p &opt : options_) {
-            if(opt->lnames.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
-                out << opt->lnames[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
+            if(opt->lnames_.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
+                out << opt->lnames_[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
         }
         return out.str();
     }
@@ -781,8 +781,8 @@ protected:
         
         // Get envname options if not yet passed
         for(const Option_p& opt : options_) {
-            if (opt->count() == 0 && opt->_envname != "") {
-                char *ename = std::getenv(opt->_envname.c_str());
+            if (opt->count() == 0 && opt->envname_ != "") {
+                char *ename = std::getenv(opt->envname_.c_str());
                 if(ename != nullptr) {
                     opt->get_new();
                     opt->add_result(0, std::string(ename));
@@ -804,11 +804,11 @@ protected:
                     && (opt->count() < opt->get_expected() || opt->count() == 0))
                 throw RequiredError(opt->get_name());
             // Requires
-            for (const Option* opt_req : opt->_requires)
+            for (const Option* opt_req : opt->requires_)
                 if (opt->count() > 0 && opt_req->count() == 0)
                     throw RequiresError(opt->get_name(), opt_req->get_name());
             // Excludes
-            for (const Option* opt_ex : opt->_excludes)
+            for (const Option* opt_ex : opt->excludes_)
                 if (opt->count() > 0 && opt_ex->count() != 0)
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }

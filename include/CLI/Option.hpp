@@ -32,71 +32,71 @@ protected:
     /// @name Names
     ///@{
 
-    /// A list of the short names (-a) without the leading dashes
-    std::vector<std::string> snames;
+    /// A list of the short names (`-a`) without the leading dashes
+    std::vector<std::string> snames_;
 
-    /// A list of the long names (--a) without the leading dashes
-    std::vector<std::string> lnames;
+    /// A list of the long names (`--a`) without the leading dashes
+    std::vector<std::string> lnames_;
 
     /// A positional name
-    std::string pname;
+    std::string pname_;
 
     /// If given, check the environment for this option
-    std::string _envname;
+    std::string envname_;
 
     ///@}
     /// @name Help
     ///@{
     
     /// The description for help strings
-    std::string description;
+    std::string description_;
 
     /// A human readable default value, usually only set if default is true in creation
-    std::string defaultval;
+    std::string defaultval_;
 
     /// A human readable type value, set when App creates this
-    std::string typeval;
+    std::string typeval_;
 
     /// The group membership
-    std::string _group {"Options"};
+    std::string group_ {"Options"};
 
     /// True if this option has a default
-    bool _default {false};
+    bool default_ {false};
 
     ///@}
     /// @name Configuration
     ///@{
     
     /// True if this is a required option
-    bool _required {false};
+    bool required_ {false};
 
     /// The number of expected values, 0 for flag, -1 for unlimited vector
-    int _expected {1};
+    int expected_ {1};
 
-    /// A private setting to allow non-vector args to not be able to accept incorrect _expected values
-    bool allow_vector {false};
+    /// A private setting to allow non-vector args to not be able to accept incorrect expected values
+    bool allow_vector_ {false};
     
     /// Ignore the case when matching (option, not value)
-    bool case_insensitive {false};
+    bool ignore_case_ {false};
 
     /// A list of validators to run on each value parsed
-    std::vector<std::function<bool(std::string)>> _validators;
+    std::vector<std::function<bool(std::string)>> validators_;
 
     /// A list of options that are required with this option
-    std::set<Option*> _requires;
+    std::set<Option*> requires_;
 
     /// A list of options that are excluded with this option
-    std::set<Option*> _excludes;
+    std::set<Option*> excludes_;
 
     ///@}
     /// @name Other
     ///@{
 
     /// Remember the parent app
-    App* parent;
+    App* parent_;
 
     /// Options store a callback to do all the work
-    callback_t callback;
+    callback_t callback_;
 
 
     ///@}
@@ -104,31 +104,31 @@ protected:
     ///@{
 
     /// Results of parsing
-    results_t results;
+    results_t results_;
 
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
-    Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool _default=true, App* parent = nullptr) :
-      description(description), callback(callback), _default(_default), parent(parent) {
-        std::tie(snames, lnames, pname) = detail::get_names(detail::split_names(name));
+    Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool default_=true, App* parent = nullptr) :
+      description_(description), callback_(callback), default_(default_), parent_(parent) {
+        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(name));
     }
 
 public:
 
-    // This class is "true" if optio passed.
+    /// This class is true if option is passed.
     operator bool() const {
-        return results.size() > 0;
+        return results_.size() > 0;
     }
 
     /// Clear the parsed results (mostly for testing)
     void clear() {
-        results.clear();
+        results_.clear();
     }
 
     /// Set the option as required
     Option* required(bool value = true) {
-        _required = value;
+        required_ = value;
         return this;
     }
 
@@ -139,70 +139,70 @@ public:
 
     /// True if this is a required option
     bool get_required() const {
-        return _required;
+        return required_;
     }
 
     /// Set the number of expected arguments (Flags bypass this)
     Option* expected(int value) {
         if(value == 0)
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
-        if(!allow_vector && value != 1)
+        if(!allow_vector_ && value != 1)
             throw IncorrectConstruction("You can only change the Expected arguments for vectors");
-        _expected = value;
+        expected_ = value;
         return this;
     }
 
     /// The number of arguments the option expects
     int get_expected() const {
-        return _expected;
+        return expected_;
     }
 
     /// True if this has a default value
     int get_default() const {
-        return _default;
+        return default_;
     }
 
     /// True if the argument can be given directly
     bool get_positional() const {
-        return pname.length() > 0;
+        return pname_.length() > 0;
     }
 
     /// True if option has at least one non-positional name
     bool nonpositional() const {
-        return (snames.size() + lnames.size()) > 0;
+        return (snames_.size() + lnames_.size()) > 0;
     }
 
     /// True if option has description
     bool has_description() const {
-        return description.length() > 0;
+        return description_.length() > 0;
     }
 
     /// Adds a validator
     Option* check(std::function<bool(std::string)> validator) {
 
-        _validators.push_back(validator);
+        validators_.push_back(validator);
         return this;
     }
 
     /// Changes the group membership
     Option* group(std::string name) {
-        _group = name;
+        group_ = name;
         return this;
     }
 
     /// Get the group of this option
     const std::string& get_group() const {
-        return _group;
+        return group_;
     }
 
     /// Get the description
     const std::string& get_description() const {
-        return description;
+        return description_;
     }
 
     /// Sets required options
     Option* requires(Option* opt) {
-        auto tup = _requires.insert(opt);
+        auto tup = requires_.insert(opt);
         if(!tup.second)
             throw OptionAlreadyAdded(get_name() + " requires " + opt->get_name());
         return this;
@@ -217,7 +217,7 @@ public:
 
     /// Sets excluded options
     Option* excludes(Option* opt) {
-        auto tup = _excludes.insert(opt);
+        auto tup = excludes_.insert(opt);
         if(!tup.second)
             throw OptionAlreadyAdded(get_name() + " excludes " + opt->get_name());
         return this;
@@ -232,13 +232,13 @@ public:
 
     /// Sets environment variable to read if no option given
     Option* envname(std::string name) {
-        _envname = name;
+        envname_ = name;
         return this;
     }
 
     /// The name and any extras needed for positionals
     std::string help_positional() const {
-        std::string out = pname;
+        std::string out = pname_;
         if(get_expected()<1)
             out = out + "x" + std::to_string(get_expected());
         else if(get_expected()==-1)
@@ -249,17 +249,17 @@ public:
 
     // Just the pname
     std::string get_pname() const {
-        return pname;
+        return pname_;
     }
 
 
     /// Process the callback
     void run_callback() const {
-        if(!callback(results))
+        if(!callback_(results_))
             throw ConversionError(get_name() + "=" + detail::join(flatten_results()));
-        if(_validators.size()>0) {
+        if(validators_.size()>0) {
             for(const std::string & result : flatten_results())
-                for(const std::function<bool(std::string)> &vali : _validators)
+                for(const std::function<bool(std::string)> &vali : validators_)
                     if(!vali(result))
                         throw ValidationError(get_name() + "=" + result);
         }
@@ -267,17 +267,17 @@ public:
 
     /// If options share any of the same names, they are equal (not counting positional)
     bool operator== (const Option& other) const {
-        for(const std::string &sname : snames)
+        for(const std::string &sname : snames_)
             if(other.check_sname(sname))
                 return true;
-        for(const std::string &lname : lnames)
+        for(const std::string &lname : lnames_)
             if(other.check_lname(lname))
                 return true;
         // We need to do the inverse, just in case we are ignore_case
-        for(const std::string &sname : other.snames)
+        for(const std::string &sname : other.snames_)
             if(check_sname(sname))
                 return true;
-        for(const std::string &lname : other.lnames)
+        for(const std::string &lname : other.lnames_)
             if(check_lname(lname))
                 return true;
         return false;
@@ -286,11 +286,11 @@ public:
     /// Gets a , sep list of names. Does not include the positional name if opt_only=true.
     std::string get_name(bool opt_only=false) const {
         std::vector<std::string> name_list;
-        if(!opt_only && pname.length() > 0)
-            name_list.push_back(pname);
-        for(const std::string& sname : snames)
+        if(!opt_only && pname_.length() > 0)
+            name_list.push_back(pname_);
+        for(const std::string& sname : snames_)
             name_list.push_back("-"+sname);
-        for(const std::string& lname : lnames)
+        for(const std::string& lname : lnames_)
             name_list.push_back("--"+lname);
         return detail::join(name_list);
     }
@@ -301,8 +301,8 @@ public:
     /// You are never expected to add an argument to the template here.
     template<typename T=App>
     Option* ignore_case(bool value = true) {
-        case_insensitive = value;
-        for(const Option_p& opt : dynamic_cast<T*>(parent)->options_)
+        ignore_case_ = value;
+        for(const Option_p& opt : dynamic_cast<T*>(parent_)->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name());
         return this;
@@ -316,8 +316,8 @@ public:
         else if (name.length()>1 && name.substr(0,1) == "-")
             return check_sname(name.substr(1));
         else {
-            std::string local_pname = pname;
-            if(case_insensitive) {
+            std::string local_pname = pname_;
+            if(ignore_case_) {
                 local_pname = detail::to_lower(local_pname);
                 name = detail::to_lower(name);
             }
@@ -327,42 +327,42 @@ public:
 
     /// Requires "-" to be removed from string
     bool check_sname(std::string name) const {
-        if(case_insensitive) {
+        if(ignore_case_) {
             name = detail::to_lower(name);
-            return std::find_if(std::begin(snames), std::end(snames), 
+            return std::find_if(std::begin(snames_), std::end(snames_), 
                         [&name](std::string local_sname){return detail::to_lower(local_sname) == name;})
-                != std::end(snames);
+                != std::end(snames_);
         } else
-            return std::find(std::begin(snames), std::end(snames), name) != std::end(snames);
+            return std::find(std::begin(snames_), std::end(snames_), name) != std::end(snames_);
     }
 
     /// Requires "--" to be removed from string
     bool check_lname(std::string name) const {
-         if(case_insensitive) {
+         if(ignore_case_) {
              name = detail::to_lower(name);
-            return std::find_if(std::begin(lnames), std::end(lnames), 
+            return std::find_if(std::begin(lnames_), std::end(lnames_), 
                         [&name](std::string local_sname){return detail::to_lower(local_sname) == name;})
-                != std::end(lnames);
+                != std::end(lnames_);
         } else
-            return std::find(std::begin(lnames), std::end(lnames), name) != std::end(lnames);
+            return std::find(std::begin(lnames_), std::end(lnames_), name) != std::end(lnames_);
     }
 
 
     /// Puts a result at position r
     void add_result(int r, std::string s) {
-        results.at(r).push_back(s);
+        results_.at(r).push_back(s);
     }
 
     /// Starts a new results vector (used for r in add_result)
     int get_new() {
-        results.emplace_back();
-        return results.size() - 1;
+        results_.emplace_back();
+        return results_.size() - 1;
     }
 
     /// Count the total number of times an option was passed
     int count() const {
         int out = 0;
-        for(const std::vector<std::string>& vec : results)
+        for(const std::vector<std::string>& vec : results_)
             out += vec.size();
         return out;
     }
@@ -386,25 +386,25 @@ public:
         std::stringstream out;
 
         if(get_expected() != 0) {
-            if(typeval != "")
-                out << " " << typeval;
-            if(defaultval != "")
-                out << "=" << defaultval; 
+            if(typeval_ != "")
+                out << " " << typeval_;
+            if(defaultval_ != "")
+                out << "=" << defaultval_; 
             if(get_expected() > 1)
                 out << " x " << get_expected();
             if(get_expected() == -1)
                 out << " ...";
         }
-        if(_envname != "")
-            out << " (env:" << _envname << ")";
-        if(_requires.size() > 0) {
+        if(envname_ != "")
+            out << " (env:" << envname_ << ")";
+        if(requires_.size() > 0) {
             out << " Requires:";
-            for(const Option* opt : _requires)
+            for(const Option* opt : requires_)
                 out << " " << opt->get_name();
         }
-        if(_excludes.size() > 0) {
+        if(excludes_.size() > 0) {
             out << " Excludes:";
-            for(const Option* opt : _excludes)
+            for(const Option* opt : excludes_)
                 out << " " << opt->get_name();
         }
         return out.str();
@@ -414,7 +414,7 @@ public:
     /// Produce a flattened vector of results, vs. a vector of vectors.
     std::vector<std::string> flatten_results() const {
         std::vector<std::string> output;
-        for(const std::vector<std::string> result : results)
+        for(const std::vector<std::string> result : results_)
             output.insert(std::end(output), std::begin(result), std::end(result));
         return output;
     }
