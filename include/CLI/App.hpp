@@ -41,8 +41,11 @@ class App {
     friend Option;
 protected:
     
-    std::string name;
-    std::string prog_description;
+    /// Subcommand name or program name (from parser)
+    std::string name {"program"};
+    
+    /// Description of the current program/subcommand
+    std::string description;
     std::vector<Option_p> options;
     
     /// Pair of classifer, string for missing options. (extra detail is removed on returning from parse)
@@ -52,8 +55,10 @@ protected:
     std::vector<App_p> subcommands;
     bool parsed {false};
     std::vector<App*> selected_subcommands;
-    int required_subcommand = 0; ///< -1 for 1 or more, 0 for not required, # for exact number required
-    std::string progname {"program"};
+
+    /// -1 for 1 or more, 0 for not required, # for exact number required
+    int required_subcommand = 0;
+
     Option* help_flag {nullptr};
 
     std::function<void()> app_callback;
@@ -68,8 +73,8 @@ protected:
 
 public:
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string prog_description="", bool help=true)
-        : prog_description(prog_description) {
+    App(std::string description="", bool help=true)
+        : description(description) {
 
         if(help)
             help_flag = add_flag("-h,--help", "Print this help message and exit");
@@ -121,8 +126,8 @@ public:
     }
     
     /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
-    App* add_subcommand(std::string name_, std::string description="", bool help=true) {
-        subcommands.emplace_back(new App(description, help));
+    App* add_subcommand(std::string name_, std::string description_="", bool help=true) {
+        subcommands.emplace_back(new App(description_, help));
         subcommands.back()->name = name_;
         subcommands.back()->allow_extras();
         subcommands.back()->parent = this;
@@ -150,16 +155,16 @@ public:
     Option* add_option(
             std::string name_,
             callback_t callback,
-            std::string description="", 
+            std::string description_="", 
             bool defaulted=false
             ) {
-        Option myopt{name_, description, callback, defaulted, this};
+        Option myopt{name_, description_, callback, defaulted, this};
 
         if(std::find_if(std::begin(options), std::end(options),
                     [&myopt](const Option_p &v){return *v == myopt;}) == std::end(options)) {
             options.emplace_back();
             Option_p& option = options.back();
-            option.reset(new Option(name_, description, callback, defaulted, this));
+            option.reset(new Option(name_, description_, callback, defaulted, this));
             return option.get();
         } else
             throw OptionAlreadyAdded(myopt.get_name());
@@ -171,7 +176,7 @@ public:
     Option* add_option(
             std::string name_,
             T &variable,                ///< The variable to set
-            std::string description="",
+            std::string description_="",
             bool defaulted=false
             ) {
 
@@ -186,7 +191,7 @@ public:
             return detail::lexical_cast(res[0][0], variable);
         };
 
-        Option* retval = add_option(name_, fun, description, defaulted);
+        Option* retval = add_option(name_, fun, description_, defaulted);
         retval->typeval = detail::type_name<T>();
         if(defaulted) {
             std::stringstream out;
@@ -201,7 +206,7 @@ public:
     Option* add_option(
             std::string name_,
             std::vector<T> &variable,   ///< The variable vector to set
-            std::string description="",
+            std::string description_="",
             bool defaulted=false
             ) {
 
@@ -216,7 +221,7 @@ public:
             return variable.size() > 0 && retval;
         };
 
-        Option* retval =  add_option(name_, fun, description, defaulted);
+        Option* retval =  add_option(name_, fun, description_, defaulted);
         retval->allow_vector = true;
         retval->_expected = -1;
         retval->typeval = detail::type_name<T>();
@@ -229,13 +234,13 @@ public:
     /// Add option for flag
     Option* add_flag(
             std::string name_,
-            std::string description=""
+            std::string description_=""
             ) {
         CLI::callback_t fun = [](CLI::results_t){
             return true;
         };
         
-        Option* opt = add_option(name_, fun, description, false);
+        Option* opt = add_option(name_, fun, description_, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -248,7 +253,7 @@ public:
     Option* add_flag(
             std::string name_,
             T &count,                   ///< A varaible holding the count
-            std::string description=""
+            std::string description_=""
             ) {
 
         count = 0;
@@ -257,7 +262,7 @@ public:
             return true;
         };
         
-        Option* opt = add_option(name_, fun, description, false);
+        Option* opt = add_option(name_, fun, description_, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -270,7 +275,7 @@ public:
     Option* add_flag(
             std::string name_,
             T &count,                   ///< A varaible holding true if passed
-            std::string description=""
+            std::string description_=""
             ) {
 
         count = false;
@@ -279,7 +284,7 @@ public:
             return res.size() == 1;
         };
         
-        Option* opt = add_option(name_, fun, description, false);
+        Option* opt = add_option(name_, fun, description_, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->_expected = 0;
@@ -293,7 +298,7 @@ public:
             std::string name_,
             T &member,                     ///< The selected member of the set
             std::set<T> _options,           ///< The set of posibilities
-            std::string description="",
+            std::string description_="",
             bool defaulted=false
             ) {
 
@@ -310,7 +315,7 @@ public:
             return std::find(std::begin(_options), std::end(_options), member) != std::end(_options);
         };
 
-        Option* retval = add_option(name_, fun, description, defaulted);
+        Option* retval = add_option(name_, fun, description_, defaulted);
         retval->typeval = detail::type_name<T>();
         retval->typeval += " in {" + detail::join(_options) + "}";
         if(defaulted) {
@@ -326,7 +331,7 @@ public:
             std::string name_,
             std::string &member,                      ///< The selected member of the set
             std::set<std::string> _options,           ///< The set of posibilities
-            std::string description="",
+            std::string description_="",
             bool defaulted=false
             ) {
 
@@ -348,7 +353,7 @@ public:
             }
         };
 
-        Option* retval = add_option(name_, fun, description, defaulted);
+        Option* retval = add_option(name_, fun, description_, defaulted);
         retval->typeval = detail::type_name<std::string>();
         retval->typeval += " in {" + detail::join(_options) + "}";
         if(defaulted) {
@@ -391,7 +396,7 @@ public:
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
     std::vector<std::string> parse(int argc, char **argv) {
-        progname = argv[0];
+        name = argv[0];
         std::vector<std::string> args;
         for(int i=argc-1; i>0; i--)
             args.push_back(argv[i]);
@@ -439,7 +444,7 @@ public:
     std::string help(size_t wid=30, std::string prev="") const {
         // Delegate to subcommand if needed
         if(prev == "")
-            prev = progname;
+            prev = name;
         else
             prev += " " + name;
 
@@ -447,7 +452,7 @@ public:
             return selected_subcommands.at(0)->help(wid, prev);
 
         std::stringstream out;
-        out << prog_description << std::endl;
+        out << description << std::endl;
         out << "Usage: " << prev;
         
         // Check for options
@@ -517,7 +522,7 @@ public:
         if(subcommands.size()> 0) {
             out << "Subcommands:" << std::endl;
             for(const App_p &com : subcommands)
-                detail::format_help(out, com->get_name(), com->prog_description, wid);
+                detail::format_help(out, com->get_name(), com->description, wid);
         }
         return out.str();
     }
