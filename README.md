@@ -41,6 +41,9 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 * Collect user feedback
     * Ini configuration support is basic (long options only, no vector support), is more needed?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
+* Expand `required`/`exluded` to take strings
+* Document adding callback (maybe add C++14 only switch method?)
+* Test "adding to cmake" method
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
 
