@@ -29,35 +29,84 @@ typedef std::unique_ptr<Option> Option_p;
 class Option {
     friend App;
 protected:
-    // Config
+    /// @name Names
+    ///@{
+
+    /// A list of the short names (-a) without the leading dashes
     std::vector<std::string> snames;
+
+    /// A list of the long names (--a) without the leading dashes
     std::vector<std::string> lnames;
+
+    /// A positional name
     std::string pname;
 
-    std::string description;
-    callback_t callback;
+    /// If given, check the environment for this option
+    std::string _envname;
 
-    // These are for help strings
+    ///@}
+    /// @name Help
+    ///@{
+    
+    /// The description for help strings
+    std::string description;
+
+    /// A human readable default value, usually only set if default is true in creation
     std::string defaultval;
+
+    /// A human readable type value, set when App creates this
     std::string typeval;
+
+    /// The group membership
     std::string _group {"Options"};
 
+    /// True if this option has a default
     bool _default {false};
+
+    ///@}
+    /// @name Configuration
+    ///@{
+    
+    /// True if this is a required option
     bool _required {false};
+
+    /// The number of expected values, 0 for flag, -1 for unlimited vector
     int _expected {1};
+
+    /// A private setting to allow non-vector args to not be able to accept incorrect _expected values
     bool allow_vector {false};
+    
+    /// Ignore the case when matching (option, not value)
     bool case_insensitive {false};
+
+    /// A list of validators to run on each value parsed
     std::vector<std::function<bool(std::string)>> _validators;
 
+    /// A list of options that are required with this option
     std::set<Option*> _requires;
+
+    /// A list of options that are excluded with this option
     std::set<Option*> _excludes;
-    std::string _envname;
+
+    ///@}
+    /// @name Other
+    ///@{
 
     /// Remember the parent app
     App* parent;
 
+    /// Options store a callback to do all the work
+    callback_t callback;
+
+
+    ///@}
+    /// @name Parsing results
+    ///@{
+
     /// Results of parsing
     results_t results;
+
+    ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool _default=true, App* parent = nullptr) :
@@ -247,12 +296,13 @@ public:
     }
 
     /// Ignore case
-    /// The template hides the fact that we don't have the definition of App yet
-    /// You are never expected to add an argument to the template here
+    ///
+    /// The template hides the fact that we don't have the definition of App yet.
+    /// You are never expected to add an argument to the template here.
     template<typename T=App>
     Option* ignore_case(bool value = true) {
         case_insensitive = value;
-        for(const Option_p& opt : dynamic_cast<T*>(parent)->options)
+        for(const Option_p& opt : dynamic_cast<T*>(parent)->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name());
         return this;
