@@ -26,6 +26,7 @@ add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
+# To see in IDE, must be listed for target
 
 # Single file test
 option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CUR_PROJ})

@@ -14,7 +14,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(T ${CLI_TESTS})
 
-    add_executable(${T} ${T}.cpp)
+    add_executable(${T} ${T}.cpp ${CLI_headers})
     target_link_libraries(${T} PUBLIC CLI)
     add_gtest(${T})
 
