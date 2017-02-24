@@ -440,7 +440,8 @@ public:
     /// @name Extras for subclassing
     ///@{
 
-    /// This allows subclasses to inject code before callbacks but after parse
+    /// This allows subclasses to inject code before callbacks but after parse.
+    ///
     /// This does not run if any errors or help is thrown.
     virtual void pre_callback() {}
 
