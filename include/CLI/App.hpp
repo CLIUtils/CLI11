@@ -319,7 +319,7 @@ public:
     }
 
 
-    /// Add set of options_
+    /// Add set of options
     template<typename T>
     Option* add_set(
             std::string name,
@@ -357,7 +357,7 @@ public:
     Option* add_set_ignore_case(
             std::string name,
             std::string &member,                      ///< The selected member of the set
-            std::set<std::string> options,           ///< The set of posibilities
+            std::set<std::string> options,            ///< The set of posibilities
             std::string description="",
             bool defaulted=false
             ) {

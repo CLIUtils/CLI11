@@ -123,11 +123,11 @@ An option name must start with a alphabetic character or underscore. For long op
 
 Adding a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless required is `true`. Configuration files are in `ini` format, and only support long options. Currently, flags and vector options are not supported.
 
-> ### Example
->
-> * `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--option`
-> * `"this"` Can only be passed positionally
-> * `"-a,-b,-c"` No limit to the number of non-positional option names
+### Example
+
+* `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--option`
+* `"this"` Can only be passed positionally
+* `"-a,-b,-c"` No limit to the number of non-positional option names
 
 
 The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup. Before parsing, you can set the following options:
@@ -185,6 +185,15 @@ Also, in a related note, the `App` you get a pointer to is stored in the parent 
 
 Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of vector of strings, so it knows how many times an option was passed, and how many arguments each passing received (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
 `false` if it failed.
+
+### Example
+
+~~~python
+app.add_option("--fancy-count", [](std::vector<std::vector<std::string>> val){
+    std::cout << "This option was given " << val.size() << " times." << std::endl
+    << "The first time, it received " << val.at(0).size() << " items" << std::endl;
+    });
+~~~
 
 ## Contributing
 
