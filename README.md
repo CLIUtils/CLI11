@@ -199,3 +199,19 @@ app.add_option("--fancy-count", [](std::vector<std::vector<std::string>> val){
 
 To contribute, open an [issue](https://github.com/henryiii/CLI11/issues) or [pull request](https://github.com/henryiii/CLI11/pulls) on GitHub, or ask a question on [gitter](https://gitter.im/CLI11gitter/Lobby).
 
+## Other libraries
+
+If you use the [`rang`](https://github.com/agauniyal/rang/wiki) library to add color to your terminal in a safe, multi-platform way, you can combine it with CLI11 nicely:
+
+```
+std::atexit([](){std::cout << rang::style::reset;});
+try {
+    app.parse(argc, argv);
+} catch (const CLI::ParseError &e) {
+    std::cout << (e.exit_code==0 ? rang::fg::blue : rang::fg::red);
+    return app.exit(e);
+}
+```
+
+This will print help in blue, errors in red, and will reset before returning the terminal to the user.
+
