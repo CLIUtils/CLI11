@@ -27,6 +27,17 @@ std::string join(const T& v, std::string delim = ",") {
     return s.str();
 }
 
+template<typename T>
+std::string rjoin(const T& v, std::string delim = ",") {
+    std::ostringstream s;
+    for(size_t start=0; start<v.size(); start++) {
+        if(start > 0)
+            s << delim;
+        s << v[v.size() - start - 1];
+    }
+    return s.str();
+}
+
 // Based on http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
 
 /// Trim whitespace from left of string

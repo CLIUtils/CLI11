@@ -188,3 +188,16 @@ TEST(String, ToLower) {
 
     EXPECT_EQ("one and two", CLI::detail::to_lower("one And TWO"));
 }
+
+TEST(Join, Forward) {
+    std::vector<std::string> val {{"one", "two", "three"}};
+    EXPECT_EQ("one,two,three", CLI::detail::join(val));
+    EXPECT_EQ("one;two;three", CLI::detail::join(val, ";"));
+}
+
+
+TEST(Join, Backward) {
+    std::vector<std::string> val {{"three", "two", "one"}};
+    EXPECT_EQ("one,two,three", CLI::detail::join(val));
+    EXPECT_EQ("one;two;three", CLI::detail::join(val, ";"));
+}

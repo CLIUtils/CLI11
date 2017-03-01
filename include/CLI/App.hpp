@@ -830,7 +830,7 @@ protected:
                 [](std::pair<detail::Classifer, std::string>& val){return val.first != detail::Classifer::POSITIONAL_MARK;});
 
         if(num_left_over>0 && !allow_extras_)
-            throw ExtrasError("[" + detail::join(args, " ") + "]");
+            throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
 
         pre_callback();
         run_callback();
@@ -916,7 +916,7 @@ protected:
         auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name](const Option_p &v){return v->check_lname(name);});
 
         if(op_ptr == std::end(options_)) {
-            missing_.emplace_back(detail::Classifer::LONG, "--" + name);
+            missing_.emplace_back(detail::Classifer::LONG, current);
             return;
         }
 

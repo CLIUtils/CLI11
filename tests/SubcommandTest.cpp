@@ -36,11 +36,70 @@ TEST_F(TApp, Callbacks) {
             val = true;
             });
     
-    app.reset();
     args = {"sub2"};
     EXPECT_FALSE(val);
     EXPECT_NO_THROW(run());
     EXPECT_TRUE(val);
+
+}
+
+TEST_F(TApp, FallThroughRegular) {
+    int val = 1;
+    app.add_option("--val", val);
+
+    auto sub = app.add_subcommand("sub");
+    
+    args = {"sub", "--val", "2"};
+    // Should not throw
+    run();
+}
+
+TEST_F(TApp, FallThroughEquals) {
+    int val = 1;
+    app.add_option("--val", val);
+
+    auto sub = app.add_subcommand("sub");
+    
+    args = {"sub", "--val=2"};
+    // Should not throw
+    run();
+}
+
+
+TEST_F(TApp, EvilParseFallthrough) {
+    int val1 = 0, val2 = 0;
+    app.add_option("--val1", val1);
+
+    auto sub = app.add_subcommand("sub");
+    sub->add_option("val2", val2);
+    
+    args = {"sub", "--val1", "1", "2"};
+    // Should not throw
+    run();
+
+    EXPECT_EQ(1, val1);
+    EXPECT_EQ(2, val2);
+}
+
+TEST_F(TApp, CallbackOrdering) {
+    int val = 1, sub_val = 0;
+    app.add_option("--val", val);
+
+    auto sub = app.add_subcommand("sub");
+    sub->set_callback([&val, &sub_val](){
+            sub_val = val;
+            });
+    
+    args = {"sub", "--val=2"};
+    run();
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(2, sub_val);
+
+    app.reset();
+    args = {"--val=2", "sub"};
+    run();
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(2, sub_val);
 
 }
 
