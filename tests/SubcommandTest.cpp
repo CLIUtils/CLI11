@@ -44,6 +44,7 @@ TEST_F(TApp, Callbacks) {
 }
 
 TEST_F(TApp, FallThroughRegular) {
+    app.fallthrough();
     int val = 1;
     app.add_option("--val", val);
 
@@ -55,6 +56,7 @@ TEST_F(TApp, FallThroughRegular) {
 }
 
 TEST_F(TApp, FallThroughEquals) {
+    app.fallthrough();
     int val = 1;
     app.add_option("--val", val);
 
@@ -67,6 +69,7 @@ TEST_F(TApp, FallThroughEquals) {
 
 
 TEST_F(TApp, EvilParseFallthrough) {
+    app.fallthrough();
     int val1 = 0, val2 = 0;
     app.add_option("--val1", val1);
 
@@ -82,6 +85,7 @@ TEST_F(TApp, EvilParseFallthrough) {
 }
 
 TEST_F(TApp, CallbackOrdering) {
+    app.fallthrough();
     int val = 1, sub_val = 0;
     app.add_option("--val", val);
 

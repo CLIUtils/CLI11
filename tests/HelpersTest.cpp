@@ -198,6 +198,6 @@ TEST(Join, Forward) {
 
 TEST(Join, Backward) {
     std::vector<std::string> val {{"three", "two", "one"}};
-    EXPECT_EQ("one,two,three", CLI::detail::join(val));
-    EXPECT_EQ("one;two;three", CLI::detail::join(val, ";"));
+    EXPECT_EQ("one,two,three", CLI::detail::rjoin(val));
+    EXPECT_EQ("one;two;three", CLI::detail::rjoin(val, ";"));
 }
