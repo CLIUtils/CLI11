@@ -41,7 +41,6 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
     * Ini configuration support is basic (long options only, no vector support), is more needed? Could it be tied to the subcommand system?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
 * Test "adding to cmake" method
-* Maybe simplify the `vector<vector>` structure of options, it is more powerful but unlikely to be needed.
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
 
@@ -117,7 +116,6 @@ app.add_config(option_name,
                required=false)
 
 App* subcom = app.add_subcommand(name, discription);
-
 ```
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`.
@@ -145,7 +143,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 
 On the command line, options can be given as:
@@ -201,17 +199,16 @@ Also, in a related note, the `App` you get a pointer to is stored in the parent 
 
 ## How it works
 
-Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of vector of strings, so it knows how many times an option was passed, and how many arguments each passing received (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
+Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of strings, so it knows how many times an option was passed or how many arguments it recieved (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
 `false` if it failed.
 
 ### Example
 
-~~~python
-app.add_option("--fancy-count", [](std::vector<std::vector<std::string>> val){
+```cpp
+app.add_option("--fancy-count", [](std::vector<std::string> val){
     std::cout << "This option was given " << val.size() << " times." << std::endl
-    << "The first time, it received " << val.at(0).size() << " items" << std::endl;
     });
-~~~
+```
 
 ## Contributing
 
@@ -221,7 +218,7 @@ To contribute, open an [issue](https://github.com/henryiii/CLI11/issues) or [pul
 
 If you use the [`rang`](https://github.com/agauniyal/rang/wiki) library to add color to your terminal in a safe, multi-platform way, you can combine it with CLI11 nicely:
 
-```
+```cpp
 std::atexit([](){std::cout << rang::style::reset;});
 try {
     app.parse(argc, argv);

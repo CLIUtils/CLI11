@@ -227,13 +227,9 @@ public:
 
         
         CLI::callback_t fun = [&variable](CLI::results_t res){
-            if(res.size()!=1) {
+            if(res.size()!=1)
                 return false;
-            }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            return detail::lexical_cast(res[0][0], variable);
+            return detail::lexical_cast(res[0], variable);
         };
 
         Option* opt = add_option(name, fun, description, defaulted);
@@ -258,11 +254,10 @@ public:
         CLI::callback_t fun = [&variable](CLI::results_t res){
             bool retval = true;
             variable.clear();
-            for(const auto &a : res)
-                for(const auto &b : a) {
-                    variable.emplace_back();
-                    retval &= detail::lexical_cast(b, variable.back());
-                }
+            for(const auto &a : res) {
+                variable.emplace_back();
+                retval &= detail::lexical_cast(a, variable.back());
+            }
             return variable.size() > 0 && retval;
         };
 
@@ -291,7 +286,7 @@ public:
         return opt;
     }
 
-    /// Add option for flag
+    /// Add option for flag integer
     template<typename T,
         enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option* add_flag(
@@ -350,10 +345,7 @@ public:
             if(res.size()!=1) {
                 return false;
             }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            bool retval = detail::lexical_cast(res[0][0], member);
+            bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
                 return false;
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
@@ -383,10 +375,7 @@ public:
             if(res.size()!=1) {
                 return false;
             }
-            if(res[0].size()!=1) {
-                return false;
-            }
-            member = detail::to_lower(res.at(0).at(0));
+            member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options),
                     [&member](std::string val){return detail::to_lower(val) == member;});
             if(iter == std::end(options))
@@ -558,7 +547,7 @@ public:
         std::stringstream out;
         for(const Option_p &opt : options_) {
             if(opt->lnames_.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
-                out << opt->lnames_[0] << "=" << detail::join(opt->flatten_results()) << std::endl;
+                out << opt->lnames_[0] << "=" << detail::join(opt->results()) << std::endl;
         }
         return out.str();
     }
@@ -763,8 +752,7 @@ protected:
             if (opt->count() == 0 && opt->envname_ != "") {
                 char *ename = std::getenv(opt->envname_.c_str());
                 if(ename != nullptr) {
-                    opt->get_new();
-                    opt->add_result(0, std::string(ename));
+                    opt->add_result(std::string(ename));
                 }
             }
         }
@@ -851,8 +839,7 @@ protected:
                     && opt->count() < opt->get_expected()
                     ) {
 
-                opt->get_new();
-                opt->add_result(0, positional);
+                opt->add_result(positional);
                 args.pop_back();
                 return;
             }
@@ -915,29 +902,28 @@ protected:
         // Get a reference to the pointer to make syntax bearable
         Option_p& op = *op_ptr;
 
-        int vnum = op->get_new();
         int num = op->get_expected();
        
         if(num == 0)
-            op->add_result(vnum, "");
+            op->add_result("");
         else if(rest!="") {
             if (num > 0)
                 num--;
-            op->add_result(vnum, rest);
+            op->add_result(rest);
             rest = "";
         }
 
 
         if(num == -1) {
             while(args.size()>0 && _recognize(args.back()) == detail::Classifer::NONE) {
-                op->add_result(vnum, args.back());
+                op->add_result(args.back());
                 args.pop_back();
             }
         } else while(num>0 && args.size() > 0) {
             num--;
             std::string current_ = args.back();
             args.pop_back();
-            op->add_result(vnum, current_);
+            op->add_result(current_);
         }
 
         if(rest != "") {
@@ -980,25 +966,23 @@ protected:
         if(!overwrite && op->count() > 0)
             return;
 
-        int vnum = op->get_new();
         int num = op->get_expected();
         
-
         if(value != "") {
             if(num!=-1) num--;
-            op->add_result(vnum, value);
+            op->add_result(value);
         } else if (num == 0) {
-            op->add_result(vnum, "");
+            op->add_result("");
         }
 
         if(num == -1) {
             while(args.size() > 0 && _recognize(args.back()) == detail::Classifer::NONE) {
-                op->add_result(vnum, args.back());
+                op->add_result(args.back());
                 args.pop_back();
             }
         } else while(num>0 && args.size()>0) {
             num--;
-            op->add_result(vnum,args.back());
+            op->add_result(args.back());
             args.pop_back();
         }
         return;

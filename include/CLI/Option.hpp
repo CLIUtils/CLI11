@@ -17,7 +17,7 @@
 
 namespace CLI {
 
-typedef std::vector<std::vector<std::string>> results_t;
+typedef std::vector<std::string> results_t;
 typedef std::function<bool(results_t)> callback_t;
 
 class Option;
@@ -121,16 +121,13 @@ public:
 
     /// Count the total number of times an option was passed
     int count() const {
-        int out = 0;
-        for(const std::vector<std::string>& vec : results_)
-            out += vec.size();
-        return out;
+        return results_.size();
     }
 
     
     /// This class is true if option is passed.
     operator bool() const {
-        return results_.size() > 0;
+        return count() > 0;
     }
 
     /// Clear the parsed results (mostly for testing)
@@ -372,9 +369,9 @@ public:
     /// Process the callback
     void run_callback() const {
         if(!callback_(results_))
-            throw ConversionError(get_name() + "=" + detail::join(flatten_results()));
+            throw ConversionError(get_name() + "=" + detail::join(results_));
         if(validators_.size()>0) {
-            for(const std::string & result : flatten_results())
+            for(const std::string & result : results_)
                 for(const std::function<bool(std::string)> &vali : validators_)
                     if(!vali(result))
                         throw ValidationError(get_name() + "=" + result);
@@ -440,23 +437,14 @@ public:
 
 
     /// Puts a result at position r
-    void add_result(int r, std::string s) {
-        results_.at(r).push_back(s);
-    }
-
-    /// Starts a new results vector (used for r in add_result)
-    int get_new() {
-        results_.emplace_back();
-        return results_.size() - 1;
+    void add_result(std::string s) {
+        results_.push_back(s);
     }
 
 
-    /// Produce a flattened vector of results, vs. a vector of vectors.
-    std::vector<std::string> flatten_results() const {
-        std::vector<std::string> output;
-        for(const std::vector<std::string> result : results_)
-            output.insert(std::end(output), std::begin(result), std::end(result));
-        return output;
+    /// Get a copy of the results
+    std::vector<std::string> results() const {
+        return results_;
     }
 
     ///@}
