@@ -1,5 +1,6 @@
 ## Version 0.6
 
+* Fixed fallthrough, made it optional as well (default: off): `.fallthrough()`.
 * Added string versions of `->requires()` and `->excludes()` for consistency.
 * Renamed protected members for internal consistency, grouped docs.
 * Added the ability to add a number to `.require_subcommand()`.

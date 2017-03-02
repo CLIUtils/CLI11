@@ -21,7 +21,7 @@ An acceptable CLI parser library should be all of the following:
 * Standard shell idioms supported naturally, like grouping flags, a positional separator, etc.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
 * Easy to extend as part of a framework that provides "applications" to users.
-* Usable subcommands.
+* Usable subcommand syntax, with support for multiple subcommands, nested subcommands, and optional fallthrough (explained later).
 * Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
 
 The major CLI parsers for C++ include:
@@ -38,9 +38,10 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 This library was built to supply the Application object for the GooFit CUDA/OMP fitting library. Before version 2.0 of GooFit is released, this library will reach version 1.0 status. The current tasks still planned are:
 
 * Collect user feedback
-    * Ini configuration support is basic (long options only, no vector support), is more needed?
+    * Ini configuration support is basic (long options only, no vector support), is more needed? Could it be tied to the subcommand system?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
 * Test "adding to cmake" method
+* Maybe simplify the `vector<vector>` structure of options, it is more powerful but unlikely to be needed.
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases](https://github.com/henryiii/CLI11/releases) for details.
 
@@ -166,17 +167,34 @@ everything after that is positional only.
 
 ## Subcommands
 
-Subcommands are naturally supported, with an infinite depth. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
+Subcommands are supported, and can be nested infinitly. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
 case).
 If you want to require at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well.
 
-All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.add_callback`. If you throw `CLI::Success`, you can
+All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name) method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
-Multiple subcommands are allowed, to allow [`Click`](http://click.pocoo.org) like series of commands (order is preserved). If you want only one, throw `CLI::Success` or only process one.
+If you want only one, use `app.require_subcommand(1)`. You are allowed to throw `CLI::Success` in the callbacks.
+Multiple subcommands are allowed, to allow [`Click`](http://click.pocoo.org) like series of commands (order is preserved).
+
+There are several options that are supported on the main app and subcommands. These are:
+
+* `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
+* `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
+* `.require_subcommand()`: Require 1 or more subcommands. Accepts an integer argument to require an exact number of subcommands.
+* `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
+* `.got_subcommand(App_or_name)`: Check to see if a subcommand was recieved on the command line
+* `.get_subcommands()`: The list of subcommands given on the command line
+* `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
+* `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
+
 
 ## Subclassing
 
-The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`). 
+The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`). You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
+but before run behavoir, while
+still giving the user freedom to `set_callback` on the main app.  
+
+The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector.
 
 Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
 

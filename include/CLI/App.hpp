@@ -147,8 +147,9 @@ public:
     }
 
     /// Remove the error when extras are left over on the command line.
-    void allow_extras (bool allow=true) {
+    App* allow_extras (bool allow=true) {
         allow_extras_ = allow;
+        return this;
     }
 
     /// Ignore case. Subcommand inherit value.
@@ -165,8 +166,9 @@ public:
 
     /// Require a subcommand to be given (does not affect help call)
     /// Does not return a pointer since it is supposed to be called on the main App.
-    void require_subcommand(int value = -1) {
+    App* require_subcommand(int value = -1) {
         require_subcommand_ = value;
+        return this;
     }
 
     /// Stop subcommand fallthrough, so that parent commands cannot collect commands after subcommand.

@@ -24,6 +24,34 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(TApp, MultiSubFallthrough) {
+
+    // No explicit fallthrough
+    app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
+
+
+    args = {"sub1", "sub2"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("sub1"));
+    EXPECT_TRUE(app.got_subcommand("sub2"));
+
+    app.reset();
+    app.require_subcommand();
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    app.require_subcommand(2);
+
+    EXPECT_NO_THROW(run());
+
+    app.reset();
+    app.require_subcommand(1);
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
@@ -41,6 +69,27 @@ TEST_F(TApp, Callbacks) {
     EXPECT_NO_THROW(run());
     EXPECT_TRUE(val);
 
+}
+
+TEST_F(TApp, NoFallThroughOpts) {
+    int val = 1;
+    app.add_option("--val", val);
+
+    auto sub = app.add_subcommand("sub");
+    
+    args = {"sub", "--val", "2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+
+TEST_F(TApp, NoFallThroughPositionals) {
+    int val = 1;
+    app.add_option("val", val);
+
+    auto sub = app.add_subcommand("sub");
+    
+    args = {"sub", "2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 TEST_F(TApp, FallThroughRegular) {
