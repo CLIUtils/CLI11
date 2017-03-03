@@ -28,7 +28,7 @@ std::vector<std::string> parse_ini(std::istream &input) {
         if(len > 1 && line[0] == '[' && line[len-1] == ']') {
             section = line.substr(1,len-2);
             section = detail::to_lower(section);
-        } else if (len > 0) {
+        } else if (len > 0 && line[0] != ';') {
             // Find = in string, split and recombine
             auto pos = line.find("=");
             if(pos != std::string::npos) {

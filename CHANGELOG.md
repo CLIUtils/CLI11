@@ -1,3 +1,6 @@
+## Version 0.7 (in progress)
+* Allow comments in ini files (lines starting with `;`)
+
 ## Version 0.6
 
 * Simplified parsing to use `vector<string>` only

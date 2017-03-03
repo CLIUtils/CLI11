@@ -27,6 +27,7 @@ std::string join(const T& v, std::string delim = ",") {
     return s.str();
 }
 
+/// Join a string in reverse order
 template<typename T>
 std::string rjoin(const T& v, std::string delim = ",") {
     std::ostringstream s;
@@ -38,7 +39,7 @@ std::string rjoin(const T& v, std::string delim = ",") {
     return s.str();
 }
 
-// Based on http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
+// Based roughly on http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
 
 /// Trim whitespace from left of string
 std::string& ltrim(std::string &str) {

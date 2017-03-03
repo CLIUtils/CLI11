@@ -23,6 +23,24 @@ TEST(StringBased, First) {
     
 }
 
+TEST(StringBased, FirstWithComments) {
+    std::stringstream ofile;
+
+    ofile << ";this is a comment" << std::endl;
+    ofile << "one=three" << std::endl;
+    ofile << "two=four" << std::endl;
+    ofile << "; and another one" << std::endl;
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+
+    std::vector<std::string> answer = {"--one=three", "--two=four"};
+
+    EXPECT_EQ(answer, output);
+    
+}
+
 TEST(StringBased, Quotes) {
     std::stringstream ofile;
 
