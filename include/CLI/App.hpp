@@ -114,6 +114,7 @@ protected:
     /// Pointer to the config option
     Option* config_ptr_ {nullptr};
 
+
     ///@}
    
     /// Special private constructor for subcommand
@@ -735,11 +736,12 @@ protected:
         // Process an INI file
         if (config_ptr_ != nullptr && config_name_ != "") {
             try {
-                std::vector<std::string> values = detail::parse_ini(config_name_);
+                std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
                 while(values.size() > 0) {
-                    _parse_long(values, false);
+                    if(!_parse_env(values)) {
+                        throw ExtrasError(values.back().name());
+                    }
                 }
-                
             } catch (const FileError &) {
                 if(config_required_)
                     throw;
@@ -798,6 +800,38 @@ protected:
             if(num_left_over>0 && !allow_extras_)
                 throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
         }
+    }
+
+    /// Parse one env param, ignore if not applicable, remove if it is
+    ///
+    /// If this has more than one dot.separated.name, go into the subcommand matching it
+    /// Returns true if it managed to find the option, if false you'll need to remove the arg manully.
+    bool _parse_env(std::vector<detail::ini_ret_t> &args) {
+        detail::ini_ret_t& current = args.back();
+        std::string parent = current.parent();
+        std::string name = current.name();
+        if(parent != "") {
+            current.level++;
+            for(const App_p &com : subcommands_) 
+                if(com->check_name(parent))
+                    return com->_parse_env(args);
+            return false;
+        }
+
+        auto op_ptr = std::find_if(std::begin(options_), std::end(options_),
+                [name](const Option_p &v){return v->check_lname(name);});
+        
+        if(op_ptr == std::end(options_)) 
+            return false;
+            
+        // Let's not go crasy with pointer syntax
+        Option_p& op = *op_ptr;
+
+        if(op->results_.empty())
+            op->results_ = current.inputs;
+
+        args.pop_back();
+        return true;
     }
 
     /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing from master
@@ -933,13 +967,13 @@ protected:
     }
 
     /// Parse a long argument, must be at the top of the list
-    void _parse_long(std::vector<std::string> &args, bool overwrite=true) {
+    void _parse_long(std::vector<std::string> &args) {
         std::string current = args.back();
 
         std::string name;
         std::string value;
         if(!detail::split_long(current, name, value))
-            throw HorribleError("Long");
+            throw HorribleError("Long:" + args.back());
 
         auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name](const Option_p &v){return v->check_lname(name);});
 
@@ -960,11 +994,6 @@ protected:
 
         // Get a reference to the pointer to make syntax bearable
         Option_p& op = *op_ptr;
-
-
-        // Stop if not overwriting options_ (for ini parse)
-        if(!overwrite && op->count() > 0)
-            return;
 
         int num = op->get_expected();
         

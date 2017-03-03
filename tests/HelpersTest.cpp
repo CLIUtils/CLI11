@@ -3,6 +3,26 @@
 #include <cstdio>
 #include <fstream>
 
+TEST(Split, SimpleByToken) {
+    auto out = CLI::detail::split("one.two.three", '.');
+    ASSERT_EQ(3, out.size());
+    EXPECT_EQ("one", out.at(0));
+    EXPECT_EQ("two", out.at(1));
+    EXPECT_EQ("three", out.at(2));
+}
+
+TEST(Split, Single) {
+    auto out = CLI::detail::split("one", '.');
+    ASSERT_EQ(1, out.size());
+    EXPECT_EQ("one", out.at(0));
+}
+
+TEST(Split, Empty) {
+    auto out = CLI::detail::split("", '.');
+    ASSERT_EQ(1, out.size());
+    EXPECT_EQ("", out.at(0));
+}
+
 TEST(Trim, Various) {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -200,4 +220,25 @@ TEST(Join, Backward) {
     std::vector<std::string> val {{"three", "two", "one"}};
     EXPECT_EQ("one,two,three", CLI::detail::rjoin(val));
     EXPECT_EQ("one;two;three", CLI::detail::rjoin(val, ";"));
+}
+
+TEST(SplitUp, Simple) {
+    std::vector<std::string> oput = {"one", "two three"};
+    std::string orig {"one \"two three\""};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
+}
+
+TEST(SplitUp, Layered) {
+    std::vector<std::string> output = {"one \'two three\'"};
+    std::string orig {"\"one \'two three\'\""};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(output, result);
+}
+
+TEST(SplitUp, Spaces) {
+    std::vector<std::string> oput = {"one", "  two three"};
+    std::string orig {"  one  \"  two three\" "};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
 }

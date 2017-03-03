@@ -15,12 +15,16 @@ TEST(StringBased, First) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::detail::ini_ret_t> output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"--one=three", "--two=four"};
+    EXPECT_EQ(2, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
 
-    EXPECT_EQ(answer, output);
-    
 }
 
 TEST(StringBased, FirstWithComments) {
@@ -33,12 +37,15 @@ TEST(StringBased, FirstWithComments) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+    auto output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"--one=three", "--two=four"};
-
-    EXPECT_EQ(answer, output);
-    
+    EXPECT_EQ(2, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
 TEST(StringBased, Quotes) {
@@ -50,12 +57,43 @@ TEST(StringBased, Quotes) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+    auto output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"--one=three", "--two=four", "--five=six and seven"};
+    EXPECT_EQ(3, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    EXPECT_EQ("five", output.at(2).name());
+    EXPECT_EQ(1, output.at(2).inputs.size());  
+    EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
+}
 
-    EXPECT_EQ(answer, output);
-    
+TEST(StringBased, Vector) {
+    std::stringstream ofile;
+
+    ofile << "one = three" << std::endl;
+    ofile << "two = four" << std::endl;
+    ofile << "five = six and seven" << std::endl;
+
+    ofile.seekg(0, std::ios::beg);
+
+    auto output = CLI::detail::parse_ini(ofile);
+
+    EXPECT_EQ(3, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    EXPECT_EQ("five", output.at(2).name());
+    EXPECT_EQ(3, output.at(2).inputs.size());  
+    EXPECT_EQ("six", output.at(2).inputs.at(0));
+    EXPECT_EQ("and", output.at(2).inputs.at(1));
+    EXPECT_EQ("seven", output.at(2).inputs.at(2));
 }
 
 
@@ -67,12 +105,15 @@ TEST(StringBased, Spaces) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+    auto output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"--one=three", "--two=four"};
-
-    EXPECT_EQ(answer, output);
-    
+    EXPECT_EQ(2, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
 TEST(StringBased, Sections) {
@@ -84,12 +125,16 @@ TEST(StringBased, Sections) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
-
-    std::vector<std::string> answer = {"--one=three", "--second.two=four"};
-
-    EXPECT_EQ(answer, output);
+    auto output = CLI::detail::parse_ini(ofile);
     
+    EXPECT_EQ(2, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("second", output.at(1).parent());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
 
@@ -104,12 +149,16 @@ TEST(StringBased, SpacesSections) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<std::string> output = CLI::detail::parse_ini(ofile);
+    auto output = CLI::detail::parse_ini(ofile);
 
-    std::vector<std::string> answer = {"--one=three", "--second.two=four"};
-
-    EXPECT_EQ(answer, output);
-    
+    EXPECT_EQ(2, output.size());
+    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("second", output.at(1).parent());
+    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
 TEST_F(TApp, IniNotRequired) {
@@ -190,6 +239,29 @@ TEST_F(TApp, IniRequired) {
 
 }
 
+TEST_F(TApp, IniVector) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2 3" << std::endl;
+        out << "three=1 2 3" << std::endl;
+    }
+
+    std::vector<int> two, three;
+    app.add_option("--two", two)->expected(2)->required();
+    app.add_option("--three", three)->required();
+
+    run();
+
+    EXPECT_EQ(std::vector<int>({2,3}), two);
+    EXPECT_EQ(std::vector<int>({1,2,3}), three);
+
+}
 TEST_F(TApp, IniOutputSimple) {
 
     int v;
