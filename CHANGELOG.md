@@ -1,5 +1,8 @@
 ## Version 0.7 (in progress)
 * Allow comments in ini files (lines starting with `;`)
+* Ini files support flags (only read)
+* Ini files support subcommands (only read)
+* Ini files support vectors (only read)
 
 ## Version 0.6
 

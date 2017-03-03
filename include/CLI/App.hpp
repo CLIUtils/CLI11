@@ -824,11 +824,33 @@ protected:
         if(op_ptr == std::end(options_)) 
             return false;
             
-        // Let's not go crasy with pointer syntax
+        // Let's not go crazy with pointer syntax
         Option_p& op = *op_ptr;
 
-        if(op->results_.empty())
-            op->results_ = current.inputs;
+        
+        if(op->results_.empty()) {
+            // Flag parsing
+            if(op->get_expected() == 0) {
+                if(current.inputs.size() == 1) {
+                    std::string val = current.inputs.at(0);
+                    val = detail::to_lower(val);
+                    if(val == "true" || val == "on" || val == "yes")
+                        op->results_ = {""};
+                    else if(val == "false" || val == "off" || val == "no")
+                        ;
+                    else
+                        try {
+                            size_t ui = std::stoul(val);
+                            for (size_t i=0; i<ui; i++)
+                                op->results_.push_back("");
+                        } catch (const std::invalid_argument &) {
+                            throw ConversionError(current.fullname + ": Should be true/false or a number");
+                        }
+                } else
+                    throw ConversionError(current.fullname + ": too many inputs for a flag");
+            } else
+                op->results_ = current.inputs;
+        }
 
         args.pop_back();
         return true;

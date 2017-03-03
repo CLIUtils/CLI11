@@ -262,6 +262,35 @@ TEST_F(TApp, IniVector) {
     EXPECT_EQ(std::vector<int>({1,2,3}), three);
 
 }
+
+TEST_F(TApp, IniFlags) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2" << std::endl;
+        out << "three=true" << std::endl;
+        out << "four=on" << std::endl;
+    }
+
+    int two;
+    bool three, four;
+    app.add_flag("--two", two);
+    app.add_flag("--three", three);
+    app.add_flag("--four", four);
+
+    run();
+
+    EXPECT_EQ(2, two);
+    EXPECT_EQ(true, three);
+    EXPECT_EQ(true, four);
+
+}
+
 TEST_F(TApp, IniOutputSimple) {
 
     int v;

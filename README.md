@@ -38,7 +38,6 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 This library was built to supply the Application object for the GooFit CUDA/OMP fitting library. Before version 2.0 of GooFit is released, this library will reach version 1.0 status. The current tasks still planned are:
 
 * Collect user feedback
-    * Ini configuration support is basic (long options only, no vector support), is more needed? Could it be tied to the subcommand system?
 * Evaluate compatibility with [ROOT](https://root.cern.ch)'s TApplication object.
 * Test "adding to cmake" method
 
@@ -110,17 +109,10 @@ app.add_set(option_name,
 
 app.add_set_ignore_case(... // String only
 
-app.add_config(option_name,
-               default_file_name="",
-               help_string="Read an ini file",
-               required=false)
-
 App* subcom = app.add_subcommand(name, discription);
 ```
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`.
-
-Adding a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless required is `true`. Configuration files are in `ini` format, and only support long options. Currently, flags and vector options are not supported.
 
 ### Example
 
@@ -184,6 +176,33 @@ There are several options that are supported on the main app and subcommands. Th
 * `.get_subcommands()`: The list of subcommands given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
+
+## Configuration file
+
+```cpp
+app.add_config(option_name,
+               default_file_name="",
+               help_string="Read an ini file",
+               required=false)
+```
+
+Adding a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format. An example of a file:
+
+```ini
+; Commments are supported, using a ;
+; The default section is [default], case insensitive
+
+value = 1
+str = "A string"
+vector = 1 2 3
+
+; Section map to subcommands
+[subcommand]
+in_subcommand = Wow
+sub.subcommand = true
+```
+
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults".
 
 
 ## Subclassing
