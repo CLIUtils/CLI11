@@ -16,24 +16,19 @@ namespace detail {
 
 // Based on http://stackoverflow.com/questions/236129/split-a-string-in-c
 ///Split a string by a delim
-template<typename Out>
-void split(const std::string &s, char delim, Out result) {
-    // Check to see if emtpy string, give consistent result
-    if(s=="")
-        *(result++) = "";
-
-    std::stringstream ss;
-    ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        *(result++) = item;
-    }
-}
-
-/// Split a string, return new vector
 std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
+    // Check to see if emtpy string, give consistent result
+    if(s=="")
+        elems.push_back("");
+    else {
+        std::stringstream ss;
+        ss.str(s);
+        std::string item;
+        while (std::getline(ss, item, delim)) {
+            elems.push_back(item);
+        }
+    }
     return elems;
 }
 
