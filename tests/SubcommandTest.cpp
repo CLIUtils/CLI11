@@ -75,7 +75,7 @@ TEST_F(TApp, NoFallThroughOpts) {
     int val = 1;
     app.add_option("--val", val);
 
-    auto sub = app.add_subcommand("sub");
+    app.add_subcommand("sub");
     
     args = {"sub", "--val", "2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
@@ -86,7 +86,7 @@ TEST_F(TApp, NoFallThroughPositionals) {
     int val = 1;
     app.add_option("val", val);
 
-    auto sub = app.add_subcommand("sub");
+    app.add_subcommand("sub");
     
     args = {"sub", "2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
@@ -97,7 +97,7 @@ TEST_F(TApp, FallThroughRegular) {
     int val = 1;
     app.add_option("--val", val);
 
-    auto sub = app.add_subcommand("sub");
+    app.add_subcommand("sub");
     
     args = {"sub", "--val", "2"};
     // Should not throw
@@ -109,7 +109,7 @@ TEST_F(TApp, FallThroughEquals) {
     int val = 1;
     app.add_option("--val", val);
 
-    auto sub = app.add_subcommand("sub");
+    app.add_subcommand("sub");
     
     args = {"sub", "--val=2"};
     // Should not throw
