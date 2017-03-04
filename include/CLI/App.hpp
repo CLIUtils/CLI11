@@ -118,7 +118,7 @@ protected:
     ///@}
    
     /// Special private constructor for subcommand
-    App(std::string description_, bool help, detail::enabler dummy_param) 
+    App(std::string description_, bool help, detail::enabler) 
         :  description_(description_) {
 
         if(help)

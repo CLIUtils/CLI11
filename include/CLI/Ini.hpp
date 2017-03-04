@@ -23,7 +23,7 @@ struct ini_ret_t {
     std::vector<std::string> inputs;
 
     /// Current parent level
-    int level = 0;
+    size_t level = 0;
 
     /// Return parent or empty string, based on level
     ///
