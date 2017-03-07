@@ -1,5 +1,6 @@
 [![Build Status Linux and macOS](https://img.shields.io/travis/henryiii/CLI11/master.svg?label=Linux/macOS)](https://travis-ci.org/henryiii/CLI11)
 [![Build Status Windows](https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows)](https://ci.appveyor.com/project/HenrySchreiner/cli11)
+[![Coverage Status](https://coveralls.io/repos/github/henryiii/CLI11/badge.svg?branch=master)](https://coveralls.io/github/henryiii/CLI11?branch=master)
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby](https://badges.gitter.im/CLI11gitter/Lobby.svg)](https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](./LICENSE)
 
