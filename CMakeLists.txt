@@ -22,6 +22,19 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+
+option(CLI_COVERAGE "Add coverage report" OFF)
+if(CLI_COVERAGE)
+    include(CodeCoverage)
+
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING ""  FORCE)
+    add_compile_options("-O0")
+    add_compile_options("--coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "--coverage ${CMAKE_EXE_LINKER_FLAGS}")
+
+    setup_target_for_coverage(CLI_coverage ctest coverage)
+endif()
+
 add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
@@ -59,8 +72,3 @@ if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-option(CLI_COVERAGE "Add coverage report" OFF)
-if(CLI_COVERAGE)
-    include(CodeCoverage)
-    setup_target_for_coverage(CLI_coverage ctest coverage)
-endif()
