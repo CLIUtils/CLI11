@@ -69,9 +69,9 @@
 
 # Check prereqs
 if(NOT "$ENV{COMPILER}")
-    set(GNAME "gcov-$ENV{COMPILER}")
-else()
     set(GNAME gcov)
+else()
+    set(GNAME "gcov-$ENV{COMPILER}")
 endif()
 
 FIND_PROGRAM( GCOV_PATH ${GNAME} )
