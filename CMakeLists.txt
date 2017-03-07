@@ -59,7 +59,7 @@ if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-option(CLI_COVERAGE)
+option(CLI_COVERAGE "Add coverage report" OFF)
 if(CLI_COVERAGE)
     include(AddCoverage)
     set(COVERAGE_SRCS ${CLI_headers})
