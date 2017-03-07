@@ -13,4 +13,11 @@ build_script:
   - cmake --build .
 
 test_script:
-    - ctest --output-on-failure
+  - ctest --output-on-failure
+
+notifications:
+  - provider: Webhook
+    url: https://webhooks.gitter.im/e/0185e91c5d989a476d7b
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
