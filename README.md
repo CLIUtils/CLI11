@@ -1,6 +1,7 @@
-[![Build Status Linux and macOS](https://img.shields.io/travis/henryiii/CLI11/master.svg?label=Linux/macOS)](https://travis-ci.org/henryiii/CLI11)
-[![Build Status Windows](https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows)](https://ci.appveyor.com/project/HenrySchreiner/cli11)
-[![Join the chat at https://gitter.im/CLI11gitter/Lobby](https://badges.gitter.im/CLI11gitter/Lobby.svg)](https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status Linux and macOS][travis-badge]][travis-link]
+[![Build Status Windows][appveyor-badge]][appveyor-link]
+[![Code Coverage][codecov-badge]][codecov-link]
+[![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter-link]
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](./LICENSE)
 
 # CLI11: Command line parser for C++11
@@ -251,3 +252,13 @@ try {
 
 This will print help in blue, errors in red, and will reset before returning the terminal to the user.
 
+
+[travis-badge]:    https://img.shields.io/travis/henryiii/CLI11/master.svg?label=Linux/macOS
+[travis-link]:     https://travis-ci.org/henryiii/CLI11
+[appveyor-badge]:  https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows
+[appveyor-link]:   https://ci.appveyor.com/project/HenrySchreiner/cli11
+[codecov-badge]:   https://codecov.io/gh/henryiii/CLI11/branch/master/graph/badge.svg
+[codecov-link]:    https://codecov.io/gh/henryiii/CLI11
+[gitter-badge]:    https://badges.gitter.im/CLI11gitter/Lobby.svg
+[gitter-link]:     https://gitter.im/CLI11gitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[license-badge]:   https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg

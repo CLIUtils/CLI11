@@ -22,6 +22,12 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+
+if(CMAKE_BUILD_TYPE STREQUAL Coverage)
+    include(CodeCoverage)
+    setup_target_for_coverage(CLI_coverage ctest coverage)
+endif()
+
 add_library(CLI INTERFACE)
 target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
@@ -58,3 +64,4 @@ option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
 if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
+
