@@ -31,8 +31,8 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-6
-        - lcov
         - curl
+        - lcov
     env:
     - COMPILER=6
     - COVERALLS=yes
@@ -55,6 +55,7 @@ install:
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
+- if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip
   install --user pathlib; fi
@@ -64,6 +65,7 @@ script:
 - .ci/travis.sh
 
 after_success:
+- if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
 - echo "${TRAVIS_BRANCH}"
 - echo "${TRAVIS_PULL_REQUEST}"
 - if [[ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && "$DEPLOY_MAT" == "yes" ]] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh ; fi
