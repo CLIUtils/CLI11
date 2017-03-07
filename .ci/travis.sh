@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 set -evx
-env | sort
 
  
 if [ -n "$COVERALLS" ] ; then 
     export COV1="-DCLI_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug"
+    export COVERALLS_SERVICE_NAME=travis-ci
 fi
 
 
