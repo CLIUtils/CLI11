@@ -1,5 +1,6 @@
-cd ${TRAVIS_BUILD_DIR}
+set -evx
 
+cd ${TRAVIS_BUILD_DIR}
 cd build
 cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCMAKE_BUILD_TYPE=Coverage
 cmake --build .
