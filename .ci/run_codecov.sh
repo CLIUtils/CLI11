@@ -1,7 +1,7 @@
 cd ${TRAVIS_BUILD_DIR}
 
 cd build
-cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCLI_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCMAKE_BUILD_TYPE=Coverage
 cmake --build .
 cmake --build . --target CLI_coverage
 

@@ -23,15 +23,8 @@ if(MSVC)
 endif()
 
 
-option(CLI_COVERAGE "Add coverage report" OFF)
-if(CLI_COVERAGE)
+if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     include(CodeCoverage)
-
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING ""  FORCE)
-    add_compile_options("-O0")
-    add_compile_options("--coverage")
-    set(CMAKE_EXE_LINKER_FLAGS "--coverage ${CMAKE_EXE_LINKER_FLAGS}")
-
     setup_target_for_coverage(CLI_coverage ctest coverage)
 endif()
 
