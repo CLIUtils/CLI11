@@ -3,7 +3,7 @@ set -evx
 env | sort
 
  
-if [[ "$DEPLOY_MAT" == "yes" ]] ; then 
+if [ "$DEPLOY_MAT" == "yes" ] ; then 
     export COV1="-DCLI11_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug"
 fi
 
