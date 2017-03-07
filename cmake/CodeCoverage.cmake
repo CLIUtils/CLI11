@@ -68,7 +68,13 @@
 #
 
 # Check prereqs
-FIND_PROGRAM( GCOV_PATH gcov )
+if(NOT "$ENV{COMPILER}")
+    set(GNAME "gcov-$ENV{COMPILER}")
+else()
+    set(GNAME gcov)
+endif()
+
+FIND_PROGRAM( GCOV_PATH ${GNAME} )
 FIND_PROGRAM( LCOV_PATH lcov )
 FIND_PROGRAM( GENHTML_PATH genhtml )
 FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
