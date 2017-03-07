@@ -15,7 +15,7 @@ download_project(PROJ                coverage
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-    ${coverage_SOURCE_DIR}/caake)
+    ${coverage_SOURCE_DIR}/cmake)
 
 include(Coveralls)
 coveralls_turn_on_coverage()

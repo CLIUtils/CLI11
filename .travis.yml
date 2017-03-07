@@ -31,17 +31,20 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-6
-    env: COMPILER=6
+        - lcov
+        - curl
+    env:
+    - COMPILER=6
+    - COVERALLS=yes
   - compiler: gcc
     addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
-        - lcov
-        - curl
         packages:
         - g++-4.7
-    env: COMPILER=4.7
+    env:
+    - COMPILER=4.7
   - os: osx
 
 install:
