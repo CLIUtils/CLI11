@@ -3,7 +3,7 @@ set -evx
 cd ${TRAVIS_BUILD_DIR}
 cd build
 cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCMAKE_BUILD_TYPE=Coverage
-cmake --build .
+cmake --build . -- -j2
 cmake --build . --target CLI_coverage
 
 lcov --directory . --capture --output-file coverage.info # capture coverage info
