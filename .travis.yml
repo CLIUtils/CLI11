@@ -37,6 +37,8 @@ matrix:
       apt:
         sources:
         - ubuntu-toolchain-r-test
+        - lcov
+        - curl
         packages:
         - g++-4.7
     env: COMPILER=4.7
