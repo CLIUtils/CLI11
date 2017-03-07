@@ -15,7 +15,6 @@ download_project(PROJ                googletest
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR})
 
 #mark_as_advanced(
@@ -46,4 +45,13 @@ macro(add_gtest TESTNAME)
     target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
     add_test(${TESTNAME} ${TESTNAME})
 endmacro()
+
+mark_as_advanced(
+gmock_build_tests
+gtest_build_samples
+gtest_build_tests
+gtest_disable_pthreads
+gtest_force_shared_crt
+gtest_hide_internal_symbols
+)
 
