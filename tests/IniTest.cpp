@@ -228,13 +228,13 @@ TEST_F(TApp, IniRequired) {
 
     args = {"--one=1"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     one=two=three=0;
     args = {"--one=1", "--two=2"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {};

@@ -4,19 +4,19 @@ TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(0, app.get_subcommands().size());
     
     app.reset();
     args = {"sub1"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
     EXPECT_EQ(0, app.get_subcommands().size());
 
     args = {"sub2"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 
     app.reset();
@@ -39,12 +39,12 @@ TEST_F(TApp, MultiSubFallthrough) {
     app.reset();
     app.require_subcommand();
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     app.require_subcommand(2);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     app.require_subcommand(1);
@@ -66,7 +66,7 @@ TEST_F(TApp, Callbacks) {
     
     args = {"sub2"};
     EXPECT_FALSE(val);
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_TRUE(val);
 
 }
@@ -168,7 +168,7 @@ TEST_F(TApp, RequiredSubCom) {
 
     args = {"sub1"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
 }
 
@@ -182,7 +182,7 @@ TEST_F(TApp, Required1SubCom) {
 
     app.reset();
     args = {"sub1"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"sub1", "sub2"};
@@ -211,7 +211,7 @@ struct SubcommandProgram : public TApp {
 TEST_F(SubcommandProgram, Working) {
     args = {"-d", "start", "-ffilename"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, dummy);
     EXPECT_EQ(start, app.get_subcommands().at(0));
@@ -234,7 +234,7 @@ TEST_F(SubcommandProgram, SpareSub) {
 TEST_F(SubcommandProgram, Multiple) {
     args = {"-d", "start", "-ffilename", "stop"};
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(2, app.get_subcommands().size());
     EXPECT_EQ(1, dummy);
     EXPECT_EQ("filename", file);
@@ -249,7 +249,7 @@ TEST_F(SubcommandProgram, MultipleOtherOrder) {
 TEST_F(SubcommandProgram, MultipleArgs) {
     args = {"start", "stop"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(2, app.get_subcommands().size());
 
@@ -262,16 +262,16 @@ TEST_F(SubcommandProgram, CaseCheck) {
 
     app.reset();
     args = {"start"};
-    EXPECT_NO_THROW(run());
+    run();
 
 
     app.reset();
     start->ignore_case();
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"Start"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 TEST_F(TApp, SubcomInheritCaseCheck) {
@@ -279,19 +279,19 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(0, app.get_subcommands().size());
     
     app.reset();
     args = {"SuB1"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
     EXPECT_EQ(0, app.get_subcommands().size());
 
     args = {"sUb2"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 }
 

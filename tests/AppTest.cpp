@@ -1,18 +1,26 @@
 #include "app_helper.hpp"
 #include <stdlib.h>
 
+
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
     args = {"-c"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-c"));
     EXPECT_EQ(1, app.count("--count"));
+}
+
+TEST_F(TApp, CountNonExist) {
+    app.add_flag("-c,--count");
+    args = {"-c"};
+    run();
+    EXPECT_THROW(app.count("--nonexist"), CLI::OptionNotFound);
 }
 
 TEST_F(TApp, OneFlagLong) {
     app.add_flag("-c,--count");
     args = {"--count"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-c"));
     EXPECT_EQ(1, app.count("--count"));
 }
@@ -23,7 +31,7 @@ TEST_F(TApp, DashedOptions) {
     app.add_flag("--this,--that");
 
     args = {"-c", "--q", "--this", "--that"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-c"));
     EXPECT_EQ(1, app.count("--q"));
     EXPECT_EQ(2, app.count("--this"));
@@ -36,7 +44,7 @@ TEST_F(TApp, OneFlagRef) {
     int ref;
     app.add_flag("-c,--count", ref);
     args = {"--count"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-c"));
     EXPECT_EQ(1, app.count("--count"));
     EXPECT_EQ(1, ref);
@@ -46,7 +54,7 @@ TEST_F(TApp, OneString) {
     std::string str;
     app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-s"));
     EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
@@ -56,7 +64,7 @@ TEST_F(TApp, OneStringEqualVersion) {
     std::string str;
     app.add_option("-s,--string", str);
     args = {"--string=mystring"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-s"));
     EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
@@ -67,7 +75,7 @@ TEST_F(TApp, TogetherInt) {
     int i;
     app.add_option("-i,--int", i);
     args = {"-i4"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("--int"));
     EXPECT_EQ(1, app.count("-i"));
     EXPECT_EQ(i, 4);
@@ -77,7 +85,7 @@ TEST_F(TApp, SepInt) {
     int i;
     app.add_option("-i,--int", i);
     args = {"-i","4"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("--int"));
     EXPECT_EQ(1, app.count("-i"));
     EXPECT_EQ(i, 4);
@@ -87,7 +95,7 @@ TEST_F(TApp, OneStringAgain) {
     std::string str;
     app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(1, app.count("-s"));
     EXPECT_EQ(1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
@@ -97,7 +105,7 @@ TEST_F(TApp, OneStringAgain) {
 TEST_F(TApp, DefaultStringAgain) {
     std::string str = "previous";
     app.add_option("-s,--string", str);
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(0, app.count("-s"));
     EXPECT_EQ(0, app.count("--string"));
     EXPECT_EQ(str, "previous");
@@ -110,7 +118,7 @@ TEST_F(TApp, LotsOfFlags) {
     app.add_flag("-b");
 
     args = {"-a","-b","-aA"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(2, app.count("-a"));
     EXPECT_EQ(1, app.count("-b"));
     EXPECT_EQ(1, app.count("-A"));
@@ -128,7 +136,7 @@ TEST_F(TApp, BoolAndIntFlags) {
     app.add_flag("-u", uflag);
 
     args = {"-b", "-i", "-u"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_TRUE(bflag);
     EXPECT_EQ(1, iflag);
     EXPECT_EQ((unsigned int) 1, uflag);
@@ -142,7 +150,7 @@ TEST_F(TApp, BoolAndIntFlags) {
     bflag = false;
 
     args = {"-iiiuu"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_FALSE(bflag);
     EXPECT_EQ(3, iflag);
     EXPECT_EQ((unsigned int) 2, uflag);
@@ -157,7 +165,7 @@ TEST_F(TApp, ShortOpts) {
 
     args = {"-zzyzyz",};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(2, app.count("-z"));
     EXPECT_EQ(1, app.count("-y"));
@@ -175,7 +183,7 @@ TEST_F(TApp, DefaultOpts) {
 
     args = {"-i2", "9"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, app.count("i"));
     EXPECT_EQ(1, app.count("-s"));
@@ -200,7 +208,7 @@ TEST_F(TApp, RequiredFlags) {
 
     app.reset();
     args = {"-a", "-b"};
-    EXPECT_NO_THROW(run());
+    run();
 
 }
 
@@ -213,7 +221,7 @@ TEST_F(TApp, Positionals) {
 
     args = {"thing1","thing2"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, app.count("posit1"));
     EXPECT_EQ(1, app.count("posit2"));
@@ -230,7 +238,7 @@ TEST_F(TApp, MixedPositionals) {
 
     args = {"--posit2","thing2","7"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, app.count("posit2"));
     EXPECT_EQ(1, app.count("--posit1"));
@@ -246,7 +254,7 @@ TEST_F(TApp, Reset) {
 
     args = {"--simple", "--double", "1.2"};
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, app.count("--simple"));
     EXPECT_EQ(1, app.count("-d"));
@@ -257,7 +265,7 @@ TEST_F(TApp, Reset) {
     EXPECT_EQ(0, app.count("--simple"));
     EXPECT_EQ(0, app.count("-d"));
     
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, app.count("--simple"));
     EXPECT_EQ(1, app.count("-d"));
@@ -274,7 +282,7 @@ TEST_F(TApp, FileNotExists) {
     app.add_option("--file", filename)->check(CLI::NonexistentPath);
     args = {"--file", myfile};
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(myfile, filename);
 
     app.reset();
@@ -302,7 +310,7 @@ TEST_F(TApp, FileExists) {
 
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(myfile, filename);
 
     std::remove(myfile.c_str());
@@ -316,7 +324,7 @@ TEST_F(TApp, InSet) {
     
     args = {"--quick", "two"};
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ("two", choice);
 
     app.reset();
@@ -332,7 +340,7 @@ TEST_F(TApp, InIntSet) {
     
     args = {"--quick", "2"};
 
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(2, choice);
 
     app.reset();
@@ -347,17 +355,17 @@ TEST_F(TApp, InSetIgnoreCase) {
     app.add_set_ignore_case("-q,--quick", choice, {"one", "Two", "THREE"});
     
     args = {"--quick", "One"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ("one", choice);
 
     app.reset();
     args = {"--quick", "two"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ("Two", choice); // Keeps caps from set
 
     app.reset();
     args = {"--quick", "ThrEE"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ("THREE", choice); // Keeps caps from set
 
 
@@ -389,7 +397,7 @@ TEST_F(TApp, VectorUnlimString) {
     EXPECT_EQ(-1, opt->get_expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
@@ -403,7 +411,7 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_EQ(3, opt->get_expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 
@@ -419,15 +427,15 @@ TEST_F(TApp, RequiresFlags) {
     CLI::Option* opt = app.add_flag("-s,--string");
     app.add_flag("--both")->requires(opt);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"-s"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"-s", "--both"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--both"};
@@ -439,15 +447,15 @@ TEST_F(TApp, ExcludesFlags) {
     CLI::Option* opt = app.add_flag("-s,--string");
     app.add_flag("--nostr")->excludes(opt);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"-s"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--nostr"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--nostr", "-s"};
@@ -464,15 +472,15 @@ TEST_F(TApp, ExcludesMixedFlags) {
     CLI::Option* opt3 = app.add_flag("--opt3");
     app.add_flag("--no")->excludes(opt1, "--opt2", opt3);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--no"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt2"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--no", "--opt1"};
@@ -489,15 +497,15 @@ TEST_F(TApp, RequiresMultiFlags) {
     CLI::Option* opt3 = app.add_flag("--opt3");
     app.add_flag("--optall")->requires(opt1, opt2, opt3);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt1"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt2"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--optall"};
@@ -513,7 +521,7 @@ TEST_F(TApp, RequiresMultiFlags) {
 
     app.reset();
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 TEST_F(TApp, RequiresMixedFlags) {
@@ -522,15 +530,15 @@ TEST_F(TApp, RequiresMixedFlags) {
     app.add_flag("--opt3");
     app.add_flag("--optall")->requires(opt1, "--opt2", "--opt3");
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt1"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt2"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--optall"};
@@ -546,7 +554,7 @@ TEST_F(TApp, RequiresMixedFlags) {
 
     app.reset();
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 TEST_F(TApp, RequiresChainedFlags) {
@@ -554,11 +562,11 @@ TEST_F(TApp, RequiresChainedFlags) {
     CLI::Option* opt2 = app.add_flag("--opt2")->requires(opt1);
     app.add_flag("--opt3")->requires(opt2);
 
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt1"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt2"};
@@ -578,11 +586,11 @@ TEST_F(TApp, RequiresChainedFlags) {
 
     app.reset();
     args = {"--opt2", "--opt1"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--opt1", "--opt2", "--opt3"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 TEST_F(TApp, Env) {
@@ -592,14 +600,14 @@ TEST_F(TApp, Env) {
     int val=1;
     CLI::Option* vopt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_TMP");
 
-    EXPECT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(2, val);
     EXPECT_EQ(1, vopt->count());
 
     app.reset();
     vopt->required();
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     unset_env("CLI11_TEST_ENV_TMP");
@@ -619,15 +627,15 @@ TEST_F(TApp, RangeInt) {
 
     app.reset();
     args = {"--one=3"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--one=5"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--one=6"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 TEST_F(TApp, RangeDouble) {
@@ -645,15 +653,15 @@ TEST_F(TApp, RangeDouble) {
 
     app.reset();
     args = {"--one=3"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--one=5"};
-    EXPECT_NO_THROW(run());
+    run();
 
     app.reset();
     args = {"--one=6"};
-    EXPECT_NO_THROW(run());
+    run();
 }
 
 // Check to make sure progromatic access to left over is available
