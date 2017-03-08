@@ -27,9 +27,11 @@ namespace CLI {
 
 namespace detail {
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
+class AppFriend;
 }
 
 class App;
+
 
 typedef std::unique_ptr<App> App_p;
 
@@ -39,6 +41,7 @@ typedef std::unique_ptr<App> App_p;
 * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
     friend Option;
+    friend detail::AppFriend;
 protected:
     
     // This library follows the Google style guide for member names ending in underscores
@@ -1041,5 +1044,23 @@ protected:
 
 };
 
+namespace detail {
+/// This class is simply to allow tests access to App's protected functions
+struct AppFriend {
+
+    /// Wrap _parse_short
+    static void parse_short(App* app, std::vector<std::string> &args) {
+        return app->_parse_short(args);
+    }
+
+    /// Wrap _parse_long
+    static void parse_long(App* app, std::vector<std::string> &args) {
+        return app->_parse_long(args);
+    }
+    
+
+};
+}
 
 }
+

@@ -696,3 +696,17 @@ TEST_F(TApp, AllowExtrasOrder) {
     EXPECT_EQ(left_over, left_over_2);
 
 }
+
+// Test horrible error
+TEST_F(TApp, CheckShortFail) {
+    args = {"--two"};
+
+    EXPECT_THROW(CLI::detail::AppFriend::parse_short(&app, args), CLI::HorribleError);
+}
+
+// Test horrible error
+TEST_F(TApp, CheckLongFail) {
+    args = {"-t"};
+
+    EXPECT_THROW(CLI::detail::AppFriend::parse_long(&app, args), CLI::HorribleError);
+}
