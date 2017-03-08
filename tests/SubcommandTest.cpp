@@ -306,3 +306,19 @@ TEST_F(SubcommandProgram, HelpOrder) {
     args = {"-h", "start"};
     EXPECT_THROW(run(), CLI::CallForHelp);
 }
+
+TEST_F(SubcommandProgram, Callbacks) {
+
+    start->set_callback([](){
+            throw CLI::Success();
+            });
+
+    run();
+
+    app.reset();
+
+    args = {"start"};
+
+    EXPECT_THROW(run(), CLI::Success);
+
+}
