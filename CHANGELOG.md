@@ -3,6 +3,7 @@
 * Ini files support flags (only read)
 * Ini files support subcommands (only read)
 * Ini files support vectors (only read)
+* Added CodeCov code coverage reports, increased coverage
 
 ## Version 0.6
 
