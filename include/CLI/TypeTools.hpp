@@ -124,20 +124,10 @@ namespace detail {
         }
     }
 
-    /// Vector
-    template<typename T, 
-    enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
-    bool lexical_cast(std::string input, T& output) {
-        if(output.size() == input.size())
-            output.resize(input.size());
-        for(size_t i=0; i<input.size(); i++)
-            output[i] = input[i];
-        return true;
-    }
 
     /// String and similar
     template<typename T, 
-    enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
+    enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value
     , detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
         output = input;

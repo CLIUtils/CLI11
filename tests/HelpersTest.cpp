@@ -2,6 +2,8 @@
 
 #include <cstdio>
 #include <fstream>
+#include <stdint.h>
+#include <string>
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
@@ -267,4 +269,58 @@ TEST(SplitUp, Spaces) {
     std::string orig {"  one  \"  two three\" "};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
+}
+
+TEST(Types, TypeName) {
+    std::string int_name = CLI::detail::type_name<int>();
+    EXPECT_EQ("INT", int_name);
+
+    std::string int2_name = CLI::detail::type_name<short>();
+    EXPECT_EQ("INT", int2_name);
+
+    std::string uint_name = CLI::detail::type_name<unsigned char>();
+    EXPECT_EQ("UINT", uint_name);
+
+    std::string float_name = CLI::detail::type_name<double>();
+    EXPECT_EQ("FLOAT", float_name);
+
+    std::string vector_name = CLI::detail::type_name<std::vector<int>>();
+    EXPECT_EQ("VECTOR", vector_name);
+
+    std::string text_name = CLI::detail::type_name<std::string>();
+    EXPECT_EQ("TEXT", text_name);
+    
+    std::string text2_name = CLI::detail::type_name<char*>();
+    EXPECT_EQ("TEXT", text2_name);
+}
+
+TEST(Types, LexicalCastInt) {
+    std::string input = "912";
+    int x;
+    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
+    EXPECT_EQ(912, x);
+
+    unsigned char y;
+    std::string overflow_input = std::to_string(UINT64_MAX) + "0";
+    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y));
+
+    std::string bad_input = "hello";
+    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, y));
+}
+
+TEST(Types, LexicalCastDouble) {
+
+    std::string input = "9.12";
+    long double x;
+    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
+    EXPECT_FLOAT_EQ(9.12, x);
+
+    std::string bad_input = "hello";
+    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
+    
+    std::string overflow_input = "1" + std::to_string(LDBL_MAX);
+    std::cout << "Before: " << overflow_input << std::endl;
+    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, x));
+    std::cout << "After: " << x << std::endl;
+
 }
