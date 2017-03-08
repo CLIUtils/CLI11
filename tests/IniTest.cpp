@@ -199,11 +199,20 @@ TEST_F(TApp, IniNotRequired) {
 
 }
 
+TEST_F(TApp, IniRequiredNotFound) {
+
+    std::string noini = "TestIniNotExist.ini";
+    app.add_config("--config", noini, "", true);
+
+    EXPECT_THROW(run(), CLI::FileError);
+    
+}
+
 TEST_F(TApp, IniRequired) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.add_config("--config", tmpini, "", true);
 
     {
         std::ofstream out{tmpini};
