@@ -154,7 +154,9 @@ public:
     Option* expected(int value) {
         if(value == 0)
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
-        if(!allow_vector_ && value != 1)
+        else if(expected_ == 0)
+            throw IncorrectConstruction("Cannot make a flag take arguments!");
+        else if(!allow_vector_ && value != 1)
             throw IncorrectConstruction("You can only change the Expected arguments for vectors");
         expected_ = value;
         return this;

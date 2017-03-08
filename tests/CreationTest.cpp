@@ -74,3 +74,50 @@ TEST_F(TApp, MultipleSubcomNoMatchingInplace2) {
     EXPECT_NO_THROW(first->ignore_case());
     EXPECT_NO_THROW(second->ignore_case());
 }
+
+TEST_F(TApp, IncorrectConstructionFlagPositional1) {
+    EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionFlagPositional2) {
+    int x;
+    EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionFlagPositional3) {
+    bool x;
+    EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionFlagExpected) {
+    auto cat = app.add_flag("--cat");
+    EXPECT_THROW(cat->expected(1), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionOptionAsFlag) {
+    int x;
+    auto cat = app.add_option("--cat", x);
+    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionOptionAsVector) {
+    int x;
+    auto cat = app.add_option("--cat", x);
+    EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionVectorAsFlag) {
+    std::vector<int> x;
+    auto cat = app.add_option("--cat", x);
+    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionRequiresCannotFind) {
+    auto cat = app.add_flag("--cat");
+    EXPECT_THROW(cat->requires("--nothing"),CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
+    auto cat = app.add_flag("--cat");
+    EXPECT_THROW(cat->excludes("--nothing"),CLI::IncorrectConstruction);
+}
