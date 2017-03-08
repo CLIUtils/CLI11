@@ -83,6 +83,32 @@ TEST(Validators, FileNotExists) {
     EXPECT_TRUE(CLI::NonexistentPath(myfile));
 }
 
+TEST(Validators, FileIsDir) {
+    std::string mydir{"../tests"};
+    EXPECT_FALSE(CLI::ExistingFile(mydir));
+}
+
+TEST(Validators, DirectoryExists) {
+    std::string mydir{"../tests"};
+    EXPECT_TRUE(CLI::ExistingDirectory(mydir));
+}
+
+TEST(Validators, DirectoryNotExists) {
+    std::string mydir{"nondirectory"};
+    EXPECT_FALSE(CLI::ExistingDirectory(mydir));
+}
+
+TEST(Validators, DirectoryIsFile) {
+    std::string myfile{"TestFileNotUsed.txt"};
+    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_FALSE(CLI::ExistingDirectory(myfile));
+
+    std::remove(myfile.c_str());
+    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+}
+
 // Yes, this is testing an app_helper :)
 TEST(AppHelper, TempfileCreated) {
     std::string name = "TestFileNotUsed.txt";

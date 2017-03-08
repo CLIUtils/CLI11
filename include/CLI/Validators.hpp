@@ -51,7 +51,7 @@ bool ExistingDirectory(std::string filename) {
         return true;
     } else {
         std::cerr << "Directory is actually a file: " << filename << std::endl;
-        return true;
+        return false;
     }
 }
 
