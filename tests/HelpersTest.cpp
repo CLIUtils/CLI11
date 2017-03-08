@@ -309,7 +309,6 @@ TEST(Types, LexicalCastInt) {
 }
 
 TEST(Types, LexicalCastDouble) {
-
     std::string input = "9.12";
     long double x;
     EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
@@ -319,8 +318,12 @@ TEST(Types, LexicalCastDouble) {
     EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
     
     std::string overflow_input = "1" + std::to_string(LDBL_MAX);
-    std::cout << "Before: " << overflow_input << std::endl;
     EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, x));
-    std::cout << "After: " << x << std::endl;
+}
 
+TEST(Types, LexicalCastString) {
+    std::string input = "one";
+    std::string output;
+    CLI::detail::lexical_cast(input, output);
+    EXPECT_EQ(input, output);
 }
