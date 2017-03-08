@@ -2,7 +2,7 @@
 [![Build Status Windows][appveyor-badge]][appveyor-link]
 [![Code Coverage][codecov-badge]][codecov-link]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter-link]
-[![License: LGPL v2.1][license-badge](./LICENSE)
+[![License: LGPL v2.1][license-badge]](./LICENSE)
 
 # CLI11: Command line parser for C++11
 
