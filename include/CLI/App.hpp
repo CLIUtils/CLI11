@@ -1048,16 +1048,20 @@ namespace detail {
 /// This class is simply to allow tests access to App's protected functions
 struct AppFriend {
 
-    /// Wrap _parse_short
-    static void parse_short(App* app, std::vector<std::string> &args) {
-        return app->_parse_short(args);
+    /// Wrap _parse_short, perfectly forward arguments and return
+    template<typename ...Args>
+    static auto parse_short(App* app, Args &&  ...args)
+      -> typename std::result_of<decltype(&App::_parse_short)(App, Args...)>::type {
+        return app->_parse_short(std::forward<Args>(args)...);
     }
 
-    /// Wrap _parse_long
-    static void parse_long(App* app, std::vector<std::string> &args) {
-        return app->_parse_long(args);
+
+    /// Wrap _parse_long, perfectly forward arguments and return
+    template<typename ...Args>
+    static auto parse_long(App* app, Args &&  ...args)
+      -> typename std::result_of<decltype(&App::_parse_long)(App, Args...)>::type {
+        return app->_parse_long(std::forward<Args>(args)...);
     }
-    
 
 };
 }
