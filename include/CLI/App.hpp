@@ -895,7 +895,8 @@ protected:
         for(const Option_p& opt : options_) {
             // Eat options, one by one, until done
             if (    opt->get_positional()
-                    && opt->count() < opt->get_expected()
+                    && (opt->count() < opt->get_expected()
+                        || opt->get_expected() < 0)
                     ) {
 
                 opt->add_result(positional);

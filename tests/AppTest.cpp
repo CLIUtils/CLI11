@@ -248,7 +248,7 @@ TEST_F(TApp, Positionals) {
 TEST_F(TApp, ForcedPositional) {
     std::vector<std::string> posit;
     auto one = app.add_flag("--one");
-    auto pos = app.add_option("posit", posit)->expected(2); // Expected -1 broken?
+    app.add_option("posit", posit);
 
     args = {"--one", "two", "three"};
     run();
@@ -260,7 +260,6 @@ TEST_F(TApp, ForcedPositional) {
 
     args = {"--", "--one", "two", "three"};
     std::vector<std::string> answers2 = {"--one", "two", "three"};
-    pos->expected(3);
     run();
 
     EXPECT_FALSE(one->count());
@@ -283,6 +282,23 @@ TEST_F(TApp, MixedPositionals) {
     EXPECT_EQ(1, app.count("--posit1"));
     EXPECT_EQ(7, positional_int);
     EXPECT_EQ("thing2", positional_string);
+}
+
+TEST_F(TApp, BigPositional) {
+    std::vector<std::string> vec;
+    app.add_option("pos", vec);
+
+    args = {"one"};
+
+    run();
+    EXPECT_EQ(args, vec);
+
+    app.reset();
+
+    args = {"one", "two"};
+    run();
+
+    EXPECT_EQ(args, vec);
 }
 
 TEST_F(TApp, Reset) {
