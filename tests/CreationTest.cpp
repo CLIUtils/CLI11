@@ -35,6 +35,24 @@ TEST_F(TApp, AddingExistingWithCaseAfter2) {
     EXPECT_THROW(cat->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
+TEST_F(TApp, AddingMultipleInfPositionals) {
+    std::vector<std::string> one, two;
+    app.add_option("one", one);
+    app.add_option("two", two);
+
+    EXPECT_THROW(run(), CLI::InvalidError);
+}
+
+
+TEST_F(TApp, AddingMultipleInfPositionalsSubcom) {
+    std::vector<std::string> one, two;
+    CLI::App* below = app.add_subcommand("below");
+    below->add_option("one", one);
+    below->add_option("two", two);
+
+    EXPECT_THROW(run(), CLI::InvalidError);
+}
+
 TEST_F(TApp, MultipleSubcomMatching) {
     app.add_subcommand("first");
     app.add_subcommand("second");

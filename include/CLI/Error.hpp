@@ -100,6 +100,11 @@ struct ExtrasError : public ParseError {
     ExtrasError(std::string name) : ParseError("ExtrasError", name, 6) {}
 };
 
+/// Thrown when validation fails before parsing
+struct InvalidError : public ParseError {
+    InvalidError(std::string name) : ParseError("InvalidError", name, 15) {}
+};
+
 /// This is just a safety check to verify selection and parsing match
 struct HorribleError : public ParseError {
     HorribleError(std::string name) : ParseError("HorribleError", "(You should never see this error) " + name, 7) {}

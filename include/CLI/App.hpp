@@ -198,7 +198,7 @@ public:
     /// 
     /// For example,
     /// 
-    ///     std::string filename
+    ///     std::string filename;
     ///     program.add_option("filename", filename, "description of filename");
     ///
     Option* add_option(
@@ -474,6 +474,7 @@ public:
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.
     std::vector<std::string>& parse(std::vector<std::string> &args) {
+        _validate();
         _parse(args);
         run_callback();
         return args;
@@ -677,6 +678,18 @@ public:
 
 
 protected:
+
+    /// Check the options to make sure there are no conficts.
+    ///
+    /// Currenly checks to see if mutiple positionals exist with -1 args
+    void _validate() const {
+        auto count = std::count_if(std::begin(options_), std::end(options_),
+                [](const Option_p& opt){return opt->get_expected() == -1 && opt->get_positional();});
+        if(count > 1)
+            throw InvalidError(name_ + ": Too many positional arguments with unlimited expected args");
+        for(const App_p& app : subcommands_)
+            app->_validate();
+    }
 
 
     /// Return missing from the master
