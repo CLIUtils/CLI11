@@ -39,7 +39,6 @@ TEST_F(TApp, DashedOptions) {
 
 }
 
-
 TEST_F(TApp, OneFlagRef) {
     int ref;
     app.add_flag("-c,--count", ref);
@@ -109,6 +108,22 @@ TEST_F(TApp, DefaultStringAgain) {
     EXPECT_EQ(0, app.count("-s"));
     EXPECT_EQ(0, app.count("--string"));
     EXPECT_EQ(str, "previous");
+}
+
+TEST_F(TApp, DualOptions) {
+
+    std::string str = "previous";
+    std::vector<std::string> vstr = {"previous"};
+    std::vector<std::string> ans = {"one", "two"};
+    app.add_option("-s,--string", str);
+    app.add_option("-v,--vector", vstr);
+
+    args = {"--vector=one", "--vector=two"};
+    run();
+    EXPECT_EQ(ans, vstr);
+
+    args = {"--string=one", "--string=two"};
+    EXPECT_THROW(run(), CLI::ConversionError);
 }
 
 TEST_F(TApp, LotsOfFlags) {
@@ -229,6 +244,30 @@ TEST_F(TApp, Positionals) {
     EXPECT_EQ("thing2", posit2);
 }
 
+
+TEST_F(TApp, ForcedPositional) {
+    std::vector<std::string> posit;
+    auto one = app.add_flag("--one");
+    auto pos = app.add_option("posit", posit)->expected(2); // Expected -1 broken?
+
+    args = {"--one", "two", "three"};
+    run();
+    std::vector<std::string> answers1 = {"two", "three"};
+    EXPECT_TRUE(one->count());
+    EXPECT_EQ(answers1, posit);
+
+    app.reset();
+
+    args = {"--", "--one", "two", "three"};
+    std::vector<std::string> answers2 = {"--one", "two", "three"};
+    pos->expected(3);
+    run();
+
+    EXPECT_FALSE(one->count());
+    EXPECT_EQ(answers2, posit);
+}
+
+
 TEST_F(TApp, MixedPositionals) {
 
     int positional_int;
@@ -273,6 +312,18 @@ TEST_F(TApp, Reset) {
 
 }
 
+
+TEST_F(TApp, RemoveOption) {
+    app.add_flag("--one");
+    auto opt = app.add_flag("--two");
+
+    EXPECT_TRUE(app.remove_option(opt));
+    EXPECT_FALSE(app.remove_option(opt));
+
+    args = {"--two"};
+
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
 
 TEST_F(TApp, FileNotExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
@@ -349,6 +400,21 @@ TEST_F(TApp, InIntSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, FailSet) {
+
+    int choice;
+    app.add_set("-q,--quick", choice, {1, 2, 3});
+    
+    args = {"--quick", "3", "--quick=2"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+
+    args = {"--quick=hello"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+
 TEST_F(TApp, InSetIgnoreCase) {
 
     std::string choice;
@@ -372,6 +438,11 @@ TEST_F(TApp, InSetIgnoreCase) {
     app.reset();
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+    args = {"--quick=one", "--quick=two"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
 }
 
 TEST_F(TApp, VectorFixedString) {
