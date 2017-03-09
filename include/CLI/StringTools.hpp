@@ -108,7 +108,7 @@ std::string trim_copy(const std::string &str) {
 /// Make a copy of the string and then trim it, any filter string can be used (any char in string is filtered)
 std::string trim_copy(const std::string &str, const std::string &filter) {
     std::string s = str;
-    return rtrim(s, filter);
+    return trim(s, filter);
 }
 /// Print a two part "help" string
 void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {

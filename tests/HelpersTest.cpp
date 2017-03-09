@@ -62,6 +62,23 @@ TEST(Trim, VariousFilters) {
     EXPECT_EQ("cabcabc", CLI::detail::trim(s4, "ab"));
 }
 
+TEST(Trim, TrimCopy) {
+    std::string orig{" cabc  "};
+    std::string trimmed = CLI::detail::trim_copy(orig);
+    EXPECT_EQ("cabc", trimmed);
+    EXPECT_NE(orig, trimmed);
+    CLI::detail::trim(orig);
+    EXPECT_EQ(trimmed, orig);
+
+    orig = "abcabcabc";
+    trimmed = CLI::detail::trim_copy(orig, "ab");
+    EXPECT_EQ("cabcabc", trimmed);
+    EXPECT_NE(orig, trimmed);
+    CLI::detail::trim(orig, "ab");
+    EXPECT_EQ(trimmed, orig);
+
+}
+
 
 TEST(Validators, FileExists) {
     std::string myfile{"TestFileNotUsed.txt"};
