@@ -228,6 +228,7 @@ TEST(RegEx, SplittingNew) {
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}), CLI::BadNameString);
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}), CLI::BadNameString);
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}), CLI::BadNameString);
+    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}), CLI::BadNameString);
     EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"one","two"}), CLI::BadNameString);
 
 }
