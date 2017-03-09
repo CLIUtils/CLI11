@@ -68,8 +68,10 @@ std::vector<ini_ret_t> parse_ini(std::istream &input) {
                 name = detail::trim_copy(line.substr(0,pos));
                 std::string item = detail::trim_copy(line.substr(pos+1));
                 items = detail::split_up(item);
-            } else
+            } else {
                 name = detail::trim_copy(line);
+                items = {"ON"};
+            }
 
             if(detail::to_lower(section) == "default")
                 out.fullname = name;
