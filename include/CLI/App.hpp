@@ -394,7 +394,7 @@ public:
         opt->typeval_ = detail::type_name<std::string>();
         opt->typeval_ += " in {" + detail::join(options) + "}";
         if(defaulted) {
-            opt->defaultval_ = detail::to_lower(member);
+            opt->defaultval_ = member;
         }
         return opt;
     }

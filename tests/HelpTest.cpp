@@ -140,3 +140,36 @@ TEST(THelp, Subcom) {
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] SUBCOMMAND"));
 
 }
+
+TEST(THelp, IntDefaults) {
+    CLI::App app{"My prog"};
+
+    int one{1}, two{2};
+    app.add_option("--one", one, "Help for one", true); 
+    app.add_set("--set", two, {2,3,4}, "Help for set", true);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("--one"));
+    EXPECT_THAT(help, HasSubstr("--set"));
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, HasSubstr("=2"));
+    EXPECT_THAT(help, HasSubstr("2,3,4"));
+
+}
+
+TEST(THelp, SetLower) {
+    CLI::App app{"My prog"};
+
+    std::string def{"One"};
+    app.add_set_ignore_case("--set",def, {"oNe", "twO", "THREE"}, "Help for set", true);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("--set"));
+    EXPECT_THAT(help, HasSubstr("=One"));
+    EXPECT_THAT(help, HasSubstr("oNe"));
+    EXPECT_THAT(help, HasSubstr("twO"));
+    EXPECT_THAT(help, HasSubstr("THREE"));
+
+}
