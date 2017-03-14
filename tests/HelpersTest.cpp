@@ -25,6 +25,14 @@ TEST(Split, Empty) {
     EXPECT_EQ("", out.at(0));
 }
 
+TEST(String, InvalidName) {
+    EXPECT_TRUE(CLI::detail::valid_name_string("valid"));
+    EXPECT_FALSE(CLI::detail::valid_name_string("-invalid"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("va-li-d"));
+    EXPECT_FALSE(CLI::detail::valid_name_string("vali&d"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("_valid"));
+}
+
 TEST(Trim, Various) {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -289,6 +297,18 @@ TEST(SplitUp, Spaces) {
     EXPECT_EQ(oput, result);
 }
 
+TEST(SplitUp, BadStrings) {
+    std::vector<std::string> oput = {"one", "\"  two three"};
+    std::string orig {"  one  \"  two three "};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
+
+    oput = {"one", "\'  two three"};
+    orig =  "  one  \'  two three ";
+    result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
+}
+
 TEST(Types, TypeName) {
     std::string int_name = CLI::detail::type_name<int>();
     EXPECT_EQ("INT", int_name);
@@ -345,3 +365,4 @@ TEST(Types, LexicalCastString) {
     CLI::detail::lexical_cast(input, output);
     EXPECT_EQ(input, output);
 }
+
