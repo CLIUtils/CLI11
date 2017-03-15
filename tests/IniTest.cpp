@@ -331,8 +331,3 @@ TEST_F(TApp, IniOutputFlag) {
     EXPECT_THAT(str, Not(HasSubstr("nothing=")));
 
 }
-
-TEST_F(TApp, IniSpaces) {
-
-
-}

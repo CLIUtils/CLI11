@@ -167,7 +167,7 @@ std::vector<std::string> inline split_up(std::string str) {
                 output.push_back(str.substr(1,end-1));
                 str = str.substr(end+1);
             } else {
-                output.push_back(str);
+                output.push_back(str.substr(1));
                 str = "";
             }
         } else if(str[0] == '\"') {
@@ -176,7 +176,7 @@ std::vector<std::string> inline split_up(std::string str) {
                 output.push_back(str.substr(1,end-1));
                 str = str.substr(end+1);
             } else {
-                output.push_back(str);
+                output.push_back(str.substr(1));
                 str = "";
             }
 

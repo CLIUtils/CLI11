@@ -298,12 +298,12 @@ TEST(SplitUp, Spaces) {
 }
 
 TEST(SplitUp, BadStrings) {
-    std::vector<std::string> oput = {"one", "\"  two three"};
+    std::vector<std::string> oput = {"one", "  two three"};
     std::string orig {"  one  \"  two three "};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
 
-    oput = {"one", "\'  two three"};
+    oput = {"one", "  two three"};
     orig =  "  one  \'  two three ";
     result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
