@@ -312,8 +312,8 @@ public:
     /// The name and any extras needed for positionals
     std::string help_positional() const {
         std::string out = pname_;
-        if(get_expected()<1)
-            out = out + "x" + std::to_string(get_expected());
+        if(get_expected()>1)
+            out = out + "(" + std::to_string(get_expected()) + "x)";
         else if(get_expected()==-1)
             out = out + "...";
         out = get_required() ? out : "["+out+"]";

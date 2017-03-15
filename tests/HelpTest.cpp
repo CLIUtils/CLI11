@@ -93,6 +93,41 @@ TEST(THelp, RequiredPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] something"));
 }
 
+
+TEST(THelp, MultiOpts) {
+    CLI::App app{"My prog"};
+    std::vector<int> x, y;
+    app.add_option("-q,--quick", x, "Disc")->expected(2);
+    app.add_option("-v,--vals", y, "Other");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("Positionals:")));
+    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS]"));
+    EXPECT_THAT(help, HasSubstr("INT x 2"));
+    EXPECT_THAT(help, HasSubstr("INT ..."));
+}
+
+TEST(THelp, MultiPosOpts) {
+    CLI::App app{"My prog"};
+    std::vector<int> x, y;
+    app.add_option("quick", x, "Disc")->expected(2);
+    app.add_option("vals", y, "Other");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("Positionals:"));
+    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS]"));
+    EXPECT_THAT(help, HasSubstr("INT x 2"));
+    EXPECT_THAT(help, HasSubstr("INT ..."));
+    EXPECT_THAT(help, HasSubstr("[quick(2x)]"));
+    EXPECT_THAT(help, HasSubstr("[vals...]"));
+}
+
+
+
 TEST(THelp, EnvName) {
     CLI::App app{"My prog"};
     std::string input;
