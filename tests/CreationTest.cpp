@@ -1,14 +1,24 @@
 #include "app_helper.hpp"
 #include <stdlib.h>
 
-TEST_F(TApp, AddingExisting) {
+TEST_F(TApp, AddingExistingShort) {
     app.add_flag("-c,--count");
     EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingNoCase) {
+TEST_F(TApp, AddingExistingLong) {
+    app.add_flag("-q,--count");
+    EXPECT_THROW(app.add_flag("--count,-c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingShortNoCase) {
     app.add_flag("-C,--count")->ignore_case();
     EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingLongNoCase) {
+    app.add_flag("-q,--count")->ignore_case();
+    EXPECT_THROW(app.add_flag("--Count,-c"), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, AddingExistingNoCaseReversed) {
@@ -166,4 +176,60 @@ TEST_F(TApp, IncorrectConstructionDuplicateExcludesTxt) {
     auto other = app.add_flag("--other");
     ASSERT_NO_THROW(cat->excludes("--other"));
     EXPECT_THROW(cat->excludes("--other"),CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, CheckName) {
+    auto long1 = app.add_flag("--long1");
+    auto long2 = app.add_flag("--Long2");
+    auto short1 = app.add_flag("-a");
+    auto short2 = app.add_flag("-B");
+    int x, y;
+    auto pos1 = app.add_option("pos1", x);
+    auto pos2 = app.add_option("pOs2", y);
+    
+    EXPECT_TRUE(long1->check_name("--long1"));
+    EXPECT_FALSE(long1->check_name("--lonG1"));
+
+    EXPECT_TRUE(long2->check_name("--Long2"));
+    EXPECT_FALSE(long2->check_name("--long2"));
+
+    EXPECT_TRUE(short1->check_name("-a"));
+    EXPECT_FALSE(short1->check_name("-A"));
+
+    EXPECT_TRUE(short2->check_name("-B"));
+    EXPECT_FALSE(short2->check_name("-b"));
+
+    EXPECT_TRUE(pos1->check_name("pos1"));
+    EXPECT_FALSE(pos1->check_name("poS1"));
+
+    EXPECT_TRUE(pos2->check_name("pOs2"));
+    EXPECT_FALSE(pos2->check_name("pos2"));
+}
+
+TEST_F(TApp, CheckNameNoCase) {
+    auto long1 = app.add_flag("--long1")->ignore_case();
+    auto long2 = app.add_flag("--Long2")->ignore_case();
+    auto short1 = app.add_flag("-a")->ignore_case();
+    auto short2 = app.add_flag("-B")->ignore_case();
+    int x, y;
+    auto pos1 = app.add_option("pos1", x)->ignore_case();
+    auto pos2 = app.add_option("pOs2", y)->ignore_case();
+
+    EXPECT_TRUE(long1->check_name("--long1"));
+    EXPECT_TRUE(long1->check_name("--lonG1"));
+
+    EXPECT_TRUE(long2->check_name("--Long2"));
+    EXPECT_TRUE(long2->check_name("--long2"));
+
+    EXPECT_TRUE(short1->check_name("-a"));
+    EXPECT_TRUE(short1->check_name("-A"));
+
+    EXPECT_TRUE(short2->check_name("-B"));
+    EXPECT_TRUE(short2->check_name("-b"));
+
+    EXPECT_TRUE(pos1->check_name("pos1"));
+    EXPECT_TRUE(pos1->check_name("poS1"));
+
+    EXPECT_TRUE(pos2->check_name("pOs2"));
+    EXPECT_TRUE(pos2->check_name("pos2"));
 }
