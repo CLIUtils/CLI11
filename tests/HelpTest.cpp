@@ -149,6 +149,20 @@ TEST(THelp, Requires) {
     EXPECT_THAT(help, HasSubstr("Requires: --op1"));
 }
 
+TEST(THelp, RequiresPositional) {
+    CLI::App app{"My prog"};
+
+    int x,y;
+
+    CLI::Option* op1 = app.add_option("op1", x, "one");
+    app.add_option("op2", y, "two")->requires(op1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("Positionals:"));
+    EXPECT_THAT(help, HasSubstr("Requires: op1"));
+}
+
 TEST(THelp, Excludes) {
     CLI::App app{"My prog"};
 
@@ -160,6 +174,19 @@ TEST(THelp, Excludes) {
     EXPECT_THAT(help, HasSubstr("Excludes: --op1"));
 }
 
+TEST(THelp, ExcludesPositional) {
+    CLI::App app{"My prog"};
+
+    int x,y;
+
+    CLI::Option* op1 = app.add_option("op1", x);
+    app.add_option("op2", y)->excludes(op1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("Positionals:"));
+    EXPECT_THAT(help, HasSubstr("Excludes: op1"));
+}
 TEST(THelp, Subcom) {
     CLI::App app{"My prog"};
 

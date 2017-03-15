@@ -364,6 +364,7 @@ public:
 
     }
 
+
     ///@}
     /// @name Parser tools
     ///@{
@@ -451,6 +452,16 @@ public:
 
     ///@}
 
+    protected:
+
+
+    /// @name App Helpers
+    ///@{
+    /// Can print positional name detailed option if true
+    bool _has_help_positional() const {
+        return get_positional() && (has_description() || requires_.size()>0 || excludes_.size()>0 );
+    }
+    ///@}
 };
 
 

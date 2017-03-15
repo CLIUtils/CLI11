@@ -593,7 +593,7 @@ public:
                 //if(detail::to_lower(opt->get_group()) == "hidden")
                 //    continue;
                 out << " " << opt->help_positional();
-                if(opt->has_description())
+                if(opt->_has_help_positional())
                     pos=true;
             }
 
@@ -612,7 +612,7 @@ public:
             for(const Option_p &opt : options_) {
                 if(detail::to_lower(opt->get_group()) == "hidden")
                     continue;
-                if(opt->get_positional() && opt->has_description())
+                if(opt->_has_help_positional())
                     detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
             }
             out << std::endl;
