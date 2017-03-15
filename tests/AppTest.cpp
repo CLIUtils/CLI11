@@ -487,6 +487,12 @@ TEST_F(TApp, VectorUnlimString) {
     run();
     EXPECT_EQ(3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
+    
+    app.reset();
+    args = {"-s", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ(3, app.count("--string"));
+    EXPECT_EQ(answer, strvec);
 }
 
 
