@@ -50,6 +50,15 @@ TEST_F(TApp, MultiSubFallthrough) {
     app.require_subcommand(1);
 
     EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"sub1"};
+    run();
+
+    EXPECT_TRUE(app.got_subcommand("sub1"));
+    EXPECT_FALSE(app.got_subcommand("sub2"));
+    
+    EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
 
 

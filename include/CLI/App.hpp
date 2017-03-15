@@ -540,7 +540,10 @@ public:
         for(const auto subcomptr : selected_subcommands_)
             if(subcomptr->check_name(name))
                 return true;
-        return false;
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr->check_name(name))
+                return false;
+        throw CLI::OptionNotFound(name);
     }
     
     ///@}
