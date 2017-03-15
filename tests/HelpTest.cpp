@@ -109,6 +109,16 @@ TEST(THelp, MultiOpts) {
     EXPECT_THAT(help, HasSubstr("INT ..."));
 }
 
+TEST(THelp, VectorOpts) {
+    CLI::App app{"My prog"};
+    std::vector<int> x = {1,2};
+    app.add_option("-q,--quick", x, "", true);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("INT=[1,2] ..."));
+}
+
 TEST(THelp, MultiPosOpts) {
     CLI::App app{"My prog"};
     std::vector<int> x, y;
