@@ -9,6 +9,7 @@
 
 namespace CLI {
 
+/// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut, int values from e.get_error_code().
 enum class ExitCodes {
     Success = 0,
     IncorrectConstruction=100,

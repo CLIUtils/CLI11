@@ -16,7 +16,7 @@ An acceptable CLI parser library should be all of the following:
 
 * Easy to include (i.e., header only, one file if possible, no external requirements): While many programs depend on Boost, that should not be a requirement if all you want is CLI parsing.
 * Short Syntax: This is one of the main points of a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
-* C++11 or better: Should work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.5+, or MSVC 2015+. (Note: for CLI11, Clang 3.4 only fails because of tests, googlemock does not support it.)
+* C++11 or better: Should work with GCC 4.7+ (such as GCC 4.8 on CentOS 7) or above, or Clang 3.5+, or MSVC 2015+. (Note: for CLI11, Clang 3.4 only fails because of tests, GoogleMock does not support it.)
 * Work on Linux, macOS, and Windows.
 * Well tested using [Travis][travis-link] (Linux and macOS) and [AppVeyor][appveyor-link] (Windows). "Well" is defined as having good coverage measured by [CodeCov][codecov-link].
 * Clear help printing.
@@ -91,7 +91,7 @@ try {
 }
 ```
 
-The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code. (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
+The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
 
 The supported values are:
 
@@ -246,7 +246,7 @@ std::atexit([](){std::cout << rang::style::reset;});
 try {
     app.parse(argc, argv);
 } catch (const CLI::ParseError &e) {
-    std::cout << (e.exit_code==0 ? rang::fg::blue : rang::fg::red);
+    std::cout << (e.get_exit_code()==0 ? rang::fg::blue : rang::fg::red);
     return app.exit(e);
 }
 ```

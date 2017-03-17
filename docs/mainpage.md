@@ -8,6 +8,7 @@ The main classes are:
 |---------------|-------------------------------------|
 |CLI::Option    | Options, stored in the app          |
 |CLI::App       | The main application or subcommands |
+|CLI::ExitCodes | A scoped enum with exit codes       |
 
 
 Groups of related topics:
