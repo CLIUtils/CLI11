@@ -106,6 +106,9 @@ protected:
     /// Results of parsing
     results_t results_;
 
+    /// Whether the callback has run (needed for INI parsing)
+    bool callback_run_ {false};
+
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -442,12 +445,18 @@ public:
     /// Puts a result at position r
     void add_result(std::string s) {
         results_.push_back(s);
+        callback_run_ = false;
     }
 
 
     /// Get a copy of the results
     std::vector<std::string> results() const {
         return results_;
+    }
+
+    /// See if the callback has been run already
+    bool get_callback_run() const {
+        return callback_run_;
     }
 
     ///@}

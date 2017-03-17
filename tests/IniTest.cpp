@@ -294,6 +294,37 @@ TEST_F(TApp, IniVector) {
 
 }
 
+
+TEST_F(TApp, IniLayered) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int one=0, two=0, three=0;
+    app.add_option("--val", one);
+    auto subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+    auto subsubcom = subcom->add_subcommand("subsubcom");
+    subsubcom->add_option("--val", three);
+
+    ASSERT_NO_THROW(run());
+
+    EXPECT_EQ(1, one);
+    EXPECT_EQ(2, two);
+    EXPECT_EQ(3, three);
+
+}
+
 TEST_F(TApp, IniFlags) {
     TempFile tmpini{"TestIniTmp.ini"};
     app.add_config("--config", tmpini);

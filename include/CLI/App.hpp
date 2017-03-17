@@ -758,7 +758,7 @@ protected:
                 std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
                 while(values.size() > 0) {
                     if(!_parse_ini(values)) {
-                        throw ExtrasError(values.back().name());
+                        throw ExtrasINIError(values.back().fullname);
                     }
                 }
             } catch (const FileError &) {
@@ -780,7 +780,7 @@ protected:
 
         // Process callbacks
         for(const Option_p& opt : options_) {
-            if (opt->count() > 0) {
+            if (opt->count() > 0 && !opt->get_callback_run()) {
                 opt->run_callback();
             }
         }
@@ -827,15 +827,17 @@ protected:
     /// Returns true if it managed to find the option, if false you'll need to remove the arg manully.
     bool _parse_ini(std::vector<detail::ini_ret_t> &args) {
         detail::ini_ret_t& current = args.back();
-        std::string parent = current.parent();
+        std::string parent = current.parent(); // respects curent.level
         std::string name = current.name();
+        std::cout << current.fullname << " " << parent << " " << name << std::endl;
+
+        // If a parent is listed, go to a subcommand
         if(parent != "") {
             current.level++;
             for(const App_p &com : subcommands_) 
                 if(com->check_name(parent))
                     return com->_parse_ini(args);
             return false;
-            //throw CLI::ExtraINIError(current.fullname);
         }
 
         auto op_ptr = std::find_if(std::begin(options_), std::end(options_),
@@ -868,8 +870,10 @@ protected:
                         }
                 } else
                     throw ConversionError(current.fullname + ": too many inputs for a flag");
-            } else
+            } else {
                 op->results_ = current.inputs;
+                op->run_callback();
+            }
         }
 
         args.pop_back();
