@@ -208,6 +208,28 @@ TEST_F(TApp, IniRequiredNotFound) {
     
 }
 
+TEST_F(TApp, IniOverwrite) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+    }
+
+    std::string orig = "filename_not_exist.ini";
+    std::string next = "TestIniTmp.ini";
+    app.add_config("--config", orig);
+    // Make sure this can be overwritten
+    app.add_config("--conf", next);
+    int two = 7;
+    app.add_option("--two", two);
+    
+    run();
+
+    EXPECT_EQ(99, two);
+}
+
 TEST_F(TApp, IniRequired) {
 
     TempFile tmpini{"TestIniTmp.ini"};
