@@ -3,7 +3,9 @@
 * Ini files support flags (only read)
 * Ini files support subcommands (only read)
 * Ini files support vectors (only read)
-* Added CodeCov code coverage reports, increased coverage
+* Added CodeCov code coverage reports
+* Lots of small bugfixes related to adding tests to increase coverage
+* Error handling now uses scoped enum in errors
 
 ## Version 0.6
 

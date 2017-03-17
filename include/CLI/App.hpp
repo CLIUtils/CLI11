@@ -482,7 +482,7 @@ public:
 
     /// Print a nice error message and return the exit code
     int exit(const Error& e) const {
-        if(e.exit_code != 0) {
+        if(e.exit_code != ErrorCodes::Success) {
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             if(e.print_help)
@@ -491,7 +491,7 @@ public:
             if(e.print_help)
                 std::cout << help();
         }
-        return e.exit_code;
+        return e.get_exit_code();
     }
 
     /// Reset the parsed data
@@ -757,7 +757,7 @@ protected:
             try {
                 std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
                 while(values.size() > 0) {
-                    if(!_parse_env(values)) {
+                    if(!_parse_ini(values)) {
                         throw ExtrasError(values.back().name());
                     }
                 }
@@ -821,11 +821,11 @@ protected:
         }
     }
 
-    /// Parse one env param, ignore if not applicable, remove if it is
+    /// Parse one ini param, return false if not found in any subcommand, remove if it is
     ///
     /// If this has more than one dot.separated.name, go into the subcommand matching it
     /// Returns true if it managed to find the option, if false you'll need to remove the arg manully.
-    bool _parse_env(std::vector<detail::ini_ret_t> &args) {
+    bool _parse_ini(std::vector<detail::ini_ret_t> &args) {
         detail::ini_ret_t& current = args.back();
         std::string parent = current.parent();
         std::string name = current.name();
@@ -833,8 +833,9 @@ protected:
             current.level++;
             for(const App_p &com : subcommands_) 
                 if(com->check_name(parent))
-                    return com->_parse_env(args);
+                    return com->_parse_ini(args);
             return false;
+            //throw CLI::ExtraINIError(current.fullname);
         }
 
         auto op_ptr = std::find_if(std::begin(options_), std::end(options_),
