@@ -388,6 +388,51 @@ TEST_F(TApp, IniFlagConvertFailure) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+
+TEST_F(TApp, IniFlagNumbers) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    bool boo;
+    app.add_flag("--flag", boo);
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "flag=3" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+
+TEST_F(TApp, IniFlagText) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    bool flag1, flag2, flag3, flag4;
+    app.add_flag("--flag1", flag1);
+    app.add_flag("--flag2", flag2);
+    app.add_flag("--flag3", flag3);
+    app.add_flag("--flag4", flag4);
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "flag1=true" << std::endl;
+        out << "flag2=on" << std::endl;
+        out << "flag3=off" << std::endl;
+        out << "flag4=1" << std::endl;
+    }
+
+    run();
+
+    EXPECT_TRUE(flag1);
+    EXPECT_TRUE(flag2);
+    EXPECT_FALSE(flag3);
+    EXPECT_TRUE(flag4);
+}
+
 TEST_F(TApp, IniFlags) {
     TempFile tmpini{"TestIniTmp.ini"};
     app.add_config("--config", tmpini);
