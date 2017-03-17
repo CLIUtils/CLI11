@@ -265,7 +265,7 @@ TEST(Exit, ErrorWithHelp) {
     try {
         app.parse(input);
     } catch (const CLI::CallForHelp &e) {
-        EXPECT_EQ(CLI::ErrorCodes::Success, e.exit_code);
+        EXPECT_EQ(CLI::ExitCodes::Success, e.exit_code);
     }
 }
 
@@ -276,14 +276,14 @@ TEST(Exit, ErrorWithoutHelp) {
     try {
         app.parse(input);
     } catch (const CLI::ParseError &e) {
-        EXPECT_EQ(CLI::ErrorCodes::Extras, e.exit_code);
+        EXPECT_EQ(CLI::ExitCodes::Extras, e.exit_code);
     }
 }
 
 TEST(Exit, ExitCodes) {
     CLI::App app;
 
-    int i = static_cast<int>(CLI::ErrorCodes::Extras);
+    int i = static_cast<int>(CLI::ExitCodes::Extras);
     EXPECT_EQ(0, app.exit(CLI::Success()));
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
     EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));
