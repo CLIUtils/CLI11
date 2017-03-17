@@ -803,3 +803,10 @@ TEST_F(TApp, CheckLongFail) {
 
     EXPECT_THROW(CLI::detail::AppFriend::parse_long(&app, args), CLI::HorribleError);
 }
+
+// Test horrible error
+TEST_F(TApp, CheckSubcomFail) {
+    args = {"subcom"};
+
+    EXPECT_THROW(CLI::detail::AppFriend::parse_long(&app, args), CLI::HorribleError);
+}

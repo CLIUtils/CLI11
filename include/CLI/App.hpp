@@ -1081,6 +1081,13 @@ struct AppFriend {
         return app->_parse_long(std::forward<Args>(args)...);
     }
 
+    /// Wrap _parse_subcommand, perfectly forward arguments and return
+    template<typename ...Args>
+    static auto parse_subcommand(App* app, Args &&  ...args)
+      -> typename std::result_of<decltype(&App::_parse_subcommand)(App, Args...)>::type {
+        return app->_parse_subcommand(std::forward<Args>(args)...);
+    }
+
 };
 }
 
