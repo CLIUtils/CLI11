@@ -27,13 +27,14 @@ TEST_F(TApp, BasicSubcommands) {
 TEST_F(TApp, MultiSubFallthrough) {
 
     // No explicit fallthrough
-    app.add_subcommand("sub1");
+    auto sub1 = app.add_subcommand("sub1");
     app.add_subcommand("sub2");
 
 
     args = {"sub1", "sub2"};
     run();
     EXPECT_TRUE(app.got_subcommand("sub1"));
+    EXPECT_TRUE(app.got_subcommand(sub1);
     EXPECT_TRUE(app.got_subcommand("sub2"));
 
     app.reset();
