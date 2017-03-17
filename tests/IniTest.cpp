@@ -325,6 +325,69 @@ TEST_F(TApp, IniLayered) {
 
 }
 
+TEST_F(TApp, IniFailure) {
+
+ TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ExtrasINIError);
+}
+
+
+TEST_F(TApp, IniSubFailure) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    auto sub = app.add_subcommand("other");
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[other]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ExtrasINIError);
+}
+
+
+TEST_F(TApp, IniNoSubFailure) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[other]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ExtrasINIError);
+}
+
+TEST_F(TApp, IniFlagConvertFailure) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_flag("--flag");
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "flag=moobook" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, IniFlags) {
     TempFile tmpini{"TestIniTmp.ini"};
     app.add_config("--config", tmpini);

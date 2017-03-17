@@ -826,7 +826,6 @@ protected:
         detail::ini_ret_t& current = args.back();
         std::string parent = current.parent(); // respects curent.level
         std::string name = current.name();
-        std::cout << current.fullname << " " << parent << " " << name << std::endl;
 
         // If a parent is listed, go to a subcommand
         if(parent != "") {
