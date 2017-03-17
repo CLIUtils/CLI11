@@ -114,6 +114,32 @@ TEST_F(TApp, FallThroughRegular) {
     run();
 }
 
+
+TEST_F(TApp, FallThroughShort) {
+    app.fallthrough();
+    int val = 1;
+    app.add_option("-v", val);
+
+    app.add_subcommand("sub");
+    
+    args = {"sub", "-v", "2"};
+    // Should not throw
+    run();
+}
+
+
+TEST_F(TApp, FallThroughPositional) {
+    app.fallthrough();
+    int val = 1;
+    app.add_option("val", val);
+
+    app.add_subcommand("sub");
+    
+    args = {"sub", "2"};
+    // Should not throw
+    run();
+}
+
 TEST_F(TApp, FallThroughEquals) {
     app.fallthrough();
     int val = 1;
