@@ -200,7 +200,7 @@ TEST(THelp, ExcludesPositional) {
 TEST(THelp, Subcom) {
     CLI::App app{"My prog"};
 
-    app.add_subcommand("sub1");
+    auto sub1 = app.add_subcommand("sub1");
     app.add_subcommand("sub2");
 
     std::string help = app.help();
@@ -210,6 +210,9 @@ TEST(THelp, Subcom) {
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] SUBCOMMAND"));
+    
+    help = sub1->help();
+    EXPECT_THAT(help, HasSubstr("Usage: sub1"));
 
 }
 
