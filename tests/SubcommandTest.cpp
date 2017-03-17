@@ -34,7 +34,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     args = {"sub1", "sub2"};
     run();
     EXPECT_TRUE(app.got_subcommand("sub1"));
-    EXPECT_TRUE(app.got_subcommand(sub1);
+    EXPECT_TRUE(app.got_subcommand(sub1));
     EXPECT_TRUE(app.got_subcommand("sub2"));
 
     app.reset();

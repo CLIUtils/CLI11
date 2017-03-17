@@ -537,12 +537,9 @@ public:
 
     /// Check with name instead of pointer
     bool got_subcommand(std::string name) const {
-        for(const auto subcomptr : selected_subcommands_)
-            if(subcomptr->check_name(name))
-                return true;
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr->check_name(name))
-                return false;
+                return got_subcommand(subcomptr.get());
         throw CLI::OptionNotFound(name);
     }
     
