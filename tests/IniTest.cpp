@@ -405,6 +405,21 @@ TEST_F(TApp, IniFlagNumbers) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, IniFlagDual) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    bool boo;
+    app.add_flag("--flag", boo);
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "flag=1 1" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
 
 TEST_F(TApp, IniFlagText) {
 

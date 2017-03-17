@@ -197,6 +197,7 @@ TEST(THelp, ExcludesPositional) {
     EXPECT_THAT(help, HasSubstr("Positionals:"));
     EXPECT_THAT(help, HasSubstr("Excludes: op1"));
 }
+
 TEST(THelp, Subcom) {
     CLI::App app{"My prog"};
 
@@ -214,6 +215,14 @@ TEST(THelp, Subcom) {
     help = sub1->help();
     EXPECT_THAT(help, HasSubstr("Usage: sub1"));
 
+    char x[] = "./myprogram"; 
+    char y[] = "sub2";
+
+    std::vector<char*> args = {x,y};
+    app.parse(args.size(), args.data());
+
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));
 }
 
 TEST(THelp, IntDefaults) {
