@@ -257,3 +257,35 @@ TEST(THelp, SetLower) {
     EXPECT_THAT(help, HasSubstr("THREE"));
 
 }
+
+TEST(Exit, ErrorWithHelp) {
+    CLI::App app{"My prog"};
+
+    std::vector<std::string> input {"-h"};
+    try {
+        app.parse(input);
+    } catch (const CLI::CallForHelp &e) {
+        EXPECT_EQ(CLI::ErrorCodes::Success, e.exit_code);
+    }
+}
+
+TEST(Exit, ErrorWithoutHelp) {
+    CLI::App app{"My prog"};
+
+    std::vector<std::string> input {"--none"};
+    try {
+        app.parse(input);
+    } catch (const CLI::ParseError &e) {
+        EXPECT_EQ(CLI::ErrorCodes::Extras, e.exit_code);
+    }
+}
+
+TEST(Exit, ExitCodes) {
+    CLI::App app;
+
+    int i = static_cast<int>(CLI::ErrorCodes::Extras);
+    EXPECT_EQ(0, app.exit(CLI::Success()));
+    EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
+    EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));
+
+}
