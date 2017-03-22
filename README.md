@@ -61,7 +61,7 @@ As you probably have guessed, the list of features above are all covered by this
 
 To use, there are two methods:
 
-1. Copy `CLI11.hpp` from the [most recent release][github-releases] into your include directory, and you are set. This is combined from the source files  for every release.
+1. Copy `CLI11.hpp` from the [most recent release][github-releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
 2. Checkout the repository and add as a subdirectory for CMake. You can use the CLI interface target. (CMake 3.4+ recommended)
 
 To build the tests, checkout the repository and use CMake:
@@ -236,6 +236,20 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
 ## Contributing
 
 To contribute, open an [issue][github-issues] or [pull request][github-pull] on GitHub, or ask a question on [gitter][gitter-link].
+
+## Utilities
+
+There are a few other utilities that are often useful in CLI programming. These are in separate headers, and do not appear in `CLI11.hpp`, but are completely independent and can be used as needed. The `Timer`/`AutoTimer` class allows you to easily time a block of code, with custom print output. An example of usage:
+
+```cpp
+{
+CLI::AutoTimer timer {"My Long Process", CLI::Timer::Big};
+some_long_running_process();
+}
+```
+
+This will create a timer with a title (default: `Timer`), and will customize the output using the predefined `Big` output (default: `Simple`). Because it is an `AutoTimer`, it will print out the time elapsed when the timer is destroyed at the end of the block. If you use `Timer` instead, you can use `to_string` or `std::cout << timer << std::endl;` to print the time. The print function can be any function that takes two strings, the title and the time, and returns a formatted
+string for printing.
 
 ## Other libraries
 
