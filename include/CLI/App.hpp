@@ -547,12 +547,33 @@ public:
     /// @name Help
     ///@{
 
-    /// Produce a string that could be read in as a config of the current values of the App
-    std::string config_to_str() const {
+    /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include default arguments.
+    std::string config_to_str(bool default_also=false) const {
         std::stringstream out;
         for(const Option_p &opt : options_) {
-            if(opt->lnames_.size() > 0 && opt->count() > 0 && opt->get_expected() > 0)
-                out << opt->lnames_[0] << "=" << detail::join(opt->results()) << std::endl;
+
+            // Only process option with a long-name
+            if(opt->lnames_.size() > 0) {
+
+                // Non-flags
+                if(opt->get_expected() != 0) {
+
+                    // If the option was found on command line
+                    if(opt->count() > 0)
+                        out << opt->lnames_[0] << "=" << detail::join(opt->results()) << std::endl;
+
+                    // If the option has a default and is requested by optional argument
+                    else if(default_also && opt->defaultval_ != "")
+                        out << opt->lnames_[0] << "=" << opt->defaultval_ << std::endl;
+                // Flag, one passed
+                } else if(opt->count() == 1) {
+                    out << opt->lnames_[0] << "=true" << std::endl;
+
+                // Flag, multiple passed
+                } else if(opt->count() > 1) {
+                    out << opt->lnames_[0] << "=" << opt->count() << std::endl;
+                }
+            }
         }
         return out.str();
     }

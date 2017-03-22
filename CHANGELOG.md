@@ -1,13 +1,13 @@
 ## Version 0.7 (in progress)
 * Allow comments in ini files (lines starting with `;`)
-* Ini files support flags (only read)
+* Ini files support flags
+* Ini files support vectors
 * Ini files support subcommands (only read)
-* Ini files support vectors (only read)
 * Added CodeCov code coverage reports
 * Lots of small bugfixes related to adding tests to increase coverage
 * Error handling now uses scoped enum in errors
 * Reparsing rules changed a little to accommodate Ini files. Callbacks are now called when parsing INI, and reset any time results are added.
-* Adding extra utilities in seperate files version only, `Timer` (not needed for parsing, but useful for general CLI applications).
+* Adding extra utilities in full version only, `Timer` (not needed for parsing, but useful for general CLI applications).
 
 ## Version 0.6
 

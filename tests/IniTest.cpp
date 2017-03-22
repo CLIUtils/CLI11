@@ -488,22 +488,64 @@ TEST_F(TApp, IniOutputSimple) {
 
     std::string str = app.config_to_str();
     EXPECT_EQ("simple=3\n", str);
-
 }
 
-/// Flags should not show up in config file
+TEST_F(TApp, IniOutputVector) {
+
+    std::vector<int> v;
+    app.add_option("--vector", v);
+
+    args = {"--vector", "1", "2", "3"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("vector=1,2,3\n", str);
+}
+
 TEST_F(TApp, IniOutputFlag) {
 
-    int v;
+    int v, q;
     app.add_option("--simple", v);
     app.add_flag("--nothing");
+    app.add_flag("--onething");
+    app.add_flag("--something", q);
 
-    args = {"--simple=3", "--nothing"};
+    args = {"--simple=3", "--onething", "--something", "--something"};
 
     run();
 
     std::string str = app.config_to_str();
     EXPECT_THAT(str, HasSubstr("simple=3"));
-    EXPECT_THAT(str, Not(HasSubstr("nothing=")));
+    EXPECT_THAT(str, Not(HasSubstr("nothing")));
+    EXPECT_THAT(str, HasSubstr("onething=true"));
+    EXPECT_THAT(str, HasSubstr("something=2"));
+}
 
+TEST_F(TApp, IniOutputSet) {
+
+    int v;
+    app.add_set("--simple", v, {1,2,3});
+
+    args = {"--simple=2"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=2"));
+}
+
+
+TEST_F(TApp, IniOutputDefault) {
+
+    int v=7;
+    app.add_option("--simple", v, "", true);
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, Not(HasSubstr("simple=7")));
+
+    str = app.config_to_str(true);
+    EXPECT_THAT(str, HasSubstr("simple=7"));
 }
