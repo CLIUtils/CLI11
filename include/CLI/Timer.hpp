@@ -39,7 +39,7 @@ public:
 
     /// This is a fancy print function with --- headers
     static std::string Big(std::string title, std::string time) {
-        return "-----------------------------------------\n"
+        return std::string("-----------------------------------------\n")
             + "| " + title + " | Time = " + time + "\n"
             + "-----------------------------------------";
     }
