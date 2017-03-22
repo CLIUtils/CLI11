@@ -7,6 +7,7 @@
 * Lots of small bugfixes related to adding tests to increase coverage
 * Error handling now uses scoped enum in errors
 * Reparsing rules changed a little to accommodate Ini files. Callbacks are now called when parsing INI, and reset any time results are added.
+* Adding extra utilities in seperate files version only, `Timer` (not needed for parsing, but useful for general CLI applications).
 
 ## Version 0.6
 
