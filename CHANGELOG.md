@@ -1,4 +1,9 @@
+## Version 0.8 (in progress)
+
+* Moved to CLTools on GitHub
+
 ## Version 0.7
+
 * Allow comments in ini files (lines starting with `;`)
 * Ini files support flags, vectors, subcommands
 * Added CodeCov code coverage reports

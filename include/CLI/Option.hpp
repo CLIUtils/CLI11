@@ -155,12 +155,12 @@ public:
 
     /// Set the number of expected arguments (Flags bypass this)
     Option* expected(int value) {
-        if(!changeable_)
-            throw IncorrectConstruction("You can only change the expected arguments for vectors");
-        else if(value == 0)
+        if(value == 0)
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
         else if(expected_ == 0)
             throw IncorrectConstruction("Cannot make a flag take arguments!");
+        else if(!changeable_)
+            throw IncorrectConstruction("You can only change the expected arguments for vectors");
         expected_ = value;
         return this;
     }
