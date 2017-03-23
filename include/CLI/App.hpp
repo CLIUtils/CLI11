@@ -547,34 +547,37 @@ public:
     /// @name Help
     ///@{
 
-    /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include default arguments.
-    std::string config_to_str(bool default_also=false) const {
+    /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include default arguments. Prefix will add a string to the beginning of each option.
+    std::string config_to_str(bool default_also=false, std::string prefix="") const {
         std::stringstream out;
         for(const Option_p &opt : options_) {
 
             // Only process option with a long-name
             if(opt->lnames_.size() > 0) {
+                std::string name = prefix + opt->lnames_[0];
 
                 // Non-flags
                 if(opt->get_expected() != 0) {
 
                     // If the option was found on command line
                     if(opt->count() > 0)
-                        out << opt->lnames_[0] << "=" << detail::join(opt->results()) << std::endl;
+                        out << name << "=" << detail::join(opt->results()) << std::endl;
 
                     // If the option has a default and is requested by optional argument
                     else if(default_also && opt->defaultval_ != "")
-                        out << opt->lnames_[0] << "=" << opt->defaultval_ << std::endl;
+                        out << name << "=" << opt->defaultval_ << std::endl;
                 // Flag, one passed
                 } else if(opt->count() == 1) {
-                    out << opt->lnames_[0] << "=true" << std::endl;
+                    out << name << "=true" << std::endl;
 
                 // Flag, multiple passed
                 } else if(opt->count() > 1) {
-                    out << opt->lnames_[0] << "=" << opt->count() << std::endl;
+                    out << name << "=" << opt->count() << std::endl;
                 }
             }
         }
+        for(const App_p &subcom : subcommands_)
+            out << subcom->config_to_str(default_also, prefix + subcom->name_ + ".");
         return out.str();
     }
 

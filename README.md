@@ -206,7 +206,8 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults".
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". To print a configuration file from the passed
+arguments, use `.config_to_str(default_also=false)`, where `default_also` will also show any defaulted arguments.
 
 
 ## Subclassing

@@ -1,8 +1,6 @@
 ## Version 0.7 (in progress)
 * Allow comments in ini files (lines starting with `;`)
-* Ini files support flags
-* Ini files support vectors
-* Ini files support subcommands (only read)
+* Ini files support flags, vectors, subcommands
 * Added CodeCov code coverage reports
 * Lots of small bugfixes related to adding tests to increase coverage
 * Error handling now uses scoped enum in errors

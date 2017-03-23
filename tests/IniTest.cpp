@@ -549,3 +549,17 @@ TEST_F(TApp, IniOutputDefault) {
     str = app.config_to_str(true);
     EXPECT_THAT(str, HasSubstr("simple=7"));
 }
+
+TEST_F(TApp, IniOutputSubcom) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("other.newer=true"));
+}
