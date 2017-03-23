@@ -41,10 +41,8 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 
 This library was built to supply the Application object for the GooFit CUDA/OMP fitting library. Before version 2.0 of GooFit is released, this library will reach version 1.0 status. The current tasks still planned are:
 
-* Add new features of config to save
 * Collect user feedback
 * Evaluate compatibility with [ROOT][root-link]'s TApplication object.
-* Test "adding to cmake" method
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases][github-releases] for details.
 
