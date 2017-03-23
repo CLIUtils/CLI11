@@ -26,6 +26,7 @@ An acceptable CLI parser library should be all of the following:
 * Usable subcommand syntax, with support for multiple subcommands, nested subcommands, and optional fallthrough (explained later).
 * Ability to add a configuration file (`ini` format).
 * Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
+* Work with standard types, similar custom types, and extendable to exotic types.
 
 The major CLI parsers for C++ include:
 
@@ -47,7 +48,7 @@ This library was built to supply the Application object for the GooFit CUDA/OMP 
 
 See the [changelog](./CHANGELOG.md) or [GitHub releases][github-releases] for details.
 
-## Things not supported by this library
+## Features not supported by this library
 
 As you probably have guessed, the list of features above are all covered by this library. There are some other features that are intentionally not supported by this library:
 
@@ -62,7 +63,7 @@ As you probably have guessed, the list of features above are all covered by this
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][github-releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the CLI interface target. (CMake 3.4+ recommended)
+2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in (CLTools cmake helpers)[cltools-cmake]. 
 
 To build the tests, checkout the repository and use CMake:
 
@@ -224,7 +225,7 @@ Also, in a related note, the `App` you get a pointer to is stored in the parent 
 ## How it works
 
 Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of strings, so it knows how many times an option was passed or how many arguments it received (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
-`false` if it failed.
+`false` if it failed. If you wanted to extend this to support a new type, just use a lambda. An example of a new parser for `complex<double>` that supports all of the features of a standard `add_options` call is in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
 ### Example
 
@@ -240,7 +241,7 @@ To contribute, open an [issue][github-issues] or [pull request][github-pull] on 
 
 ## Utilities
 
-There are a few other utilities that are often useful in CLI programming. These are in separate headers, and do not appear in `CLI11.hpp`, but are completely independent and can be used as needed. The `Timer`/`AutoTimer` class allows you to easily time a block of code, with custom print output. An example of usage:
+There are a few other utilities that are often useful in CLI programming. These are in separate headers, and do not appear in `CLI11.hpp`, but are completely independent and can be used as needed. The `Timer`/`AutoTimer` class allows you to easily time a block of code, with custom print output. 
 
 ```cpp
 {
@@ -291,3 +292,4 @@ This will print help in blue, errors in red, and will reset before returning the
 [tclap-link]:        http://tclap.sourceforge.net
 [cxxopts-link]:      https://github.com/jarro2783/cxxopts
 [root-link]:         https://root.cern.ch
+[cltools-cmake]:     https://github.com/CLTools/cmake

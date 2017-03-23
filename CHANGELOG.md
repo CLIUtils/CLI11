@@ -2,10 +2,11 @@
 * Allow comments in ini files (lines starting with `;`)
 * Ini files support flags, vectors, subcommands
 * Added CodeCov code coverage reports
-* Lots of small bugfixes related to adding tests to increase coverage
+* Lots of small bugfixes related to adding tests to increase coverage to 100%
 * Error handling now uses scoped enum in errors
 * Reparsing rules changed a little to accommodate Ini files. Callbacks are now called when parsing INI, and reset any time results are added.
 * Adding extra utilities in full version only, `Timer` (not needed for parsing, but useful for general CLI applications).
+* Better support for custom `add_options` like functions.
 
 ## Version 0.6
 

@@ -7,7 +7,9 @@ set(CLI_TESTS
     AppTest
     CreationTest
     SubcommandTest
-    HelpTest)
+    HelpTest
+    NewParseTest
+    )
 
 set(CLI_SINGLE_TESTS
     TimerTest
