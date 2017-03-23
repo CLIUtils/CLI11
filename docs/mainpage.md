@@ -8,8 +8,8 @@ The main classes are:
 |---------------|-------------------------------------|
 |CLI::Option    | Options, stored in the app          |
 |CLI::App       | The main application or subcommands |
-|CLI::ExitCodes | A scoped enum with exit codes       |
-|CLI::Timer     | A timer class, only in CLI/Timer.hpp (not CLI11.hpp) |
+|CLI::ExitCode  | A scoped enum with exit codes       |
+|CLI::Timer     | A timer class, only in CLI/Timer.hpp (not in `CLI11.hpp`) |
 |CLI::AutoTimer | A timer that prints on deletion     |
 
 

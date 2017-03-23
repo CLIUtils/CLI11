@@ -284,7 +284,7 @@ This will print help in blue, errors in red, and will reset before returning the
 [plumbum-link]:      https://plumbum.readthedocs.io/en/latest/
 [click-link]:        http://click.pocoo.org
 [api-docs]:          https://CLITools.github.io/CLI11/index.html
-[rang-link]:         https://github.com/agauniyal/rang/wiki
+[rang-link]:         https://github.com/agauniyal/rang
 [boost-link]:        http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html
 [optionparser-link]: http://optionparser.sourceforge.net
 [tclap-link]:        http://tclap.sourceforge.net

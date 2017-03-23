@@ -1,6 +1,7 @@
-## Version 0.8 (in progress)
+## Version 0.8
 
 * Moved to CLITools on GitHub
+* Fixed docs build and a few links
 
 ## Version 0.7
 
