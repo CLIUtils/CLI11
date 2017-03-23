@@ -237,11 +237,11 @@ public:
         };
 
         Option* opt = add_option(name, fun, description, defaulted);
-        opt->typeval_ = detail::type_name<T>();
+        opt->set_custom_option(detail::type_name<T>());
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            opt->defaultval_ = out.str();
+            opt->set_default_val(out.str());
         }
         return opt;
     }
@@ -266,11 +266,9 @@ public:
         };
 
         Option* opt =  add_option(name, fun, description, defaulted);
-        opt->allow_vector_ = true;
-        opt->expected_ = -1;
-        opt->typeval_ = detail::type_name<T>();
+        opt->set_custom_option(detail::type_name<T>(), -1, true);
         if(defaulted)
-            opt->defaultval_ =  "[" + detail::join(variable) + "]";
+            opt->set_default_val("[" + detail::join(variable) + "]");
         return opt;
     }
 
@@ -286,7 +284,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->expected_ = 0;
+        opt->set_custom_option("", 0);
         return opt;
     }
 
@@ -308,7 +306,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->expected_ = 0;
+        opt->set_custom_option("", 0);
         return opt;
     }
 
@@ -330,7 +328,7 @@ public:
         Option* opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
-        opt->expected_ = 0;
+        opt->set_custom_option("", 0);
         return opt;
     }
 
@@ -356,12 +354,13 @@ public:
         };
 
         Option* opt = add_option(name, fun, description, defaulted);
-        opt->typeval_ = detail::type_name<T>();
-        opt->typeval_ += " in {" + detail::join(options) + "}";
+        std::string typeval = detail::type_name<T>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
         if(defaulted) {
             std::stringstream out;
             out << member;
-            opt->defaultval_ = out.str();
+            opt->set_default_val(out.str());
         }
         return opt;
     }
@@ -391,10 +390,11 @@ public:
         };
 
         Option* opt = add_option(name, fun, description, defaulted);
-        opt->typeval_ = detail::type_name<std::string>();
-        opt->typeval_ += " in {" + detail::join(options) + "}";
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
         if(defaulted) {
-            opt->defaultval_ = member;
+            opt->set_default_val(member);
         }
         return opt;
     }

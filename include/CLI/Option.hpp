@@ -73,8 +73,8 @@ protected:
     /// The number of expected values, 0 for flag, -1 for unlimited vector
     int expected_ {1};
 
-    /// A private setting to allow non-vector args to not be able to accept incorrect expected values
-    bool allow_vector_ {false};
+    /// A private setting to allow args to not be able to accept incorrect expected values
+    bool changeable_ {false};
     
     /// Ignore the case when matching (option, not value)
     bool ignore_case_ {false};
@@ -155,12 +155,12 @@ public:
 
     /// Set the number of expected arguments (Flags bypass this)
     Option* expected(int value) {
-        if(value == 0)
+        if(!changeable_)
+            throw IncorrectConstruction("You can only change the expected arguments for vectors");
+        else if(value == 0)
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
         else if(expected_ == 0)
             throw IncorrectConstruction("Cannot make a flag take arguments!");
-        else if(!allow_vector_ && value != 1)
-            throw IncorrectConstruction("You can only change the Expected arguments for vectors");
         expected_ = value;
         return this;
     }
@@ -460,6 +460,23 @@ public:
     }
 
     ///@}
+    /// @name Custom options
+    ///@{
+
+    /// Set a custom option, typestring, expected, and changeable
+    void set_custom_option(std::string typeval, int expected=1, bool changeable = false) {
+        typeval_ = typeval;
+        expected_ = expected;
+        changeable_ = changeable;
+    }
+
+    /// Set the default value string representation
+    void set_default_val(std::string val) {
+        defaultval_ = val;
+    }
+
+    ///@}
+
 
     protected:
 
