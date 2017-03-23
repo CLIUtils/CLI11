@@ -1,6 +1,6 @@
 ## Version 0.8 (in progress)
 
-* Moved to CLTools on GitHub
+* Moved to CLITools on GitHub
 
 ## Version 0.7
 

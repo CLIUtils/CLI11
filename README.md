@@ -61,7 +61,7 @@ As you probably have guessed, the list of features above are all covered by this
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][github-releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in [CLTools cmake helpers][cltools-cmake]. 
+2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in [CLITools cmake helpers][cltools-cmake]. 
 
 To build the tests, checkout the repository and use CMake:
 
@@ -268,26 +268,26 @@ try {
 This will print help in blue, errors in red, and will reset before returning the terminal to the user.
 
 
-[travis-badge]:      https://img.shields.io/travis/CLTools/CLI11/master.svg?label=Linux/macOS
-[travis-link]:       https://travis-ci.org/CLTools/CLI11
+[travis-badge]:      https://img.shields.io/travis/CLITools/CLI11/master.svg?label=Linux/macOS
+[travis-link]:       https://travis-ci.org/CLITools/CLI11
 [appveyor-badge]:    https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows
 [appveyor-link]:     https://ci.appveyor.com/project/HenrySchreiner/cli11
-[codecov-badge]:     https://codecov.io/gh/CLTools/CLI11/branch/master/graph/badge.svg
-[codecov-link]:      https://codecov.io/gh/CLTools/CLI11
+[codecov-badge]:     https://codecov.io/gh/CLITools/CLI11/branch/master/graph/badge.svg
+[codecov-link]:      https://codecov.io/gh/CLITools/CLI11
 [gitter-badge]:      https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter-link]:       https://gitter.im/CLI11gitter/Lobby
 [license-badge]:     https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg
-[github-releases]:   https://github.com/CLTools/CLI11/releases
-[github-issues]:     https://github.com/CLTools/CLI11/issues
-[github-pull]:       https://github.com/CLTools/CLI11/pulls
+[github-releases]:   https://github.com/CLITools/CLI11/releases
+[github-issues]:     https://github.com/CLITools/CLI11/issues
+[github-pull]:       https://github.com/CLITools/CLI11/pulls
 [goofit-link]:       https://GooFit.github.io 
 [plumbum-link]:      https://plumbum.readthedocs.io/en/latest/
 [click-link]:        http://click.pocoo.org
-[api-docs]:          https://CLTools.github.io/CLI11/index.html
+[api-docs]:          https://CLITools.github.io/CLI11/index.html
 [rang-link]:         https://github.com/agauniyal/rang/wiki
 [boost-link]:        http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html
 [optionparser-link]: http://optionparser.sourceforge.net
 [tclap-link]:        http://tclap.sourceforge.net
 [cxxopts-link]:      https://github.com/jarro2783/cxxopts
 [root-link]:         https://root.cern.ch
-[cltools-cmake]:     https://github.com/CLTools/cmake
+[cltools-cmake]:     https://github.com/CLITools/cmake
