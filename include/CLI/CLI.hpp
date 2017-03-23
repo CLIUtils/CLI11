@@ -1,7 +1,7 @@
 #pragma once
 
 // Distributed under the LGPL v2.1 license.  See accompanying
-// file LICENSE or https://github.com/henryiii/CLI11 for details.
+// file LICENSE or https://github.com/CLTools/CLI11 for details.
 
 // CLI Library includes
 #include "CLI/Error.hpp"

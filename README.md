@@ -268,22 +268,22 @@ try {
 This will print help in blue, errors in red, and will reset before returning the terminal to the user.
 
 
-[travis-badge]:      https://img.shields.io/travis/henryiii/CLI11/master.svg?label=Linux/macOS
-[travis-link]:       https://travis-ci.org/henryiii/CLI11
+[travis-badge]:      https://img.shields.io/travis/CLTools/CLI11/master.svg?label=Linux/macOS
+[travis-link]:       https://travis-ci.org/CLTools/CLI11
 [appveyor-badge]:    https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows
 [appveyor-link]:     https://ci.appveyor.com/project/HenrySchreiner/cli11
-[codecov-badge]:     https://codecov.io/gh/henryiii/CLI11/branch/master/graph/badge.svg
-[codecov-link]:      https://codecov.io/gh/henryiii/CLI11
+[codecov-badge]:     https://codecov.io/gh/CLTools/CLI11/branch/master/graph/badge.svg
+[codecov-link]:      https://codecov.io/gh/CLTools/CLI11
 [gitter-badge]:      https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter-link]:       https://gitter.im/CLI11gitter/Lobby
 [license-badge]:     https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg
-[github-releases]:   https://github.com/henryiii/CLI11/releases
-[github-issues]:     https://github.com/henryiii/CLI11/issues
-[github-pull]:       https://github.com/henryiii/CLI11/pulls
+[github-releases]:   https://github.com/CLTools/CLI11/releases
+[github-issues]:     https://github.com/CLTools/CLI11/issues
+[github-pull]:       https://github.com/CLTools/CLI11/pulls
 [goofit-link]:       https://GooFit.github.io 
 [plumbum-link]:      https://plumbum.readthedocs.io/en/latest/
 [click-link]:        http://click.pocoo.org
-[api-docs]:          https://henryiii.github.io/CLI11/index.html
+[api-docs]:          https://CLTools.github.io/CLI11/index.html
 [rang-link]:         https://github.com/agauniyal/rang/wiki
 [boost-link]:        http://www.boost.org/doc/libs/1_63_0/doc/html/program_options.html
 [optionparser-link]: http://optionparser.sourceforge.net

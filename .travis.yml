@@ -2,10 +2,7 @@ language: cpp
 sudo: false
 branches:
   exclude:
-    - gh-pages
-env:
-  global:
-    - secure: "Tdqt9SFIri3bu3B0D1aJqkYr5Zhy1yuBgvL5xC84w96DX45/gq27q51jEHxZdyhAo71D5UNxd9It7aRDMixoYmHj9VvPmhX3o34JKcXsXTFmK6Mks55E8gVr8FJfX7Efl8TSrZ677c51aUeScIaLnpL7G2VoKAqp8GA15foBgggQYjMC6h0ciDRh39GEKUWc/aZa1+uqsTw8rYfDTUn6fQ4GQqVaFhcN14V4vDOleeHM17GgOSoZTPXMi/9qAgRkASARvkdndWYwAIu8XFgu7Za8mWqpn2lpl9Yfv/YbRoPTm8FC9yH4VSbS1YKUw2vS6ehdpgqp8c8ANqoCKp4nUTY6O+5HYJO8bq3pvYOdz2Uz99gSagzIQ/JHxPHQ6GH/3j7e79OWI810FLtG7jJ4SCnBrN8tSCWeDlCatDEMyAchXB2bAns61Tcu5Welf9wLYDgFWYlYl20X6Y/a1B44yczvu8h+McptcNCPola2xLj+TVTc5EewgjAFgpugtx39XMC/GLaY74wv+Q4rX0o1V4AQgZ42fXPKpUeum2JXzBD+Sw0Qzp8cu+qGMjLv2i0BoKcOtQ6LuJsftq/0p/EjnlZCupHeV0aiujNHqB1KkKdTX/aerPNef0Xz3ZL+eukGTwTbFUxng4zkV4JL+3f9RykzJ0TJDMavZSPggXXP4P0="
+  - gh-pages
 cache:
   directories:
   - ${TRAVIS_BUILD_DIR}/deps/cmake
@@ -21,9 +18,9 @@ matrix:
         packages:
         - clang-3.5
     env:
-      - COMPILER=3.5
-      - DEPLOY_MAT=yes
-      - DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
+    - COMPILER=3.5
+    - DEPLOY_MAT=yes
+    - DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
   - compiler: gcc
     addons:
       apt:
@@ -46,28 +43,29 @@ matrix:
     env:
     - COMPILER=4.7
   - os: osx
-
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh
+  ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh
+  ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh
+  ; fi
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip
   install --user pathlib; fi
-
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - .ci/travis.sh
-
 after_success:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
 - echo "${TRAVIS_BRANCH}"
 - echo "${TRAVIS_PULL_REQUEST}"
-- if [ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && -n "$DEPLOY_MAT" ] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh ; fi
-
+- if [ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && -n
+  "$DEPLOY_MAT" ] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
+  ; fi
 deploy:
   provider: releases
   api_key:
@@ -75,14 +73,16 @@ deploy:
   skip_cleanup: true
   file: build/include/CLI11.hpp
   on:
-    repo: henryiii/CLI11
+    repo: CLTools/CLI11
     tags: true
     condition: $DEPLOY_MAT = yes
-
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/bbdb3befce4c00448d24
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
+    - https://webhooks.gitter.im/e/bbdb3befce4c00448d24
+    on_success: change
+    on_failure: always
+    on_start: never
+env:
+  global:
+    secure: OKpsUj80J/zdGXE1eoMe78kq2HNsu4H6nTLd+JpenCU8DNmNugz2uwVr5pL9dL70y1LIh0Zjfm7yvnEDTYebEtj94n3Ms2kRDKBDZRiy1ZXxhVrGUGRC8PCkZIrKVOzy2CA3OY2PlqWbRF4kD0FaO7G4rVTYP4cNCJSnx/nM5knS2KMQ0uVyr/fi4CfjL7SKwdguVpvDlTgqx70+xwQyfba0PCZRzA2SSth7MGAC0chel3H4G1xDksukZkOoTRtRXlwHtqFNIlk7pZc6oZyoDxWIVbdZaluffYfGSolNTwLskaq1sV8coa9roLDZOpKKa97q2YPI2uU87l7FD/rDs/K15bDCGfai0sSKL/THqC1SvoHuHstAsy1cYjmOaIN55/nl0hY3rL9nMt01d84FNRGQA2VVzSJ4A6TTTlP+Vme25COhEBkF8MFfNqNVj0hfVY7wqUJu75SOy6gmkp9tH2ZEQHzVOWsm0ZX0tOlauhLTVfNkq5k60NAGK659doC1H9kpEOVfyrbnPGLFiJIB3LugQacknm/Px4owR/XkZrfrka/kk4WKYgzo9vCpOrNr5j1ERYnw70aOxpAQ75mIQOsGQDAqp6AIMJjLoVy7y4rUWIEfARn/2u/1bs3OsON33PI+9xhF+E/W1SlQmqVglbnJiwrbet7SM+//09Gr3aw=
