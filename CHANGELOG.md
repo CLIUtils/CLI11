@@ -1,4 +1,4 @@
-## Version 0.7 (in progress)
+## Version 0.7
 * Allow comments in ini files (lines starting with `;`)
 * Ini files support flags, vectors, subcommands
 * Added CodeCov code coverage reports

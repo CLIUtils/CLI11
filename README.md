@@ -26,7 +26,7 @@ An acceptable CLI parser library should be all of the following:
 * Usable subcommand syntax, with support for multiple subcommands, nested subcommands, and optional fallthrough (explained later).
 * Ability to add a configuration file (`ini` format).
 * Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
-* Work with standard types, similar custom types, and extendable to exotic types.
+* Work with standard types, simple custom types, and extendable to exotic types.
 
 The major CLI parsers for C++ include:
 
@@ -53,8 +53,8 @@ See the [changelog](./CHANGELOG.md) or [GitHub releases][github-releases] for de
 As you probably have guessed, the list of features above are all covered by this library. There are some other features that are intentionally not supported by this library:
 
 * Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
-* Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this design flaw.
-* In C++14, you could have a set of `callback` methods (tested in a branch). Not deemed worth having a C++14 variation on API and removed.
+* Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
+* In C++14, you could have a set of `callback` methods with differing signatures (tested in a branch). Not deemed worth having a C++14 variation on API and removed.
 * Autocomplete: This might eventually be added to both Plumbum and CLI11, but it is not supported yet.
 
 
@@ -63,7 +63,7 @@ As you probably have guessed, the list of features above are all covered by this
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][github-releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in (CLTools cmake helpers)[cltools-cmake]. 
+2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in [CLTools cmake helpers][cltools-cmake]. 
 
 To build the tests, checkout the repository and use CMake:
 
