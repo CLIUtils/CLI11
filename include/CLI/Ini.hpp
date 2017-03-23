@@ -14,6 +14,24 @@
 namespace CLI {
 namespace detail {
 
+inline std::string inijoin(std::vector<std::string> args) {
+    std::ostringstream s;
+    size_t start = 0;
+    for (const auto& arg : args) {
+        if(start++ > 0)
+            s << " ";
+
+        auto it = std::find_if(arg.begin(), arg.end(), [](char ch){ return std::isspace<char>(ch , std::locale());});
+        if(it == arg.end())
+            s << arg;
+        else if(arg.find("\"") == std::string::npos)
+            s << "\"" << arg << "\"";
+        else
+            s << "\'" << arg << "\'";
+    }
+
+    return s.str();
+}
 
 struct ini_ret_t {
     /// This is the full name with dots

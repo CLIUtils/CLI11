@@ -561,7 +561,7 @@ public:
 
                     // If the option was found on command line
                     if(opt->count() > 0)
-                        out << name << "=" << detail::join(opt->results()) << std::endl;
+                        out << name << "=" << detail::inijoin(opt->results()) << std::endl;
 
                     // If the option has a default and is requested by optional argument
                     else if(default_also && opt->defaultval_ != "")
