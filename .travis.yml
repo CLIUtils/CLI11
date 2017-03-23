@@ -63,8 +63,7 @@ after_success:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
 - echo "${TRAVIS_BRANCH}"
 - echo "${TRAVIS_PULL_REQUEST}"
-- if [ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && -n
-  "$DEPLOY_MAT" ] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
+- if [ "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" && -n "$DEPLOY_MAT" ] ; then echo "Updating docs" &&  cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
   ; fi
 deploy:
   provider: releases
