@@ -119,7 +119,7 @@ An option name must start with a alphabetic character or underscore. For long op
 
 ### Example
 
-* `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--option`
+* `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--one`
 * `"this"` Can only be passed positionally
 * `"-a,-b,-c"` No limit to the number of non-positional option names
 
