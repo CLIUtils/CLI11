@@ -1,6 +1,6 @@
 ## Version 0.8
 
-* Moved to CLITools on GitHub
+* Moved to CLIUtils on GitHub
 * Fixed docs build and a few links
 
 ## Version 0.7

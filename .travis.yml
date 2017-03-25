@@ -64,18 +64,18 @@ after_success:
 - echo "${TRAVIS_BRANCH}"
 - echo "${TRAVIS_PULL_REQUEST}"
 - |
-    if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ -n "$DEPLOY_MAT" ]
-    then
-        echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
-    fi
+  if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ -n "$DEPLOY_MAT" ]
+  then
+      echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
+  fi
 deploy:
   provider: releases
   api_key:
-    secure: fSUE2bTUyJwMuRuZmHy76bCDSM/XzdHAb3kK1urP1DBa0xbaOORqRxN0KxfRfMaBiQowY9+rJbAE7NpbsInWoDLawgUzDV0jA0lJ3W4gsgBpmriXgD205iaOWPmhWSqfNCyqqJqMprJP9EsE26+jcV54Ge2q0psSJHqD8kEhsb8NLUPkCB82ZCCaJFseCI/u4CJNBbyzGVf42cgAnG2JzX0oCUTLJzMrzc/qFWZRxS/U0l7D8ehrThHGTL9OrVcuWcG3uaFcQ4NvgxeqciXzf6tCZKWCsXId7/2g5jHLZv9FDhaVSz8O6oBN6J2uzQfI+VxvvMW465+dk9s0X/yN6swtHTeA48HbpBwFhqNV2cPU/ZkgVT8a4T1nJRWnAHGFhGEBr0RNMl2bcDrB4tPX/aLBptuDKRVVgmJ+BImgSzEXewGzuwhQ3dJ6zY5IvtO/LDwO7mVnPAzjW81/FwIsS5vYQXBV/sfHw1WpE9mI1GE99laf8UneNqtwPNpU/BAjbb/W4DvC7fyLwf2GDwl35/vOWfDTatilXeYVZetLTReFv8iy4atli2pf/irxbrhCTdiuuJWq18dGfhozvLIEzJMz84+pnT0nXkNshgnJ4rV613G4WfXjOauYOuU80supOZX0raFDDnCF1JNhrIwo9XYZGhIp+qU+NyyzvGsY3zA=
+    secure: L1svZ5J+RiR67dj1fNk/XiZRvYfGJC4c5/dKSvDH+yuKSzZ6ODaTiVmYF8NtMJ7/3AQenEa0OuRBVQ0YpngFz3ugIcRsGCDUHtCMK/Bti0+6ZFdICbqcv6W3BlRIM8s7EOBPhjfbCV+ae7xep9B24HmwBPKukMFjDIj4nwBsmwCHZK9iNFtfaW2J2cr2TJo7QPY01J0W1k/boaj91KzHf9UuhEH8KYqp7szv+6kV00W8bRBtugw419dIm25eXFXgXDT9s/OA7qXV7o5FXWWpkyJ5AINVbY9DerkYag5TStrdOyKk+S1FexRG6TMG4L4Jyu/QxQGhMdu0m1yRCLvIekGtWLDnjNrI2SZrd5HbKprQ0O8j1770Is4q5blVPqAZ6O9jVMJRtVEaYbsJwItz1BJWkPT4S9GFbDL1dq2Z5jR2f5gd/cz2yYH56b47iYHWtzSqEfVhsXiN+atD+tWyQFA4Q/av0bGHwJ6LX0A1q0OCHruUMoxcw1QKfYtV1bkf/folL4Z4Hx3CL+NB0Lkqs8LFsQHxODP4a26I5DS/kaDHofotho8wsWlKFDtonZa+CExORGFFMPnGRz2qX5tMgGoo84wcqrprfoQv2llqeUr3gISPl2qxrljAhj3/Dcl7iI7k0Er7Ji8ENpgjSec4aqnBx8Ke2yaDEmBvwbouFCM=
   skip_cleanup: true
   file: build/include/CLI11.hpp
   on:
-    repo: CLITools/CLI11
+    repo: CLIUtils/CLI11
     tags: true
     condition: $DEPLOY_MAT = yes
 notifications:
@@ -87,4 +87,4 @@ notifications:
     on_start: never
 env:
   global:
-    secure: G4DlRriUeLR3xYJbI2aZcv4NTY9g+s9IHXiflV2YwfJEAwR2GbtIKKK7WEOlCqVN71EVWarMSGWTOgLarScCP5C+AQw+aKhp5EwA6wraZL5Mu81fiWd7GGBLPwR1JtQHg+xCY3mw5BTaNPHG/DSjl+1/YH0p5hMsf9d1Bwy+0qK212E8Ugn0zr9PFIQR9N3YB6W1l24CzCGcpd2nz+jk7PIOuieIySupkeFuD4RJJrM8NQNMZ2xWQ+Nz5VkpaSN2Zg4Zt/91ck8qsiI74ZgekL74wbt4IFp6vpWAW0G+Sq2Dehfkx1++YX2vKnevwUmYRGvBElhNn2W4z9Xf26EXW9xJlrqmQ2nbt0dMCi7Yok6Yt/PiSf3AU3Xo29dfjlle6b4t7RUjkjRrQlO+eeMy4cZW4rWabIqXbycj3o+STRm9Dv5B9KeO7G6ozKk7WXsbh6GMBa7D1D2nBX5ZN8qlykQktaqonHbWGGKwQPV0Ed/StTZQetr+h4ETNit/NyXj4KjCcdn8/ux4BL97/VPTCTE/GS3AZZ83XX8UGFg/Zkp1HuVrCh4hnGbAe+jdDdtc+pqFiIB3LHM65Euc8xJx1GG+wP9/wio8h7Ex7dOE8B80tuTNA3iCk19jCJDJ1p/Thwcdi5Jr9eKDCKxItN3u48el1sY5Blmpodq6NeN2wMo=
+    secure: cY0OI609iTAxLRYuYQnNMi+H6n0dBwioTAoFXGGRTnngw2V9om3UmY5eUu4HQEQsQZovHdYpNhlSgRmdwQ4UqSp3FGyrwobf0kzacV4bVnMDeXDmHt8RzE5wP/LwDd8elNF6RRYjElY99f0k0FyXVd0fIvuVkGKQECNLOtEk0jQo+4YTh7dhuCxRhBYgTbNiRL6UJynfrcK0YN+DQ+8CJNupu2VxgaEpCSngTfvDHLcddcrXwpvn3MPc3FsDUbtN389ZCIe41qqIL0ATv46DQaTw4FOevyVfRyrBOznONoGCVeAYKL6VBdrk01Fh6aytF5zgI3hKaKobgEn+QFfzR6l68c6APvqA0Qv39iLjuh6KbdIV2YsqXfyt6FBgqP2xZuNEZW1jZ8LxUOLl2I40UEh87nFutvnSbfIzN+FcLrajm2H2jV2kZGNKAMx+4qxkZuXSre4JPkENfJm2WNFAKlqPt4ZSEQarkDYzZPcEr2I9fbGjQYVJICoN4LikCv9K5z7ujpTxCTNbVpQWZcEOT6QQBc6Vml/N/NKAIl9o2OeTLiXCmT31+KQMeO492KYNQ6VmkeqrVhGExOUcJdNyDJV9C+3mSekb3Sq78SneYRKDechkWbMl0ol07wGTdBwQQwgaorjRyn07x1rDxpPr3z19/+eubnpPUW4UQ5MYsjs=
