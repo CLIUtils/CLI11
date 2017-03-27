@@ -11,7 +11,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
     # Be moderately paranoid with flags
-    if(CMAKE_CXX_COMPILER_ID EQUAL "MSVC")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL MSVC)
         add_definitions("/W4")
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     else()
