@@ -1,3 +1,8 @@
+## Version 0.9 (in progress)
+
+* Better CMake named target (CLI11)
+* More warnings added, fixed
+
 ## Version 0.8
 
 * Moved to CLIUtils on GitHub

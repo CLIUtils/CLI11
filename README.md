@@ -62,7 +62,7 @@ As you probably have guessed, the list of features above are all covered by this
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][Github-releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the `cli` interface target when linking. (CMake 3.4+ recommended) Or, use the `AddCLI.cmake` supplied in [CLIUtils cmake helpers][cltools-cmake]. 
+2. Checkout the repository and add as a subdirectory for CMake. You can use the `CLI11` interface target when linking. (CMake 3.4+ recommended) Or, instead of explicitly downloading the library, use the `AddCLI.cmake` supplied in [CLIUtils cmake helpers][cltools-cmake].
 
 To build the tests, checkout the repository and use CMake:
 

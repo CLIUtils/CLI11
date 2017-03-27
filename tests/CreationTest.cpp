@@ -159,7 +159,7 @@ TEST_F(TApp, IncorrectConstructionDuplicateRequires) {
 
 TEST_F(TApp, IncorrectConstructionDuplicateRequiresTxt) {
     auto cat = app.add_flag("--cat");
-    auto other = app.add_flag("--other");
+    app.add_flag("--other");
     ASSERT_NO_THROW(cat->requires("--other"));
     EXPECT_THROW(cat->requires("--other"),CLI::OptionAlreadyAdded);
 }
@@ -173,7 +173,7 @@ TEST_F(TApp, IncorrectConstructionDuplicateExcludes) {
 
 TEST_F(TApp, IncorrectConstructionDuplicateExcludesTxt) {
     auto cat = app.add_flag("--cat");
-    auto other = app.add_flag("--other");
+    app.add_flag("--other");
     ASSERT_NO_THROW(cat->excludes("--other"));
     EXPECT_THROW(cat->excludes("--other"),CLI::OptionAlreadyAdded);
 }

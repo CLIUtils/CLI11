@@ -21,12 +21,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 foreach(T ${CLI_TESTS})
 
     add_executable(${T} ${T}.cpp ${CLI_headers})
-    target_link_libraries(${T} PUBLIC CLI)
+    target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 
     if(CLI_SINGLE_FILE AND CLI_SINGLE_FILE_TESTS)
         add_executable(${T}_Single ${T}.cpp)
-        target_link_libraries(${T}_Single PUBLIC CLI_SINGLE)
+        target_link_libraries(${T}_Single PUBLIC CLI11_SINGLE)
         add_gtest(${T}_Single)
     endif()
 
@@ -35,7 +35,7 @@ endforeach()
 foreach(T ${CLI_SINGLE_TESTS})
 
     add_executable(${T} ${T}.cpp ${CLI_headers})
-    target_link_libraries(${T} PUBLIC CLI)
+    target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 
 endforeach()

@@ -24,11 +24,11 @@ protected:
     /// This is the title of the timer
     std::string title_;
 
-    /// This is the starting point (when the timer was created)
-    time_point start_;
-
     /// This is the function that is used to format most of the timing message
     time_print_t time_print_;
+
+    /// This is the starting point (when the timer was created)
+    time_point start_;
 
 public:
 

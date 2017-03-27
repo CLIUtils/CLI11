@@ -113,7 +113,7 @@ protected:
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool default_=true, App* parent = nullptr) :
-      description_(description), callback_(callback), default_(default_), parent_(parent) {
+      description_(description), default_(default_), parent_(parent), callback_(callback) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(name));
     }
 

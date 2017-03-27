@@ -5,7 +5,7 @@ TEST_F(TApp, BasicSubcommands) {
     auto sub2 = app.add_subcommand("sub2");
 
     run();
-    EXPECT_EQ(0, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
     
     app.reset();
     args = {"sub1"};
@@ -13,7 +13,7 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
-    EXPECT_EQ(0, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
 
     args = {"sub2"};
     run();
@@ -271,7 +271,7 @@ TEST_F(SubcommandProgram, Multiple) {
     args = {"-d", "start", "-ffilename", "stop"};
 
     run();
-    EXPECT_EQ(2, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 2, app.get_subcommands().size());
     EXPECT_EQ(1, dummy);
     EXPECT_EQ("filename", file);
 }
@@ -287,7 +287,7 @@ TEST_F(SubcommandProgram, MultipleArgs) {
 
     run();
 
-    EXPECT_EQ(2, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 2, app.get_subcommands().size());
 
 }
 
@@ -316,7 +316,7 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     auto sub2 = app.add_subcommand("sub2");
 
     run();
-    EXPECT_EQ(0, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
     
     app.reset();
     args = {"SuB1"};
@@ -324,7 +324,7 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
-    EXPECT_EQ(0, app.get_subcommands().size());
+    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
 
     args = {"sUb2"};
     run();

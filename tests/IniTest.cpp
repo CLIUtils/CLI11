@@ -17,12 +17,12 @@ TEST(StringBased, First) {
 
     std::vector<CLI::detail::ini_ret_t> output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(2, output.size());
+    EXPECT_EQ((size_t) 2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 
 }
@@ -39,12 +39,12 @@ TEST(StringBased, FirstWithComments) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(2, output.size());
+    EXPECT_EQ((size_t) 2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -59,15 +59,15 @@ TEST(StringBased, Quotes) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(3, output.size());
+    EXPECT_EQ((size_t) 3, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name());
-    EXPECT_EQ(1, output.at(2).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(2).inputs.size());  
     EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
 }
 
@@ -82,15 +82,15 @@ TEST(StringBased, Vector) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(3, output.size());
+    EXPECT_EQ((size_t) 3, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name());
-    EXPECT_EQ(3, output.at(2).inputs.size());  
+    EXPECT_EQ((size_t) 3, output.at(2).inputs.size());  
     EXPECT_EQ("six", output.at(2).inputs.at(0));
     EXPECT_EQ("and", output.at(2).inputs.at(1));
     EXPECT_EQ("seven", output.at(2).inputs.at(2));
@@ -107,12 +107,12 @@ TEST(StringBased, Spaces) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(2, output.size());
+    EXPECT_EQ((size_t) 2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -127,13 +127,13 @@ TEST(StringBased, Sections) {
 
     auto output = CLI::detail::parse_ini(ofile);
     
-    EXPECT_EQ(2, output.size());
+    EXPECT_EQ((size_t) 2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
     EXPECT_EQ("second", output.at(1).parent());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -151,13 +151,13 @@ TEST(StringBased, SpacesSections) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ(2, output.size());
+    EXPECT_EQ((size_t) 2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ(1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
     EXPECT_EQ("second", output.at(1).parent());
-    EXPECT_EQ(1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -345,7 +345,7 @@ TEST_F(TApp, IniSubFailure) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    auto sub = app.add_subcommand("other");
+    app.add_subcommand("other");
     app.add_config("--config", tmpini);
 
     {

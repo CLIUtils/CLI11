@@ -9,18 +9,18 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+    # Be moderately paranoid with flags
+    if(CMAKE_CXX_COMPILER_ID EQUAL "MSVC")
+        add_definitions("/W4")
+        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    else()
+        add_definitions("-Wall -Wextra -pedantic")
+    endif()
 else()
     set(CUR_PROJ OFF)
 endif()
 
-# Be moderately paranoid with flags
-if(CMAKE_COMPILER_IS_GNUCC)
-    add_definitions("-Wall -Wextra -pedantic")
-endif()
-if(MSVC)
-    add_definitions("/W4")
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif()
 
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
@@ -28,11 +28,10 @@ if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     setup_target_for_coverage(CLI_coverage ctest coverage)
 endif()
 
-add_library(CLI INTERFACE)
-target_include_directories(CLI INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
 file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 # To see in IDE, must be listed for target
+add_library(CLI11 INTERFACE)
+target_include_directories(CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Single file test
 option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CUR_PROJ})
@@ -45,11 +44,11 @@ if(CLI_SINGLE_FILE)
     add_custom_target(generate_cli_single_file ALL
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
 
-    add_library(CLI_SINGLE INTERFACE)
-    target_link_libraries(CLI_SINGLE INTERFACE CLI)
-    add_dependencies(CLI_SINGLE generate_cli_single_file)
-    target_compile_definitions(CLI_SINGLE INTERFACE -DCLI_SINGLE_FILE)
-    target_include_directories(CLI_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
+    add_library(CLI11_SINGLE INTERFACE)
+    target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
+    add_dependencies(CLI11_SINGLE generate_cli_single_file)
+    target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI_SINGLE_FILE)
+    target_include_directories(CLI11_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
 endif()
 
 option(CLI_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF)
