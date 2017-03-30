@@ -168,7 +168,7 @@ If you want to require at least one subcommand is given, use `.require_subcomman
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name)` method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 If you want only one, use `app.require_subcommand(1)`. You are allowed to throw `CLI::Success` in the callbacks.
-Multiple subcommands are allowed, to allow [`Click`][click-link] like series of commands (order is preserved).
+Multiple subcommands are allowed, to allow [`Click`][Click] like series of commands (order is preserved).
 
 There are several options that are supported on the main app and subcommands. These are:
 
