@@ -49,12 +49,33 @@ public:
     Timer(std::string title="Timer", time_print_t time_print = Simple)
         : title_(title), time_print_(time_print), start_(clock::now()) {}
 
+    /// Time a function by running it multiple times. Target time is the len to target.
+    inline std::string time_it(std::function<void()> f, double target_time=1) {
+        time_point start = start_;
+        double total_time;
+
+        start_ = clock::now();
+        size_t n = 0;
+        do {
+            f();
+            std::chrono::duration<double> elapsed = clock::now() - start_; 
+            total_time = elapsed.count();
+        } while (n++ < 100 && total_time < target_time);
+
+        std::string out = make_time_str(total_time/n) + " for " + std::to_string(n) + " tries";
+        start_ = start;
+        return out;
+    }
     /// This formats the numerical value for the time string
+
     std::string make_time_str() const {
         time_point stop = clock::now();
-        std::chrono::duration<double, std::milli> elapsed = stop - start_;
+        std::chrono::duration<double> elapsed = stop - start_;
         double time = elapsed.count();
-
+        return make_time_str(time);
+    }
+        
+    std::string make_time_str(double time) const {
         auto print_it = [](double x, std::string unit){
             char buffer[50];
             std::snprintf(buffer, 50, "%.5g", x);
@@ -62,14 +83,14 @@ public:
         };
         
         // LCOV_EXCL_START
-        if(time < .001)
-            return print_it(time*1000000, "ns");
+        if(time < .000001)
+            return print_it(time*1000000000, "ns");
+        else if(time < .001)
+            return print_it(time*1000000, "us");
         else if(time < 1)
-            return print_it(time*1000, "us");
-        else if(time < 1000)
-            return print_it(time, "ms");
+            return print_it(time*1000, "ms");
         else
-            return print_it(time/1000, "s");
+            return print_it(time, "s");
         // LCOV_EXCL_END
     }
 
@@ -78,6 +99,8 @@ public:
         return time_print_(title_, make_time_str());
     }
 };
+
+
 
 /// This class prints out the time upon destruction
 class AutoTimer : public Timer {

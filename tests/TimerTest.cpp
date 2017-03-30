@@ -25,10 +25,11 @@ TEST(Timer, STimes) {
 }
 */
 
-TEST(Timer, NStimes) {
+TEST(Timer, UStimes) {
     CLI::Timer timer;
+    std::this_thread::sleep_for(std::chrono::microseconds(2));
     std::string output = timer.to_string();
-    EXPECT_THAT(output, HasSubstr(" ns"));
+    EXPECT_THAT(output, HasSubstr(" us"));
 }
 
 TEST(Timer, BigTimer) {
@@ -50,4 +51,12 @@ TEST(Timer, PrintTimer) {
     out << timer;
     std::string output = out.str();
     EXPECT_THAT(output, HasSubstr("Timer"));
+}
+
+TEST(Timer, TimeItTimer) {
+    CLI::Timer timer;
+    std::string output = timer.time_it([](){
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));}, .1);
+    std::cout << output << std::endl;
+    EXPECT_THAT(output, HasSubstr("ms"));
 }
