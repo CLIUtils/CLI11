@@ -54,18 +54,22 @@ public:
         time_point stop = clock::now();
         std::chrono::duration<double, std::milli> elapsed = stop - start_;
         double time = elapsed.count();
+
+        auto print_it = [](double x, std::string unit){
+            char buffer[50];
+            std::snprintf(buffer, 50, "%.5g", x);
+            return buffer + std::string(" ") + unit;
+        };
         
         // LCOV_EXCL_START
-        if(time < 1)
-            return std::to_string(int(time*1000000)) + " ns";
-        else if(time < 10)
-            return std::to_string(int(time*100) / 100.) + " ms";
+        if(time < .001)
+            return print_it(time*1000000, "ns");
+        else if(time < 1)
+            return print_it(time*1000, "us");
         else if(time < 1000)
-            return std::to_string(int(time)) + " ms";
-        else if(time < 10000)
-            return std::to_string(int(time*10000) / 10. ) + " s";
+            return print_it(time, "ms");
         else
-            return std::to_string(int(time*1000)) + " s";
+            return print_it(time/1000, "s");
         // LCOV_EXCL_END
     }
 
