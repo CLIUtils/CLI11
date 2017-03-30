@@ -350,7 +350,7 @@ TEST(Types, LexicalCastDouble) {
     std::string input = "9.12";
     long double x;
     EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
-    EXPECT_FLOAT_EQ((long double) 9.12, x);
+    EXPECT_FLOAT_EQ(9.12, (float) x);
 
     std::string bad_input = "hello";
     EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));

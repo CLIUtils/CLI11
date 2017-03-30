@@ -2,6 +2,7 @@
 
 * Better CMake named target (CLI11)
 * More warnings added, fixed
+* Ini output now includes `=false` when `default_also` is true
 
 ## Version 0.8
 
