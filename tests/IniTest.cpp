@@ -521,7 +521,7 @@ TEST_F(TApp, IniOutputFlag) {
     EXPECT_THAT(str, HasSubstr("onething=true"));
     EXPECT_THAT(str, HasSubstr("something=2"));
 
-    std::string str = app.config_to_str(true);
+    str = app.config_to_str(true);
     EXPECT_THAT(str, HasSubstr("nothing"));
 }
 
