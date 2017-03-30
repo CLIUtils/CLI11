@@ -573,7 +573,12 @@ public:
                 // Flag, multiple passed
                 } else if(opt->count() > 1) {
                     out << name << "=" << opt->count() << std::endl;
+
+                // Flag, not present
+                } else if(opt->count() == 0 && default_also) {
+                    out << name << "=false" << std::endl;
                 }
+
             }
         }
         for(const App_p &subcom : subcommands_)
