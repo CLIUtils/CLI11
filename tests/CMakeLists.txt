@@ -40,3 +40,10 @@ foreach(T ${CLI_SINGLE_TESTS})
 
 endforeach()
 
+
+# Link test (build error if inlines missing)
+add_library(link_test_1 link_test_1.cpp)
+target_link_libraries(link_test_1 PUBLIC CLI11)
+add_executable(link_test_2 link_test_2.cpp)
+target_link_libraries(link_test_2 PUBLIC CLI11 link_test_1)
+add_gtest(link_test_2)
