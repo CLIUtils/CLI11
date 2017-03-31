@@ -1,3 +1,6 @@
 a.out*
 *.swp
 /*build*
+/Makefile
+/CMakeFiles/*
+/cmake_install.cmake
