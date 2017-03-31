@@ -119,6 +119,6 @@ public:
 }
 
 /// This prints out the time if shifted into a std::cout like stream.
-std::ostream & operator<< (std::ostream& in, const CLI::Timer& timer) {
+inline std::ostream & operator<< (std::ostream& in, const CLI::Timer& timer) {
     return in << timer.to_string();
 }

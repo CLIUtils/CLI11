@@ -16,7 +16,7 @@ namespace detail {
 
 // Based on http://stackoverflow.com/questions/236129/split-a-string-in-c
 ///Split a string by a delim
-std::vector<std::string> split(const std::string &s, char delim) {
+inline std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     // Check to see if emtpy string, give consistent result
     if(s=="")
@@ -61,14 +61,14 @@ std::string rjoin(const T& v, std::string delim = ",") {
 // Based roughly on http://stackoverflow.com/questions/25829143/c-trim-whitespace-from-a-string
 
 /// Trim whitespace from left of string
-std::string& ltrim(std::string &str) {
+inline std::string& ltrim(std::string &str) {
     auto it = std::find_if(str.begin(), str.end(), [](char ch){ return !std::isspace<char>(ch , std::locale());});
     str.erase(str.begin(), it);
     return str;   
 }
 
 /// Trim anything from left of string
-std::string& ltrim(std::string &str, const std::string &filter) {
+inline std::string& ltrim(std::string &str, const std::string &filter) {
     auto it = std::find_if(str.begin(), str.end(), [&filter](char ch){return filter.find(ch) == std::string::npos;}); 
     str.erase(str.begin(), it);
     return str;
@@ -76,42 +76,42 @@ std::string& ltrim(std::string &str, const std::string &filter) {
 
 
 /// Trim whitespace from right of string
-std::string& rtrim(std::string &str) {
+inline std::string& rtrim(std::string &str) {
     auto it = std::find_if(str.rbegin(), str.rend(), [](char ch){ return !std::isspace<char>(ch, std::locale());});
     str.erase(it.base() , str.end() );
     return str;   
 }
 
 /// Trim anything from right of string
-std::string& rtrim(std::string &str, const std::string &filter) {
+inline std::string& rtrim(std::string &str, const std::string &filter) {
     auto it = std::find_if(str.rbegin(), str.rend(), [&filter](char ch){return filter.find(ch) == std::string::npos;}); 
     str.erase(it.base(), str.end());
     return str;   
 }
 
 /// Trim whitespace from string
-std::string& trim(std::string &str) {
+inline std::string& trim(std::string &str) {
     return ltrim(rtrim(str));
 }
 
 /// Trim anything from string
-std::string& trim(std::string &str, const std::string filter) {
+inline std::string& trim(std::string &str, const std::string filter) {
     return ltrim(rtrim(str, filter), filter);
 }
 
 /// Make a copy of the string and then trim it
-std::string trim_copy(const std::string &str) {
+inline std::string trim_copy(const std::string &str) {
     std::string s = str;
     return trim(s);
 }
 
 /// Make a copy of the string and then trim it, any filter string can be used (any char in string is filtered)
-std::string trim_copy(const std::string &str, const std::string &filter) {
+inline std::string trim_copy(const std::string &str, const std::string &filter) {
     std::string s = str;
     return trim(s, filter);
 }
 /// Print a two part "help" string
-void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
+inline void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;
     out << std::setw(wid) << std::left << name;
     if(description != "") {
@@ -145,14 +145,14 @@ inline bool valid_name_string(const std::string &str) {
 }
 
 /// Return a lower case version of a string
-std::string inline to_lower(std::string str) {
+inline std::string to_lower(std::string str) {
     std::transform(std::begin(str), std::end(str), std::begin(str),
         [](const std::string::value_type &x){return std::tolower(x,std::locale());});
     return str;
 }
 
 /// Split a string '"one two" "three"' into 'one two', 'three'
-std::vector<std::string> inline split_up(std::string str) {
+inline std::vector<std::string> split_up(std::string str) {
     
     std::vector<char> delims = {'\'', '\"'};
     auto find_ws = [](char ch){ return std::isspace<char>(ch , std::locale());};

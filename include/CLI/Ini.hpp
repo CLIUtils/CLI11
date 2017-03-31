@@ -63,7 +63,7 @@ struct ini_ret_t {
 };
 
 /// Internal parsing function
-std::vector<ini_ret_t> parse_ini(std::istream &input) {
+inline std::vector<ini_ret_t> parse_ini(std::istream &input) {
     std::string name, line;
     std::string section = "default";
 
@@ -103,7 +103,7 @@ std::vector<ini_ret_t> parse_ini(std::istream &input) {
 }
 
 /// Parse an INI file, throw an error (ParseError:INIParseError or FileError) on failure
-std::vector<ini_ret_t> parse_ini(const std::string &name) {
+inline std::vector<ini_ret_t> parse_ini(const std::string &name) {
 
     std::ifstream input{name};
     if(!input.good())

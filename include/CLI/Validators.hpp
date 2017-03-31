@@ -24,7 +24,7 @@ namespace CLI {
 /// @{
 
 /// Check for an existing file
-bool ExistingFile(std::string filename) {
+inline bool ExistingFile(std::string filename) {
     struct stat buffer;   
     bool exist = stat(filename.c_str(), &buffer) == 0; 
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -40,7 +40,7 @@ bool ExistingFile(std::string filename) {
 }
 
 /// Check for an existing directory
-bool ExistingDirectory(std::string filename) {
+inline bool ExistingDirectory(std::string filename) {
     struct stat buffer;   
     bool exist = stat(filename.c_str(), &buffer) == 0; 
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -57,7 +57,7 @@ bool ExistingDirectory(std::string filename) {
 
 
 /// Check for a non-existing path
-bool NonexistentPath(std::string filename) {
+inline bool NonexistentPath(std::string filename) {
     struct stat buffer;   
     bool exist = stat(filename.c_str(), &buffer) == 0; 
     if(!exist) {
