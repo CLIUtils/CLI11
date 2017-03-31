@@ -575,7 +575,7 @@ public:
                     out << name << "=" << opt->count() << std::endl;
 
                 // Flag, not present
-                } else if(opt->count() == 0 && default_also) {
+                } else if(opt->count() == 0 && default_also && opt.get() != get_help_ptr()) {
                     out << name << "=false" << std::endl;
                 }
 
@@ -682,11 +682,20 @@ public:
         return help_ptr_;
     }
 
+    /// Get a pointer to the help flag. (const)
+    const Option* get_help_ptr() const {
+        return help_ptr_;
+    }
+
     /// Get a pointer to the config option.
     Option* get_config_ptr() {
         return config_ptr_;
     }
 
+    /// Get a pointer to the config option. (const)
+    const Option* get_config_ptr() const {
+        return config_ptr_;
+    }
     /// Get the name of the current app
     std::string get_name() const {
         return name_;
