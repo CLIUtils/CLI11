@@ -58,3 +58,34 @@ TEST_F(TApp, DefaultComplex) {
 
     EXPECT_EQ(cx(4,3), comp);
 }
+
+TEST_F(TApp, BuiltinComplex) {
+    cx comp {1, 2};
+    app.add_complex("-c,--complex", comp, "", true);
+
+    args = {"-c", "4", "3"};
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, HasSubstr("2"));
+    EXPECT_THAT(help, HasSubstr("COMPLEX"));
+
+    EXPECT_EQ(cx(1,2), comp);
+
+    run();
+
+    EXPECT_EQ(cx(4,3), comp);
+
+}
+
+
+TEST_F(TApp, BuiltinComplexIgnoreI) {
+    cx comp {1, 2};
+    app.add_complex("-c,--complex", comp);
+
+    args = {"-c", "4", "3i"};
+
+    run();
+
+    EXPECT_EQ(cx(4,3), comp);
+}

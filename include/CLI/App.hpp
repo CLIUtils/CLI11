@@ -399,6 +399,33 @@ public:
         return opt;
     }
 
+    /// Add a complex number
+    template<typename T>
+    Option* add_complex(
+			std::string name, T& variable,
+			std::string description="", bool defaulted=false,
+			std::string label="COMPLEX") {
+		CLI::callback_t fun = [&variable](results_t res){
+			if(res.size()!=2)
+				return false;
+			double x,y;
+			bool worked = detail::lexical_cast(res[0], x)
+				&& detail::lexical_cast(res[1], y);
+			if(worked)
+				variable = T(x,y);
+			return worked;
+		};
+
+		CLI::Option* opt = add_option(name, fun, description, defaulted);
+		opt->set_custom_option(label, 2);
+		if(defaulted) {
+			std::stringstream out;
+			out << variable;
+			opt->set_default_val(out.str());
+		}
+		return opt;
+	}
+
 
     /// Add a configuration ini file option
     Option* add_config(std::string name="--config",

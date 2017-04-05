@@ -101,6 +101,8 @@ app.add_options(option_name,
                 help_string="",
                 default=false)
 
+app.add_complex(... // Special case: support for complex numbers
+
 app.add_flag(option_name,
              int_or_bool = nothing,
              help_string="")

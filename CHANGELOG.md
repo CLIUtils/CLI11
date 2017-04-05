@@ -5,6 +5,7 @@
 * Ini output now includes `=false` when `default_also` is true
 * Ini no longer lists the help pointer
 * Added test for inclusion in multiple files and linking, fixed issues (rarely needed for CLI, but nice for tools)
+* Support for complex numbers
 
 ## Version 0.8
 
