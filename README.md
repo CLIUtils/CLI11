@@ -34,7 +34,8 @@ The major CLI parsers for C++ include:
 * [The Lean Mean C++ Option Parser]: One header file is great, but the syntax is atrocious, in my opinion. It was quite impractical to wrap the syntax or to use in a complex project. It seems to handle standard parsing quite well.
 * [TCLAP]: The not-quite-standard command line parsing causes common shortcuts to fail. It also seems to be poorly supported, with only minimal bugfixes accepted. Header only, but in quite a few files. Has not managed to get enough support to move to GitHub yet. No subcommands. Produces wrapped values.
 * [Cxxopts]: C++11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar.
-* [DocOpt]: Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized. 
+* [DocOpt]: Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized.
+* [GFlags]: The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars.
 
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
@@ -295,3 +296,4 @@ This will print help in blue, errors in red, and will reset before returning the
 [DocOpt]:            https://github.com/docopt/docopt.cpp
 [ROOT]:              https://root.cern.ch
 [cltools-cmake]:     https://github.com/CLIUtils/cmake
+[GFlags]:            https://gflags.github.io/gflags
