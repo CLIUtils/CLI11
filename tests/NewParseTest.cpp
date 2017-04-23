@@ -89,3 +89,12 @@ TEST_F(TApp, BuiltinComplexIgnoreI) {
 
     EXPECT_EQ(cx(4,3), comp);
 }
+
+TEST_F(TApp, BuiltinComplexFail) {
+    cx comp {1, 2};
+    app.add_complex("-c,--complex", comp);
+
+    args = {"-c", "4"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
