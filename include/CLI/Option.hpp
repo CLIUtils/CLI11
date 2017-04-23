@@ -123,7 +123,7 @@ public:
     ///@{
 
     /// Count the total number of times an option was passed
-    int count() const {
+    size_t count() const {
         return results_.size();
     }
 

@@ -219,7 +219,7 @@ TEST(THelp, Subcom) {
     char y[] = "sub2";
 
     std::vector<char*> args = {x,y};
-    app.parse(args.size(), args.data());
+    app.parse((int) args.size(), args.data());
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));

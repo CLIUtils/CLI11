@@ -565,7 +565,7 @@ public:
     ///@{
 
     /// Counts the number of times the given option was passed.
-    int count(std::string name) const {
+    size_t count(std::string name) const {
         for(const Option_p &opt : options_) {
             if(opt->check_name(name)) {
                 return opt->count();
@@ -878,7 +878,7 @@ protected:
         for(const Option_p& opt : options_) {
             // Required
             if (opt->get_required()
-                    && (opt->count() < opt->get_expected() || opt->count() == 0))
+                    && ((int) opt->count() < opt->get_expected() || opt->count() == 0))
                 throw RequiredError(opt->get_name());
             // Requires
             for (const Option* opt_req : opt->requires_)
@@ -1005,7 +1005,7 @@ protected:
         for(const Option_p& opt : options_) {
             // Eat options, one by one, until done
             if (    opt->get_positional()
-                    && (opt->count() < opt->get_expected()
+                    && ((int) opt->count() < opt->get_expected()
                         || opt->get_expected() < 0)
                     ) {
 

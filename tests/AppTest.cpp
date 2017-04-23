@@ -6,8 +6,8 @@ TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
     args = {"-c"};
     run();
-    EXPECT_EQ(1, app.count("-c"));
-    EXPECT_EQ(1, app.count("--count"));
+    EXPECT_EQ((size_t) 1, app.count("-c"));
+    EXPECT_EQ((size_t) 1, app.count("--count"));
 }
 
 TEST_F(TApp, CountNonExist) {
@@ -21,8 +21,8 @@ TEST_F(TApp, OneFlagLong) {
     app.add_flag("-c,--count");
     args = {"--count"};
     run();
-    EXPECT_EQ(1, app.count("-c"));
-    EXPECT_EQ(1, app.count("--count"));
+    EXPECT_EQ((size_t) 1, app.count("-c"));
+    EXPECT_EQ((size_t) 1, app.count("--count"));
 }
 
 TEST_F(TApp, DashedOptions) {
@@ -32,10 +32,10 @@ TEST_F(TApp, DashedOptions) {
 
     args = {"-c", "--q", "--this", "--that"};
     run();
-    EXPECT_EQ(1, app.count("-c"));
-    EXPECT_EQ(1, app.count("--q"));
-    EXPECT_EQ(2, app.count("--this"));
-    EXPECT_EQ(2, app.count("--that"));
+    EXPECT_EQ((size_t) 1, app.count("-c"));
+    EXPECT_EQ((size_t) 1, app.count("--q"));
+    EXPECT_EQ((size_t) 2, app.count("--this"));
+    EXPECT_EQ((size_t) 2, app.count("--that"));
 
 }
 
@@ -44,8 +44,8 @@ TEST_F(TApp, OneFlagRef) {
     app.add_flag("-c,--count", ref);
     args = {"--count"};
     run();
-    EXPECT_EQ(1, app.count("-c"));
-    EXPECT_EQ(1, app.count("--count"));
+    EXPECT_EQ((size_t) 1, app.count("-c"));
+    EXPECT_EQ((size_t) 1, app.count("--count"));
     EXPECT_EQ(1, ref);
 }
 
@@ -54,8 +54,8 @@ TEST_F(TApp, OneString) {
     app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
     run();
-    EXPECT_EQ(1, app.count("-s"));
-    EXPECT_EQ(1, app.count("--string"));
+    EXPECT_EQ((size_t) 1, app.count("-s"));
+    EXPECT_EQ((size_t) 1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
 }
 
@@ -64,8 +64,8 @@ TEST_F(TApp, OneStringEqualVersion) {
     app.add_option("-s,--string", str);
     args = {"--string=mystring"};
     run();
-    EXPECT_EQ(1, app.count("-s"));
-    EXPECT_EQ(1, app.count("--string"));
+    EXPECT_EQ((size_t) 1, app.count("-s"));
+    EXPECT_EQ((size_t) 1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
 }
 
@@ -75,8 +75,8 @@ TEST_F(TApp, TogetherInt) {
     app.add_option("-i,--int", i);
     args = {"-i4"};
     run();
-    EXPECT_EQ(1, app.count("--int"));
-    EXPECT_EQ(1, app.count("-i"));
+    EXPECT_EQ((size_t) 1, app.count("--int"));
+    EXPECT_EQ((size_t) 1, app.count("-i"));
     EXPECT_EQ(i, 4);
 }
 
@@ -85,8 +85,8 @@ TEST_F(TApp, SepInt) {
     app.add_option("-i,--int", i);
     args = {"-i","4"};
     run();
-    EXPECT_EQ(1, app.count("--int"));
-    EXPECT_EQ(1, app.count("-i"));
+    EXPECT_EQ((size_t) 1, app.count("--int"));
+    EXPECT_EQ((size_t) 1, app.count("-i"));
     EXPECT_EQ(i, 4);
 }
 
@@ -95,8 +95,8 @@ TEST_F(TApp, OneStringAgain) {
     app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
     run();
-    EXPECT_EQ(1, app.count("-s"));
-    EXPECT_EQ(1, app.count("--string"));
+    EXPECT_EQ((size_t) 1, app.count("-s"));
+    EXPECT_EQ((size_t) 1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
 }
 
@@ -105,8 +105,8 @@ TEST_F(TApp, DefaultStringAgain) {
     std::string str = "previous";
     app.add_option("-s,--string", str);
     run();
-    EXPECT_EQ(0, app.count("-s"));
-    EXPECT_EQ(0, app.count("--string"));
+    EXPECT_EQ((size_t) 0, app.count("-s"));
+    EXPECT_EQ((size_t) 0, app.count("--string"));
     EXPECT_EQ(str, "previous");
 }
 
@@ -134,9 +134,9 @@ TEST_F(TApp, LotsOfFlags) {
 
     args = {"-a","-b","-aA"};
     run();
-    EXPECT_EQ(2, app.count("-a"));
-    EXPECT_EQ(1, app.count("-b"));
-    EXPECT_EQ(1, app.count("-A"));
+    EXPECT_EQ((size_t) 2, app.count("-a"));
+    EXPECT_EQ((size_t) 1, app.count("-b"));
+    EXPECT_EQ((size_t) 1, app.count("-A"));
 }
 
 
@@ -182,8 +182,8 @@ TEST_F(TApp, ShortOpts) {
 
     run();
 
-    EXPECT_EQ(2, app.count("-z"));
-    EXPECT_EQ(1, app.count("-y"));
+    EXPECT_EQ((size_t) 2, app.count("-z"));
+    EXPECT_EQ((size_t) 1, app.count("-y"));
     EXPECT_EQ((unsigned long long) 2, funnyint);
     EXPECT_EQ("zyz", someopt);
 }
@@ -200,8 +200,8 @@ TEST_F(TApp, DefaultOpts) {
 
     run();
 
-    EXPECT_EQ(1, app.count("i"));
-    EXPECT_EQ(1, app.count("-s"));
+    EXPECT_EQ((size_t) 1, app.count("i"));
+    EXPECT_EQ((size_t) 1, app.count("-s"));
     EXPECT_EQ(2, i);
     EXPECT_EQ("9", s);
 }
@@ -238,8 +238,8 @@ TEST_F(TApp, Positionals) {
 
     run();
 
-    EXPECT_EQ(1, app.count("posit1"));
-    EXPECT_EQ(1, app.count("posit2"));
+    EXPECT_EQ((size_t) 1, app.count("posit1"));
+    EXPECT_EQ((size_t) 1, app.count("posit2"));
     EXPECT_EQ("thing1", posit1);
     EXPECT_EQ("thing2", posit2);
 }
@@ -278,8 +278,8 @@ TEST_F(TApp, MixedPositionals) {
 
     run();
 
-    EXPECT_EQ(1, app.count("posit2"));
-    EXPECT_EQ(1, app.count("--posit1"));
+    EXPECT_EQ((size_t) 1, app.count("posit2"));
+    EXPECT_EQ((size_t) 1, app.count("--posit1"));
     EXPECT_EQ(7, positional_int);
     EXPECT_EQ("thing2", positional_string);
 }
@@ -311,19 +311,19 @@ TEST_F(TApp, Reset) {
 
     run();
 
-    EXPECT_EQ(1, app.count("--simple"));
-    EXPECT_EQ(1, app.count("-d"));
+    EXPECT_EQ((size_t) 1, app.count("--simple"));
+    EXPECT_EQ((size_t) 1, app.count("-d"));
     EXPECT_DOUBLE_EQ(1.2, doub);
 
     app.reset();
 
-    EXPECT_EQ(0, app.count("--simple"));
-    EXPECT_EQ(0, app.count("-d"));
+    EXPECT_EQ((size_t) 0, app.count("--simple"));
+    EXPECT_EQ((size_t) 0, app.count("-d"));
     
     run();
 
-    EXPECT_EQ(1, app.count("--simple"));
-    EXPECT_EQ(1, app.count("-d"));
+    EXPECT_EQ((size_t) 1, app.count("--simple"));
+    EXPECT_EQ((size_t) 1, app.count("-d"));
     EXPECT_DOUBLE_EQ(1.2, doub);
 
 }
@@ -470,7 +470,7 @@ TEST_F(TApp, VectorFixedString) {
     
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3, app.count("--string"));
+    EXPECT_EQ((size_t) 3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
 
@@ -485,13 +485,13 @@ TEST_F(TApp, VectorUnlimString) {
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3, app.count("--string"));
+    EXPECT_EQ((size_t) 3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
     
     app.reset();
     args = {"-s", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3, app.count("--string"));
+    EXPECT_EQ((size_t) 3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
 
@@ -505,7 +505,7 @@ TEST_F(TApp, VectorFancyOpts) {
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3, app.count("--string"));
+    EXPECT_EQ((size_t) 3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 
     app.reset();
@@ -696,7 +696,7 @@ TEST_F(TApp, Env) {
     run();
 
     EXPECT_EQ(2, val);
-    EXPECT_EQ(1, vopt->count());
+    EXPECT_EQ((size_t) 1, vopt->count());
 
     app.reset();
     vopt->required();

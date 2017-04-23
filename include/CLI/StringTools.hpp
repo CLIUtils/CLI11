@@ -113,10 +113,10 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
 /// Print a two part "help" string
 inline void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;
-    out << std::setw(wid) << std::left << name;
+    out << std::setw((int) wid) << std::left << name;
     if(description != "") {
         if(name.length()>=wid)
-            out << std::endl << std::setw(wid) << "";
+            out << std::endl << std::setw((int) wid) << "";
         out << description;
     }
     out << std::endl;

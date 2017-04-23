@@ -75,6 +75,7 @@ public:
         return make_time_str(time);
     }
         
+    // LCOV_EXCL_START
     std::string make_time_str(double time) const {
         auto print_it = [](double x, std::string unit){
             char buffer[50];
@@ -82,7 +83,6 @@ public:
             return buffer + std::string(" ") + unit;
         };
         
-        // LCOV_EXCL_START
         if(time < .000001)
             return print_it(time*1000000000, "ns");
         else if(time < .001)
@@ -91,8 +91,8 @@ public:
             return print_it(time*1000, "ms");
         else
             return print_it(time, "s");
-        // LCOV_EXCL_END
     }
+    // LCOV_EXCL_END
 
     /// This is the main function, it creates a string
     std::string to_string() const {
