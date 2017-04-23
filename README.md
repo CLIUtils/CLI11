@@ -168,7 +168,10 @@ Subcommands are supported, and can be nested infinitely. To add a subcommand, ca
 case).
 If you want to require at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well.
 
-All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommand passed on the command line. A simple compare of these pointers to each subcommand allows choosing based on subcommand, facilitated by a `got_subcommand(App_or_name)` method that will check the list for you. For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
+If an App (main or subcommand) has been parsed on the command line, it's "value" is true, and it is false otherwise.
+All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an App pointer or a string name was collected on the command line.
+
+For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 If you want only one, use `app.require_subcommand(1)`. You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][Click] like series of commands (order is preserved).

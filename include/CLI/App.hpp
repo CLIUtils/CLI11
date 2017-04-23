@@ -98,8 +98,8 @@ protected:
     /// A pointer to the parent if this is a subcommand
     App* parent_ {nullptr};
 
-    /// A list of all the subcommand pointers that have been collected on the command line
-    std::vector<App*> selected_subcommands_;
+    /// True if this command/subcommand was parsed
+    bool parsed_ {false};
 
     /// -1 for 1 or more, 0 for not required, # for exact number required
     int require_subcommand_ = 0;
@@ -167,6 +167,9 @@ public:
         }
         return this;
     }
+
+    /// Check to see if this subcommand was parsed, true only if received on command line.
+    operator bool () const { return parsed_;}
 
     /// Require a subcommand to be given (does not affect help call)
     /// Does not return a pointer since it is supposed to be called on the main App.
@@ -472,7 +475,29 @@ public:
         return subcommands_.back().get();
     }
 
-
+    /// Check to see if a subcommand is part of this command (doesn't have to be in command line)
+    App* get_subcommand(App* subcom) const {
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr.get() == subcom)
+                return subcom;
+        throw CLI::OptionNotFound(subcom->get_name());
+    }
+    
+    /// Check to see if a subcommand is part of this command (text version)
+    App* get_subcommand(std::string subcom) {
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr->check_name(subcom))
+                return subcomptr.get();
+        throw CLI::OptionNotFound(subcom);
+    }
+    
+    /// Check to see if a subcommand is part of this command (text version, const)
+    App* get_subcommand(std::string subcom) const {
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr->check_name(subcom))
+                return subcomptr.get();
+        throw CLI::OptionNotFound(subcom);
+    }
 
     ///@}
     /// @name Extras for subclassing
@@ -524,7 +549,7 @@ public:
     /// Reset the parsed data
     void reset() {
 
-        selected_subcommands_.clear();
+        parsed_ = false;
         missing_.clear();
 
         for(const Option_p &opt : options_) {
@@ -550,24 +575,24 @@ public:
     }
 
     /// Get a subcommand pointer list to the currently selected subcommands (after parsing)
-    std::vector<App*> get_subcommands() {
-        return selected_subcommands_;
-    }
-
-
-    /// Check to see if selected subcommand in list
-    bool got_subcommand(App* subcom) const {
-        return std::find(std::begin(selected_subcommands_),
-                         std::end(selected_subcommands_), subcom)
-                           != std::end(selected_subcommands_);
-    }
-
-    /// Check with name instead of pointer
-    bool got_subcommand(std::string name) const {
+    std::vector<App*> get_subcommands() const {
+        std::vector<App*> subcomms;
         for(const App_p &subcomptr : subcommands_)
-            if(subcomptr->check_name(name))
-                return got_subcommand(subcomptr.get());
-        throw CLI::OptionNotFound(name);
+            if(subcomptr->parsed_)
+                subcomms.push_back(subcomptr.get());
+        return subcomms;
+    }
+
+
+    /// Check to see if given subcommand was selected
+    bool got_subcommand(App* subcom) const {
+        // get subcom needed to verify that this was a real subcommand
+        return get_subcommand(subcom)->parsed_;
+    }
+
+    /// Check with name instead of pointer to see if subcommand was selected
+    bool got_subcommand(std::string name) const {
+        return get_subcommand(name)->parsed_;
     }
     
     ///@}
@@ -621,8 +646,9 @@ public:
         else
             prev += " " + name_;
 
-        if(selected_subcommands_.size() > 0)
-            return selected_subcommands_.at(0)->help(wid, prev);
+        auto selected_subcommands = get_subcommands();
+        if(selected_subcommands.size() > 0)
+            return selected_subcommands.at(0)->help(wid, prev);
 
         std::stringstream out;
         out << description_ << std::endl;
@@ -769,7 +795,7 @@ protected:
         pre_callback();
         if(callback_)
             callback_();
-        for(App* subc : selected_subcommands_) {
+        for(App* subc : get_subcommands()) {
             subc->run_callback();
         }
     }
@@ -803,6 +829,7 @@ protected:
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args) {
+        parsed_ = true;
         bool positional_only = false;
         
         while(args.size()>0) {
@@ -863,9 +890,10 @@ protected:
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
-        if(require_subcommand_ < 0 && selected_subcommands_.size() == 0)
+        auto selected_subcommands =get_subcommands();
+        if(require_subcommand_ < 0 && selected_subcommands.size() == 0)
             throw RequiredError("Subcommand required");
-        else if(require_subcommand_ > 0 && (int) selected_subcommands_.size() != require_subcommand_)
+        else if(require_subcommand_ > 0 && (int) selected_subcommands.size() != require_subcommand_)
             throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
 
         // Convert missing (pairs) to extras (string only)
@@ -1002,7 +1030,6 @@ protected:
         for(const App_p &com : subcommands_) {
             if(com->check_name(args.back())){ 
                 args.pop_back();
-                selected_subcommands_.push_back(com.get());
                 com->_parse(args);
                 return;
             }
