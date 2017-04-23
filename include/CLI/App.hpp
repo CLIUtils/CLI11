@@ -484,21 +484,13 @@ public:
     }
     
     /// Check to see if a subcommand is part of this command (text version)
-    App* get_subcommand(std::string subcom) {
-        for(const App_p &subcomptr : subcommands_)
-            if(subcomptr->check_name(subcom))
-                return subcomptr.get();
-        throw CLI::OptionNotFound(subcom);
-    }
-    
-    /// Check to see if a subcommand is part of this command (text version, const)
     App* get_subcommand(std::string subcom) const {
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr->check_name(subcom))
                 return subcomptr.get();
         throw CLI::OptionNotFound(subcom);
     }
-
+    
     ///@}
     /// @name Extras for subclassing
     ///@{
