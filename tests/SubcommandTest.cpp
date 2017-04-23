@@ -238,6 +238,14 @@ TEST_F(TApp, Required1SubCom) {
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 
+TEST_F(TApp, BadSubcomSearch) {
+
+    auto one = app.add_subcommand("one");
+    auto two = one->add_subcommand("two");
+
+    EXPECT_THROW(app.get_subcommand(two), CLI::OptionNotFound);
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App* start;
