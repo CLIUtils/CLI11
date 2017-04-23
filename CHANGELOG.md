@@ -6,7 +6,7 @@
 * Ini no longer lists the help pointer
 * Added test for inclusion in multiple files and linking, fixed issues (rarely needed for CLI, but nice for tools)
 * Support for complex numbers
-* Subcommands now test true/false directly, cleaner parse
+* Subcommands now test true/false directly or with `->parsed()`, cleaner parse
 
 ## Version 0.8
 

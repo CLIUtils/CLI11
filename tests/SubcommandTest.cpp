@@ -40,6 +40,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(app.got_subcommand("sub1"));
     EXPECT_TRUE(app.got_subcommand(sub1));
     EXPECT_TRUE(*sub1);
+    EXPECT_TRUE(sub1->parsed());
 
     EXPECT_TRUE(app.got_subcommand("sub2"));
     EXPECT_TRUE(app.got_subcommand(sub2));
@@ -69,6 +70,7 @@ TEST_F(TApp, MultiSubFallthrough) {
 
     EXPECT_TRUE(*sub1);
     EXPECT_FALSE(*sub2);
+    EXPECT_FALSE(sub2->parsed());
     
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }

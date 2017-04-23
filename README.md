@@ -168,8 +168,8 @@ Subcommands are supported, and can be nested infinitely. To add a subcommand, ca
 case).
 If you want to require at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well.
 
-If an App (main or subcommand) has been parsed on the command line, it's "value" is true, and it is false otherwise.
-All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an App pointer or a string name was collected on the command line.
+If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
+All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an `App` pointer or a string name was collected on the command line.
 
 For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
@@ -184,6 +184,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
 * `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line
 * `.get_subcommands()`: The list of subcommands given on the command line
+* `.parsed()`: True if this subcommand was given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
 

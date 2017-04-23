@@ -169,6 +169,10 @@ public:
     }
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
+    bool parsed() const {return parsed_;}
+
+    /// Check to see if this subcommand was parsed, true only if received on command line.
+    /// This allows the subcommand to be directly checked.
     operator bool () const { return parsed_;}
 
     /// Require a subcommand to be given (does not affect help call)
