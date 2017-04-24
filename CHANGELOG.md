@@ -1,4 +1,4 @@
-## Version 0.9 (in progress)
+## Version 0.9
 
 * Better CMake named target (CLI11)
 * More warnings added, fixed
