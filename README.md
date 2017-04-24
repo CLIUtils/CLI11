@@ -36,6 +36,7 @@ The major CLI parsers for C++ include:
 * [Cxxopts]: C++11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar.
 * [DocOpt]: Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized.
 * [GFlags]: The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars.
+* [GetOpt]: Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors).
 
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
@@ -301,3 +302,5 @@ This will print help in blue, errors in red, and will reset before returning the
 [ROOT]:              https://root.cern.ch
 [cltools-cmake]:     https://github.com/CLIUtils/cmake
 [GFlags]:            https://gflags.github.io/gflags
+[GetOpt]:            https://www.gnu.org/software/libc/manual/html_node/Getopt.html
+
