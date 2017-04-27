@@ -265,7 +265,7 @@ TEST(Exit, ErrorWithHelp) {
     try {
         app.parse(input);
     } catch (const CLI::CallForHelp &e) {
-        EXPECT_EQ(CLI::ExitCodes::Success, e.exit_code);
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Success), e.get_exit_code());
     }
 }
 
@@ -276,7 +276,7 @@ TEST(Exit, ErrorWithoutHelp) {
     try {
         app.parse(input);
     } catch (const CLI::ParseError &e) {
-        EXPECT_EQ(CLI::ExitCodes::Extras, e.exit_code);
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
     }
 }
 
