@@ -39,10 +39,12 @@ enum class ExitCodes {
 
 /// All errors derive from this one
 struct Error : public std::runtime_error {
-    ExitCodes exit_code;
+    int exit_code;
     bool print_help;
-    int get_exit_code() const {return static_cast<int>(exit_code);}
+    int get_exit_code() const {return exit_code;}
     Error(std::string parent, std::string name, ExitCodes exit_code=ExitCodes::BaseClass, bool print_help=true)
+        : runtime_error(parent + ": " + name), exit_code(static_cast<int>(exit_code)), print_help(print_help) {}
+    Error(std::string parent, std::string name, int exit_code=static_cast<int>(ExitCodes::BaseClass), bool print_help=true)
         : runtime_error(parent + ": " + name), exit_code(exit_code), print_help(print_help) {}
 };
 
