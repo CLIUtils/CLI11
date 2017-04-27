@@ -530,7 +530,7 @@ public:
 
     /// Print a nice error message and return the exit code
     int exit(const Error& e) const {
-        if(e.exit_code != ExitCodes::Success) {
+        if(e.exit_code != static_cast<int>(ExitCodes::Success)) {
             std::cerr << "ERROR: ";
             std::cerr << e.what() << std::endl;
             if(e.print_help)
