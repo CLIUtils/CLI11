@@ -12,7 +12,7 @@ TEST(Timer, MSTimes) {
     CLI::Timer timer{"My Timer"};
     std::this_thread::sleep_for(std::chrono::milliseconds(123));
     std::string output = timer.to_string();
-    std::new_output = (timer / 1000000).to_string();
+    std::string new_output = (timer / 1000000).to_string();
     EXPECT_THAT(output, HasSubstr("My Timer"));
     EXPECT_THAT(output, HasSubstr(" ms"));
     EXPECT_THAT(new_output, HasSubstr(" ns"));

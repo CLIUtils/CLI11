@@ -74,7 +74,7 @@ public:
     std::string make_time_str() const {
         time_point stop = clock::now();
         std::chrono::duration<double> elapsed = stop - start_;
-        double time = elapsed.count();
+        double time = elapsed.count() / cycles;
         return make_time_str(time);
     }
         
