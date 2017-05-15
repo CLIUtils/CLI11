@@ -29,6 +29,9 @@ protected:
 
     /// This is the starting point (when the timer was created)
     time_point start_;
+    
+    /// This is the number of times cycles (print divides by this number)
+    size_t cycles {1};
 
 public:
 
@@ -50,7 +53,7 @@ public:
         : title_(title), time_print_(time_print), start_(clock::now()) {}
 
     /// Time a function by running it multiple times. Target time is the len to target.
-    inline std::string time_it(std::function<void()> f, double target_time=1) {
+    std::string time_it(std::function<void()> f, double target_time=1) {
         time_point start = start_;
         double total_time;
 
@@ -98,6 +101,9 @@ public:
     std::string to_string() const {
         return time_print_(title_, make_time_str());
     }
+    
+    /// Division sets the number of cycles
+    Timer& operator / (size_t val) {cycles = val; return *this;}
 };
 
 
