@@ -13,7 +13,7 @@ namespace CLI {
 class Timer {
 protected:
     /// This is a typedef to make clocks easier to use
-    typedef std::chrono::high_resolution_clock clock;
+    typedef std::chrono::steady_clock clock;
 
     /// This typedef is for points in time
     typedef std::chrono::time_point<clock> time_point;
@@ -69,8 +69,8 @@ public:
         start_ = start;
         return out;
     }
-    /// This formats the numerical value for the time string
 
+    /// This formats the numerical value for the time string
     std::string make_time_str() const {
         time_point stop = clock::now();
         std::chrono::duration<double> elapsed = stop - start_;
@@ -102,7 +102,7 @@ public:
         return time_print_(title_, make_time_str());
     }
     
-    /// Division sets the number of cycles
+    /// Division sets the number of cycles to divide by (no graphical change)
     Timer& operator / (size_t val) {cycles = val; return *this;}
 };
 
