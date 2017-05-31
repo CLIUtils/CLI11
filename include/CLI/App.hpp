@@ -3,26 +3,26 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
-#include <memory>
-#include <deque>
-#include <iostream>
-#include <functional>
 #include <algorithm>
-#include <sstream>
-#include <set>
+#include <deque>
+#include <functional>
+#include <iostream>
+#include <memory>
 #include <numeric>
+#include <set>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
 
 // CLI Library includes
 #include "CLI/Error.hpp"
-#include "CLI/TypeTools.hpp"
-#include "CLI/StringTools.hpp"
-#include "CLI/Split.hpp"
-#include "CLI/Option.hpp"
 #include "CLI/Ini.hpp"
+#include "CLI/Option.hpp"
+#include "CLI/Split.hpp"
+#include "CLI/StringTools.hpp"
+#include "CLI/TypeTools.hpp"
 
 namespace CLI {
 

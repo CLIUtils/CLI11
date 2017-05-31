@@ -3,10 +3,10 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <fstream>
-#include <string>
-#include <iostream>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include "CLI/StringTools.hpp"
 

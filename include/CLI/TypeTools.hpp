@@ -3,10 +3,10 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <vector>
-#include <type_traits>
-#include <string>
 #include <exception>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 namespace CLI {
 

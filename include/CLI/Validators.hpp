@@ -3,16 +3,16 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
-#include <iostream>
-#include <functional>
 #include "CLI/TypeTools.hpp"
+#include <functional>
+#include <iostream>
+#include <string>
 
 // C standard library
 // Only needed for existence checking
 // Could be swapped for filesystem in C++17
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 namespace CLI {
 

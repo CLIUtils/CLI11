@@ -3,9 +3,9 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
 #include <exception>
 #include <stdexcept>
+#include <string>
 
 namespace CLI {
 

@@ -3,12 +3,12 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
-#include <sstream>
+#include <algorithm>
 #include <iomanip>
 #include <locale>
+#include <sstream>
+#include <string>
 #include <type_traits>
-#include <algorithm>
 
 namespace CLI {
 namespace detail {

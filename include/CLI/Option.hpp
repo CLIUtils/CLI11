@@ -3,18 +3,18 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
-#include <functional>
-#include <utility>
-#include <vector>
-#include <tuple>
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <set>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "CLI/Error.hpp"
-#include "CLI/StringTools.hpp"
 #include "CLI/Split.hpp"
+#include "CLI/StringTools.hpp"
 
 namespace CLI {
 

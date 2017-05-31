@@ -4,8 +4,8 @@
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
 #include <string>
-#include <vector>
 #include <tuple>
+#include <vector>
 
 #include "CLI/Error.hpp"
 #include "CLI/StringTools.hpp"

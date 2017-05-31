@@ -3,10 +3,10 @@
 // Distributed under the LGPL v2.1 license.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
-#include <iostream>
 #include <chrono>
 #include <functional>
+#include <iostream>
+#include <string>
 #include <utility>
 
 namespace CLI {
