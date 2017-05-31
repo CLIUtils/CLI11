@@ -283,7 +283,7 @@ TEST(Exit, ErrorWithoutHelp) {
 TEST(Exit, ExitCodes) {
     CLI::App app;
 
-    int i = static_cast<int>(CLI::ExitCodes::Extras);
+    auto i = static_cast<int>(CLI::ExitCodes::Extras);
     EXPECT_EQ(0, app.exit(CLI::Success()));
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
     EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));

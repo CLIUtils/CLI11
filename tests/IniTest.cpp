@@ -51,9 +51,9 @@ TEST(StringBased, FirstWithComments) {
 TEST(StringBased, Quotes) {
     std::stringstream ofile;
 
-    ofile << "one = \"three\"" << std::endl;
-    ofile << "two = \'four\'" << std::endl;
-    ofile << "five = \"six and seven\"" << std::endl;
+    ofile << R"(one = "three")" << std::endl;
+    ofile << R"(two = 'four')" << std::endl;
+    ofile << R"(five = "six and seven")" << std::endl;
 
     ofile.seekg(0, std::ios::beg);
 
@@ -575,7 +575,7 @@ TEST_F(TApp, IniQuotedOutput) {
     std::string val2;
     app.add_option("--val2", val2);
     
-    args = {"--val1", "I am a string", "--val2", "I am a \"confusing\" string"};
+    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
 
     run();
 

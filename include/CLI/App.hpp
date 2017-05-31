@@ -12,6 +12,7 @@
 #include <sstream>
 #include <set>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 
@@ -33,7 +34,7 @@ struct AppFriend;
 class App;
 
 
-typedef std::unique_ptr<App> App_p;
+using App_p = std::unique_ptr<App>;
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
@@ -122,7 +123,7 @@ protected:
    
     /// Special private constructor for subcommand
     App(std::string description_, bool help, detail::enabler) 
-        :  description_(description_) {
+        :  description_(std::move(description_)) {
 
         if(help)
             help_ptr_ = add_flag("-h,--help", "Print this help message and exit");
@@ -514,7 +515,7 @@ public:
         name_ = argv[0];
         std::vector<std::string> args;
         for(int i=argc-1; i>0; i--)
-            args.push_back(argv[i]);
+            args.emplace_back(argv[i]);
         return parse(args);
         
     }
@@ -949,7 +950,7 @@ protected:
                         try {
                             size_t ui = std::stoul(val);
                             for (size_t i=0; i<ui; i++)
-                                op->results_.push_back("");
+                                op->results_.emplace_back("");
                         } catch (const std::invalid_argument &) {
                             throw ConversionError(current.fullname + ": Should be true/false or a number");
                         }

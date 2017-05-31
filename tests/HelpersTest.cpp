@@ -2,7 +2,7 @@
 
 #include <cstdio>
 #include <fstream>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 TEST(Split, SimpleByToken) {
@@ -278,33 +278,33 @@ TEST(Join, Backward) {
 
 TEST(SplitUp, Simple) {
     std::vector<std::string> oput = {"one", "two three"};
-    std::string orig {"one \"two three\""};
+    std::string orig {R"(one "two three")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
 }
 
 TEST(SplitUp, Layered) {
-    std::vector<std::string> output = {"one \'two three\'"};
-    std::string orig {"\"one \'two three\'\""};
+    std::vector<std::string> output = {R"(one 'two three')"};
+    std::string orig {R"("one 'two three'")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(output, result);
 }
 
 TEST(SplitUp, Spaces) {
     std::vector<std::string> oput = {"one", "  two three"};
-    std::string orig {"  one  \"  two three\" "};
+    std::string orig {R"(  one  "  two three" )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
 }
 
 TEST(SplitUp, BadStrings) {
     std::vector<std::string> oput = {"one", "  two three"};
-    std::string orig {"  one  \"  two three "};
+    std::string orig {R"(  one  "  two three )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
 
     oput = {"one", "  two three"};
-    orig =  "  one  \'  two three ";
+    orig =  R"(  one  '  two three )";
     result = CLI::detail::split_up(orig);
     EXPECT_EQ(oput, result);
 }

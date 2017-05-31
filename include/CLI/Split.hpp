@@ -65,7 +65,7 @@ inline std::tuple<std::vector<std::string>,std::vector<std::string>, std::string
             continue;
         else if(name.length() > 1 && name[0] == '-' && name[1] != '-') {
             if(name.length()==2 && valid_first_char(name[1]))
-                short_names.push_back(std::string(1,name[1]));
+                short_names.emplace_back(1,name[1]);
             else
                 throw BadNameString("Invalid one char name: "+name);
         } else if(name.length() > 2 && name.substr(0,2) == "--") {

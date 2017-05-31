@@ -4,7 +4,7 @@
 
 using ::testing::HasSubstr;
 
-typedef std::complex<double> cx;
+using cx = std::complex<double>;
 
 CLI::Option* add_option(CLI::App& app,
         std::string name, cx& variable,

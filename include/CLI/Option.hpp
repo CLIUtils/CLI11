@@ -5,6 +5,7 @@
 
 #include <string>
 #include <functional>
+#include <utility>
 #include <vector>
 #include <tuple>
 #include <algorithm>
@@ -17,13 +18,13 @@
 
 namespace CLI {
 
-typedef std::vector<std::string> results_t;
-typedef std::function<bool(results_t)> callback_t;
+using results_t = std::vector<std::string>;
+using callback_t = std::function<bool (results_t)>;
 
 class Option;
 class App;
 
-typedef std::unique_ptr<Option> Option_p;
+using Option_p = std::unique_ptr<Option>;
 
 
 class Option {
@@ -113,7 +114,7 @@ protected:
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string name, std::string description = "", std::function<bool(results_t)> callback=[](results_t){return true;}, bool default_=true, App* parent = nullptr) :
-      description_(description), default_(default_), parent_(parent), callback_(callback) {
+      description_(std::move(description)), default_(default_), parent_(parent), callback_(std::move(callback)) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(name));
     }
 

@@ -1,5 +1,5 @@
 #include "app_helper.hpp"
-#include <stdlib.h>
+#include <cstdlib>
 
 TEST_F(TApp, AddingExistingShort) {
     app.add_flag("-c,--count");

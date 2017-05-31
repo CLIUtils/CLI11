@@ -7,19 +7,20 @@
 #include <iostream>
 #include <chrono>
 #include <functional>
+#include <utility>
 
 namespace CLI {
 
 class Timer {
 protected:
     /// This is a typedef to make clocks easier to use
-    typedef std::chrono::steady_clock clock;
+    using clock = std::chrono::steady_clock;
 
     /// This typedef is for points in time
-    typedef std::chrono::time_point<clock> time_point;
+    using time_point = std::chrono::time_point<clock>;
 
     /// This is the type of a printing function, you can make your own
-    typedef std::function<std::string(std::string, std::string)> time_print_t;
+    using time_print_t = std::function<std::string (std::string, std::string)>;
 
     /// This is the title of the timer
     std::string title_;
@@ -50,7 +51,7 @@ public:
 public:
     /// Standard constructor, can set title and print function
     Timer(std::string title="Timer", time_print_t time_print = Simple)
-        : title_(title), time_print_(time_print), start_(clock::now()) {}
+        : title_(std::move(title)), time_print_(std::move(time_print)), start_(clock::now()) {}
 
     /// Time a function by running it multiple times. Target time is the len to target.
     std::string time_it(std::function<void()> f, double target_time=1) {

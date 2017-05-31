@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-typedef std::vector<std::string> input_t;
+using input_t = std::vector<std::string>;
 
 TEST(Basic, Empty) {
 
