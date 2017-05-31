@@ -40,12 +40,7 @@ The major CLI parsers for C++ include:
 
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
-## Current status:
-
-This library was built to supply the Application object for the GooFit CUDA/OMP fitting library. Before version 2.0 of GooFit is released, this library will reach version 1.0 status. The current tasks still planned are:
-
-* Collect user feedback
-* Evaluate compatibility with [ROOT]'s TApplication object.
+## Changelog
 
 See the [changelog](./CHANGELOG.md) or [GitHub Releases] for details.
 
