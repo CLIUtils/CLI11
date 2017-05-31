@@ -104,9 +104,9 @@ namespace detail {
         try{
             output = (T) std::stoll(input);
             return true;
-        } catch (std::invalid_argument) {
+        } catch (const std::invalid_argument&) {
             return false;
-        } catch (std::out_of_range) {
+        } catch (const std::out_of_range&) {
             return false;
         }
     }
@@ -117,9 +117,9 @@ namespace detail {
         try{
             output = (T) std::stold(input);
             return true;
-        } catch (std::invalid_argument) {
+        } catch (const std::invalid_argument&) {
             return false;
-        } catch (std::out_of_range) {
+        } catch (const std::out_of_range&) {
             return false;
         }
     }
