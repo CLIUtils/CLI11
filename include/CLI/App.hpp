@@ -76,7 +76,7 @@ protected:
     /// @name Parsing
     ///@{
 
-    typedef std::vector<std::pair<detail::Classifer, std::string>> missing_t;
+    using missing_t = std::vector<std::pair<detail::Classifer, std::string>>;
 
     /// Pair of classifier, string for missing options. (extra detail is removed on returning from parse)
     /// 
