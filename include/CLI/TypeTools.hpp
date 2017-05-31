@@ -102,7 +102,7 @@ namespace detail {
     template<typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
         try{
-            output = (T) std::stoll(input);
+            output = static_cast<T>(std::stoll(input));
             return true;
         } catch (const std::invalid_argument&) {
             return false;
@@ -115,7 +115,7 @@ namespace detail {
     template<typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
     bool lexical_cast(std::string input, T& output) {
         try{
-            output = (T) std::stold(input);
+            output =static_cast<T>(std::stold(input));
             return true;
         } catch (const std::invalid_argument&) {
             return false;

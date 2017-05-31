@@ -307,7 +307,7 @@ public:
 
         count = 0;
         CLI::callback_t fun = [&count](CLI::results_t res){
-            count = (T) res.size();
+            count = static_cast<T>(res.size());
             return true;
         };
         

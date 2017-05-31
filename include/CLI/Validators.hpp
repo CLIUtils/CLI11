@@ -81,7 +81,7 @@ std::function<bool(std::string)> Range(T min, T max) {
 /// Range of one value is 0 to value
 template<typename T>
 std::function<bool(std::string)> Range(T max) {
-    return Range((T) 0, max);
+    return Range(static_cast<T>(0), max);
 }
 
 /// @}
