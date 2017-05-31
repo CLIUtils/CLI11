@@ -1,3 +1,7 @@
+## Version 1.0 (in progress)
+* Cleanup using `clang-tidy` and `clang-format`
+* Small improvements to Timers, easier to subclass Error
+
 ## Version 0.9
 
 * Better CMake named target (CLI11)
