@@ -9,15 +9,15 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_THROW(app.get_subcommand("sub3"), CLI::OptionNotFound);
 
     run();
-    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
-    
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+
     app.reset();
     args = {"sub1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
-    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
 
     args = {"sub2"};
     run();
@@ -33,7 +33,6 @@ TEST_F(TApp, MultiSubFallthrough) {
     // No explicit fallthrough
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
-
 
     args = {"sub1", "sub2"};
     run();
@@ -71,27 +70,21 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(*sub1);
     EXPECT_FALSE(*sub2);
     EXPECT_FALSE(sub2->parsed());
-    
+
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
 
-
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
-    sub1->set_callback([](){
-            throw CLI::Success();
-            });
+    sub1->set_callback([]() { throw CLI::Success(); });
     auto sub2 = app.add_subcommand("sub2");
     bool val = false;
-    sub2->set_callback([&val](){
-            val = true;
-            });
-    
+    sub2->set_callback([&val]() { val = true; });
+
     args = {"sub2"};
     EXPECT_FALSE(val);
     run();
     EXPECT_TRUE(val);
-
 }
 
 TEST_F(TApp, NoFallThroughOpts) {
@@ -99,18 +92,17 @@ TEST_F(TApp, NoFallThroughOpts) {
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "--val", "2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
-
 
 TEST_F(TApp, NoFallThroughPositionals) {
     int val = 1;
     app.add_option("val", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
@@ -121,12 +113,11 @@ TEST_F(TApp, FallThroughRegular) {
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "--val", "2"};
     // Should not throw
     run();
 }
-
 
 TEST_F(TApp, FallThroughShort) {
     app.fallthrough();
@@ -134,12 +125,11 @@ TEST_F(TApp, FallThroughShort) {
     app.add_option("-v", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "-v", "2"};
     // Should not throw
     run();
 }
-
 
 TEST_F(TApp, FallThroughPositional) {
     app.fallthrough();
@@ -147,7 +137,7 @@ TEST_F(TApp, FallThroughPositional) {
     app.add_option("val", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "2"};
     // Should not throw
     run();
@@ -159,12 +149,11 @@ TEST_F(TApp, FallThroughEquals) {
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
-    
+
     args = {"sub", "--val=2"};
     // Should not throw
     run();
 }
-
 
 TEST_F(TApp, EvilParseFallthrough) {
     app.fallthrough();
@@ -173,7 +162,7 @@ TEST_F(TApp, EvilParseFallthrough) {
 
     auto sub = app.add_subcommand("sub");
     sub->add_option("val2", val2);
-    
+
     args = {"sub", "--val1", "1", "2"};
     // Should not throw
     run();
@@ -188,10 +177,8 @@ TEST_F(TApp, CallbackOrdering) {
     app.add_option("--val", val);
 
     auto sub = app.add_subcommand("sub");
-    sub->set_callback([&val, &sub_val](){
-            sub_val = val;
-            });
-    
+    sub->set_callback([&val, &sub_val]() { sub_val = val; });
+
     args = {"sub", "--val=2"};
     run();
     EXPECT_EQ(2, val);
@@ -202,7 +189,6 @@ TEST_F(TApp, CallbackOrdering) {
     run();
     EXPECT_EQ(2, val);
     EXPECT_EQ(2, sub_val);
-
 }
 
 TEST_F(TApp, RequiredSubCom) {
@@ -218,7 +204,6 @@ TEST_F(TApp, RequiredSubCom) {
     args = {"sub1"};
 
     run();
-
 }
 
 TEST_F(TApp, Required1SubCom) {
@@ -248,8 +233,8 @@ TEST_F(TApp, BadSubcomSearch) {
 
 struct SubcommandProgram : public TApp {
 
-    CLI::App* start;
-    CLI::App* stop;
+    CLI::App *start;
+    CLI::App *stop;
 
     int dummy;
     std::string file;
@@ -258,7 +243,7 @@ struct SubcommandProgram : public TApp {
     SubcommandProgram() {
         start = app.add_subcommand("start", "Start prog");
         stop = app.add_subcommand("stop", "Stop prog");
-            
+
         app.add_flag("-d", dummy, "My dummy var");
         start->add_option("-f,--file", file, "File name");
         stop->add_flag("-c,--count", count, "Some flag opt");
@@ -274,7 +259,6 @@ TEST_F(SubcommandProgram, Working) {
     EXPECT_EQ(start, app.get_subcommands().at(0));
     EXPECT_EQ("filename", file);
 }
-
 
 TEST_F(SubcommandProgram, Spare) {
     args = {"extra", "-d", "start", "-ffilename"};
@@ -292,7 +276,7 @@ TEST_F(SubcommandProgram, Multiple) {
     args = {"-d", "start", "-ffilename", "stop"};
 
     run();
-    EXPECT_EQ((size_t) 2, app.get_subcommands().size());
+    EXPECT_EQ((size_t)2, app.get_subcommands().size());
     EXPECT_EQ(1, dummy);
     EXPECT_EQ("filename", file);
 }
@@ -308,19 +292,16 @@ TEST_F(SubcommandProgram, MultipleArgs) {
 
     run();
 
-    EXPECT_EQ((size_t) 2, app.get_subcommands().size());
-
+    EXPECT_EQ((size_t)2, app.get_subcommands().size());
 }
 
 TEST_F(SubcommandProgram, CaseCheck) {
     args = {"Start"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 
-
     app.reset();
     args = {"start"};
     run();
-
 
     app.reset();
     start->ignore_case();
@@ -337,15 +318,15 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     auto sub2 = app.add_subcommand("sub2");
 
     run();
-    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
-    
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+
     app.reset();
     args = {"SuB1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
 
     app.reset();
-    EXPECT_EQ((size_t) 0, app.get_subcommands().size());
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
 
     args = {"sUb2"};
     run();
@@ -366,9 +347,7 @@ TEST_F(SubcommandProgram, HelpOrder) {
 
 TEST_F(SubcommandProgram, Callbacks) {
 
-    start->set_callback([](){
-            throw CLI::Success();
-            });
+    start->set_callback([]() { throw CLI::Success(); });
 
     run();
 
@@ -377,5 +356,4 @@ TEST_F(SubcommandProgram, Callbacks) {
     args = {"start"};
 
     EXPECT_THROW(run(), CLI::Success);
-
 }

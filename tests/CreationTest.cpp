@@ -53,10 +53,9 @@ TEST_F(TApp, AddingMultipleInfPositionals) {
     EXPECT_THROW(run(), CLI::InvalidError);
 }
 
-
 TEST_F(TApp, AddingMultipleInfPositionalsSubcom) {
     std::vector<std::string> one, two;
-    CLI::App* below = app.add_subcommand("below");
+    CLI::App *below = app.add_subcommand("below");
     below->add_option("one", one);
     below->add_option("two", two);
 
@@ -84,28 +83,26 @@ TEST_F(TApp, MultipleSubcomMatchingWithCaseFirst) {
 TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace) {
     app.add_subcommand("first");
     auto first = app.add_subcommand("fIrst");
-    
+
     EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace2) {
     auto first = app.add_subcommand("first");
     app.add_subcommand("fIrst");
-    
+
     EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, MultipleSubcomNoMatchingInplace2) {
     auto first = app.add_subcommand("first");
     auto second = app.add_subcommand("second");
-    
+
     EXPECT_NO_THROW(first->ignore_case());
     EXPECT_NO_THROW(second->ignore_case());
 }
 
-TEST_F(TApp, IncorrectConstructionFlagPositional1) {
-    EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction);
-}
+TEST_F(TApp, IncorrectConstructionFlagPositional1) { EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction); }
 
 TEST_F(TApp, IncorrectConstructionFlagPositional2) {
     int x;
@@ -142,40 +139,40 @@ TEST_F(TApp, IncorrectConstructionVectorAsFlag) {
 
 TEST_F(TApp, IncorrectConstructionRequiresCannotFind) {
     auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->requires("--nothing"),CLI::IncorrectConstruction);
+    EXPECT_THROW(cat->requires("--nothing"), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
     auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->excludes("--nothing"),CLI::IncorrectConstruction);
+    EXPECT_THROW(cat->excludes("--nothing"), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateRequires) {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
     ASSERT_NO_THROW(cat->requires(other));
-    EXPECT_THROW(cat->requires(other),CLI::OptionAlreadyAdded);
+    EXPECT_THROW(cat->requires(other), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateRequiresTxt) {
     auto cat = app.add_flag("--cat");
     app.add_flag("--other");
     ASSERT_NO_THROW(cat->requires("--other"));
-    EXPECT_THROW(cat->requires("--other"),CLI::OptionAlreadyAdded);
+    EXPECT_THROW(cat->requires("--other"), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateExcludes) {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
     ASSERT_NO_THROW(cat->excludes(other));
-    EXPECT_THROW(cat->excludes(other),CLI::OptionAlreadyAdded);
+    EXPECT_THROW(cat->excludes(other), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateExcludesTxt) {
     auto cat = app.add_flag("--cat");
     app.add_flag("--other");
     ASSERT_NO_THROW(cat->excludes("--other"));
-    EXPECT_THROW(cat->excludes("--other"),CLI::OptionAlreadyAdded);
+    EXPECT_THROW(cat->excludes("--other"), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, CheckName) {
@@ -186,7 +183,7 @@ TEST_F(TApp, CheckName) {
     int x, y;
     auto pos1 = app.add_option("pos1", x);
     auto pos2 = app.add_option("pOs2", y);
-    
+
     EXPECT_TRUE(long1->check_name("--long1"));
     EXPECT_FALSE(long1->check_name("--lonG1"));
 

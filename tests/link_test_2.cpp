@@ -9,4 +9,3 @@ TEST(Link, DoNothing) {
     int a = do_nothing();
     EXPECT_EQ(7, a);
 }
-

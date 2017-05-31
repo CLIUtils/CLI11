@@ -20,7 +20,6 @@ TEST(THelp, Basic) {
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
     EXPECT_THAT(help, HasSubstr("Usage:"));
-
 }
 
 TEST(THelp, OptionalPositional) {
@@ -44,11 +43,9 @@ TEST(THelp, Hidden) {
     CLI::App app{"My prog"};
 
     std::string x;
-    app.add_option("something", x, "My option here")
-        ->group("Hidden");
+    app.add_option("something", x, "My option here")->group("Hidden");
     std::string y;
-    app.add_option("--another", y)
-        ->group("Hidden");
+    app.add_option("--another", y)->group("Hidden");
 
     std::string help = app.help();
 
@@ -73,7 +70,6 @@ TEST(THelp, OptionalPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [something]"));
-
 }
 
 TEST(THelp, RequiredPositionalAndOptions) {
@@ -81,8 +77,7 @@ TEST(THelp, RequiredPositionalAndOptions) {
     app.add_flag("-q,--quick");
 
     std::string x;
-    app.add_option("something", x, "My option here")
-        ->required();
+    app.add_option("something", x, "My option here")->required();
 
     std::string help = app.help();
 
@@ -92,7 +87,6 @@ TEST(THelp, RequiredPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("Positionals:"));
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] something"));
 }
-
 
 TEST(THelp, MultiOpts) {
     CLI::App app{"My prog"};
@@ -111,7 +105,7 @@ TEST(THelp, MultiOpts) {
 
 TEST(THelp, VectorOpts) {
     CLI::App app{"My prog"};
-    std::vector<int> x = {1,2};
+    std::vector<int> x = {1, 2};
     app.add_option("-q,--quick", x, "", true);
 
     std::string help = app.help();
@@ -136,8 +130,6 @@ TEST(THelp, MultiPosOpts) {
     EXPECT_THAT(help, HasSubstr("[vals...]"));
 }
 
-
-
 TEST(THelp, EnvName) {
     CLI::App app{"My prog"};
     std::string input;
@@ -151,7 +143,7 @@ TEST(THelp, EnvName) {
 TEST(THelp, Requires) {
     CLI::App app{"My prog"};
 
-    CLI::Option* op1 = app.add_flag("--op1");
+    CLI::Option *op1 = app.add_flag("--op1");
     app.add_flag("--op2")->requires(op1);
 
     std::string help = app.help();
@@ -162,9 +154,9 @@ TEST(THelp, Requires) {
 TEST(THelp, RequiresPositional) {
     CLI::App app{"My prog"};
 
-    int x,y;
+    int x, y;
 
-    CLI::Option* op1 = app.add_option("op1", x, "one");
+    CLI::Option *op1 = app.add_option("op1", x, "one");
     app.add_option("op2", y, "two")->requires(op1);
 
     std::string help = app.help();
@@ -176,7 +168,7 @@ TEST(THelp, RequiresPositional) {
 TEST(THelp, Excludes) {
     CLI::App app{"My prog"};
 
-    CLI::Option* op1 = app.add_flag("--op1");
+    CLI::Option *op1 = app.add_flag("--op1");
     app.add_flag("--op2")->excludes(op1);
 
     std::string help = app.help();
@@ -187,9 +179,9 @@ TEST(THelp, Excludes) {
 TEST(THelp, ExcludesPositional) {
     CLI::App app{"My prog"};
 
-    int x,y;
+    int x, y;
 
-    CLI::Option* op1 = app.add_option("op1", x);
+    CLI::Option *op1 = app.add_option("op1", x);
     app.add_option("op2", y)->excludes(op1);
 
     std::string help = app.help();
@@ -211,15 +203,15 @@ TEST(THelp, Subcom) {
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] SUBCOMMAND"));
-    
+
     help = sub1->help();
     EXPECT_THAT(help, HasSubstr("Usage: sub1"));
 
-    char x[] = "./myprogram"; 
+    char x[] = "./myprogram";
     char y[] = "sub2";
 
-    std::vector<char*> args = {x,y};
-    app.parse((int) args.size(), args.data());
+    std::vector<char *> args = {x, y};
+    app.parse((int)args.size(), args.data());
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));
@@ -229,8 +221,8 @@ TEST(THelp, IntDefaults) {
     CLI::App app{"My prog"};
 
     int one{1}, two{2};
-    app.add_option("--one", one, "Help for one", true); 
-    app.add_set("--set", two, {2,3,4}, "Help for set", true);
+    app.add_option("--one", one, "Help for one", true);
+    app.add_set("--set", two, {2, 3, 4}, "Help for set", true);
 
     std::string help = app.help();
 
@@ -239,14 +231,13 @@ TEST(THelp, IntDefaults) {
     EXPECT_THAT(help, HasSubstr("1"));
     EXPECT_THAT(help, HasSubstr("=2"));
     EXPECT_THAT(help, HasSubstr("2,3,4"));
-
 }
 
 TEST(THelp, SetLower) {
     CLI::App app{"My prog"};
 
     std::string def{"One"};
-    app.add_set_ignore_case("--set",def, {"oNe", "twO", "THREE"}, "Help for set", true);
+    app.add_set_ignore_case("--set", def, {"oNe", "twO", "THREE"}, "Help for set", true);
 
     std::string help = app.help();
 
@@ -255,16 +246,15 @@ TEST(THelp, SetLower) {
     EXPECT_THAT(help, HasSubstr("oNe"));
     EXPECT_THAT(help, HasSubstr("twO"));
     EXPECT_THAT(help, HasSubstr("THREE"));
-
 }
 
 TEST(Exit, ErrorWithHelp) {
     CLI::App app{"My prog"};
 
-    std::vector<std::string> input {"-h"};
+    std::vector<std::string> input{"-h"};
     try {
         app.parse(input);
-    } catch (const CLI::CallForHelp &e) {
+    } catch(const CLI::CallForHelp &e) {
         EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Success), e.get_exit_code());
     }
 }
@@ -272,10 +262,10 @@ TEST(Exit, ErrorWithHelp) {
 TEST(Exit, ErrorWithoutHelp) {
     CLI::App app{"My prog"};
 
-    std::vector<std::string> input {"--none"};
+    std::vector<std::string> input{"--none"};
     try {
         app.parse(input);
-    } catch (const CLI::ParseError &e) {
+    } catch(const CLI::ParseError &e) {
         EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
     }
 }
@@ -287,5 +277,4 @@ TEST(Exit, ExitCodes) {
     EXPECT_EQ(0, app.exit(CLI::Success()));
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
     EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));
-
 }

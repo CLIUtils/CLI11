@@ -28,7 +28,7 @@ TEST(Timer, STimes) {
 */
 
 // Fails on Windows
-//TEST(Timer, UStimes) {
+// TEST(Timer, UStimes) {
 //    CLI::Timer timer;
 //    std::this_thread::sleep_for(std::chrono::microseconds(2));
 //    std::string output = timer.to_string();
@@ -58,8 +58,7 @@ TEST(Timer, PrintTimer) {
 
 TEST(Timer, TimeItTimer) {
     CLI::Timer timer;
-    std::string output = timer.time_it([](){
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));}, .1);
+    std::string output = timer.time_it([]() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }, .1);
     std::cout << output << std::endl;
     EXPECT_THAT(output, HasSubstr("ms"));
 }
