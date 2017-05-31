@@ -22,6 +22,24 @@ else()
 endif()
 
 
+if(CMAKE_VERSION VERSION_GREATER 3.6)
+# Add clang-tidy if available
+    option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy (resets to OFF)" OFF)
+    find_program(
+        CLANG_TIDY_EXE
+        NAMES "clang-tidy"
+        DOC "Path to clang-tidy executable"
+    )
+
+    if(CLANG_TIDY_EXE)
+        if(CLANG_TIDY_FIX)
+            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
+        else()
+            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}")
+        endif()
+    endif()
+endif()
+
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     include(CodeCoverage)
@@ -64,3 +82,4 @@ if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+set(CLANG_TIDY_FIX OFF CACHE BOOL "Perform fixes for Clang-Tidy (resets to OFF)" FORCE)

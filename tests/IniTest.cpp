@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <sstream>
 #include "gmock/gmock.h"
- 
+
 using ::testing::HasSubstr;
 using ::testing::Not;
 
@@ -17,14 +17,13 @@ TEST(StringBased, First) {
 
     std::vector<CLI::detail::ini_ret_t> output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 2, output.size());
+    EXPECT_EQ((size_t)2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
-
 }
 
 TEST(StringBased, FirstWithComments) {
@@ -39,35 +38,35 @@ TEST(StringBased, FirstWithComments) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 2, output.size());
+    EXPECT_EQ((size_t)2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
 TEST(StringBased, Quotes) {
     std::stringstream ofile;
 
-    ofile << "one = \"three\"" << std::endl;
-    ofile << "two = \'four\'" << std::endl;
-    ofile << "five = \"six and seven\"" << std::endl;
+    ofile << R"(one = "three")" << std::endl;
+    ofile << R"(two = 'four')" << std::endl;
+    ofile << R"(five = "six and seven")" << std::endl;
 
     ofile.seekg(0, std::ios::beg);
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 3, output.size());
+    EXPECT_EQ((size_t)3, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name());
-    EXPECT_EQ((size_t) 1, output.at(2).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(2).inputs.size());
     EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
 }
 
@@ -82,20 +81,19 @@ TEST(StringBased, Vector) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 3, output.size());
+    EXPECT_EQ((size_t)3, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name());
-    EXPECT_EQ((size_t) 3, output.at(2).inputs.size());  
+    EXPECT_EQ((size_t)3, output.at(2).inputs.size());
     EXPECT_EQ("six", output.at(2).inputs.at(0));
     EXPECT_EQ("and", output.at(2).inputs.at(1));
     EXPECT_EQ("seven", output.at(2).inputs.at(2));
 }
-
 
 TEST(StringBased, Spaces) {
     std::stringstream ofile;
@@ -107,12 +105,12 @@ TEST(StringBased, Spaces) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 2, output.size());
+    EXPECT_EQ((size_t)2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -126,17 +124,16 @@ TEST(StringBased, Sections) {
     ofile.seekg(0, std::ios::beg);
 
     auto output = CLI::detail::parse_ini(ofile);
-    
-    EXPECT_EQ((size_t) 2, output.size());
+
+    EXPECT_EQ((size_t)2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
     EXPECT_EQ("second", output.at(1).parent());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
-
 
 TEST(StringBased, SpacesSections) {
     std::stringstream ofile;
@@ -151,13 +148,13 @@ TEST(StringBased, SpacesSections) {
 
     auto output = CLI::detail::parse_ini(ofile);
 
-    EXPECT_EQ((size_t) 2, output.size());
+    EXPECT_EQ((size_t)2, output.size());
     EXPECT_EQ("one", output.at(0).name());
-    EXPECT_EQ((size_t) 1, output.at(0).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name());
     EXPECT_EQ("second", output.at(1).parent());
-    EXPECT_EQ((size_t) 1, output.at(1).inputs.size());  
+    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -174,7 +171,7 @@ TEST_F(TApp, IniNotRequired) {
         out << "three=3" << std::endl;
     }
 
-    int one=0, two=0, three=0;
+    int one = 0, two = 0, three = 0;
     app.add_option("--one", one);
     app.add_option("--two", two);
     app.add_option("--three", three);
@@ -188,7 +185,7 @@ TEST_F(TApp, IniNotRequired) {
     EXPECT_EQ(3, three);
 
     app.reset();
-    one=two=three=0;
+    one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
     run();
@@ -196,7 +193,6 @@ TEST_F(TApp, IniNotRequired) {
     EXPECT_EQ(1, one);
     EXPECT_EQ(2, two);
     EXPECT_EQ(3, three);
-
 }
 
 TEST_F(TApp, IniRequiredNotFound) {
@@ -205,7 +201,6 @@ TEST_F(TApp, IniRequiredNotFound) {
     app.add_config("--config", noini, "", true);
 
     EXPECT_THROW(run(), CLI::FileError);
-    
 }
 
 TEST_F(TApp, IniOverwrite) {
@@ -224,7 +219,7 @@ TEST_F(TApp, IniOverwrite) {
     app.add_config("--conf", next);
     int two = 7;
     app.add_option("--two", two);
-    
+
     run();
 
     EXPECT_EQ(99, two);
@@ -243,7 +238,7 @@ TEST_F(TApp, IniRequired) {
         out << "three=3" << std::endl;
     }
 
-    int one=0, two=0, three=0;
+    int one = 0, two = 0, three = 0;
     app.add_option("--one", one)->required();
     app.add_option("--two", two)->required();
     app.add_option("--three", three)->required();
@@ -253,7 +248,7 @@ TEST_F(TApp, IniRequired) {
     run();
 
     app.reset();
-    one=two=three=0;
+    one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
     run();
@@ -267,7 +262,6 @@ TEST_F(TApp, IniRequired) {
     args = {"--two=2"};
 
     EXPECT_THROW(run(), CLI::RequiredError);
-
 }
 
 TEST_F(TApp, IniVector) {
@@ -289,11 +283,9 @@ TEST_F(TApp, IniVector) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2,3}), two);
-    EXPECT_EQ(std::vector<int>({1,2,3}), three);
-
+    EXPECT_EQ(std::vector<int>({2, 3}), two);
+    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
 }
-
 
 TEST_F(TApp, IniLayered) {
 
@@ -310,7 +302,7 @@ TEST_F(TApp, IniLayered) {
         out << "subsubcom.val=3" << std::endl;
     }
 
-    int one=0, two=0, three=0;
+    int one = 0, two = 0, three = 0;
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
@@ -322,12 +314,11 @@ TEST_F(TApp, IniLayered) {
     EXPECT_EQ(1, one);
     EXPECT_EQ(2, two);
     EXPECT_EQ(3, three);
-
 }
 
 TEST_F(TApp, IniFailure) {
 
- TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini{"TestIniTmp.ini"};
 
     app.add_config("--config", tmpini);
 
@@ -339,7 +330,6 @@ TEST_F(TApp, IniFailure) {
 
     EXPECT_THROW(run(), CLI::ExtrasINIError);
 }
-
 
 TEST_F(TApp, IniSubFailure) {
 
@@ -356,7 +346,6 @@ TEST_F(TApp, IniSubFailure) {
 
     EXPECT_THROW(run(), CLI::ExtrasINIError);
 }
-
 
 TEST_F(TApp, IniNoSubFailure) {
 
@@ -387,7 +376,6 @@ TEST_F(TApp, IniFlagConvertFailure) {
 
     EXPECT_THROW(run(), CLI::ConversionError);
 }
-
 
 TEST_F(TApp, IniFlagNumbers) {
 
@@ -474,7 +462,6 @@ TEST_F(TApp, IniFlags) {
     EXPECT_EQ(true, three);
     EXPECT_EQ(true, four);
     EXPECT_EQ(true, five);
-
 }
 
 TEST_F(TApp, IniOutputSimple) {
@@ -528,7 +515,7 @@ TEST_F(TApp, IniOutputFlag) {
 TEST_F(TApp, IniOutputSet) {
 
     int v;
-    app.add_set("--simple", v, {1,2,3});
+    app.add_set("--simple", v, {1, 2, 3});
 
     args = {"--simple=2"};
 
@@ -538,10 +525,9 @@ TEST_F(TApp, IniOutputSet) {
     EXPECT_THAT(str, HasSubstr("simple=2"));
 }
 
-
 TEST_F(TApp, IniOutputDefault) {
 
-    int v=7;
+    int v = 7;
     app.add_option("--simple", v, "", true);
 
     run();
@@ -574,8 +560,8 @@ TEST_F(TApp, IniQuotedOutput) {
 
     std::string val2;
     app.add_option("--val2", val2);
-    
-    args = {"--val1", "I am a string", "--val2", "I am a \"confusing\" string"};
+
+    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
 
     run();
 
@@ -585,5 +571,4 @@ TEST_F(TApp, IniQuotedOutput) {
     std::string str = app.config_to_str();
     EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
     EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
-
 }
