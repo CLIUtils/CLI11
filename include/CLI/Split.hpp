@@ -89,5 +89,5 @@ inline std::tuple<std::vector<std::string>,std::vector<std::string>, std::string
 }
 
 
-}
-}
+} // namespace detail
+} // namespace CLI

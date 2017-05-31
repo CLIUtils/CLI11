@@ -113,5 +113,5 @@ inline std::vector<ini_ret_t> parse_ini(const std::string &name) {
 }
 
 
-}
-}
+} // namespace detail
+} // namespace CLI

@@ -123,7 +123,7 @@ public:
     }
 };
 
-}
+} // namespace CLI
 
 /// This prints out the time if shifted into a std::cout like stream.
 inline std::ostream & operator<< (std::ostream& in, const CLI::Timer& timer) {

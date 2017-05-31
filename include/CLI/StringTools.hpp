@@ -197,5 +197,5 @@ inline std::vector<std::string> split_up(std::string str) {
     return output;
 }
 
-}
-}
+} // namespace detail
+} // namespace CLI

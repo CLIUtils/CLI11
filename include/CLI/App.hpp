@@ -29,7 +29,7 @@ namespace CLI {
 namespace detail {
 enum class Classifer {NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND};
 struct AppFriend;
-}
+} // namespace detail
 
 class App;
 
@@ -1178,7 +1178,7 @@ struct AppFriend {
     }
 
 };
-}
+} // namespace detail
 
-}
+} // namespace CLI
 

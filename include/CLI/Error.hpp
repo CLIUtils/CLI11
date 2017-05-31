@@ -166,4 +166,4 @@ struct OptionNotFound : public Error {
 
 /// @}
 
-}
+} // namespace CLI

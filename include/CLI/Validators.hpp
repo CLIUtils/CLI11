@@ -86,4 +86,4 @@ std::function<bool(std::string)> Range(T max) {
 
 /// @}
 
-}
+} // namespace CLI

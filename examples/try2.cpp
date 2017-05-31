@@ -1,7 +1,9 @@
 #include "CLI/CLI.hpp"
+#include "CLI/Timer.hpp"
 
 
 int main (int argc, char** argv) {
+    CLI::AutoTimer("This is a timer");
 
     CLI::App app("K3Pi goofit fitter");
 
