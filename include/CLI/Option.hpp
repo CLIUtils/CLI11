@@ -354,12 +354,12 @@ public:
         }
         if(envname_ != "")
             out << " (env:" << envname_ << ")";
-        if(requires_.size() > 0) {
+        if(!requires_.empty()) {
             out << " Requires:";
             for(const Option* opt : requires_)
                 out << " " << opt->get_name();
         }
-        if(excludes_.size() > 0) {
+        if(!excludes_.empty()) {
             out << " Excludes:";
             for(const Option* opt : excludes_)
                 out << " " << opt->get_name();
@@ -377,7 +377,7 @@ public:
     void run_callback() const {
         if(!callback_(results_))
             throw ConversionError(get_name() + "=" + detail::join(results_));
-        if(validators_.size()>0) {
+        if(!validators_.empty()) {
             for(const std::string & result : results_)
                 for(const std::function<bool(std::string)> &vali : validators_)
                     if(!vali(result))
@@ -486,7 +486,7 @@ public:
     ///@{
     /// Can print positional name detailed option if true
     bool _has_help_positional() const {
-        return get_positional() && (has_description() || requires_.size()>0 || excludes_.size()>0 );
+        return get_positional() && (has_description() || !requires_.empty() || !excludes_.empty() );
     }
     ///@}
 };

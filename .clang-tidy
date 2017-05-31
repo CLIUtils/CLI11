@@ -1,6 +1,6 @@
 #Checks: '*,-clang-analyzer-alpha.*'
 #Checks: '-*,google-readability-casting,llvm-namespace-comment,performance-unnecessary-value-param,llvm-include-order,misc-throw-by-value-catch-by-reference,readability-container-size-empty,google-runtime-references,modernize*'
-Checks: '-*,llvm-namespace-comment,llvm-include-order'
+Checks: '-*,llvm-namespace-comment,llvm-include-order,readability-container-size-empty'
 HeaderFilterRegex: '.*hpp'
 CheckOptions:
 - key:             readability-braces-around-statements.ShortStatementLines

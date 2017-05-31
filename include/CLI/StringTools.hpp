@@ -136,7 +136,7 @@ bool valid_later_char(T c) {
 
 /// Verify an option name
 inline bool valid_name_string(const std::string &str) {
-    if(str.size()<1 || !valid_first_char(str[0]))
+    if(str.empty() || !valid_first_char(str[0]))
         return false;
     for(auto c : str.substr(1))
         if(!valid_later_char(c))
@@ -160,7 +160,7 @@ inline std::vector<std::string> split_up(std::string str) {
 
     std::vector<std::string> output;
 
-    while(str.size() > 0) {
+    while(!str.empty()) {
         if(str[0] == '\'') {
             auto end = str.find('\'', 1);
             if(end != std::string::npos) {

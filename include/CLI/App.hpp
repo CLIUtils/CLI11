@@ -602,7 +602,7 @@ public:
         for(const Option_p &opt : options_) {
 
             // Only process option with a long-name
-            if(opt->lnames_.size() > 0) {
+            if(!opt->lnames_.empty()) {
                 std::string name = prefix + opt->lnames_[0];
 
                 // Non-flags
@@ -644,7 +644,7 @@ public:
             prev += " " + name_;
 
         auto selected_subcommands = get_subcommands();
-        if(selected_subcommands.size() > 0)
+        if(!selected_subcommands.empty())
             return selected_subcommands.at(0)->help(wid, prev);
 
         std::stringstream out;
@@ -676,7 +676,7 @@ public:
                     pos=true;
             }
 
-        if(subcommands_.size() > 0) {
+        if(!subcommands_.empty()) {
             if(require_subcommand_ != 0)
                 out << " SUBCOMMAND";
             else
@@ -715,7 +715,7 @@ public:
         }
 
         // Subcommands
-        if(subcommands_.size()> 0) {
+        if(!subcommands_.empty()) {
             out << "Subcommands:" << std::endl;
             for(const App_p &com : subcommands_)
                 detail::format_help(out, com->get_name(), com->description_, wid);
@@ -829,7 +829,7 @@ protected:
         parsed_ = true;
         bool positional_only = false;
         
-        while(args.size()>0) {
+        while(!args.empty()) {
             _parse_single(args, positional_only);
         }
 
@@ -842,7 +842,7 @@ protected:
         if (config_ptr_ != nullptr && config_name_ != "") {
             try {
                 std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
-                while(values.size() > 0) {
+                while(!values.empty()) {
                     if(!_parse_ini(values)) {
                         throw ExtrasINIError(values.back().fullname);
                     }
@@ -888,7 +888,7 @@ protected:
         }
 
         auto selected_subcommands =get_subcommands();
-        if(require_subcommand_ < 0 && selected_subcommands.size() == 0)
+        if(require_subcommand_ < 0 && selected_subcommands.empty())
             throw RequiredError("Subcommand required");
         else if(require_subcommand_ > 0 && static_cast<int>( selected_subcommands.size()) != require_subcommand_)
             throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
@@ -1081,11 +1081,11 @@ protected:
 
 
         if(num == -1) {
-            while(args.size()>0 && _recognize(args.back()) == detail::Classifer::NONE) {
+            while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(args.back());
                 args.pop_back();
             }
-        } else while(num>0 && args.size() > 0) {
+        } else while(num>0 && !args.empty()) {
             num--;
             std::string current_ = args.back();
             args.pop_back();
@@ -1137,11 +1137,11 @@ protected:
         }
 
         if(num == -1) {
-            while(args.size() > 0 && _recognize(args.back()) == detail::Classifer::NONE) {
+            while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(args.back());
                 args.pop_back();
             }
-        } else while(num>0 && args.size()>0) {
+        } else while(num>0 && !args.empty()) {
             num--;
             op->add_result(args.back());
             args.pop_back();
