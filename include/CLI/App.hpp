@@ -874,7 +874,7 @@ protected:
         for(const Option_p& opt : options_) {
             // Required
             if (opt->get_required()
-                    && ((int) opt->count() < opt->get_expected() || opt->count() == 0))
+                    && (static_cast<int>( opt->count()) < opt->get_expected() || opt->count() == 0))
                 throw RequiredError(opt->get_name());
             // Requires
             for (const Option* opt_req : opt->requires_)
@@ -889,7 +889,7 @@ protected:
         auto selected_subcommands =get_subcommands();
         if(require_subcommand_ < 0 && selected_subcommands.size() == 0)
             throw RequiredError("Subcommand required");
-        else if(require_subcommand_ > 0 && (int) selected_subcommands.size() != require_subcommand_)
+        else if(require_subcommand_ > 0 && static_cast<int>( selected_subcommands.size()) != require_subcommand_)
             throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
 
         // Convert missing (pairs) to extras (string only)
@@ -1001,7 +1001,7 @@ protected:
         for(const Option_p& opt : options_) {
             // Eat options, one by one, until done
             if (    opt->get_positional()
-                    && ((int) opt->count() < opt->get_expected()
+                    && (static_cast<int>( opt->count()) < opt->get_expected()
                         || opt->get_expected() < 0)
                     ) {
 
