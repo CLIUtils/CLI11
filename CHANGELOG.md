@@ -1,6 +1,7 @@
-## Version 1.0 (in progress)
+## Version 1.0
 * Cleanup using `clang-tidy` and `clang-format`
 * Small improvements to Timers, easier to subclass Error
+* Move to 3-Clause BSD license
 
 ## Version 0.9
 
