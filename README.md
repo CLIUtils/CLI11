@@ -45,7 +45,7 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 
 ## Features not supported by this library
 
-As you probably have guessed, the list of features above are all covered by this library. There are some other features that are intentionally not supported by this library:
+There are some other possible features that are intentionally not supported by this library:
 
 * Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
 * Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
