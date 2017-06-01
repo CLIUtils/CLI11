@@ -1,6 +1,6 @@
-#A few notes on contributions
+# A few notes on contributions
 
-If you want to add code, please make sure it passes the clang-format style (I'm using LLVM 4.0):
+If you want to add code, please make sure it passes the clang-format style (I am using LLVM 4.0):
 
 ```bash
 git ls-files -- '.cpp' '.hpp' | xargs clang-format -i -style=file
