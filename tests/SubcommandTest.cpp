@@ -231,6 +231,19 @@ TEST_F(TApp, BadSubcomSearch) {
     EXPECT_THROW(app.get_subcommand(two), CLI::OptionNotFound);
 }
 
+TEST_F(TApp, PrefixProgram) {
+    
+    app.prefix_command();
+    
+    app.add_flag("--simple");
+    
+    args = {"--simple", "other", "--simple", "--mine"};
+    auto ret_args = run();
+    
+    EXPECT_EQ(ret_args, std::vector<std::string>({"--mine", "--simple", "other"}));
+    
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App *start;
