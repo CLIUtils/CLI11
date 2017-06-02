@@ -306,4 +306,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [DIANA/HEP]:         http://diana-hep.org
 [NSF Award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
-[GitBook]:           https://henryiii.gitbooks.io/cli11
+[GitBook]:           https://henryiii.gitbooks.io/cli11/content
