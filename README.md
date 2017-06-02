@@ -31,7 +31,7 @@ An acceptable CLI parser library should be all of the following:
 * Work with standard types, simple custom types, and extendible to exotic types.
 * Permissively licenced.
 
-The major CLI parsers for C++ include:
+The major CLI parsers for C++ include (with my biased opinions):
 
 * [Boost Program Options]: A great library if you already depend on Boost, but its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented (and is nearly a page of code). A simple wrapper for the Boost library was originally developed, but was discarded as CLI11 became more powerful. The idea of capturing a value and setting it originated with Boost PO.
 * [The Lean Mean C++ Option Parser]: One header file is great, but the syntax is atrocious, in my opinion. It was quite impractical to wrap the syntax or to use in a complex project. It seems to handle standard parsing quite well.
@@ -40,6 +40,7 @@ The major CLI parsers for C++ include:
 * [DocOpt]: Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized.
 * [GFlags]: The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars.
 * [GetOpt]: Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors).
+* [ProgramOptions.hxx]: Intresting library, less powerful and no subcommands.
 
 None of these libraries fulfill all the above requirements. As you probably have already guessed, CLI11 does.
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
@@ -307,3 +308,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [NSF Award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
 [GitBook]:           https://henryiii.gitbooks.io/cli11/content
+[ProgramOptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx
