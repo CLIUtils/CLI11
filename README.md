@@ -50,6 +50,7 @@ There are some other possible features that are intentionally not supported by t
 * Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
 * In C++14, you could have a set of `callback` methods with differing signatures (tested in a branch). Not deemed worth having a C++14 variation on API and removed.
 * Autocomplete: This might eventually be added to both Plumbum and CLI11, but it is not supported yet.
+* Wide strings / unicode: Since this uses the standard library only, it might be hard to properly implement, but I would be open to suggestions in how to do this.
 
 
 ## Installing
