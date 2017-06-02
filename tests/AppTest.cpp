@@ -217,7 +217,20 @@ TEST_F(TApp, EnumTest) {
     EXPECT_EQ(level, Level::Medium);
 }
 
-// New style enums do not work, since << is not supported. Could be fixed without changing API by duplicating the `add_` methods with and without the extra flag.
+TEST_F(TApp, NewEnumTest) {
+    enum class Level2 : std::int32_t {
+        High,
+        Medium,
+        Low
+    };
+    Level2 level = Level2::Low;
+    app.add_option("--level", level);
+    
+    args = {"--level", "1"};
+    run();
+    EXPECT_EQ(level, Level2::Medium);
+}
+
 
 TEST_F(TApp, RequiredFlags) {
     app.add_flag("-a")->required();
