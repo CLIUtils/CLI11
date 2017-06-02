@@ -11,7 +11,7 @@ set(CLI_TESTS
     NewParseTest
     )
 
-set(CLI_SINGLE_TESTS
+set(CLI_MULTIONLY_TESTS
     TimerTest
     )
 
@@ -28,11 +28,14 @@ foreach(T ${CLI_TESTS})
         add_executable(${T}_Single ${T}.cpp)
         target_link_libraries(${T}_Single PUBLIC CLI11_SINGLE)
         add_gtest(${T}_Single)
+        set_target_properties(${T}_Single
+            PROPERTIES
+            FOLDER "Tests Single File")
     endif()
 
 endforeach()
 
-foreach(T ${CLI_SINGLE_TESTS})
+foreach(T ${CLI_MULTIONLY_TESTS})
 
     add_executable(${T} ${T}.cpp ${CLI_headers})
     target_link_libraries(${T} PUBLIC CLI11)
@@ -44,6 +47,7 @@ endforeach()
 # Link test (build error if inlines missing)
 add_library(link_test_1 link_test_1.cpp)
 target_link_libraries(link_test_1 PUBLIC CLI11)
+set_target_properties(link_test_1 PROPERTIES FOLDER "Tests")
 add_executable(link_test_2 link_test_2.cpp)
 target_link_libraries(link_test_2 PUBLIC CLI11 link_test_1)
 add_gtest(link_test_2)

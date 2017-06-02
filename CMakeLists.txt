@@ -21,10 +21,12 @@ else()
     set(CUR_PROJ OFF)
 endif()
 
+# Allow IDE's to group targets into folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(CMAKE_VERSION VERSION_GREATER 3.6)
 # Add clang-tidy if available
-    option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy (resets to OFF)" OFF)
+    option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy" OFF)
     find_program(
         CLANG_TIDY_EXE
         NAMES "clang-tidy"
@@ -61,6 +63,8 @@ if(CLI_SINGLE_FILE)
         )
     add_custom_target(generate_cli_single_file ALL
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
+    set_target_properties(generate_cli_single_file
+                          PROPERTIES FOLDER "Scripts")
 
     add_library(CLI11_SINGLE INTERFACE)
     target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
@@ -82,4 +86,3 @@ if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-set(CLANG_TIDY_FIX OFF CACHE BOOL "Perform fixes for Clang-Tidy (resets to OFF)" FORCE)

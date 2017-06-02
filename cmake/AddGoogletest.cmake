@@ -17,15 +17,6 @@ download_project(PROJ                googletest
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR})
 
-#mark_as_advanced(
-#    gtest_build_samples
-#    gtest_build_tests
-#    gtest_disable_pthreads
-#    gtest_force_shared_crt
-#    gtest_hide_internal_symbols
-#    BUILD_SHARED_LIBS
-#)
-
 if (CMAKE_CONFIGURATION_TYPES)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure 
@@ -34,6 +25,7 @@ else()
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure)
 endif()
+set_target_properties(check PROPERTIES FOLDER "Scripts")
 
 #include_directories(${gtest_SOURCE_DIR}/include)
 
@@ -44,6 +36,7 @@ endif()
 macro(add_gtest TESTNAME)
     target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
     add_test(${TESTNAME} ${TESTNAME})
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
 endmacro()
 
 mark_as_advanced(
@@ -55,3 +48,5 @@ gtest_force_shared_crt
 gtest_hide_internal_symbols
 )
 
+set_target_properties(gtest gtest_main gmock gmock_main
+    PROPERTIES FOLDER "Extern")

@@ -1,11 +1,15 @@
 function(add_cli_exe T)
     add_executable(${T} ${ARGN} ${CLI_headers})
     target_link_libraries(${T} PUBLIC CLI11)
+    set_target_properties(
+         ${T} PROPERTIES
+         FOLDER "Examples"
+         )
 
     if(CLANG_TIDY_EXE)
     set_target_properties(
-         ${T} PROPERTIES
-            CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        ${T} PROPERTIES
+        CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
 endfunction()
