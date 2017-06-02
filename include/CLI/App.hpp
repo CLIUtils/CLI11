@@ -970,7 +970,7 @@ class App {
             missing()->emplace_back(detail::Classifer::NONE, positional);
             
             if(prefix_command_) {
-                for(std::string positional : args) {
+                while(!args.empty()) {
                     missing()->emplace_back(detail::Classifer::NONE, args.back());
                     args.pop_back();
                 }
