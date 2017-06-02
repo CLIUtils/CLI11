@@ -1,3 +1,6 @@
+## Version 1.1 (in progress)
+* Added support for basic enumerations [#12](https://github.com/CLIUtils/CLI11/issues/12)
+
 ## Version 1.0
 * Cleanup using `clang-tidy` and `clang-format`
 * Small improvements to Timers, easier to subclass Error
