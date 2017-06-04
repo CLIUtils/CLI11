@@ -84,6 +84,9 @@ class App {
     /// This is faster and cleaner than storing just a list of strings and reparsing. This may contain the -- separator.
     missing_t missing_;
 
+    /// This is a list of pointers to options with the orignal parse order
+    std::vector<Option *> parse_order_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -260,7 +263,7 @@ class App {
                 variable.emplace_back();
                 retval &= detail::lexical_cast(a, variable.back());
             }
-            return variable.size() > 0 && retval;
+            return (!variable.empty()) && retval;
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
@@ -720,6 +723,9 @@ class App {
         return local_name == name_to_check;
     }
 
+    /// This gets a vector of pointers with the original parse order
+    const std::vector<Option *> &parse_order() const { return parse_order_; }
+
     ///@}
 
   protected:
@@ -958,6 +964,7 @@ class App {
                (static_cast<int>(opt->count()) < opt->get_expected() || opt->get_expected() < 0)) {
 
                 opt->add_result(positional);
+                parse_order_.push_back(opt.get());
                 args.pop_back();
                 return;
             }
@@ -1028,18 +1035,21 @@ class App {
 
         int num = op->get_expected();
 
-        if(num == 0)
+        if(num == 0) {
             op->add_result("");
-        else if(rest != "") {
+            parse_order_.push_back(op.get());
+        } else if(rest != "") {
             if(num > 0)
                 num--;
             op->add_result(rest);
+            parse_order_.push_back(op.get());
             rest = "";
         }
 
         if(num == -1) {
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(args.back());
+                parse_order_.push_back(op.get());
                 args.pop_back();
             }
         } else
@@ -1048,6 +1058,7 @@ class App {
                 std::string current_ = args.back();
                 args.pop_back();
                 op->add_result(current_);
+                parse_order_.push_back(op.get());
             }
 
         if(rest != "") {
@@ -1092,19 +1103,23 @@ class App {
             if(num != -1)
                 num--;
             op->add_result(value);
+            parse_order_.push_back(op.get());
         } else if(num == 0) {
             op->add_result("");
+            parse_order_.push_back(op.get());
         }
 
         if(num == -1) {
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 op->add_result(args.back());
+                parse_order_.push_back(op.get());
                 args.pop_back();
             }
         } else
             while(num > 0 && !args.empty()) {
                 num--;
                 op->add_result(args.back());
+                parse_order_.push_back(op.get());
                 args.pop_back();
             }
         return;
