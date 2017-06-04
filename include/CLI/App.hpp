@@ -80,9 +80,9 @@ class App {
     ///
     /// This is faster and cleaner than storing just a list of strings and reparsing. This may contain the -- separator.
     missing_t missing_;
-    
+
     /// This is a list of pointers to options with the orignal parse order
-    std::vector<Option*> parse_order_;
+    std::vector<Option *> parse_order_;
 
     ///@}
     /// @name Subcommands
@@ -713,11 +713,9 @@ class App {
 
         return local_name == name_to_check;
     }
-    
+
     /// This gets a vector of pointers with the original parse order
-    const std::vector<Option*> &parse_order() const {
-        return parse_order_;
-    }
+    const std::vector<Option *> &parse_order() const { return parse_order_; }
 
     ///@}
 

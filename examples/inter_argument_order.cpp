@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     // Standard parsing lines (copy and paste in)
     try {
         app.parse(argc, argv);
-    } catch (const CLI::ParseError &e) {
+    } catch(const CLI::ParseError &e) {
         return app.exit(e);
     }
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     std::reverse(std::begin(foos), std::end(foos));
     std::reverse(std::begin(bars), std::end(bars));
 
-	std::vector<std::tuple<std::string,int>> keyval;
+    std::vector<std::tuple<std::string, int>> keyval;
     for(auto option : app.parse_order()) {
         if(option == foo) {
             keyval.emplace_back("foo", foos.back());
@@ -41,10 +41,8 @@ int main(int argc, char **argv) {
     std::string name;
     int value;
 
-    for(auto& tuple : keyval) {
+    for(auto &tuple : keyval) {
         std::tie(name, value) = tuple;
         std::cout << name << " : " << value << std::endl;
     }
 }
-
-
