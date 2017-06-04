@@ -31,15 +31,25 @@ An acceptable CLI parser library should be all of the following:
 * Work with standard types, simple custom types, and extendible to exotic types.
 * Permissively licenced.
 
-The major CLI parsers for C++ include:
+The major CLI parsers for C++ include (with my biased opinions):
 
-* [Boost Program Options]: A great library if you already depend on Boost, but its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented (and is nearly a page of code). A simple wrapper for the Boost library was originally developed, but was discarded as CLI11 became more powerful. The idea of capturing a value and setting it originated with Boost PO.
-* [The Lean Mean C++ Option Parser]: One header file is great, but the syntax is atrocious, in my opinion. It was quite impractical to wrap the syntax or to use in a complex project. It seems to handle standard parsing quite well.
-* [TCLAP]: The not-quite-standard command line parsing causes common shortcuts to fail. It also seems to be poorly supported, with only minimal bugfixes accepted. Header only, but in quite a few files. Has not managed to get enough support to move to GitHub yet. No subcommands. Produces wrapped values.
-* [Cxxopts]: C++11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar.
-* [DocOpt]: Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized.
-* [GFlags]: The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars.
-* [GetOpt]: Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors).
+| Library | My biased opinion |
+|---------|-------------------|
+| [Boost Program Options] | A great library if you already depend on Boost, but its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented (and is nearly a page of code). A simple wrapper for the Boost library was originally developed, but was discarded as CLI11 became more powerful. The idea of capturing a value and setting it originated with Boost PO. |
+| [The Lean Mean C++ Option Parser] | One header file is great, but the syntax is atrocious, in my opinion. It was quite impractical to wrap the syntax or to use in a complex project. It seems to handle standard parsing quite well. |
+| [TCLAP] | The not-quite-standard command line parsing causes common shortcuts to fail. It also seems to be poorly supported, with only minimal bugfixes accepted. Header only, but in quite a few files. Has not managed to get enough support to move to GitHub yet. No subcommands. Produces wrapped values. |
+| [Cxxopts] | C++11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar. |
+| [DocOpt] | Completely different approach to program options in C++11, you write the docs and the interface is generated. Too fragile and specialized. |
+
+After I wrote this, I also found the following libraries:
+
+| Library | My biased opinion |
+|---------|-------------------|
+| [GFlags] | The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars. |
+| [GetOpt] | Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors). |
+| [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. |
+| [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
+| [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
 
 None of these libraries fulfill all the above requirements. As you probably have already guessed, CLI11 does.
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
@@ -306,4 +316,8 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [DIANA/HEP]:         http://diana-hep.org
 [NSF Award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
-[GitBook]:           https://henryiii.gitbooks.io/cli11/content
+[GitBook]:             https://henryiii.gitbooks.io/cli11/content
+[ProgramOptions.hxx]:  https://github.com/Fytch/ProgramOptions.hxx
+[Argument Aggregator]: https://github.com/vietjtnguyen/argagg
+[Args]:                https://github.com/Taywee/args
+[fmt]:                 https://github.com/fmtlib/fmt
