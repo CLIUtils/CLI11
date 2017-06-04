@@ -164,7 +164,7 @@ On the command line, options can be given as:
 * `--file=filename` (equals)
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
-If you set `.allow_extras()` on the main `App`, the parse function will return the left over arguments instead of throwing an error.
+If you set `.allow_extras()` on the main `App`, the parse function will return the left over arguments instead of throwing an error. You can access a vector of pointers to the parsed options in the original order using `parse_order()`.
 If `--` is present in the command line,
 everything after that is positional only.
 

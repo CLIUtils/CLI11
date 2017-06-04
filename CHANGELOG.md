@@ -1,3 +1,6 @@
+## Version 1.1 (in progress)
+* Added `app.parse_order()` with original parse order
+
 ## Version 1.0
 * Cleanup using `clang-tidy` and `clang-format`
 * Small improvements to Timers, easier to subclass Error

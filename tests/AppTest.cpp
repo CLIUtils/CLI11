@@ -501,6 +501,22 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_THROW(run(), CLI::ParseError);
 }
 
+TEST_F(TApp, OriginalOrder) {
+    std::vector<int> st1;
+    CLI::Option *op1 = app.add_option("-a", st1);
+    std::vector<int> st2;
+    CLI::Option *op2 = app.add_option("-b", st2);
+
+    args = {"-a", "1", "-b", "2", "-a3", "-a", "4"};
+
+    run();
+
+    EXPECT_EQ(st1, std::vector<int>({1, 3, 4}));
+    EXPECT_EQ(st2, std::vector<int>({2}));
+
+    EXPECT_EQ(app.parse_order(), std::vector<CLI::Option *>({op1, op2, op1, op1}));
+}
+
 TEST_F(TApp, RequiresFlags) {
     CLI::Option *opt = app.add_flag("-s,--string");
     app.add_flag("--both")->requires(opt);
