@@ -832,7 +832,7 @@ class App {
                 #endif
 
                 if(!ename_string.empty()) {
-                    opt->add_result(ename_string));
+                    opt->add_result(ename_string);
                 }
             }
         }
