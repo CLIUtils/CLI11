@@ -47,7 +47,7 @@ After I wrote this, I also found the following libraries:
 |---------|-------------------|
 | [GFlags] | The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars. |
 | [GetOpt] | Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors). |
-| [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. |
+| [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. Nice callback system. |
 | [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
 | [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
 
