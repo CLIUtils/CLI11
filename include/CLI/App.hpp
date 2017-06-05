@@ -828,7 +828,8 @@ class App {
                 #else
                 // This also works on Windows, but gives a warning
                 buffer = std::getenv(opt->envname_.c_str());
-                ename_string = std::string(buffer);
+                if(buffer != nullptr)
+                    ename_string = std::string(buffer);
                 #endif
 
                 if(!ename_string.empty()) {

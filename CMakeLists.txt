@@ -13,7 +13,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # Be moderately paranoid with flags
     if(MSVC)
         add_definitions("/W4")
-        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     else()
         add_definitions("-Wall -Wextra -pedantic")
     endif()
