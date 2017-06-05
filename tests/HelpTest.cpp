@@ -190,6 +190,22 @@ TEST(THelp, ExcludesPositional) {
     EXPECT_THAT(help, HasSubstr("Excludes: op1"));
 }
 
+TEST(THelp, ManualSetters) {
+
+    CLI::App app{"My prog"};
+
+    int x;
+
+    CLI::Option *op1 = app.add_option("--op", x);
+    op1->set_default_val("12");
+    op1->set_type_name("BIGGLES");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("=12"));
+    EXPECT_THAT(help, HasSubstr("BIGGLES"));
+}
+
 TEST(THelp, Subcom) {
     CLI::App app{"My prog"};
 
