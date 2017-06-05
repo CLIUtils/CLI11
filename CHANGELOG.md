@@ -1,5 +1,6 @@
 ## Version 1.1 (in progress)
 * Added `app.parse_order()` with original parse order
+* Added `prefix_command()`, which is like `allow_extras` but instantly stops and returns.
 
 ## Version 1.0
 * Cleanup using `clang-tidy` and `clang-format`

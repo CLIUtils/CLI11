@@ -194,6 +194,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.parsed()`: True if this subcommand was given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
+* `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app to be a "prefix" to calling another app.
 
 ## Configuration file
 
