@@ -53,9 +53,15 @@ add_library(CLI11 INTERFACE)
 target_include_directories(CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Single file test
-option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CUR_PROJ})
+find_package(PythonInterp)
+if(CUR_PROJ AND PYTHONINTERP_FOUND)
+    set(CLI_SINGLE_FILE_DEFAULT ON)
+else()
+    set(CLI_SINGLE_FILE_DEFAULT OFF)
+endif()
+option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CLI_SINGLE_FILE_DEFAULT})
 if(CLI_SINGLE_FILE)
-    find_package(PythonInterp)
+    find_package(PythonInterp REQUIRED)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
