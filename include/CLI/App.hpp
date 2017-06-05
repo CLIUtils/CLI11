@@ -57,6 +57,9 @@ class App {
     /// If true, allow extra arguments (ie, don't throw an error).
     bool allow_extras_{false};
 
+    ///  If true, return immediatly on an unrecognised option (implies allow_extras)
+    bool prefix_command_{false};
+    
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
 
@@ -152,6 +155,12 @@ class App {
         return this;
     }
 
+    /// Do not parse anything after the first unrecongnised option and return
+    App *prefix_command(bool allow = true) {
+        prefix_command_ = allow;
+        return this;
+    }
+    
     /// Ignore case. Subcommand inherit value.
     App *ignore_case(bool value = true) {
         ignore_case_ = value;
@@ -949,7 +958,7 @@ class App {
                     return val.first != detail::Classifer::POSITIONAL_MARK;
                 });
 
-            if(num_left_over > 0 && !allow_extras_)
+            if(num_left_over > 0 && !(allow_extras_ || prefix_command_))
                 throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
         }
     }
@@ -1060,7 +1069,15 @@ class App {
         else {
             args.pop_back();
             missing()->emplace_back(detail::Classifer::NONE, positional);
+            
+            if(prefix_command_) {
+                while(!args.empty()) {
+                    missing()->emplace_back(detail::Classifer::NONE, args.back());
+                    args.pop_back();
+                }
+            }
         }
+        
     }
 
     /// Parse a subcommand, modify args and continue

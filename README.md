@@ -47,7 +47,7 @@ After I wrote this, I also found the following libraries:
 |---------|-------------------|
 | [GFlags] | The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars. |
 | [GetOpt] | Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors). |
-| [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. |
+| [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. Nice callback system. |
 | [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
 | [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
 
@@ -90,7 +90,7 @@ To set up, add options, and run, your main function will look something like thi
 CLI::App app{"App description"};
 
 std::string filename = "default";
-app.add_option("-f,--file", file, "A help string");
+app.add_option("-f,--file", filename, "A help string");
 
 try {
     app.parse(argc, argv);
@@ -194,6 +194,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.parsed()`: True if this subcommand was given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
+* `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app to be a "prefix" to calling another app.
 
 ## Configuration file
 

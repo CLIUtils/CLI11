@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <tuple>
+#include <algorithm>
 
 int main(int argc, char **argv) {
     CLI::App app;
@@ -25,7 +26,7 @@ int main(int argc, char **argv) {
     std::reverse(std::begin(foos), std::end(foos));
     std::reverse(std::begin(bars), std::end(bars));
 
-    std::vector<std::tuple<std::string, int>> keyval;
+    std::vector<std::pair<std::string, int>> keyval;
     for(auto option : app.parse_order()) {
         if(option == foo) {
             keyval.emplace_back("foo", foos.back());
@@ -38,11 +39,7 @@ int main(int argc, char **argv) {
     }
 
     // Prove the vector is correct
-    std::string name;
-    int value;
-
-    for(auto &tuple : keyval) {
-        std::tie(name, value) = tuple;
-        std::cout << name << " : " << value << std::endl;
+    for(auto &pair : keyval) {
+        std::cout << pair.first << " : " << pair.second << std::endl;
     }
 }
