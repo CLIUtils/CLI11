@@ -815,9 +815,24 @@ class App {
         // Get envname options if not yet passed
         for(const Option_p &opt : options_) {
             if(opt->count() == 0 && opt->envname_ != "") {
-                char *ename = std::getenv(opt->envname_.c_str());
-                if(ename != nullptr) {
-                    opt->add_result(std::string(ename));
+                char *buffer = nullptr;
+                std::string ename_string;
+
+                #ifdef _MSC_VER
+                // Windows version
+                size_t sz = 0;
+                if(_dupenv_s(&buf, &sz, opt->envname_.c_str()) == 0 && buf != nullptr) {
+                    ename_string = std::string(buffer);
+                    free(buffer);
+                }
+                #else
+                // This also works on Windows, but gives a warning
+                buffer = std::getenv(opt->envname_.c_str());
+                ename_string = std::string(buffer);
+                #endif
+
+                if(!ename_string.empty()) {
+                    opt->add_result(ename_string));
                 }
             }
         }
