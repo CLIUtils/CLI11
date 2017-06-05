@@ -281,7 +281,7 @@ class App {
                 variable.emplace_back();
                 retval &= detail::lexical_cast(a, variable.back());
             }
-            return variable.size() > 0 && retval;
+            return (!variable.empty()) && retval;
         };
         
         Option *opt = add_option(name, fun, description, false);

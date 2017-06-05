@@ -420,6 +420,47 @@ TEST_F(TApp, InSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, InSetWithDefault) {
+
+    std::string choice = "one";
+    app.add_set("-q,--quick", choice, {"one", "two", "three"}, "", true);
+
+    run();
+    EXPECT_EQ("one", choice);
+    app.reset();
+
+    args = {"--quick", "two"};
+
+    run();
+    EXPECT_EQ("two", choice);
+
+    app.reset();
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+
+TEST_F(TApp, InCaselessSetWithDefault) {
+
+    std::string choice = "one";
+    app.add_set_ignore_case("-q,--quick", choice, {"one", "two", "three"}, "", true);
+
+    run();
+    EXPECT_EQ("one", choice);
+    app.reset();
+
+    args = {"--quick", "tWo"};
+
+    run();
+    EXPECT_EQ("two", choice);
+
+    app.reset();
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, InIntSet) {
 
     int choice;
@@ -483,6 +524,20 @@ TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec)->expected(3);
+    EXPECT_EQ(3, opt->get_expected());
+
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ((size_t)3, app.count("--string"));
+    EXPECT_EQ(answer, strvec);
+}
+
+
+TEST_F(TApp, VectorDefaultedFixedString) {
+    std::vector<std::string> strvec{"one"};
+    std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
+
+    CLI::Option *opt = app.add_option("-s,--string", strvec, "", true)->expected(3);
     EXPECT_EQ(3, opt->get_expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
