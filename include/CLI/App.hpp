@@ -821,7 +821,7 @@ class App {
                 #ifdef _MSC_VER
                 // Windows version
                 size_t sz = 0;
-                if(_dupenv_s(&buf, &sz, opt->envname_.c_str()) == 0 && buf != nullptr) {
+                if(_dupenv_s(&buffer, &sz, opt->envname_.c_str()) == 0 && buf != nullptr) {
                     ename_string = std::string(buffer);
                     free(buffer);
                 }
