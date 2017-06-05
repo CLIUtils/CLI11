@@ -90,7 +90,7 @@ To set up, add options, and run, your main function will look something like thi
 CLI::App app{"App description"};
 
 std::string filename = "default";
-app.add_option("-f,--file", file, "A help string");
+app.add_option("-f,--file", filename, "A help string");
 
 try {
     app.parse(argc, argv);
