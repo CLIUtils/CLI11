@@ -892,3 +892,43 @@ TEST_F(TApp, CheckSubcomFail) {
 
     EXPECT_THROW(CLI::detail::AppFriend::parse_subcommand(&app, args), CLI::HorribleError);
 }
+
+// Added to test defaults on dual method
+TEST_F(TApp, OptionWithDefaults) {
+    int someint=2;
+    app.add_option("-a", someint, "", true);
+    
+    args = {"-a1", "-a2"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaults) {
+    int someint=2;
+    app.add_set("-a", someint, {1,2,3,4}, "", true);
+    
+    args = {"-a1", "-a2"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaultsConversion) {
+    int someint=2;
+    app.add_set("-a", someint, {1,2,3,4}, "", true);
+    
+    args = {"-a", "hi"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaultsIC) {
+    std::string someint="ho";
+    app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
+    
+    args = {"-aHi", "-aHo"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
