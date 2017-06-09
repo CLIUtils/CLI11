@@ -203,6 +203,35 @@ TEST_F(TApp, DefaultOpts) {
     EXPECT_EQ("9", s);
 }
 
+TEST_F(TApp, EnumTest) {
+    enum Level : std::int32_t {
+        High,
+        Medium,
+        Low
+    };
+    Level level = Level::Low;
+    app.add_option("--level", level);
+    
+    args = {"--level", "1"};
+    run();
+    EXPECT_EQ(level, Level::Medium);
+}
+
+TEST_F(TApp, NewEnumTest) {
+    enum class Level2 : std::int32_t {
+        High,
+        Medium,
+        Low
+    };
+    Level2 level = Level2::Low;
+    app.add_option("--level", level);
+    
+    args = {"--level", "1"};
+    run();
+    EXPECT_EQ(level, Level2::Medium);
+}
+
+
 TEST_F(TApp, RequiredFlags) {
     app.add_flag("-a")->required();
     app.add_flag("-b")->mandatory(); // Alternate term
@@ -391,6 +420,47 @@ TEST_F(TApp, InSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, InSetWithDefault) {
+
+    std::string choice = "one";
+    app.add_set("-q,--quick", choice, {"one", "two", "three"}, "", true);
+
+    run();
+    EXPECT_EQ("one", choice);
+    app.reset();
+
+    args = {"--quick", "two"};
+
+    run();
+    EXPECT_EQ("two", choice);
+
+    app.reset();
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+
+TEST_F(TApp, InCaselessSetWithDefault) {
+
+    std::string choice = "one";
+    app.add_set_ignore_case("-q,--quick", choice, {"one", "two", "three"}, "", true);
+
+    run();
+    EXPECT_EQ("one", choice);
+    app.reset();
+
+    args = {"--quick", "tWo"};
+
+    run();
+    EXPECT_EQ("two", choice);
+
+    app.reset();
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, InIntSet) {
 
     int choice;
@@ -454,6 +524,20 @@ TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec)->expected(3);
+    EXPECT_EQ(3, opt->get_expected());
+
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ((size_t)3, app.count("--string"));
+    EXPECT_EQ(answer, strvec);
+}
+
+
+TEST_F(TApp, VectorDefaultedFixedString) {
+    std::vector<std::string> strvec{"one"};
+    std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
+
+    CLI::Option *opt = app.add_option("-s,--string", strvec, "", true)->expected(3);
     EXPECT_EQ(3, opt->get_expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
@@ -807,4 +891,44 @@ TEST_F(TApp, CheckSubcomFail) {
     args = {"subcom"};
 
     EXPECT_THROW(CLI::detail::AppFriend::parse_subcommand(&app, args), CLI::HorribleError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, OptionWithDefaults) {
+    int someint=2;
+    app.add_option("-a", someint, "", true);
+    
+    args = {"-a1", "-a2"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaults) {
+    int someint=2;
+    app.add_set("-a", someint, {1,2,3,4}, "", true);
+    
+    args = {"-a1", "-a2"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaultsConversion) {
+    int someint=2;
+    app.add_set("-a", someint, {1,2,3,4}, "", true);
+    
+    args = {"-a", "hi"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// Added to test defaults on dual method
+TEST_F(TApp, SetWithDefaultsIC) {
+    std::string someint="ho";
+    app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
+    
+    args = {"-aHi", "-aHo"};
+    
+    EXPECT_THROW(run(), CLI::ConversionError);
 }

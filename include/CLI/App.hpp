@@ -225,13 +225,14 @@ class App {
         } else
             throw OptionAlreadyAdded(myopt.get_name());
     }
+    
+    
 
-    /// Add option for non-vectors
+    /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
     template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string name,
                        T &variable, ///< The variable to set
-                       std::string description = "",
-                       bool defaulted = false) {
+                       std::string description = "") {
 
         CLI::callback_t fun = [&variable](CLI::results_t res) {
             if(res.size() != 1)
@@ -239,6 +240,24 @@ class App {
             return detail::lexical_cast(res[0], variable);
         };
 
+        Option *opt = add_option(name, fun, description, false);
+        opt->set_custom_option(detail::type_name<T>());
+        return opt;
+    }
+
+    /// Add option for non-vectors with a default print
+    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
+    Option *add_option(std::string name,
+                       T &variable, ///< The variable to set
+                       std::string description,
+                       bool defaulted) {
+        
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
+            if(res.size() != 1)
+                return false;
+            return detail::lexical_cast(res[0], variable);
+        };
+        
         Option *opt = add_option(name, fun, description, defaulted);
         opt->set_custom_option(detail::type_name<T>());
         if(defaulted) {
@@ -248,13 +267,34 @@ class App {
         }
         return opt;
     }
-
+    
+    /// Add option for vectors (no default)
+    template <typename T>
+    Option *add_option(std::string name,
+                       std::vector<T> &variable, ///< The variable vector to set
+                       std::string description = "") {
+        
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
+            bool retval = true;
+            variable.clear();
+            for(const auto &a : res) {
+                variable.emplace_back();
+                retval &= detail::lexical_cast(a, variable.back());
+            }
+            return (!variable.empty()) && retval;
+        };
+        
+        Option *opt = add_option(name, fun, description, false);
+        opt->set_custom_option(detail::type_name<T>(), -1, true);
+        return opt;
+    }
+    
     /// Add option for vectors
     template <typename T>
     Option *add_option(std::string name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string description = "",
-                       bool defaulted = false) {
+                       std::string description,
+                       bool defaulted) {
 
         CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
@@ -323,13 +363,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options
+    /// Add set of options (No default)
     template <typename T>
     Option *add_set(std::string name,
                     T &member,           ///< The selected member of the set
                     std::set<T> options, ///< The set of posibilities
-                    std::string description = "",
-                    bool defaulted = false) {
+                    std::string description = "") {
 
         CLI::callback_t fun = [&member, options](CLI::results_t res) {
             if(res.size() != 1) {
@@ -341,6 +380,31 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<T>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+        return opt;
+    }
+    
+    /// Add set of options
+    template <typename T>
+    Option *add_set(std::string name,
+                    T &member,           ///< The selected member of the set
+                    std::set<T> options, ///< The set of posibilities
+                    std::string description,
+                    bool defaulted) {
+        
+        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+            if(res.size() != 1) {
+                return false;
+            }
+            bool retval = detail::lexical_cast(res[0], member);
+            if(!retval)
+                return false;
+            return std::find(std::begin(options), std::end(options), member) != std::end(options);
+        };
+        
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
@@ -353,12 +417,11 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case
+    /// Add set of options, string only, ignore case (no default)
     Option *add_set_ignore_case(std::string name,
                                 std::string &member,           ///< The selected member of the set
                                 std::set<std::string> options, ///< The set of posibilities
-                                std::string description = "",
-                                bool defaulted = false) {
+                                std::string description = "") {
 
         CLI::callback_t fun = [&member, options](CLI::results_t res) {
             if(res.size() != 1) {
@@ -376,6 +439,37 @@ class App {
             }
         };
 
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+        
+        return opt;
+    }
+    
+    /// Add set of options, string only, ignore case
+    Option *add_set_ignore_case(std::string name,
+                                std::string &member,           ///< The selected member of the set
+                                std::set<std::string> options, ///< The set of posibilities
+                                std::string description,
+                                bool defaulted) {
+        
+        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+            if(res.size() != 1) {
+                return false;
+            }
+            member = detail::to_lower(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(val) == member;
+            });
+            if(iter == std::end(options))
+                return false;
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+        
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
