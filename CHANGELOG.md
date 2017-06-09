@@ -1,7 +1,10 @@
 ## Version 1.1 (in progress)
-* Added support for basic enumerations [#12](https://github.com/CLIUtils/CLI11/issues/12)
-* Added `app.parse_order()` with original parse order
-* Added `prefix_command()`, which is like `allow_extras` but instantly stops and returns.
+
+* Added simple support for enumerations, allow non-printable objects [#12](https://github.com/CLIUtils/CLI11/issues/12)
+* Added `app.parse_order()` with original parse order ([#13](https://github.com/CLIUtils/CLI11/issues/13), [#16](https://github.com/CLIUtils/CLI11/pull/16)) 
+* Added `prefix_command()`, which is like `allow_extras` but instantly stops and returns. ([#8](https://github.com/CLIUtils/CLI11/issues/8), [#17](https://github.com/CLIUtils/CLI11/pull/17)) 
+* Removed Windows error ([#10](https://github.com/CLIUtils/CLI11/issues/10), [#20](https://github.com/CLIUtils/CLI11/pull/20))
+* Some improvements to CMake, detect Python and no dependencies on Python 2 (like Python 3) ([#18](https://github.com/CLIUtils/CLI11/issues/18), [#21](https://github.com/CLIUtils/CLI11/pull/21))
 
 ## Version 1.0
 * Cleanup using `clang-tidy` and `clang-format`

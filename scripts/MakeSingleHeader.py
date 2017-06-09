@@ -4,24 +4,24 @@
 
 from __future__ import print_function, unicode_literals
 
+import os
 import re
 import argparse
-from pathlib import Path
 from subprocess import check_output
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
 
-DIR = Path(__file__).resolve().parent
-BDIR = DIR.parent / 'include'
+DIR = os.path.dirname(os.path.abspath(__file__)) # Path(__file__).resolve().parent
+BDIR = os.path.join(os.path.dirname(DIR), 'include') # DIR.parent / 'include'
 
 print("Git directory:", DIR)
 
 TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
 
 def MakeHeader(out):
-    main_header = BDIR / 'CLI/CLI.hpp'
-    with main_header.open() as f:
+    main_header = os.path.join(BDIR, 'CLI', 'CLI.hpp')
+    with open(main_header) as f:
         header = f.read()
 
     include_files = includes_local.findall(header)
@@ -29,7 +29,7 @@ def MakeHeader(out):
     headers = set()
     output = ''
     for inc in include_files:
-        with (BDIR / inc).open() as f:
+        with open(os.path.join(BDIR, inc)) as f:
             inner = f.read()
         headers |= set(includes_system.findall(inner))
         output += '\n// From {inc}\n\n'.format(inc=inc)
@@ -50,7 +50,7 @@ def MakeHeader(out):
 {header_list}
 {output}'''.format(header_list=header_list, output=output, tag=TAG)
 
-    with Path(out).open('w') as f:
+    with open(out, 'w') as f:
         f.write(output)
 
     print("Created {out}".format(out=out))
@@ -58,6 +58,6 @@ def MakeHeader(out):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("output", nargs='?', default=BDIR / 'CLI11.hpp')
+    parser.add_argument("output", nargs='?', default=os.path.join(BDIR, 'CLI11.hpp'))
     args = parser.parse_args()
     MakeHeader(args.output)
