@@ -293,7 +293,7 @@ If you are on a Unix-like system, and you'd like to handle control-c and color, 
 
 And, in your main function:
 
-```
+```cpp
      // Nice Control-C
      struct sigaction sigIntHandler;
      sigIntHandler.sa_handler = signal_handler;
