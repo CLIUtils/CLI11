@@ -280,6 +280,28 @@ try {
 
 This will print help in blue, errors in red, and will reset before returning the terminal to the user.
 
+If you are on a Unix-like system, and you'd like to handle control-c and color, you can add:
+
+```cpp
+ #include <csignal>
+ void signal_handler(int s) {
+     std::cout << std::endl << rang::style::reset << rang::fg::red << rang::fg::bold;
+     std::cout << "Control-C detected, exiting..." << rang::style::reset << std::endl;
+     std::exit(1); // will call the correct exit func, no unwinding of the stack though
+ }
+```
+
+And, in your main function:
+
+```
+     // Nice Control-C
+     struct sigaction sigIntHandler;
+     sigIntHandler.sa_handler = signal_handler;
+     sigemptyset(&sigIntHandler.sa_mask);
+     sigIntHandler.sa_flags = 0;
+     sigaction(SIGINT, &sigIntHandler, nullptr);
+```
+
 ## Contributing
 
 To contribute, open an [issue][Github Issues] or [pull request][Github Pull Requests] on GitHub, or ask a question on [gitter].
