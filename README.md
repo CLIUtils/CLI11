@@ -51,6 +51,7 @@ After I wrote this, I also found the following libraries:
 | [ProgramOptions.hxx] | Intresting library, less powerful and no subcommands. Nice callback system. |
 | [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
 | [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
+| [Clara] | Simple library built for the excellent [Catch] testing framework. Unique syntax, limited scope. |
 
 None of these libraries fulfill all the above requirements. As you probably have already guessed, CLI11 does.
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
@@ -347,3 +348,5 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Argument Aggregator]: https://github.com/vietjtnguyen/argagg
 [Args]:                https://github.com/Taywee/args
 [fmt]:                 https://github.com/fmtlib/fmt
+[Catch]:               https://github.com/philsquared/Catch
+[Clara]:               https://github.com/philsquared/Clara
