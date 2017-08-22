@@ -2,7 +2,7 @@ set -evx
 
 cd ${TRAVIS_BUILD_DIR}
 cd build
-cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCMAKE_BUILD_TYPE=Coverage
+cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCLI_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Coverage
 cmake --build . -- -j2
 cmake --build . --target CLI_coverage
 
