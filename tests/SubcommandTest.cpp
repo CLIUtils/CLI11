@@ -101,13 +101,13 @@ TEST_F(TApp, RequiredAndSubcoms) { // #23
 
     app.reset();
     args = {"foo", "other"};
-    EXPECT_THROW(run(), CLI::ParseError);
+    EXPECT_THROW(run(), CLI::ExtrasError); // RequiredError
 }
 
 TEST_F(TApp, RequiredAndSubcomFallthrough) {
 
     std::string baz;
-    app.add_option("baz", baz, "Baz Description", true)->required();
+    app.add_option("baz", baz)->required();
     app.add_subcommand("foo");
     auto bar = app.add_subcommand("bar");
     app.fallthrough();
@@ -119,8 +119,34 @@ TEST_F(TApp, RequiredAndSubcomFallthrough) {
 
     app.reset();
     args = {"bar", "other2"};
-    EXPECT_THROW(run(), CLI::ParseError); // RequiredError or ExtrasError (actual)
+    EXPECT_THROW(run(), CLI::ExtrasError); // RequiredError
+}
 
+TEST_F(TApp, FooFooProblem) {
+
+    std::string baz_str, other_str;
+    auto baz = app.add_option("baz", baz_str);
+    auto foo = app.add_subcommand("foo");
+    auto other = foo->add_option("other", other_str);
+
+    args = {"foo", "foo"};
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_FALSE(*baz);
+    EXPECT_TRUE(*other);         // Fails
+    EXPECT_EQ(baz_str, "");
+    EXPECT_EQ(other_str, "foo"); // Fails
+
+    app.reset();
+    baz_str = "";
+    other_str = "";
+    baz->required();
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_TRUE(*baz);
+    EXPECT_FALSE(*other);
+    EXPECT_EQ(baz_str, "foo");
+    EXPECT_EQ(other_str, "");
 }
 
 TEST_F(TApp, Callbacks) {

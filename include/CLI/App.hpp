@@ -855,7 +855,7 @@ class App {
 
     bool _valid_subcommand(const std::string &current) const {
         for(const App_p &com : subcommands_)
-            if(com->check_name(current))
+            if(com->check_name(current) && !*com)
                 return true;
         if(parent_ != nullptr)
             return parent_->_valid_subcommand(current);
