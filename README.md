@@ -198,6 +198,8 @@ There are several options that are supported on the main app and subcommands. Th
 * `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app to be a "prefix" to calling another app.
 
+> Note: if you have a fixed number of required positional options, that will match before subcommand names.
+
 ## Configuration file
 
 ```cpp

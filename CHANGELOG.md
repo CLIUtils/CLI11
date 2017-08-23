@@ -1,3 +1,7 @@
+## Version 1.2 (in progress)
+
+* Required positionals now take priority over subcommands [#23](https://github.com/CLIUtils/CLI11/issues/23)
+
 ## Version 1.1
 
 * Added simple support for enumerations, allow non-printable objects [#12](https://github.com/CLIUtils/CLI11/issues/12)

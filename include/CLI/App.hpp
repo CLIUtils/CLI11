@@ -855,7 +855,7 @@ class App {
 
     bool _valid_subcommand(const std::string &current) const {
         for(const App_p &com : subcommands_)
-            if(com->check_name(current))
+            if(com->check_name(current) && !*com)
                 return true;
         if(parent_ != nullptr)
             return parent_->_valid_subcommand(current);
@@ -1064,6 +1064,19 @@ class App {
         }
     }
 
+    /// Count the required remaining positional arguments
+    size_t _count_remaining_required_positionals() const {
+        size_t retval = 0;
+        for(const Option_p &opt : options_)
+            if(opt->get_positional()
+               && opt->get_required()
+               && opt->get_expected() > 0
+               && static_cast<int>(opt->count()) < opt->get_expected())
+                retval = static_cast<size_t>(opt->get_expected()) - opt->count();
+
+        return retval;
+    }
+
     /// Parse a positional, go up the tree to check
     void _parse_positional(std::vector<std::string> &args) {
 
@@ -1100,6 +1113,8 @@ class App {
     ///
     /// Unlike the others, this one will always allow fallthrough
     void _parse_subcommand(std::vector<std::string> &args) {
+        if(_count_remaining_required_positionals() > 0)
+            return _parse_positional(args);
         for(const App_p &com : subcommands_) {
             if(com->check_name(args.back())) {
                 args.pop_back();

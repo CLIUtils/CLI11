@@ -74,6 +74,81 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
 
+TEST_F(TApp, RequiredAndSubcoms) { // #23
+
+    std::string baz;
+    app.add_option("baz", baz, "Baz Description", true)->required();
+    auto foo = app.add_subcommand("foo");
+    auto bar = app.add_subcommand("bar");
+
+    args = {"bar", "foo"};
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(*foo);
+    EXPECT_FALSE(*bar);
+    EXPECT_EQ(baz, "bar");
+
+    app.reset();
+    args = {"foo"};
+    EXPECT_NO_THROW(run());
+    EXPECT_FALSE(*foo);
+    EXPECT_EQ(baz, "foo");
+
+    app.reset();
+    args = {"foo", "foo"};
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(*foo);
+    EXPECT_EQ(baz, "foo");
+
+    app.reset();
+    args = {"foo", "other"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(TApp, RequiredAndSubcomFallthrough) {
+
+    std::string baz;
+    app.add_option("baz", baz)->required();
+    app.add_subcommand("foo");
+    auto bar = app.add_subcommand("bar");
+    app.fallthrough();
+
+    args = {"other", "bar"};
+    run();
+    EXPECT_TRUE(bar);
+    EXPECT_EQ(baz, "other");
+
+    app.reset();
+    args = {"bar", "other2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(TApp, FooFooProblem) {
+
+    std::string baz_str, other_str;
+    auto baz = app.add_option("baz", baz_str);
+    auto foo = app.add_subcommand("foo");
+    auto other = foo->add_option("other", other_str);
+
+    args = {"foo", "foo"};
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_FALSE(*baz);
+    EXPECT_TRUE(*other);
+    EXPECT_EQ(baz_str, "");
+    EXPECT_EQ(other_str, "foo");
+
+    app.reset();
+    baz_str = "";
+    other_str = "";
+    baz->required();
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_TRUE(*baz);
+    EXPECT_FALSE(*other);
+    EXPECT_EQ(baz_str, "foo");
+    EXPECT_EQ(other_str, "");
+}
+
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
     sub1->set_callback([]() { throw CLI::Success(); });
