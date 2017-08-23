@@ -101,7 +101,7 @@ TEST_F(TApp, RequiredAndSubcoms) { // #23
 
     app.reset();
     args = {"foo", "other"};
-    EXPECT_THROW(run(), CLI::ExtrasError); // RequiredError
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 TEST_F(TApp, RequiredAndSubcomFallthrough) {
@@ -119,7 +119,7 @@ TEST_F(TApp, RequiredAndSubcomFallthrough) {
 
     app.reset();
     args = {"bar", "other2"};
-    EXPECT_THROW(run(), CLI::ExtrasError); // RequiredError
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 TEST_F(TApp, FooFooProblem) {
@@ -133,9 +133,9 @@ TEST_F(TApp, FooFooProblem) {
     run();
     EXPECT_TRUE(*foo);
     EXPECT_FALSE(*baz);
-    EXPECT_TRUE(*other);         // Fails
+    EXPECT_TRUE(*other);
     EXPECT_EQ(baz_str, "");
-    EXPECT_EQ(other_str, "foo"); // Fails
+    EXPECT_EQ(other_str, "foo");
 
     app.reset();
     baz_str = "";
