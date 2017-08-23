@@ -1064,6 +1064,19 @@ class App {
         }
     }
 
+    /// Count the required remaining positional arguments
+    size_t _count_remaining_required_positionals() const {
+        size_t retval = 0;
+        for(const Option_p &opt : options_)
+            if(opt->get_positional()
+               && opt->get_required()
+               && opt->get_expected() > 0
+               && static_cast<int>(opt->count()) < opt->get_expected())
+                retval = static_cast<size_t>(opt->get_expected()) - opt->count();
+
+        return retval;
+    }
+
     /// Parse a positional, go up the tree to check
     void _parse_positional(std::vector<std::string> &args) {
 
@@ -1080,7 +1093,7 @@ class App {
             }
         }
 
-        if(parent_ != nullptr && fallthrough_)
+        if(parent_ != nullptr)// TODO && fallthrough_)
             return parent_->_parse_positional(args);
         else {
             args.pop_back();
