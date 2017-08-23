@@ -857,7 +857,7 @@ class App {
         for(const App_p &com : subcommands_)
             if(com->check_name(current))
                 return true;
-        if(parent_ != nullptr && fallthrough_)
+        if(parent_ != nullptr)
             return parent_->_valid_subcommand(current);
         else
             return false;
@@ -1093,7 +1093,7 @@ class App {
             }
         }
 
-        if(parent_ != nullptr)// TODO && fallthrough_)
+        if(parent_ != nullptr && fallthrough_)
             return parent_->_parse_positional(args);
         else {
             args.pop_back();
@@ -1113,6 +1113,8 @@ class App {
     ///
     /// Unlike the others, this one will always allow fallthrough
     void _parse_subcommand(std::vector<std::string> &args) {
+        if(_count_remaining_required_positionals() > 0)
+            return _parse_positional(args);
         for(const App_p &com : subcommands_) {
             if(com->check_name(args.back())) {
                 args.pop_back();
