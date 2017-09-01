@@ -75,9 +75,8 @@ constexpr const char *type_name() {
 // Lexical cast
 
 /// Integers / enums
-template <typename T, enable_if_t<std::is_integral<T>::value
-    || std::is_enum<T>::value
-    , detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<std::is_integral<T>::value || std::is_enum<T>::value, detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
         output = static_cast<T>(std::stoll(input));
@@ -103,11 +102,9 @@ bool lexical_cast(std::string input, T &output) {
 }
 
 /// String and similar
-template <
-    typename T,
-    enable_if_t<!std::is_floating_point<T>::value
-                && !std::is_integral<T>::value
-                && !std::is_enum<T>::value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     output = input;
     return true;

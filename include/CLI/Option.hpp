@@ -442,8 +442,9 @@ class Option {
         results_ = std::move(old_results);
     }
 
+
     /// Set the type name displayed on this option
-    void set_type_name(std::string val) {typeval_ = val;}
+    void set_type_name(std::string val) { typeval_ = val; }
 
     ///@}
 
