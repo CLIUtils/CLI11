@@ -13,9 +13,6 @@ matrix:
   - compiler: clang
     addons:
       apt:
-        sources:
-        - llvm-toolchain-precise-3.5
-        - ubuntu-toolchain-r-test
         packages:
         - clang-3.5
     env:
@@ -37,30 +34,40 @@ matrix:
   - compiler: gcc
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - g++-4.7
     env:
     - COMPILER=4.7
     - CXXFLAGS=-D_GLIBCXX_USE_NANOSLEEP
   - os: osx
+  - compiler: clang
+    addons:
+      apt:
+        packages:
+        - clang-3.9
+        - clang-format-3.9
+        - clang-tidy-3.9
+    env:
+    - COMPILER=3.9
+    - CHECK_STYLE=yes
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh
-  ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh
-  ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh
-  ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
-- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip
-  install --user pathlib; fi
+- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] then pip install --user pathlib; fi
 script:
 - cd "${TRAVIS_BUILD_DIR}"
-- .ci/travis.sh
+- |
+  if [ -n "$CHECK_STYLE" ]
+  then
+    .ci/check_style.sh
+  else
+    .ci/travis.sh
+  fi
 after_success:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
 - echo "${TRAVIS_BRANCH}"
@@ -68,7 +75,7 @@ after_success:
 - |
   if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ -n "$DEPLOY_MAT" ]
   then
-      echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
+    echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
   fi
 deploy:
   provider: releases
