@@ -14,6 +14,16 @@ matrix:
     addons:
       apt:
         packages:
+        - clang-3.9
+        - clang-format-3.9
+        - clang-tidy-3.9
+    env:
+    - COMPILER=3.9
+    - CHECK_STYLE=yes
+  - compiler: clang
+    addons:
+      apt:
+        packages:
         - clang-3.5
     env:
     - COMPILER=3.5
@@ -40,16 +50,6 @@ matrix:
     - COMPILER=4.7
     - CXXFLAGS=-D_GLIBCXX_USE_NANOSLEEP
   - os: osx
-  - compiler: clang
-    addons:
-      apt:
-        packages:
-        - clang-3.9
-        - clang-format-3.9
-        - clang-tidy-3.9
-    env:
-    - COMPILER=3.9
-    - CHECK_STYLE=yes
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
