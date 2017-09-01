@@ -6,8 +6,7 @@ int main(int argc, char **argv) {
     app.prefix_command();
 
     std::vector<int> vals;
-    app.add_option("--vals,-v", vals)
-        ->expected(1);
+    app.add_option("--vals,-v", vals)->expected(1);
 
     std::vector<std::string> more_comms;
     try {
@@ -19,7 +18,7 @@ int main(int argc, char **argv) {
     std::cout << "Prefix:";
     for(int v : vals)
         std::cout << v << ":";
-    
+
     std::cout << std::endl << "Remaining commands: ";
 
     // Perfer to loop over from beginning, not "pop" order

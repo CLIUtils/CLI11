@@ -1,12 +1,8 @@
 #include <CLI/CLI.hpp>
 
-enum Level : std::int32_t {
-    High,
-    Medium,
-    Low
-};
+enum Level : std::int32_t { High, Medium, Low };
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     CLI::App app;
 
     Level level;
@@ -15,9 +11,8 @@ int main(int argc, char** argv) {
 
     try {
         app.parse(argc, argv);
-    } catch (CLI::Error const& e) {
+    } catch(CLI::Error const &e) {
         app.exit(e);
     }
     return 0;
 }
-
