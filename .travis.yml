@@ -58,7 +58,7 @@ install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
-- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] then pip install --user pathlib; fi
+- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip install --user pathlib ; fi
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - |
