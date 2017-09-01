@@ -59,7 +59,7 @@ class App {
 
     ///  If true, return immediatly on an unrecognised option (implies allow_extras)
     bool prefix_command_{false};
-    
+
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
 
@@ -160,7 +160,7 @@ class App {
         prefix_command_ = allow;
         return this;
     }
-    
+
     /// Ignore case. Subcommand inherit value.
     App *ignore_case(bool value = true) {
         ignore_case_ = value;
@@ -225,8 +225,6 @@ class App {
         } else
             throw OptionAlreadyAdded(myopt.get_name());
     }
-    
-    
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
     template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
@@ -251,13 +249,13 @@ class App {
                        T &variable, ///< The variable to set
                        std::string description,
                        bool defaulted) {
-        
+
         CLI::callback_t fun = [&variable](CLI::results_t res) {
             if(res.size() != 1)
                 return false;
             return detail::lexical_cast(res[0], variable);
         };
-        
+
         Option *opt = add_option(name, fun, description, defaulted);
         opt->set_custom_option(detail::type_name<T>());
         if(defaulted) {
@@ -267,13 +265,13 @@ class App {
         }
         return opt;
     }
-    
+
     /// Add option for vectors (no default)
     template <typename T>
     Option *add_option(std::string name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description = "") {
-        
+
         CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
             variable.clear();
@@ -283,12 +281,12 @@ class App {
             }
             return (!variable.empty()) && retval;
         };
-        
+
         Option *opt = add_option(name, fun, description, false);
         opt->set_custom_option(detail::type_name<T>(), -1, true);
         return opt;
     }
-    
+
     /// Add option for vectors
     template <typename T>
     Option *add_option(std::string name,
@@ -386,7 +384,7 @@ class App {
         opt->set_custom_option(typeval);
         return opt;
     }
-    
+
     /// Add set of options
     template <typename T>
     Option *add_set(std::string name,
@@ -394,7 +392,7 @@ class App {
                     std::set<T> options, ///< The set of posibilities
                     std::string description,
                     bool defaulted) {
-        
+
         CLI::callback_t fun = [&member, options](CLI::results_t res) {
             if(res.size() != 1) {
                 return false;
@@ -404,7 +402,7 @@ class App {
                 return false;
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
-        
+
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
@@ -443,17 +441,17 @@ class App {
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->set_custom_option(typeval);
-        
+
         return opt;
     }
-    
+
     /// Add set of options, string only, ignore case
     Option *add_set_ignore_case(std::string name,
                                 std::string &member,           ///< The selected member of the set
                                 std::set<std::string> options, ///< The set of posibilities
                                 std::string description,
                                 bool defaulted) {
-        
+
         CLI::callback_t fun = [&member, options](CLI::results_t res) {
             if(res.size() != 1) {
                 return false;
@@ -469,7 +467,7 @@ class App {
                 return true;
             }
         };
-        
+
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
@@ -912,19 +910,19 @@ class App {
                 char *buffer = nullptr;
                 std::string ename_string;
 
-                #ifdef _MSC_VER
+#ifdef _MSC_VER
                 // Windows version
                 size_t sz = 0;
                 if(_dupenv_s(&buffer, &sz, opt->envname_.c_str()) == 0 && buffer != nullptr) {
                     ename_string = std::string(buffer);
                     free(buffer);
                 }
-                #else
+#else
                 // This also works on Windows, but gives a warning
                 buffer = std::getenv(opt->envname_.c_str());
                 if(buffer != nullptr)
                     ename_string = std::string(buffer);
-                #endif
+#endif
 
                 if(!ename_string.empty()) {
                     opt->add_result(ename_string);
@@ -1068,10 +1066,8 @@ class App {
     size_t _count_remaining_required_positionals() const {
         size_t retval = 0;
         for(const Option_p &opt : options_)
-            if(opt->get_positional()
-               && opt->get_required()
-               && opt->get_expected() > 0
-               && static_cast<int>(opt->count()) < opt->get_expected())
+            if(opt->get_positional() && opt->get_required() && opt->get_expected() > 0 &&
+               static_cast<int>(opt->count()) < opt->get_expected())
                 retval = static_cast<size_t>(opt->get_expected()) - opt->count();
 
         return retval;
@@ -1098,7 +1094,7 @@ class App {
         else {
             args.pop_back();
             missing()->emplace_back(detail::Classifer::NONE, positional);
-            
+
             if(prefix_command_) {
                 while(!args.empty()) {
                     missing()->emplace_back(detail::Classifer::NONE, args.back());
@@ -1106,7 +1102,6 @@ class App {
                 }
             }
         }
-        
     }
 
     /// Parse a subcommand, modify args and continue

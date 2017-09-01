@@ -433,9 +433,8 @@ class Option {
     /// Set the default value string representation
     void set_default_val(std::string val) { defaultval_ = val; }
 
-
     /// Set the type name displayed on this option
-    void set_type_name(std::string val) {typeval_ = val;}
+    void set_type_name(std::string val) { typeval_ = val; }
 
     ///@}
 

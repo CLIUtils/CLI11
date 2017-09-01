@@ -204,33 +204,24 @@ TEST_F(TApp, DefaultOpts) {
 }
 
 TEST_F(TApp, EnumTest) {
-    enum Level : std::int32_t {
-        High,
-        Medium,
-        Low
-    };
+    enum Level : std::int32_t { High, Medium, Low };
     Level level = Level::Low;
     app.add_option("--level", level);
-    
+
     args = {"--level", "1"};
     run();
     EXPECT_EQ(level, Level::Medium);
 }
 
 TEST_F(TApp, NewEnumTest) {
-    enum class Level2 : std::int32_t {
-        High,
-        Medium,
-        Low
-    };
+    enum class Level2 : std::int32_t { High, Medium, Low };
     Level2 level = Level2::Low;
     app.add_option("--level", level);
-    
+
     args = {"--level", "1"};
     run();
     EXPECT_EQ(level, Level2::Medium);
 }
-
 
 TEST_F(TApp, RequiredFlags) {
     app.add_flag("-a")->required();
@@ -440,7 +431,6 @@ TEST_F(TApp, InSetWithDefault) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
-
 TEST_F(TApp, InCaselessSetWithDefault) {
 
     std::string choice = "one";
@@ -531,7 +521,6 @@ TEST_F(TApp, VectorFixedString) {
     EXPECT_EQ((size_t)3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 }
-
 
 TEST_F(TApp, VectorDefaultedFixedString) {
     std::vector<std::string> strvec{"one"};
@@ -895,40 +884,40 @@ TEST_F(TApp, CheckSubcomFail) {
 
 // Added to test defaults on dual method
 TEST_F(TApp, OptionWithDefaults) {
-    int someint=2;
+    int someint = 2;
     app.add_option("-a", someint, "", true);
-    
+
     args = {"-a1", "-a2"};
-    
+
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
 // Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaults) {
-    int someint=2;
-    app.add_set("-a", someint, {1,2,3,4}, "", true);
-    
+    int someint = 2;
+    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
+
     args = {"-a1", "-a2"};
-    
+
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
 // Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaultsConversion) {
-    int someint=2;
-    app.add_set("-a", someint, {1,2,3,4}, "", true);
-    
+    int someint = 2;
+    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
+
     args = {"-a", "hi"};
-    
+
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
 // Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaultsIC) {
-    std::string someint="ho";
+    std::string someint = "ho";
     app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
-    
+
     args = {"-aHi", "-aHo"};
-    
+
     EXPECT_THROW(run(), CLI::ConversionError);
 }

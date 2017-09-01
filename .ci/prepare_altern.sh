@@ -9,6 +9,8 @@ if [ "$CXX" = "g++" ] ; then
 else
     ln -s `which clang-$COMPILER` clang
     ln -s `which clang++-$COMPILER` clang++
+    ln -s `which clang-format-$COMPILER` clang-format
+    ln -s `which clang-tidy-$COMPILER` clang-tidy
 fi
 
 export PATH="${DEPS_DIR}/extrabin":$PATH
