@@ -1,6 +1,9 @@
 ## Version 1.2 (in progress)
 
+
+* `set_default_str` now only sets string, and `set_default_val` will evaluate the default string given [#26](https://github.com/CLIUtils/CLI11/issues/26)
 * Required positionals now take priority over subcommands [#23](https://github.com/CLIUtils/CLI11/issues/23)
+* Extra requirements enforced by Travis
 
 ## Version 1.1
 

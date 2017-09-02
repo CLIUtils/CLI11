@@ -194,7 +194,7 @@ TEST(THelp, ManualSetters) {
 
     CLI::App app{"My prog"};
 
-    int x=1;
+    int x = 1;
 
     CLI::Option *op1 = app.add_option("--op", x);
     op1->set_default_str("12");
@@ -210,7 +210,6 @@ TEST(THelp, ManualSetters) {
     EXPECT_EQ(x, 14);
     help = app.help();
     EXPECT_THAT(help, HasSubstr("=14"));
-
 }
 
 TEST(THelp, Subcom) {
