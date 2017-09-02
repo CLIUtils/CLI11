@@ -194,16 +194,22 @@ TEST(THelp, ManualSetters) {
 
     CLI::App app{"My prog"};
 
-    int x;
+    int x = 1;
 
     CLI::Option *op1 = app.add_option("--op", x);
-    op1->set_default_val("12");
+    op1->set_default_str("12");
     op1->set_type_name("BIGGLES");
+    EXPECT_EQ(x, 1);
 
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("=12"));
     EXPECT_THAT(help, HasSubstr("BIGGLES"));
+
+    op1->set_default_val("14");
+    EXPECT_EQ(x, 14);
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("=14"));
 }
 
 TEST(THelp, Subcom) {

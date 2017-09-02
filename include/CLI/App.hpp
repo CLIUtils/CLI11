@@ -261,7 +261,7 @@ class App {
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            opt->set_default_val(out.str());
+            opt->set_default_str(out.str());
         }
         return opt;
     }
@@ -307,7 +307,7 @@ class App {
         Option *opt = add_option(name, fun, description, defaulted);
         opt->set_custom_option(detail::type_name<T>(), -1, true);
         if(defaulted)
-            opt->set_default_val("[" + detail::join(variable) + "]");
+            opt->set_default_str("[" + detail::join(variable) + "]");
         return opt;
     }
 
@@ -410,7 +410,7 @@ class App {
         if(defaulted) {
             std::stringstream out;
             out << member;
-            opt->set_default_val(out.str());
+            opt->set_default_str(out.str());
         }
         return opt;
     }
@@ -473,7 +473,7 @@ class App {
         typeval += " in {" + detail::join(options) + "}";
         opt->set_custom_option(typeval);
         if(defaulted) {
-            opt->set_default_val(member);
+            opt->set_default_str(member);
         }
         return opt;
     }
@@ -500,7 +500,7 @@ class App {
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            opt->set_default_val(out.str());
+            opt->set_default_str(out.str());
         }
         return opt;
     }

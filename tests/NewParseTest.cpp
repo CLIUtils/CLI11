@@ -23,7 +23,7 @@ add_option(CLI::App &app, std::string name, cx &variable, std::string descriptio
     if(defaulted) {
         std::stringstream out;
         out << variable;
-        opt->set_default_val(out.str());
+        opt->set_default_str(out.str());
     }
     return opt;
 }
