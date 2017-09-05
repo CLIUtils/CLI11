@@ -44,10 +44,10 @@ inline std::vector<std::string> split_names(std::string current) {
     std::vector<std::string> output;
     size_t val;
     while((val = current.find(",")) != std::string::npos) {
-        output.push_back(current.substr(0, val));
+        output.push_back(trim_copy(current.substr(0, val)));
         current = current.substr(val + 1);
     }
-    output.push_back(current);
+    output.push_back(trim_copy(current));
     return output;
 }
 

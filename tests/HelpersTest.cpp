@@ -179,6 +179,9 @@ TEST(Split, StringList) {
 
     std::vector<std::string> results{"a", "long", "--lone", "-q"};
     EXPECT_EQ(results, CLI::detail::split_names("a,long,--lone,-q"));
+    EXPECT_EQ(results, CLI::detail::split_names(" a, long, --lone, -q"));
+    EXPECT_EQ(results, CLI::detail::split_names(" a , long , --lone , -q "));
+    EXPECT_EQ(results, CLI::detail::split_names("   a  ,  long  ,  --lone  ,    -q  "));
 
     EXPECT_EQ(std::vector<std::string>({"one"}), CLI::detail::split_names("one"));
 }
