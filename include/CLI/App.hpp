@@ -23,14 +23,16 @@
 #include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
 
-#define CLI11_PARSE(app,argc,argv) \
-    try { \
-    (app).parse((argc),(argv)); \
-    } catch(const CLI::ParseError &e) { \
-    return (app).exit(e); \
-    }
-
 namespace CLI {
+
+#ifndef CLI11_PARSE
+#define CLI11_PARSE(app, argc, argv)                                                                                   \
+    try {                                                                                                              \
+        (app).parse((argc), (argv));                                                                                   \
+    } catch(const CLI::ParseError &e) {                                                                                \
+        return (app).exit(e);                                                                                          \
+    }
+#endif
 
 namespace detail {
 enum class Classifer { NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND };
