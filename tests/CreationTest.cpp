@@ -231,23 +231,20 @@ TEST_F(TApp, CheckNameNoCase) {
     EXPECT_TRUE(pos2->check_name("pos2"));
 }
 
-
 TEST_F(TApp, PreSpaces) {
     int x;
     auto myapp = app.add_option(" -a, --long, other", x);
-    
+
     EXPECT_TRUE(myapp->check_lname("long"));
     EXPECT_TRUE(myapp->check_sname("a"));
     EXPECT_TRUE(myapp->check_name("other"));
-    
 }
 
 TEST_F(TApp, AllSpaces) {
     int x;
     auto myapp = app.add_option(" -a , --long , other ", x);
-    
+
     EXPECT_TRUE(myapp->check_lname("long"));
     EXPECT_TRUE(myapp->check_sname("a"));
     EXPECT_TRUE(myapp->check_name("other"));
-    
 }
