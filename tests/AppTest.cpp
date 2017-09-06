@@ -260,7 +260,6 @@ TEST_F(TApp, Positionals) {
     EXPECT_EQ("thing2", posit2);
 }
 
-
 TEST_F(TApp, ForcedPositional) {
     std::vector<std::string> posit;
     auto one = app.add_flag("--one");
