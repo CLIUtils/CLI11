@@ -101,11 +101,7 @@ try {
 }
 ```
 
-> Note: The final five lines are so common, they have a dedicated macro:
-> 
-> ```cpp
-CLI11_PARSE(app, argc, argv)
-```
+> Note: The final five lines are so common, they have a dedicated macro: `CLI11_PARSE(app, argc, argv)`. You can use that as long as you don't need the return value of `.parse`.
 
 
 The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
