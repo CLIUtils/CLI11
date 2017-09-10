@@ -195,11 +195,59 @@ TEST_F(TApp, IniNotRequired) {
     EXPECT_EQ(3, three);
 }
 
+TEST_F(TApp, IniNotRequiredNotDefault) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+
+    app.add_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "two=98" << std::endl;
+        out << "three=4" << std::endl;
+    }
+
+    int one = 0, two = 0, three = 0;
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    run();
+
+    EXPECT_EQ(99, two);
+    EXPECT_EQ(3, three);
+
+    app.reset();
+    args = {"--config", tmpini2};
+    run();
+
+    EXPECT_EQ(98, two);
+    EXPECT_EQ(4, three);
+}
+
 TEST_F(TApp, IniRequiredNotFound) {
 
     std::string noini = "TestIniNotExist.ini";
     app.add_config("--config", noini, "", true);
 
+    EXPECT_THROW(run(), CLI::FileError);
+}
+
+TEST_F(TApp, IniNotRequiredPassedNotFound) {
+
+    std::string noini = "TestIniNotExist.ini";
+    app.add_config("--config", "", "", false);
+
+    args = {"--config", noini};
     EXPECT_THROW(run(), CLI::FileError);
 }
 
