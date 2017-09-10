@@ -1,6 +1,6 @@
 ## Version 1.2 (in progress)
 
-
+* Fixed Config file search if passed on command line [#30](https://github.com/CLIUtils/CLI11/issues/30)
 * Added `CLI11_PARSE(app, argc, argv)` macro for simple parse commands (does not support returning arg)
 * The name string can now contain spaces around commas [#29](https://github.com/CLIUtils/CLI11/pull/29)
 * `set_default_str` now only sets string, and `set_default_val` will evaluate the default string given [#26](https://github.com/CLIUtils/CLI11/issues/26)

@@ -899,17 +899,23 @@ class App {
         }
 
         // Process an INI file
-        if(config_ptr_ != nullptr && config_name_ != "") {
-            try {
-                std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
-                while(!values.empty()) {
-                    if(!_parse_ini(values)) {
-                        throw ExtrasINIError(values.back().fullname);
+        if(config_ptr_ != nullptr) {
+            if(*config_ptr_) {
+                config_ptr_->run_callback();
+                config_required_ = true;
+            }
+            if(config_name_ != "") {
+                try {
+                    std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
+                    while(!values.empty()) {
+                        if(!_parse_ini(values)) {
+                            throw ExtrasINIError(values.back().fullname);
+                        }
                     }
+                } catch(const FileError &) {
+                    if(config_required_)
+                        throw;
                 }
-            } catch(const FileError &) {
-                if(config_required_)
-                    throw;
             }
         }
 

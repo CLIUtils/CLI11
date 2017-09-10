@@ -7,8 +7,8 @@ git ls-files -- '*.cpp' '*.hpp' | xargs clang-format -i -style=file
 
 git diff --exit-code --color
 
-mkdir build || true
-cd build
+mkdir build-tidy || true
+cd build-tidy
 CXX_FLAGS="-Werror -Wall -Wextra -pedantic -std=c++11" cmake .. -DCLANG_TIDY_FIX=ON
 cmake --build .
 
