@@ -351,6 +351,24 @@ class App {
         return opt;
     }
 
+    /// Add option for callback
+    Option *add_flag(std::string name,
+                     std::function<void(size_t)> function, ///< A function to call, void(size_t)
+                     std::string description = "") {
+
+        CLI::callback_t fun = [&function](CLI::results_t res) {
+            auto count = static_cast<size_t>(res.size());
+            function(count);
+            return true;
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        if(opt->get_positional())
+            throw IncorrectConstruction("Flags cannot be positional");
+        opt->set_custom_option("", 0);
+        return opt;
+    }
+
     /// Bool version only allows the flag once
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,

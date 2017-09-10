@@ -243,6 +243,31 @@ TEST_F(TApp, RequiredFlags) {
     run();
 }
 
+TEST_F(TApp, CallbackFlagsAuto) {
+
+    int value = 0;
+
+    auto func = [&value](size_t x){value = x;};
+
+    app.add_flag("-v", func); 
+
+    run();
+    EXPECT_EQ(value, 0);
+
+    app.reset();
+    args = {"-v"};
+    run();
+    EXPECT_EQ(value, 1);
+    
+    app.reset();
+    args = {"-vv"};
+    run();
+    EXPECT_EQ(value, 2);
+
+    EXPECT_THROW(app.add_flag("hi", func), CLI::IncorrectConstruction);
+    
+}
+
 TEST_F(TApp, Positionals) {
 
     std::string posit1;
