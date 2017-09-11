@@ -243,13 +243,13 @@ TEST_F(TApp, RequiredFlags) {
     run();
 }
 
-TEST_F(TApp, CallbackFlagsAuto) {
+TEST_F(TApp, CallbackFlags) {
 
     int value = 0;
 
-    auto func = [&value](size_t x){value = x;};
+    auto func = [&value](size_t x) { value = x; };
 
-    app.add_flag("-v", func); 
+    app.add_flag_function("-v", func);
 
     run();
     EXPECT_EQ(value, 0);
@@ -258,15 +258,40 @@ TEST_F(TApp, CallbackFlagsAuto) {
     args = {"-v"};
     run();
     EXPECT_EQ(value, 1);
-    
+
+    app.reset();
+    args = {"-vv"};
+    run();
+    EXPECT_EQ(value, 2);
+
+    EXPECT_THROW(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
+}
+
+#if __cplusplus >= 201402L
+TEST_F(TApp, CallbackFlagsAuto) {
+
+    int value = 0;
+
+    auto func = [&value](size_t x) { value = x; };
+
+    app.add_flag("-v", func);
+
+    run();
+    EXPECT_EQ(value, 0);
+
+    app.reset();
+    args = {"-v"};
+    run();
+    EXPECT_EQ(value, 1);
+
     app.reset();
     args = {"-vv"};
     run();
     EXPECT_EQ(value, 2);
 
     EXPECT_THROW(app.add_flag("hi", func), CLI::IncorrectConstruction);
-    
 }
+#endif
 
 TEST_F(TApp, Positionals) {
 

@@ -20,6 +20,7 @@ matrix:
     env:
     - COMPILER=3.9
     - CHECK_STYLE=yes
+    - CLI_CXX_STD=14
   - compiler: clang
     addons:
       apt:
@@ -41,6 +42,7 @@ matrix:
     env:
     - COMPILER=6
     - COVERALLS=yes
+    - CLI_CXX_STD=14
   - compiler: gcc
     addons:
       apt:
