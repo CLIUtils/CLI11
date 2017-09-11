@@ -50,7 +50,6 @@ matrix:
         - g++-4.7
     env:
     - COMPILER=4.7
-    - CXXFLAGS=-D_GLIBCXX_USE_NANOSLEEP
   - os: osx
 install:
 - python -c 'import sys; print(sys.version_info[:])'
