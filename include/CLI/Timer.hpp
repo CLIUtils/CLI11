@@ -3,6 +3,12 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
+// On GCC < 4.8, the following define is often missing. Due to the
+// fact that this library only uses sleep_for, this should be safe
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 5 && __GNUC_MINOR__ < 8
+#define _GLIBCXX_USE_NANOSLEEP
+#endif
+
 #include <chrono>
 #include <functional>
 #include <iostream>
