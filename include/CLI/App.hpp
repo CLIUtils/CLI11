@@ -375,7 +375,7 @@ class App {
                               std::function<void(size_t)> function, ///< A function to call, void(size_t)
                               std::string description = "") {
 
-        CLI::callback_t fun = [&function](CLI::results_t res) {
+        CLI::callback_t fun = [function](CLI::results_t res) {
             auto count = static_cast<size_t>(res.size());
             function(count);
             return true;
