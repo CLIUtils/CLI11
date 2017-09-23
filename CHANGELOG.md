@@ -1,4 +1,4 @@
-## Version 1.2 (in progress)
+## Version 1.2
 
 * Added functional form of flag [#33](https://github.com/CLIUtils/CLI11/pull/33), automatic on C++14
 * Fixed Config file search if passed on command line [#30](https://github.com/CLIUtils/CLI11/issues/30)
