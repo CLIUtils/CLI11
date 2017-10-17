@@ -354,7 +354,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [DIANA/HEP]:         http://diana-hep.org
 [NSF Award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
-[GitBook]:             https://henryiii.gitbooks.io/cli11/content
+[GitBook]:             https://cliutils.gitlab.io/CLI11Tutorial
 [ProgramOptions.hxx]:  https://github.com/Fytch/ProgramOptions.hxx
 [Argument Aggregator]: https://github.com/vietjtnguyen/argagg
 [Args]:                https://github.com/Taywee/args
