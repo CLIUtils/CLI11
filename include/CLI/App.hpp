@@ -45,8 +45,8 @@ using App_p = std::unique_ptr<App>;
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
-*  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
-* program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
+ *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
+ * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
 class App {
     friend Option;
     friend detail::AppFriend;
