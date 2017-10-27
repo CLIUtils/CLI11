@@ -310,16 +310,16 @@ class Option {
         std::stringstream out;
 
         if(get_expected() != 0) {
-            if(typeval_ != "")
+            if(!typeval_.empty())
                 out << " " << typeval_;
-            if(defaultval_ != "")
+            if(!defaultval_.empty())
                 out << "=" << defaultval_;
             if(get_expected() > 1)
                 out << " x " << get_expected();
             if(get_expected() == -1)
                 out << " ...";
         }
-        if(envname_ != "")
+        if(!envname_.empty())
             out << " (env:" << envname_ << ")";
         if(!requires_.empty()) {
             out << " Requires:";

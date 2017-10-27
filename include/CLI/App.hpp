@@ -552,7 +552,7 @@ class App {
             remove_option(config_ptr_);
         config_name_ = default_filename;
         config_required_ = required;
-        config_ptr_ = add_option(name, config_name_, help, default_filename != "");
+        config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());
         return config_ptr_;
     }
 
@@ -716,7 +716,7 @@ class App {
                         out << name << "=" << detail::inijoin(opt->results()) << std::endl;
 
                     // If the option has a default and is requested by optional argument
-                    else if(default_also && opt->defaultval_ != "")
+                    else if(default_also && !opt->defaultval_.empty())
                         out << name << "=" << opt->defaultval_ << std::endl;
                     // Flag, one passed
                 } else if(opt->count() == 1) {
@@ -740,7 +740,7 @@ class App {
     /// Makes a help message, with a column wid for column 1
     std::string help(size_t wid = 30, std::string prev = "") const {
         // Delegate to subcommand if needed
-        if(prev == "")
+        if(prev.empty())
             prev = name_;
         else
             prev += " " + name_;
@@ -931,7 +931,7 @@ class App {
                 config_ptr_->run_callback();
                 config_required_ = true;
             }
-            if(config_name_ != "") {
+            if(!config_name_.empty()) {
                 try {
                     std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
                     while(!values.empty()) {
@@ -948,7 +948,7 @@ class App {
 
         // Get envname options if not yet passed
         for(const Option_p &opt : options_) {
-            if(opt->count() == 0 && opt->envname_ != "") {
+            if(opt->count() == 0 && !opt->envname_.empty()) {
                 char *buffer = nullptr;
                 std::string ename_string;
 
@@ -1029,7 +1029,7 @@ class App {
         std::string name = current.name();
 
         // If a parent is listed, go to a subcommand
-        if(parent != "") {
+        if(!parent.empty()) {
             current.level++;
             for(const App_p &com : subcommands_)
                 if(com->check_name(parent))
@@ -1200,7 +1200,7 @@ class App {
         if(num == 0) {
             op->add_result("");
             parse_order_.push_back(op.get());
-        } else if(rest != "") {
+        } else if(!rest.empty()) {
             if(num > 0)
                 num--;
             op->add_result(rest);
@@ -1223,7 +1223,7 @@ class App {
                 parse_order_.push_back(op.get());
             }
 
-        if(rest != "") {
+        if(!rest.empty()) {
             rest = "-" + rest;
             args.push_back(rest);
         }
@@ -1261,7 +1261,7 @@ class App {
 
         int num = op->get_expected();
 
-        if(value != "") {
+        if(!value.empty()) {
             if(num != -1)
                 num--;
             op->add_result(value);
