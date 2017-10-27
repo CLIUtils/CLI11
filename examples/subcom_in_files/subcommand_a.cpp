@@ -19,10 +19,6 @@ void setup_subcommand_a(CLI::App &app) {
 
     // Set the run function as callback to be called when this subcommand is issued.
     sub->set_callback([opt]() { run_subcommand_a(*opt); });
-
-    // Note: In C++14, you could make a unique pointer, then pass it into the lambda function via
-    // a move. That's slightly more elegant, but you won't be able to see the runtime difference
-    // in skipping one mutex check for shared_ptr.
 }
 
 /// The function that runs our code.
