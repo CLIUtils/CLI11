@@ -18,7 +18,7 @@ namespace detail {
 inline std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     // Check to see if emtpy string, give consistent result
-    if(s == "")
+    if(s.empty())
         elems.emplace_back("");
     else {
         std::stringstream ss;
@@ -106,7 +106,7 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
 inline void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;
     out << std::setw(static_cast<int>(wid)) << std::left << name;
-    if(description != "") {
+    if(!description.empty()) {
         if(name.length() >= wid)
             out << std::endl << std::setw(static_cast<int>(wid)) << "";
         out << description;
