@@ -8,13 +8,14 @@ int main(int argc, char **argv) {
     std::vector<int> vals;
     app.add_option("--vals,-v", vals)->expected(1);
 
-    std::vector<std::string> more_comms;
     try {
-        more_comms = app.parse(argc, argv);
+        app.parse(argc, argv);
     } catch(const CLI::ParseError &e) {
         return app.exit(e);
     }
 
+    std::vector<std::string> more_comms = app.remaining();
+    
     std::cout << "Prefix:";
     for(int v : vals)
         std::cout << v << ":";
