@@ -154,7 +154,8 @@ TEST_F(TApp, BoolAndIntFlags) {
     app.reset();
 
     args = {"-b", "-b"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(bflag);
 
     app.reset();
     bflag = false;

@@ -438,7 +438,8 @@ TEST_F(TApp, IniFlagNumbers) {
         out << "flag=3" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(boo);
 }
 
 TEST_F(TApp, IniFlagDual) {

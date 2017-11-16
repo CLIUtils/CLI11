@@ -351,16 +351,16 @@ class App {
         return opt;
     }
 
-    /// Bool version only allows the flag once
+    /// Bool version
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,
                      T &count, ///< A varaible holding true if passed
                      std::string description = "") {
 
         count = false;
-        CLI::callback_t fun = [&count](CLI::results_t res) {
+        CLI::callback_t fun = [&count](CLI::results_t) {
             count = true;
-            return res.size() == 1;
+            return true;
         };
 
         Option *opt = add_option(name, fun, description, false);
