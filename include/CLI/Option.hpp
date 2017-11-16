@@ -144,7 +144,7 @@ class Option {
         return this;
     }
 
-    /// Support Plubmum term
+    /// Support Plumbum term
     Option *mandatory(bool value = true) { return required(value); }
 
     /// Set the number of expected arguments (Flags bypass this)
