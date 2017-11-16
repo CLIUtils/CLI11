@@ -101,7 +101,7 @@ try {
 }
 ```
 
-> Note: The final five lines are so common, they have a dedicated macro: `CLI11_PARSE(app, argc, argv)`. You can use that as long as you don't need the return value of `.parse`.
+> Note: The final five lines are so common, they have a dedicated macro: `CLI11_PARSE(app, argc, argv)`.
 
 
 The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
@@ -175,9 +175,12 @@ On the command line, options can be given as:
 * `--file=filename` (equals)
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
-If you set `.allow_extras()` on the main `App`, the parse function will return the left over arguments instead of throwing an error. You can access a vector of pointers to the parsed options in the original order using `parse_order()`.
+If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
+
+You can access a vector of pointers to the parsed options in the original order using `parse_order()`.
 If `--` is present in the command line,
 everything after that is positional only.
+
 
 
 ## Subcommands
@@ -204,8 +207,8 @@ There are several options that are supported on the main app and subcommands. Th
 * `.get_subcommands()`: The list of subcommands given on the command line
 * `.parsed()`: True if this subcommand was given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
-* `.allow_extras()`: Do not throw an error if extra arguments are left over (Only useful on the main `App`, as that's the one that throws errors).
-* `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app to be a "prefix" to calling another app.
+* `.allow_extras()`: Do not throw an error if extra arguments are left over
+* `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names.
 
