@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     }
 
     std::vector<std::string> more_comms = app.remaining();
-    
+
     std::cout << "Prefix:";
     for(int v : vals)
         std::cout << v << ":";

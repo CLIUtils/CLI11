@@ -291,20 +291,18 @@ TEST_F(TApp, SubComExtras) {
     EXPECT_EQ(sub->remaining(), std::vector<std::string>());
 
     app.reset();
-    
+
     args = {"extra1", "extra2", "sub"};
     run();
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra1", "extra2"}));
     EXPECT_EQ(sub->remaining(), std::vector<std::string>());
-    
+
     app.reset();
 
-    //args = {"sub", "extra"};
-    //run();
-    //EXPECT_EQ(app.remaining(), std::vector<std::string>());
-    //EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra"}));
-
-
+    // args = {"sub", "extra"};
+    // run();
+    // EXPECT_EQ(app.remaining(), std::vector<std::string>());
+    // EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra"}));
 }
 
 TEST_F(TApp, Required1SubCom) {

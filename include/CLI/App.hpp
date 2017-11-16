@@ -584,7 +584,8 @@ class App {
     App *add_subcommand(std::string name, std::string description = "", bool help = true) {
         subcommands_.emplace_back(new App(description, help, detail::dummy));
         subcommands_.back()->name_ = name;
-        subcommands_.back()->allow_extras();
+        subcommands_.back()->allow_extras_ = allow_extras_;
+        subcommands_.back()->prefix_command_ = prefix_command_;
         subcommands_.back()->parent_ = this;
         subcommands_.back()->ignore_case_ = ignore_case_;
         subcommands_.back()->fallthrough_ = fallthrough_;
@@ -863,23 +864,34 @@ class App {
     const std::vector<Option *> &parse_order() const { return parse_order_; }
 
     /// This retuns the missing options from the current subcommand
-    std::vector<std::string> remaining() const {
+    std::vector<std::string> remaining(bool recurse = false) const {
         std::vector<std::string> miss_list;
-        for(const std::pair<detail::Classifer, std::string>& miss : missing_) {
+        for(const std::pair<detail::Classifer, std::string> &miss : missing_) {
             miss_list.push_back(std::get<1>(miss));
+        }
+        if(recurse) {
+            for(const App_p &sub : subcommands_) {
+                std::vector<std::string> output = sub->remaining(recurse);
+                miss_list.assign(std::begin(output), std::end(output));
+            }
         }
         return miss_list;
     }
-    
+
     /// This returns the number of remaining options, minus the -- seperator
-    size_t remaining_size() const {
-        return std::count_if(
-                             std::begin(missing_), std::end(missing_),
-                             [](const std::pair<detail::Classifer, std::string> &val) {
-                                             return val.first != detail::Classifer::POSITIONAL_MARK;
-                            });
+    size_t remaining_size(bool recurse = false) const {
+        size_t count = std::count_if(
+            std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifer, std::string> &val) {
+                return val.first != detail::Classifer::POSITIONAL_MARK;
+            });
+        if(recurse) {
+            for(const App_p &sub : subcommands_) {
+                count += sub->remaining_size(recurse);
+            }
+        }
+        return count;
     }
-    
+
     ///@}
 
   protected:
@@ -894,13 +906,6 @@ class App {
             throw InvalidError(name_ + ": Too many positional arguments with unlimited expected args");
         for(const App_p &app : subcommands_)
             app->_validate();
-    }
-
-    /// Return missing from the master
-    missing_t *missing() {
-        if(parent_ != nullptr)
-            return parent_->missing();
-        return &missing_;
     }
 
     /// Internal function to run (App) callback, top down
@@ -1028,14 +1033,14 @@ class App {
 
         // Convert missing (pairs) to extras (string only)
         if(parent_ == nullptr) {
-            args = remaining();
+            args = remaining(true);
             std::reverse(std::begin(args), std::end(args));
-
-            size_t num_left_over = remaining_size();
-
-            if(num_left_over > 0 && !(allow_extras_ || prefix_command_))
-                throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
         }
+
+        size_t num_left_over = remaining_size();
+
+        if(num_left_over > 0 && !(allow_extras_ || prefix_command_))
+            throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
     }
 
     /// Parse one ini param, return false if not found in any subcommand, remove if it is
@@ -1102,7 +1107,7 @@ class App {
         detail::Classifer classifer = positional_only ? detail::Classifer::NONE : _recognize(args.back());
         switch(classifer) {
         case detail::Classifer::POSITIONAL_MARK:
-            missing()->emplace_back(classifer, args.back());
+            missing_.emplace_back(classifer, args.back());
             args.pop_back();
             positional_only = true;
             break;
@@ -1154,11 +1159,11 @@ class App {
             return parent_->_parse_positional(args);
         else {
             args.pop_back();
-            missing()->emplace_back(detail::Classifer::NONE, positional);
+            missing_.emplace_back(detail::Classifer::NONE, positional);
 
             if(prefix_command_) {
                 while(!args.empty()) {
-                    missing()->emplace_back(detail::Classifer::NONE, args.back());
+                    missing_.emplace_back(detail::Classifer::NONE, args.back());
                     args.pop_back();
                 }
             }
@@ -1204,7 +1209,7 @@ class App {
             // Otherwise, add to missing
             else {
                 args.pop_back();
-                missing()->emplace_back(detail::Classifer::SHORT, current);
+                missing_.emplace_back(detail::Classifer::SHORT, current);
                 return;
             }
         }
@@ -1268,7 +1273,7 @@ class App {
             // Otherwise, add to missing
             else {
                 args.pop_back();
-                missing()->emplace_back(detail::Classifer::LONG, current);
+                missing_.emplace_back(detail::Classifer::LONG, current);
                 return;
             }
         }

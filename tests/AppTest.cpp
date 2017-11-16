@@ -917,7 +917,7 @@ TEST_F(TApp, AllowExtras) {
     EXPECT_FALSE(val);
 
     args = {"-x", "-f"};
-    
+
     EXPECT_NO_THROW(run());
     EXPECT_TRUE(val);
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x"}));
