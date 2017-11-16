@@ -863,6 +863,15 @@ class App {
     /// This gets a vector of pointers with the original parse order
     const std::vector<Option *> &parse_order() const { return parse_order_; }
 
+    /// This retuns the missing options from the current subcommand
+    std::vector<std::string> remaining() const {
+        std::vector<std::string> miss_list;
+        for(const std::pair<detail::Classifer, std::string>& miss : missing_) {
+            miss_list.push_back(std::get<1>(miss));
+        }
+        return miss_list;
+    }
+    
     ///@}
 
   protected:
