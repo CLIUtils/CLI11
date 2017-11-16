@@ -299,10 +299,10 @@ TEST_F(TApp, SubComExtras) {
 
     app.reset();
 
-    // args = {"sub", "extra"};
-    // run();
-    // EXPECT_EQ(app.remaining(), std::vector<std::string>());
-    // EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra"}));
+    args = {"sub", "extra1", "extra2"};
+    run();
+    EXPECT_EQ(app.remaining(), std::vector<std::string>());
+    EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra1", "extra2"}));
 }
 
 TEST_F(TApp, Required1SubCom) {
@@ -340,6 +340,20 @@ TEST_F(TApp, PrefixProgram) {
     run();
 
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
+}
+
+TEST_F(TApp, PrefixSubcom) {
+    auto subc = app.add_subcommand("subc");
+    subc->prefix_command();
+    
+    app.add_flag("--simple");
+    
+    args = {"--simple", "subc", "other", "--simple", "--mine"};
+    run();
+    
+    EXPECT_EQ(app.remaining_size(), (size_t) 0);
+    EXPECT_EQ(app.remaining_size(true), (size_t) 3);
+    EXPECT_EQ(subc->remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
 }
 
 struct SubcommandProgram : public TApp {
