@@ -626,21 +626,20 @@ class App {
 
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
-    std::vector<std::string> parse(int argc, char **argv) {
+    void parse(int argc, char **argv) {
         name_ = argv[0];
         std::vector<std::string> args;
         for(int i = argc - 1; i > 0; i--)
             args.emplace_back(argv[i]);
-        return parse(args);
+        parse(args);
     }
 
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.
-    std::vector<std::string> &parse(std::vector<std::string> &args) {
+    void parse(std::vector<std::string> &args) {
         _validate();
         _parse(args);
         run_callback();
-        return args;
     }
 
     /// Print a nice error message and return the exit code
@@ -872,6 +871,15 @@ class App {
         return miss_list;
     }
     
+    /// This returns the number of remaining options, minus the -- seperator
+    size_t remaining_size() const {
+        return std::count_if(
+                             std::begin(missing_), std::end(missing_),
+                             [](const std::pair<detail::Classifer, std::string> &val) {
+                                             return val.first != detail::Classifer::POSITIONAL_MARK;
+                            });
+    }
+    
     ///@}
 
   protected:
@@ -1020,17 +1028,10 @@ class App {
 
         // Convert missing (pairs) to extras (string only)
         if(parent_ == nullptr) {
-            args.resize(missing()->size());
-            std::transform(std::begin(*missing()),
-                           std::end(*missing()),
-                           std::begin(args),
-                           [](const std::pair<detail::Classifer, std::string> &val) { return val.second; });
+            args = remaining();
             std::reverse(std::begin(args), std::end(args));
 
-            size_t num_left_over = std::count_if(
-                std::begin(*missing()), std::end(*missing()), [](std::pair<detail::Classifer, std::string> &val) {
-                    return val.first != detail::Classifer::POSITIONAL_MARK;
-                });
+            size_t num_left_over = remaining_size();
 
             if(num_left_over > 0 && !(allow_extras_ || prefix_command_))
                 throw ExtrasError("[" + detail::rjoin(args, " ") + "]");

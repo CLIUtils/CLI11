@@ -339,9 +339,9 @@ TEST_F(TApp, PrefixProgram) {
     app.add_flag("--simple");
 
     args = {"--simple", "other", "--simple", "--mine"};
-    auto ret_args = run();
+    run();
 
-    EXPECT_EQ(ret_args, std::vector<std::string>({"--mine", "--simple", "other"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
 }
 
 struct SubcommandProgram : public TApp {

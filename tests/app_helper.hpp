@@ -15,10 +15,10 @@ struct TApp : public ::testing::Test {
     CLI::App app{"My Test Program"};
     input_t args;
 
-    std::vector<std::string> run() {
+    void run() {
         input_t newargs = args;
         std::reverse(std::begin(newargs), std::end(newargs));
-        return app.parse(newargs);
+        app.parse(newargs);
     }
 };
 

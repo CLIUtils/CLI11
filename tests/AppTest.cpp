@@ -917,10 +917,10 @@ TEST_F(TApp, AllowExtras) {
     EXPECT_FALSE(val);
 
     args = {"-x", "-f"};
-    std::vector<std::string> left_over;
-    EXPECT_NO_THROW({ left_over = run(); });
+    
+    EXPECT_NO_THROW(run());
     EXPECT_TRUE(val);
-    EXPECT_EQ(std::vector<std::string>({"-x"}), left_over);
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x"}));
 }
 
 TEST_F(TApp, AllowExtrasOrder) {
@@ -928,14 +928,13 @@ TEST_F(TApp, AllowExtrasOrder) {
     app.allow_extras();
 
     args = {"-x", "-f"};
-    std::vector<std::string> left_over;
-    EXPECT_NO_THROW({ left_over = run(); });
-    EXPECT_EQ(std::vector<std::string>({"-f", "-x"}), left_over);
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "-f"}));
     app.reset();
 
-    std::vector<std::string> left_over_2;
-    left_over_2 = app.parse(left_over);
-    EXPECT_EQ(left_over, left_over_2);
+    std::vector<std::string> left_over = app.remaining();
+    app.parse(left_over);
+    EXPECT_EQ(app.remaining(), left_over);
 }
 
 // Test horrible error
