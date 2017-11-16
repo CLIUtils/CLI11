@@ -66,7 +66,7 @@ class App {
     /// If true, allow extra arguments (ie, don't throw an error).
     bool allow_extras_{false};
 
-    ///  If true, return immediatly on an unrecognised option (implies allow_extras)
+    ///  If true, return immediately on an unrecognised option (implies allow_extras)
     bool prefix_command_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
@@ -93,7 +93,7 @@ class App {
     /// This is faster and cleaner than storing just a list of strings and reparsing. This may contain the -- separator.
     missing_t missing_;
 
-    /// This is a list of pointers to options with the orignal parse order
+    /// This is a list of pointers to options with the original parse order
     std::vector<Option *> parse_order_;
 
     ///@}
@@ -164,7 +164,7 @@ class App {
         return this;
     }
 
-    /// Do not parse anything after the first unrecongnised option and return
+    /// Do not parse anything after the first unrecognised option and return
     App *prefix_command(bool allow = true) {
         prefix_command_ = allow;
         return this;
@@ -337,7 +337,7 @@ class App {
     template <typename T,
               enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,
-                     T &count, ///< A varaible holding the count
+                     T &count, ///< A variable holding the count
                      std::string description = "") {
 
         count = 0;
@@ -356,7 +356,7 @@ class App {
     /// Bool version - defaults to allowing multiple passings, but can be forced to one if `take_last(false)` is used.
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,
-                     T &count, ///< A varaible holding true if passed
+                     T &count, ///< A variable holding true if passed
                      std::string description = "") {
 
         count = false;
@@ -404,7 +404,7 @@ class App {
     template <typename T>
     Option *add_set(std::string name,
                     T &member,           ///< The selected member of the set
-                    std::set<T> options, ///< The set of posibilities
+                    std::set<T> options, ///< The set of possibilities
                     std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -459,7 +459,7 @@ class App {
     /// Add set of options, string only, ignore case (no default)
     Option *add_set_ignore_case(std::string name,
                                 std::string &member,           ///< The selected member of the set
-                                std::set<std::string> options, ///< The set of posibilities
+                                std::set<std::string> options, ///< The set of possibilities
                                 std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -866,9 +866,9 @@ class App {
     ///@}
 
   protected:
-    /// Check the options to make sure there are no conficts.
+    /// Check the options to make sure there are no conflicts.
     ///
-    /// Currenly checks to see if mutiple positionals exist with -1 args
+    /// Currently checks to see if multiple positionals exist with -1 args
     void _validate() const {
         auto count = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
             return opt->get_expected() == -1 && opt->get_positional();
@@ -906,7 +906,7 @@ class App {
             return false;
     }
 
-    /// Selects a Classifer enum based on the type of the current argument
+    /// Selects a Classifier enum based on the type of the current argument
     detail::Classifer _recognize(const std::string &current) const {
         std::string dummy1, dummy2;
 
@@ -1031,10 +1031,10 @@ class App {
     /// Parse one ini param, return false if not found in any subcommand, remove if it is
     ///
     /// If this has more than one dot.separated.name, go into the subcommand matching it
-    /// Returns true if it managed to find the option, if false you'll need to remove the arg manully.
+    /// Returns true if it managed to find the option, if false you'll need to remove the arg manually.
     bool _parse_ini(std::vector<detail::ini_ret_t> &args) {
         detail::ini_ret_t &current = args.back();
-        std::string parent = current.parent(); // respects curent.level
+        std::string parent = current.parent(); // respects current.level
         std::string name = current.name();
 
         // If a parent is listed, go to a subcommand
