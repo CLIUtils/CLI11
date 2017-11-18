@@ -241,9 +241,10 @@ class App {
                        T &variable, ///< The variable to set
                        std::string description = "") {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
             if(res.size() != 1)
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             return detail::lexical_cast(res[0], variable);
         };
 
@@ -259,9 +260,10 @@ class App {
                        std::string description,
                        bool defaulted) {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
             if(res.size() != 1)
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             return detail::lexical_cast(res[0], variable);
         };
 
@@ -404,13 +406,14 @@ class App {
                     std::set<T> options, ///< The set of posibilities
                     std::string description = "") {
 
-        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             if(res.size() != 1) {
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             }
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
-                return false;
+                throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
@@ -429,13 +432,14 @@ class App {
                     std::string description,
                     bool defaulted) {
 
-        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             if(res.size() != 1) {
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             }
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
-                return false;
+                throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
@@ -457,16 +461,17 @@ class App {
                                 std::set<std::string> options, ///< The set of posibilities
                                 std::string description = "") {
 
-        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             if(res.size() != 1) {
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             }
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;
             });
             if(iter == std::end(options))
-                return false;
+                throw ConversionError("The value " + member + "is not an allowed value for " + simple_name);
             else {
                 member = *iter;
                 return true;
@@ -488,16 +493,17 @@ class App {
                                 std::string description,
                                 bool defaulted) {
 
-        CLI::callback_t fun = [&member, options](CLI::results_t res) {
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             if(res.size() != 1) {
-                return false;
+                throw ConversionError("Only one " + simple_name + " allowed");
             }
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;
             });
             if(iter == std::end(options))
-                return false;
+                throw ConversionError("The value " + member + "is not an allowed value for " + simple_name);
             else {
                 member = *iter;
                 return true;
@@ -521,9 +527,11 @@ class App {
                         std::string description = "",
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
-        CLI::callback_t fun = [&variable](results_t res) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
             if(res.size() != 2)
-                return false;
+                throw ConversionError(simple_name + " is " + label + " which must have two values");
             double x, y;
             bool worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(res[1], y);
             if(worked)

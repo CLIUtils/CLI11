@@ -27,7 +27,7 @@ enum class ExitCodes {
     Invalid,
     Horrible,
     OptionNotFound,
-    BaseClass = 255
+    BaseClass = 127
 };
 
 // Error definitions
@@ -105,7 +105,7 @@ struct FileError : public ParseError {
     FileError(std::string name) : ParseError("FileError", name, ExitCodes::File) {}
 };
 
-/// Thrown when conversion call back fails, such as when an int fails to coerse to a string
+/// Thrown when conversion call back fails, such as when an int fails to coerce to a string
 struct ConversionError : public ParseError {
     ConversionError(std::string name) : ParseError("ConversionError", name, ExitCodes::Conversion) {}
 };
