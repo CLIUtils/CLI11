@@ -167,6 +167,20 @@ TEST_F(TApp, BoolAndIntFlags) {
     EXPECT_EQ((unsigned int)2, uflag);
 }
 
+TEST_F(TApp, BoolOnlyFlag) {
+    bool bflag;
+    app.add_flag("-b", bflag)->take_last(false);
+
+    args = {"-b"};
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(bflag);
+
+    app.reset();
+
+    args = {"-b", "-b"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, ShortOpts) {
 
     unsigned long long funnyint;
@@ -202,6 +216,18 @@ TEST_F(TApp, DefaultOpts) {
     EXPECT_EQ((size_t)1, app.count("-s"));
     EXPECT_EQ(2, i);
     EXPECT_EQ("9", s);
+}
+
+TEST_F(TApp, TakeLastOpt) {
+
+    std::string str;
+    app.add_option("--str", str)->take_last();
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "two");
 }
 
 TEST_F(TApp, EnumTest) {

@@ -155,6 +155,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 * `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print.
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
+* `->take_last()`: Only take the last option/flag given on the command line, automatically true for bool flags
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.

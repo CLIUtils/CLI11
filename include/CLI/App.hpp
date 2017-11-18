@@ -351,22 +351,23 @@ class App {
         return opt;
     }
 
-    /// Bool version
+    /// Bool version - defaults to allowing multiple passings, but can be forced to one if `take_last(false)` is used.
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,
                      T &count, ///< A varaible holding true if passed
                      std::string description = "") {
 
         count = false;
-        CLI::callback_t fun = [&count](CLI::results_t) {
+        CLI::callback_t fun = [&count](CLI::results_t res) {
             count = true;
-            return true;
+            return res.size() == 1;
         };
 
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->set_custom_option("", 0);
+        opt->take_last();
         return opt;
     }
 
