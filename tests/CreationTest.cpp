@@ -137,6 +137,20 @@ TEST_F(TApp, IncorrectConstructionVectorAsFlag) {
     EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
 }
 
+TEST_F(TApp, IncorrectConstructionVectorTakeLast) {
+    std::vector<int> vec;
+    auto cat = app.add_option("--vec", vec);
+    EXPECT_THROW(cat->take_last(), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, IncorrectConstructionTakeLastExpected) {
+    std::vector<int> vec;
+    auto cat = app.add_option("--vec", vec);
+    cat->expected(1);
+    ASSERT_NO_THROW(cat->take_last());
+    EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
+}
+
 TEST_F(TApp, IncorrectConstructionRequiresCannotFind) {
     auto cat = app.add_flag("--cat");
     EXPECT_THROW(cat->requires("--nothing"), CLI::IncorrectConstruction);
