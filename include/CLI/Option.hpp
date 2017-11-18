@@ -74,6 +74,9 @@ class Option {
     /// The number of expected values, 0 for flag, -1 for unlimited vector
     int expected_{1};
 
+    /// Only take the last argument (requires `expected_ == 1`)
+    bool last_{false};
+
     /// A private setting to allow args to not be able to accept incorrect expected values
     bool changeable_{false};
 
@@ -155,7 +158,17 @@ class Option {
             throw IncorrectConstruction("Cannot make a flag take arguments!");
         else if(!changeable_)
             throw IncorrectConstruction("You can only change the expected arguments for vectors");
+        else if(last_)
+            throw IncorrectConstruction("You can't change expected arguments after you've set take_last!");
         expected_ = value;
+        return this;
+    }
+
+    /// Take the last argument if given multiple times
+    Option *take_last(bool value = true) {
+        if(expected_ != 0 && expected_ != 1)
+            throw IncorrectConstruction("take_last only works for flags and single value options!");
+        last_ = value;
         return this;
     }
 
@@ -242,6 +255,9 @@ class Option {
 
     /// The number of arguments the option expects
     int get_expected() const { return expected_; }
+
+    /// The status of the take last flag
+    bool get_take_last() const { return last_; }
 
     /// True if this has a default value
     int get_default() const { return default_; }
@@ -340,7 +356,16 @@ class Option {
 
     /// Process the callback
     void run_callback() const {
-        if(!callback_(results_))
+        bool result;
+        // If take_last, only operate on the final item
+        if(last_) {
+            results_t partial_result = {results_.back()};
+            result = !callback_(partial_result);
+        } else {
+            result = !callback_(results_);
+        }
+
+        if(result)
             throw ConversionError(get_name() + "=" + detail::join(results_));
         if(!validators_.empty()) {
             for(const std::string &result : results_)
@@ -407,7 +432,7 @@ class Option {
             return std::find(std::begin(lnames_), std::end(lnames_), name) != std::end(lnames_);
     }
 
-    /// Puts a result at position r
+    /// Puts a result at the end, unless last_ is set, in which case it just keeps the last one
     void add_result(std::string s) {
         results_.push_back(s);
         callback_run_ = false;
