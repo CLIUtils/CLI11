@@ -22,6 +22,19 @@ TEST(THelp, Basic) {
     EXPECT_THAT(help, HasSubstr("Usage:"));
 }
 
+TEST(THelp, Footer) {
+    CLI::App app{"My prog"};
+    app.set_footer("Report bugs to bugs@example.com");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("-h,--help"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+    EXPECT_THAT(help, HasSubstr("Report bugs to bugs@example.com"));
+}
+
 TEST(THelp, OptionalPositional) {
     CLI::App app{"My prog"};
 

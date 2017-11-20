@@ -63,6 +63,9 @@ class App {
     /// Description of the current program/subcommand
     std::string description_;
 
+    /// Footer to put after all options in the help output
+    std::string footer_;
+
     /// If true, allow extra arguments (ie, don't throw an error).
     bool allow_extras_{false};
 
@@ -146,6 +149,12 @@ class App {
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
     App(std::string description_ = "", bool help = true) : App(description_, help, detail::dummy) {}
+
+    /// Set footer.
+    App *set_footer(std::string footer) {
+        footer_ = footer;
+        return this;
+    }
 
     /// Set a callback for the end of parsing.
     ///
@@ -794,18 +803,17 @@ class App {
                 out << " [SUBCOMMAND]";
         }
 
-        out << std::endl << std::endl;
+        out << std::endl;
 
         // Positional descriptions
         if(pos) {
-            out << "Positionals:" << std::endl;
+            out << std::endl << "Positionals:" << std::endl;
             for(const Option_p &opt : options_) {
                 if(detail::to_lower(opt->get_group()) == "hidden")
                     continue;
                 if(opt->_has_help_positional())
                     detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
             }
-            out << std::endl;
         }
 
         // Options
@@ -813,21 +821,25 @@ class App {
             for(const std::string &group : groups) {
                 if(detail::to_lower(group) == "hidden")
                     continue;
-                out << group << ":" << std::endl;
+                out << std::endl << group << ":" << std::endl;
                 for(const Option_p &opt : options_) {
                     if(opt->nonpositional() && opt->get_group() == group)
                         detail::format_help(out, opt->help_name(), opt->get_description(), wid);
                 }
-                out << std::endl;
             }
         }
 
         // Subcommands
         if(!subcommands_.empty()) {
-            out << "Subcommands:" << std::endl;
+            out << std::endl << "Subcommands:" << std::endl;
             for(const App_p &com : subcommands_)
                 detail::format_help(out, com->get_name(), com->description_, wid);
         }
+
+        if (!footer_.empty()) {
+          out << std::endl << footer_ << std::endl;
+        }
+
         return out.str();
     }
 
