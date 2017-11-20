@@ -283,9 +283,6 @@ class Option : public OptionBase<Option> {
         ignore_case_ = value;
         auto *parent = dynamic_cast<T *>(parent_);
 
-        if(parent == nullptr)
-            throw IncorrectConstruction("This should not happen, there is always a parent!");
-
         for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name());
