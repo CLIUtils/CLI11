@@ -283,6 +283,54 @@ TEST(THelp, SetLower) {
     EXPECT_THAT(help, HasSubstr("THREE"));
 }
 
+TEST(THelp, OnlyOneHelp) {
+    CLI::App app{"My prog"};
+
+    /* It is not supported to add more than one help flag.  */
+    EXPECT_THROW(app.add_help_flag("--yelp", "Alias for help"), CLI::IncorrectConstruction);
+}
+
+TEST(THelp, NoHelp) {
+    CLI::App app{"My prog", false};
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("-h,--help")));
+    EXPECT_THAT(help, Not(HasSubstr("Options:")));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+
+    std::vector<std::string> input{"--help"};
+    try {
+        app.parse(input);
+    } catch(const CLI::ParseError &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
+    }
+}
+
+TEST(THelp, CustomHelp) {
+    CLI::App app{"My prog", false};
+
+    CLI::Option *help_option = app.add_help_flag("--yelp", "display help and exit");
+    EXPECT_EQ(app.get_help_ptr(), help_option);
+    EXPECT_THROW(app.add_help_flag("--help", "Alias for yelp"), CLI::IncorrectConstruction);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("-h,--help")));
+    EXPECT_THAT(help, HasSubstr("--yelp"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+
+    std::vector<std::string> input{"--yelp"};
+    try {
+        app.parse(input);
+    } catch(const CLI::CallForHelp &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Success), e.get_exit_code());
+    }
+}
+
 TEST(Exit, ErrorWithHelp) {
     CLI::App app{"My prog"};
 

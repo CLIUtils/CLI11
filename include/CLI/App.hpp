@@ -331,6 +331,13 @@ class App {
         return opt;
     }
 
+    Option *add_help_flag(std::string name, std::string description = "") {
+        if(help_ptr_)
+            throw IncorrectConstruction("Help flag already initialized");
+        help_ptr_ = add_flag(name, description);
+        return help_ptr_;
+    }
+
     /// Add option for flag
     Option *add_flag(std::string name, std::string description = "") {
         CLI::callback_t fun = [](CLI::results_t) { return true; };
