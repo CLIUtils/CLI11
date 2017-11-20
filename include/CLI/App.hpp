@@ -836,8 +836,8 @@ class App {
                 detail::format_help(out, com->get_name(), com->description_, wid);
         }
 
-        if (!footer_.empty()) {
-          out << std::endl << footer_ << std::endl;
+        if(!footer_.empty()) {
+            out << std::endl << footer_ << std::endl;
         }
 
         return out.str();

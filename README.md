@@ -210,6 +210,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
+* `.set_footer(message)`: Set text to appear at the bottom of the help string.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names.
 
