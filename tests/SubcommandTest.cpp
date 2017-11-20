@@ -162,6 +162,36 @@ TEST_F(TApp, Callbacks) {
     EXPECT_TRUE(val);
 }
 
+TEST_F(TApp, RuntimeErrorInCallback) {
+    auto sub1 = app.add_subcommand("sub1");
+    sub1->set_callback([]() { throw CLI::RuntimeError(); });
+    auto sub2 = app.add_subcommand("sub2");
+    sub2->set_callback([]() { throw CLI::RuntimeError(2); });
+
+    args = {"sub1"};
+    EXPECT_THROW(run(), CLI::RuntimeError);
+
+    app.reset();
+    args = {"sub1"};
+    try {
+        run();
+    } catch(const CLI::RuntimeError &e) {
+        EXPECT_EQ(1, e.get_exit_code());
+    }
+
+    app.reset();
+    args = {"sub2"};
+    EXPECT_THROW(run(), CLI::RuntimeError);
+
+    app.reset();
+    args = {"sub2"};
+    try {
+        run();
+    } catch(const CLI::RuntimeError &e) {
+        EXPECT_EQ(2, e.get_exit_code());
+    }
+}
+
 TEST_F(TApp, NoFallThroughOpts) {
     int val = 1;
     app.add_option("--val", val);
