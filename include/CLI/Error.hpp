@@ -83,8 +83,7 @@ struct OptionAlreadyAdded : public ConstructionError {
 
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
 struct RuntimeError : public Error {
-    RuntimeError(int exit_code = 1)
-      : Error("RuntimeError", "runtime error", exit_code, false) {}
+    RuntimeError(int exit_code = 1) : Error("RuntimeError", "runtime error", exit_code, false) {}
 };
 
 // Parsing errors

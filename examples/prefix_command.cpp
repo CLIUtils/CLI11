@@ -8,11 +8,7 @@ int main(int argc, char **argv) {
     std::vector<int> vals;
     app.add_option("--vals,-v", vals)->expected(1);
 
-    try {
-        app.parse(argc, argv);
-    } catch(const CLI::ParseError &e) {
-        return app.exit(e);
-    }
+    CLI11_PARSE(app, argc, argv);
 
     std::vector<std::string> more_comms = app.remaining();
 

@@ -29,7 +29,7 @@ namespace CLI {
 #define CLI11_PARSE(app, argc, argv)                                                                                   \
     try {                                                                                                              \
         (app).parse((argc), (argv));                                                                                   \
-    } catch(const CLI::Error &e) {                                                                                \
+    } catch(const CLI::Error &e) {                                                                                     \
         return (app).exit(e);                                                                                          \
     }
 #endif
@@ -647,7 +647,7 @@ class App {
     int exit(const Error &e) const {
 
         /// Avoid printing anything if this is a CLI::RuntimeError
-        if(dynamic_cast<const CLI::RuntimeError*>(&e) != nullptr)
+        if(dynamic_cast<const CLI::RuntimeError *>(&e) != nullptr)
             return e.get_exit_code();
 
         if(e.exit_code != static_cast<int>(ExitCodes::Success)) {

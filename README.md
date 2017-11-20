@@ -96,7 +96,7 @@ app.add_option("-f,--file", filename, "A help string");
 
 try {
     app.parse(argc, argv);
-} catch (const CLI::ParseError &e) {
+} catch (const CLI::Error &e) {
     return app.exit(e);
 }
 ```
@@ -137,7 +137,7 @@ App* subcom = app.add_subcommand(name, discription);
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`. The set options allow your users to pick from a set of predefined options.
 
-On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a `CLI::ParseError` to signal a failure.
+On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::Error` to signal a failure.
 
 ### Example
 
@@ -193,7 +193,7 @@ If you want to require at least one subcommand is given, use `.require_subcomman
 If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an `App` pointer or a string name was collected on the command line.
 
-For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success`, you can
+For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 If you want only one, use `app.require_subcommand(1)`. You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][Click] like series of commands (order is preserved).
@@ -288,7 +288,7 @@ If you use the excellent [Rang] library to add color to your terminal in a safe,
 std::atexit([](){std::cout << rang::style::reset;});
 try {
     app.parse(argc, argv);
-} catch (const CLI::ParseError &e) {
+} catch (const CLI::Error &e) {
     std::cout << (e.get_exit_code()==0 ? rang::fg::blue : rang::fg::red);
     return app.exit(e);
 }
