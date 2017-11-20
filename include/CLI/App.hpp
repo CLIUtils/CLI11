@@ -78,7 +78,7 @@ class App {
     ///@}
     /// @name Options
     ///@{
-    
+
     /// The default values for options, customizable and changeable INHERITABLE
     OptionDefaults option_defaults_;
 
@@ -143,21 +143,22 @@ class App {
     ///@}
 
     /// Special private constructor for subcommand
-    App(std::string description_, App* parent) : description_(std::move(description_)), parent_(parent) {
+    App(std::string description_, App *parent) : description_(std::move(description_)), parent_(parent) {
         // Inherit if not from a nullptr
         if(parent_ != nullptr) {
             if(parent_->help_ptr_ != nullptr)
                 set_help_flag(parent_->help_ptr_->get_name(), parent_->help_ptr_->get_description());
-            
+
             /// OptionDefaults
             option_defaults_ = parent_->option_defaults_;
-            
+
             // INHERITABLE
             allow_extras_ = parent_->allow_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
             fallthrough_ = parent_->fallthrough_;
             group_ = parent_->group_;
+            footer_ = parent_->footer_;
         }
     }
 
@@ -176,6 +177,9 @@ class App {
         return this;
     }
 
+    /// Get footer.
+    std::string get_footer() const { return footer_; }
+
     /// Set a callback for the end of parsing.
     ///
     /// Due to a bug in c++11,
@@ -193,11 +197,16 @@ class App {
         return this;
     }
 
+    /// Get the status of allow extras
+    bool get_allow_extras() const { return allow_extras_; }
+
     /// Do not parse anything after the first unrecognised option and return
     App *prefix_command(bool allow = true) {
         prefix_command_ = allow;
         return this;
     }
+
+    bool get_prefix_command() const { return prefix_command_; }
 
     /// Ignore case. Subcommand inherit value.
     App *ignore_case(bool value = true) {
@@ -210,6 +219,8 @@ class App {
         }
         return this;
     }
+
+    bool get_ignore_case() const { return ignore_case_; }
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
     bool parsed() const { return parsed_; }
@@ -232,6 +243,9 @@ class App {
         return this;
     }
 
+    /// Check the status of fallthrough
+    bool get_fallthrough() const { return fallthrough_; }
+
     /// Changes the group membership
     App *group(std::string name) {
         group_ = name;
@@ -240,9 +254,9 @@ class App {
 
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
-    
+
     /// Get the OptionDefault object, to set option defaults
-    OptionDefaults* option_defaults() {return &option_defaults_;}
+    OptionDefaults *option_defaults() { return &option_defaults_; }
 
     ///@}
     /// @name Adding options
@@ -881,7 +895,7 @@ class App {
             std::set<std::string> subcmd_groups_seen;
             for(const App_p &com : subcommands_) {
                 const std::string &group_key = detail::to_lower(com->get_group());
-                if(group_key == "hidden" || subcmd_groups_seen.count(group_key) != 0)
+                if(group_key == "" || subcmd_groups_seen.count(group_key) != 0)
                     continue;
 
                 subcmd_groups_seen.insert(group_key);

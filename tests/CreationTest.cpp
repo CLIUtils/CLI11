@@ -262,3 +262,81 @@ TEST_F(TApp, AllSpaces) {
     EXPECT_TRUE(myapp->check_sname("a"));
     EXPECT_TRUE(myapp->check_name("other"));
 }
+
+TEST_F(TApp, OptionFromDefaults) {
+    app.option_defaults()->required();
+
+    // Options should remember defaults
+    int x;
+    auto opt = app.add_option("--simple", x);
+    EXPECT_TRUE(opt->get_required());
+
+    // Flags cannot be required
+    auto flag = app.add_flag("--other");
+    EXPECT_FALSE(flag->get_required());
+
+    app.option_defaults()->required(false);
+    auto opt2 = app.add_option("--simple2", x);
+    EXPECT_FALSE(opt2->get_required());
+
+    app.option_defaults()->required()->ignore_case();
+
+    auto opt3 = app.add_option("--simple3", x);
+    EXPECT_TRUE(opt3->get_required());
+    EXPECT_TRUE(opt3->get_ignore_case());
+}
+
+TEST_F(TApp, OptionFromDefaultsSubcommands) {
+    // Initial defaults
+    EXPECT_FALSE(app.option_defaults()->get_required());
+    EXPECT_FALSE(app.option_defaults()->get_take_last());
+    EXPECT_FALSE(app.option_defaults()->get_ignore_case());
+    EXPECT_EQ(app.option_defaults()->get_group(), "Options");
+
+    app.option_defaults()->required()->take_last()->ignore_case()->group("Something");
+
+    auto app2 = app.add_subcommand("app2");
+
+    EXPECT_TRUE(app2->option_defaults()->get_required());
+    EXPECT_TRUE(app2->option_defaults()->get_take_last());
+    EXPECT_TRUE(app2->option_defaults()->get_ignore_case());
+    EXPECT_EQ(app2->option_defaults()->get_group(), "Something");
+}
+
+TEST_F(TApp, HelpFlagFromDefaultsSubcommands) {
+    app.set_help_flag("--that", "Wow");
+
+    auto app2 = app.add_subcommand("app2");
+
+    EXPECT_EQ(app2->get_help_ptr()->get_name(), "--that");
+    EXPECT_EQ(app2->get_help_ptr()->get_description(), "Wow");
+}
+
+TEST_F(TApp, SubcommandDefaults) {
+    // allow_extras, prefix_command, ignore_case, fallthrough, group
+
+    // Initial defaults
+    EXPECT_FALSE(app.get_allow_extras());
+    EXPECT_FALSE(app.get_prefix_command());
+    EXPECT_FALSE(app.get_ignore_case());
+    EXPECT_FALSE(app.get_fallthrough());
+    EXPECT_EQ(app.get_footer(), "");
+    EXPECT_EQ(app.get_group(), "Subcommands");
+
+    app.allow_extras();
+    app.prefix_command();
+    app.ignore_case();
+    app.fallthrough();
+    app.set_footer("footy");
+    app.group("Stuff");
+
+    auto app2 = app.add_subcommand("app2");
+
+    // Initial defaults
+    EXPECT_TRUE(app2->get_allow_extras());
+    EXPECT_TRUE(app2->get_prefix_command());
+    EXPECT_TRUE(app2->get_ignore_case());
+    EXPECT_TRUE(app2->get_fallthrough());
+    EXPECT_EQ(app2->get_footer(), "footy");
+    EXPECT_EQ(app2->get_group(), "Stuff");
+}
