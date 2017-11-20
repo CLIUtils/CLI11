@@ -1,4 +1,6 @@
 ## Version 1.3 (in progress)
+
+* Reworked the way defaults are set and inherited; explicit control given to user with `->option_defaults()` [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * `parse` no longer returns (so `CLI11_PARSE` is always usable) [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * Added `remaining()` and `remaining_size()` [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * `allow_extras` and `prefix_command` are now valid on subcommands [#37](https://github.com/CLIUtils/CLI11/pull/37)
@@ -8,6 +10,7 @@
 * Help flags are easier to customize [#43](https://github.com/CLIUtils/CLI11/pull/43)
 * Subcommand now support groups [#46](https://github.com/CLIUtils/CLI11/pull/46)
 * `CLI::RuntimeError` added, for easy exit with error codes [#45](https://github.com/CLIUtils/CLI11/pull/45) 
+* The clang-format script is now no longer "hidden" [#48](https://github.com/CLIUtils/CLI11/pull/48)
 
 
 ## Version 1.2

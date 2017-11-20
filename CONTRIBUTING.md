@@ -17,5 +17,4 @@ In general, make sure the addition is well thought out and does not increase the
 
 * Once you make the PR, tests will run to make sure your code works on all supported platforms
 * The test coverage is also measured, and that should remain 100%
-* Formatting should be done with clang-format, otherwise the format check will not pass. However, it is trivial to apply this to your PR, so don't worry about this check
-
+* Formatting should be done with clang-format, otherwise the format check will not pass. However, it is trivial to apply this to your PR, so don't worry about this check. If you do have clang-format, just run `scripts/check_style.sh`
