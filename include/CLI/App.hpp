@@ -31,6 +31,8 @@ namespace CLI {
         (app).parse((argc), (argv));                                                                                   \
     } catch(const CLI::ParseError &e) {                                                                                \
         return (app).exit(e);                                                                                          \
+    } catch(const CLI::RuntimeError &e) {                                                                              \
+        return e.get_exit_code();                                                                                      \
     }
 #endif
 
