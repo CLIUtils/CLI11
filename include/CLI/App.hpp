@@ -322,6 +322,7 @@ class App {
         return opt;
     }
 
+    /// Add a help flag, currently throws an error if already set
     Option *add_help_flag(std::string name, std::string description = "") {
         if(help_ptr_)
             throw IncorrectConstruction("Help flag already initialized");
