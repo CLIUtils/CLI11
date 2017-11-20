@@ -26,81 +26,82 @@ class App;
 
 using Option_p = std::unique_ptr<Option>;
 
-template<typename CRTP>
-class OptionBase {
-  friend App;
-    
+template <typename CRTP> class OptionBase {
+    friend App;
+
   protected:
-    
     /// The group membership
     std::string group_{"Options"};
 
     /// True if this is a required option
     bool required_{false};
-    
+
     /// Ignore the case when matching (option, not value)
     bool ignore_case_{false};
-    
+
     /// Only take the last argument (requires `expected_ == 1`)
     bool last_{false};
-    
-    template<typename T>
-    void copy_from(T& other) {
-        group_ = other.group_;
-        required_ = other.required_;
-        ignore_case_ = other.ignore_case_;
-        last_ = other.last_;
+
+    template <typename T> void copy_from(const T &other) {
+        group_ = other.get_group();
+        required_ = other.get_required();
+        ignore_case_ = other.get_ignore_case();
+        last_ = other.get_take_last();
     }
-    
+
   public:
-    
-    /// Set the option as required
-    CRTP *required(bool value = true) {
-        required_ = value;
-        return static_cast<CRTP*>(this);
-    }
-    
-    /// Support Plumbum term
-    CRTP *mandatory(bool value = true) { return required(value); }
-    
+    // setters
+
     /// Changes the group membership
     CRTP *group(std::string name) {
         group_ = name;
-        return static_cast<CRTP*>(this);;
+        return static_cast<CRTP *>(this);
+        ;
     }
-    
+
+    /// Set the option as required
+    CRTP *required(bool value = true) {
+        required_ = value;
+        return static_cast<CRTP *>(this);
+    }
+
+    /// Support Plumbum term
+    CRTP *mandatory(bool value = true) { return required(value); }
+
+    // Getters
+
+    /// Get the group of this option
+    const std::string &get_group() const { return group_; }
+
     /// True if this is a required option
     bool get_required() const { return required_; }
 
+    /// The status of ignore case
+    bool get_ignore_case() const { return ignore_case_; }
+
     /// The status of the take last flag
     bool get_take_last() const { return last_; }
-    
-    /// The status of ignore case
-    bool ignore_case() const {return ignore_case_;}
-    
-    /// Get the group of this option
-    const std::string &get_group() const { return group_; }
 };
-    
-class OptionDefaults : public OptionBase<Option> {
+
+class OptionDefaults : public OptionBase<OptionDefaults> {
   public:
     OptionDefaults() = default;
-    
+
     // Methods here need a different implementation if they are Option vs. OptionDefault
-    
+
     /// Take the last argument if given multiple times
     OptionDefaults *take_last(bool value = true) {
         last_ = value;
         return this;
     }
-    
+
     /// Ignore the case of the option name
     OptionDefaults *ignore_case(bool value = true) {
         ignore_case_ = value;
         return this;
     }
 };
-    
+
 class Option : public OptionBase<Option> {
     friend App;
 
@@ -145,7 +146,6 @@ class Option : public OptionBase<Option> {
 
     /// A private setting to allow args to not be able to accept incorrect expected values
     bool changeable_{false};
-
 
     /// A list of validators to run on each value parsed
     std::vector<std::function<bool(std::string)>> validators_;
@@ -226,7 +226,6 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-
     /// Sets required options
     Option *requires(Option *opt) {
         auto tup = requires_.insert(opt);
@@ -282,12 +281,18 @@ class Option : public OptionBase<Option> {
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_case(bool value = true) {
         ignore_case_ = value;
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
+        T *parent = dynamic_cast<T *>(parent_);
+
+        if(parent == nullptr)
+            throw IncorrectConstruction("This should not happen, there is always a parent!");
+
+        for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name());
+
         return this;
     }
-    
+
     /// Take the last argument if given multiple times
     Option *take_last(bool value = true) {
         if(get_expected() != 0 && get_expected() != 1)
@@ -502,6 +507,8 @@ class Option : public OptionBase<Option> {
     void set_custom_option(std::string typeval, int expected = 1, bool changeable = false) {
         typeval_ = typeval;
         expected_ = expected;
+        if(expected == 0)
+            required_ = false;
         changeable_ = changeable;
     }
 
