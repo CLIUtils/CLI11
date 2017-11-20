@@ -1,5 +1,11 @@
 #include "app_helper.hpp"
 
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+using ::testing::HasSubstr;
+using ::testing::Not;
+
 TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
@@ -481,4 +487,22 @@ TEST_F(SubcommandProgram, Callbacks) {
     args = {"start"};
 
     EXPECT_THROW(run(), CLI::Success);
+}
+
+TEST_F(SubcommandProgram, Groups) {
+
+    std::string help = app.help();
+    EXPECT_THAT(help, Not(HasSubstr("More Commands:")));
+    EXPECT_THAT(help, HasSubstr("Subcommands:"));
+
+    start->group("More Commands");
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("More Commands:"));
+    EXPECT_THAT(help, HasSubstr("Subcommands:"));
+
+    // Case is ignored but for the first subcommand in a group.
+    stop->group("more commands");
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("More Commands:"));
+    EXPECT_THAT(help, Not(HasSubstr("Subcommands:")));
 }

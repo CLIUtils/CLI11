@@ -121,6 +121,9 @@ class App {
     /// -1 for 1 or more, 0 for not required, # for exact number required
     int require_subcommand_ = 0;
 
+    /// The group membership
+    std::string group_{"Subcommands"};
+
     ///@}
     /// @name Config
     ///@{
@@ -211,6 +214,15 @@ class App {
         fallthrough_ = value;
         return this;
     }
+
+    /// Changes the group membership
+    App *group(std::string name) {
+        group_ = name;
+        return this;
+    }
+
+    /// Get the group of this subcommand
+    const std::string &get_group() const { return group_; }
 
     ///@}
     /// @name Adding options
@@ -845,9 +857,18 @@ class App {
 
         // Subcommands
         if(!subcommands_.empty()) {
-            out << std::endl << "Subcommands:" << std::endl;
-            for(const App_p &com : subcommands_)
-                detail::format_help(out, com->get_name(), com->description_, wid);
+            std::set<std::string> subcmd_groups_seen;
+            for(const App_p &com : subcommands_) {
+                const std::string &group_key = detail::to_lower(com->get_group());
+                if(group_key == "hidden" || subcmd_groups_seen.count(group_key) != 0)
+                    continue;
+
+                subcmd_groups_seen.insert(group_key);
+                out << std::endl << com->get_group() << ":" << std::endl;
+                for(const App_p &com : subcommands_)
+                    if(detail::to_lower(com->get_group()) == group_key)
+                        detail::format_help(out, com->get_name(), com->description_, wid);
+            }
         }
 
         if(!footer_.empty()) {
