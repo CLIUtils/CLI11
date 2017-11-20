@@ -132,8 +132,6 @@ app.add_set(option_name,
 
 app.add_set_ignore_case(... // String only
 
-app.add_help_flag(name, optional_discription);
-
 App* subcom = app.add_subcommand(name, discription);
 ```
 
@@ -163,7 +161,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you want to change the default help option, it is available through `get_help_ptr`. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 
 On the command line, options can be given as:
@@ -246,7 +244,7 @@ arguments, use `.config_to_str(default_also=false)`, where `default_also` will a
 
 ## Subclassing
 
-The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`). You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
+The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`), and can removed/replaced using `.set_help_flag(name, help_string)`. You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
 but before run behavior, while
 still giving the user freedom to `set_callback` on the main app.  
 

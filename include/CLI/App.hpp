@@ -137,7 +137,7 @@ class App {
     App(std::string description_, bool help, detail::enabler) : description_(std::move(description_)) {
 
         if(help)
-            add_help_flag("-h,--help", "Print this help message and exit");
+            set_help_flag("-h,--help", "Print this help message and exit");
     }
 
   public:
@@ -322,11 +322,17 @@ class App {
         return opt;
     }
 
-    /// Add a help flag, replaced the existing one if present
-    Option *add_help_flag(std::string name, std::string description = "") {
-        if(help_ptr_ != nullptr)
+    /// Set a help flag, replaced the existing one if present
+    Option *set_help_flag(std::string name = "", std::string description = "") {
+        if(help_ptr_ != nullptr) {
             remove_option(help_ptr_);
-        help_ptr_ = add_flag(name, description);
+            help_ptr_ = nullptr;
+        }
+
+        // Empty name will simply remove the help flag
+        if(!name.empty())
+            help_ptr_ = add_flag(name, description);
+
         return help_ptr_;
     }
 
