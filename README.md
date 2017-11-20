@@ -132,6 +132,8 @@ app.add_set(option_name,
 
 app.add_set_ignore_case(... // String only
 
+app.add_help_flag(name, optional_discription);
+
 App* subcom = app.add_subcommand(name, discription);
 ```
 
