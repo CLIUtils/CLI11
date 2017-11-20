@@ -63,13 +63,13 @@ class App {
     /// Description of the current program/subcommand
     std::string description_;
 
-    /// Footer to put after all options in the help output
+    /// Footer to put after all options in the help output INHERITABLE
     std::string footer_;
 
-    /// If true, allow extra arguments (ie, don't throw an error).
+    /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
 
-    ///  If true, return immediately on an unrecognised option (implies allow_extras)
+    ///  If true, return immediately on an unrecognised option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
@@ -78,11 +78,14 @@ class App {
     ///@}
     /// @name Options
     ///@{
+    
+    /// The default values for options, customizable and changeable INHERITABLE
+    OptionDefaults option_defaults_;
 
     /// The list of options, stored locally
     std::vector<Option_p> options_;
 
-    /// A pointer to the help flag if there is one
+    /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
 
     ///@}
@@ -106,10 +109,10 @@ class App {
     /// Storage for subcommand list
     std::vector<App_p> subcommands_;
 
-    /// If true, the program name is not case sensitive
+    /// If true, the program name is not case sensitive INHERITABLE
     bool ignore_case_{false};
 
-    /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.
+    /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.  INHERITABLE
     bool fallthrough_{false};
 
     /// A pointer to the parent if this is a subcommand
@@ -121,7 +124,7 @@ class App {
     /// -1 for 1 or more, 0 for not required, # for exact number required
     int require_subcommand_ = 0;
 
-    /// The group membership
+    /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
 
     ///@}
@@ -140,10 +143,22 @@ class App {
     ///@}
 
     /// Special private constructor for subcommand
-    App(std::string description_, bool help, detail::enabler) : description_(std::move(description_)) {
-
-        if(help)
-            set_help_flag("-h,--help", "Print this help message and exit");
+    App(std::string description_, App* parent) : description_(std::move(description_)), parent_(parent) {
+        // Inherit if not from a nullptr
+        if(parent_ != nullptr) {
+            if(parent_->help_ptr_ != nullptr)
+                set_help_flag(parent_->help_ptr_->get_name(), parent_->help_ptr_->get_description());
+            
+            /// OptionDefaults
+            option_defaults_ = parent_->option_defaults_;
+            
+            // INHERITABLE
+            allow_extras_ = parent_->allow_extras_;
+            prefix_command_ = parent_->prefix_command_;
+            ignore_case_ = parent_->ignore_case_;
+            fallthrough_ = parent_->fallthrough_;
+            group_ = parent_->group_;
+        }
     }
 
   public:
@@ -151,7 +166,9 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string description_ = "", bool help = true) : App(description_, help, detail::dummy) {}
+    App(std::string description_ = "") : App(description_, nullptr) {
+        set_help_flag("-h,--help", "Print this help message and exit");
+    }
 
     /// Set footer.
     App *set_footer(std::string footer) {
@@ -223,6 +240,9 @@ class App {
 
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
+    
+    /// Get the OptionDefault object, to set option defaults
+    OptionDefaults* option_defaults() {return &option_defaults_;}
 
     ///@}
     /// @name Adding options
@@ -251,6 +271,7 @@ class App {
             options_.emplace_back();
             Option_p &option = options_.back();
             option.reset(new Option(name, description, callback, defaulted, this));
+            option->copy_from(option_defaults_);
             return option.get();
         } else
             throw OptionAlreadyAdded(myopt.get_name());
@@ -615,15 +636,10 @@ class App {
     /// @name Subcommmands
     ///@{
 
-    /// Add a subcommand. Like the constructor, you can override the help message addition by setting help=false
-    App *add_subcommand(std::string name, std::string description = "", bool help = true) {
-        subcommands_.emplace_back(new App(description, help, detail::dummy));
+    /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
+    App *add_subcommand(std::string name, std::string description = "") {
+        subcommands_.emplace_back(new App(description, this));
         subcommands_.back()->name_ = name;
-        subcommands_.back()->allow_extras_ = allow_extras_;
-        subcommands_.back()->prefix_command_ = prefix_command_;
-        subcommands_.back()->parent_ = this;
-        subcommands_.back()->ignore_case_ = ignore_case_;
-        subcommands_.back()->fallthrough_ = fallthrough_;
         for(const auto &subc : subcommands_)
             if(subc.get() != subcommands_.back().get())
                 if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_))
