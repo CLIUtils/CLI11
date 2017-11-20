@@ -287,12 +287,30 @@ TEST(THelp, OnlyOneHelp) {
     CLI::App app{"My prog"};
 
     // It is not supported to have more than one help flag, last one wins
-    app.add_help_flag("--help", "No short name allowed");
-    app.add_help_flag("--yelp", "Alias for help");
+    app.set_help_flag("--help", "No short name allowed");
+    app.set_help_flag("--yelp", "Alias for help");
 
     std::vector<std::string> input{"--help"};
     EXPECT_THROW(app.parse(input), CLI::ExtrasError);
-    
+}
+
+TEST(THelp, RemoveHelp) {
+    CLI::App app{"My prog"};
+    app.set_help_flag();
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("-h,--help")));
+    EXPECT_THAT(help, Not(HasSubstr("Options:")));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+
+    std::vector<std::string> input{"--help"};
+    try {
+        app.parse(input);
+    } catch(const CLI::ParseError &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
+    }
 }
 
 TEST(THelp, NoHelp) {
@@ -316,7 +334,7 @@ TEST(THelp, NoHelp) {
 TEST(THelp, CustomHelp) {
     CLI::App app{"My prog", false};
 
-    CLI::Option *help_option = app.add_help_flag("--yelp", "display help and exit");
+    CLI::Option *help_option = app.set_help_flag("--yelp", "display help and exit");
     EXPECT_EQ(app.get_help_ptr(), help_option);
 
     std::string help = app.help();
