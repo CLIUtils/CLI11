@@ -9,10 +9,7 @@ int main(int argc, char **argv) {
     app.add_set("-l,--level", level, {High, Medium, Low}, "Level settings")
         ->set_type_name("enum/Level in {High=0, Medium=1, Low=2}");
 
-    try {
-        app.parse(argc, argv);
-    } catch(CLI::Error const &e) {
-        app.exit(e);
-    }
+    CLI11_PARSE(app, argc, argv);
+
     return 0;
 }

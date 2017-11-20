@@ -79,18 +79,16 @@ struct OptionAlreadyAdded : public ConstructionError {
         : ConstructionError("OptionAlreadyAdded", name, ExitCodes::OptionAlreadyAdded) {}
 };
 
-// Runtime Errors
-
-/// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
-struct RuntimeError : public Error {
-    RuntimeError(int exit_code = 1) : Error("RuntimeError", "runtime error", exit_code, false) {}
-};
-
 // Parsing errors
 
 /// Anything that can error in Parse
 struct ParseError : public Error {
     ParseError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass, bool print_help = true)
+        : Error(parent, name, exit_code, print_help) {}
+    ParseError(std::string parent,
+               std::string name,
+               int exit_code = static_cast<int>(ExitCodes::BaseClass),
+               bool print_help = true)
         : Error(parent, name, exit_code, print_help) {}
 };
 
@@ -105,6 +103,11 @@ struct Success : public ParseError {
 struct CallForHelp : public ParseError {
     CallForHelp()
         : ParseError("CallForHelp", "This should be caught in your main function, see examples", ExitCodes::Success) {}
+};
+
+/// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
+struct RuntimeError : public ParseError {
+    RuntimeError(int exit_code = 1) : ParseError("RuntimeError", "runtime error", exit_code, false) {}
 };
 
 /// Thrown when parsing an INI file and it is missing
