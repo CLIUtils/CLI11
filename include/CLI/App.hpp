@@ -137,7 +137,7 @@ class App {
     App(std::string description_, bool help, detail::enabler) : description_(std::move(description_)) {
 
         if(help)
-            help_ptr_ = add_flag("-h,--help", "Print this help message and exit");
+            add_help_flag("-h,--help", "Print this help message and exit");
     }
 
   public:
