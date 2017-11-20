@@ -65,7 +65,7 @@ script:
 - |
   if [ -n "$CHECK_STYLE" ]
   then
-    .ci/check_style.sh
+    scripts/check_style.sh
   else
     .ci/travis.sh
   fi
