@@ -850,7 +850,7 @@ class App {
         for(const Option_p &opt : options_)
             if(opt->get_positional()) {
                 // A hidden positional should still show up in the usage statement
-                // if(detail::to_lower(opt->get_group()) == "hidden")
+                // if(detail::to_lower(opt->get_group()).empty())
                 //    continue;
                 out << " " << opt->help_positional();
                 if(opt->_has_help_positional())
@@ -870,8 +870,8 @@ class App {
         if(pos) {
             out << std::endl << "Positionals:" << std::endl;
             for(const Option_p &opt : options_) {
-                if(detail::to_lower(opt->get_group()) == "hidden")
-                    continue;
+                if(detail::to_lower(opt->get_group()).empty())
+                    continue; // Hidden
                 if(opt->_has_help_positional())
                     detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
             }
@@ -880,8 +880,8 @@ class App {
         // Options
         if(npos) {
             for(const std::string &group : groups) {
-                if(detail::to_lower(group) == "hidden")
-                    continue;
+                if(detail::to_lower(group).empty())
+                    continue; // Hidden
                 out << std::endl << group << ":" << std::endl;
                 for(const Option_p &opt : options_) {
                     if(opt->nonpositional() && opt->get_group() == group)
@@ -896,7 +896,7 @@ class App {
             for(const App_p &com : subcommands_) {
                 const std::string &group_key = detail::to_lower(com->get_group());
                 if(group_key.empty() || subcmd_groups_seen.count(group_key) != 0)
-                    continue;
+                    continue; // Hidden or not in a group
 
                 subcmd_groups_seen.insert(group_key);
                 out << std::endl << com->get_group() << ":" << std::endl;
