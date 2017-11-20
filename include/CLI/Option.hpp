@@ -26,7 +26,82 @@ class App;
 
 using Option_p = std::unique_ptr<Option>;
 
-class Option {
+template<typename CRTP>
+class OptionBase {
+  friend App;
+    
+  protected:
+    
+    /// The group membership
+    std::string group_{"Options"};
+
+    /// True if this is a required option
+    bool required_{false};
+    
+    /// Ignore the case when matching (option, not value)
+    bool ignore_case_{false};
+    
+    /// Only take the last argument (requires `expected_ == 1`)
+    bool last_{false};
+    
+    template<typename T>
+    void copy_from(T& other) {
+        group_ = other.group_;
+        required_ = other.required_;
+        ignore_case_ = other.ignore_case_;
+        last_ = other.last_;
+    }
+    
+  public:
+    
+    /// Set the option as required
+    CRTP *required(bool value = true) {
+        required_ = value;
+        return static_cast<CRTP*>(this);
+    }
+    
+    /// Support Plumbum term
+    CRTP *mandatory(bool value = true) { return required(value); }
+    
+    /// Changes the group membership
+    CRTP *group(std::string name) {
+        group_ = name;
+        return static_cast<CRTP*>(this);;
+    }
+    
+    /// True if this is a required option
+    bool get_required() const { return required_; }
+
+    /// The status of the take last flag
+    bool get_take_last() const { return last_; }
+    
+    /// The status of ignore case
+    bool ignore_case() const {return ignore_case_;}
+    
+    /// Get the group of this option
+    const std::string &get_group() const { return group_; }
+};
+    
+class OptionDefaults : public OptionBase<Option> {
+  public:
+    OptionDefaults() = default;
+    
+    // Methods here need a different implementation if they are Option vs. OptionDefault
+    
+    /// Take the last argument if given multiple times
+    OptionDefaults *take_last(bool value = true) {
+        last_ = value;
+        return this;
+    }
+    
+    /// Ignore the case of the option name
+    OptionDefaults *ignore_case(bool value = true) {
+        ignore_case_ = value;
+        return this;
+    }
+};
+    
+class Option : public OptionBase<Option> {
     friend App;
 
   protected:
@@ -58,9 +133,6 @@ class Option {
     /// A human readable type value, set when App creates this
     std::string typeval_;
 
-    /// The group membership
-    std::string group_{"Options"};
-
     /// True if this option has a default
     bool default_{false};
 
@@ -68,20 +140,12 @@ class Option {
     /// @name Configuration
     ///@{
 
-    /// True if this is a required option
-    bool required_{false};
-
     /// The number of expected values, 0 for flag, -1 for unlimited vector
     int expected_{1};
-
-    /// Only take the last argument (requires `expected_ == 1`)
-    bool last_{false};
 
     /// A private setting to allow args to not be able to accept incorrect expected values
     bool changeable_{false};
 
-    /// Ignore the case when matching (option, not value)
-    bool ignore_case_{false};
 
     /// A list of validators to run on each value parsed
     std::vector<std::function<bool(std::string)>> validators_;
@@ -141,15 +205,6 @@ class Option {
     /// @name Setting options
     ///@{
 
-    /// Set the option as required
-    Option *required(bool value = true) {
-        required_ = value;
-        return this;
-    }
-
-    /// Support Plumbum term
-    Option *mandatory(bool value = true) { return required(value); }
-
     /// Set the number of expected arguments (Flags bypass this)
     Option *expected(int value) {
         if(value == 0)
@@ -164,14 +219,6 @@ class Option {
         return this;
     }
 
-    /// Take the last argument if given multiple times
-    Option *take_last(bool value = true) {
-        if(expected_ != 0 && expected_ != 1)
-            throw IncorrectConstruction("take_last only works for flags and single value options!");
-        last_ = value;
-        return this;
-    }
-
     /// Adds a validator
     Option *check(std::function<bool(std::string)> validator) {
 
@@ -179,11 +226,6 @@ class Option {
         return this;
     }
 
-    /// Changes the group membership
-    Option *group(std::string name) {
-        group_ = name;
-        return this;
-    }
 
     /// Sets required options
     Option *requires(Option *opt) {
@@ -243,6 +285,14 @@ class Option {
         for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name());
+        return this;
+    }
+    
+    /// Take the last argument if given multiple times
+    Option *take_last(bool value = true) {
+        if(get_expected() != 0 && get_expected() != 1)
+            throw IncorrectConstruction("take_last only works for flags and single value options!");
+        last_ = value;
         return this;
     }
 
