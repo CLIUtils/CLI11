@@ -331,10 +331,10 @@ class App {
         return opt;
     }
 
-    /// Add a help flag, currently throws an error if already set
+    /// Add a help flag, replaced the existing one if present
     Option *add_help_flag(std::string name, std::string description = "") {
-        if(help_ptr_)
-            throw IncorrectConstruction("Help flag already initialized");
+        if(help_ptr_ != nullptr)
+            remove_option(help_ptr_);
         help_ptr_ = add_flag(name, description);
         return help_ptr_;
     }
