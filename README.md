@@ -242,10 +242,22 @@ sub.subcommand = true
 Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false)`, where `default_also` will also show any defaulted arguments.
 
+## Inheriting defaults
+
+Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, and `footer`. The help flag existence, name, and description are inherited, as well.
+
+Options have defaults for `group`, `required`, `take_last`, and `ignore_case`. To set these defaults, you should set the `option_defauts()` object, for example:
+
+```cpp
+app.option_defauts()->required();
+// All future options will be required
+```
+
+The default settings for options are inherited to subcommands, as well. 
 
 ## Subclassing
 
-The App class was designed allow toolkits to subclass it, to provide default options and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, but provides an option to disable it in the constructor (and in `add_subcommand`), and can removed/replaced using `.set_help_flag(name, help_string)`. You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
+The App class was designed allow toolkits to subclass it, to provide preset default options (see above) and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, than can removed/replaced using `.set_help_flag(name, help_string)`. You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
 but before run behavior, while
 still giving the user freedom to `set_callback` on the main app.  
 
