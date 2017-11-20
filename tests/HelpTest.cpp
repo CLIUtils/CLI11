@@ -56,9 +56,9 @@ TEST(THelp, Hidden) {
     CLI::App app{"My prog"};
 
     std::string x;
-    app.add_option("something", x, "My option here")->group("Hidden");
+    app.add_option("something", x, "My option here")->group("");
     std::string y;
-    app.add_option("--another", y)->group("Hidden");
+    app.add_option("--another", y)->group("");
 
     std::string help = app.help();
 

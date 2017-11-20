@@ -153,7 +153,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
 * `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
-* `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print.
+* `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 * `->take_last()`: Only take the last option/flag given on the command line, automatically true for bool flags
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given.
@@ -211,6 +211,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.allow_extras()`: Do not throw an error if extra arguments are left over
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 * `.set_footer(message)`: Set text to appear at the bottom of the help string.
+* `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names.
 
