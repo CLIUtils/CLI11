@@ -314,7 +314,8 @@ TEST(THelp, RemoveHelp) {
 }
 
 TEST(THelp, NoHelp) {
-    CLI::App app{"My prog", false};
+    CLI::App app{"My prog"};
+    app.set_help_flag();
 
     std::string help = app.help();
 
@@ -332,7 +333,7 @@ TEST(THelp, NoHelp) {
 }
 
 TEST(THelp, CustomHelp) {
-    CLI::App app{"My prog", false};
+    CLI::App app{"My prog"};
 
     CLI::Option *help_option = app.set_help_flag("--yelp", "display help and exit");
     EXPECT_EQ(app.get_help_ptr(), help_option);
