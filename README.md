@@ -321,9 +321,13 @@ And, in your main function:
 
 ## Contributing
 
-To contribute, open an [issue][Github Issues] or [pull request][Github Pull Requests] on GitHub, or ask a question on [gitter].
+To contribute, open an [issue][Github Issues] or [pull request][Github Pull Requests] on GitHub, or ask a question on [gitter]. The is also a short note to contributors [here](./CONTRIBUTING.md).
 
 As of version 1.0, this library is available under a 3-Clause BSD license. See the [LICENSE](./LICENSE) file for details.
+
+This project was created by Henry Schreiner. Significant features and/or improvements to the code were contributed by:
+
+* Marcus Brinkmann
 
 CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. It was featured in a [DIANA/HEP] meeting at CERN. Please give it a try! Feedback is always welcome.
 

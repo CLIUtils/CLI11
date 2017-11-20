@@ -3,6 +3,7 @@
 * Added `remaining()` and `remaining_size()` [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * `allow_extras` and `prefix_command` are now valid on subcommands [#37](https://github.com/CLIUtils/CLI11/pull/37)
 
+
 ## Version 1.2
 
 * Added functional form of flag [#33](https://github.com/CLIUtils/CLI11/pull/33), automatic on C++14
