@@ -273,8 +273,13 @@ TEST(THelp, SetLower) {
 TEST(THelp, OnlyOneHelp) {
     CLI::App app{"My prog"};
 
-    /* It is not supported to add more than one help flag.  */
-    EXPECT_THROW(app.add_help_flag("--yelp", "Alias for help"), CLI::IncorrectConstruction);
+    // It is not supported to have more than one help flag, last one wins
+    app.add_help_flag("--help", "No short name allowed");
+    app.add_help_flag("--yelp", "Alias for help");
+
+    std::vector<std::string> input{"--help"};
+    EXPECT_THROW(app.parse(input), CLI::ExtrasError);
+    
 }
 
 TEST(THelp, NoHelp) {
@@ -300,7 +305,6 @@ TEST(THelp, CustomHelp) {
 
     CLI::Option *help_option = app.add_help_flag("--yelp", "display help and exit");
     EXPECT_EQ(app.get_help_ptr(), help_option);
-    EXPECT_THROW(app.add_help_flag("--help", "Alias for yelp"), CLI::IncorrectConstruction);
 
     std::string help = app.help();
 
