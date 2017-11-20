@@ -1,6 +1,7 @@
 ## Version 1.3 (in progress)
 
 * Reworked the way defaults are set and inherited; explicit control given to user with `->option_defaults()` [#48](https://github.com/CLIUtils/CLI11/pull/48)
+* Hidden options now are based on an empty group name, instead of special "hidden" keyword [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * `parse` no longer returns (so `CLI11_PARSE` is always usable) [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * Added `remaining()` and `remaining_size()` [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * `allow_extras` and `prefix_command` are now valid on subcommands [#37](https://github.com/CLIUtils/CLI11/pull/37)
