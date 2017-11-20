@@ -285,7 +285,7 @@ class App {
             options_.emplace_back();
             Option_p &option = options_.back();
             option.reset(new Option(name, description, callback, defaulted, this));
-            option->copy_from(option_defaults_);
+            option_defaults_.copy_to(option.get());
             return option.get();
         } else
             throw OptionAlreadyAdded(myopt.get_name());
@@ -895,7 +895,7 @@ class App {
             std::set<std::string> subcmd_groups_seen;
             for(const App_p &com : subcommands_) {
                 const std::string &group_key = detail::to_lower(com->get_group());
-                if(group_key == "" || subcmd_groups_seen.count(group_key) != 0)
+                if(group_key.empty() || subcmd_groups_seen.count(group_key) != 0)
                     continue;
 
                 subcmd_groups_seen.insert(group_key);

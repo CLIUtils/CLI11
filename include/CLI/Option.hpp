@@ -42,11 +42,11 @@ template <typename CRTP> class OptionBase {
     /// Only take the last argument (requires `expected_ == 1`)
     bool last_{false};
 
-    template <typename T> void copy_from(const T &other) {
-        group_ = other.get_group();
-        required_ = other.get_required();
-        ignore_case_ = other.get_ignore_case();
-        last_ = other.get_take_last();
+    template <typename T> void copy_to(T *other) const {
+        other->group(group_);
+        other->required(required_);
+        other->ignore_case(ignore_case_);
+        other->take_last(last_);
     }
 
   public:
@@ -281,7 +281,7 @@ class Option : public OptionBase<Option> {
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_case(bool value = true) {
         ignore_case_ = value;
-        T *parent = dynamic_cast<T *>(parent_);
+        auto *parent = dynamic_cast<T *>(parent_);
 
         if(parent == nullptr)
             throw IncorrectConstruction("This should not happen, there is always a parent!");
