@@ -15,10 +15,10 @@ int main(int argc, char **argv) {
 
     app.add_flag("--z,--x"); // Random other flags
 
-    // Standard parsing lines (copy and paste in)
+    // Standard parsing lines (copy and paste in, or use CLI11_PARSE)
     try {
         app.parse(argc, argv);
-    } catch(const CLI::Error &e) {
+    } catch(const CLI::ParseError &e) {
         return app.exit(e);
     }
 
