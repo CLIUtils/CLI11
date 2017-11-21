@@ -9,11 +9,11 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_GENERATOR="Visual Studio 14 2015"
+  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_GENERATOR="Visual Studio 14 2015"
   - cmake --build .
 
 test_script:
-  - ctest --output-on-failure
+  - ctest --output-on-failure -C RelWithDebInfo
 
 notifications:
   - provider: Webhook
