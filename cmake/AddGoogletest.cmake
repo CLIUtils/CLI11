@@ -34,7 +34,11 @@ set_target_properties(check PROPERTIES FOLDER "Scripts")
 
 
 if(GOOGLE_TEST_INDIVIDUAL)
-    include(GoogleTest)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.9)
+        include(GoogleTest)
+    else()
+        set(GOOGLE_TEST_INDIVIDUAL OFF)
+    endif()
 endif()
 
 # Target must already exist
