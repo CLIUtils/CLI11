@@ -60,6 +60,7 @@ install:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then pip install --user pathlib ; fi
+- cmake --version
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - |
