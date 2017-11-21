@@ -32,6 +32,23 @@ TEST_F(TApp, BasicSubcommands) {
     app.reset();
     args = {"SUb2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
+
+    app.reset();
+    args = {"SUb2"};
+    try {
+        run();
+    } catch(const CLI::ExtrasError &e) {
+        EXPECT_THAT(e.what(), HasSubstr("SUb2"));
+    }
+
+    app.reset();
+    args = {"sub1", "extra"};
+    try {
+      run();
+    } catch(const CLI::ExtrasError &e) {
+        EXPECT_THAT(e.what(), HasSubstr("extra"));
+    }
+
 }
 
 TEST_F(TApp, MultiSubFallthrough) {
@@ -339,6 +356,14 @@ TEST_F(TApp, SubComExtras) {
     run();
     EXPECT_EQ(app.remaining(), std::vector<std::string>());
     EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra1", "extra2"}));
+
+    app.reset();
+
+    args = {"extra1", "extra2", "sub", "extra3", "extra4"};
+    run();
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra1", "extra2"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"extra1", "extra2", "extra3", "extra4"}));
+    EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra3", "extra4"}));
 }
 
 TEST_F(TApp, Required1SubCom) {
