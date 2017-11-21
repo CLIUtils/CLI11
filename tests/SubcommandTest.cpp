@@ -27,6 +27,7 @@ TEST_F(TApp, BasicSubcommands) {
 
     args = {"sub2"};
     run();
+    EXPECT_EQ((size_t)1, app.get_subcommands().size());
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 
     app.reset();
@@ -559,4 +560,85 @@ TEST_F(SubcommandProgram, Groups) {
     help = app.help();
     EXPECT_THAT(help, HasSubstr("More Commands:"));
     EXPECT_THAT(help, Not(HasSubstr("Subcommands:")));
+}
+
+TEST_F(SubcommandProgram, ExtrasErrors) {
+
+    args = {"one", "two", "start", "three", "four"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    app.reset();
+
+    args = {"start", "three", "four"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    app.reset();
+
+    args = {"one", "two"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    app.reset();
+}
+
+TEST_F(SubcommandProgram, OrderedExtras) {
+
+    app.allow_extras();
+    args = {"one", "two", "start", "three", "four"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    app.reset();
+
+    start->allow_extras();
+
+    run();
+
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "four"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four"}));
+
+    app.reset();
+    args = {"one", "two", "start", "three", "--", "four"};
+
+    run();
+
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "--", "four"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "--", "four"}));
+}
+
+TEST_F(SubcommandProgram, MixedOrderExtras) {
+
+    app.allow_extras();
+    start->allow_extras();
+    stop->allow_extras();
+
+    args = {"one", "two", "start", "three", "four", "stop", "five", "six"};
+    run();
+
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "four"}));
+    EXPECT_EQ(stop->remaining(), std::vector<std::string>({"five", "six"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four", "five", "six"}));
+
+    app.reset();
+    args = {"one", "two", "stop", "three", "four", "start", "five", "six"};
+    run();
+
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(stop->remaining(), std::vector<std::string>({"three", "four"}));
+    EXPECT_EQ(start->remaining(), std::vector<std::string>({"five", "six"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four", "five", "six"}));
+}
+
+TEST_F(SubcommandProgram, CallbackOrder) {
+    std::vector<int> callback_order;
+    start->set_callback([&callback_order]() { callback_order.push_back(1); });
+    stop->set_callback([&callback_order]() { callback_order.push_back(2); });
+
+    args = {"start", "stop"};
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({1, 2}));
+
+    app.reset();
+    callback_order.clear();
+
+    args = {"stop", "start"};
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({2, 1}));
 }
