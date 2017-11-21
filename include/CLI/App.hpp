@@ -102,6 +102,9 @@ class App {
     /// This is a list of pointers to options with the original parse order
     std::vector<Option *> parse_order_;
 
+    /// This is a list of the subcommands collected, in order
+    std::vector<App *> parsed_subcommands_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -732,6 +735,7 @@ class App {
 
         parsed_ = false;
         missing_.clear();
+        parsed_subcommands_.clear();
 
         for(const Option_p &opt : options_) {
             opt->clear();
@@ -755,13 +759,18 @@ class App {
         throw OptionNotFound(name);
     }
 
-    /// Get a subcommand pointer list to the currently selected subcommands (after parsing)
-    std::vector<App *> get_subcommands() const {
-        std::vector<App *> subcomms;
-        for(const App_p &subcomptr : subcommands_)
-            if(subcomptr->parsed_)
-                subcomms.push_back(subcomptr.get());
-        return subcomms;
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command line
+    /// order)
+    std::vector<App *> get_subcommands(bool parsed = true) const {
+        if(parsed) {
+            return parsed_subcommands_;
+        } else {
+            std::vector<App *> subcomms(subcommands_.size());
+            std::transform(std::begin(subcommands_), std::end(subcommands_), std::begin(subcomms), [](const App_p &v) {
+                return v.get();
+            });
+            return subcomms;
+        }
     }
 
     /// Check to see if given subcommand was selected
@@ -952,7 +961,7 @@ class App {
             miss_list.push_back(std::get<1>(miss));
         }
         if(recurse) {
-            for(const App_p &sub : subcommands_) {
+            for(const App *sub : parsed_subcommands_) {
                 std::vector<std::string> output = sub->remaining(recurse);
                 std::copy(std::begin(output), std::end(output), std::back_inserter(miss_list));
             }
@@ -1260,6 +1269,9 @@ class App {
         for(const App_p &com : subcommands_) {
             if(com->check_name(args.back())) {
                 args.pop_back();
+                if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com.get()) ==
+                   std::end(parsed_subcommands_))
+                    parsed_subcommands_.push_back(com.get());
                 com->_parse(args);
                 return;
             }
