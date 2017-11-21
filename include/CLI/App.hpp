@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iterator>
 
 // CLI Library includes
 #include "CLI/Error.hpp"
