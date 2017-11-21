@@ -1,3 +1,4 @@
+set(GOOGLE_TEST_INDIVIDUAL ON)
 include(AddGoogletest)
 
 set(CLI_TESTS
