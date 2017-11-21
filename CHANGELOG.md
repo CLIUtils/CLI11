@@ -12,6 +12,8 @@
 * Subcommand now support groups [#46](https://github.com/CLIUtils/CLI11/pull/46)
 * `CLI::RuntimeError` added, for easy exit with error codes [#45](https://github.com/CLIUtils/CLI11/pull/45) 
 * The clang-format script is now no longer "hidden" [#48](https://github.com/CLIUtils/CLI11/pull/48)
+* The order is now preserved for subcommands (list and callbacks) [#49](https://github.com/CLIUtils/CLI11/pull/49)
+* Tests now run individually, utilizing CMake 3.10 additions if possible
 
 
 ## Version 1.2
