@@ -408,17 +408,18 @@ class Option : public OptionBase<Option> {
 
     /// Process the callback
     void run_callback() const {
-        bool result;
+        bool local_result;
         // If take_last, only operate on the final item
         if(last_) {
             results_t partial_result = {results_.back()};
-            result = !callback_(partial_result);
+            local_result = !callback_(partial_result);
         } else {
-            result = !callback_(results_);
+            local_result = !callback_(results_);
         }
 
-        if(result)
+        if(local_result)
             throw ConversionError(get_name() + "=" + detail::join(results_));
+
         if(!validators_.empty()) {
             for(const std::string &result : results_)
                 for(const std::function<bool(std::string)> &vali : validators_)
