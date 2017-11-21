@@ -44,11 +44,10 @@ TEST_F(TApp, BasicSubcommands) {
     app.reset();
     args = {"sub1", "extra"};
     try {
-      run();
+        run();
     } catch(const CLI::ExtrasError &e) {
         EXPECT_THAT(e.what(), HasSubstr("extra"));
     }
-
 }
 
 TEST_F(TApp, MultiSubFallthrough) {
