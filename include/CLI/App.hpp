@@ -910,9 +910,9 @@ class App {
 
                 subcmd_groups_seen.insert(group_key);
                 out << std::endl << com->get_group() << ":" << std::endl;
-                for(const App_p &com : subcommands_)
-                    if(detail::to_lower(com->get_group()) == group_key)
-                        detail::format_help(out, com->get_name(), com->description_, wid);
+                for(const App_p &new_com : subcommands_)
+                    if(detail::to_lower(new_com->get_group()) == group_key)
+                        detail::format_help(out, new_com->get_name(), new_com->description_, wid);
             }
         }
 
