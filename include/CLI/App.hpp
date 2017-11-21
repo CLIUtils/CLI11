@@ -954,7 +954,7 @@ class App {
         if(recurse) {
             for(const App_p &sub : subcommands_) {
                 std::vector<std::string> output = sub->remaining(recurse);
-                miss_list.assign(std::begin(output), std::end(output));
+                std::copy(std::begin(output), std::end(output), std::back_inserter(miss_list));
             }
         }
         return miss_list;
@@ -1114,15 +1114,14 @@ class App {
             throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
 
         // Convert missing (pairs) to extras (string only)
-        if(parent_ == nullptr) {
-            args = remaining(true);
-            std::reverse(std::begin(args), std::end(args));
+        if(!(allow_extras_ || prefix_command_)) {
+            size_t num_left_over = remaining_size();
+            if(num_left_over > 0) {
+                args = remaining(false);
+                std::reverse(std::begin(args), std::end(args));
+                throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
+            }
         }
-
-        size_t num_left_over = remaining_size();
-
-        if(num_left_over > 0 && !(allow_extras_ || prefix_command_))
-            throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
     }
 
     /// Parse one ini param, return false if not found in any subcommand, remove if it is
