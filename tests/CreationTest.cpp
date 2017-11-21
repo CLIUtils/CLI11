@@ -70,12 +70,12 @@ TEST_F(TApp, MultipleSubcomMatching) {
 }
 
 TEST_F(TApp, RecoverSubcommands) {
-    CLI::App* app1 = app.add_subcommand("app1");
-    CLI::App* app2 = app.add_subcommand("app2");
-    CLI::App* app3 = app.add_subcommand("app3");
-    CLI::App* app4 = app.add_subcommand("app4");
+    CLI::App *app1 = app.add_subcommand("app1");
+    CLI::App *app2 = app.add_subcommand("app2");
+    CLI::App *app3 = app.add_subcommand("app3");
+    CLI::App *app4 = app.add_subcommand("app4");
 
-    EXPECT_EQ(app.get_subcommands(false), std::vector<CLI::App*>({app1, app2, app3, app4}));
+    EXPECT_EQ(app.get_subcommands(false), std::vector<CLI::App *>({app1, app2, app3, app4}));
 }
 
 TEST_F(TApp, MultipleSubcomMatchingWithCase) {
