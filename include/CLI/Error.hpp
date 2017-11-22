@@ -41,25 +41,19 @@ enum class ExitCodes {
 /// All errors derive from this one
 struct Error : public std::runtime_error {
     int exit_code;
-    bool print_help;
     int get_exit_code() const { return exit_code; }
-    Error(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass, bool print_help = true)
-        : runtime_error(parent + ": " + name), exit_code(static_cast<int>(exit_code)), print_help(print_help) {}
-    Error(std::string parent,
-          std::string name,
-          int exit_code = static_cast<int>(ExitCodes::BaseClass),
-          bool print_help = true)
-        : runtime_error(parent + ": " + name), exit_code(exit_code), print_help(print_help) {}
+
+    Error(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
+        : runtime_error(parent + ": " + name), exit_code(static_cast<int>(exit_code)) {}
+    Error(std::string parent, std::string name, int exit_code = static_cast<int>(ExitCodes::BaseClass))
+        : runtime_error(parent + ": " + name), exit_code(exit_code) {}
 };
 
 /// Construction errors (not in parsing)
 struct ConstructionError : public Error {
     // Using Error::Error constructors seem to not work on GCC 4.7
-    ConstructionError(std::string parent,
-                      std::string name,
-                      ExitCodes exit_code = ExitCodes::BaseClass,
-                      bool print_help = true)
-        : Error(parent, name, exit_code, print_help) {}
+    ConstructionError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
+        : Error(parent, name, exit_code) {}
 };
 
 /// Thrown when an option is set to conflicting values (non-vector and multi args, for example)
@@ -83,20 +77,17 @@ struct OptionAlreadyAdded : public ConstructionError {
 
 /// Anything that can error in Parse
 struct ParseError : public Error {
-    ParseError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass, bool print_help = true)
-        : Error(parent, name, exit_code, print_help) {}
-    ParseError(std::string parent,
-               std::string name,
-               int exit_code = static_cast<int>(ExitCodes::BaseClass),
-               bool print_help = true)
-        : Error(parent, name, exit_code, print_help) {}
+    ParseError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
+        : Error(parent, name, exit_code) {}
+    ParseError(std::string parent, std::string name, int exit_code = static_cast<int>(ExitCodes::BaseClass))
+        : Error(parent, name, exit_code) {}
 };
 
 // Not really "errors"
 
 /// This is a successful completion on parsing, supposed to exit
 struct Success : public ParseError {
-    Success() : ParseError("Success", "Successfully completed, should be caught and quit", ExitCodes::Success, false) {}
+    Success() : ParseError("Success", "Successfully completed, should be caught and quit", ExitCodes::Success) {}
 };
 
 /// -h or --help on command line
@@ -107,7 +98,7 @@ struct CallForHelp : public ParseError {
 
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
 struct RuntimeError : public ParseError {
-    RuntimeError(int exit_code = 1) : ParseError("RuntimeError", "runtime error", exit_code, false) {}
+    RuntimeError(int exit_code = 1) : ParseError("RuntimeError", "runtime error", exit_code) {}
 };
 
 /// Thrown when parsing an INI file and it is missing

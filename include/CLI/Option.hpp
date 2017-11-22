@@ -359,10 +359,20 @@ class Option : public OptionBase<Option> {
         return out;
     }
 
-    /// The first half of the help print, name plus default, etc
-    std::string help_name() const {
+    /// The most discriptive name available
+    std::string single_name() const {
+        if(!lnames_.empty())
+            return lnames_[0];
+        else if(!snames_.empty())
+            return snames_[0];
+        else
+            return pname_;
+    }
+
+    /// The first half of the help print, name plus default, etc. Setting opt_only to true avoids the positional name.
+    std::string help_name(bool opt_only = false) const {
         std::stringstream out;
-        out << get_name(true) << help_aftername();
+        out << get_name(opt_only) << help_aftername();
         return out.str();
     }
 
