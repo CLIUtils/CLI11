@@ -302,11 +302,12 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
+    // It's better to feed a hungry option than to feed allow_extras
     app.reset();
     app.allow_extras();
     run();
-    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"two"}));
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({}));
 
     app.reset();
     app.allow_extras(false);
@@ -335,11 +336,12 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
+    // It's better to feed a hungry option than to feed allow_extras
     app.reset();
     app.allow_extras();
     run();
-    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"two"}));
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({}));
 
     app.reset();
     app.allow_extras(false);
