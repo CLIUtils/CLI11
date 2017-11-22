@@ -1108,11 +1108,12 @@ class App {
             if(opt->get_required()) {
                 if(opt->count() == 0) {
                     throw RequiredError(opt->get_name() + " is required");
-                } else if (static_cast<int>(opt->count()) < opt->get_expected()) {
+                } else if(static_cast<int>(opt->count()) < opt->get_expected()) {
                     if(opt->get_expected() == 1)
                         throw RequiredError(opt->get_name() + " requires an argument");
                     else
-                        throw RequiredError(opt->get_name() + " requires at least " + std::to_string(opt->get_expected()) + " arguments");
+                        throw RequiredError(opt->get_name() + " requires at least " +
+                                            std::to_string(opt->get_expected()) + " arguments");
                 }
             }
             // Requires
