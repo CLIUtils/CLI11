@@ -362,9 +362,9 @@ class Option : public OptionBase<Option> {
     /// The most discriptive name available
     std::string single_name() const {
         if(!lnames_.empty())
-            return lnames_[0];
+            return std::string("--") + lnames_[0];
         else if(!snames_.empty())
-            return snames_[0];
+            return std::string("-") + snames_[0];
         else
             return pname_;
     }
