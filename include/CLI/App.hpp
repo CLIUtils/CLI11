@@ -1392,9 +1392,7 @@ class App {
             bool already_ate_one = false; // Make sure we always eat one
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 if(already_ate_one) {
-                    // If allow extras is true, don't keep eating
-                    if(get_allow_extras())
-                        break;
+                    // We could break here for allow extras, but we don't
 
                     // If any positionals remain, don't keep eating
                     if(_count_remaining_positionals() > 0)
@@ -1471,9 +1469,7 @@ class App {
             bool already_ate_one = false; // Make sure we always eat one
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 if(already_ate_one) {
-                    // If allow extras is true, don't keep eating
-                    if(get_allow_extras())
-                        break;
+                    // We could break here for allow extras, but we don't
 
                     // If any positionals remain, don't keep eating
                     if(_count_remaining_positionals() > 0)
