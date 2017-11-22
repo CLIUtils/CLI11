@@ -58,7 +58,7 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 
 ## Features not supported by this library
 
-There are some other possible features that are intentionally not supported by this library:
+There are some other possible "features" that are intentionally not supported by this library:
 
 * Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
 * Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
@@ -72,7 +72,7 @@ There are some other possible features that are intentionally not supported by t
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][Github Releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the `CLI11` interface target when linking. (CMake 3.4+ recommended) Or, instead of explicitly downloading the library, use the `AddCLI.cmake` supplied in [CLIUtils cmake helpers][cltools-cmake].
+2. Checkout the repository and add as a subdirectory for CMake. You can use the `CLI11` interface target when linking. (CMake 3.4+ required, 3.10+ best) Or, instead of explicitly downloading the library, use the `AddCLI.cmake` supplied in [CLIUtils cmake helpers][cltools-cmake].
 
 To build the tests, checkout the repository and use CMake:
 
@@ -94,14 +94,17 @@ CLI::App app{"App description"};
 std::string filename = "default";
 app.add_option("-f,--file", filename, "A help string");
 
-try {
-    app.parse(argc, argv);
-} catch (const CLI::ParseError &e) {
-    return app.exit(e);
-}
+CLI11_PARSE(app, argc, argv);
 ```
 
-> Note: The final five lines are so common, they have a dedicated macro: `CLI11_PARSE(app, argc, argv)`.
+> Note: If you don't like macros, this is what that macro expands to:
+> ```cpp
+> try {
+>     app.parse(argc, argv);
+> } catch (const CLI::ParseError &e) {
+>     return app.exit(e);
+> }
+> ```
 
 
 The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
