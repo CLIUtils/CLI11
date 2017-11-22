@@ -69,9 +69,6 @@ class App {
     /// Description of the current program/subcommand
     std::string description_;
 
-    /// Footer to put after all options in the help output INHERITABLE
-    std::string footer_;
-
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
 
@@ -90,6 +87,13 @@ class App {
 
     /// The list of options, stored locally
     std::vector<Option_p> options_;
+
+    ///@}
+    /// @name Help
+    ///@{
+
+    /// Footer to put after all options in the help output INHERITABLE
+    std::string footer_;
 
     /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
@@ -188,15 +192,6 @@ class App {
         set_help_flag("-h,--help", "Print this help message and exit");
     }
 
-    /// Set footer.
-    App *set_footer(std::string footer) {
-        footer_ = footer;
-        return this;
-    }
-
-    /// Get footer.
-    std::string get_footer() const { return footer_; }
-
     /// Set a callback for the end of parsing.
     ///
     /// Due to a bug in c++11,
@@ -214,16 +209,11 @@ class App {
         return this;
     }
 
-    /// Get the status of allow extras
-    bool get_allow_extras() const { return allow_extras_; }
-
     /// Do not parse anything after the first unrecognised option and return
     App *prefix_command(bool allow = true) {
         prefix_command_ = allow;
         return this;
     }
-
-    bool get_prefix_command() const { return prefix_command_; }
 
     /// Ignore case. Subcommand inherit value.
     App *ignore_case(bool value = true) {
@@ -237,68 +227,8 @@ class App {
         return this;
     }
 
-    bool get_ignore_case() const { return ignore_case_; }
-
     /// Check to see if this subcommand was parsed, true only if received on command line.
     bool parsed() const { return parsed_; }
-
-    /// Check to see if this subcommand was parsed, true only if received on command line.
-    /// This allows the subcommand to be directly checked.
-    operator bool() const { return parsed_; }
-
-    /// The argumentless form of require subcommand requires 1 or more subcommands
-    App *require_subcommand() {
-        require_subcommand_min_ = 1;
-        require_subcommand_max_ = 0;
-        return this;
-    }
-
-    /// Require a subcommand to be given (does not affect help call)
-    /// The number required can be given. Negative values indicate maximum
-    /// number allowed (0 for any number). Max number inheritable.
-    App *require_subcommand(int value) {
-        if(value < 0) {
-            require_subcommand_min_ = 0;
-            require_subcommand_max_ = static_cast<size_t>(-value);
-        } else {
-            require_subcommand_min_ = static_cast<size_t>(value);
-            require_subcommand_max_ = static_cast<size_t>(value);
-        }
-        return this;
-    }
-
-    /// Explicitly control the number of subcommands required. Setting 0
-    /// for the max means unlimited number allowed. Max number inheritable.
-    App *require_subcommand(size_t min, size_t max) {
-        require_subcommand_min_ = min;
-        require_subcommand_max_ = max;
-        return this;
-    }
-
-    /// Get the required min subcommand value
-    size_t get_require_subcommand_min() const { return require_subcommand_min_; }
-
-    /// Get the required max subcommand value
-    size_t get_require_subcommand_max() const { return require_subcommand_max_; }
-
-    /// Stop subcommand fallthrough, so that parent commands cannot collect commands after subcommand.
-    /// Default from parent, usually set on parent.
-    App *fallthrough(bool value = true) {
-        fallthrough_ = value;
-        return this;
-    }
-
-    /// Check the status of fallthrough
-    bool get_fallthrough() const { return fallthrough_; }
-
-    /// Changes the group membership
-    App *group(std::string name) {
-        group_ = name;
-        return this;
-    }
-
-    /// Get the group of this subcommand
-    const std::string &get_group() const { return group_; }
 
     /// Get the OptionDefault object, to set option defaults
     OptionDefaults *option_defaults() { return &option_defaults_; }
@@ -722,6 +652,52 @@ class App {
         throw CLI::OptionNotFound(subcom);
     }
 
+    /// Changes the group membership
+    App *group(std::string name) {
+        group_ = name;
+        return this;
+    }
+
+    /// The argumentless form of require subcommand requires 1 or more subcommands
+    App *require_subcommand() {
+        require_subcommand_min_ = 1;
+        require_subcommand_max_ = 0;
+        return this;
+    }
+
+    /// Require a subcommand to be given (does not affect help call)
+    /// The number required can be given. Negative values indicate maximum
+    /// number allowed (0 for any number). Max number inheritable.
+    App *require_subcommand(int value) {
+        if(value < 0) {
+            require_subcommand_min_ = 0;
+            require_subcommand_max_ = static_cast<size_t>(-value);
+        } else {
+            require_subcommand_min_ = static_cast<size_t>(value);
+            require_subcommand_max_ = static_cast<size_t>(value);
+        }
+        return this;
+    }
+
+    /// Explicitly control the number of subcommands required. Setting 0
+    /// for the max means unlimited number allowed. Max number inheritable.
+    App *require_subcommand(size_t min, size_t max) {
+        require_subcommand_min_ = min;
+        require_subcommand_max_ = max;
+        return this;
+    }
+
+    /// Stop subcommand fallthrough, so that parent commands cannot collect commands after subcommand.
+    /// Default from parent, usually set on parent.
+    App *fallthrough(bool value = true) {
+        fallthrough_ = value;
+        return this;
+    }
+
+    /// Check to see if this subcommand was parsed, true only if received on command line.
+    /// This allows the subcommand to be directly checked.
+    operator bool() const { return parsed_; }
+
     ///@}
     /// @name Extras for subclassing
     ///@{
@@ -833,6 +809,12 @@ class App {
     ///@}
     /// @name Help
     ///@{
+
+    /// Set footer.
+    App *set_footer(std::string footer) {
+        footer_ = footer;
+        return this;
+    }
 
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include
     /// default arguments. Prefix will add a string to the beginning of each option.
@@ -973,6 +955,30 @@ class App {
     ///@}
     /// @name Getters
     ///@{
+
+    /// Check the status of ignore_case
+    bool get_ignore_case() const { return ignore_case_; }
+
+    /// Check the status of fallthrough
+    bool get_fallthrough() const { return fallthrough_; }
+
+    /// Get the group of this subcommand
+    const std::string &get_group() const { return group_; }
+
+    /// Get footer.
+    std::string get_footer() const { return footer_; }
+
+    /// Get the required min subcommand value
+    size_t get_require_subcommand_min() const { return require_subcommand_min_; }
+
+    /// Get the required max subcommand value
+    size_t get_require_subcommand_max() const { return require_subcommand_max_; }
+
+    /// Get the prefix command status
+    bool get_prefix_command() const { return prefix_command_; }
+
+    /// Get the status of allow extras
+    bool get_allow_extras() const { return allow_extras_; }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
