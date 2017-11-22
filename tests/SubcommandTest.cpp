@@ -677,6 +677,12 @@ TEST_F(ManySubcommands, Required2Exact) {
     EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
 }
 
+TEST_F(ManySubcommands, Required4Failure) {
+    app.require_subcommand(4);
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 TEST_F(ManySubcommands, Required1Fuzzy) {
 
     app.require_subcommand(0, 1);
