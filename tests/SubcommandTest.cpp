@@ -6,6 +6,8 @@
 using ::testing::HasSubstr;
 using ::testing::Not;
 
+using vs_t = std::vector<std::string>;
+
 TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
@@ -81,7 +83,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     app.reset();
     app.require_subcommand(1);
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ExtrasError);
 
     app.reset();
     args = {"sub1"};
@@ -380,7 +382,7 @@ TEST_F(TApp, Required1SubCom) {
 
     app.reset();
     args = {"sub1", "sub2"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
 TEST_F(TApp, BadSubcomSearch) {
@@ -641,4 +643,61 @@ TEST_F(SubcommandProgram, CallbackOrder) {
     args = {"stop", "start"};
     run();
     EXPECT_EQ(callback_order, std::vector<int>({2, 1}));
+}
+
+struct ManySubcommands : public TApp {
+
+    CLI::App *sub1;
+    CLI::App *sub2;
+    CLI::App *sub3;
+    CLI::App *sub4;
+
+    ManySubcommands() {
+        sub1 = app.add_subcommand("sub1");
+        sub2 = app.add_subcommand("sub2");
+        sub3 = app.add_subcommand("sub3");
+        sub4 = app.add_subcommand("sub4");
+    }
+};
+
+TEST_F(ManySubcommands, RequiredExact) {
+
+    app.require_subcommand(1);
+
+    sub1->allow_extras();
+
+    args = {"sub1", "sub2", "sub3"};
+    run();
+
+    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+
+    app.reset();
+
+    app.require_subcommand(2);
+    sub2->allow_extras();
+
+    run();
+
+    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
+}
+
+TEST_F(ManySubcommands, RequiredFuzzy) {
+
+    app.require_subcommand(0, 1);
+
+    sub1->allow_extras();
+
+    args = {"sub1", "sub2", "sub3"};
+    run();
+
+    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+
+    app.reset();
+
+    app.require_subcommand(0, 2);
+    sub2->allow_extras();
+
+    run();
+
+    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
 }

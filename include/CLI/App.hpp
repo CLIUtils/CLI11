@@ -133,8 +133,11 @@ class App {
     /// True if this command/subcommand was parsed
     bool parsed_{false};
 
-    /// -1 for 1 or more, 0 for not required, # for exact number required
-    int require_subcommand_ = 0;
+    /// Minimum required subcommands
+    size_t require_subcommand_min_ = 0;
+
+    /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited
+    size_t require_subcommand_max_ = 0;
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
@@ -243,9 +246,24 @@ class App {
     operator bool() const { return parsed_; }
 
     /// Require a subcommand to be given (does not affect help call)
-    /// Does not return a pointer since it is supposed to be called on the main App.
+    /// The number required can be given. Negative values indicate maximum
+    /// number allowed (0 for any number).
     App *require_subcommand(int value = -1) {
-        require_subcommand_ = value;
+        if(value < 0) {
+            require_subcommand_min_ = static_cast<size_t>(-value);
+            require_subcommand_max_ = 0;
+        } else {
+            require_subcommand_min_ = static_cast<size_t>(value);
+            require_subcommand_max_ = static_cast<size_t>(value);
+        }
+        return this;
+    }
+
+    /// Explicitly control the number of subcommands required. Setting 0
+    /// for the max means unlimited number allowed
+    App *require_subcommand(size_t min, size_t max) {
+        require_subcommand_min_ = min;
+        require_subcommand_max_ = max;
         return this;
     }
 
@@ -883,7 +901,7 @@ class App {
             }
 
         if(!subcommands_.empty()) {
-            if(require_subcommand_ != 0)
+            if(require_subcommand_min_ > 0)
                 out << " SUBCOMMAND";
             else
                 out << " [SUBCOMMAND]";
@@ -1025,14 +1043,19 @@ class App {
         }
     }
 
+    /// Check to see if a subcommand is valid. Give up immediately if subcommand max has been reached.
     bool _valid_subcommand(const std::string &current) const {
+        // Don't match if max has been reached - but still check parents
+        if(require_subcommand_max_ != 0 && parsed_subcommands_.size() >= require_subcommand_max_) {
+            return parent_ != nullptr && parent_->_valid_subcommand(current);
+        }
+
         for(const App_p &com : subcommands_)
             if(com->check_name(current) && !*com)
                 return true;
-        if(parent_ != nullptr)
-            return parent_->_valid_subcommand(current);
-        else
-            return false;
+
+        // Check parent if exists, else return false
+        return parent_ != nullptr && parent_->_valid_subcommand(current);
     }
 
     /// Selects a Classifier enum based on the type of the current argument
@@ -1139,10 +1162,10 @@ class App {
         }
 
         auto selected_subcommands = get_subcommands();
-        if(require_subcommand_ < 0 && selected_subcommands.empty())
+        if(require_subcommand_min_ > 0 && selected_subcommands.empty())
             throw RequiredError("Subcommand required");
-        else if(require_subcommand_ > 0 && static_cast<int>(selected_subcommands.size()) != require_subcommand_)
-            throw RequiredError(std::to_string(require_subcommand_) + " subcommand(s) required");
+        else if(require_subcommand_min_ > selected_subcommands.size())
+            throw RequiredError("Requires at least " + std::to_string(require_subcommand_min_) + " subcommands");
 
         // Convert missing (pairs) to extras (string only)
         if(!(allow_extras_ || prefix_command_)) {
