@@ -653,51 +653,71 @@ struct ManySubcommands : public TApp {
     CLI::App *sub4;
 
     ManySubcommands() {
+        app.allow_extras();
         sub1 = app.add_subcommand("sub1");
         sub2 = app.add_subcommand("sub2");
         sub3 = app.add_subcommand("sub3");
         sub4 = app.add_subcommand("sub4");
+        args = {"sub1", "sub2", "sub3"};
     }
 };
 
-TEST_F(ManySubcommands, RequiredExact) {
-
+TEST_F(ManySubcommands, Required1Exact) {
     app.require_subcommand(1);
 
-    sub1->allow_extras();
-
-    args = {"sub1", "sub2", "sub3"};
     run();
-
     EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+    EXPECT_EQ(app.remaining(true), vs_t({"sub2", "sub3"}));
+}
 
-    app.reset();
-
+TEST_F(ManySubcommands, Required2Exact) {
     app.require_subcommand(2);
-    sub2->allow_extras();
 
     run();
-
     EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
 }
 
-TEST_F(ManySubcommands, RequiredFuzzy) {
+TEST_F(ManySubcommands, Required1Fuzzy) {
 
     app.require_subcommand(0, 1);
 
-    sub1->allow_extras();
-
-    args = {"sub1", "sub2", "sub3"};
     run();
-
     EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
 
     app.reset();
-
-    app.require_subcommand(0, 2);
-    sub2->allow_extras();
+    app.require_subcommand(-1);
 
     run();
+    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+}
 
+TEST_F(ManySubcommands, Required2Fuzzy) {
+    app.require_subcommand(0, 2);
+
+    run();
     EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
+    EXPECT_EQ(app.remaining(true), vs_t({"sub3"}));
+
+    app.reset();
+    app.require_subcommand(-2);
+
+    run();
+    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
+}
+
+TEST_F(ManySubcommands, Unlimited) {
+    run();
+    EXPECT_EQ(app.remaining(true), vs_t());
+
+    app.reset();
+    app.require_subcommand();
+
+    run();
+    EXPECT_EQ(app.remaining(true), vs_t());
+
+    app.reset();
+    app.require_subcommand(2, 0); // 2 or more
+
+    run();
+    EXPECT_EQ(app.remaining(true), vs_t());
 }

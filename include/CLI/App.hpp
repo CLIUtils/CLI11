@@ -245,13 +245,20 @@ class App {
     /// This allows the subcommand to be directly checked.
     operator bool() const { return parsed_; }
 
+    /// The argumentless form of require subcommand requires 1 or more subcommands
+    App *require_subcommand() {
+        require_subcommand_min_ = 1;
+        require_subcommand_max_ = 0;
+        return this;
+    }
+
     /// Require a subcommand to be given (does not affect help call)
     /// The number required can be given. Negative values indicate maximum
     /// number allowed (0 for any number).
-    App *require_subcommand(int value = -1) {
+    App *require_subcommand(int value) {
         if(value < 0) {
-            require_subcommand_min_ = static_cast<size_t>(-value);
-            require_subcommand_max_ = 0;
+            require_subcommand_min_ = 0;
+            require_subcommand_max_ = static_cast<size_t>(-value);
         } else {
             require_subcommand_min_ = static_cast<size_t>(value);
             require_subcommand_max_ = static_cast<size_t>(value);
