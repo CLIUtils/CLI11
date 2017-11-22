@@ -435,7 +435,7 @@ TEST_F(CapturedHelp, NormalError) {
     EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::Extras));
     EXPECT_EQ(out.str(), "");
     EXPECT_THAT(err.str(), HasSubstr("for more information"));
-    EXPECT_THAT(err.str(), HasSubstr("ERROR: ExtrasError"));
+    EXPECT_THAT(err.str(), HasSubstr("ExtrasError"));
     EXPECT_THAT(err.str(), HasSubstr("Thing"));
     EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
 }

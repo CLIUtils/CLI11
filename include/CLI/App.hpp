@@ -1507,7 +1507,7 @@ class App {
 namespace FailureMessage {
 
 inline std::string simple(const App *app, const Error &e) {
-    std::string header = std::string("ERROR: ") + e.what() + "\n";
+    std::string header = e.what() + "\n";
     if(app->get_help_ptr() != nullptr)
         header += "Run with " + app->get_help_ptr()->single_name() + " for more information.\n";
     return header;
