@@ -40,6 +40,11 @@ enum class Classifer { NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND };
 struct AppFriend;
 } // namespace detail
 
+namespace FailureMessage {
+std::string simple(const App *app, const Error &e);
+std::string help(const App *app, const Error &e);
+} // namespace FailureMessage
+
 class App;
 
 using App_p = std::unique_ptr<App>;
@@ -88,6 +93,9 @@ class App {
 
     /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
+
+    /// The error message printing function INHERITABLE
+    std::function<std::string(const App *, const Error &e)> failure_message_ = FailureMessage::simple;
 
     ///@}
     /// @name Parsing
@@ -157,6 +165,7 @@ class App {
             option_defaults_ = parent_->option_defaults_;
 
             // INHERITABLE
+            failure_message_ = parent_->failure_message_;
             allow_extras_ = parent_->allow_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
@@ -712,6 +721,11 @@ class App {
         run_callback();
     }
 
+    /// Provide a function to print a help message. The function gets access to the App pointer and error.
+    void set_failure_message(std::function<std::string(const App *, const Error &e)> function) {
+        failure_message_ = function;
+    }
+
     /// Print a nice error message and return the exit code
     int exit(const Error &e) const {
 
@@ -719,15 +733,16 @@ class App {
         if(dynamic_cast<const CLI::RuntimeError *>(&e) != nullptr)
             return e.get_exit_code();
 
-        if(e.exit_code != static_cast<int>(ExitCodes::Success)) {
-            std::cerr << "ERROR: ";
-            std::cerr << e.what() << std::endl;
-            if(e.print_help)
-                std::cerr << help();
-        } else {
-            if(e.print_help)
-                std::cout << help();
+        if(dynamic_cast<const CLI::CallForHelp *>(&e) != nullptr) {
+            std::cout << help();
+            return e.get_exit_code();
         }
+
+        if(e.exit_code != static_cast<int>(ExitCodes::Success)) {
+            if(failure_message_)
+                std::cerr << failure_message_(this, e) << std::flush;
+        }
+
         return e.get_exit_code();
     }
 
@@ -895,7 +910,7 @@ class App {
                 out << std::endl << group << ":" << std::endl;
                 for(const Option_p &opt : options_) {
                     if(opt->nonpositional() && opt->get_group() == group)
-                        detail::format_help(out, opt->help_name(), opt->get_description(), wid);
+                        detail::format_help(out, opt->help_name(true), opt->get_description(), wid);
                 }
             }
         }
@@ -1107,23 +1122,20 @@ class App {
             // Required
             if(opt->get_required()) {
                 if(opt->count() == 0) {
-                    throw RequiredError(opt->get_name() + " is required");
+                    throw RequiredError(opt->help_name() + " is required");
                 } else if(static_cast<int>(opt->count()) < opt->get_expected()) {
-                    if(opt->get_expected() == 1)
-                        throw RequiredError(opt->get_name() + " requires an argument");
-                    else
-                        throw RequiredError(opt->get_name() + " requires at least " +
-                                            std::to_string(opt->get_expected()) + " arguments");
+                    throw RequiredError(opt->help_name() + " required at least " + std::to_string(opt->get_expected()) +
+                                        " arguments");
                 }
             }
             // Requires
             for(const Option *opt_req : opt->requires_)
                 if(opt->count() > 0 && opt_req->count() == 0)
-                    throw RequiresError(opt->get_name(), opt_req->get_name());
+                    throw RequiresError(opt->single_name(), opt_req->single_name());
             // Excludes
             for(const Option *opt_ex : opt->excludes_)
                 if(opt->count() > 0 && opt_ex->count() != 0)
-                    throw ExcludesError(opt->get_name(), opt_ex->get_name());
+                    throw ExcludesError(opt->single_name(), opt_ex->single_name());
         }
 
         auto selected_subcommands = get_subcommands();
@@ -1414,6 +1426,20 @@ class App {
         return;
     }
 };
+
+namespace FailureMessage {
+inline std::string simple(const App *app, const Error &e) {
+    std::string header = std::string("ERROR: ") + e.what() + "\n";
+    if(app->get_help_ptr() != nullptr)
+        header += "Run with " + app->get_help_ptr()->single_name() + " for more help\n";
+    return header;
+};
+inline std::string help(const App *app, const Error &e) {
+    std::string header = std::string("ERROR: ") + e.what() + "\n";
+    header += app->help();
+    return header;
+};
+} // namespace FailureMessage
 
 namespace detail {
 /// This class is simply to allow tests access to App's protected functions
