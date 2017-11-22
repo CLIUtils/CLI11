@@ -214,6 +214,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.allow_extras()`: Do not throw an error if extra arguments are left over
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 * `.set_footer(message)`: Set text to appear at the bottom of the help string.
+* `.set_failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and CLI::FailureMessage::simple` (the default).
 * `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names.
