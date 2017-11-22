@@ -230,6 +230,178 @@ TEST_F(TApp, TakeLastOpt) {
     EXPECT_EQ(str, "two");
 }
 
+TEST_F(TApp, RequiredOptsSingle) {
+
+    std::string str;
+    app.add_option("--str", str)->required();
+
+    args = {"--str"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(TApp, RequiredOptsSingleShort) {
+
+    std::string str;
+    app.add_option("-s", str)->required();
+
+    args = {"-s"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(TApp, RequiredOptsDouble) {
+
+    std::vector<std::string> strs;
+    app.add_option("--str", strs)->required()->expected(2);
+
+    args = {"--str", "one"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"--str", "one", "two"};
+
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+}
+
+TEST_F(TApp, RequiredOptsDoubleShort) {
+
+    std::vector<std::string> strs;
+    app.add_option("-s", strs)->required()->expected(2);
+
+    args = {"-s", "one"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"-s", "one", "two"};
+
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+}
+
+TEST_F(TApp, RequiredOptsUnlimited) {
+
+    std::vector<std::string> strs;
+    app.add_option("--str", strs)->required();
+
+    args = {"--str"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"--str", "one", "--str", "two"};
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+
+    app.reset();
+    args = {"--str", "one", "two"};
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+
+    app.reset();
+    app.allow_extras();
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"two"}));
+
+    app.reset();
+    app.allow_extras(false);
+    std::vector<std::string> remain;
+    app.add_option("positional", remain);
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two"}));
+}
+
+TEST_F(TApp, RequiredOptsUnlimitedShort) {
+
+    std::vector<std::string> strs;
+    app.add_option("-s", strs)->required();
+
+    args = {"-s"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    app.reset();
+    args = {"-s", "one", "-s", "two"};
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+
+    app.reset();
+    args = {"-s", "one", "two"};
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+
+    app.reset();
+    app.allow_extras();
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"two"}));
+
+    app.reset();
+    app.allow_extras(false);
+    std::vector<std::string> remain;
+    app.add_option("positional", remain);
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two"}));
+}
+
+TEST_F(TApp, RequireOptPriority) {
+
+    std::vector<std::string> strs;
+    app.add_option("--str", strs)->required();
+    std::vector<std::string> remain;
+    app.add_option("positional", remain)->expected(2);
+
+    args = {"--str", "one", "two", "three"};
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
+
+    app.reset();
+    args = {"two", "three", "--str", "one", "four"};
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "four"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
+}
+
+TEST_F(TApp, RequireOptPriorityShort) {
+
+    std::vector<std::string> strs;
+    app.add_option("-s", strs)->required();
+    std::vector<std::string> remain;
+    app.add_option("positional", remain)->expected(2);
+
+    args = {"-s", "one", "two", "three"};
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
+
+    app.reset();
+    args = {"two", "three", "-s", "one", "four"};
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "four"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
+}
+
+TEST_F(TApp, NotRequiedExpectedDouble) {
+
+    std::vector<std::string> strs;
+    app.add_option("--str", strs)->expected(2);
+
+    args = {"--str", "one"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 TEST_F(TApp, EnumTest) {
     enum Level : std::int32_t { High, Medium, Low };
     Level level = Level::Low;

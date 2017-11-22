@@ -17,6 +17,7 @@
 * Failure messages are now customizable, with a shorter default [#52](https://github.com/CLIUtils/CLI11/pull/52)
 * `require_subcommand` now offers a two-argument form and negative values on the one-argument form are more useful [#51](https://github.com/CLIUtils/CLI11/pull/51)
 * Subcommands no longer match after the max required number is obtained [#51](https://github.com/CLIUtils/CLI11/pull/51)
+* Unlimited options no longer prioritize over extras or remaining/unlimited positionals [#51](https://github.com/CLIUtils/CLI11/pull/51)
 
 ## Version 1.2
 

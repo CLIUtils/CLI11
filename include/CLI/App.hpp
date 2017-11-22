@@ -1156,14 +1156,17 @@ class App {
 
         // Verify required options
         for(const Option_p &opt : options_) {
-            // Required
-            if(opt->get_required()) {
-                if(opt->count() == 0) {
+            // Required or partially filled
+            if(opt->get_required() || opt->count() != 0) {
+
+                // Required but empty
+                if(opt->get_required() && opt->count() == 0)
                     throw RequiredError(opt->help_name() + " is required");
-                } else if(static_cast<int>(opt->count()) < opt->get_expected()) {
-                    throw RequiredError(opt->help_name() + " required at least " + std::to_string(opt->get_expected()) +
+
+                // Partially filled
+                if(opt->get_expected() > 0 && static_cast<int>(opt->count()) < opt->get_expected())
+                    throw RequiredError(opt->help_name() + " requires " + std::to_string(opt->get_expected()) +
                                         " arguments");
-                }
             }
             // Requires
             for(const Option *opt_req : opt->requires_)
@@ -1278,10 +1281,10 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    size_t _count_remaining_required_positionals() const {
+    size_t _count_remaining_positionals(bool required = false) const {
         size_t retval = 0;
         for(const Option_p &opt : options_)
-            if(opt->get_positional() && opt->get_required() && opt->get_expected() > 0 &&
+            if(opt->get_positional() && (!required || opt->get_required()) && opt->get_expected() > 0 &&
                static_cast<int>(opt->count()) < opt->get_expected())
                 retval = static_cast<size_t>(opt->get_expected()) - opt->count();
 
@@ -1323,7 +1326,7 @@ class App {
     ///
     /// Unlike the others, this one will always allow fallthrough
     void _parse_subcommand(std::vector<std::string> &args) {
-        if(_count_remaining_required_positionals() > 0)
+        if(_count_remaining_positionals(/* required */ true) > 0)
             return _parse_positional(args);
         for(const App_p &com : subcommands_) {
             if(com->check_name(args.back())) {
@@ -1384,11 +1387,29 @@ class App {
             rest = "";
         }
 
+        // Unlimited vector parser
         if(num == -1) {
+            bool already_ate_one = false; // Make sure we always eat one
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
+                if(already_ate_one) {
+                    // If allow extras is true, don't keep eating
+                    if(get_allow_extras())
+                        break;
+
+                    // If any positionals remain, don't keep eating
+                    if(_count_remaining_positionals() > 0)
+                        break;
+
+                    // If there are any unlimited positionals, those also take priority
+                    if(std::any_of(std::begin(options_), std::end(options_), [](const Option_p &opt) {
+                           return opt->get_positional() && opt->get_expected() < 0;
+                       }))
+                        break;
+                }
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
+                already_ate_one = true;
             }
         } else
             while(num > 0 && !args.empty()) {
@@ -1445,21 +1466,38 @@ class App {
         } else if(num == 0) {
             op->add_result("");
             parse_order_.push_back(op.get());
-        }
-
-        if(num == -1) {
+        } else if(num == -1) {
+            // Unlimited vector parser
+            bool already_ate_one = false; // Make sure we always eat one
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
+                if(already_ate_one) {
+                    // If allow extras is true, don't keep eating
+                    if(get_allow_extras())
+                        break;
+
+                    // If any positionals remain, don't keep eating
+                    if(_count_remaining_positionals() > 0)
+                        break;
+
+                    // If there are any unlimited positionals, those also take priority
+                    if(std::any_of(std::begin(options_), std::end(options_), [](const Option_p &opt) {
+                           return opt->get_positional() && opt->get_expected() < 0;
+                       }))
+                        break;
+                }
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
+                already_ate_one = true;
             }
-        } else
+        } else {
             while(num > 0 && !args.empty()) {
                 num--;
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
             }
+        }
         return;
     }
 };
