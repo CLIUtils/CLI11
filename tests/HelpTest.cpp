@@ -356,16 +356,15 @@ TEST(THelp, CustomHelp) {
 
 TEST(THelp, NiceName) {
     CLI::App app;
-    
+
     int x;
     auto long_name = app.add_option("-s,--long,-q,--other,that", x);
     auto short_name = app.add_option("more,-x,-y", x);
     auto positional = app.add_option("posit", x);
-    
+
     EXPECT_EQ(long_name->single_name(), "--long");
     EXPECT_EQ(short_name->single_name(), "-x");
     EXPECT_EQ(positional->single_name(), "posit");
-    
 }
 
 TEST(Exit, ErrorWithHelp) {
