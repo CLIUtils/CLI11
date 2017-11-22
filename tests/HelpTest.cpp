@@ -386,3 +386,54 @@ TEST(Exit, ExitCodes) {
     EXPECT_EQ(42, app.exit(CLI::RuntimeError(42)));
     EXPECT_EQ(1, app.exit(CLI::RuntimeError())); // Not sure if a default here is a good thing
 }
+
+struct CapturedHelp : public ::testing::Test {
+    CLI::App app{"My Test Program"};
+    std::stringstream out;
+    std::stringstream err;
+
+    int run(const CLI::Error &e) { return app.exit(e, out, err); }
+
+    void reset() {
+        out.clear();
+        err.clear();
+    }
+};
+
+TEST_F(CapturedHelp, Sucessful) {
+    EXPECT_EQ(run(CLI::Success()), 0);
+    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(err.str(), "");
+}
+
+TEST_F(CapturedHelp, JustAnError) {
+    EXPECT_EQ(run(CLI::RuntimeError(42)), 42);
+    EXPECT_EQ(out.str(), "");
+    EXPECT_EQ(err.str(), "");
+}
+
+TEST_F(CapturedHelp, CallForHelp) {
+    EXPECT_EQ(run(CLI::CallForHelp()), 0);
+    EXPECT_EQ(out.str(), app.help());
+    EXPECT_EQ(err.str(), "");
+}
+
+TEST_F(CapturedHelp, NormalError) {
+    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::Extras));
+    EXPECT_EQ(out.str(), "");
+    EXPECT_THAT(err.str(), HasSubstr("for more information"));
+    EXPECT_THAT(err.str(), HasSubstr("ERROR: ExtrasError"));
+    EXPECT_THAT(err.str(), HasSubstr("Thing"));
+    EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
+}
+
+TEST_F(CapturedHelp, RepacedError) {
+    app.set_failure_message(CLI::FailureMessage::help);
+
+    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::Extras));
+    EXPECT_EQ(out.str(), "");
+    EXPECT_THAT(err.str(), Not(HasSubstr("for more information")));
+    EXPECT_THAT(err.str(), HasSubstr("ERROR: ExtrasError"));
+    EXPECT_THAT(err.str(), HasSubstr("Thing"));
+    EXPECT_THAT(err.str(), HasSubstr("Usage"));
+}

@@ -727,20 +727,20 @@ class App {
     }
 
     /// Print a nice error message and return the exit code
-    int exit(const Error &e) const {
+    int exit(const Error &e, std::ostream &out = std::cout, std::ostream &err = std::cerr) const {
 
         /// Avoid printing anything if this is a CLI::RuntimeError
         if(dynamic_cast<const CLI::RuntimeError *>(&e) != nullptr)
             return e.get_exit_code();
 
         if(dynamic_cast<const CLI::CallForHelp *>(&e) != nullptr) {
-            std::cout << help();
+            out << help();
             return e.get_exit_code();
         }
 
         if(e.exit_code != static_cast<int>(ExitCodes::Success)) {
             if(failure_message_)
-                std::cerr << failure_message_(this, e) << std::flush;
+                err << failure_message_(this, e) << std::flush;
         }
 
         return e.get_exit_code();
@@ -1428,17 +1428,20 @@ class App {
 };
 
 namespace FailureMessage {
+
 inline std::string simple(const App *app, const Error &e) {
     std::string header = std::string("ERROR: ") + e.what() + "\n";
     if(app->get_help_ptr() != nullptr)
-        header += "Run with " + app->get_help_ptr()->single_name() + " for more help\n";
+        header += "Run with " + app->get_help_ptr()->single_name() + " for more information.\n";
     return header;
 };
+
 inline std::string help(const App *app, const Error &e) {
     std::string header = std::string("ERROR: ") + e.what() + "\n";
     header += app->help();
     return header;
 };
+
 } // namespace FailureMessage
 
 namespace detail {
