@@ -50,16 +50,16 @@ macro(add_gtest TESTNAME)
             gtest_add_tests(TARGET ${TESTNAME}
                             TEST_PREFIX "${TESTNAME}."
                             TEST_LIST TmpTestList)
-            set_tests_properties(${TmpTestList} PROPERTIES FOLDER "Tests")
         else()
             gtest_discover_tests(${TESTNAME}
                 TEST_PREFIX "${TESTNAME}."
-                PROPERTIES FOLDER "Tests")
+                )
+            
         endif()
     else()
         add_test(${TESTNAME} ${TESTNAME})
-        set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
     endif()
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
 
 endmacro()
 
