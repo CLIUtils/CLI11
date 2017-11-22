@@ -191,21 +191,26 @@ everything after that is positional only.
 
 Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
 case).
-If you want to require at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well.
+
+If you want to require that at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well. If you give two arguments, that sets the min and max number allowed.
+0 for the max number allowed will allow an unlimited number of subcommands. As a handy shortcut, a single negative value N will set "up to N" values. Limiting the maximimum number allows you to keep arguments that match a previous
+subcommand name from matching.
 
 If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an `App` pointer or a string name was collected on the command line.
 
 For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
-If you want only one, use `app.require_subcommand(1)`. You are allowed to throw `CLI::Success` in the callbacks.
+You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][Click] like series of commands (order is preserved).
 
 There are several options that are supported on the main app and subcommands. These are:
 
 * `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
 * `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
-* `.require_subcommand()`: Require 1 or more subcommands. Accepts an integer argument to require an exact number of subcommands.
+* `.require_subcommand()`: Require 1 or more subcommands.
+* `.require_subcommand(N)`: Require `N` subcommands if `N`>0, or up to `N` if `N`<0. N=0 resets to the default 0 or more.
+* `.require_subcommand(min, max)`: Explicilty set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 * `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
 * `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line
 * `.get_subcommands()`: The list of subcommands given on the command line
@@ -249,7 +254,7 @@ arguments, use `.config_to_str(default_also=false)`, where `default_also` will a
 
 ## Inheriting defaults
 
-Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, and `footer`. The help flag existence, name, and description are inherited, as well.
+Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
 Options have defaults for `group`, `required`, `take_last`, and `ignore_case`. To set these defaults, you should set the `option_defauts()` object, for example:
 
@@ -258,7 +263,7 @@ app.option_defauts()->required();
 // All future options will be required
 ```
 
-The default settings for options are inherited to subcommands, as well. 
+The default settings for options are inherited to subcommands, as well.
 
 ## Subclassing
 

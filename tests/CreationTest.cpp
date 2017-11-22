@@ -322,7 +322,7 @@ TEST_F(TApp, HelpFlagFromDefaultsSubcommands) {
 }
 
 TEST_F(TApp, SubcommandDefaults) {
-    // allow_extras, prefix_command, ignore_case, fallthrough, group
+    // allow_extras, prefix_command, ignore_case, fallthrough, group, min/max subcommand
 
     // Initial defaults
     EXPECT_FALSE(app.get_allow_extras());
@@ -331,6 +331,8 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_FALSE(app.get_fallthrough());
     EXPECT_EQ(app.get_footer(), "");
     EXPECT_EQ(app.get_group(), "Subcommands");
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
 
     app.allow_extras();
     app.prefix_command();
@@ -338,6 +340,7 @@ TEST_F(TApp, SubcommandDefaults) {
     app.fallthrough();
     app.set_footer("footy");
     app.group("Stuff");
+    app.require_subcommand(2, 3);
 
     auto app2 = app.add_subcommand("app2");
 
@@ -348,4 +351,37 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_TRUE(app2->get_fallthrough());
     EXPECT_EQ(app2->get_footer(), "footy");
     EXPECT_EQ(app2->get_group(), "Stuff");
+    EXPECT_EQ(app2->get_require_subcommand_min(), (size_t)0);
+    EXPECT_EQ(app2->get_require_subcommand_max(), (size_t)3);
+}
+
+TEST_F(TApp, SubcommandMinMax) {
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+
+    app.require_subcommand();
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)1);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+
+    app.require_subcommand(2);
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)2);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)2);
+
+    app.require_subcommand(0);
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+
+    app.require_subcommand(-2);
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)2);
+
+    app.require_subcommand(3, 7);
+
+    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)3);
+    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)7);
 }

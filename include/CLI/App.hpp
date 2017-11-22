@@ -136,7 +136,7 @@ class App {
     /// Minimum required subcommands
     size_t require_subcommand_min_ = 0;
 
-    /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited
+    /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited INHERITABLE
     size_t require_subcommand_max_ = 0;
 
     /// The group membership INHERITABLE
@@ -175,6 +175,7 @@ class App {
             fallthrough_ = parent_->fallthrough_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
+            require_subcommand_max_ = parent_->require_subcommand_max_;
         }
     }
 
@@ -254,7 +255,7 @@ class App {
 
     /// Require a subcommand to be given (does not affect help call)
     /// The number required can be given. Negative values indicate maximum
-    /// number allowed (0 for any number).
+    /// number allowed (0 for any number). Max number inheritable.
     App *require_subcommand(int value) {
         if(value < 0) {
             require_subcommand_min_ = 0;
@@ -267,12 +268,18 @@ class App {
     }
 
     /// Explicitly control the number of subcommands required. Setting 0
-    /// for the max means unlimited number allowed
+    /// for the max means unlimited number allowed. Max number inheritable.
     App *require_subcommand(size_t min, size_t max) {
         require_subcommand_min_ = min;
         require_subcommand_max_ = max;
         return this;
     }
+
+    /// Get the required min subcommand value
+    size_t get_require_subcommand_min() const { return require_subcommand_min_; }
+
+    /// Get the required max subcommand value
+    size_t get_require_subcommand_max() const { return require_subcommand_max_; }
 
     /// Stop subcommand fallthrough, so that parent commands cannot collect commands after subcommand.
     /// Default from parent, usually set on parent.
