@@ -14,6 +14,7 @@
 * The clang-format script is now no longer "hidden" [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * The order is now preserved for subcommands (list and callbacks) [#49](https://github.com/CLIUtils/CLI11/pull/49)
 * Tests now run individually, utilizing CMake 3.10 additions if possible [#50](https://github.com/CLIUtils/CLI11/pull/50)
+* Failure messages are now customizable, with a shorter default [#52](https://github.com/CLIUtils/CLI11/pull/52)
 
 
 ## Version 1.2
