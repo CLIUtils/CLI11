@@ -428,13 +428,13 @@ class Option : public OptionBase<Option> {
         }
 
         if(local_result)
-            throw ConversionError(get_name() + "=" + detail::join(results_));
+            throw ConversionError("Could not convert: " + get_name() + "=" + detail::join(results_));
 
         if(!validators_.empty()) {
             for(const std::string &result : results_)
                 for(const std::function<bool(std::string)> &vali : validators_)
                     if(!vali(result))
-                        throw ValidationError(get_name() + "=" + result);
+                        throw ValidationError("Failed validation: " + get_name() + "=" + result);
         }
     }
 
