@@ -309,7 +309,7 @@ TEST(THelp, RemoveHelp) {
     try {
         app.parse(input);
     } catch(const CLI::ParseError &e) {
-        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ExtrasError), e.get_exit_code());
     }
 }
 
@@ -328,7 +328,7 @@ TEST(THelp, NoHelp) {
     try {
         app.parse(input);
     } catch(const CLI::ParseError &e) {
-        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ExtrasError), e.get_exit_code());
     }
 }
 
@@ -385,14 +385,14 @@ TEST(Exit, ErrorWithoutHelp) {
     try {
         app.parse(input);
     } catch(const CLI::ParseError &e) {
-        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Extras), e.get_exit_code());
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ExtrasError), e.get_exit_code());
     }
 }
 
 TEST(Exit, ExitCodes) {
     CLI::App app;
 
-    auto i = static_cast<int>(CLI::ExitCodes::Extras);
+    auto i = static_cast<int>(CLI::ExitCodes::ExtrasError);
     EXPECT_EQ(0, app.exit(CLI::Success()));
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
     EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));
@@ -432,10 +432,10 @@ TEST_F(CapturedHelp, CallForHelp) {
 }
 
 TEST_F(CapturedHelp, NormalError) {
-    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::Extras));
+    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::ExtrasError));
     EXPECT_EQ(out.str(), "");
     EXPECT_THAT(err.str(), HasSubstr("for more information"));
-    EXPECT_THAT(err.str(), HasSubstr("ExtrasError"));
+    EXPECT_THAT(err.str(), Not(HasSubstr("ExtrasError")));
     EXPECT_THAT(err.str(), HasSubstr("Thing"));
     EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
 }
@@ -443,7 +443,7 @@ TEST_F(CapturedHelp, NormalError) {
 TEST_F(CapturedHelp, RepacedError) {
     app.set_failure_message(CLI::FailureMessage::help);
 
-    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::Extras));
+    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::ExtrasError));
     EXPECT_EQ(out.str(), "");
     EXPECT_THAT(err.str(), Not(HasSubstr("for more information")));
     EXPECT_THAT(err.str(), HasSubstr("ERROR: ExtrasError"));

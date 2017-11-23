@@ -7,6 +7,20 @@
 #include <stdexcept>
 #include <string>
 
+// Use one of these on all error classes
+#define CLI11_ERROR_DEF(parent, name)                                                                                  \
+  protected:                                                                                                           \
+    name(std::string name, std::string msg, int exit_code) : parent(name, msg, exit_code) {}                           \
+    name(std::string name, std::string msg, ExitCodes exit_code) : parent(name, msg, exit_code) {}                     \
+                                                                                                                       \
+  public:                                                                                                              \
+    name(std::string msg, ExitCodes exit_code) : parent(#name, msg, exit_code) {}                                      \
+    name(std::string msg, int exit_code) : parent(#name, msg, exit_code) {}
+
+// This is added after the one above if a class is used directly and builds its own message
+#define CLI11_ERROR_SIMPLE(name)                                                                                       \
+    name(std::string msg) : name(#name, msg, ExitCodes::name) {}
+
 namespace CLI {
 
 /// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut,
@@ -17,15 +31,15 @@ enum class ExitCodes {
     BadNameString,
     OptionAlreadyAdded,
     File,
-    Conversion,
-    Validation,
-    Required,
-    Requires,
-    Excludes,
-    Extras,
-    ExtrasINI,
-    Invalid,
-    Horrible,
+    ConversionError,
+    ValidationError,
+    RequiredError,
+    RequiresError,
+    ExcludesError,
+    ExtrasError,
+    ExtrasINIError,
+    InvalidError,
+    HorribleError,
     OptionNotFound,
     BaseClass = 127
 };
@@ -39,126 +53,141 @@ enum class ExitCodes {
 /// @{
 
 /// All errors derive from this one
-struct Error : public std::runtime_error {
+class Error : public std::runtime_error {
     int exit_code;
+    std::string name{"Error"};
+
+  public:
     int get_exit_code() const { return exit_code; }
 
-    Error(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
-        : runtime_error(parent + ": " + name), exit_code(static_cast<int>(exit_code)) {}
-    Error(std::string parent, std::string name, int exit_code = static_cast<int>(ExitCodes::BaseClass))
-        : runtime_error(parent + ": " + name), exit_code(exit_code) {}
+    std::string get_name() const { return name; }
+
+    Error(std::string name, std::string msg, int exit_code = static_cast<int>(ExitCodes::BaseClass))
+        : runtime_error(msg), exit_code(exit_code), name(name) {}
+
+    Error(std::string name, std::string msg, ExitCodes exit_code) : Error(name, msg, static_cast<int>(exit_code)) {}
 };
 
+// Note: Using Error::Error constructors does not work on GCC 4.7
+
 /// Construction errors (not in parsing)
-struct ConstructionError : public Error {
-    // Using Error::Error constructors seem to not work on GCC 4.7
-    ConstructionError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
-        : Error(parent, name, exit_code) {}
+class ConstructionError : public Error {
+    CLI11_ERROR_DEF(Error, ConstructionError)
 };
 
 /// Thrown when an option is set to conflicting values (non-vector and multi args, for example)
-struct IncorrectConstruction : public ConstructionError {
-    IncorrectConstruction(std::string name)
-        : ConstructionError("IncorrectConstruction", name, ExitCodes::IncorrectConstruction) {}
+class IncorrectConstruction : public ConstructionError {
+    CLI11_ERROR_DEF(ConstructionError, IncorrectConstruction)
+    CLI11_ERROR_SIMPLE(IncorrectConstruction)
 };
 
 /// Thrown on construction of a bad name
-struct BadNameString : public ConstructionError {
-    BadNameString(std::string name) : ConstructionError("BadNameString", name, ExitCodes::BadNameString) {}
+class BadNameString : public ConstructionError {
+    CLI11_ERROR_DEF(ConstructionError, BadNameString)
+    CLI11_ERROR_SIMPLE(BadNameString)
 };
 
 /// Thrown when an option already exists
-struct OptionAlreadyAdded : public ConstructionError {
-    OptionAlreadyAdded(std::string name)
-        : ConstructionError("OptionAlreadyAdded", name, ExitCodes::OptionAlreadyAdded) {}
+class OptionAlreadyAdded : public ConstructionError {
+    CLI11_ERROR_DEF(ConstructionError, OptionAlreadyAdded)
+    CLI11_ERROR_SIMPLE(OptionAlreadyAdded)
 };
 
 // Parsing errors
 
 /// Anything that can error in Parse
-struct ParseError : public Error {
-    ParseError(std::string parent, std::string name, ExitCodes exit_code = ExitCodes::BaseClass)
-        : Error(parent, name, exit_code) {}
-    ParseError(std::string parent, std::string name, int exit_code = static_cast<int>(ExitCodes::BaseClass))
-        : Error(parent, name, exit_code) {}
+class ParseError : public Error {
+    CLI11_ERROR_DEF(Error, ParseError)
 };
 
 // Not really "errors"
 
 /// This is a successful completion on parsing, supposed to exit
-struct Success : public ParseError {
-    Success() : ParseError("Success", "Successfully completed, should be caught and quit", ExitCodes::Success) {}
+class Success : public ParseError {
+    CLI11_ERROR_DEF(ParseError, Success)
+    Success() : Success("Successfully completed, should be caught and quit", ExitCodes::Success) {}
 };
 
 /// -h or --help on command line
-struct CallForHelp : public ParseError {
-    CallForHelp()
-        : ParseError("CallForHelp", "This should be caught in your main function, see examples", ExitCodes::Success) {}
+class CallForHelp : public ParseError {
+    CLI11_ERROR_DEF(ParseError, CallForHelp)
+    CallForHelp() : CallForHelp("This should be caught in your main function, see examples", ExitCodes::Success) {}
 };
 
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
-struct RuntimeError : public ParseError {
-    RuntimeError(int exit_code = 1) : ParseError("RuntimeError", "runtime error", exit_code) {}
+class RuntimeError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, RuntimeError)
+    RuntimeError(int exit_code = 1) : RuntimeError("Runtime error", exit_code) {}
 };
 
 /// Thrown when parsing an INI file and it is missing
-struct FileError : public ParseError {
-    FileError(std::string name) : ParseError("FileError", name, ExitCodes::File) {}
+class FileError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, FileError)
+    FileError(std::string msg) : FileError(msg, ExitCodes::File) {}
 };
 
 /// Thrown when conversion call back fails, such as when an int fails to coerce to a string
-struct ConversionError : public ParseError {
-    ConversionError(std::string name) : ParseError("ConversionError", name, ExitCodes::Conversion) {}
+class ConversionError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ConversionError)
+    CLI11_ERROR_SIMPLE(ConversionError)
 };
 
 /// Thrown when validation of results fails
-struct ValidationError : public ParseError {
-    ValidationError(std::string name) : ParseError("ValidationError", name, ExitCodes::Validation) {}
+class ValidationError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ValidationError)
+    CLI11_ERROR_SIMPLE(ValidationError)
 };
 
 /// Thrown when a required option is missing
-struct RequiredError : public ParseError {
-    RequiredError(std::string name) : ParseError("RequiredError", name, ExitCodes::Required) {}
+class RequiredError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, RequiredError)
+    CLI11_ERROR_SIMPLE(RequiredError)
 };
 
 /// Thrown when a requires option is missing
-struct RequiresError : public ParseError {
-    RequiresError(std::string name, std::string subname)
-        : ParseError("RequiresError", name + " requires " + subname, ExitCodes::Requires) {}
+class RequiresError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, RequiresError)
+    RequiresError(std::string curname, std::string subname)
+        : RequiresError(curname + " requires " + subname, ExitCodes::RequiresError) {}
 };
 
 /// Thrown when a exludes option is present
-struct ExcludesError : public ParseError {
-    ExcludesError(std::string name, std::string subname)
-        : ParseError("ExcludesError", name + " excludes " + subname, ExitCodes::Excludes) {}
+class ExcludesError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ExcludesError)
+    ExcludesError(std::string curname, std::string subname)
+        : ExcludesError(curname + " excludes " + subname, ExitCodes::ExcludesError) {}
 };
 
 /// Thrown when too many positionals or options are found
-struct ExtrasError : public ParseError {
-    ExtrasError(std::string name) : ParseError("ExtrasError", name, ExitCodes::Extras) {}
+class ExtrasError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ExtrasError)
+    CLI11_ERROR_SIMPLE(ExtrasError)
 };
 
 /// Thrown when extra values are found in an INI file
-struct ExtrasINIError : public ParseError {
-    ExtrasINIError(std::string name) : ParseError("ExtrasINIError", name, ExitCodes::ExtrasINI) {}
+class ExtrasINIError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ExtrasINIError)
+    CLI11_ERROR_SIMPLE(ExtrasINIError)
 };
 
 /// Thrown when validation fails before parsing
-struct InvalidError : public ParseError {
-    InvalidError(std::string name) : ParseError("InvalidError", name, ExitCodes::Invalid) {}
+class InvalidError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, InvalidError)
+    CLI11_ERROR_SIMPLE(InvalidError)
 };
 
-/// This is just a safety check to verify selection and parsing match
-struct HorribleError : public ParseError {
-    HorribleError(std::string name)
-        : ParseError("HorribleError", "(You should never see this error) " + name, ExitCodes::Horrible) {}
+/// This is just a safety check to verify selection and parsing match - you should not ever see it
+class HorribleError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, HorribleError)
+    CLI11_ERROR_SIMPLE(HorribleError)
 };
 
 // After parsing
 
 /// Thrown when counting a non-existent option
-struct OptionNotFound : public Error {
-    OptionNotFound(std::string name) : Error("OptionNotFound", name, ExitCodes::OptionNotFound) {}
+class OptionNotFound : public Error {
+    CLI11_ERROR_DEF(Error, OptionNotFound)
+    CLI11_ERROR_SIMPLE(OptionNotFound)
 };
 
 /// @}

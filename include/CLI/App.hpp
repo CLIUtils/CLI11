@@ -746,7 +746,7 @@ class App {
             return e.get_exit_code();
         }
 
-        if(e.exit_code != static_cast<int>(ExitCodes::Success)) {
+        if(e.get_exit_code() != static_cast<int>(ExitCodes::Success)) {
             if(failure_message_)
                 err << failure_message_(this, e) << std::flush;
         }
@@ -1514,7 +1514,7 @@ inline std::string simple(const App *app, const Error &e) {
 };
 
 inline std::string help(const App *app, const Error &e) {
-    std::string header = std::string("ERROR: ") + e.what() + "\n";
+    std::string header = std::string("ERROR: ") + e.get_name() + ": " + e.what() + "\n";
     header += app->help();
     return header;
 };
