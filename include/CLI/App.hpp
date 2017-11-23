@@ -1357,7 +1357,7 @@ class App {
         std::string name;
         std::string rest;
         if(!detail::split_short(current, name, rest))
-            throw HorribleError("Short");
+            throw HorribleError("Short parsed but missing! You should not see this");
 
         auto op_ptr = std::find_if(
             std::begin(options_), std::end(options_), [name](const Option_p &opt) { return opt->check_sname(name); });
@@ -1437,7 +1437,7 @@ class App {
         std::string name;
         std::string value;
         if(!detail::split_long(current, name, value))
-            throw HorribleError("Long:" + args.back());
+            throw HorribleError("Long parsed but missing (you should not see this):" + args.back());
 
         auto op_ptr = std::find_if(
             std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
