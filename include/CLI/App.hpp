@@ -1511,13 +1511,13 @@ inline std::string simple(const App *app, const Error &e) {
     if(app->get_help_ptr() != nullptr)
         header += "Run with " + app->get_help_ptr()->single_name() + " for more information.\n";
     return header;
-};
+}
 
 inline std::string help(const App *app, const Error &e) {
     std::string header = std::string("ERROR: ") + e.get_name() + ": " + e.what() + "\n";
     header += app->help();
     return header;
-};
+}
 
 } // namespace FailureMessage
 
