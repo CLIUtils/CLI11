@@ -6,22 +6,24 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <utility>
+
+namespace CLI {
 
 // Use one of these on all error classes
 #define CLI11_ERROR_DEF(parent, name)                                                                                  \
   protected:                                                                                                           \
-    name(std::string name, std::string msg, int exit_code) : parent(name, msg, exit_code) {}                           \
-    name(std::string name, std::string msg, ExitCodes exit_code) : parent(name, msg, exit_code) {}                     \
+    name(std::string name, std::string msg, int exit_code) : parent(std::move(name), std::move(msg), exit_code) {}     \
+    name(std::string name, std::string msg, ExitCodes exit_code)                                                       \
+        : parent(std::move(name), std::move(msg), exit_code) {}                                                        \
                                                                                                                        \
   public:                                                                                                              \
-    name(std::string msg, ExitCodes exit_code) : parent(#name, msg, exit_code) {}                                      \
-    name(std::string msg, int exit_code) : parent(#name, msg, exit_code) {}
+    name(std::string msg, ExitCodes exit_code) : parent(#name, std::move(msg), exit_code) {}                           \
+    name(std::string msg, int exit_code) : parent(#name, std::move(msg), exit_code) {}
 
 // This is added after the one above if a class is used directly and builds its own message
 #define CLI11_ERROR_SIMPLE(name)                                                                                       \
     name(std::string msg) : name(#name, msg, ExitCodes::name) {}
-
-namespace CLI {
 
 /// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut,
 /// int values from e.get_error_code().
@@ -63,7 +65,7 @@ class Error : public std::runtime_error {
     std::string get_name() const { return name; }
 
     Error(std::string name, std::string msg, int exit_code = static_cast<int>(ExitCodes::BaseClass))
-        : runtime_error(msg), exit_code(exit_code), name(name) {}
+        : runtime_error(msg), exit_code(exit_code), name(std::move(name)) {}
 
     Error(std::string name, std::string msg, ExitCodes exit_code) : Error(name, msg, static_cast<int>(exit_code)) {}
 };
