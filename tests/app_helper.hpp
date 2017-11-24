@@ -27,7 +27,7 @@ class TempFile {
 
   public:
     TempFile(std::string name) : _name(name) {
-        if(!CLI::NonexistentPath(_name))
+        if(!CLI::NonexistentPath(_name).empty())
             throw std::runtime_error(_name);
     }
 

@@ -87,50 +87,50 @@ TEST(Trim, TrimCopy) {
 
 TEST(Validators, FileExists) {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_TRUE(CLI::ExistingFile(myfile));
+    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
 TEST(Validators, FileNotExists) {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_FALSE(CLI::NonexistentPath(myfile));
+    EXPECT_FALSE(CLI::NonexistentPath(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
 }
 
 TEST(Validators, FileIsDir) {
     std::string mydir{"../tests"};
-    EXPECT_FALSE(CLI::ExistingFile(mydir));
+    EXPECT_NE(CLI::ExistingFile(mydir), "");
 }
 
 TEST(Validators, DirectoryExists) {
     std::string mydir{"../tests"};
-    EXPECT_TRUE(CLI::ExistingDirectory(mydir));
+    EXPECT_EQ(CLI::ExistingDirectory(mydir), "");
 }
 
 TEST(Validators, DirectoryNotExists) {
     std::string mydir{"nondirectory"};
-    EXPECT_FALSE(CLI::ExistingDirectory(mydir));
+    EXPECT_NE(CLI::ExistingDirectory(mydir), "");
 }
 
 TEST(Validators, DirectoryIsFile) {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
-    EXPECT_FALSE(CLI::ExistingDirectory(myfile));
+    EXPECT_FALSE(CLI::ExistingDirectory(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
 }
 
 // Yes, this is testing an app_helper :)
@@ -139,14 +139,14 @@ TEST(AppHelper, TempfileCreated) {
     {
         TempFile myfile{name};
 
-        EXPECT_FALSE(CLI::ExistingFile(myfile));
+        EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 
         bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
         EXPECT_TRUE(ok);
-        EXPECT_TRUE(CLI::ExistingFile(name));
+        EXPECT_TRUE(CLI::ExistingFile(name).empty());
         EXPECT_THROW({ TempFile otherfile(name); }, std::runtime_error);
     }
-    EXPECT_FALSE(CLI::ExistingFile(name));
+    EXPECT_FALSE(CLI::ExistingFile(name).empty());
 }
 
 TEST(AppHelper, TempfileNotCreated) {
@@ -154,9 +154,9 @@ TEST(AppHelper, TempfileNotCreated) {
     {
         TempFile myfile{name};
 
-        EXPECT_FALSE(CLI::ExistingFile(myfile));
+        EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
     }
-    EXPECT_FALSE(CLI::ExistingFile(name));
+    EXPECT_FALSE(CLI::ExistingFile(name).empty());
 }
 
 TEST(AppHelper, Ofstream) {
@@ -170,9 +170,9 @@ TEST(AppHelper, Ofstream) {
             out << "this is output" << std::endl;
         }
 
-        EXPECT_TRUE(CLI::ExistingFile(myfile));
+        EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
     }
-    EXPECT_FALSE(CLI::ExistingFile(name));
+    EXPECT_FALSE(CLI::ExistingFile(name).empty());
 }
 
 TEST(Split, StringList) {

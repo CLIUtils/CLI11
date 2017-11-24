@@ -606,7 +606,7 @@ TEST_F(TApp, RemoveOption) {
 
 TEST_F(TApp, FileNotExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::NonexistentPath(myfile));
+    EXPECT_NO_THROW(CLI::NonexistentPath(myfile));
 
     std::string filename;
     app.add_option("--file", filename)->check(CLI::NonexistentPath);
@@ -622,12 +622,12 @@ TEST_F(TApp, FileNotExists) {
     EXPECT_THROW(run(), CLI::ValidationError);
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
 TEST_F(TApp, FileExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 
     std::string filename = "Failed";
     app.add_option("--file", filename)->check(CLI::ExistingFile);
@@ -643,7 +643,7 @@ TEST_F(TApp, FileExists) {
     EXPECT_EQ(myfile, filename);
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingFile(myfile));
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
 TEST_F(TApp, InSet) {

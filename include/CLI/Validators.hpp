@@ -4,6 +4,7 @@
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
 #include "CLI/TypeTools.hpp"
+
 #include <functional>
 #include <iostream>
 #include <string>
@@ -19,64 +20,62 @@ namespace CLI {
 /// @defgroup validator_group Validators
 /// @brief Some validators that are provided
 ///
-/// These are simple `bool(std::string&)` validators that are useful.
+/// These are simple `void(std::string&)` validators that are useful. They throw
+/// a ValidationError if they fail (or the normally expected error if the cast fails)
 /// @{
 
 /// Check for an existing file
-inline bool ExistingFile(const std::string &filename) {
+inline std::string ExistingFile(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
     if(!exist) {
-        std::cerr << "File does not exist: " << filename << std::endl;
-        return false;
+        return "File does not exist: " + filename;
     } else if(is_dir) {
-        std::cerr << "File is actually a directory: " << filename << std::endl;
-        return false;
-    } else {
-        return true;
+        return "File is actually a directory: " + filename;
     }
+    return std::string();
 }
 
 /// Check for an existing directory
-inline bool ExistingDirectory(const std::string &filename) {
+inline std::string ExistingDirectory(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
     if(!exist) {
-        std::cerr << "Directory does not exist: " << filename << std::endl;
-        return false;
-    } else if(is_dir) {
-        return true;
-    } else {
-        std::cerr << "Directory is actually a file: " << filename << std::endl;
-        return false;
+        return "Directory does not exist: " + filename;
+    } else if(!is_dir) {
+        return "Directory is actually a file: " + filename;
     }
+    return std::string();
 }
 
 /// Check for a non-existing path
-inline bool NonexistentPath(const std::string &filename) {
+inline std::string NonexistentPath(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
-    if(!exist) {
-        return true;
-    } else {
-        std::cerr << "Path exists: " << filename << std::endl;
-        return false;
+    if(exist) {
+        return "Path already exists: " + filename;
     }
+    return std::string();
 }
 
 /// Produce a range validator function
-template <typename T> std::function<bool(const std::string &)> Range(T min, T max) {
+template <typename T> std::function<std::string(const std::string &)> Range(T min, T max) {
     return [min, max](std::string input) {
         T val;
         detail::lexical_cast(input, val);
-        return val >= min && val <= max;
+        if(val < min || val > max)
+            return "Value " + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
+
+        return std::string();
     };
 }
 
 /// Range of one value is 0 to value
-template <typename T> std::function<bool(const std::string &)> Range(T max) { return Range(static_cast<T>(0), max); }
+template <typename T> std::function<std::string(const std::string &)> Range(T max) {
+    return Range(static_cast<T>(0), max);
+}
 
 /// @}
 

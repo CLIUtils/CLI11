@@ -148,7 +148,7 @@ class Option : public OptionBase<Option> {
     bool changeable_{false};
 
     /// A list of validators to run on each value parsed
-    std::vector<std::function<bool(std::string &)>> validators_;
+    std::vector<std::function<std::string(std::string &)>> validators_;
 
     /// A list of options that are required with this option
     std::set<Option *> requires_;
@@ -220,16 +220,20 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a validator
-    Option *check(std::function<bool(const std::string &)> validator) {
+    Option *check(std::function<std::string(const std::string &)> validator) {
         validators_.emplace_back(validator);
         return this;
     }
 
     /// Adds a validator-like function that can change result
     Option *transform(std::function<std::string(std::string)> func) {
-        validators_.push_back([func](std::string &inout) {
-            inout = func(inout);
-            return true;
+        validators_.emplace_back([func](std::string &inout) {
+            try {
+                inout = func(inout);
+            } catch(const ValidationError &e) {
+                return std::string(e.what());
+            }
+            return std::string();
         });
         return this;
     }
@@ -430,9 +434,11 @@ class Option : public OptionBase<Option> {
         // Run the validators (can change the string)
         if(!validators_.empty()) {
             for(std::string &result : results_)
-                for(const std::function<bool(std::string &)> &vali : validators_)
-                    if(!vali(result))
-                        throw ValidationError("Failed validation: " + get_name() + "=" + result);
+                for(const std::function<std::string(std::string &)> &vali : validators_) {
+                    std::string err_msg = vali(result);
+                    if(!err_msg.empty())
+                        throw ValidationError(get_name() + ": " + err_msg);
+                }
         }
 
         bool local_result;
