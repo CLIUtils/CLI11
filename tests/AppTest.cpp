@@ -1176,14 +1176,8 @@ TEST_F(TApp, SetWithDefaultsIC) {
 TEST_F(TApp, OrderedModifingValidators) {
     std::vector<std::string> val;
     auto m = app.add_option("-m", val);
-    m->transform([](std::string &x) {
-        x += "1";
-        return true;
-    });
-    m->transform([](std::string &x) {
-        x += "2";
-        return true;
-    });
+    m->transform([](std::string x) { return x + "1"; });
+    m->transform([](std::string x) { return x + "2"; });
 
     args = {"-mone", "-mtwo"};
 
