@@ -19,7 +19,7 @@ namespace CLI {
 /// @defgroup validator_group Validators
 /// @brief Some validators that are provided
 ///
-/// These are simple `bool(std::string)` validators that are useful.
+/// These are simple `bool(std::string&)` validators that are useful.
 /// @{
 
 /// Check for an existing file

@@ -220,8 +220,13 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a validator
-    Option *check(std::function<bool(std::string &)> validator) {
+    Option *check(std::function<bool(const std::string &)> validator) {
+        validators_.emplace_back(validator);
+        return this;
+    }
 
+    /// Adds a validator-like function that can change result
+    Option *transform(std::function<bool(std::string &)> validator) {
         validators_.push_back(validator);
         return this;
     }

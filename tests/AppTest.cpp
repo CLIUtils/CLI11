@@ -1171,3 +1171,23 @@ TEST_F(TApp, SetWithDefaultsIC) {
 
     EXPECT_THROW(run(), CLI::ConversionError);
 }
+
+// Added to test defaults on dual method
+TEST_F(TApp, OrderedModifingValidators) {
+    std::vector<std::string> val;
+    auto m = app.add_option("-m", val);
+    m->transform([](std::string &x) {
+        x += "1";
+        return true;
+    });
+    m->transform([](std::string &x) {
+        x += "2";
+        return true;
+    });
+
+    args = {"-mone", "-mtwo"};
+
+    run();
+
+    EXPECT_EQ(val, std::vector<std::string>({"one12", "two12"}));
+}
