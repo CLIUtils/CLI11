@@ -23,7 +23,7 @@ namespace CLI {
 /// @{
 
 /// Check for an existing file
-inline bool ExistingFile(std::string filename) {
+inline bool ExistingFile(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -39,7 +39,7 @@ inline bool ExistingFile(std::string filename) {
 }
 
 /// Check for an existing directory
-inline bool ExistingDirectory(std::string filename) {
+inline bool ExistingDirectory(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
     bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -55,7 +55,7 @@ inline bool ExistingDirectory(std::string filename) {
 }
 
 /// Check for a non-existing path
-inline bool NonexistentPath(std::string filename) {
+inline bool NonexistentPath(const std::string &filename) {
     struct stat buffer;
     bool exist = stat(filename.c_str(), &buffer) == 0;
     if(!exist) {
@@ -67,7 +67,7 @@ inline bool NonexistentPath(std::string filename) {
 }
 
 /// Produce a range validator function
-template <typename T> std::function<bool(std::string)> Range(T min, T max) {
+template <typename T> std::function<bool(const std::string &)> Range(T min, T max) {
     return [min, max](std::string input) {
         T val;
         detail::lexical_cast(input, val);
@@ -76,7 +76,7 @@ template <typename T> std::function<bool(std::string)> Range(T min, T max) {
 }
 
 /// Range of one value is 0 to value
-template <typename T> std::function<bool(std::string)> Range(T max) { return Range(static_cast<T>(0), max); }
+template <typename T> std::function<bool(const std::string &)> Range(T max) { return Range(static_cast<T>(0), max); }
 
 /// @}
 

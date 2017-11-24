@@ -148,7 +148,7 @@ class Option : public OptionBase<Option> {
     bool changeable_{false};
 
     /// A list of validators to run on each value parsed
-    std::vector<std::function<bool(std::string)>> validators_;
+    std::vector<std::function<bool(std::string &)>> validators_;
 
     /// A list of options that are required with this option
     std::set<Option *> requires_;
@@ -220,7 +220,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a validator
-    Option *check(std::function<bool(std::string)> validator) {
+    Option *check(std::function<bool(std::string &)> validator) {
 
         validators_.push_back(validator);
         return this;
@@ -417,7 +417,16 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// Process the callback
-    void run_callback() const {
+    void run_callback() {
+
+        // Run the validators (can change the string)
+        if(!validators_.empty()) {
+            for(std::string &result : results_)
+                for(const std::function<bool(std::string &)> &vali : validators_)
+                    if(!vali(result))
+                        throw ValidationError("Failed validation: " + get_name() + "=" + result);
+        }
+
         bool local_result;
         // If take_last, only operate on the final item
         if(last_) {
@@ -429,13 +438,6 @@ class Option : public OptionBase<Option> {
 
         if(local_result)
             throw ConversionError("Could not convert: " + get_name() + "=" + detail::join(results_));
-
-        if(!validators_.empty()) {
-            for(const std::string &result : results_)
-                for(const std::function<bool(std::string)> &vali : validators_)
-                    if(!vali(result))
-                        throw ValidationError("Failed validation: " + get_name() + "=" + result);
-        }
     }
 
     /// If options share any of the same names, they are equal (not counting positional)
