@@ -32,7 +32,7 @@ An acceptable CLI parser library should be all of the following:
 * Work with standard types, simple custom types, and extendible to exotic types.
 * Permissively licensed.
 
-The major CLI parsers for C++ include (with my biased opinions):
+<details><summary>The major CLI parsers for C++ include, with my biased opinions: (click to expand)</summary><p>
 
 | Library | My biased opinion |
 |---------|-------------------|
@@ -52,6 +52,9 @@ After I wrote this, I also found the following libraries:
 | [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
 | [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
 | [Clara] | Simple library built for the excellent [Catch] testing framework. Unique syntax, limited scope. |
+
+</p></details>
+<br/>
 
 None of these libraries fulfill all the above requirements. As you probably have already guessed, CLI11 does.
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
@@ -97,14 +100,18 @@ app.add_option("-f,--file", filename, "A help string");
 CLI11_PARSE(app, argc, argv);
 ```
 
-> Note: If you don't like macros, this is what that macro expands to:
-> ```cpp
-> try {
->     app.parse(argc, argv);
-> } catch (const CLI::ParseError &e) {
->     return app.exit(e);
-> }
-> ```
+<details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
+
+```cpp
+try {
+    app.parse(argc, argv);
+} catch (const CLI::ParseError &e) {
+    return app.exit(e);
+}
+```
+
+</p></details>
+</br>
 
 
 The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
