@@ -1172,8 +1172,8 @@ TEST_F(TApp, SetWithDefaultsIC) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
-// Added to test defaults on dual method
-TEST_F(TApp, OrderedModifingValidators) {
+// Added to test ->transform
+TEST_F(TApp, OrderedModifingTransforms) {
     std::vector<std::string> val;
     auto m = app.add_option("-m", val);
     m->transform([](std::string x) { return x + "1"; });
@@ -1184,4 +1184,25 @@ TEST_F(TApp, OrderedModifingValidators) {
     run();
 
     EXPECT_EQ(val, std::vector<std::string>({"one12", "two12"}));
+}
+
+TEST_F(TApp, ThrowingTransform) {
+    std::string val;
+    auto m = app.add_option("-m,--mess", val);
+    m->transform([](std::string x) -> std::string { throw CLI::ValidationError("My Message"); });
+
+    EXPECT_NO_THROW(run());
+    app.reset();
+
+    args = {"-mone"};
+
+    ASSERT_THROW(run(), CLI::ValidationError);
+
+    app.reset();
+
+    try {
+        run();
+    } catch(const CLI::ValidationError &e) {
+        EXPECT_EQ(e.what(), std::string("--mess: My Message"));
+    }
 }
