@@ -170,8 +170,9 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
+* `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `bool(std::string)`. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 
 On the command line, options can be given as:
@@ -263,10 +264,10 @@ arguments, use `.config_to_str(default_also=false)`, where `default_also` will a
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `take_last`, and `ignore_case`. To set these defaults, you should set the `option_defauts()` object, for example:
+Options have defaults for `group`, `required`, `take_last`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
-app.option_defauts()->required();
+app.option_defaults()->required();
 // All future options will be required
 ```
 
