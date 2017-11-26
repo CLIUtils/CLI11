@@ -551,6 +551,9 @@ class Option : public OptionBase<Option> {
     /// Set the type name displayed on this option
     void set_type_name(std::string val) { typeval_ = val; }
 
+    /// Get the typename for this option
+    std::string get_type_name() const { return typeval_; }
+
     ///@}
 
   protected:

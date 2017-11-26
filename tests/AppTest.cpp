@@ -230,6 +230,19 @@ TEST_F(TApp, TakeLastOpt) {
     EXPECT_EQ(str, "two");
 }
 
+TEST_F(TApp, MissingValueNonRequiredOpt) {
+    int count;
+    app.add_option("-c,--count", count);
+
+    args = {"-c"};
+    EXPECT_ANY_THROW(run());
+
+    app.reset();
+
+    args = {"--count"};
+    EXPECT_ANY_THROW(run());
+}
+
 TEST_F(TApp, RequiredOptsSingle) {
 
     std::string str;
@@ -1189,7 +1202,7 @@ TEST_F(TApp, OrderedModifingTransforms) {
 TEST_F(TApp, ThrowingTransform) {
     std::string val;
     auto m = app.add_option("-m,--mess", val);
-    m->transform([](std::string x) -> std::string { throw CLI::ValidationError("My Message"); });
+    m->transform([](std::string) -> std::string { throw CLI::ValidationError("My Message"); });
 
     EXPECT_NO_THROW(run());
     app.reset();

@@ -1196,7 +1196,9 @@ class App {
             if(num_left_over > 0) {
                 args = remaining(false);
                 std::reverse(std::begin(args), std::end(args));
-                throw ExtrasError("[" + detail::rjoin(args, " ") + "]");
+                throw ExtrasError((args.size() > 1 ? "The following argument was not expected: "
+                                                   : "The following arguments were not expected: ") +
+                                  detail::rjoin(args, " "));
             }
         }
     }
@@ -1415,7 +1417,7 @@ class App {
                 args.pop_back();
                 already_ate_one = true;
             }
-        } else
+        } else {
             while(num > 0 && !args.empty()) {
                 num--;
                 std::string current_ = args.back();
@@ -1423,6 +1425,12 @@ class App {
                 op->add_result(current_);
                 parse_order_.push_back(op.get());
             }
+
+            if(num > 0) {
+                throw RequiredError(op->single_name() + ": " + std::to_string(num) + " required " +
+                                    op->get_type_name() + " missing");
+            }
+        }
 
         if(!rest.empty()) {
             rest = "-" + rest;
@@ -1498,6 +1506,10 @@ class App {
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
+            }
+            if(num > 0) {
+                throw RequiredError(op->single_name() + ": " + std::to_string(num) + " required " +
+                                    op->get_type_name() + " missing");
             }
         }
         return;

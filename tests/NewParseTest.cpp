@@ -91,5 +91,5 @@ TEST_F(TApp, BuiltinComplexFail) {
 
     args = {"-c", "4"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::RequiredError);
 }
