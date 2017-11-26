@@ -576,8 +576,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
-            if(res.size() != 2)
-                throw ConversionError(simple_name + " is " + label + " which must have two values");
             double x, y;
             bool worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(res[1], y);
             if(worked)
