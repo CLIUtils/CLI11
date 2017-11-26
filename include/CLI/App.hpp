@@ -623,7 +623,7 @@ class App {
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr.get() == subcom)
                 return subcom;
-        throw CLI::OptionNotFound(subcom->get_name());
+        throw OptionNotFound(subcom->get_name());
     }
 
     /// Check to see if a subcommand is part of this command (text version)
@@ -631,7 +631,7 @@ class App {
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr->check_name(subcom))
                 return subcomptr.get();
-        throw CLI::OptionNotFound(subcom);
+        throw OptionNotFound(subcom);
     }
 
     /// Changes the group membership
@@ -1030,7 +1030,7 @@ class App {
             return opt->get_expected() == -1 && opt->get_positional();
         });
         if(count > 1)
-            throw InvalidError(name_ + ": Too many positional arguments with unlimited expected args");
+            throw InvalidError(name_);
         for(const App_p &app : subcommands_)
             app->_validate();
     }
@@ -1173,9 +1173,7 @@ class App {
             if(num_left_over > 0) {
                 args = remaining(false);
                 std::reverse(std::begin(args), std::end(args));
-                throw ExtrasError((args.size() > 1 ? "The following argument was not expected: "
-                                                   : "The following arguments were not expected: ") +
-                                  detail::rjoin(args, " "));
+                throw ExtrasError(args);
             }
         }
     }

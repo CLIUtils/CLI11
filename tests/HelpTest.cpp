@@ -395,7 +395,7 @@ TEST(Exit, ExitCodes) {
     auto i = static_cast<int>(CLI::ExitCodes::ExtrasError);
     EXPECT_EQ(0, app.exit(CLI::Success()));
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
-    EXPECT_EQ(i, app.exit(CLI::ExtrasError("Thing")));
+    EXPECT_EQ(i, app.exit(CLI::ExtrasError({"Thing"})));
     EXPECT_EQ(42, app.exit(CLI::RuntimeError(42)));
     EXPECT_EQ(1, app.exit(CLI::RuntimeError())); // Not sure if a default here is a good thing
 }
@@ -432,7 +432,7 @@ TEST_F(CapturedHelp, CallForHelp) {
 }
 
 TEST_F(CapturedHelp, NormalError) {
-    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::ExtrasError));
+    EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
     EXPECT_EQ(out.str(), "");
     EXPECT_THAT(err.str(), HasSubstr("for more information"));
     EXPECT_THAT(err.str(), Not(HasSubstr("ExtrasError")));
@@ -443,7 +443,7 @@ TEST_F(CapturedHelp, NormalError) {
 TEST_F(CapturedHelp, RepacedError) {
     app.set_failure_message(CLI::FailureMessage::help);
 
-    EXPECT_EQ(run(CLI::ExtrasError("Thing")), static_cast<int>(CLI::ExitCodes::ExtrasError));
+    EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
     EXPECT_EQ(out.str(), "");
     EXPECT_THAT(err.str(), Not(HasSubstr("for more information")));
     EXPECT_THAT(err.str(), HasSubstr("ERROR: ExtrasError"));
