@@ -8,6 +8,9 @@
 #include <string>
 #include <utility>
 
+// CLI library includes
+#include "CLI/StringTools.hpp"
+
 namespace CLI {
 
 // Use one of these on all error classes
@@ -179,19 +182,25 @@ class ExcludesError : public ParseError {
 /// Thrown when too many positionals or options are found
 class ExtrasError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExtrasError)
-    CLI11_ERROR_SIMPLE(ExtrasError)
+    ExtrasError(std::vector<std::string> args)
+        : ExtrasError((args.size() > 1 ? "The following argument was not expected: "
+                                       : "The following arguments were not expected: ") +
+                          detail::rjoin(args, " "),
+                      ExitCodes::ExtrasError) {}
 };
 
 /// Thrown when extra values are found in an INI file
 class ExtrasINIError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExtrasINIError)
-    CLI11_ERROR_SIMPLE(ExtrasINIError)
+    ExtrasINIError(std::string item) : ExtrasINIError("INI was not able to parse " + item, ExitCodes::ExtrasINIError) {}
 };
 
 /// Thrown when validation fails before parsing
 class InvalidError : public ParseError {
     CLI11_ERROR_DEF(ParseError, InvalidError)
-    CLI11_ERROR_SIMPLE(InvalidError)
+    InvalidError(std::string name)
+        : InvalidError(name + ": Too many positional arguments with unlimited expected args", ExitCodes::InvalidError) {
+    }
 };
 
 /// This is just a safety check to verify selection and parsing match - you should not ever see it
@@ -205,7 +214,7 @@ class HorribleError : public ParseError {
 /// Thrown when counting a non-existent option
 class OptionNotFound : public Error {
     CLI11_ERROR_DEF(Error, OptionNotFound)
-    CLI11_ERROR_SIMPLE(OptionNotFound)
+    OptionNotFound(std::string name) : OptionNotFound(name + " not found", ExitCodes::OptionNotFound) {}
 };
 
 /// @}

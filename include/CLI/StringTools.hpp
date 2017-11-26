@@ -8,6 +8,7 @@
 #include <locale>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <type_traits>
 
 namespace CLI {
