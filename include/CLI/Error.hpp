@@ -126,19 +126,22 @@ class RuntimeError : public ParseError {
 /// Thrown when parsing an INI file and it is missing
 class FileError : public ParseError {
     CLI11_ERROR_DEF(ParseError, FileError)
-    FileError(std::string msg) : FileError(msg, ExitCodes::File) {}
+    FileError(std::string name) : FileError(name + " was not readable (missing?)", ExitCodes::File) {}
 };
 
 /// Thrown when conversion call back fails, such as when an int fails to coerce to a string
 class ConversionError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ConversionError)
     CLI11_ERROR_SIMPLE(ConversionError)
+    ConversionError(std::string member, std::string name)
+        : ConversionError("The value " + member + "is not an allowed value for " + name) {}
 };
 
 /// Thrown when validation of results fails
 class ValidationError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ValidationError)
     CLI11_ERROR_SIMPLE(ValidationError)
+    ValidationError(std::string name, std::string msg) : ValidationError(name + ": " + msg) {}
 };
 
 /// Thrown when a required option is missing
@@ -150,6 +153,7 @@ class RequiredError : public ParseError {
 /// Thrown when the wrong number of arguments has been recieved
 class ArgumentMismatch : ParseError {
     CLI11_ERROR_DEF(ParseError, ArgumentMismatch)
+    CLI11_ERROR_SIMPLE(ArgumentMismatch)
     ArgumentMismatch(std::string name, int expected, size_t recieved)
         : ArgumentMismatch(expected > 0 ? ("Expected exactly " + std::to_string(expected) + " arguments to " + name +
                                            ", got " + std::to_string(recieved))
