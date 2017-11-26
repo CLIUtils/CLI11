@@ -6,11 +6,11 @@
 // CLI Library includes
 // Order is important for combiner script
 
+#include "CLI/StringTools.hpp"
+
 #include "CLI/Error.hpp"
 
 #include "CLI/TypeTools.hpp"
-
-#include "CLI/StringTools.hpp"
 
 #include "CLI/Split.hpp"
 
