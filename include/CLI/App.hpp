@@ -274,8 +274,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
-            if(res.size() != 1)
-                throw ConversionError("Only one " + simple_name + " allowed");
             return detail::lexical_cast(res[0], variable);
         };
 
@@ -293,8 +291,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
-            if(res.size() != 1)
-                throw ConversionError("Only one " + simple_name + " allowed");
             return detail::lexical_cast(res[0], variable);
         };
 
@@ -325,7 +321,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_custom_option(detail::type_name<T>(), -1, true);
+        opt->set_custom_option(detail::type_name<T>(), -1);
         return opt;
     }
 
@@ -347,7 +343,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_custom_option(detail::type_name<T>(), -1, true);
+        opt->set_custom_option(detail::type_name<T>(), -1);
         if(defaulted)
             opt->set_default_str("[" + detail::join(variable) + "]");
         return opt;
@@ -454,9 +450,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            if(res.size() != 1) {
-                throw ConversionError("Only one " + simple_name + " allowed");
-            }
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
                 throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
@@ -480,9 +473,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            if(res.size() != 1) {
-                throw ConversionError("Only one " + simple_name + " allowed");
-            }
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
                 throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
@@ -509,9 +499,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            if(res.size() != 1) {
-                throw ConversionError("Only one " + simple_name + " allowed");
-            }
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;
@@ -541,9 +528,6 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            if(res.size() != 1) {
-                throw ConversionError("Only one " + simple_name + " allowed");
-            }
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;

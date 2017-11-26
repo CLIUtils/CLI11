@@ -207,14 +207,15 @@ class Option : public OptionBase<Option> {
 
     /// Set the number of expected arguments (Flags bypass this)
     Option *expected(int value) {
-        if(value == 0)
+        if(expected_ == value)
+            return this;
+        else if(value == 0)
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
-        else if(expected_ == 0)
-            throw IncorrectConstruction("Cannot make a flag take arguments!");
         else if(!changeable_)
             throw IncorrectConstruction("You can only change the expected arguments for vectors");
         else if(last_)
             throw IncorrectConstruction("You can't change expected arguments after you've set take_last!");
+
         expected_ = value;
         return this;
     }
@@ -447,7 +448,11 @@ class Option : public OptionBase<Option> {
             results_t partial_result = {results_.back()};
             local_result = !callback_(partial_result);
         } else {
-            local_result = !callback_(results_);
+            if((expected_ > 0 && results_.size() != static_cast<size_t>(expected_)) ||
+               (expected_ < 0 && results_.size() < static_cast<size_t>(-expected_)))
+                throw ArgumentMismatch(single_name(), expected_, results_.size());
+            else
+                local_result = !callback_(results_);
         }
 
         if(local_result)
@@ -527,13 +532,13 @@ class Option : public OptionBase<Option> {
     /// @name Custom options
     ///@{
 
-    /// Set a custom option, typestring, expected, and changeable
-    void set_custom_option(std::string typeval, int expected = 1, bool changeable = false) {
+    /// Set a custom option, typestring, expected; locks changeable unless expected is -1
+    void set_custom_option(std::string typeval, int expected = 1) {
         typeval_ = typeval;
         expected_ = expected;
         if(expected == 0)
             required_ = false;
-        changeable_ = changeable;
+        changeable_ = expected < 0;
     }
 
     /// Set the default value string representation

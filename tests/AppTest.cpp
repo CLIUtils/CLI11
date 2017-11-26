@@ -119,7 +119,7 @@ TEST_F(TApp, DualOptions) {
     EXPECT_EQ(ans, vstr);
 
     args = {"--string=one", "--string=two"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, LotsOfFlags) {
@@ -737,7 +737,7 @@ TEST_F(TApp, FailSet) {
     app.add_set("-q,--quick", choice, {1, 2, 3});
 
     args = {"--quick", "3", "--quick=2"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
 
@@ -770,7 +770,7 @@ TEST_F(TApp, InSetIgnoreCase) {
 
     app.reset();
     args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, VectorFixedString) {
@@ -1145,27 +1145,24 @@ TEST_F(TApp, CheckSubcomFail) {
     EXPECT_THROW(CLI::detail::AppFriend::parse_subcommand(&app, args), CLI::HorribleError);
 }
 
-// Added to test defaults on dual method
 TEST_F(TApp, OptionWithDefaults) {
     int someint = 2;
     app.add_option("-a", someint, "", true);
 
     args = {"-a1", "-a2"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
-// Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaults) {
     int someint = 2;
     app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
 
     args = {"-a1", "-a2"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
-// Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaultsConversion) {
     int someint = 2;
     app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
@@ -1175,14 +1172,13 @@ TEST_F(TApp, SetWithDefaultsConversion) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
-// Added to test defaults on dual method
 TEST_F(TApp, SetWithDefaultsIC) {
     std::string someint = "ho";
     app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
 
     args = {"-aHi", "-aHo"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 // Added to test ->transform
