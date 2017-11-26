@@ -43,6 +43,7 @@ enum class ExitCodes {
     InvalidError,
     HorribleError,
     OptionNotFound,
+    ArgumentMismatch,
     BaseClass = 127
 };
 
@@ -144,6 +145,17 @@ class ValidationError : public ParseError {
 class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
     CLI11_ERROR_SIMPLE(RequiredError)
+};
+
+/// Thrown when the wrong number of arguments has been recieved
+class ArgumentMismatch : ParseError {
+    CLI11_ERROR_DEF(ParseError, ArgumentMismatch)
+    ArgumentMismatch(std::string name, int expected, size_t recieved)
+        : ArgumentMismatch(expected > 0 ? ("Expected exactly " + std::to_string(expected) + " arguments to " + name +
+                                           ", got " + std::to_string(recieved))
+                                        : ("Expected at least " + std::to_string(-expected) + " arguments to " + name +
+                                           ", got " + std::to_string(recieved)),
+                           ExitCodes::ArgumentMismatch) {}
 };
 
 /// Thrown when a requires option is missing
