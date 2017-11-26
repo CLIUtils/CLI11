@@ -243,6 +243,26 @@ TEST_F(TApp, MissingValueNonRequiredOpt) {
     EXPECT_ANY_THROW(run());
 }
 
+TEST_F(TApp, NotRequiredOptsSingle) {
+
+    std::string str;
+    app.add_option("--str", str);
+
+    args = {"--str"};
+
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
+TEST_F(TApp, NotRequiredOptsSingleShort) {
+
+    std::string str;
+    app.add_option("-s", str);
+
+    args = {"-s"};
+
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
 TEST_F(TApp, RequiredOptsSingle) {
 
     std::string str;
@@ -250,7 +270,7 @@ TEST_F(TApp, RequiredOptsSingle) {
 
     args = {"--str"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, RequiredOptsSingleShort) {
@@ -260,7 +280,7 @@ TEST_F(TApp, RequiredOptsSingleShort) {
 
     args = {"-s"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, RequiredOptsDouble) {
@@ -270,7 +290,7 @@ TEST_F(TApp, RequiredOptsDouble) {
 
     args = {"--str", "one"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
     args = {"--str", "one", "two"};
@@ -287,7 +307,7 @@ TEST_F(TApp, RequiredOptsDoubleShort) {
 
     args = {"-s", "one"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
     args = {"-s", "one", "two"};
@@ -414,7 +434,17 @@ TEST_F(TApp, NotRequiedExpectedDouble) {
 
     args = {"--str", "one"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
+TEST_F(TApp, NotRequiedExpectedDoubleShort) {
+
+    std::vector<std::string> strs;
+    app.add_option("-s", strs)->expected(2);
+
+    args = {"-s", "one"};
+
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, EnumTest) {

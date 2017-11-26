@@ -452,7 +452,7 @@ class App {
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
-                throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
+                throw ConversionError(res[0], simple_name);
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
@@ -475,7 +475,7 @@ class App {
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
-                throw ConversionError("The value " + res[0] + "is not an allowed value for " + simple_name);
+                throw ConversionError(res[0], simple_name);
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
@@ -504,7 +504,7 @@ class App {
                 return detail::to_lower(val) == member;
             });
             if(iter == std::end(options))
-                throw ConversionError("The value " + member + "is not an allowed value for " + simple_name);
+                throw ConversionError(member, simple_name);
             else {
                 member = *iter;
                 return true;
@@ -533,7 +533,7 @@ class App {
                 return detail::to_lower(val) == member;
             });
             if(iter == std::end(options))
-                throw ConversionError("The value " + member + "is not an allowed value for " + simple_name);
+                throw ConversionError(member, simple_name);
             else {
                 member = *iter;
                 return true;
@@ -1149,12 +1149,7 @@ class App {
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
-                    throw RequiredError(opt->help_name() + " is required");
-
-                // Partially filled
-                if(opt->get_expected() > 0 && static_cast<int>(opt->count()) < opt->get_expected())
-                    throw RequiredError(opt->help_name() + " requires " + std::to_string(opt->get_expected()) +
-                                        " arguments");
+                    throw RequiredError(opt->single_name() + " is required");
             }
             // Requires
             for(const Option *opt_req : opt->requires_)
@@ -1409,8 +1404,8 @@ class App {
             }
 
             if(num > 0) {
-                throw RequiredError(op->single_name() + ": " + std::to_string(num) + " required " +
-                                    op->get_type_name() + " missing");
+                throw ArgumentMismatch(op->single_name() + ": " + std::to_string(num) + " required " +
+                                       op->get_type_name() + " missing");
             }
         }
 
@@ -1490,8 +1485,8 @@ class App {
                 args.pop_back();
             }
             if(num > 0) {
-                throw RequiredError(op->single_name() + ": " + std::to_string(num) + " required " +
-                                    op->get_type_name() + " missing");
+                throw ArgumentMismatch(op->single_name() + ": " + std::to_string(num) + " required " +
+                                       op->get_type_name() + " missing");
             }
         }
         return;

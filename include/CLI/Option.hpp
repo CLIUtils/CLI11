@@ -438,7 +438,7 @@ class Option : public OptionBase<Option> {
                 for(const std::function<std::string(std::string &)> &vali : validators_) {
                     std::string err_msg = vali(result);
                     if(!err_msg.empty())
-                        throw ValidationError(single_name() + ": " + err_msg);
+                        throw ValidationError(single_name(), err_msg);
                 }
         }
 

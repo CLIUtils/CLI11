@@ -106,7 +106,7 @@ inline std::vector<ini_ret_t> parse_ini(const std::string &name) {
 
     std::ifstream input{name};
     if(!input.good())
-        throw FileError(name + " was not readable (missing?)");
+        throw FileError(name);
 
     return parse_ini(input);
 }
