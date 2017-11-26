@@ -248,13 +248,13 @@ TEST_F(TApp, MissingValueMoreThan) {
     std::vector<int> vals2;
     app.add_option("-v", vals1)->expected(-2);
     app.add_option("--vals", vals2)->expected(-2);
-    
+
     args = {"-v", "2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    
+
     app.reset();
-    
-    args = {"--vals","4"};
+
+    args = {"--vals", "4"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
@@ -1173,14 +1173,14 @@ TEST_F(TApp, AllowExtrasOrder) {
 TEST_F(TApp, CheckShortFail) {
     args = {"--two"};
 
-    EXPECT_THROW(CLI::detail::AppFriend::parse_short(&app, args), CLI::HorribleError);
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, false), CLI::HorribleError);
 }
 
 // Test horrible error
 TEST_F(TApp, CheckLongFail) {
     args = {"-t"};
 
-    EXPECT_THROW(CLI::detail::AppFriend::parse_long(&app, args), CLI::HorribleError);
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, true), CLI::HorribleError);
 }
 
 // Test horrible error

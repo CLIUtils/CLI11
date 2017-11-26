@@ -1251,11 +1251,11 @@ class App {
             break;
         case detail::Classifer::LONG:
             // If already parsed a subcommand, don't accept options_
-            _parse_long(args);
+            _parse_arg(args, true);
             break;
         case detail::Classifer::SHORT:
             // If already parsed a subcommand, don't accept options_
-            _parse_short(args);
+            _parse_arg(args, false);
             break;
         case detail::Classifer::NONE:
             // Probably a positional or something for a parent (sub)command
@@ -1327,27 +1327,38 @@ class App {
             throw HorribleError("Subcommand " + args.back() + " missing");
     }
 
-    /// Parse a short argument, must be at the top of the list
-    void _parse_short(std::vector<std::string> &args) {
+    /// Parse a short (false) or long (true) argument, must be at the top of the list
+    void _parse_arg(std::vector<std::string> &args, bool second_dash) {
+
+        detail::Classifer current_type = second_dash ? detail::Classifer::LONG : detail::Classifer::SHORT;
+
         std::string current = args.back();
 
         std::string name;
+        std::string value;
         std::string rest;
-        if(!detail::split_short(current, name, rest))
-            throw HorribleError("Short parsed but missing! You should not see this");
 
-        auto op_ptr = std::find_if(
-            std::begin(options_), std::end(options_), [name](const Option_p &opt) { return opt->check_sname(name); });
+        if(second_dash) {
+            if(!detail::split_long(current, name, value))
+                throw HorribleError("Long parsed but missing (you should not see this):" + args.back());
+        } else {
+            if(!detail::split_short(current, name, rest))
+                throw HorribleError("Short parsed but missing! You should not see this");
+        }
+
+        auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name, second_dash](const Option_p &opt) {
+            return second_dash ? opt->check_lname(name) : opt->check_sname(name);
+        });
 
         // Option not found
         if(op_ptr == std::end(options_)) {
             // If a subcommand, try the master command
             if(parent_ != nullptr && fallthrough_)
-                return parent_->_parse_short(args);
+                return parent_->_parse_arg(args, second_dash);
             // Otherwise, add to missing
             else {
                 args.pop_back();
-                missing_.emplace_back(detail::Classifer::SHORT, current);
+                missing_.emplace_back(current_type, current);
                 return;
             }
         }
@@ -1359,7 +1370,13 @@ class App {
 
         int num = op->get_expected();
 
-        if(num == 0) {
+        /// ONE ///////////////////////////////////////////////////////////////
+        if(!value.empty()) {
+            if(num != -1)
+                num--;
+            op->add_result(value);
+            parse_order_.push_back(op.get());
+        } else if(num == 0) {
             op->add_result("");
             parse_order_.push_back(op.get());
         } else if(!rest.empty()) {
@@ -1392,9 +1409,9 @@ class App {
                 args.pop_back();
                 collected++;
             }
-            //if(collected < -num)
+            // if(collected < -num)
             //    throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
-            
+
         } else {
             while(num > 0 && !args.empty()) {
                 num--;
@@ -1414,85 +1431,6 @@ class App {
             rest = "-" + rest;
             args.push_back(rest);
         }
-    }
-
-    /// Parse a long argument, must be at the top of the list
-    void _parse_long(std::vector<std::string> &args) {
-        std::string current = args.back();
-
-        std::string name;
-        std::string value;
-        if(!detail::split_long(current, name, value))
-            throw HorribleError("Long parsed but missing (you should not see this):" + args.back());
-
-        auto op_ptr = std::find_if(
-            std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
-
-        // Option not found
-        if(op_ptr == std::end(options_)) {
-            // If a subcommand, try the master command
-            if(parent_ != nullptr && fallthrough_)
-                return parent_->_parse_long(args);
-            // Otherwise, add to missing
-            else {
-                args.pop_back();
-                missing_.emplace_back(detail::Classifer::LONG, current);
-                return;
-            }
-        }
-
-        args.pop_back();
-
-        // Get a reference to the pointer to make syntax bearable
-        Option_p &op = *op_ptr;
-
-        int num = op->get_expected();
-
-        if(!value.empty()) {
-            if(num != -1)
-                num--;
-            op->add_result(value);
-            parse_order_.push_back(op.get());
-        } else if(num == 0) {
-            op->add_result("");
-            parse_order_.push_back(op.get());
-        } else if(num < 0) {
-            // Unlimited vector parser
-            int collected = 0; // Make sure we always eat the minimum
-            while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
-                if(collected >= -num) {
-                    // We could break here for allow extras, but we don't
-
-                    // If any positionals remain, don't keep eating
-                    if(_count_remaining_positionals() > 0)
-                        break;
-
-                    // If there are any unlimited positionals, those also take priority
-                    if(std::any_of(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-                           return opt->get_positional() && opt->get_expected() < 0;
-                       }))
-                        break;
-                }
-                op->add_result(args.back());
-                parse_order_.push_back(op.get());
-                args.pop_back();
-                collected++;
-            }
-            //if(collected < -num)
-            //    throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
-        } else {
-            while(num > 0 && !args.empty()) {
-                num--;
-                op->add_result(args.back());
-                parse_order_.push_back(op.get());
-                args.pop_back();
-            }
-            if(num > 0) {
-                throw ArgumentMismatch(op->single_name() + ": " + std::to_string(num) + " required " +
-                                       op->get_type_name() + " missing");
-            }
-        }
-        return;
     }
 };
 
@@ -1519,16 +1457,9 @@ struct AppFriend {
 
     /// Wrap _parse_short, perfectly forward arguments and return
     template <typename... Args>
-    static auto parse_short(App *app, Args &&... args) ->
-        typename std::result_of<decltype (&App::_parse_short)(App, Args...)>::type {
-        return app->_parse_short(std::forward<Args>(args)...);
-    }
-
-    /// Wrap _parse_long, perfectly forward arguments and return
-    template <typename... Args>
-    static auto parse_long(App *app, Args &&... args) ->
-        typename std::result_of<decltype (&App::_parse_long)(App, Args...)>::type {
-        return app->_parse_long(std::forward<Args>(args)...);
+    static auto parse_arg(App *app, Args &&... args) ->
+        typename std::result_of<decltype (&App::_parse_arg)(App, Args...)>::type {
+        return app->_parse_arg(std::forward<Args>(args)...);
     }
 
     /// Wrap _parse_subcommand, perfectly forward arguments and return
