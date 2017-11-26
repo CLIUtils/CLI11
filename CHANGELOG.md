@@ -21,6 +21,9 @@
 * Unlimited options no longer prioritize over remaining/unlimited positionals [#51](https://github.com/CLIUtils/CLI11/pull/51)
 * Added `->transform` which modifies the string parsed [#54](https://github.com/CLIUtils/CLI11/pull/54)
 * Changed of API in validators to `void(std::string &)` (const for users), throwing providing nicer errors [#54](https://github.com/CLIUtils/CLI11/pull/54)
+* Added `CLI::ArgumentMismatch` [#56](https://github.com/CLIUtils/CLI11/pull/56) and fixed missing failure if one arg expected [#55](https://github.com/CLIUtils/CLI11/issues/55)
+* Support for minimum unlimited expected arguments [#56](https://github.com/CLIUtils/CLI11/pull/56)
+* Single internal arg parse function [#56](https://github.com/CLIUtils/CLI11/pull/56)
 
 ## Version 1.2
 
