@@ -183,8 +183,8 @@ class ExcludesError : public ParseError {
 class ExtrasError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExtrasError)
     ExtrasError(std::vector<std::string> args)
-        : ExtrasError((args.size() > 1 ? "The following argument was not expected: "
-                                       : "The following arguments were not expected: ") +
+        : ExtrasError((args.size() > 1 ? "The following arguments were not expected: "
+                                       : "The following argument was not expected: ") +
                           detail::rjoin(args, " "),
                       ExitCodes::ExtrasError) {}
 };

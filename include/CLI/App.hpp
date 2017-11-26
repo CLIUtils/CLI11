@@ -1371,10 +1371,10 @@ class App {
         }
 
         // Unlimited vector parser
-        if(num == -1) {
-            bool already_ate_one = false; // Make sure we always eat one
+        if(num < 0) {
+            int collected = 0; // Make sure we always eat the minimum
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
-                if(already_ate_one) {
+                if(collected >= -num) {
                     // We could break here for allow extras, but we don't
 
                     // If any positionals remain, don't keep eating
@@ -1390,8 +1390,11 @@ class App {
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
-                already_ate_one = true;
+                collected++;
             }
+            //if(collected < -num)
+            //    throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
+            
         } else {
             while(num > 0 && !args.empty()) {
                 num--;
@@ -1453,11 +1456,11 @@ class App {
         } else if(num == 0) {
             op->add_result("");
             parse_order_.push_back(op.get());
-        } else if(num == -1) {
+        } else if(num < 0) {
             // Unlimited vector parser
-            bool already_ate_one = false; // Make sure we always eat one
+            int collected = 0; // Make sure we always eat the minimum
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
-                if(already_ate_one) {
+                if(collected >= -num) {
                     // We could break here for allow extras, but we don't
 
                     // If any positionals remain, don't keep eating
@@ -1473,8 +1476,10 @@ class App {
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
                 args.pop_back();
-                already_ate_one = true;
+                collected++;
             }
+            //if(collected < -num)
+            //    throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
         } else {
             while(num > 0 && !args.empty()) {
                 num--;
