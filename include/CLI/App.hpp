@@ -1370,7 +1370,6 @@ class App {
 
         int num = op->get_expected();
 
-        /// ONE ///////////////////////////////////////////////////////////////
         if(!value.empty()) {
             if(num != -1)
                 num--;
@@ -1409,8 +1408,8 @@ class App {
                 args.pop_back();
                 collected++;
             }
-            // if(collected < -num)
-            //    throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
+            if(op->results_.size() < static_cast<size_t>(-num))
+                throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
 
         } else {
             while(num > 0 && !args.empty()) {

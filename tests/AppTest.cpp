@@ -338,7 +338,7 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     app.add_option("--str", strs)->required();
 
     args = {"--str"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
     args = {"--str", "one", "--str", "two"};
@@ -372,7 +372,7 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
     app.add_option("-s", strs)->required();
 
     args = {"-s"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
     args = {"-s", "one", "-s", "two"};
