@@ -1146,6 +1146,10 @@ class App {
         for(const Option_p &opt : options_) {
             // Required or partially filled
             if(opt->get_required() || opt->count() != 0) {
+                // Make sure enough -N arguments parsed (+N is already handled in parsing function)
+                if(opt->get_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_expected()))
+                    throw ArgumentMismatch(opt->single_name() + ": At least " + std::to_string(-opt->get_expected()) +
+                                           " required");
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
@@ -1408,8 +1412,6 @@ class App {
                 args.pop_back();
                 collected++;
             }
-            if(op->results_.size() < static_cast<size_t>(-num))
-                throw ArgumentMismatch(op->single_name() + ": At least " + std::to_string(-num) + " required");
 
         } else {
             while(num > 0 && !args.empty()) {

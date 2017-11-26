@@ -325,9 +325,32 @@ TEST_F(TApp, RequiredOptsDoubleShort) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     app.reset();
+
+    args = {"-s", "one", "-s", "one", "-s", "one"};
+
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
+TEST_F(TApp, RequiredOptsDoubleNeg) {
+    std::vector<std::string> strs;
+    app.add_option("-s", strs)->required()->expected(-2);
+
+    args = {"-s", "one"};
+
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+
+    app.reset();
+
+    args = {"-s", "one", "two", "-s", "three"};
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two", "three"}));
+
+    app.reset();
     args = {"-s", "one", "two"};
 
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 }
