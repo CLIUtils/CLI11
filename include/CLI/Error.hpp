@@ -153,8 +153,8 @@ class RequiredError : public ParseError {
     CLI11_ERROR_SIMPLE(RequiredError)
 };
 
-/// Thrown when the wrong number of arguments has been recieved
-class ArgumentMismatch : ParseError {
+/// Thrown when the wrong number of arguments has been received
+class ArgumentMismatch : public ParseError {
     CLI11_ERROR_DEF(ParseError, ArgumentMismatch)
     CLI11_ERROR_SIMPLE(ArgumentMismatch)
     ArgumentMismatch(std::string name, int expected, size_t recieved)
