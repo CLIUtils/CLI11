@@ -298,7 +298,7 @@ class Option : public OptionBase<Option> {
 
         for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name());
+                throw OptionAlreadyAdded(opt->get_name() + " is already added");
 
         return this;
     }

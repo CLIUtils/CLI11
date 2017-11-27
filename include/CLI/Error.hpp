@@ -172,7 +172,7 @@ class RequiresError : public ParseError {
         : RequiresError(curname + " requires " + subname, ExitCodes::RequiresError) {}
 };
 
-/// Thrown when a exludes option is present
+/// Thrown when an excludes option is present
 class ExcludesError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExcludesError)
     ExcludesError(std::string curname, std::string subname)
