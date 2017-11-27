@@ -20,5 +20,6 @@ add_cli_exe(groups groups.cpp)
 add_cli_exe(inter_argument_order inter_argument_order.cpp)
 add_cli_exe(prefix_command prefix_command.cpp)
 add_cli_exe(enum enum.cpp)
+add_cli_exe(modhelp modhelp.cpp)
 
 add_subdirectory(subcom_in_files)
