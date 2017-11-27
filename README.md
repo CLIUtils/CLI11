@@ -110,11 +110,13 @@ try {
 }
 ```
 
+The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). You should not assume that the option values have been set inside the catch block; for example, help flags intentionally short-circuit all other processing for speed and to ensure required options and the like do not interfere. 
+
 </p></details>
 </br>
 
 
-The initialization is just one line, adding options is just two each. The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
+The initialization is just one line, adding options is just two each. The parse macro is just one line (or 5 for the contents of the macro).  After the app runs, the filename will be set to the correct value if it was passed, otherwise it will be set to the default. You can check to see if this was passed on the command line with `app.count("--file")`.
 
 The supported values are:
 
