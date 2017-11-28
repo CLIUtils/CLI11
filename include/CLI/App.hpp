@@ -394,7 +394,8 @@ class App {
         return opt;
     }
 
-    /// Bool version - defaults to allowing multiple passings, but can be forced to one if `take_last(false)` is used.
+    /// Bool version - defaults to allowing multiple passings, but can be forced to one if
+    /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string name,
                      T &count, ///< A variable holding true if passed
@@ -410,7 +411,7 @@ class App {
         if(opt->get_positional())
             throw IncorrectConstruction("Flags cannot be positional");
         opt->set_custom_option("", 0);
-        opt->take_last();
+        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
         return opt;
     }
 

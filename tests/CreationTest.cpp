@@ -152,14 +152,14 @@ TEST_F(TApp, IncorrectConstructionVectorAsFlag) {
 TEST_F(TApp, IncorrectConstructionVectorTakeLast) {
     std::vector<int> vec;
     auto cat = app.add_option("--vec", vec);
-    EXPECT_THROW(cat->take_last(), CLI::IncorrectConstruction);
+    EXPECT_THROW(cat->multi_option_policy(CLI::MultiOptionPolicy::TakeLast), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, IncorrectConstructionTakeLastExpected) {
     std::vector<int> vec;
     auto cat = app.add_option("--vec", vec);
     cat->expected(1);
-    ASSERT_NO_THROW(cat->take_last());
+    ASSERT_NO_THROW(cat->multi_option_policy(CLI::MultiOptionPolicy::TakeLast));
     EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
 }
 
@@ -301,16 +301,20 @@ TEST_F(TApp, OptionFromDefaults) {
 TEST_F(TApp, OptionFromDefaultsSubcommands) {
     // Initial defaults
     EXPECT_FALSE(app.option_defaults()->get_required());
-    EXPECT_FALSE(app.option_defaults()->get_take_last());
+    EXPECT_EQ(app.option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::Throw);
     EXPECT_FALSE(app.option_defaults()->get_ignore_case());
     EXPECT_EQ(app.option_defaults()->get_group(), "Options");
 
-    app.option_defaults()->required()->take_last()->ignore_case()->group("Something");
+    app.option_defaults()
+        ->required()
+        ->multi_option_policy(CLI::MultiOptionPolicy::TakeLast)
+        ->ignore_case()
+        ->group("Something");
 
     auto app2 = app.add_subcommand("app2");
 
     EXPECT_TRUE(app2->option_defaults()->get_required());
-    EXPECT_TRUE(app2->option_defaults()->get_take_last());
+    EXPECT_EQ(app2->option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::TakeLast);
     EXPECT_TRUE(app2->option_defaults()->get_ignore_case());
     EXPECT_EQ(app2->option_defaults()->get_group(), "Something");
 }

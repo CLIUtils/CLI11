@@ -26,6 +26,8 @@ class App;
 
 using Option_p = std::unique_ptr<Option>;
 
+enum class MultiOptionPolicy { Throw, TakeLast, TakeFirst, Join };
+
 template <typename CRTP> class OptionBase {
     friend App;
 
@@ -39,14 +41,14 @@ template <typename CRTP> class OptionBase {
     /// Ignore the case when matching (option, not value)
     bool ignore_case_{false};
 
-    /// Only take the last argument (requires `expected_ == 1`)
-    bool last_{false};
+    /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
+    MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
         other->required(required_);
         other->ignore_case(ignore_case_);
-        other->take_last(last_);
+        other->multi_option_policy(multi_option_policy_);
     }
 
   public:
@@ -79,8 +81,8 @@ template <typename CRTP> class OptionBase {
     /// The status of ignore case
     bool get_ignore_case() const { return ignore_case_; }
 
-    /// The status of the take last flag
-    bool get_take_last() const { return last_; }
+    /// The status of the multi option policy
+    MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 };
 
 class OptionDefaults : public OptionBase<OptionDefaults> {
@@ -90,8 +92,8 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
     // Methods here need a different implementation if they are Option vs. OptionDefault
 
     /// Take the last argument if given multiple times
-    OptionDefaults *take_last(bool value = true) {
-        last_ = value;
+    OptionDefaults *multi_option_policy(MultiOptionPolicy value) {
+        multi_option_policy_ = value;
         return this;
     }
 
@@ -213,8 +215,9 @@ class Option : public OptionBase<Option> {
             throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
         else if(!changeable_)
             throw IncorrectConstruction("You can only change the expected arguments for vectors");
-        else if(last_)
-            throw IncorrectConstruction("You can't change expected arguments after you've set take_last!");
+        else if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
+            throw IncorrectConstruction(
+                "You can't change expected arguments after you've changed the multi option policy!");
 
         expected_ = value;
         return this;
@@ -304,10 +307,10 @@ class Option : public OptionBase<Option> {
     }
 
     /// Take the last argument if given multiple times
-    Option *take_last(bool value = true) {
+    Option *multi_option_policy(MultiOptionPolicy value) {
         if(get_expected() != 0 && get_expected() != 1)
-            throw IncorrectConstruction("take_last only works for flags and single value options!");
-        last_ = value;
+            throw IncorrectConstruction("multi_option_policy only works for flags and single value options!");
+        multi_option_policy_ = value;
         return this;
     }
 
@@ -315,14 +318,8 @@ class Option : public OptionBase<Option> {
     /// @name Accessors
     ///@{
 
-    /// True if this is a required option
-    bool get_required() const { return required_; }
-
     /// The number of arguments the option expects
     int get_expected() const { return expected_; }
-
-    /// The status of the take last flag
-    bool get_take_last() const { return last_; }
 
     /// True if this has a default value
     int get_default() const { return default_; }
@@ -335,9 +332,6 @@ class Option : public OptionBase<Option> {
 
     /// True if option has description
     bool has_description() const { return description_.length() > 0; }
-
-    /// Get the group of this option
-    const std::string &get_group() const { return group_; }
 
     /// Get the description
     const std::string &get_description() const { return description_; }
@@ -443,9 +437,16 @@ class Option : public OptionBase<Option> {
         }
 
         bool local_result;
-        // If take_last, only operate on the final item
-        if(last_) {
+
+        // Operation depends on the policy setting
+        if(multi_option_policy_ == MultiOptionPolicy::TakeLast) {
             results_t partial_result = {results_.back()};
+            local_result = !callback_(partial_result);
+        } else if(multi_option_policy_ == MultiOptionPolicy::TakeFirst) {
+            results_t partial_result = {results_.at(0)};
+            local_result = !callback_(partial_result);
+        } else if(multi_option_policy_ == MultiOptionPolicy::Join) {
+            results_t partial_result = {detail::join(results_, "\n")};
             local_result = !callback_(partial_result);
         } else {
             if((expected_ > 0 && results_.size() != static_cast<size_t>(expected_)) ||

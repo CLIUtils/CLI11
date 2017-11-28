@@ -169,7 +169,7 @@ TEST_F(TApp, BoolAndIntFlags) {
 
 TEST_F(TApp, BoolOnlyFlag) {
     bool bflag;
-    app.add_flag("-b", bflag)->take_last(false);
+    app.add_flag("-b", bflag)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
 
     args = {"-b"};
     EXPECT_NO_THROW(run());
@@ -221,13 +221,37 @@ TEST_F(TApp, DefaultOpts) {
 TEST_F(TApp, TakeLastOpt) {
 
     std::string str;
-    app.add_option("--str", str)->take_last();
+    app.add_option("--str", str)->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
 
     args = {"--str=one", "--str=two"};
 
     run();
 
     EXPECT_EQ(str, "two");
+}
+
+TEST_F(TApp, TakeFirstOpt) {
+
+    std::string str;
+    app.add_option("--str", str)->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "one");
+}
+
+TEST_F(TApp, JoinOpt) {
+
+    std::string str;
+    app.add_option("--str", str)->multi_option_policy(CLI::MultiOptionPolicy::Join);
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "one\ntwo");
 }
 
 TEST_F(TApp, MissingValueNonRequiredOpt) {
