@@ -1209,7 +1209,7 @@ class App {
 
         if(!op->get_configurable())
             throw INIError::NotConfigurable(current.fullname);
-        
+
         if(op->results_.empty()) {
             // Flag parsing
             if(op->get_expected() == 0) {

@@ -303,12 +303,14 @@ TEST_F(TApp, OptionFromDefaultsSubcommands) {
     EXPECT_FALSE(app.option_defaults()->get_required());
     EXPECT_EQ(app.option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::Throw);
     EXPECT_FALSE(app.option_defaults()->get_ignore_case());
+    EXPECT_TRUE(app.option_defaults()->get_configurable());
     EXPECT_EQ(app.option_defaults()->get_group(), "Options");
 
     app.option_defaults()
         ->required()
         ->multi_option_policy(CLI::MultiOptionPolicy::TakeLast)
         ->ignore_case()
+        ->configurable(false)
         ->group("Something");
 
     auto app2 = app.add_subcommand("app2");
@@ -316,6 +318,7 @@ TEST_F(TApp, OptionFromDefaultsSubcommands) {
     EXPECT_TRUE(app2->option_defaults()->get_required());
     EXPECT_EQ(app2->option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::TakeLast);
     EXPECT_TRUE(app2->option_defaults()->get_ignore_case());
+    EXPECT_FALSE(app2->option_defaults()->get_configurable());
     EXPECT_EQ(app2->option_defaults()->get_group(), "Something");
 }
 
