@@ -25,6 +25,7 @@
 * Added `CLI::ArgumentMismatch` [#56](https://github.com/CLIUtils/CLI11/pull/56) and fixed missing failure if one arg expected [#55](https://github.com/CLIUtils/CLI11/issues/55)
 * Support for minimum unlimited expected arguments [#56](https://github.com/CLIUtils/CLI11/pull/56)
 * Single internal arg parse function [#56](https://github.com/CLIUtils/CLI11/pull/56)
+* Allow options to be disabled from INI file [#60](https://github.com/CLIUtils/CLI11/pull/60)
 
 ## Version 1.2
 
