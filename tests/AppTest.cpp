@@ -230,6 +230,18 @@ TEST_F(TApp, TakeLastOpt) {
     EXPECT_EQ(str, "two");
 }
 
+TEST_F(TApp, TakeLastOpt2) {
+
+    std::string str;
+    app.add_option("--str", str)->take_last();
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "two");
+}
+
 TEST_F(TApp, TakeFirstOpt) {
 
     std::string str;
@@ -242,10 +254,34 @@ TEST_F(TApp, TakeFirstOpt) {
     EXPECT_EQ(str, "one");
 }
 
+TEST_F(TApp, TakeFirstOpt2) {
+
+    std::string str;
+    app.add_option("--str", str)->take_first();
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "one");
+}
+
 TEST_F(TApp, JoinOpt) {
 
     std::string str;
     app.add_option("--str", str)->multi_option_policy(CLI::MultiOptionPolicy::Join);
+
+    args = {"--str=one", "--str=two"};
+
+    run();
+
+    EXPECT_EQ(str, "one\ntwo");
+}
+
+TEST_F(TApp, JoinOpt2) {
+
+    std::string str;
+    app.add_option("--str", str)->join();
 
     args = {"--str=one", "--str=two"};
 

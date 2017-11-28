@@ -83,6 +83,29 @@ template <typename CRTP> class OptionBase {
 
     /// The status of the multi option policy
     MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
+
+    // Shortcuts for multi option policy
+
+    /// Set the multi option policy to take last
+    CRTP *take_last() {
+        CRTP *self = static_cast<CRTP *>(this);
+        self->multi_option_policy(MultiOptionPolicy::TakeLast);
+        return self;
+    }
+
+    /// Set the multi option policy to take last
+    CRTP *take_first() {
+        CRTP *self = static_cast<CRTP *>(this);
+        self->multi_option_policy(MultiOptionPolicy::TakeFirst);
+        return self;
+    }
+
+    /// Set the multi option policy to take last
+    CRTP *join() {
+        CRTP *self = static_cast<CRTP *>(this);
+        self->multi_option_policy(MultiOptionPolicy::Join);
+        return self;
+    }
 };
 
 class OptionDefaults : public OptionBase<OptionDefaults> {
@@ -92,7 +115,7 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
     // Methods here need a different implementation if they are Option vs. OptionDefault
 
     /// Take the last argument if given multiple times
-    OptionDefaults *multi_option_policy(MultiOptionPolicy value) {
+    OptionDefaults *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
         multi_option_policy_ = value;
         return this;
     }
@@ -307,7 +330,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Take the last argument if given multiple times
-    Option *multi_option_policy(MultiOptionPolicy value) {
+    Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
         if(get_expected() != 0 && get_expected() != 1)
             throw IncorrectConstruction("multi_option_policy only works for flags and single value options!");
         multi_option_policy_ = value;
