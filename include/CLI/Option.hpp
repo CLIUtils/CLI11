@@ -41,8 +41,12 @@ template <typename CRTP> class OptionBase {
     /// Ignore the case when matching (option, not value)
     bool ignore_case_{false};
 
+    /// Allow this option to be given in a configuration file
+    bool configurable_{true};
+    
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
+    
 
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
@@ -80,6 +84,9 @@ template <typename CRTP> class OptionBase {
 
     /// The status of ignore case
     bool get_ignore_case() const { return ignore_case_; }
+    
+    /// The status of configurable
+    bool get_configurable() const { return configurable_; }
 
     /// The status of the multi option policy
     MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
@@ -105,6 +112,12 @@ template <typename CRTP> class OptionBase {
         CRTP *self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::Join);
         return self;
+    }
+    
+    /// Allow in a configuration file
+    CRTP *configurable(bool value = true) {
+        configurable_ = value;
+        return static_cast<CRTP *>(this);
     }
 };
 
@@ -235,12 +248,11 @@ class Option : public OptionBase<Option> {
         if(expected_ == value)
             return this;
         else if(value == 0)
-            throw IncorrectConstruction("Cannot set 0 expected, use a flag instead");
+            throw IncorrectConstruction::Set0Opt(single_name());
         else if(!changeable_)
-            throw IncorrectConstruction("You can only change the expected arguments for vectors");
+            throw IncorrectConstruction::ChangeNotVector(single_name());
         else if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
-            throw IncorrectConstruction(
-                "You can't change expected arguments after you've changed the multi option policy!");
+            throw IncorrectConstruction::AfterMultiOpt(single_name());
 
         expected_ = value;
         return this;
@@ -269,7 +281,7 @@ class Option : public OptionBase<Option> {
     Option *requires(Option *opt) {
         auto tup = requires_.insert(opt);
         if(!tup.second)
-            throw OptionAlreadyAdded(get_name() + " requires " + opt->get_name());
+            throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
         return this;
     }
 
@@ -278,7 +290,7 @@ class Option : public OptionBase<Option> {
         for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
             if(opt.get() != this && opt->check_name(opt_name))
                 return requires(opt.get());
-        throw IncorrectConstruction("Option " + opt_name + " is not defined");
+        throw IncorrectConstruction::MissingOption(opt_name);
     }
 
     /// Any number supported, any mix of string and Opt
@@ -291,7 +303,7 @@ class Option : public OptionBase<Option> {
     Option *excludes(Option *opt) {
         auto tup = excludes_.insert(opt);
         if(!tup.second)
-            throw OptionAlreadyAdded(get_name() + " excludes " + opt->get_name());
+            throw OptionAlreadyAdded::Excludes(get_name(), opt->get_name());
         return this;
     }
 
@@ -300,7 +312,7 @@ class Option : public OptionBase<Option> {
         for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
             if(opt.get() != this && opt->check_name(opt_name))
                 return excludes(opt.get());
-        throw IncorrectConstruction("Option " + opt_name + " is not defined");
+        throw IncorrectConstruction::MissingOption(opt_name);
     }
     /// Any number supported, any mix of string and Opt
     template <typename A, typename B, typename... ARG> Option *excludes(A opt, B opt1, ARG... args) {
@@ -324,7 +336,7 @@ class Option : public OptionBase<Option> {
 
         for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name() + " is already added");
+                throw OptionAlreadyAdded(opt->get_name());
 
         return this;
     }
@@ -332,7 +344,7 @@ class Option : public OptionBase<Option> {
     /// Take the last argument if given multiple times
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
         if(get_expected() != 0 && get_expected() != 1)
-            throw IncorrectConstruction("multi_option_policy only works for flags and single value options!");
+            throw IncorrectConstruction::MultiOptionPolicy(single_name());
         multi_option_policy_ = value;
         return this;
     }
@@ -480,7 +492,7 @@ class Option : public OptionBase<Option> {
         }
 
         if(local_result)
-            throw ConversionError("Could not convert: " + get_name() + "=" + detail::join(results_));
+            throw ConversionError(get_name(), results_);
     }
 
     /// If options share any of the same names, they are equal (not counting positional)

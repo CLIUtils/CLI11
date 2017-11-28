@@ -376,7 +376,7 @@ TEST_F(TApp, IniFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ExtrasINIError);
+    EXPECT_THROW(run(), CLI::INIError);
 }
 
 TEST_F(TApp, IniSubFailure) {
@@ -392,7 +392,7 @@ TEST_F(TApp, IniSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ExtrasINIError);
+    EXPECT_THROW(run(), CLI::INIError);
 }
 
 TEST_F(TApp, IniNoSubFailure) {
@@ -407,7 +407,7 @@ TEST_F(TApp, IniNoSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ExtrasINIError);
+    EXPECT_THROW(run(), CLI::INIError);
 }
 
 TEST_F(TApp, IniFlagConvertFailure) {

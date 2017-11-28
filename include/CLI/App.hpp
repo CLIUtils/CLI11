@@ -369,7 +369,7 @@ class App {
 
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction("Flags cannot be positional");
+            throw IncorrectConstruction::PositionalFlag(name);
         opt->set_custom_option("", 0);
         return opt;
     }
@@ -389,7 +389,7 @@ class App {
 
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction("Flags cannot be positional");
+            throw IncorrectConstruction::PositionalFlag(name);
         opt->set_custom_option("", 0);
         return opt;
     }
@@ -409,7 +409,7 @@ class App {
 
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction("Flags cannot be positional");
+            throw IncorrectConstruction::PositionalFlag(name);
         opt->set_custom_option("", 0);
         opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
         return opt;
@@ -428,7 +428,7 @@ class App {
 
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction("Flags cannot be positional");
+            throw IncorrectConstruction::PositionalFlag(name);
         opt->set_custom_option("", 0);
         return opt;
     }
@@ -1100,7 +1100,7 @@ class App {
                     std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
                     while(!values.empty()) {
                         if(!_parse_ini(values)) {
-                            throw ExtrasINIError(values.back().fullname);
+                            throw INIError::Extras(values.back().fullname);
                         }
                     }
                 } catch(const FileError &) {
@@ -1149,8 +1149,7 @@ class App {
             if(opt->get_required() || opt->count() != 0) {
                 // Make sure enough -N arguments parsed (+N is already handled in parsing function)
                 if(opt->get_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_expected()))
-                    throw ArgumentMismatch(opt->single_name() + ": At least " + std::to_string(-opt->get_expected()) +
-                                           " required");
+                    throw ArgumentMismatch::AtLeast(opt->single_name(), -opt->get_expected());
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
@@ -1167,10 +1166,8 @@ class App {
         }
 
         auto selected_subcommands = get_subcommands();
-        if(require_subcommand_min_ > 0 && selected_subcommands.empty())
-            throw RequiredError("Subcommand required");
-        else if(require_subcommand_min_ > selected_subcommands.size())
-            throw RequiredError("Requires at least " + std::to_string(require_subcommand_min_) + " subcommands");
+        if(require_subcommand_min_ > selected_subcommands.size())
+            throw RequiredError::Subcommand(require_subcommand_min_);
 
         // Convert missing (pairs) to extras (string only)
         if(!(allow_extras_ || prefix_command_)) {
@@ -1210,6 +1207,9 @@ class App {
         // Let's not go crazy with pointer syntax
         Option_p &op = *op_ptr;
 
+        if(!op->get_configurable())
+            throw INIError::NotConfigurable(current.fullname);
+        
         if(op->results_.empty()) {
             // Flag parsing
             if(op->get_expected() == 0) {
@@ -1226,10 +1226,10 @@ class App {
                             for(size_t i = 0; i < ui; i++)
                                 op->results_.emplace_back("");
                         } catch(const std::invalid_argument &) {
-                            throw ConversionError(current.fullname + ": Should be true/false or a number");
+                            throw ConversionError::TrueFalse(current.fullname);
                         }
                 } else
-                    throw ConversionError(current.fullname + ": too many inputs for a flag");
+                    throw ConversionError::TooManyInputsFlag(current.fullname);
             } else {
                 op->results_ = current.inputs;
                 op->run_callback();
@@ -1424,8 +1424,7 @@ class App {
             }
 
             if(num > 0) {
-                throw ArgumentMismatch(op->single_name() + ": " + std::to_string(num) + " required " +
-                                       op->get_type_name() + " missing");
+                throw ArgumentMismatch::TypedAtLeast(op->single_name(), num, op->get_type_name());
             }
         }
 
