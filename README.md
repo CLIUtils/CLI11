@@ -167,7 +167,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 * `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
-* `->take_last()`: Only take the last option/flag given on the command line, automatically true for bool flags
+* `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
@@ -266,7 +266,7 @@ arguments, use `.config_to_str(default_also=false)`, where `default_also` will a
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `take_last`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `multi_option_policy`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();

@@ -6,6 +6,7 @@
 * Added `remaining()` and `remaining_size()` [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * `allow_extras` and `prefix_command` are now valid on subcommands [#37](https://github.com/CLIUtils/CLI11/pull/37)
 * Added `take_last` to only take last value passed [#40](https://github.com/CLIUtils/CLI11/pull/40)
+* Added `multi_option_policy` and shortcuts to provide more control than just a take last policy [#59](https://github.com/CLIUtils/CLI11/pull/59)
 * More detailed error messages in a few cases [#41](https://github.com/CLIUtils/CLI11/pull/41)
 * Footers can be added to help [#42](https://github.com/CLIUtils/CLI11/pull/42)
 * Help flags are easier to customize [#43](https://github.com/CLIUtils/CLI11/pull/43)
