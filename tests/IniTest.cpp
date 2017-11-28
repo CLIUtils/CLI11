@@ -379,6 +379,41 @@ TEST_F(TApp, IniFailure) {
     EXPECT_THROW(run(), CLI::INIError);
 }
 
+TEST_F(TApp, IniConfigurable) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+    bool value;
+    app.add_flag("--val", value)->configurable(true);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    EXPECT_NO_THROW(run());
+    EXPECT_TRUE(value);
+}
+
+TEST_F(TApp, IniNotConfigurable) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_config("--config", tmpini);
+    bool value;
+    app.add_flag("--val", value)->configurable(false);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    EXPECT_THROW(run(), CLI::INIError);
+}
+
 TEST_F(TApp, IniSubFailure) {
 
     TempFile tmpini{"TestIniTmp.ini"};

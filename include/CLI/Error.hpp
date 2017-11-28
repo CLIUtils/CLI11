@@ -86,30 +86,32 @@ class IncorrectConstruction : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, IncorrectConstruction)
     CLI11_ERROR_SIMPLE(IncorrectConstruction)
     static IncorrectConstruction PositionalFlag(std::string name) {
-        return IncorrectConstruction(name + ": Flags cannot be positional");}
+        return IncorrectConstruction(name + ": Flags cannot be positional");
+    }
     static IncorrectConstruction Set0Opt(std::string name) {
-        return IncorrectConstruction(name + ": Cannot set 0 expected, use a flag instead");}
+        return IncorrectConstruction(name + ": Cannot set 0 expected, use a flag instead");
+    }
     static IncorrectConstruction ChangeNotVector(std::string name) {
-        return IncorrectConstruction(name + ": You can only change the expected arguments for vectors");}
+        return IncorrectConstruction(name + ": You can only change the expected arguments for vectors");
+    }
     static IncorrectConstruction AfterMultiOpt(std::string name) {
-        return IncorrectConstruction(name + ": You can't change expected arguments after you've changed the multi option policy!");}
+        return IncorrectConstruction(
+            name + ": You can't change expected arguments after you've changed the multi option policy!");
+    }
     static IncorrectConstruction MissingOption(std::string name) {
-        return IncorrectConstruction("Option " + name + " is not defined");}
+        return IncorrectConstruction("Option " + name + " is not defined");
+    }
     static IncorrectConstruction MultiOptionPolicy(std::string name) {
-        return IncorrectConstruction(name + ": multi_option_policy only works for flags and single value options");}
-
+        return IncorrectConstruction(name + ": multi_option_policy only works for flags and single value options");
+    }
 };
 
 /// Thrown on construction of a bad name
 class BadNameString : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, BadNameString)
     CLI11_ERROR_SIMPLE(BadNameString)
-    static BadNameString OneCharName(std::string name) {
-        return BadNameString("Invalid one char name: " + name);
-    }
-    static BadNameString BadLongName(std::string name) {
-        return BadNameString("Bad long name: " + name);
-    }
+    static BadNameString OneCharName(std::string name) { return BadNameString("Invalid one char name: " + name); }
+    static BadNameString BadLongName(std::string name) { return BadNameString("Bad long name: " + name); }
     static BadNameString DashesOnly(std::string name) {
         return BadNameString("Must have a name, not just dashes: " + name);
     }
@@ -162,7 +164,7 @@ class RuntimeError : public ParseError {
 class FileError : public ParseError {
     CLI11_ERROR_DEF(ParseError, FileError)
     CLI11_ERROR_SIMPLE(FileError)
-    static FileError Missing(std::string name) {return FileError(name + " was not readable (missing?)");}
+    static FileError Missing(std::string name) { return FileError(name + " was not readable (missing?)"); }
 };
 
 /// Thrown when conversion call back fails, such as when an int fails to coerce to a string
@@ -174,9 +176,11 @@ class ConversionError : public ParseError {
     ConversionError(std::string name, std::vector<std::string> results)
         : ConversionError("Could not convert: " + name + " = " + detail::join(results)) {}
     static ConversionError TooManyInputsFlag(std::string name) {
-        return ConversionError(name + ": too many inputs for a flag");}
+        return ConversionError(name + ": too many inputs for a flag");
+    }
     static ConversionError TrueFalse(std::string name) {
-        return ConversionError(name + ": Should be true/false or a number");}
+        return ConversionError(name + ": Should be true/false or a number");
+    }
 };
 
 /// Thrown when validation of results fails
@@ -189,15 +193,14 @@ class ValidationError : public ParseError {
 /// Thrown when a required option is missing
 class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
-    RequiredError(std::string name) : RequiredError(name + " is required") {}
+    RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
     static RequiredError Subcommand(size_t min_subcom) {
         if(min_subcom == 1)
             return RequiredError("A subcommand");
         else
-            return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands", ExitCodes::RequiredError);
+            return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
+                                 ExitCodes::RequiredError);
     }
-    
-    
 };
 
 /// Thrown when the wrong number of arguments has been received
@@ -210,13 +213,13 @@ class ArgumentMismatch : public ParseError {
                                         : ("Expected at least " + std::to_string(-expected) + " arguments to " + name +
                                            ", got " + std::to_string(recieved)),
                            ExitCodes::ArgumentMismatch) {}
-    
+
     static ArgumentMismatch AtLeast(std::string name, int num) {
-        return ArgumentMismatch(name + ": At least " + std::to_string(num) + " required");}
+        return ArgumentMismatch(name + ": At least " + std::to_string(num) + " required");
+    }
     static ArgumentMismatch TypedAtLeast(std::string name, int num, std::string type) {
-        return ArgumentMismatch(name + ": " + std::to_string(num) + " required " + type + " missing");}
-    
-    
+        return ArgumentMismatch(name + ": " + std::to_string(num) + " required " + type + " missing");
+    }
 };
 
 /// Thrown when a requires option is missing
@@ -247,9 +250,10 @@ class ExtrasError : public ParseError {
 class INIError : public ParseError {
     CLI11_ERROR_DEF(ParseError, INIError)
     CLI11_ERROR_SIMPLE(INIError)
-    static INIError Extras(std::string item) {return INIError("INI was not able to parse " + item);}
-    static INIError NotConfigurable(std::string item) {return INIError(item + ": This option is not allowed in a configuration file");}
-    
+    static INIError Extras(std::string item) { return INIError("INI was not able to parse " + item); }
+    static INIError NotConfigurable(std::string item) {
+        return INIError(item + ": This option is not allowed in a configuration file");
+    }
 };
 
 /// Thrown when validation fails before parsing

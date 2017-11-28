@@ -43,15 +43,15 @@ template <typename CRTP> class OptionBase {
 
     /// Allow this option to be given in a configuration file
     bool configurable_{true};
-    
+
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
-    
 
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
         other->required(required_);
         other->ignore_case(ignore_case_);
+        other->configurable(configurable_);
         other->multi_option_policy(multi_option_policy_);
     }
 
@@ -84,7 +84,7 @@ template <typename CRTP> class OptionBase {
 
     /// The status of ignore case
     bool get_ignore_case() const { return ignore_case_; }
-    
+
     /// The status of configurable
     bool get_configurable() const { return configurable_; }
 
@@ -113,7 +113,7 @@ template <typename CRTP> class OptionBase {
         self->multi_option_policy(MultiOptionPolicy::Join);
         return self;
     }
-    
+
     /// Allow in a configuration file
     CRTP *configurable(bool value = true) {
         configurable_ = value;
