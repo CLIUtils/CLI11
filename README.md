@@ -5,7 +5,9 @@
 [![License: BSD][license-badge]](./LICENSE)
 [![DOI][DOI-badge]][DOI-link]
 
-[API Docs][api-docs] • [Tutorial series][GitBook] • [What's new](./CHANGELOG.md)
+[Documentation][GitBook] •
+[API Reference][api-docs] •
+[What's new](./CHANGELOG.md)
 
 # CLI11: Command line parser for C++11
 
