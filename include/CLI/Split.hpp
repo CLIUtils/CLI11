@@ -66,18 +66,18 @@ get_names(const std::vector<std::string> &input) {
             if(name.length() == 2 && valid_first_char(name[1]))
                 short_names.emplace_back(1, name[1]);
             else
-                throw BadNameString("Invalid one char name: " + name);
+                throw BadNameString::OneCharName(name);
         } else if(name.length() > 2 && name.substr(0, 2) == "--") {
             name = name.substr(2);
             if(valid_name_string(name))
                 long_names.push_back(name);
             else
-                throw BadNameString("Bad long name: " + name);
+                throw BadNameString::BadLongName(name);
         } else if(name == "-" || name == "--") {
-            throw BadNameString("Must have a name, not just dashes");
+            throw BadNameString::DashesOnly(name);
         } else {
             if(pos_name.length() > 0)
-                throw BadNameString("Only one positional name allowed, remove: " + name);
+                throw BadNameString::MultiPositionalNames(name);
             pos_name = name;
         }
     }
