@@ -589,7 +589,7 @@ class App {
             remove_option(config_ptr_);
 
         // Only add config if option passed
-        if(name) {
+        if(!name.empty()) {
             config_name_ = default_filename;
             config_required_ = required;
             config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());

@@ -429,7 +429,8 @@ TEST_F(TApp, IniSubFailure) {
 
     EXPECT_THROW(run(), CLI::INIError);
 }
-d TEST_F(TApp, IniNoSubFailure) {
+
+TEST_F(TApp, IniNoSubFailure) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
