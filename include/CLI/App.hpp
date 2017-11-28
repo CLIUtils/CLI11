@@ -578,8 +578,8 @@ class App {
         return opt;
     }
 
-    /// Add a configuration ini file option
-    Option *add_config(std::string name = "--config",
+    /// Set a configuration ini file option, or clear it if no name passed
+    Option *set_config(std::string name = "",
                        std::string default_filename = "",
                        std::string help = "Read an ini file",
                        bool required = false) {
@@ -587,9 +587,14 @@ class App {
         // Remove existing config if present
         if(config_ptr_ != nullptr)
             remove_option(config_ptr_);
-        config_name_ = default_filename;
-        config_required_ = required;
-        config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());
+
+        // Only add config if option passed
+        if(name) {
+            config_name_ = default_filename;
+            config_required_ = required;
+            config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());
+        }
+
         return config_ptr_;
     }
 

@@ -238,13 +238,13 @@ There are several options that are supported on the main app and subcommands. Th
 ## Configuration file
 
 ```cpp
-app.add_config(option_name,
+app.set_config(option_name="",
                default_file_name="",
                help_string="Read an ini file",
                required=false)
 ```
 
-Adding a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format. An example of a file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format. An example of a file:
 
 ```ini
 ; Commments are supported, using a ;

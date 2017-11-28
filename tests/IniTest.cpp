@@ -162,7 +162,7 @@ TEST_F(TApp, IniNotRequired) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -200,7 +200,7 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
     TempFile tmpini{"TestIniTmp.ini"};
     TempFile tmpini2{"TestIniTmp2.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -237,7 +237,7 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
 TEST_F(TApp, IniRequiredNotFound) {
 
     std::string noini = "TestIniNotExist.ini";
-    app.add_config("--config", noini, "", true);
+    app.set_config("--config", noini, "", true);
 
     EXPECT_THROW(run(), CLI::FileError);
 }
@@ -245,7 +245,7 @@ TEST_F(TApp, IniRequiredNotFound) {
 TEST_F(TApp, IniNotRequiredPassedNotFound) {
 
     std::string noini = "TestIniNotExist.ini";
-    app.add_config("--config", "", "", false);
+    app.set_config("--config", "", "", false);
 
     args = {"--config", noini};
     EXPECT_THROW(run(), CLI::FileError);
@@ -262,9 +262,9 @@ TEST_F(TApp, IniOverwrite) {
 
     std::string orig = "filename_not_exist.ini";
     std::string next = "TestIniTmp.ini";
-    app.add_config("--config", orig);
+    app.set_config("--config", orig);
     // Make sure this can be overwritten
-    app.add_config("--conf", next);
+    app.set_config("--conf", next);
     int two = 7;
     app.add_option("--two", two);
 
@@ -277,7 +277,7 @@ TEST_F(TApp, IniRequired) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini, "", true);
+    app.set_config("--config", tmpini, "", true);
 
     {
         std::ofstream out{tmpini};
@@ -316,7 +316,7 @@ TEST_F(TApp, IniVector) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -339,7 +339,7 @@ TEST_F(TApp, IniLayered) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -368,7 +368,7 @@ TEST_F(TApp, IniFailure) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -383,7 +383,7 @@ TEST_F(TApp, IniConfigurable) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
     bool value;
     app.add_flag("--val", value)->configurable(true);
 
@@ -401,7 +401,7 @@ TEST_F(TApp, IniNotConfigurable) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
     bool value;
     app.add_flag("--val", value)->configurable(false);
 
@@ -419,7 +419,7 @@ TEST_F(TApp, IniSubFailure) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.add_subcommand("other");
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -429,12 +429,11 @@ TEST_F(TApp, IniSubFailure) {
 
     EXPECT_THROW(run(), CLI::INIError);
 }
-
-TEST_F(TApp, IniNoSubFailure) {
+d TEST_F(TApp, IniNoSubFailure) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -450,7 +449,7 @@ TEST_F(TApp, IniFlagConvertFailure) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.add_flag("--flag");
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -466,7 +465,7 @@ TEST_F(TApp, IniFlagNumbers) {
 
     bool boo;
     app.add_flag("--flag", boo);
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -483,7 +482,7 @@ TEST_F(TApp, IniFlagDual) {
 
     bool boo;
     app.add_flag("--flag", boo);
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -502,7 +501,7 @@ TEST_F(TApp, IniFlagText) {
     app.add_flag("--flag2", flag2);
     app.add_flag("--flag3", flag3);
     app.add_flag("--flag4", flag4);
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
@@ -522,7 +521,7 @@ TEST_F(TApp, IniFlagText) {
 
 TEST_F(TApp, IniFlags) {
     TempFile tmpini{"TestIniTmp.ini"};
-    app.add_config("--config", tmpini);
+    app.set_config("--config", tmpini);
 
     {
         std::ofstream out{tmpini};
