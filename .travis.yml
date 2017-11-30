@@ -13,6 +13,17 @@ matrix:
   - compiler: clang
     addons:
       apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-trusty-5.0
+        packages:
+        - clang++-5.0
+    env:
+    - COMPILER=5.0
+    - CLI_CXX_STD=14
+  - compiler: clang
+    addons:
+      apt:
         packages:
         - clang-3.9
         - clang-format-3.9
