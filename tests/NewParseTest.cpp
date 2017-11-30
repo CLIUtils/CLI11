@@ -36,7 +36,8 @@ TEST_F(TApp, AddingComplexParser) {
 
     run();
 
-    EXPECT_EQ(cx(1.5, 2.5), comp);
+    EXPECT_EQ(1.5, comp.real());
+    EXPECT_EQ(2.5, comp.imag());
 }
 
 TEST_F(TApp, DefaultComplex) {
@@ -49,11 +50,13 @@ TEST_F(TApp, DefaultComplex) {
     EXPECT_THAT(help, HasSubstr("1"));
     EXPECT_THAT(help, HasSubstr("2"));
 
-    EXPECT_EQ(cx(1, 2), comp);
+    EXPECT_EQ(1, comp.real());
+    EXPECT_EQ(2, comp.imag());
 
     run();
 
-    EXPECT_EQ(cx(4, 3), comp);
+    EXPECT_EQ(4, comp.real());
+    EXPECT_EQ(3, comp.imag());
 }
 
 TEST_F(TApp, BuiltinComplex) {
@@ -67,11 +70,13 @@ TEST_F(TApp, BuiltinComplex) {
     EXPECT_THAT(help, HasSubstr("2"));
     EXPECT_THAT(help, HasSubstr("COMPLEX"));
 
-    EXPECT_EQ(cx(1, 2), comp);
+    EXPECT_EQ(1, comp.real());
+    EXPECT_EQ(2, comp.imag());
 
     run();
 
-    EXPECT_EQ(cx(4, 3), comp);
+    EXPECT_EQ(4, comp.real());
+    EXPECT_EQ(3, comp.imag());
 }
 
 TEST_F(TApp, BuiltinComplexIgnoreI) {
@@ -82,7 +87,8 @@ TEST_F(TApp, BuiltinComplexIgnoreI) {
 
     run();
 
-    EXPECT_EQ(cx(4, 3), comp);
+    EXPECT_EQ(4, comp.real());
+    EXPECT_EQ(3, comp.imag());
 }
 
 TEST_F(TApp, BuiltinComplexFail) {
