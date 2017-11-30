@@ -357,9 +357,11 @@ class App {
         }
 
         // Empty name will simply remove the help flag
-        if(!name.empty())
+        if(!name.empty()) {
             help_ptr_ = add_flag(name, description);
-
+            help_ptr_->configurable(false);
+        }
+            
         return help_ptr_;
     }
 
@@ -593,6 +595,7 @@ class App {
             config_name_ = default_filename;
             config_required_ = required;
             config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());
+            config_ptr_->configurable(false);
         }
 
         return config_ptr_;
@@ -833,7 +836,7 @@ class App {
                     out << name << "=" << opt->count() << std::endl;
 
                     // Flag, not present
-                } else if(opt->count() == 0 && default_also && opt.get() != get_help_ptr()) {
+                } else if(opt->count() == 0 && default_also) {
                     out << name << "=false" << std::endl;
                 }
             }
