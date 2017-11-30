@@ -361,7 +361,7 @@ class App {
             help_ptr_ = add_flag(name, description);
             help_ptr_->configurable(false);
         }
-            
+
         return help_ptr_;
     }
 
