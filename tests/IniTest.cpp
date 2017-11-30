@@ -561,6 +561,20 @@ TEST_F(TApp, IniOutputSimple) {
     EXPECT_EQ("simple=3\n", str);
 }
 
+TEST_F(TApp, IniOutputNoConfigurable) {
+
+    int v1, v2;
+    app.add_option("--simple", v1);
+    app.add_option("--noconf", v2)->configurable(false);
+
+    args = {"--simple=3", "--noconf=2"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("simple=3\n", str);
+}
+
 TEST_F(TApp, IniOutputVector) {
 
     std::vector<int> v;

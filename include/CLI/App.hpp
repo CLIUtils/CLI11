@@ -810,8 +810,8 @@ class App {
         std::stringstream out;
         for(const Option_p &opt : options_) {
 
-            // Only process option with a long-name
-            if(!opt->lnames_.empty()) {
+            // Only process option with a long-name and configurable
+            if(!opt->lnames_.empty() && opt->get_configurable()) {
                 std::string name = prefix + opt->lnames_[0];
 
                 // Non-flags
