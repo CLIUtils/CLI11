@@ -63,7 +63,7 @@ matrix:
     - COMPILER=4.7
   - os: osx
     before_install:
-    - python -m ensurepip --default-pip
+    - python -m ensurepip --user
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
