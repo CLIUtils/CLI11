@@ -12,13 +12,11 @@ namespace CLI {
 
 // Type tools
 
-// Copied from C++14
-#if __cplusplus < 201402L
+// We could check to see if C++14 is being used, but it does not hurt to redefine this
+// (even Google does this: https://github.com/google/skia/blob/master/include/private/SkTLogic.h)
+// It is not in the std namespace anyway, so no harm done.
+
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
-#else
-// If your compiler supports C++14, you can use that definition instead
-using std::enable_if_t;
-#endif
 
 template <typename T> struct is_vector { static const bool value = false; };
 
