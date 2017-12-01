@@ -4,6 +4,7 @@
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
 [![Try it online][wandbox-online]][wandbox-link]
 [![License: BSD][license-badge]](./LICENSE)
+[![Latest release][releases-badge]][Github Releases]
 [![DOI][DOI-badge]][DOI-link]
 
 [Documentation][GitBook] •
@@ -414,4 +415,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [wandbox-online]:        https://img.shields.io/badge/try%20it-online-orange.svg
 [wandbox-link]:          https://wandbox.org/permlink/7eh3iURD5On64u30
-
+[releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg 
