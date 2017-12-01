@@ -2,6 +2,7 @@
 [![Build Status Windows][appveyor-badge]][AppVeyor]
 [![Code Coverage][codecov-badge]][CodeCov]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
+[![Try it online][wandbox-online]][wandbox-link]
 [![License: BSD][license-badge]](./LICENSE)
 [![DOI][DOI-badge]][DOI-link]
 
@@ -411,3 +412,6 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Clara]:                 https://github.com/philsquared/Clara
 [Version 1.0 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
+[wandbox-online]:        https://img.shields.io/badge/try%20it-online-orange.svg
+[wandbox-link]:          https://wandbox.org/permlink/7eh3iURD5On64u30
+
