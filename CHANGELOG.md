@@ -1,5 +1,6 @@
-## Version 1.3 (in progress)
+## Version 1.3
 
+* Added a version macro, `CLI11_VERSION`, along with `*_MAJOR`, `*_MINOR`, and `*_PATCH`, for programmatic access to the version.
 * Reworked the way defaults are set and inherited; explicit control given to user with `->option_defaults()` [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * Hidden options now are based on an empty group name, instead of special "hidden" keyword [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * `parse` no longer returns (so `CLI11_PARSE` is always usable) [#37](https://github.com/CLIUtils/CLI11/pull/37)
