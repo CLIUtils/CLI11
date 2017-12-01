@@ -1,4 +1,9 @@
-## Version 1.3
+## Version 1.3: Refactor
+
+This version focused on refactoring several key systems to ensure correct behavior in the interaction of different settings. Most caveats about
+features only working on the main App have been addressed, and extra arguments have been reworked. Inheritance
+of defaults makes configuring CLI11 much easier without having to subclass. Policies add new ways to handle multiple arguments to match your
+favorite CLI programs. Error messages and help messages are better and more flexible. Several bugs and odd behaviors in the parser have been fixed.
 
 * Added a version macro, `CLI11_VERSION`, along with `*_MAJOR`, `*_MINOR`, and `*_PATCH`, for programmatic access to the version.
 * Reworked the way defaults are set and inherited; explicit control given to user with `->option_defaults()` [#48](https://github.com/CLIUtils/CLI11/pull/48)
@@ -28,7 +33,18 @@
 * Single internal arg parse function [#56](https://github.com/CLIUtils/CLI11/pull/56)
 * Allow options to be disabled from INI file, rename `add_config` to `set_config` [#60](https://github.com/CLIUtils/CLI11/pull/60)
 
-## Version 1.2
+> ### Converting from CLI11 1.2:
+> 
+> * `app.parse` no longer returns a vector. Instead, use `app.remaining(true)`.
+> * `"hidden"` is no longer a special group name, instead use `""`
+> * Validators API has changed to return an error string; use `.empty()` to get the old bool back
+> * Use `.set_help_flag` instead of accessing the help pointer directly (discouraged, but not removed yet)
+> * `add_config` has been renamed to `set_config`
+> * Errors thrown in some cases are slightly more specific
+
+## Version 1.2: Stability
+
+This release focuses on making CLI11 behave properly in corner cases, and with config files on the command line. This includes fixes for a variety of reported issues. A few features were added to make life easier, as well; such as a new flag callback and a macro for the parse command.
 
 * Added functional form of flag [#33](https://github.com/CLIUtils/CLI11/pull/33), automatic on C++14
 * Fixed Config file search if passed on command line [#30](https://github.com/CLIUtils/CLI11/issues/30)
@@ -38,7 +54,9 @@
 * Required positionals now take priority over subcommands [#23](https://github.com/CLIUtils/CLI11/issues/23)
 * Extra requirements enforced by Travis
 
-## Version 1.1
+## Version 1.1: Feedback
+
+This release incorporates feedback from the release announcement. The examples are slowly being expanded, some corner cases improved, and some new functionality for tricky parsing situations.
 
 * Added simple support for enumerations, allow non-printable objects [#12](https://github.com/CLIUtils/CLI11/issues/12)
 * Added `app.parse_order()` with original parse order ([#13](https://github.com/CLIUtils/CLI11/issues/13), [#16](https://github.com/CLIUtils/CLI11/pull/16)) 
@@ -46,12 +64,17 @@
 * Removed Windows warning ([#10](https://github.com/CLIUtils/CLI11/issues/10), [#20](https://github.com/CLIUtils/CLI11/pull/20))
 * Some improvements to CMake, detect Python and no dependencies on Python 2 (like Python 3) ([#18](https://github.com/CLIUtils/CLI11/issues/18), [#21](https://github.com/CLIUtils/CLI11/pull/21))
 
-## Version 1.0
+## Version 1.0: Official release
+
+This is the first stable release for CLI11. Future releases will try to remain backward compatible and will follow semantic versioning if possible. There were a few small changes since version 0.9:
+
 * Cleanup using `clang-tidy` and `clang-format`
 * Small improvements to Timers, easier to subclass Error
 * Move to 3-Clause BSD license
 
-## Version 0.9
+## Version 0.9: Polish
+
+This release focused on cleaning up the most exotic compiler warnings, fixing a few oddities of the config parser, and added a more natural method to check subcommands.
 
 * Better CMake named target (CLI11)
 * More warnings added, fixed
@@ -61,12 +84,16 @@
 * Support for complex numbers
 * Subcommands now test true/false directly or with `->parsed()`, cleaner parse
 
-## Version 0.8
+## Version 0.8: CLIUtils
+
+This release moved the repository to the CLIUtils master organization.
 
 * Moved to CLIUtils on GitHub
 * Fixed docs build and a few links
 
-## Version 0.7
+## Version 0.7: Code coverage 100%
+
+Lots of small bugs fixed when adding code coverage, better in edge cases. Much more powerful ini support.
 
 * Allow comments in ini files (lines starting with `;`)
 * Ini files support flags, vectors, subcommands
@@ -77,7 +104,9 @@
 * Adding extra utilities in full version only, `Timer` (not needed for parsing, but useful for general CLI applications).
 * Better support for custom `add_options` like functions.
 
-## Version 0.6
+## Version 0.6: Cleanup
+
+Lots of cleanup and docs additions made it into this release. Parsing is simpler and more robust; fall through option added and works as expected; much more consistent variable names internally.
 
 * Simplified parsing to use `vector<string>` only
 * Fixed fallthrough, made it optional as well (default: off): `.fallthrough()`.
@@ -85,7 +114,7 @@
 * Renamed protected members for internal consistency, grouped docs.
 * Added the ability to add a number to `.require_subcommand()`.
 
-## Version 0.5
+## Version 0.5: Windows support
 
 * Allow `Hidden` options.
 * Throw `OptionAlreadyAdded` errors for matching subcommands or options, with ignore-case included, tests
@@ -97,7 +126,7 @@
 * Support for quotes and spaces in ini files
 * Fixes to allow support for Windows (added Appveyor) (Uses `-`, not `/` syntax)
 
-## Version 0.4
+## Version 0.4: Ini support
 
 * Updates to help print
 * Removed `run`, please use `parse` unless you subclass and add it
@@ -105,7 +134,7 @@
 * Added Range for further Plumbum compatibility
 * Added function to print out ini file
 
-## Version 0.3
+## Version 0.3: Plumbum compatibility
 
 * Added `->requires`, `->excludes`, and `->envname` from [Plumbum](http://plumbum.readthedocs.io/en/latest/)
 * Supports `->mandatory` from Plubmum
@@ -117,7 +146,7 @@
 * Clang 3.5 now required for tests due to googlemock usage, 3.4 should still work otherwise
 * Changes `setup` for an explicit help bool in constructor/`add_subcommand`
 
-## Version 0.2
+## Version 0.2: Leaner and meaner
 
 * Moved to simpler syntax, where `Option` pointers are returned and operated on
 * Removed `make_` style options
@@ -127,8 +156,7 @@
 * Added `Option_p` and `App_p`, mostly for internal use
 * Startup sequence, including help flag, can be modified by subclasses
 
-## Version 0.1
+## Version 0.1: First release
 
-Initial version
-
+First release before major cleanup. Still has make syntax and combiners; very clever syntax but not the best or most commonly expected way to work.
 
