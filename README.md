@@ -2,14 +2,14 @@
 [![Build Status Windows][appveyor-badge]][AppVeyor]
 [![Code Coverage][codecov-badge]][CodeCov]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
-[![Try it online][wandbox-online]][wandbox-link]
 [![License: BSD][license-badge]](./LICENSE)
 [![Latest release][releases-badge]][Github Releases]
 [![DOI][DOI-badge]][DOI-link]
 
 [Documentation][GitBook] •
 [API Reference][api-docs] •
-[What's new](./CHANGELOG.md)
+[What's new](./CHANGELOG.md) •
+[Try it online][wandbox-link]
 
 # CLI11: Command line parser for C++11
 
@@ -58,12 +58,13 @@ After I wrote this, I also found the following libraries:
 | [Args] | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose. |
 | [Argument Aggregator] | I'm a big fan of the [fmt] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands. |
 | [Clara] | Simple library built for the excellent [Catch] testing framework. Unique syntax, limited scope. |
-| [Argh!] | Very minimalistic C++11 parser, single header. Don't have many features. |
+| [Argh!] | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.|
+| [CLI]   | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active. |
 
 </p></details>
 <br/>
 
-None of these libraries fulfill all the above requirements. As you probably have already guessed, CLI11 does.
+None of these libraries fulfill all the above requirements, or really even come close. As you probably have already guessed, CLI11 does.
 So, this library was designed to provide a great syntax, good compiler compatibility, and minimal installation fuss.
 
 ## Features not supported by this library
