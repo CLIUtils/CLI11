@@ -371,7 +371,7 @@ This project was created by Henry Schreiner. Significant features and/or improve
 
 * Marcus Brinkmann
 
-CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. It was featured in a [DIANA/HEP] meeting at CERN. Please give it a try! Feedback is always welcome.
+CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. Version 0.9 was featured in a [DIANA/HEP] meeting at CERN ([see the slides][DIANA slides]). Please give it a try! Feedback is always welcome.
 
 
 [DOI-badge]:             https://zenodo.org/badge/80064252.svg
@@ -419,3 +419,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [wandbox-link]:          https://wandbox.org/permlink/7eh3iURD5On64u30
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
+[DIANA slides]: https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
