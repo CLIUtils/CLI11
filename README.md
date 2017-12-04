@@ -29,11 +29,12 @@ An acceptable CLI parser library should be all of the following:
 * Work on Linux, macOS, and Windows.
 * Well tested using [Travis] (Linux and macOS) and [AppVeyor] (Windows). "Well" is defined as having good coverage measured by [CodeCov].
 * Clear help printing.
+* Nice error messages.
 * Standard shell idioms supported naturally, like grouping flags, a positional separator, etc.
 * Easy to execute, with help, parse errors, etc. providing correct exit and details.
 * Easy to extend as part of a framework that provides "applications" to users.
 * Usable subcommand syntax, with support for multiple subcommands, nested subcommands, and optional fallthrough (explained later).
-* Ability to add a configuration file (`ini` format).
+* Ability to add a configuration file (`ini` format), and produce it as well.
 * Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
 * Work with standard types, simple custom types, and extendible to exotic types.
 * Permissively licensed.
@@ -42,7 +43,7 @@ An acceptable CLI parser library should be all of the following:
 
 | Library | My biased opinion |
 |---------|-------------------|
-| [Boost Program Options] | A great library if you already depend on Boost, but its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented (and is nearly a page of code). A simple wrapper for the Boost library was originally developed, but was discarded as CLI11 became more powerful. The idea of capturing a value and setting it originated with Boost PO. |
+| [Boost Program Options] | A great library if you already depend on Boost, but its pre-C++11 syntax is really odd and setting up the correct call in the main function is poorly documented (and is nearly a page of code). A simple wrapper for the Boost library was originally developed, but was discarded as CLI11 became more powerful. The idea of capturing a value and setting it originated with Boost PO. [See this comparison.][cli11-po-compare] |
 | [The Lean Mean C++ Option Parser] | One header file is great, but the syntax is atrocious, in my opinion. It was quite impractical to wrap the syntax or to use in a complex project. It seems to handle standard parsing quite well. |
 | [TCLAP] | The not-quite-standard command line parsing causes common shortcuts to fail. It also seems to be poorly supported, with only minimal bugfixes accepted. Header only, but in quite a few files. Has not managed to get enough support to move to GitHub yet. No subcommands. Produces wrapped values. |
 | [Cxxopts] | C++11, single file, and nice CMake support, but requires regex, therefore GCC 4.8 (CentOS 7 default) does not work. Syntax closely based on Boost PO, so not ideal but familiar. |
@@ -416,4 +417,5 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [wandbox-online]:        https://img.shields.io/badge/try%20it-online-orange.svg
 [wandbox-link]:          https://wandbox.org/permlink/7eh3iURD5On64u30
-[releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg 
+[releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
+[cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
