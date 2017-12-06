@@ -9,8 +9,6 @@ using cx = std::complex<double>;
 CLI::Option *
 add_option(CLI::App &app, std::string name, cx &variable, std::string description = "", bool defaulted = false) {
     CLI::callback_t fun = [&variable](CLI::results_t res) {
-        if(res.size() != 2)
-            return false;
         double x, y;
         bool worked = CLI::detail::lexical_cast(res[0], x) && CLI::detail::lexical_cast(res[1], y);
         if(worked)
