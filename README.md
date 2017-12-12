@@ -230,10 +230,11 @@ There are several options that are supported on the main app and subcommands. Th
 * `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 * `.require_subcommand()`: Require 1 or more subcommands.
 * `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
-* `.require_subcommand(min, max)`: Explicilty set min and max allowed subcommands. Setting `max` to 0 is unlimited.
+* `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 * `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
 * `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line
 * `.get_subcommands()`: The list of subcommands given on the command line
+* `.get_parent()`: Get the parent App or nullptr if called on master App **Coming in version 1.4**
 * `.parsed()`: True if this subcommand was given on the command line
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over

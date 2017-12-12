@@ -1,3 +1,6 @@
+## Version 1.4 (in progress)
+* Added `get_parent()` to access the parent from a subcommand
+
 ## Version 1.3: Refactor
 
 This version focused on refactoring several key systems to ensure correct behavior in the interaction of different settings. Most caveats about

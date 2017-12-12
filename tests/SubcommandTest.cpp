@@ -12,6 +12,8 @@ TEST_F(TApp, BasicSubcommands) {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
+    EXPECT_EQ(sub1->get_parent(), &app);
+
     EXPECT_EQ(sub1, app.get_subcommand(sub1));
     EXPECT_EQ(sub1, app.get_subcommand("sub1"));
     EXPECT_THROW(app.get_subcommand("sub3"), CLI::OptionNotFound);

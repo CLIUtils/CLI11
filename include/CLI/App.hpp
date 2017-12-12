@@ -980,6 +980,9 @@ class App {
     /// Get a pointer to the config option.
     Option *get_config_ptr() { return config_ptr_; }
 
+    /// Get the parent of this subcommand (or nullptr if master app)
+    App *get_parent() { return parent_; }
+
     /// Get a pointer to the config option. (const)
     const Option *get_config_ptr() const { return config_ptr_; }
     /// Get the name of the current app
