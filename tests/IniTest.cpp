@@ -575,6 +575,31 @@ TEST_F(TApp, IniOutputNoConfigurable) {
     EXPECT_EQ("simple=3\n", str);
 }
 
+TEST_F(TApp, IniOutputShortSingleDescription) {
+  std::string flag = "some_flag";
+  std::string description = "Some short description.";
+  app.add_flag("--" + flag, description);
+  
+  run();
+  
+  std::string str = app.config_to_str(true, "", true);
+  EXPECT_THAT(str, HasSubstr("; " + description + "\n" + flag + "=false\n"));
+}
+
+TEST_F(TApp, IniOutputShortDoubleDescription) {
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    std::string description1 = "First description.";
+    std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1);
+    app.add_flag("--" + flag2, description2);
+    
+    run();
+    
+    std::string str = app.config_to_str(true, "", true);
+    EXPECT_EQ(str, "; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n");
+}
+
 TEST_F(TApp, IniOutputVector) {
 
     std::vector<int> v;
