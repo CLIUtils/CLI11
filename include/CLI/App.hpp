@@ -842,7 +842,7 @@ class App {
                 }
                 
                 if (value.size() != 0) {
-                    if (write_description and opt->description_.size() != 0) {
+                    if (write_description && opt->description_.size() != 0) {
                         if (out.tellp() != 0) {
                             out << std::endl;
                         }
