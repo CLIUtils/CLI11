@@ -842,11 +842,11 @@ class App {
                 }
                 
                 if (value.size() != 0) {
-                    if (write_description and opt->description_.size() != 0) {
+                    if (write_description && opt->has_description()) {
                         if (out.tellp() != 0) {
                             out << std::endl;
                         }
-                        out << "; " << opt->description_ << std::endl;
+                        out << "; " << opt->get_description() << std::endl;
                     }
                     out << name << "=" << value << std::endl;
                 }
