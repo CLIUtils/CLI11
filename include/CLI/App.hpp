@@ -809,7 +809,8 @@ class App {
 
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include
     /// default arguments. Prefix will add a string to the beginning of each option.
-    std::string config_to_str(bool default_also = false, std::string prefix = "", bool write_description = false) const {
+    std::string
+    config_to_str(bool default_also = false, std::string prefix = "", bool write_description = false) const {
         std::stringstream out;
         for(const Option_p &opt : options_) {
 
@@ -840,10 +841,10 @@ class App {
                 } else if(opt->count() == 0 && default_also) {
                     value = "false";
                 }
-                
-                if (value.size() != 0) {
-                    if (write_description && opt->has_description()) {
-                        if (out.tellp() != 0) {
+
+                if(value.size() != 0) {
+                    if(write_description && opt->has_description()) {
+                        if(out.tellp() != 0) {
                             out << std::endl;
                         }
                         out << "; " << opt->get_description() << std::endl;
