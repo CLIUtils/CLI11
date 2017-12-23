@@ -600,6 +600,19 @@ TEST_F(TApp, IniOutputShortDoubleDescription) {
     EXPECT_EQ(str, "; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n");
 }
 
+TEST_F(TApp, IniOutputMultiLineDescription) {
+    std::string flag = "some_flag";
+    std::string description = "Some short description.\nThat has lines.";
+    app.add_flag("--" + flag, description);
+
+    run();
+
+    std::string str = app.config_to_str(true, "", true);
+    EXPECT_THAT(str, HasSubstr("; Some short description.\n"));
+    EXPECT_THAT(str, HasSubstr("; That has lines.\n"));
+    EXPECT_THAT(str, HasSubstr(flag + "=false\n"));
+}
+
 TEST_F(TApp, IniOutputVector) {
 
     std::vector<int> v;

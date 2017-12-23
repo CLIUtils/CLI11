@@ -847,7 +847,7 @@ class App {
                         if(out.tellp() != 0) {
                             out << std::endl;
                         }
-                        out << "; " << opt->get_description() << std::endl;
+                        out << "; " << detail::fix_newlines("; ", opt->get_description()) << std::endl;
                     }
                     out << name << "=" << value << std::endl;
                 }

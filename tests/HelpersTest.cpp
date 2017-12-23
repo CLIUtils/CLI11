@@ -359,3 +359,17 @@ TEST(Types, LexicalCastString) {
     CLI::detail::lexical_cast(input, output);
     EXPECT_EQ(input, output);
 }
+
+TEST(FixNewLines, BasicCheck) {
+    std::string input = "one\ntwo";
+    std::string output = "one\n; two";
+    std::string result = CLI::detail::fix_newlines("; ", input);
+    EXPECT_EQ(result, output);
+}
+
+TEST(FixNewLines, EdgesCheck) {
+    std::string input = "\none\ntwo\n";
+    std::string output = "\n; one\n; two\n; ";
+    std::string result = CLI::detail::fix_newlines("; ", input);
+    EXPECT_EQ(result, output);
+}
