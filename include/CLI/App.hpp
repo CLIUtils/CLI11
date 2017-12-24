@@ -842,9 +842,9 @@ class App {
                     value = "false";
                 }
 
-                if(value.size() != 0) {
+                if(!value.empty()) {
                     if(write_description && opt->has_description()) {
-                        if(out.tellp() != 0) {
+                        if(static_cast<int>(out.tellp()) != 0) {
                             out << std::endl;
                         }
                         out << "; " << detail::fix_newlines("; ", opt->get_description()) << std::endl;
