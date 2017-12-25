@@ -4,6 +4,8 @@
 #include <fstream>
 #include <cstdint>
 #include <string>
+#include <complex>
+
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
@@ -374,4 +376,17 @@ TEST(Types, LexicalCastString) {
     std::string output;
     CLI::detail::lexical_cast(input, output);
     EXPECT_EQ(input, output);
+}
+
+TEST(Types, LexicalCastParsable) {
+    std::string input = "(4.2,7.3)";
+    std::string fail_input = "4.2,7.3";
+    std::string extra_input = "(4.2,7.3)e";
+
+    std::complex<double> output;
+    EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
+    EXPECT_EQ(output, std::complex<double>(4.2, 7.3));
+
+    EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
 }

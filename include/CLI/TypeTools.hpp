@@ -122,11 +122,25 @@ bool lexical_cast(std::string input, T &output) {
 
 /// String and similar
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
+                          std::is_assignable<T&, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     output = input;
     return true;
+}
+
+/// Non-string parsable
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
+                          !std::is_assignable<T&, std::string>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(std::string input, T &output) {
+    static thread_local std::istringstream is;
+
+    is.str(input);
+    is >> output;
+    return !is.fail() && !is.rdbuf()->in_avail();
 }
 
 } // namespace detail
