@@ -563,6 +563,8 @@ class App {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
+            if(res[1].back() == 'i')
+                res[1].pop_back();
             double x, y;
             bool worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(res[1], y);
             if(worked)
