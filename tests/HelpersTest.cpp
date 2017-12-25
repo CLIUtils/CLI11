@@ -327,17 +327,30 @@ TEST(Types, TypeName) {
 }
 
 TEST(Types, LexicalCastInt) {
-    std::string input = "912";
-    int x;
-    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
-    EXPECT_EQ(912, x);
+    std::string signed_input = "-912";
+    int x_signed;
+    EXPECT_TRUE(CLI::detail::lexical_cast(signed_input, x_signed));
+    EXPECT_EQ(-912, x_signed);
+
+    std::string unsigned_input = "912";
+    unsigned int x_unsigned;
+    EXPECT_TRUE(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
+    EXPECT_EQ(912, x_unsigned);
+
+    EXPECT_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
     unsigned char y;
     std::string overflow_input = std::to_string(UINT64_MAX) + "0";
     EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
+    char y_signed;
+    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y_signed));
+
     std::string bad_input = "hello";
     EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, y));
+
+    std::string extra_input = "912i";
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, y));
 }
 
 TEST(Types, LexicalCastDouble) {

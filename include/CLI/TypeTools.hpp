@@ -72,13 +72,33 @@ constexpr const char *type_name() {
 
 // Lexical cast
 
-/// Integers / enums
+/// Signed integers / enums
 template <typename T,
-          enable_if_t<std::is_integral<T>::value || std::is_enum<T>::value, detail::enabler> = detail::dummy>
+          enable_if_t<(std::is_integral<T>::value && std::is_signed<T>::value) || std::is_enum<T>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
-        output = static_cast<T>(std::stoll(input));
-        return true;
+        size_t n = 0;
+        output = static_cast<T>(std::stoll(input, &n, 0));
+        return n == input.size();
+    } catch(const std::invalid_argument &) {
+        return false;
+    } catch(const std::out_of_range &) {
+        return false;
+    }
+}
+
+/// Unsigned integers
+template <typename T,
+          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+bool lexical_cast(std::string input, T &output) {
+    if (!input.empty() && input.front() == '-')
+        return false; // std::stoull happily converts negative values to junk without any errors.
+
+    try {
+        size_t n = 0;
+        output = static_cast<T>(std::stoull(input, &n, 0));
+        return n == input.size();
     } catch(const std::invalid_argument &) {
         return false;
     } catch(const std::out_of_range &) {
