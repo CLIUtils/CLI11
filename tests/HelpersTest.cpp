@@ -364,6 +364,9 @@ TEST(Types, LexicalCastDouble) {
 
     std::string overflow_input = "1" + std::to_string(LDBL_MAX);
     EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, x));
+
+    std::string extra_input = "9.12i";
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, x));
 }
 
 TEST(Types, LexicalCastString) {

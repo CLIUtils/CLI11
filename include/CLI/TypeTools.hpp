@@ -110,8 +110,9 @@ bool lexical_cast(std::string input, T &output) {
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
-        output = static_cast<T>(std::stold(input));
-        return true;
+        size_t n = 0;
+        output = static_cast<T>(std::stold(input, &n));
+        return n == input.size();
     } catch(const std::invalid_argument &) {
         return false;
     } catch(const std::out_of_range &) {
