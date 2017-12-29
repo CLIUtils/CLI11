@@ -92,7 +92,7 @@ bool lexical_cast(std::string input, T &output) {
 template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
-    if (!input.empty() && input.front() == '-')
+    if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
 
     try {
@@ -123,7 +123,7 @@ bool lexical_cast(std::string input, T &output) {
 /// String and similar
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
-                          std::is_assignable<T&, std::string>::value,
+                          std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     output = input;
@@ -133,7 +133,7 @@ bool lexical_cast(std::string input, T &output) {
 /// Non-string parsable
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
-                          !std::is_assignable<T&, std::string>::value,
+                          !std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     static thread_local std::istringstream is;

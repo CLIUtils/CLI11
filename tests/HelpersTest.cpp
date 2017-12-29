@@ -6,7 +6,6 @@
 #include <string>
 #include <complex>
 
-
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
     ASSERT_EQ((size_t)3, out.size());
