@@ -809,35 +809,47 @@ class App {
 
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include
     /// default arguments. Prefix will add a string to the beginning of each option.
-    std::string config_to_str(bool default_also = false, std::string prefix = "") const {
+    std::string
+    config_to_str(bool default_also = false, std::string prefix = "", bool write_description = false) const {
         std::stringstream out;
         for(const Option_p &opt : options_) {
 
             // Only process option with a long-name and configurable
             if(!opt->lnames_.empty() && opt->get_configurable()) {
                 std::string name = prefix + opt->lnames_[0];
+                std::string value;
 
                 // Non-flags
                 if(opt->get_expected() != 0) {
 
                     // If the option was found on command line
                     if(opt->count() > 0)
-                        out << name << "=" << detail::inijoin(opt->results()) << std::endl;
+                        value = detail::inijoin(opt->results());
 
                     // If the option has a default and is requested by optional argument
                     else if(default_also && !opt->defaultval_.empty())
-                        out << name << "=" << opt->defaultval_ << std::endl;
+                        value = opt->defaultval_;
                     // Flag, one passed
                 } else if(opt->count() == 1) {
-                    out << name << "=true" << std::endl;
+                    value = "true";
 
                     // Flag, multiple passed
                 } else if(opt->count() > 1) {
-                    out << name << "=" << opt->count() << std::endl;
+                    value = std::to_string(opt->count());
 
                     // Flag, not present
                 } else if(opt->count() == 0 && default_also) {
-                    out << name << "=false" << std::endl;
+                    value = "false";
+                }
+
+                if(!value.empty()) {
+                    if(write_description && opt->has_description()) {
+                        if(static_cast<int>(out.tellp()) != 0) {
+                            out << std::endl;
+                        }
+                        out << "; " << detail::fix_newlines("; ", opt->get_description()) << std::endl;
+                    }
+                    out << name << "=" << value << std::endl;
                 }
             }
         }
