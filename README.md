@@ -130,10 +130,10 @@ The initialization is just one line, adding options is just two each. The parse 
 The supported values are:
 
 ```cpp
-app.add_options(option_name,
-                variable_to_bind_to, // int, float, vector, or string-like
-                help_string="",
-                default=false)
+app.add_option(option_name,
+               variable_to_bind_to, // int, float, vector, or string-like
+               help_string="",
+               default=false)
 
 app.add_complex(... // Special case: support for complex numbers
 
