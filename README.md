@@ -179,6 +179,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 * `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 * `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
+* `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 * `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.

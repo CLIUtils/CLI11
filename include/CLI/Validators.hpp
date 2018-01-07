@@ -50,6 +50,16 @@ inline std::string ExistingDirectory(const std::string &filename) {
     return std::string();
 }
 
+/// Check for an existing path
+inline std::string ExistingPath(const std::string &filename) {
+    struct stat buffer;
+    bool const exist = stat(filename.c_str(), &buffer) == 0;
+    if(!exist) {
+        return "Path does not exist: " + filename;
+    }
+    return std::string();
+}
+
 /// Check for a non-existing path
 inline std::string NonexistentPath(const std::string &filename) {
     struct stat buffer;
