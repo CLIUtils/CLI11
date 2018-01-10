@@ -71,6 +71,9 @@ class App {
 
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
+  
+    /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
+    bool allow_ini_extras_{false};
 
     ///  If true, return immediately on an unrecognised option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
@@ -206,6 +209,12 @@ class App {
     /// Remove the error when extras are left over on the command line.
     App *allow_extras(bool allow = true) {
         allow_extras_ = allow;
+        return this;
+    }
+  
+    /// Remove the error when extras are left over on the command line.
+    App *allow_ini_extras(bool allow = true) {
+        allow_ini_extras_ = allow;
         return this;
     }
 
@@ -1220,12 +1229,17 @@ class App {
                     return com->_parse_ini(args);
             return false;
         }
-
+  
         auto op_ptr = std::find_if(
             std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
 
-        if(op_ptr == std::end(options_))
-            return false;
+        if(op_ptr == std::end(options_)) {
+          if (allow_ini_extras_) {
+            args.pop_back();
+            return true;
+          }
+          return false;
+        }
 
         // Let's not go crazy with pointer syntax
         Option_p &op = *op_ptr;
