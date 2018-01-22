@@ -172,7 +172,7 @@ class ConversionError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ConversionError)
     CLI11_ERROR_SIMPLE(ConversionError)
     ConversionError(std::string member, std::string name)
-        : ConversionError("The value " + member + "is not an allowed value for " + name) {}
+        : ConversionError("The value " + member + " is not an allowed value for " + name) {}
     ConversionError(std::string name, std::vector<std::string> results)
         : ConversionError("Could not convert: " + name + " = " + detail::join(results)) {}
     static ConversionError TooManyInputsFlag(std::string name) {
