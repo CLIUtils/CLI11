@@ -1235,13 +1235,13 @@ class App {
             std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
 
         if(op_ptr == std::end(options_)) {
-          if (allow_ini_extras_) {
-            // Should we worry about classifying the extras properly?
-            missing_.emplace_back(detail::Classifer::NONE, current.fullname);
-            args.pop_back();
-            return true;
-          }
-          return false;
+            if (allow_ini_extras_) {
+                // Should we worry about classifying the extras properly?
+                missing_.emplace_back(detail::Classifer::NONE, current.fullname);
+                args.pop_back();
+                return true;
+            }
+            return false;
         }
 
         // Let's not go crazy with pointer syntax
