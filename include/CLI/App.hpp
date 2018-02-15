@@ -1185,7 +1185,7 @@ class App {
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
-                    throw RequiredError(opt->single_name() + " is required");
+                    throw RequiredError(opt->single_name());
             }
             // Requires
             for(const Option *opt_req : opt->requires_)

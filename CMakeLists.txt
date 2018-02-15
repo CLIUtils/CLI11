@@ -53,6 +53,9 @@ file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 # To see in IDE, must be listed for target
 add_library(CLI11 INTERFACE)
 target_include_directories(CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+if (CUR_PROJ)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
+endif()
 
 # Single file test
 find_package(PythonInterp)
@@ -73,7 +76,9 @@ if(CLI_SINGLE_FILE)
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
     set_target_properties(generate_cli_single_file
                           PROPERTIES FOLDER "Scripts")
-
+    if (CUR_PROJ)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp DESTINATION include)
+    endif()
     add_library(CLI11_SINGLE INTERFACE)
     target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
     add_dependencies(CLI11_SINGLE generate_cli_single_file)
@@ -93,4 +98,3 @@ option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
 if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
-

@@ -7,7 +7,7 @@ from __future__ import print_function, unicode_literals
 import os
 import re
 import argparse
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
@@ -17,7 +17,10 @@ BDIR = os.path.join(os.path.dirname(DIR), 'include') # DIR.parent / 'include'
 
 print("Git directory:", DIR)
 
-TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
+try:
+    TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
+except CalledProcessError:
+    TAG = "A non-git source"
 
 def MakeHeader(out):
     main_header = os.path.join(BDIR, 'CLI', 'CLI.hpp')
