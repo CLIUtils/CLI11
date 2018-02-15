@@ -71,7 +71,7 @@ class App {
 
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
-  
+
     /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
     bool allow_ini_extras_{false};
 
@@ -211,7 +211,7 @@ class App {
         allow_extras_ = allow;
         return this;
     }
-  
+
     /// Remove the error when extras are left over on the command line.
     App *allow_ini_extras(bool allow = true) {
         allow_extras(allow);
@@ -1230,7 +1230,7 @@ class App {
                     return com->_parse_ini(args);
             return false;
         }
-  
+
         auto op_ptr = std::find_if(
             std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
 
