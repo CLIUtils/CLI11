@@ -214,6 +214,7 @@ class App {
   
     /// Remove the error when extras are left over on the command line.
     App *allow_ini_extras(bool allow = true) {
+        allow_extras(allow);
         allow_ini_extras_ = allow;
         return this;
     }
@@ -1235,6 +1236,8 @@ class App {
 
         if(op_ptr == std::end(options_)) {
           if (allow_ini_extras_) {
+            // Should we worry about classifying the extras properly?
+            missing_.emplace_back(detail::Classifer::NONE, current.fullname);
             args.pop_back();
             return true;
           }

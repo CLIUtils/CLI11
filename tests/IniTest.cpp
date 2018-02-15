@@ -213,6 +213,44 @@ TEST_F(TApp, IniSuccessOnUnknownOption) {
   EXPECT_EQ(99, two);
 }
 
+TEST_F(TApp, IniGetRemainingOption) {
+  TempFile tmpini{"TestIniTmp.ini"};
+  
+  app.set_config("--config", tmpini);
+  app.allow_ini_extras(true);
+  
+  std::string ExtraOption = "three";
+  std::string ExtraOptionValue = "3";
+  {
+  std::ofstream out{tmpini};
+  out << ExtraOption << "=" << ExtraOptionValue << std::endl;
+  out << "two=99" << std::endl;
+  }
+  
+  int two = 0;
+  app.add_option("--two", two);
+  EXPECT_NO_THROW(run());
+  std::vector<std::string> ExpectedRemaining = {ExtraOption};
+  EXPECT_EQ(app.remaining(), ExpectedRemaining);
+}
+
+TEST_F(TApp, IniGetNoRemaining) {
+  TempFile tmpini{"TestIniTmp.ini"};
+  
+  app.set_config("--config", tmpini);
+  app.allow_ini_extras(true);
+  
+  {
+  std::ofstream out{tmpini};
+  out << "two=99" << std::endl;
+  }
+  
+  int two = 0;
+  app.add_option("--two", two);
+  EXPECT_NO_THROW(run());
+  EXPECT_EQ(app.remaining().size(), 0);
+}
+
 TEST_F(TApp, IniNotRequiredNotDefault) {
 
     TempFile tmpini{"TestIniTmp.ini"};
