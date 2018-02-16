@@ -177,6 +177,7 @@ class App {
             // INHERITABLE
             failure_message_ = parent_->failure_message_;
             allow_extras_ = parent_->allow_extras_;
+            allow_ini_extras_ = parent_->allow_ini_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
             fallthrough_ = parent_->fallthrough_;
@@ -213,6 +214,7 @@ class App {
     }
 
     /// Remove the error when extras are left over on the command line.
+    /// Will also call App::allow_extras().
     App *allow_ini_extras(bool allow = true) {
         allow_extras(allow);
         allow_ini_extras_ = allow;
@@ -992,6 +994,9 @@ class App {
 
     /// Get the status of allow extras
     bool get_allow_extras() const { return allow_extras_; }
+
+    /// Get the status of allow extras
+    bool get_allow_ini_extras() const { return allow_ini_extras_; }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
