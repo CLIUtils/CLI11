@@ -72,6 +72,9 @@ class App {
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
 
+    /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
+    bool allow_ini_extras_{false};
+
     ///  If true, return immediately on an unrecognised option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
 
@@ -174,6 +177,7 @@ class App {
             // INHERITABLE
             failure_message_ = parent_->failure_message_;
             allow_extras_ = parent_->allow_extras_;
+            allow_ini_extras_ = parent_->allow_ini_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
             fallthrough_ = parent_->fallthrough_;
@@ -206,6 +210,14 @@ class App {
     /// Remove the error when extras are left over on the command line.
     App *allow_extras(bool allow = true) {
         allow_extras_ = allow;
+        return this;
+    }
+
+    /// Remove the error when extras are left over on the command line.
+    /// Will also call App::allow_extras().
+    App *allow_ini_extras(bool allow = true) {
+        allow_extras(allow);
+        allow_ini_extras_ = allow;
         return this;
     }
 
@@ -983,6 +995,9 @@ class App {
     /// Get the status of allow extras
     bool get_allow_extras() const { return allow_extras_; }
 
+    /// Get the status of allow extras
+    bool get_allow_ini_extras() const { return allow_ini_extras_; }
+
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
 
@@ -1224,8 +1239,15 @@ class App {
         auto op_ptr = std::find_if(
             std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
 
-        if(op_ptr == std::end(options_))
+        if(op_ptr == std::end(options_)) {
+            if(allow_ini_extras_) {
+                // Should we worry about classifying the extras properly?
+                missing_.emplace_back(detail::Classifer::NONE, current.fullname);
+                args.pop_back();
+                return true;
+            }
             return false;
+        }
 
         // Let's not go crazy with pointer syntax
         Option_p &op = *op_ptr;
