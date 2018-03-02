@@ -74,6 +74,8 @@ install:
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python -m pip install --user pathlib ; fi
 - cmake --version
+- pip install conan
+- conan user
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - |
@@ -83,6 +85,7 @@ script:
     .ci/check_tidy.sh
   else
     .ci/travis.sh
+    conant create CLIUtils/CLI11
   fi
 after_success:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
