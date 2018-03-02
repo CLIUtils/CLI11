@@ -32,6 +32,10 @@ matrix:
     - COMPILER=3.9
     - CHECK_STYLE=yes
     - CLI_CXX_STD=14
+    script:
+    - cd "${TRAVIS_BUILD_DIR}"
+    - scripts/check_style.sh
+    - .ci/check_tidy.sh
   - compiler: clang
     addons:
       apt:
@@ -62,8 +66,15 @@ matrix:
     env:
     - COMPILER=4.7
   - os: osx
+    compiler: clang
     before_install:
+    - brew update
+    - echo 'brew "python"' > Brewfile
+    - echo 'brew "conan"' >> Brewfile
+    - brew bundle
     - python -m ensurepip --user
+before_install:
+- python -m pip install --user conan
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
@@ -74,19 +85,11 @@ install:
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python -m pip install --user pathlib ; fi
 - cmake --version
-- pip install conan
 - conan user
 script:
 - cd "${TRAVIS_BUILD_DIR}"
-- |
-  if [ -n "$CHECK_STYLE" ]
-  then
-    scripts/check_style.sh
-    .ci/check_tidy.sh
-  else
-    .ci/travis.sh
-    conant create CLIUtils/CLI11
-  fi
+- .ci/travis.sh
+- conan create . CLIUtils/CLI11
 after_success:
 - if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
 - echo "${TRAVIS_BRANCH}"

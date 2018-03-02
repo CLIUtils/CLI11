@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
-project(CLI11 CXX)
+project(CLI11 LANGUAGES CXX)
 
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
 
@@ -54,6 +54,9 @@ file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 add_library(CLI11 INTERFACE)
 target_include_directories(CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
+install(TARGETS CLI11 EXPORT CLI11Config)
+export(TARGETS CLI11 FILE CLI11Targets.cmake)
+export(PACKAGE CLI11)
 
 # Single file test
 find_package(PythonInterp)
