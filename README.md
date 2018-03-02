@@ -171,7 +171,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 
 * `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
 * `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`.
-* `->requires(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
+* `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
 * `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 * `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
@@ -272,7 +272,7 @@ sub.subcommand = true
 ```
 
 Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". To print a configuration file from the passed
-arguments, use `.config_to_str(default_also=false)`, where `default_also` will also show any defaulted arguments.
+arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
 
 ## Inheriting defaults
 

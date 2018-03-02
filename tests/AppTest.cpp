@@ -982,9 +982,9 @@ TEST_F(TApp, OriginalOrder) {
     EXPECT_EQ(app.parse_order(), std::vector<CLI::Option *>({op1, op2, op1, op1}));
 }
 
-TEST_F(TApp, RequiresFlags) {
+TEST_F(TApp, NeedsFlags) {
     CLI::Option *opt = app.add_flag("-s,--string");
-    app.add_flag("--both")->requires(opt);
+    app.add_flag("--both")->needs(opt);
 
     run();
 
@@ -1049,11 +1049,11 @@ TEST_F(TApp, ExcludesMixedFlags) {
     EXPECT_THROW(run(), CLI::ExcludesError);
 }
 
-TEST_F(TApp, RequiresMultiFlags) {
+TEST_F(TApp, NeedsMultiFlags) {
     CLI::Option *opt1 = app.add_flag("--opt1");
     CLI::Option *opt2 = app.add_flag("--opt2");
     CLI::Option *opt3 = app.add_flag("--opt3");
-    app.add_flag("--optall")->requires(opt1, opt2, opt3);
+    app.add_flag("--optall")->needs(opt1, opt2, opt3);
 
     run();
 
@@ -1081,6 +1081,41 @@ TEST_F(TApp, RequiresMultiFlags) {
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
     run();
 }
+
+TEST_F(TApp, NeedsMixedFlags) {
+    CLI::Option *opt1 = app.add_flag("--opt1");
+    app.add_flag("--opt2");
+    app.add_flag("--opt3");
+    app.add_flag("--optall")->needs(opt1, "--opt2", "--opt3");
+
+    run();
+
+    app.reset();
+    args = {"--opt1"};
+    run();
+
+    app.reset();
+    args = {"--opt2"};
+    run();
+
+    app.reset();
+    args = {"--optall"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt2", "--opt1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    app.reset();
+    args = {"--optall", "--opt1", "--opt2", "--opt3"};
+    run();
+}
+
+#if __cplusplus <= 201703L
 
 TEST_F(TApp, RequiresMixedFlags) {
     CLI::Option *opt1 = app.add_flag("--opt1");
@@ -1115,10 +1150,12 @@ TEST_F(TApp, RequiresMixedFlags) {
     run();
 }
 
-TEST_F(TApp, RequiresChainedFlags) {
+#endif
+
+TEST_F(TApp, NeedsChainedFlags) {
     CLI::Option *opt1 = app.add_flag("--opt1");
-    CLI::Option *opt2 = app.add_flag("--opt2")->requires(opt1);
-    app.add_flag("--opt3")->requires(opt2);
+    CLI::Option *opt2 = app.add_flag("--opt2")->needs(opt1);
+    app.add_flag("--opt3")->needs(opt2);
 
     run();
 
