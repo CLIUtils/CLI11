@@ -248,7 +248,7 @@ TEST_F(TApp, IniGetNoRemaining) {
     int two = 0;
     app.add_option("--two", two);
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(app.remaining().size(), 0);
+    EXPECT_EQ(app.remaining().size(), (size_t)0);
 }
 
 TEST_F(TApp, IniNotRequiredNotDefault) {

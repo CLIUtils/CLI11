@@ -163,9 +163,9 @@ TEST_F(TApp, IncorrectConstructionTakeLastExpected) {
     EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionRequiresCannotFind) {
+TEST_F(TApp, IncorrectConstructionNeedsCannotFind) {
     auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->requires("--nothing"), CLI::IncorrectConstruction);
+    EXPECT_THROW(cat->needs("--nothing"), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
@@ -173,18 +173,18 @@ TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
     EXPECT_THROW(cat->excludes("--nothing"), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionDuplicateRequires) {
+TEST_F(TApp, IncorrectConstructionDuplicateNeeds) {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
-    ASSERT_NO_THROW(cat->requires(other));
-    EXPECT_THROW(cat->requires(other), CLI::OptionAlreadyAdded);
+    ASSERT_NO_THROW(cat->needs(other));
+    EXPECT_THROW(cat->needs(other), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, IncorrectConstructionDuplicateRequiresTxt) {
+TEST_F(TApp, IncorrectConstructionDuplicateNeedsTxt) {
     auto cat = app.add_flag("--cat");
     app.add_flag("--other");
-    ASSERT_NO_THROW(cat->requires("--other"));
-    EXPECT_THROW(cat->requires("--other"), CLI::OptionAlreadyAdded);
+    ASSERT_NO_THROW(cat->needs("--other"));
+    EXPECT_THROW(cat->needs("--other"), CLI::OptionAlreadyAdded);
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateExcludes) {

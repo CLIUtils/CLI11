@@ -1,5 +1,23 @@
 ## Version 1.4 (in progress)
 * Added `get_parent()` to access the parent from a subcommand
+* `app.allow_ini_extras()` added to allow extras in INI files [#70]
+* Adding install support for CMake [#79]
+* MakeSingleHeader now works if outside of git [#78]
+* Double printing of error message fixed [#77]
+* Descriptions can now be written with `config_to_str` [#66] 
+* Multiline INI comments now supported
+* Added `ExistingPath` validator  [#73]
+* Renamed `requires` to `needs` to avoid C++20 keyword [#75], [#82]
+
+[#70]: https://github.com/CLIUtils/CLI11/issues/70
+[#75]: https://github.com/CLIUtils/CLI11/issues/75
+
+[#82]: https://github.com/CLIUtils/CLI11/pull/82
+[#79]: https://github.com/CLIUtils/CLI11/pull/79
+[#78]: https://github.com/CLIUtils/CLI11/pull/78
+[#77]: https://github.com/CLIUtils/CLI11/pull/77
+[#73]: https://github.com/CLIUtils/CLI11/pull/73
+[#66]: https://github.com/CLIUtils/CLI11/pull/66
 
 ## Version 1.3: Refactor
 
