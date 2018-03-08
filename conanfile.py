@@ -17,9 +17,7 @@ class HelloConan(ConanFile):
         cmake.configure()
         cmake.build()
         cmake.test()
-
-    def package(self):
-        self.copy("*.hpp")
+        cmake.install()
 
     def package_id(self):
         self.info.header_only()
