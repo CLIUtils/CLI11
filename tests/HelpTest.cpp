@@ -153,24 +153,24 @@ TEST(THelp, EnvName) {
     EXPECT_THAT(help, HasSubstr("SOME_ENV"));
 }
 
-TEST(THelp, Requires) {
+TEST(THelp, Needs) {
     CLI::App app{"My prog"};
 
     CLI::Option *op1 = app.add_flag("--op1");
-    app.add_flag("--op2")->requires(op1);
+    app.add_flag("--op2")->needs(op1);
 
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("Requires: --op1"));
 }
 
-TEST(THelp, RequiresPositional) {
+TEST(THelp, NeedsPositional) {
     CLI::App app{"My prog"};
 
     int x, y;
 
     CLI::Option *op1 = app.add_option("op1", x, "one");
-    app.add_option("op2", y, "two")->requires(op1);
+    app.add_option("op2", y, "two")->needs(op1);
 
     std::string help = app.help();
 

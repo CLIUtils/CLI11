@@ -5,12 +5,17 @@ branches:
 install:
   - set PATH=C:\Python36;%PATH%
   - cmake --version
+  - pip install conan
+  - conan user
+  - conan --version
 
 build_script:
   - mkdir build
   - cd build
   - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_GENERATOR="Visual Studio 14 2015"
   - cmake --build .
+  - cd ..
+  - conan create . CLIUtils/CLI11
 
 test_script:
   - ctest --output-on-failure -C Debug

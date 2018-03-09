@@ -278,7 +278,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Sets required options
-    Option *requires(Option *opt) {
+    Option *needs(Option *opt) {
         auto tup = requires_.insert(opt);
         if(!tup.second)
             throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
@@ -286,18 +286,32 @@ class Option : public OptionBase<Option> {
     }
 
     /// Can find a string if needed
-    template <typename T = App> Option *requires(std::string opt_name) {
+    template <typename T = App> Option *needs(std::string opt_name) {
         for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
             if(opt.get() != this && opt->check_name(opt_name))
-                return requires(opt.get());
+                return needs(opt.get());
         throw IncorrectConstruction::MissingOption(opt_name);
     }
 
     /// Any number supported, any mix of string and Opt
-    template <typename A, typename B, typename... ARG> Option *requires(A opt, B opt1, ARG... args) {
-        requires(opt);
-        return requires(opt1, args...);
+    template <typename A, typename B, typename... ARG> Option *needs(A opt, B opt1, ARG... args) {
+        needs(opt);
+        return needs(opt1, args...);
     }
+
+#if __cplusplus <= 201703L
+    /// Sets required options \deprecated
+    Option *requires(Option *opt) { return needs(opt); }
+
+    /// Can find a string if needed \deprecated
+    template <typename T = App> Option *requires(std::string opt_name) { return needs<T>(opt_name); }
+
+    /// Any number supported, any mix of string and Opt \deprecated
+    template <typename A, typename B, typename... ARG> Option *requires(A opt, B opt1, ARG... args) {
+        needs(opt);
+        return needs(opt1, args...);
+    }
+#endif
 
     /// Sets excluded options
     Option *excludes(Option *opt) {
@@ -314,6 +328,7 @@ class Option : public OptionBase<Option> {
                 return excludes(opt.get());
         throw IncorrectConstruction::MissingOption(opt_name);
     }
+
     /// Any number supported, any mix of string and Opt
     template <typename A, typename B, typename... ARG> Option *excludes(A opt, B opt1, ARG... args) {
         excludes(opt);
