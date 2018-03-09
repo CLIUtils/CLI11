@@ -405,7 +405,8 @@ TEST(Types, LexicalCastParsable) {
 
     std::complex<double> output;
     EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
-    EXPECT_EQ(output, std::complex<double>(4.2, 7.3));
+    EXPECT_EQ(output.real(), 4.2); // Doing this in one go sometimes has trouble
+    EXPECT_EQ(output.imag(), 7.3); // on clang + c++4.8 due to missing const
 
     EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
