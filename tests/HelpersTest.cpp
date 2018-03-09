@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cstdint>
 #include <string>
+#include <complex>
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
@@ -348,17 +349,30 @@ TEST(Types, TypeName) {
 }
 
 TEST(Types, LexicalCastInt) {
-    std::string input = "912";
-    int x;
-    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
-    EXPECT_EQ(912, x);
+    std::string signed_input = "-912";
+    int x_signed;
+    EXPECT_TRUE(CLI::detail::lexical_cast(signed_input, x_signed));
+    EXPECT_EQ(-912, x_signed);
+
+    std::string unsigned_input = "912";
+    unsigned int x_unsigned;
+    EXPECT_TRUE(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
+    EXPECT_EQ(912, x_unsigned);
+
+    EXPECT_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
     unsigned char y;
     std::string overflow_input = std::to_string(UINT64_MAX) + "0";
     EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
+    char y_signed;
+    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y_signed));
+
     std::string bad_input = "hello";
     EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, y));
+
+    std::string extra_input = "912i";
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, y));
 }
 
 TEST(Types, LexicalCastDouble) {
@@ -372,6 +386,9 @@ TEST(Types, LexicalCastDouble) {
 
     std::string overflow_input = "1" + std::to_string(LDBL_MAX);
     EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, x));
+
+    std::string extra_input = "9.12i";
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, x));
 }
 
 TEST(Types, LexicalCastString) {
@@ -379,6 +396,20 @@ TEST(Types, LexicalCastString) {
     std::string output;
     CLI::detail::lexical_cast(input, output);
     EXPECT_EQ(input, output);
+}
+
+TEST(Types, LexicalCastParsable) {
+    std::string input = "(4.2,7.3)";
+    std::string fail_input = "4.2,7.3";
+    std::string extra_input = "(4.2,7.3)e";
+
+    std::complex<double> output;
+    EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
+    EXPECT_EQ(output.real(), 4.2); // Doing this in one go sometimes has trouble
+    EXPECT_EQ(output.imag(), 7.3); // on clang + c++4.8 due to missing const
+
+    EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
+    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
 }
 
 TEST(FixNewLines, BasicCheck) {
