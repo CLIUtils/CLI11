@@ -62,6 +62,8 @@ After I wrote this, I also found the following libraries:
 | [Argh!] | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.|
 | [CLI]   | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active. |
 
+See [Awesome C++] for a less-biased list of parsers.
+
 </p></details>
 <br/>
 
@@ -84,7 +86,7 @@ There are some other possible "features" that are intentionally not supported by
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][Github Releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Checkout the repository and add as a subdirectory for CMake. You can use the `CLI11` interface target when linking. (CMake 3.4+ required, 3.10+ best) Or, instead of explicitly downloading the library, use the `AddCLI.cmake` supplied in [CLIUtils cmake helpers][cltools-cmake].
+2. Use `CLI/*.hpp` files. You could check out the repository as a submodule, for example. You can use the `CLI11::CLI11` interface target when linking from `add_subdirectory`. You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. Soon, you will also be able to use Conan.io. (These are just conveniences to allow you to use your favorite method of managing packages; it's just header only so including the correct path and using C++11 is all you really need.
 
 To build the tests, checkout the repository and use CMake:
 
@@ -369,9 +371,16 @@ To contribute, open an [issue][Github Issues] or [pull request][Github Pull Requ
 
 As of version 1.0, this library is available under a 3-Clause BSD license. See the [LICENSE](./LICENSE) file for details.
 
-This project was created by Henry Schreiner. Significant features and/or improvements to the code were contributed by:
+This project was created by [Henry Schreiner](https://github.com/henryiii).
+Significant features and/or improvements to the code were contributed by:
 
-* Marcus Brinkmann
+* [Marcus Brinkmann](https://github.com/lambdafu)
+* [Jonas Nilsson](https://github.com/SkyToGround)
+* [Doug Johnston](https://github.com/dvj)
+* [Lucas Czech](https://github.com/lczech)
+* [Mathias Soeken](https://github.com/msoeken)
+* [Nathan Hourt](https://github.com/nathanhourt)
+
 
 CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. Version 0.9 was featured in a [DIANA/HEP] meeting at CERN ([see the slides][DIANA slides]). Please give it a try! Feedback is always welcome.
 
@@ -422,3 +431,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
 [DIANA slides]: https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
+[Awesome C++]: https://github.com/fffaraz/awesome-cpp/blob/master/README.md#cli
