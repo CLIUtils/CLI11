@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
-project(CLI11 CXX)
+project(CLI11 LANGUAGES CXX)
 
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
 
@@ -51,9 +51,42 @@ endif()
 
 file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 # To see in IDE, must be listed for target
+
 add_library(CLI11 INTERFACE)
-target_include_directories(CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+# Duplicated because CMake adds the current source dir if you don't.
+target_include_directories(CLI11 INTERFACE
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+     $<INSTALL_INTERFACE:include>)
+
+# Make add_subdirectory work like find_package
+add_library(CLI11::CLI11 ALIAS CLI11)
+
+# This folder should be installed
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
+
+# Use find_package on the installed package
+# Since we have no custom code, we can directly write this
+# to Config.cmake (otherwise we'd have a custom config and would
+# import Targets.cmake
+
+# Make an export target
+install(TARGETS CLI11
+        EXPORT CLI11Targets)
+
+# Install the export target as a file
+install(EXPORT CLI11Targets
+        FILE CLI11Config.cmake
+        NAMESPACE CLI11::
+        DESTINATION lib/cmake/CLI11)
+
+# Use find_package on the installed package
+export(TARGETS CLI11
+       NAMESPACE CLI11::
+       FILE CLI11Targets.cmake)
+
+# Register in the user cmake package registry
+export(PACKAGE CLI11)
 
 # Single file test
 find_package(PythonInterp)

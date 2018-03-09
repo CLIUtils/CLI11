@@ -30,8 +30,11 @@ matrix:
         - clang-tidy-3.9
     env:
     - COMPILER=3.9
-    - CHECK_STYLE=yes
     - CLI_CXX_STD=14
+    script:
+    - cd "${TRAVIS_BUILD_DIR}"
+    - scripts/check_style.sh
+    - .ci/check_tidy.sh
   - compiler: clang
     addons:
       apt:
@@ -39,8 +42,13 @@ matrix:
         - clang-3.5
     env:
     - COMPILER=3.5
-    - DEPLOY_MAT=yes
     - DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
+    after_success:
+    - |
+      if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]
+      then
+        echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
+      fi
   - compiler: gcc
     addons:
       apt:
@@ -52,8 +60,12 @@ matrix:
         - lcov
     env:
     - COMPILER=6
-    - COVERALLS=yes
     - CLI_CXX_STD=14
+    before_install:
+    - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+    - cd $TRAVIS_BUILD_DIR 
+    - . .ci/build_lcov.sh
+    - .ci/run_codecov.sh
   - compiler: gcc
     addons:
       apt:
@@ -61,38 +73,34 @@ matrix:
         - g++-4.7
     env:
     - COMPILER=4.7
-  - os: osx
     before_install:
+    - python -m pip install --user conan
+    - conan user
+    after_success:
+    - conan create . CLIUtils/CLI11
+  - os: osx
+    compiler: clang
+    before_install:
+    - brew update
+    - echo 'brew "python"' > Brewfile
+    - echo 'brew "conan"' >> Brewfile
+    - brew bundle
     - python -m ensurepip --user
+    - conan user
+    after_success:
+    - conan create . CLIUtils/CLI11
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh ; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
-- if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_lcov.sh ; fi
 - cd "${DEPS_DIR}"
 - if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python -m pip install --user pathlib ; fi
 - cmake --version
 script:
 - cd "${TRAVIS_BUILD_DIR}"
-- |
-  if [ -n "$CHECK_STYLE" ]
-  then
-    scripts/check_style.sh
-    .ci/check_tidy.sh
-  else
-    .ci/travis.sh
-  fi
-after_success:
-- if [ -n "$COVERALLS" ] ; then cd $TRAVIS_BUILD_DIR && .ci/run_codecov.sh ; fi
-- echo "${TRAVIS_BRANCH}"
-- echo "${TRAVIS_PULL_REQUEST}"
-- |
-  if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ -n "$DEPLOY_MAT" ]
-  then
-    echo "Updating docs" && cd $TRAVIS_BUILD_DIR && .ci/build_docs.sh
-  fi
+- .ci/travis.sh
 deploy:
   provider: releases
   api_key:
