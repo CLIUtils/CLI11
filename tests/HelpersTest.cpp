@@ -348,6 +348,16 @@ TEST(Types, TypeName) {
     EXPECT_EQ("TEXT", text2_name);
 }
 
+TEST(Types, OverflowSmall) {
+    char x;
+    auto strmax = std::to_string(INT8_MAX + 1);
+    EXPECT_FALSE(CLI::detail::lexical_cast(strmax, x));
+
+    unsigned char y;
+    strmax = std::to_string(UINT8_MAX + 1);
+    EXPECT_FALSE(CLI::detail::lexical_cast(strmax, y));
+}
+
 TEST(Types, LexicalCastInt) {
     std::string signed_input = "-912";
     int x_signed;
@@ -357,7 +367,7 @@ TEST(Types, LexicalCastInt) {
     std::string unsigned_input = "912";
     unsigned int x_unsigned;
     EXPECT_TRUE(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
-    EXPECT_EQ(912, x_unsigned);
+    EXPECT_EQ((unsigned int)912, x_unsigned);
 
     EXPECT_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 

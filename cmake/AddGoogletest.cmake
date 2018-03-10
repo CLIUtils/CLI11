@@ -15,7 +15,11 @@ download_project(PROJ                googletest
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# CMake warning suppression will not be needed in version 1.9
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR} EXCLUDE_FROM_ALL)
+unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
 
 if (CMAKE_CONFIGURATION_TYPES)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
