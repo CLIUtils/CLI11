@@ -1,9 +1,19 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
-project(CLI11 LANGUAGES CXX)
+set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
 
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+# Read in the line containing the version
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/Version.hpp"
+    VERSION_STRING REGEX ${VERSION_REGEX})
 
+# Pick out just the version
+string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
+
+project(CLI11 LANGUAGES CXX VERSION ${VERSION_STRING})
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+# User settable
 set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -70,6 +80,18 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
 # to Config.cmake (otherwise we'd have a custom config and would
 # import Targets.cmake
 
+# Add the version in a CMake readable way
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    CLI11ConfigVersion.cmake
+    VERSION ${CLI11_VERSION}
+    COMPATIBILITY AnyNewerVersion
+    )
+
+# Make version available in the install
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake"
+        DESTINATION lib/cmake/CLI11)
+
 # Make an export target
 install(TARGETS CLI11
         EXPORT CLI11Targets)
@@ -128,4 +150,25 @@ option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
 if(CLI_EXAMPLES)
     add_subdirectory(examples)
 endif()
+
+# Packaging support
+set(CPACK_PACKAGE_VENDOR "github.com/CLIUtils/CLI11")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Command line interface")
+set(CPACK_PACKAGE_VERSION_MAJOR ${CLI11_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${CLI11_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${CLI11_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+# CPack collects *everything* except what's listed here.
+set(CPACK_SOURCE_IGNORE_FILES
+    /.git
+    /dist
+    /.*build.*
+    /\\\\.DS_Store
+    /.*\\\\.egg-info
+    /var
+    /Pipfile.*$
+)
+include(CPack)
 
