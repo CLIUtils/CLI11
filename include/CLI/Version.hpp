@@ -8,8 +8,8 @@ namespace CLI {
 // Note that all code in CLI11 must be in a namespace, even if it just a define.
 
 #define CLI11_VERSION_MAJOR 1
-#define CLI11_VERSION_MINOR 3
+#define CLI11_VERSION_MINOR 4
 #define CLI11_VERSION_PATCH 0
-#define CLI11_VERSION "1.3.0"
+#define CLI11_VERSION "1.4.0"
 
 } // namespace CLI

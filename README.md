@@ -5,6 +5,7 @@
 [![License: BSD][license-badge]](./LICENSE)
 [![Latest release][releases-badge]][Github Releases]
 [![DOI][DOI-badge]][DOI-link]
+[![Conan.io][conan-badge]][conan-link]
 
 [Documentation][GitBook] •
 [API Reference][api-docs] •
@@ -396,6 +397,8 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [gitter-badge]:          https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter]:                https://gitter.im/CLI11gitter/Lobby
 [license-badge]:         https://img.shields.io/badge/License-BSD-blue.svg
+[conan-badge]:           https://api.bintray.com/packages/cliutilsa/cli11/cli11%3Acli11/images/download.svg
+[conan-link]:            https://bintray.com/cliutils/cli11/cli11%3Acli11/_latestVersion
 [Github Releases]:       https://github.com/CLIUtils/CLI11/releases
 [Github Issues]:         https://github.com/CLIUtils/CLI11/issues
 [Github Pull Requests]:  https://github.com/CLIUtils/CLI11/pulls
