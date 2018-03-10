@@ -84,7 +84,7 @@ matrix:
       then
         conan remote add origin https://api.bintray.com/conan/cliutils/CLI11
         conan user -p ${BINFROG_API_KEY} -r origin henryiii
-        conan upload "*" -r origin --all
+        conan upload "*" -c -r origin --all
       fi
   - os: osx
     compiler: clang
