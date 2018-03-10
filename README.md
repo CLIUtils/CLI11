@@ -87,7 +87,8 @@ There are some other possible "features" that are intentionally not supported by
 To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][Github Releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2. Use `CLI/*.hpp` files. You could check out the repository as a submodule, for example. You can use the `CLI11::CLI11` interface target when linking from `add_subdirectory`. You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. Soon, you will also be able to use Conan.io. (These are just conveniences to allow you to use your favorite method of managing packages; it's just header only so including the correct path and using C++11 is all you really need.
+2. Use `CLI/*.hpp` files. You could check out the repository as a submodule, for example. You can use the `CLI11::CLI11` interface target when linking from `add_subdirectory`. You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. You can also use [Conan.io][conan-link]. (These are just conveniences to allow you to use your favorite method of managing packages; it's just header only so including the correct path and
+   using C++11 is all you really need.)
 
 To build the tests, checkout the repository and use CMake:
 
@@ -397,8 +398,8 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [gitter-badge]:          https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter]:                https://gitter.im/CLI11gitter/Lobby
 [license-badge]:         https://img.shields.io/badge/License-BSD-blue.svg
-[conan-badge]:           https://api.bintray.com/packages/cliutilsa/cli11/cli11%3Acli11/images/download.svg
-[conan-link]:            https://bintray.com/cliutils/cli11/cli11%3Acli11/_latestVersion
+[conan-badge]:           https://api.bintray.com/packages/cliutils/CLI11/CLI11/images/download.svg
+[conan-link]:            https://bintray.com/cliutils/CLI11/CLI11/_latestVersion
 [Github Releases]:       https://github.com/CLIUtils/CLI11/releases
 [Github Issues]:         https://github.com/CLIUtils/CLI11/issues
 [Github Pull Requests]:  https://github.com/CLIUtils/CLI11/pulls
