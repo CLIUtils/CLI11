@@ -13,10 +13,11 @@ project(CLI11 LANGUAGES CXX VERSION ${VERSION_STRING})
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-# User settable
-set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
-
+# Only if built as the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    # User settable
+    set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
+
     set(CUR_PROJ ON)
     set(CMAKE_CXX_STANDARD ${CLI_CXX_STD})
     set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,31 +29,30 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     else()
         add_definitions("-Wall -Wextra -pedantic")
     endif()
+
+    if(CMAKE_VERSION VERSION_GREATER 3.6)
+        # Add clang-tidy if available
+        option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy" OFF)
+        find_program(
+            CLANG_TIDY_EXE
+            NAMES "clang-tidy"
+            DOC "Path to clang-tidy executable"
+        )
+
+        if(CLANG_TIDY_EXE)
+            if(CLANG_TIDY_FIX)
+                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
+            else()
+                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}")
+            endif()
+        endif()
+    endif()
 else()
     set(CUR_PROJ OFF)
 endif()
 
 # Allow IDE's to group targets into folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-if(CMAKE_VERSION VERSION_GREATER 3.6)
-# Add clang-tidy if available
-    option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy" OFF)
-    find_program(
-        CLANG_TIDY_EXE
-        NAMES "clang-tidy"
-        DOC "Path to clang-tidy executable"
-    )
-
-    if(CLANG_TIDY_EXE)
-        if(CLANG_TIDY_FIX)
-            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
-        else()
-            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}")
-        endif()
-    endif()
-endif()
-
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     include(CodeCoverage)
@@ -118,7 +118,7 @@ else()
     set(CLI_SINGLE_FILE_DEFAULT OFF)
 endif()
 
-option(CLI_SINGLE_FILE "Generate a single header file (and test)" ${CLI_SINGLE_FILE_DEFAULT})
+option(CLI_SINGLE_FILE "Generate a single header file" ${CLI_SINGLE_FILE_DEFAULT})
 if(CLI_SINGLE_FILE)
     find_package(PythonInterp REQUIRED)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -149,6 +149,10 @@ endif()
 option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
 if(CLI_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(NOT CUR_PROJ)
+    mark_as_advanced(CLI_SINGLE_FILE_TESTS CLI_EXAMPLES CLI_TESTING)
 endif()
 
 # Packaging support
