@@ -2,7 +2,7 @@ from conans import ConanFile, CMake
 
 class HelloConan(ConanFile):
     name = "CLI11"
-    version = "1.3.0"
+    version = "1.4.0"
     url = "https://github.com/CLIUtils/CLI11"
     settings = "os", "compiler", "arch", "build_type"
     license = "BSD 3 clause"
