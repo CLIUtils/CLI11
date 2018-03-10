@@ -6,8 +6,8 @@ branches:
   - gh-pages
 cache:
   directories:
-  - ${TRAVIS_BUILD_DIR}/deps/cmake
-  - ${TRAVIS_BUILD_DIR}/deps/doxygen
+  - "${TRAVIS_BUILD_DIR}/deps/cmake"
+  - "${TRAVIS_BUILD_DIR}/deps/doxygen"
 matrix:
   include:
   - compiler: clang
@@ -34,7 +34,7 @@ matrix:
     script:
     - cd "${TRAVIS_BUILD_DIR}"
     - scripts/check_style.sh
-    - .ci/check_tidy.sh
+    - ".ci/check_tidy.sh"
   - compiler: clang
     addons:
       apt:
@@ -42,6 +42,7 @@ matrix:
         - clang-3.5
     env:
     - COMPILER=3.5
+    - DEPLOY_MAT=yes
     - DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
     after_success:
     - |
@@ -63,9 +64,9 @@ matrix:
     - CLI_CXX_STD=14
     before_install:
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-    - cd $TRAVIS_BUILD_DIR 
-    - . .ci/build_lcov.sh
-    - .ci/run_codecov.sh
+    - cd $TRAVIS_BUILD_DIR
+    - ". .ci/build_lcov.sh"
+    - ".ci/run_codecov.sh"
   - compiler: gcc
     addons:
       apt:
@@ -78,6 +79,13 @@ matrix:
     - conan user
     after_success:
     - conan create . CLIUtils/CLI11
+    - |
+      if [ "${TRAVIS_TAG}" ]
+      then
+        conan remote add origin https://api.bintray.com/conan/cliutils/CLI11
+        conan user -p ${BINFROG_API_KEY} -r origin henryiii
+        conan upload "*" -r origin --all
+      fi
   - os: osx
     compiler: clang
     before_install:
@@ -92,15 +100,19 @@ matrix:
 install:
 - python -c 'import sys; print(sys.version_info[:])'
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh ; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd $TRAVIS_BUILD_DIR && . .ci/prepare_altern.sh
+  ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_cmake.sh
+  ; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh
+  ; fi
 - cd "${DEPS_DIR}"
-- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python -m pip install --user pathlib ; fi
+- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python
+  -m pip install --user pathlib ; fi
 - cmake --version
 script:
 - cd "${TRAVIS_BUILD_DIR}"
-- .ci/travis.sh
+- ".ci/travis.sh"
 deploy:
   provider: releases
   api_key:
@@ -110,7 +122,7 @@ deploy:
   on:
     repo: CLIUtils/CLI11
     tags: true
-    condition: $DEPLOY_MAT = yes
+    condition: "$DEPLOY_MAT = yes"
 notifications:
   webhooks:
     urls:
@@ -120,4 +132,5 @@ notifications:
     on_start: never
 env:
   global:
-    secure: cY0OI609iTAxLRYuYQnNMi+H6n0dBwioTAoFXGGRTnngw2V9om3UmY5eUu4HQEQsQZovHdYpNhlSgRmdwQ4UqSp3FGyrwobf0kzacV4bVnMDeXDmHt8RzE5wP/LwDd8elNF6RRYjElY99f0k0FyXVd0fIvuVkGKQECNLOtEk0jQo+4YTh7dhuCxRhBYgTbNiRL6UJynfrcK0YN+DQ+8CJNupu2VxgaEpCSngTfvDHLcddcrXwpvn3MPc3FsDUbtN389ZCIe41qqIL0ATv46DQaTw4FOevyVfRyrBOznONoGCVeAYKL6VBdrk01Fh6aytF5zgI3hKaKobgEn+QFfzR6l68c6APvqA0Qv39iLjuh6KbdIV2YsqXfyt6FBgqP2xZuNEZW1jZ8LxUOLl2I40UEh87nFutvnSbfIzN+FcLrajm2H2jV2kZGNKAMx+4qxkZuXSre4JPkENfJm2WNFAKlqPt4ZSEQarkDYzZPcEr2I9fbGjQYVJICoN4LikCv9K5z7ujpTxCTNbVpQWZcEOT6QQBc6Vml/N/NKAIl9o2OeTLiXCmT31+KQMeO492KYNQ6VmkeqrVhGExOUcJdNyDJV9C+3mSekb3Sq78SneYRKDechkWbMl0ol07wGTdBwQQwgaorjRyn07x1rDxpPr3z19/+eubnpPUW4UQ5MYsjs=
+  - secure: cY0OI609iTAxLRYuYQnNMi+H6n0dBwioTAoFXGGRTnngw2V9om3UmY5eUu4HQEQsQZovHdYpNhlSgRmdwQ4UqSp3FGyrwobf0kzacV4bVnMDeXDmHt8RzE5wP/LwDd8elNF6RRYjElY99f0k0FyXVd0fIvuVkGKQECNLOtEk0jQo+4YTh7dhuCxRhBYgTbNiRL6UJynfrcK0YN+DQ+8CJNupu2VxgaEpCSngTfvDHLcddcrXwpvn3MPc3FsDUbtN389ZCIe41qqIL0ATv46DQaTw4FOevyVfRyrBOznONoGCVeAYKL6VBdrk01Fh6aytF5zgI3hKaKobgEn+QFfzR6l68c6APvqA0Qv39iLjuh6KbdIV2YsqXfyt6FBgqP2xZuNEZW1jZ8LxUOLl2I40UEh87nFutvnSbfIzN+FcLrajm2H2jV2kZGNKAMx+4qxkZuXSre4JPkENfJm2WNFAKlqPt4ZSEQarkDYzZPcEr2I9fbGjQYVJICoN4LikCv9K5z7ujpTxCTNbVpQWZcEOT6QQBc6Vml/N/NKAIl9o2OeTLiXCmT31+KQMeO492KYNQ6VmkeqrVhGExOUcJdNyDJV9C+3mSekb3Sq78SneYRKDechkWbMl0ol07wGTdBwQQwgaorjRyn07x1rDxpPr3z19/+eubnpPUW4UQ5MYsjs=
+  - secure: G6H5HA9pPUgsd96A+uvTxbLjR1rcT9NtxsknIkFDfzGDpffn6wVX+kCIQLf9zFDnQnsfYA/4piiuoBN5U5C7HQrh9UCvBVptXjWviea0Y7CRbMJZpw2rPvXWQtrFNzYkaV7kdJ5B0Mmvh6rcH/I8gKFrkdjF7i7sfzWdFWRU5QXfxXOk2n+xCXX6uFemxHH9850XEjVtnU7YYUebQFaoTYLLy05nlt9JaEF84wfJljY/SJX7I9gpNLtizE9MpJylnrwUeL66OqFievmjL3/bWpPUBjUF0WdtXYlVDja7O582FQDs94ofgqeGieGIMQ0VuovpbQOJSdjs5XHZwu2ce6HZxtOhJJqw6xEwbq43ZdofAlJ5GUEOgrr+j25zIDkdzOhliDKJtw5ysmmTUKEcZ36iWbCE0YP/IC42yOV9oOP6UkgbuwpVDdxAFRgLZLahW9Ok+c1PlzIauPxv+jIEI4rSEEJRKZG2JK3TXUdhd58mHBfQMNjKQMF+Y2wCCGjfMO0q4SgvBhYyb4oBTxEqnc2Pzh2DJdNzRFsV7ktsQSRglHGVI+1XTmQ+2kbBzNOQBLjOuRvDZENUhyxPKGZDHyAOMlVvYm8vvWebM1/F3YgDb/tPh33+EGSvpKkCZ5nUxB5e605H6gdYlNKNhuWKlEKTo2/kF0D39gAUCIcGbzw=
