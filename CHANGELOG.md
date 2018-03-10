@@ -1,16 +1,18 @@
 ## Version 1.4: More feedback
 
-* Added `get_parent()` to access the parent from a subcommand
-* `app.allow_ini_extras()` added to allow extras in INI files [#70]
-* Adding install support for CMake [#79], improved support for `find_package` [#83], [#84]
-* MakeSingleHeader now works if outside of git [#78]
-* Double printing of error message fixed [#77]
-* Descriptions can now be written with `config_to_str` [#66] 
-* Multiline INI comments now supported
-* Added `ExistingPath` validator  [#73]
-* Renamed `requires` to `needs` to avoid C++20 keyword [#75], [#82]
-* Added support for Conan.io [#83]
+This version adds lots of smaller fixes and additions after the refactor in version 1.3. More ways to download and use CLI11 in CMake have been added. INI files have improved support.
+
 * Lexical cast is now more strict than before [#68] and fails on overflow [#84]
+* Added `get_parent()` to access the parent from a subcommand
+* Added `ExistingPath` validator  [#73]
+* `app.allow_ini_extras()` added to allow extras in INI files [#70]
+* Multiline INI comments now supported
+* Descriptions can now be written with `config_to_str` [#66] 
+* Double printing of error message fixed [#77]
+* Renamed `requires` to `needs` to avoid C++20 keyword [#75], [#82]
+* MakeSingleHeader now works if outside of git [#78]
+* Adding install support for CMake [#79], improved support for `find_package` [#83], [#84]
+* Added support for Conan.io [#83]
 
 [#70]: https://github.com/CLIUtils/CLI11/issues/70
 [#75]: https://github.com/CLIUtils/CLI11/issues/75
