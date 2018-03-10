@@ -78,7 +78,7 @@ matrix:
     - python -m pip install --user conan
     - conan user
     after_success:
-    - conan create . CLIUtils/CLI11
+    - conan create . CLIUtils/stable
     - |
       if [ "${TRAVIS_TAG}" ]
       then
