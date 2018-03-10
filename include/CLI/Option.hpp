@@ -95,21 +95,21 @@ template <typename CRTP> class OptionBase {
 
     /// Set the multi option policy to take last
     CRTP *take_last() {
-        CRTP *self = static_cast<CRTP *>(this);
+        auto self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::TakeLast);
         return self;
     }
 
     /// Set the multi option policy to take last
     CRTP *take_first() {
-        CRTP *self = static_cast<CRTP *>(this);
+        auto self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::TakeFirst);
         return self;
     }
 
     /// Set the multi option policy to take last
     CRTP *join() {
-        CRTP *self = static_cast<CRTP *>(this);
+        auto self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::Join);
         return self;
     }
