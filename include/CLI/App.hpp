@@ -835,7 +835,7 @@ class App {
                 std::string value;
 
                 // Non-flags
-                if(opt->get_expected() != 0) {
+                if(opt->get_type_size() != 0) {
 
                     // If the option was found on command line
                     if(opt->count() > 0)
@@ -1069,7 +1069,7 @@ class App {
     /// Currently checks to see if multiple positionals exist with -1 args
     void _validate() const {
         auto count = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-            return opt->get_expected() == -1 && opt->get_positional();
+            return opt->get_items_expected() < 0 && opt->get_positional();
         });
         if(count > 1)
             throw InvalidError(name_);
@@ -1189,8 +1189,8 @@ class App {
             // Required or partially filled
             if(opt->get_required() || opt->count() != 0) {
                 // Make sure enough -N arguments parsed (+N is already handled in parsing function)
-                if(opt->get_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_expected()))
-                    throw ArgumentMismatch::AtLeast(opt->single_name(), -opt->get_expected());
+                if(opt->get_items_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_items_expected()))
+                    throw ArgumentMismatch::AtLeast(opt->single_name(), -opt->get_items_expected());
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
@@ -1260,7 +1260,7 @@ class App {
 
         if(op->results_.empty()) {
             // Flag parsing
-            if(op->get_expected() == 0) {
+            if(op->get_type_size() == 0) {
                 if(current.inputs.size() == 1) {
                     std::string val = current.inputs.at(0);
                     val = detail::to_lower(val);
@@ -1320,9 +1320,9 @@ class App {
     size_t _count_remaining_positionals(bool required = false) const {
         size_t retval = 0;
         for(const Option_p &opt : options_)
-            if(opt->get_positional() && (!required || opt->get_required()) && opt->get_expected() > 0 &&
-               static_cast<int>(opt->count()) < opt->get_expected())
-                retval = static_cast<size_t>(opt->get_expected()) - opt->count();
+            if(opt->get_positional() && (!required || opt->get_required()) && opt->get_items_expected() > 0 &&
+               static_cast<int>(opt->count()) < opt->get_items_expected())
+                retval = static_cast<size_t>(opt->get_items_expected()) - opt->count();
 
         return retval;
     }
@@ -1334,7 +1334,7 @@ class App {
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
-               (static_cast<int>(opt->count()) < opt->get_expected() || opt->get_expected() < 0)) {
+               (static_cast<int>(opt->count()) < opt->get_items_expected() || opt->get_items_expected() < 0)) {
 
                 opt->add_result(positional);
                 parse_order_.push_back(opt.get());
@@ -1421,7 +1421,7 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
 
-        int num = op->get_expected();
+        int num = op->get_items_expected();
 
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;
@@ -1459,7 +1459,7 @@ class App {
 
                     // If there are any unlimited positionals, those also take priority
                     if(std::any_of(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-                           return opt->get_positional() && opt->get_expected() < 0;
+                           return opt->get_positional() && opt->get_items_expected() < 0;
                        }))
                         break;
                 }

@@ -125,7 +125,7 @@ TEST_F(TApp, IncorrectConstructionFlagPositional3) {
 
 TEST_F(TApp, IncorrectConstructionFlagExpected) {
     auto cat = app.add_flag("--cat");
-    EXPECT_NO_THROW(cat->expected(0));
+    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
     EXPECT_THROW(cat->expected(1), CLI::IncorrectConstruction);
 }
 

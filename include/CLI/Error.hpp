@@ -91,6 +91,9 @@ class IncorrectConstruction : public ConstructionError {
     static IncorrectConstruction Set0Opt(std::string name) {
         return IncorrectConstruction(name + ": Cannot set 0 expected, use a flag instead");
     }
+    static IncorrectConstruction SetFlag(std::string name) {
+        return IncorrectConstruction(name + ": Cannot set an expected number for flags");
+    }
     static IncorrectConstruction ChangeNotVector(std::string name) {
         return IncorrectConstruction(name + ": You can only change the expected arguments for vectors");
     }
