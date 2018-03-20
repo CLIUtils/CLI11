@@ -180,11 +180,13 @@ class Option : public OptionBase<Option> {
     /// @name Configuration
     ///@{
 
-    /// The number of expected values, 0 for flag, -1 for unlimited vector
-    int expected_{1};
+    /// The number of arguments that make up one option. -1=unlimited (vector-like), 0=flag, 1=normal option,
+    /// 2=complex/pair, etc. Set only when the option is created; this is intrinsic to the type. Eventually, -2 may mean
+    /// vector of pairs.
+    int type_size_{1};
 
-    /// A private setting to allow args to not be able to accept incorrect expected values
-    bool changeable_{false};
+    /// The number of expected values, type_size_ must be < 0. Ignored for flag. N < 0 means at least -N values.
+    int expected_{1};
 
     /// A list of validators to run on each value parsed
     std::vector<std::function<std::string(std::string &)>> validators_;
@@ -244,14 +246,25 @@ class Option : public OptionBase<Option> {
     /// @name Setting options
     ///@{
 
-    /// Set the number of expected arguments (Flags bypass this)
+    /// Set the number of expected arguments (Flags don't use this)
     Option *expected(int value) {
-        if(expected_ == value)
-            return this;
+        // Break if this is a flag
+        if(type_size_ == 0)
+            throw IncorrectConstruction::SetFlag(single_name());
+
+        // Setting 0 is not allowed
         else if(value == 0)
             throw IncorrectConstruction::Set0Opt(single_name());
-        else if(!changeable_)
+
+        // No change is okay, quit now
+        else if(expected_ == value)
+            return this;
+
+        // Type must be a vector
+        else if(type_size_ >= 0)
             throw IncorrectConstruction::ChangeNotVector(single_name());
+
+        // TODO: Can support multioption for non-1 values (except for join)
         else if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
             throw IncorrectConstruction::AfterMultiOpt(single_name());
 
@@ -368,9 +381,10 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Take the last argument if given multiple times
+    /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
-        if(get_expected() != 0 && get_expected() != 1)
+        // TODO: This can support multiple options
+        if(get_type_size() != 0 && get_expected() != 1)
             throw IncorrectConstruction::MultiOptionPolicy(single_name());
         multi_option_policy_ = value;
         return this;
@@ -381,7 +395,18 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// The number of arguments the option expects
+    int get_type_size() const { return type_size_; }
+
+    /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
+
+    /// The total number of expected values (including the type)
+    int get_items_expected() const {
+        // type_size == 0, return 0
+        // type_size > 1, return type_size_
+        // type_size < 0, return -type_size * expected;
+        return type_size_ < 0 ? -1 * type_size_ * expected_ : type_size_;
+    }
 
     /// True if this has a default value
     int get_default() const { return default_; }
@@ -428,7 +453,7 @@ class Option : public OptionBase<Option> {
         return out;
     }
 
-    /// The most discriptive name available
+    /// The most descriptive name available
     std::string single_name() const {
         if(!lnames_.empty())
             return std::string("--") + lnames_[0];
@@ -456,7 +481,7 @@ class Option : public OptionBase<Option> {
     std::string help_aftername() const {
         std::stringstream out;
 
-        if(get_expected() != 0) {
+        if(get_type_size() != 0) {
             if(!typeval_.empty())
                 out << " " << typeval_;
             if(!defaultval_.empty())
@@ -502,18 +527,23 @@ class Option : public OptionBase<Option> {
 
         // Operation depends on the policy setting
         if(multi_option_policy_ == MultiOptionPolicy::TakeLast) {
+            // TODO: add non-1 size arguments here
             results_t partial_result = {results_.back()};
             local_result = !callback_(partial_result);
+
         } else if(multi_option_policy_ == MultiOptionPolicy::TakeFirst) {
             results_t partial_result = {results_.at(0)};
             local_result = !callback_(partial_result);
+
         } else if(multi_option_policy_ == MultiOptionPolicy::Join) {
             results_t partial_result = {detail::join(results_, "\n")};
             local_result = !callback_(partial_result);
+
         } else {
-            if((expected_ > 0 && results_.size() != static_cast<size_t>(expected_)) ||
-               (expected_ < 0 && results_.size() < static_cast<size_t>(-expected_)))
-                throw ArgumentMismatch(single_name(), expected_, results_.size());
+            // For now, vector of non size 1 types are not supported but possibility included here
+            if((get_items_expected() > 0 && results_.size() != static_cast<size_t>(get_items_expected())) ||
+               (get_items_expected() < 0 && results_.size() < static_cast<size_t>(-get_items_expected())))
+                throw ArgumentMismatch(single_name(), get_items_expected(), results_.size());
             else
                 local_result = !callback_(results_);
         }
@@ -595,13 +625,14 @@ class Option : public OptionBase<Option> {
     /// @name Custom options
     ///@{
 
-    /// Set a custom option, typestring, expected; locks changeable unless expected is -1
-    void set_custom_option(std::string typeval, int expected = 1) {
+    /// Set a custom option, typestring, type_size
+    void set_custom_option(std::string typeval, int type_size = 1) {
         typeval_ = typeval;
-        expected_ = expected;
-        if(expected == 0)
+        type_size_ = type_size;
+        if(type_size_ == 0)
             required_ = false;
-        changeable_ = expected < 0;
+        if(type_size < 0)
+            expected_ = -1;
     }
 
     /// Set the default value string representation
