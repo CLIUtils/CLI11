@@ -1,3 +1,5 @@
+set -evx
+
 DOXYGEN_URL="ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.13.src.tar.gz"
 cd "${DEPS_DIR}"
 
@@ -15,3 +17,6 @@ fi
 export PATH="${DEPS_DIR}/doxygen/build/bin:${PATH}"
 
 cd "${TRAVIS_BUILD_DIR}"
+
+set +evx
+

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -evx
 
 cd ${TRAVIS_BUILD_DIR}
