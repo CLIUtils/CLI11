@@ -97,8 +97,6 @@ install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ] ; then cd $TRAVIS_BUILD_DIR && . .ci/build_doxygen.sh
   ; fi
 - cd "${DEPS_DIR}"
-- if [ "$(python -c 'import sys; print(sys.version_info[0])')" = "2" ] ; then python
-  -m pip install --user pathlib ; fi
 script:
 - cd "${TRAVIS_BUILD_DIR}"
 - ".ci/travis.sh"
