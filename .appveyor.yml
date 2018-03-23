@@ -1,6 +1,6 @@
 branches:
-  except:
-    - gh-pages
+  only:
+    - master
 
 install:
   - set PATH=C:\Python36;%PATH%

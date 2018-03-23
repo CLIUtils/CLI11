@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# Requires pathlib on python 2
-
 from __future__ import print_function, unicode_literals
 
 import os
