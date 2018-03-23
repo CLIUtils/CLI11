@@ -2,9 +2,11 @@ language: cpp
 sudo: false
 dist: trusty
 
+# Exclude ghpages,
+# but even better, don't build branch and PR, just PR
 branches:
-  exclude:
-  - gh-pages
+  only:
+  - master
 
 cache:
   ccache: true
@@ -90,10 +92,11 @@ matrix:
     # macOS and clang
   - os: osx
     compiler: clang
-    before_install:
+    install:
     - brew update
     - echo 'brew "python"' > Brewfile
     - echo 'brew "conan"' >> Brewfile
+    - echo 'brew "ccache"' >> Brewfile
     - brew bundle
     - python -m ensurepip --user
     - conan user
