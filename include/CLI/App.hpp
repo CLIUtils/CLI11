@@ -1422,25 +1422,32 @@ class App {
 
         int num = op->get_expected();
 
+        // Make sure we always eat the minimum for unlimited vectors
+        int collected = 0;
+
+        // --this=value
         if(!value.empty()) {
-            if(num != -1)
+            // If exact number expected
+            if(num > 0)
                 num--;
             op->add_result(value);
             parse_order_.push_back(op.get());
+            collected += 1;
         } else if(num == 0) {
             op->add_result("");
             parse_order_.push_back(op.get());
+            // -Trest
         } else if(!rest.empty()) {
             if(num > 0)
                 num--;
             op->add_result(rest);
             parse_order_.push_back(op.get());
             rest = "";
+            collected += 1;
         }
 
         // Unlimited vector parser
         if(num < 0) {
-            int collected = 0; // Make sure we always eat the minimum
             while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
                 if(collected >= -num) {
                     // We could break here for allow extras, but we don't
