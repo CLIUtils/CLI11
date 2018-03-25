@@ -707,6 +707,30 @@ TEST_F(TApp, BigPositional) {
     EXPECT_EQ(args, vec);
 }
 
+// This makes sure unlimited option priority is
+// correct for space vs. no space #90
+TEST_F(TApp, PositionalNoSpace) {
+    std::vector<std::string> options;
+    std::string foo, bar;
+
+    app.add_option("-O", options);
+    app.add_option("foo", foo)->required();
+    app.add_option("bar", bar)->required();
+
+    args = {"-O", "Test", "param1", "param2"};
+    run();
+
+    EXPECT_EQ(options.size(), (size_t)1);
+    EXPECT_EQ(options.at(0), "Test");
+
+    app.reset();
+    args = {"-OTest", "param1", "param2"};
+    run();
+
+    EXPECT_EQ(options.size(), (size_t)1);
+    EXPECT_EQ(options.at(0), "Test");
+}
+
 TEST_F(TApp, Reset) {
 
     app.add_flag("--simple");

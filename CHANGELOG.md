@@ -1,3 +1,7 @@
+## In progress
+
+* Fix unlimited short options eating two values before checking for positionals when no space present #90
+
 ## Version 1.4: More feedback
 
 This version adds lots of smaller fixes and additions after the refactor in version 1.3. More ways to download and use CLI11 in CMake have been added. INI files have improved support.
