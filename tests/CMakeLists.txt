@@ -1,4 +1,4 @@
-set(GOOGLE_TEST_INDIVIDUAL ON)
+set(GOOGLE_TEST_INDIVIDUAL OFF)
 include(AddGoogletest)
 
 set(CLI_TESTS
