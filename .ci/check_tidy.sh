@@ -6,7 +6,7 @@ set -evx
 
 mkdir -p build-tidy
 cd build-tidy
-CXX_FLAGS="-Werror -Wall -Wextra -pedantic -std=c++11" cmake .. -DCLANG_TIDY_FIX=ON
+CXX_FLAGS="-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11" cmake .. -DCLANG_TIDY_FIX=ON
 cmake --build .
 
 set -evx
