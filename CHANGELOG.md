@@ -1,6 +1,11 @@
 ## In progress
 
-* Fix unlimited short options eating two values before checking for positionals when no space present #90
+* Fix unlimited short options eating two values before checking for positionals when no space present [#90]
+* Symmetric exclude text when excluding options, exclude can be called multiple times [#64]
+
+[#64]: https://github.com/CLIUtils/CLI11/issues/64
+[#90]: https://github.com/CLIUtils/CLI11/issues/90
+
 
 ## Version 1.4: More feedback
 

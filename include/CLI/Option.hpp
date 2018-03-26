@@ -315,9 +315,14 @@ class Option : public OptionBase<Option> {
 
     /// Sets excluded options
     Option *excludes(Option *opt) {
-        auto tup = excludes_.insert(opt);
-        if(!tup.second)
-            throw OptionAlreadyAdded::Excludes(get_name(), opt->get_name());
+        excludes_.insert(opt);
+
+        // Help text should be symmetric - excluding a should exclude b
+        opt->excludes_.insert(this);
+
+        // Ignoring the insert return value, excluding twice is now allowed.
+        // (Mostly to allow both directions to be excluded by user, even though the library does it for you.)
+
         return this;
     }
 

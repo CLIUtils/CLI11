@@ -203,6 +203,17 @@ TEST(THelp, ExcludesPositional) {
     EXPECT_THAT(help, HasSubstr("Excludes: op1"));
 }
 
+TEST(THelp, ExcludesSymmetric) {
+    CLI::App app{"My prog"};
+
+    CLI::Option *op1 = app.add_flag("--op1");
+    app.add_flag("--op2")->excludes(op1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("Excludes: --op2"));
+}
+
 TEST(THelp, ManualSetters) {
 
     CLI::App app{"My prog"};
