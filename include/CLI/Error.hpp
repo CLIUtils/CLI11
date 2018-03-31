@@ -105,7 +105,7 @@ class IncorrectConstruction : public ConstructionError {
         return IncorrectConstruction("Option " + name + " is not defined");
     }
     static IncorrectConstruction MultiOptionPolicy(std::string name) {
-        return IncorrectConstruction(name + ": multi_option_policy only works for flags and single value options");
+        return IncorrectConstruction(name + ": multi_option_policy only works for flags and exact value options");
     }
 };
 

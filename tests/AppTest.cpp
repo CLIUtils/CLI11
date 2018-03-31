@@ -1,5 +1,6 @@
 #include "app_helper.hpp"
 #include <cstdlib>
+#include <complex>
 
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
@@ -288,6 +289,40 @@ TEST_F(TApp, JoinOpt2) {
     run();
 
     EXPECT_EQ(str, "one\ntwo");
+}
+
+TEST_F(TApp, TakeLastOptMulti) {
+    std::vector<int> vals;
+    app.add_option("--long", vals)->expected(2)->take_last();
+
+    args = {"--long", "1", "2", "3"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({2, 3}));
+}
+
+TEST_F(TApp, TakeFirstOptMulti) {
+    std::vector<int> vals;
+    app.add_option("--long", vals)->expected(2)->take_first();
+
+    args = {"--long", "1", "2", "3"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+}
+
+TEST_F(TApp, ComplexOptMulti) {
+    std::complex<double> val;
+    app.add_complex("--long", val)->take_first();
+
+    args = {"--long", "1", "2", "3", "4"};
+
+    run();
+
+    EXPECT_FLOAT_EQ(val.real(), 1);
+    EXPECT_FLOAT_EQ(val.imag(), 2);
 }
 
 TEST_F(TApp, MissingValueNonRequiredOpt) {

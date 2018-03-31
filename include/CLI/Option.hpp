@@ -383,8 +383,8 @@ class Option : public OptionBase<Option> {
 
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
-        // TODO: This can support multiple options
-        if(get_type_size() != 0 && get_expected() != 1)
+
+        if(get_items_expected() < 0)
             throw IncorrectConstruction::MultiOptionPolicy(single_name());
         multi_option_policy_ = value;
         return this;
@@ -400,12 +400,25 @@ class Option : public OptionBase<Option> {
     /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
 
-    /// The total number of expected values (including the type)
+    /// \breif The total number of expected values (including the type)
+    /// This is positive if exactly this number is expected, and negitive for at least N values
+    ///
+    /// v = fabs(size_type*expected)
+    /// !MultiOptionPolicy::Throw
+    ///           | Expected < 0  | Expected == 0 | Expected > 0
+    /// Size < 0  |      -v       |       0       |     -v
+    /// Size == 0 |       0       |       0       |      0
+    /// Size > 0  |      -v       |       0       |     -v       // Expected must be 1
+    ///
+    /// MultiOptionPolicy::Throw
+    ///           | Expected < 0  | Expected == 0 | Expected > 0
+    /// Size < 0  |      -v       |       0       |      v
+    /// Size == 0 |       0       |       0       |      0
+    /// Size > 0  |       v       |       0       |      v      // Expected must be 1
+    ///
     int get_items_expected() const {
-        // type_size == 0, return 0
-        // type_size > 1, return type_size_
-        // type_size < 0, return -type_size * expected;
-        return type_size_ < 0 ? -1 * type_size_ * expected_ : type_size_;
+        return std::abs(type_size_ * expected_) *
+               ((multi_option_policy_ != MultiOptionPolicy::Throw || (expected_ < 0 && type_size_ < 0) ? -1 : 1));
     }
 
     /// True if this has a default value
@@ -525,14 +538,18 @@ class Option : public OptionBase<Option> {
 
         bool local_result;
 
+        // Num items expected or length of vector, always at least 1
+        // Only valid for a trimming policy
+        int trim_size = std::min(std::max(std::abs(get_items_expected()), 1), static_cast<int>(results_.size()));
+
         // Operation depends on the policy setting
         if(multi_option_policy_ == MultiOptionPolicy::TakeLast) {
-            // TODO: add non-1 size arguments here
-            results_t partial_result = {results_.back()};
+            // Allow multi-option sizes (including 0)
+            results_t partial_result{results_.end() - trim_size, results_.end()};
             local_result = !callback_(partial_result);
 
         } else if(multi_option_policy_ == MultiOptionPolicy::TakeFirst) {
-            results_t partial_result = {results_.at(0)};
+            results_t partial_result{results_.begin(), results_.begin() + trim_size};
             local_result = !callback_(partial_result);
 
         } else if(multi_option_policy_ == MultiOptionPolicy::Join) {
