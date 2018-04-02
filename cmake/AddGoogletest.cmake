@@ -4,24 +4,39 @@
 # gives output on failed tests without having to set an environment variable.
 #
 #
-set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
-
-include(DownloadProject)
-download_project(PROJ                googletest
-                 GIT_REPOSITORY      https://github.com/google/googletest.git
-                 GIT_TAG             release-1.8.0
-                 UPDATE_DISCONNECTED 1
-                 QUIET
-)
-
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-# CMake warning suppression will not be needed in version 1.9
-set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
-add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR} EXCLUDE_FROM_ALL)
-unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
+if(CMAKE_VERSION VERSION_LESS 3.11)
+    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+    include(DownloadProject)
+    download_project(PROJ                googletest
+                     GIT_REPOSITORY      https://github.com/google/googletest.git
+                     GIT_TAG             release-1.8.0
+                     UPDATE_DISCONNECTED 1
+                     QUIET
+    )
+    
+    # CMake warning suppression will not be needed in version 1.9
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR} EXCLUDE_FROM_ALL)
+    unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
+else()
+    include(FetchContent)
+    FetchContent_Declare(googletest
+        GIT_REPOSITORY      https://github.com/google/googletest.git
+        GIT_TAG             release-1.8.0)
+    FetchContent_GetProperties(googletest)
+    if(NOT googletest_POPULATED)
+        FetchContent_Populate(googletest)
+        set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
+        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+        unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
+    endif()
+endif()
 
-if (CMAKE_CONFIGURATION_TYPES)
+
+
+if(CMAKE_CONFIGURATION_TYPES)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
         --force-new-ctest-process --output-on-failure 
         --build-config "$<CONFIGURATION>")
@@ -54,16 +69,17 @@ macro(add_gtest TESTNAME)
             gtest_add_tests(TARGET ${TESTNAME}
                             TEST_PREFIX "${TESTNAME}."
                             TEST_LIST TmpTestList)
+            set_tests_properties(${TmpTestList} PROPERTIES FOLDER "Tests")
         else()
             gtest_discover_tests(${TESTNAME}
                 TEST_PREFIX "${TESTNAME}."
-                )
+                PROPERTIES FOLDER "Tests")
             
         endif()
     else()
         add_test(${TESTNAME} ${TESTNAME})
+        set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
     endif()
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
 
 endmacro()
 
