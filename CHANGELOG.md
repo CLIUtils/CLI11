@@ -18,9 +18,11 @@ Other, non-user facing changes:
 * Informational printout now added to CTest [#95]
 * Better single file generation [#95]
 * Added support for GTest on MSVC 2017 (but not in C++17 mode, will need next version of GTest)
+* Types now have a specific size, separate from the expected number - cleaner and more powerful internally [#92]
 
 [#64]: https://github.com/CLIUtils/CLI11/issues/64
 [#90]: https://github.com/CLIUtils/CLI11/issues/90
+[#92]: https://github.com/CLIUtils/CLI11/issues/92
 [#95]: https://github.com/CLIUtils/CLI11/pull/95
 
 
