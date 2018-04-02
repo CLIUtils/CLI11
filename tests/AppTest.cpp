@@ -353,6 +353,23 @@ TEST_F(TApp, MissingValueMoreThan) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
+TEST_F(TApp, NoMissingValueMoreThan) {
+    std::vector<int> vals1;
+    std::vector<int> vals2;
+    app.add_option("-v", vals1)->expected(-2);
+    app.add_option("--vals", vals2)->expected(-2);
+    
+    args = {"-v", "2", "3", "4"};
+    run();
+    EXPECT_EQ(vals1, std::vector<int>({2,3,4}));
+    
+    app.reset();
+    
+    args = {"--vals", "2", "3", "4"};
+    run();
+    EXPECT_EQ(vals2, std::vector<int>({2,3,4}));
+}
+
 TEST_F(TApp, NotRequiredOptsSingle) {
 
     std::string str;
