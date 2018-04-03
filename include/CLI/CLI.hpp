@@ -8,6 +8,8 @@
 
 #include "CLI/Version.hpp"
 
+#include "CLI/Macros.hpp"
+
 #include "CLI/StringTools.hpp"
 
 #include "CLI/Error.hpp"
