@@ -1161,7 +1161,7 @@ TEST_F(TApp, NeedsMixedFlags) {
     run();
 }
 
-#if __cplusplus <= 201703L
+#ifndef CLI11_CPP20
 
 TEST_F(TApp, RequiresMixedFlags) {
     CLI::Option *opt1 = app.add_flag("--opt1");

@@ -168,6 +168,13 @@ TEST_F(TApp, IncorrectConstructionNeedsCannotFind) {
     EXPECT_THROW(cat->needs("--nothing"), CLI::IncorrectConstruction);
 }
 
+#ifndef CLI11_CPP20
+TEST_F(TApp, IncorrectConstructionRequiresCannotFind) {
+    auto cat = app.add_flag("--cat");
+    EXPECT_THROW(cat->requires("--nothing"), CLI::IncorrectConstruction);
+}
+#endif
+
 TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
     auto cat = app.add_flag("--cat");
     EXPECT_THROW(cat->excludes("--nothing"), CLI::IncorrectConstruction);
