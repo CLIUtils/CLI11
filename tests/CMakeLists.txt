@@ -10,6 +10,7 @@ set(CLI_TESTS
     SubcommandTest
     HelpTest
     NewParseTest
+    OptionalTest
     )
 
 set(CLI_MULTIONLY_TESTS
