@@ -1,28 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#ifdef __has_include
-#if defined(CLI11_CPP17) && __has_include(<optional>)
-#include <optional>
-#define have_optional 1
-using std::experimental::optional;
-#elif defined(CPP11_CPP14) && __has_include(<experimental/optional>)
-#include <experimental/optional>
-#define have_optional 1
-using std::optional;
-#else
-#define have_optional 0
-#endif
-#endif
-
-#if have_optional
-
-template <typename T> std::istream &operator>>(std::istream &in, optional<T> &val) {
-    T v;
-    in >> v;
-    val = v;
-    return in;
-}
+#if CLI11_OPTIONAL
 
 #include "app_helper.hpp"
 
