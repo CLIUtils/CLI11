@@ -19,6 +19,7 @@
 // CLI Library includes
 #include "CLI/Error.hpp"
 #include "CLI/Ini.hpp"
+#include "CLI/Macros.hpp"
 #include "CLI/Option.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
@@ -447,7 +448,7 @@ class App {
         return opt;
     }
 
-#if __cplusplus >= 201402L
+#ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
     Option *add_flag(std::string name,
                      std::function<void(size_t)> function, ///< A function to call, void(size_t)

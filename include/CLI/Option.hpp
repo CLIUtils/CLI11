@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "CLI/Error.hpp"
+#include "CLI/Macros.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
 
@@ -299,7 +300,7 @@ class Option : public OptionBase<Option> {
         return needs(opt1, args...);
     }
 
-#if __cplusplus <= 201703L
+#ifndef CLI11_CPP17
     /// Sets required options \deprecated
     Option *requires(Option *opt) { return needs(opt); }
 
