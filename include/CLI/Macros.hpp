@@ -10,20 +10,20 @@ namespace CLI {
 // The following version macro is very similar to the one in PyBind11
 
 #if !defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#  if __cplusplus >= 201402L
-#    define CLI11_CPP14
-#    if __cplusplus > 201402L /* Temporary: should be updated to >= the final C++17 value once known */
-#      define CLI11_CPP17
-#    endif
-#  endif
+#if __cplusplus >= 201402L
+#define CLI11_CPP14
+#if __cplusplus > 201402L /* Temporary: should be updated to >= the final C++17 value once known */
+#define CLI11_CPP17
+#endif
+#endif
 #elif defined(_MSC_VER)
 // MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard is fully implemented)
-#  if _MSVC_LANG >= 201402L
-#    define CLI11_CPP14
-#    if _MSVC_LANG > 201402L && _MSC_VER >= 1910
-#      define CLI11_CPP17
-#    endif
-#  endif
+#if _MSVC_LANG >= 201402L
+#define CLI11_CPP14
+#if _MSVC_LANG > 201402L && _MSC_VER >= 1910
+#define CLI11_CPP17
+#endif
+#endif
 #endif
 
 } // namespace CLI
