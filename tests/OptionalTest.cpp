@@ -2,11 +2,11 @@
 #include <iostream>
 
 #ifdef __has_include
-#if __has_include(<optional>)
+#if defined(CLI11_CPP17) && __has_include(<optional>)
 #include <optional>
 #define have_optional 1
 using std::experimental::optional;
-#elif __has_include(<experimental/optional>)
+#elif defined(CPP11_CPP14) && __has_include(<experimental/optional>)
 #include <experimental/optional>
 #define have_optional 1
 using std::optional;
