@@ -7,9 +7,9 @@ set -evx
 cd ${TRAVIS_BUILD_DIR}
 mkdir -p build
 cd build
-cmake .. -DCLI_SINGLE_FILE_TESTS=OFF -DCLI_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Coverage
+cmake .. -DCLI11_SINGLE_FILE_TESTS=OFF -DCLI11_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Coverage
 cmake --build . -- -j2
-cmake --build . --target CLI_coverage
+cmake --build . --target CLI11_coverage
 
 set +evx
 echo -en "travis_fold:end:script.build\\r"

@@ -12,7 +12,7 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_GENERATOR="Visual Studio 14 2015"
+  - cmake .. -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_GENERATOR="Visual Studio 14 2015"
   - cmake --build .
   - cd ..
   - conan create . CLIUtils/CLI11

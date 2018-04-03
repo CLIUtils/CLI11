@@ -22,8 +22,8 @@ class HelloConan(ConanFile):
 
     def build(self): # this is not building a library, just tests
         cmake = CMake(self)
-        cmake.definitions["CLI_EXAMPLES"] = "OFF"
-        cmake.definitions["CLI_SINGLE_FILE"] = "OFF"
+        cmake.definitions["CLI11_EXAMPLES"] = "OFF"
+        cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"
         cmake.configure()
         cmake.build()
         cmake.test()

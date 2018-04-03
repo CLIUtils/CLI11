@@ -16,10 +16,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 # Only if built as the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # User settable
-    set(CLI_CXX_STD "11"  CACHE STRING "The CMake standard to require")
+    set(CLI11_CXX_STD "11"  CACHE STRING "The CMake standard to require")
 
     set(CUR_PROJ ON)
-    set(CMAKE_CXX_STANDARD ${CLI_CXX_STD})
+    set(CMAKE_CXX_STANDARD ${CLI11_CXX_STD})
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -56,10 +56,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     include(CodeCoverage)
-    setup_target_for_coverage(CLI_coverage ctest coverage)
+    setup_target_for_coverage(CLI11_coverage ctest coverage)
 endif()
 
-file(GLOB CLI_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
+file(GLOB CLI11_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 # To see in IDE, must be listed for target
 
 add_library(CLI11 INTERFACE)
@@ -113,18 +113,18 @@ export(PACKAGE CLI11)
 # Single file test
 find_package(PythonInterp)
 if(CUR_PROJ AND PYTHONINTERP_FOUND)
-    set(CLI_SINGLE_FILE_DEFAULT ON)
+    set(CLI11_SINGLE_FILE_DEFAULT ON)
 else()
-    set(CLI_SINGLE_FILE_DEFAULT OFF)
+    set(CLI11_SINGLE_FILE_DEFAULT OFF)
 endif()
 
-option(CLI_SINGLE_FILE "Generate a single header file" ${CLI_SINGLE_FILE_DEFAULT})
-if(CLI_SINGLE_FILE)
+option(CLI11_SINGLE_FILE "Generate a single header file" ${CLI11_SINGLE_FILE_DEFAULT})
+if(CLI11_SINGLE_FILE)
     find_package(PythonInterp REQUIRED)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI_headers}
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI11_headers}
         )
     add_custom_target(generate_cli_single_file ALL
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
@@ -134,25 +134,25 @@ if(CLI_SINGLE_FILE)
     add_library(CLI11_SINGLE INTERFACE)
     target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
     add_dependencies(CLI11_SINGLE generate_cli_single_file)
-    target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI_SINGLE_FILE)
+    target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI11_SINGLE_FILE)
     target_include_directories(CLI11_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
 endif()
 
-option(CLI_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF)
+option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF)
 
-option(CLI_TESTING "Build the tests and add them" ${CUR_PROJ})
-if(CLI_TESTING)
+option(CLI11_TESTING "Build the tests and add them" ${CUR_PROJ})
+if(CLI11_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
-option(CLI_EXAMPLES "Build the examples" ${CUR_PROJ})
-if(CLI_EXAMPLES)
+option(CLI11_EXAMPLES "Build the examples" ${CUR_PROJ})
+if(CLI11_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
 if(NOT CUR_PROJ)
-    mark_as_advanced(CLI_SINGLE_FILE_TESTS CLI_EXAMPLES CLI_TESTING)
+    mark_as_advanced(CLI11_SINGLE_FILE_TESTS CLI11_EXAMPLES CLI11_TESTING)
 endif()
 
 # Packaging support

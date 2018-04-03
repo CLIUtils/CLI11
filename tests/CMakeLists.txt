@@ -1,7 +1,7 @@
 set(GOOGLE_TEST_INDIVIDUAL OFF)
 include(AddGoogletest)
 
-set(CLI_TESTS
+set(CLI11_TESTS
     HelpersTest
     IniTest
     SimpleTest
@@ -13,20 +13,20 @@ set(CLI_TESTS
     OptionalTest
     )
 
-set(CLI_MULTIONLY_TESTS
+set(CLI11_MULTIONLY_TESTS
     TimerTest
     )
 
 # Only affects current directory, so safe
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-foreach(T ${CLI_TESTS})
+foreach(T ${CLI11_TESTS})
 
-    add_executable(${T} ${T}.cpp ${CLI_headers})
+    add_executable(${T} ${T}.cpp ${CLI11_headers})
     target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 
-    if(CLI_SINGLE_FILE AND CLI_SINGLE_FILE_TESTS)
+    if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
         add_executable(${T}_Single ${T}.cpp)
         target_link_libraries(${T}_Single PUBLIC CLI11_SINGLE)
         add_gtest(${T}_Single)
@@ -37,9 +37,9 @@ foreach(T ${CLI_TESTS})
 
 endforeach()
 
-foreach(T ${CLI_MULTIONLY_TESTS})
+foreach(T ${CLI11_MULTIONLY_TESTS})
 
-    add_executable(${T} ${T}.cpp ${CLI_headers})
+    add_executable(${T} ${T}.cpp ${CLI11_headers})
     target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 

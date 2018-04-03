@@ -1,5 +1,5 @@
 function(add_cli_exe T)
-    add_executable(${T} ${ARGN} ${CLI_headers})
+    add_executable(${T} ${ARGN} ${CLI11_headers})
     target_link_libraries(${T} PUBLIC CLI11)
     set_target_properties(
          ${T} PROPERTIES
