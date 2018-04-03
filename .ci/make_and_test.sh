@@ -5,7 +5,7 @@ set -evx
 
 mkdir -p build
 cd build
-cmake .. -DCLI_CXX_STD=$1 -DCLI_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+cmake .. -DCLI11_CXX_STD=$1 -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 cmake --build . -- -j2
 
 set +evx
