@@ -18,6 +18,10 @@ matrix:
   include:
     # Default clang
   - compiler: clang
+    script:
+    - .ci/make_and_test.sh 11
+    - .ci/make_and_test.sh 14
+    - .ci/make_and_test.sh 17
 
     # Check style/tidy
   - compiler: clang 
@@ -55,16 +59,20 @@ matrix:
         sources:
         - ubuntu-toolchain-r-test
         packages:
-        - g++-6
+        - g++-7
         - curl
         - lcov
     install:
-    - export CC=gcc-6
-    - export CXX=g++-6
+    - export CC=gcc-7
+    - export CXX=g++-7
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - cd $TRAVIS_BUILD_DIR
     - ". .ci/build_lcov.sh"
     - ".ci/run_codecov.sh"
+    script:
+    - .ci/make_and_test.sh 11
+    - .ci/make_and_test.sh 14
+    - .ci/make_and_test.sh 17
 
     # GCC 4.7 and Conan
   - compiler: gcc
