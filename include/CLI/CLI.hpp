@@ -10,6 +10,8 @@
 
 #include "CLI/Macros.hpp"
 
+#include "CLI/Optional.hpp"
+
 #include "CLI/StringTools.hpp"
 
 #include "CLI/Error.hpp"
