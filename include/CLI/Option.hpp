@@ -300,14 +300,17 @@ class Option : public OptionBase<Option> {
         return needs(opt1, args...);
     }
 
-#ifndef CLI11_CPP17
+#ifndef CLI11_CPP20
     /// Sets required options \deprecated
+    CLI11_DEPRECATED("Use needs instead of requires (eventual keyword clash)")
     Option *requires(Option *opt) { return needs(opt); }
 
     /// Can find a string if needed \deprecated
+    CLI11_DEPRECATED("Use needs instead of requires (eventual keyword clash)")
     template <typename T = App> Option *requires(std::string opt_name) { return needs<T>(opt_name); }
 
     /// Any number supported, any mix of string and Opt \deprecated
+    CLI11_DEPRECATED("Use needs instead of requires (eventual keyword clash)")
     template <typename A, typename B, typename... ARG> Option *requires(A opt, B opt1, ARG... args) {
         needs(opt);
         return needs(opt1, args...);
