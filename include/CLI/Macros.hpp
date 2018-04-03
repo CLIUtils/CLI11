@@ -35,6 +35,8 @@ namespace CLI {
 
 #if defined(PYBIND11_CPP14)
 #define CLI11_DEPRECATED(reason) [[deprecated(reason)]]
+#elif defined(_MSC_VER)
+#define CLI11_DEPRECATED(reason) __declspec(deprecated(reason))
 #else
 #define CLI11_DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
