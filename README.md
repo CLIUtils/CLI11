@@ -63,7 +63,7 @@ After I wrote this, I also found the following libraries:
 | [Argh!] | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.|
 | [CLI]   | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active. |
 
-See [Awesome C++] for a less-biased list of parsers.
+See [Awesome C++] for a less-biased list of parsers. You can also find other single file libraries at [Single file libs].
 
 </p></details>
 <br/>
@@ -434,5 +434,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [wandbox-link]:          https://wandbox.org/permlink/g7tRkuU8xY3aTIVP
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
-[DIANA slides]: https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
-[Awesome C++]: https://github.com/fffaraz/awesome-cpp/blob/master/README.md#cli
+[DIANA slides]:          https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
+[Awesome C++]:           https://github.com/fffaraz/awesome-cpp/blob/master/README.md#cli
+[CLI]:                   https://codesynthesis.com/projects/cli/
+[Single file libs]:      https://github.com/nothings/single_file_libs/blob/master/README.md
