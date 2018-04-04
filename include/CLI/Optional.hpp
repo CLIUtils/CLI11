@@ -3,7 +3,7 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <sstream>
+#include <istream>
 
 #include "CLI/Macros.hpp"
 
@@ -15,11 +15,11 @@
 #define CLI11_STD_OPTIONAL
 #endif
 #endif
-#if defined(CPP11_CPP14) && __has_include(<experimental/optional>)
+#if defined(CLI11_CPP14) && __has_include(<experimental/optional>)
 #include <experimental/optional>
 #define CLI11_EXPERIMENTAL_OPTIONAL
 #endif
-#if __has_include(<boost/optional>)
+#if __has_include(<boost/optional.hpp>)
 #include <boost/optional.hpp>
 #define CLI11_BOOST_OPTIONAL
 #endif
@@ -44,15 +44,15 @@ template <typename T> std::istream &operator>>(std::istream &in, std::experiment
     val = v;
     return in;
 }
+#endif
 
 #ifdef CLI11_BOOST_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, boost::optional<T> &val) {
+template <typename T> std::istringstream &operator>>(std::istringstream &in, boost::optional<T> &val) {
     T v;
     in >> v;
     val = v;
     return in;
 }
-#endif
 #endif
 
 // Export the best optional to the CLI namespace

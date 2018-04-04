@@ -6,7 +6,7 @@
 #ifdef CLI11_OPTIONAL
 
 TEST_F(TApp, OptionalTest) {
-    optional<int> opt;
+    CLI::optional<int> opt;
     app.add_option("-c,--count", opt);
     run();
     EXPECT_FALSE(opt);
