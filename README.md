@@ -164,6 +164,8 @@ An option name must start with a alphabetic character or underscore. For long op
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
+On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. See [CLI11 Internals] for information on how this was done and how you can add your own converters.
+
 ### Example
 
 * `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--one`
@@ -421,6 +423,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [NSF Award 1414736]:     https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
 [GitBook]:               https://cliutils.gitlab.io/CLI11Tutorial
+[CLI11 Internals]:       https://cliutils.gitlab.io/CLI11Tutorial/chapters/internals.html
 [ProgramOptions.hxx]:    https://github.com/Fytch/ProgramOptions.hxx
 [Argument Aggregator]:   https://github.com/vietjtnguyen/argagg
 [Args]:                  https://github.com/Taywee/args
