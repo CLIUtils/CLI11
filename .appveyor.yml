@@ -12,14 +12,14 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_GENERATOR="Visual Studio 14 2015"
-  - cmake --build .
+  - ps: cmake .. -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_GENERATOR="Visual Studio 14 2015"
+  - ps: cmake --build .
   - cd ..
   - conan create . CLIUtils/CLI11
 
 test_script:
   - cd build
-  - ctest --output-on-failure -C Debug
+  - ps: ctest --output-on-failure -C Debug
 
 notifications:
   - provider: Webhook
