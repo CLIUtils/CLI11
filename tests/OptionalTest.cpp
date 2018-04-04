@@ -3,7 +3,7 @@
 
 #include "app_helper.hpp"
 
-#if CLI11_OPTIONAL
+#ifdef CLI11_OPTIONAL
 
 TEST_F(TApp, OptionalTest) {
     optional<int> opt;

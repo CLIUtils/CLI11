@@ -20,7 +20,6 @@ build_script:
 test_script:
   - cd build
   - ctest --output-on-failure -C Debug
-  - tests\OptionalTest
 
 notifications:
   - provider: Webhook

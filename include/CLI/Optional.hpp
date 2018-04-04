@@ -60,10 +60,10 @@ template <typename T> std::istream &operator>>(std::istream &in, boost::optional
 // Export the best optional to the CLI namespace
 #if defined(CLI11_STD_OPTIONAL)
 using std::optional;
-#elif CLI11_EXPERIMENTAL_OPTIONAL
+#elif defined(CLI11_EXPERIMENTAL_OPTIONAL)
 using std::experimental::optional;
-#elif CLI11_BOOST_OPTIONAL
-using boost::optionall
+#elif defined(CLI11_BOOST_OPTIONAL)
+using boost::optional;
 #endif
 
 // This is true if any optional is found
