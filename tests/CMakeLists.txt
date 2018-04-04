@@ -55,11 +55,18 @@ target_link_libraries(link_test_2 PUBLIC CLI11 link_test_1)
 add_gtest(link_test_2)
 
 # Add informational printout
+# Force this to be in a standard location so CTest can find it
 add_executable(informational informational.cpp)
 target_link_libraries(informational PUBLIC CLI11)
-set_property(TARGET informational PROPERTY
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set_target_properties(informational PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}"
+    )
 
+# Adding this printout to CTest
 file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
     "set(CTEST_CUSTOM_PRE_TEST \"${CMAKE_BINARY_DIR}/informational\")"
     )
