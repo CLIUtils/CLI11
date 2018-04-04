@@ -31,8 +31,7 @@ int main() {
 #ifdef CLI11_OPTIONAL
     std::cout << "  [Available as CLI::optional]";
 #else
-        std::cout
-              << "  No optional library found\n";
+    std::cout << "  No optional library found\n";
 #endif
 
 #ifdef CLI11_STD_OPTIONAL
