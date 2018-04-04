@@ -17,9 +17,7 @@
 #endif
 #if defined(CPP11_CPP14) && __has_include(<experimental/optional>)
 #include <experimental/optional>
-#ifdef __cpp_lib_experimental_optional
 #define CLI11_EXPERIMENTAL_OPTIONAL
-#endif
 #endif
 #if __has_include(<boost/optional>)
 #include <boost/optional.hpp>

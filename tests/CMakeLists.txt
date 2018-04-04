@@ -63,3 +63,11 @@ set_property(TARGET informational PROPERTY
 file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
     "set(CTEST_CUSTOM_PRE_TEST \"${CMAKE_BINARY_DIR}/informational\")"
     )
+
+# Add boost to test boost::optional if available
+find_package(Boost 1.35)
+if(Boost_FOUND)
+    target_link_libraries(informational PUBLIC Boost::boost)
+    target_link_libraries(OptionalTest PUBLIC Boost::boost)
+endif()
+
