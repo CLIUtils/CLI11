@@ -76,5 +76,9 @@ find_package(Boost 1.35)
 if(Boost_FOUND)
     target_link_libraries(informational PUBLIC Boost::boost)
     target_link_libraries(OptionalTest PUBLIC Boost::boost)
+
+    # Enforce Boost::Optional even if __has_include is missing on your compiler
+    target_compile_definitions(informational PUBLIC CLI11_BOOST_OPTIONAL)
+    target_compile_definitions(OptionalTest PUBLIC CLI11_BOOST_OPTIONAL)
 endif()
 
