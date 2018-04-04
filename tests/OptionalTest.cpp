@@ -1,9 +1,9 @@
 #include <cstdlib>
 #include <iostream>
 
-#if CLI11_OPTIONAL
-
 #include "app_helper.hpp"
+
+#if CLI11_OPTIONAL
 
 TEST_F(TApp, OptionalTest) {
     optional<int> opt;
@@ -23,5 +23,9 @@ TEST_F(TApp, OptionalTest) {
     EXPECT_TRUE(opt);
     EXPECT_EQ(*opt, 3);
 }
+
+#else
+
+TEST_F(TApp, DISABLED_OptionalTest) {}
 
 #endif

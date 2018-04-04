@@ -18,7 +18,9 @@ build_script:
   - conan create . CLIUtils/CLI11
 
 test_script:
+  - cd build
   - ctest --output-on-failure -C Debug
+  - tests\OptionalTest
 
 notifications:
   - provider: Webhook

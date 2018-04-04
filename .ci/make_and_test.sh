@@ -15,6 +15,7 @@ echo "Testing..."
 set -evx
 
 ctest --output-on-failure
+./tests/OptionalTest
 
 set +evx
 echo -en "travis_fold:end:script.test\\r"
