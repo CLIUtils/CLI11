@@ -53,3 +53,13 @@ set_target_properties(link_test_1 PROPERTIES FOLDER "Tests")
 add_executable(link_test_2 link_test_2.cpp)
 target_link_libraries(link_test_2 PUBLIC CLI11 link_test_1)
 add_gtest(link_test_2)
+
+# Add informational printout
+add_executable(informational informational.cpp)
+target_link_libraries(informational PUBLIC CLI11)
+set_property(TARGET informational PROPERTY
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
+    "set(CTEST_CUSTOM_PRE_TEST \"${CMAKE_BINARY_DIR}/informational\")"
+    )
