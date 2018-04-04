@@ -1,10 +1,27 @@
 ## In progress
 
+This version has some internal cleanup and improved support for the newest compilers.
+
+Note: This is the final release with `requires`, please switch to `needs`.
+
 * Fix unlimited short options eating two values before checking for positionals when no space present [#90]
 * Symmetric exclude text when excluding options, exclude can be called multiple times [#64]
+* Support for `std::optional`, `std::experimental::optional`, and `boost::optional` added if `__has_include` is supported [#95]
+* All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95]
+* The internal stream was not being cleared before use in some cases. Fixed. [#95]
+
+Other, non-user facing changes:
+
+* Added `Macros.hpp` with better C++ mode discovery [#95]
+* Deprecated macros added for all platforms
+* C++17 is now tested on supported platforms [#95]
+* Informational printout now added to CTest [#95]
+* Better single file generation [#95]
+* Added support for GTest on MSVC 2017 (but not in C++17 mode, will need next version of GTest)
 
 [#64]: https://github.com/CLIUtils/CLI11/issues/64
 [#90]: https://github.com/CLIUtils/CLI11/issues/90
+[#95]: https://github.com/CLIUtils/CLI11/pull/95
 
 
 ## Version 1.4: More feedback
