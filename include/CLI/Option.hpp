@@ -309,7 +309,7 @@ class Option : public OptionBase<Option> {
     template <typename T = App> Option *requires(std::string opt_name) {
         for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
             if(opt.get() != this && opt->check_name(opt_name))
-                return requires(opt.get());
+                return needs(opt.get());
         throw IncorrectConstruction::MissingOption(opt_name);
     }
 
