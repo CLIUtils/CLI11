@@ -25,6 +25,8 @@ matrix:
 
     # Check style/tidy
   - compiler: clang 
+    env:
+    - CHECK_STYLE=yes
     script:
     - cd "${TRAVIS_BUILD_DIR}"
     - scripts/check_style.sh
@@ -54,6 +56,8 @@ matrix:
 
     # GCC 6 and Coverage
   - compiler: gcc
+    env:
+    - GCC_VER=7
     addons:
       apt:
         sources:
@@ -76,6 +80,8 @@ matrix:
 
     # GCC 4.7 and Conan
   - compiler: gcc
+    env:
+    - GCC_VER=4.7
     addons:
       apt:
         packages:
