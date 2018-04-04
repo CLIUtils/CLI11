@@ -29,7 +29,7 @@
 namespace CLI {
 
 #ifdef CLI11_STD_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, std::optional<T> &val) {
+template <typename T> std::istringstream &operator>>(std::istringstream &in, std::optional<T> &val) {
     T v;
     in >> v;
     val = v;
@@ -38,7 +38,7 @@ template <typename T> std::istream &operator>>(std::istream &in, std::optional<T
 #endif
 
 #ifdef CLI11_EXPERIMENTAL_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, std::experimental::optional<T> &val) {
+template <typename T> std::istringstream &operator>>(std::istringstream &in, std::experimental::optional<T> &val) {
     T v;
     in >> v;
     val = v;
