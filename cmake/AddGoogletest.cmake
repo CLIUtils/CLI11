@@ -4,7 +4,8 @@
 # gives output on failed tests without having to set an environment variable.
 #
 #
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(gtest_force_shared_crt CACHE INTERNAL ON)
+set(BUILD_SHARED_LIBS OFF)
 
 if(CMAKE_VERSION VERSION_LESS 3.11)
     set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
@@ -19,7 +20,6 @@ if(CMAKE_VERSION VERSION_LESS 3.11)
     # CMake warning suppression will not be needed in version 1.9
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR} EXCLUDE_FROM_ALL)
-    unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
 else()
     include(FetchContent)
     FetchContent_Declare(googletest
@@ -30,7 +30,6 @@ else()
         FetchContent_Populate(googletest)
         set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
         add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-        unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
     endif()
 endif()
 
