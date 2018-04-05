@@ -51,6 +51,9 @@ else()
     set(CUR_PROJ OFF)
 endif()
 
+# Allow dependent options
+include(CMakeDependentOption)
+
 # Allow IDE's to group targets into folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -112,13 +115,8 @@ export(PACKAGE CLI11)
 
 # Single file test
 find_package(PythonInterp)
-if(CUR_PROJ AND PYTHONINTERP_FOUND)
-    set(CLI11_SINGLE_FILE_DEFAULT ON)
-else()
-    set(CLI11_SINGLE_FILE_DEFAULT OFF)
-endif()
+cmake_dependent_option(CLI11_SINGLE_FILE "Generate a single header file" ON "CUR_PROJ;PYTHONINTERP_FOUND" OFF)
 
-option(CLI11_SINGLE_FILE "Generate a single header file" ${CLI11_SINGLE_FILE_DEFAULT})
 if(CLI11_SINGLE_FILE)
     find_package(PythonInterp REQUIRED)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -140,19 +138,15 @@ endif()
 
 option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF)
 
-option(CLI11_TESTING "Build the tests and add them" ${CUR_PROJ})
+cmake_dependent_option(CLI11_TESTING "Build the tests and add them" ON "CUR_PROJ" OFF)
 if(CLI11_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
-option(CLI11_EXAMPLES "Build the examples" ${CUR_PROJ})
+cmake_dependent_option(CLI11_EXAMPLES "Build the examples" ON "CUR_PROJ" OFF)
 if(CLI11_EXAMPLES)
     add_subdirectory(examples)
-endif()
-
-if(NOT CUR_PROJ)
-    mark_as_advanced(CLI11_SINGLE_FILE_TESTS CLI11_EXAMPLES CLI11_TESTING)
 endif()
 
 # Packaging support
