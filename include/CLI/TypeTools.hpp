@@ -74,8 +74,7 @@ constexpr const char *type_name() {
 
 /// Signed integers / enums
 template <typename T,
-          enable_if_t<(std::is_integral<T>::value && std::is_signed<T>::value) || std::is_enum<T>::value,
-                      detail::enabler> = detail::dummy>
+          enable_if_t<(std::is_integral<T>::value && std::is_signed<T>::value), detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
         size_t n = 0;
@@ -124,7 +123,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// String and similar
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
@@ -134,7 +133,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Non-string parsable
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !std::is_enum<T>::value &&
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
