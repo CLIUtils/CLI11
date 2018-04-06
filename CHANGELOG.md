@@ -9,6 +9,7 @@ Note: This is the final release with `requires`, please switch to `needs`.
 * Support for `std::optional`, `std::experimental::optional`, and `boost::optional` added if `__has_include` is supported [#95]
 * All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95]
 * The internal stream was not being cleared before use in some cases. Fixed. [#95]
+* Using an emum now requires explicit conversion overload [#97]
 
 Other, non-user facing changes:
 
@@ -24,6 +25,7 @@ Other, non-user facing changes:
 [#90]: https://github.com/CLIUtils/CLI11/issues/90
 [#92]: https://github.com/CLIUtils/CLI11/issues/92
 [#95]: https://github.com/CLIUtils/CLI11/pull/95
+[#97]: https://github.com/CLIUtils/CLI11/pull/97
 
 
 ## Version 1.4: More feedback

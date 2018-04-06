@@ -307,7 +307,11 @@ Also, in a related note, the `App` you get a pointer to is stored in the parent 
 ## How it works
 
 Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of strings, so it knows how many times an option was passed or how many arguments it received (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
-`false` if it failed. If you wanted to extend this to support a new type, just use a lambda. An example of a new parser for `complex<double>` that supports all of the features of a standard `add_options` call is in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
+`false` if it failed.
+
+Other values can be added as long as they support `operator>>` (and defaults can be printed if they support `operator<<`). To add an enum, for example, provide a custom `operator>>` with an `istream` (inside the CLI namespace is fine if you don't want to interfere with an existing `operator>>`).
+
+If you wanted to extend this to support a completely new type, just use a lambda. An example of a new parser for `complex<double>` that supports all of the features of a standard `add_options` call is in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
 ### Example
 

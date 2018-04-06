@@ -4,7 +4,7 @@
 # gives output on failed tests without having to set an environment variable.
 #
 #
-set(gtest_force_shared_crt CACHE INTERNAL ON)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF)
 
 if(CMAKE_VERSION VERSION_LESS 3.11)

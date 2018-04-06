@@ -321,8 +321,8 @@ TEST_F(TApp, ComplexOptMulti) {
 
     run();
 
-    EXPECT_FLOAT_EQ(val.real(), 1);
-    EXPECT_FLOAT_EQ(val.imag(), 2);
+    EXPECT_DOUBLE_EQ(val.real(), 1);
+    EXPECT_DOUBLE_EQ(val.imag(), 2);
 }
 
 TEST_F(TApp, MissingValueNonRequiredOpt) {
@@ -641,26 +641,6 @@ TEST_F(TApp, NotRequiedExpectedDoubleShort) {
     args = {"-s", "one"};
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
-TEST_F(TApp, EnumTest) {
-    enum Level : std::int32_t { High, Medium, Low };
-    Level level = Level::Low;
-    app.add_option("--level", level);
-
-    args = {"--level", "1"};
-    run();
-    EXPECT_EQ(level, Level::Medium);
-}
-
-TEST_F(TApp, NewEnumTest) {
-    enum class Level2 : std::int32_t { High, Medium, Low };
-    Level2 level = Level2::Low;
-    app.add_option("--level", level);
-
-    args = {"--level", "1"};
-    run();
-    EXPECT_EQ(level, Level2::Medium);
 }
 
 TEST_F(TApp, RequiredFlags) {
