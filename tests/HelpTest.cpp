@@ -461,3 +461,19 @@ TEST_F(CapturedHelp, RepacedError) {
     EXPECT_THAT(err.str(), HasSubstr("Thing"));
     EXPECT_THAT(err.str(), HasSubstr("Usage"));
 }
+
+// #87
+TEST(THelp, CustomDoubleOption) {
+
+    std::pair<int, float> custom_opt;
+
+    CLI::App app;
+
+    auto opt = app.add_option("posit", [&custom_opt](CLI::results_t vals) {
+        custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
+        return true;
+    });
+    opt->set_custom_option("INT FLOAT", 2);
+
+    EXPECT_THAT(app.help(), Not(HasSubstr("x 2")));
+}

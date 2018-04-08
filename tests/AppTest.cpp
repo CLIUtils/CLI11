@@ -1458,3 +1458,21 @@ TEST_F(TApp, ThrowingTransform) {
         EXPECT_EQ(e.what(), std::string("--mess: My Message"));
     }
 }
+
+// #87
+TEST_F(TApp, CustomDoubleOption) {
+
+    std::pair<int, float> custom_opt;
+
+    auto opt = app.add_option("posit", [&custom_opt](CLI::results_t vals) {
+        custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
+        return true;
+    });
+    opt->set_custom_option("INT FLOAT", 2);
+
+    args = {"12", "1.5"};
+
+    run();
+    EXPECT_EQ(custom_opt.first, 12);
+    EXPECT_FLOAT_EQ(custom_opt.second, 1.5);
+}

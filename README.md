@@ -388,7 +388,8 @@ Significant features and/or improvements to the code were contributed by:
 * [Lucas Czech](https://github.com/lczech)
 * [Mathias Soeken](https://github.com/msoeken)
 * [Nathan Hourt](https://github.com/nathanhourt)
-
+* [Stéphane Del Pino](https://github.com/delpinux)
+* [Anton](https://github.com/SX91)
 
 CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. Version 0.9 was featured in a [DIANA/HEP] meeting at CERN ([see the slides][DIANA slides]). Please give it a try! Feedback is always welcome.
 
