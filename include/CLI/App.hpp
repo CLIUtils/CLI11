@@ -198,7 +198,7 @@ class App {
     }
 
     /// virtual destructor
-    virtual ~App() {}
+    virtual ~App() = default;
 
     /// Set a callback for the end of parsing.
     ///
