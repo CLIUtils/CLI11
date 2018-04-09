@@ -25,6 +25,17 @@ Note that the style check is really just:
 git ls-files -- '.cpp' '.hpp' | xargs clang-format -i -style=file
 ```
 
-And, if you want to always use it, feel free to install the git hook provided in stripts.
+And, if you want to always use it, feel free to install the git hook provided in scripts.
 
+## For developers releasing to Conan.io
 
+The steps to make a Conan.io release are:
+
+```bash
+conan delete '*' # optional, I like to be clean
+
+conan create . CLIUtils/stable
+conan upload "*" -r cli11 --all
+```
+
+Here I've assumed that the remote is `cli11`.

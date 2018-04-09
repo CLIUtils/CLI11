@@ -10,7 +10,7 @@
 [Documentation][GitBook] •
 [API Reference][api-docs] •
 [What's new](./CHANGELOG.md) •
-[Try CLI11 1.4 online][wandbox-link]
+[Try CLI11 1.5 online][wandbox-link]
 
 # CLI11: Command line parser for C++11
 
@@ -439,7 +439,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Version 1.0 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [wandbox-online]:        https://img.shields.io/badge/try%20it-online-orange.svg
-[wandbox-link]:          https://wandbox.org/permlink/g7tRkuU8xY3aTIVP
+[wandbox-link]:          https://wandbox.org/permlink/3a2C5qg6vUjSSpr7
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
 [DIANA slides]:          https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
