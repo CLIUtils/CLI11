@@ -1,5 +1,4 @@
-## Version 1.5: Optional
-
+## Version 1.5: Optionals
 
 This version introduced support for optionals, along with clarification and examples of custom conversion overloads. Enums now have been dropped from the automatic conversion system, allowing explicit protection for out-of-range ints (or a completely custom conversion). This version has some internal cleanup and improved support for the newest compilers. Several bugs were fixed, as well.
 
@@ -11,6 +10,7 @@ Note: This is the final release with `requires`, please switch to `needs`.
 * All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95]
 * The internal stream was not being cleared before use in some cases. Fixed. [#95]
 * Using an emum now requires explicit conversion overload [#97]
+* The separator `--` now is removed when it ends unlimited arguments [#100]
 
 Other, non-user facing changes:
 
@@ -21,12 +21,15 @@ Other, non-user facing changes:
 * Better single file generation [#95]
 * Added support for GTest on MSVC 2017 (but not in C++17 mode, will need next version of GTest)
 * Types now have a specific size, separate from the expected number - cleaner and more powerful internally [#92]
+* Examples now run as part of testing [#99]
 
 [#64]: https://github.com/CLIUtils/CLI11/issues/64
 [#90]: https://github.com/CLIUtils/CLI11/issues/90
 [#92]: https://github.com/CLIUtils/CLI11/issues/92
 [#95]: https://github.com/CLIUtils/CLI11/pull/95
 [#97]: https://github.com/CLIUtils/CLI11/pull/97
+[#99]: https://github.com/CLIUtils/CLI11/pull/99
+[#100]: https://github.com/CLIUtils/CLI11/pull/100
 
 
 ## Version 1.4: More feedback

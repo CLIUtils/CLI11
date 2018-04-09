@@ -430,7 +430,7 @@ TEST_F(TApp, PrefixSeparation) {
 
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"--", "other"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"other"}));
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
 }
 
