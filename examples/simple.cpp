@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
               << ", opt count: " << opt->count() << std::endl;
     std::cout << "Working on count: " << count << ", direct count: " << app.count("--count")
               << ", opt count: " << copt->count() << std::endl;
-    std::cout << "Recieved flag: " << v << " (" << flag->count() << ") times\n";
+    std::cout << "Received flag: " << v << " (" << flag->count() << ") times\n";
     std::cout << "Some value: " << value << std::endl;
 
     return 0;
