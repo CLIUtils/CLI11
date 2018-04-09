@@ -5,15 +5,15 @@
 #include <algorithm>
 
 int main(int argc, char **argv) {
-    CLI::App app;
+    CLI::App app{"An app to practice mixing unlimited arguments, but still recover the original order."};
 
     std::vector<int> foos;
-    auto foo = app.add_option("--foo,-f", foos);
+    auto foo = app.add_option("--foo,-f", foos, "Some unlimited argument");
 
     std::vector<int> bars;
-    auto bar = app.add_option("--bar", bars);
+    auto bar = app.add_option("--bar", bars, "Some unlimited arggument");
 
-    app.add_flag("--z,--x"); // Random other flags
+    app.add_flag("--z,--x", "Random other flags");
 
     // Standard parsing lines (copy and paste in, or use CLI11_PARSE)
     try {
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
         return app.exit(e);
     }
 
-    // I perfer using the back and popping
+    // I prefer using the back and popping
     std::reverse(std::begin(foos), std::end(foos));
     std::reverse(std::begin(bars), std::end(bars));
 

@@ -1,12 +1,11 @@
-// Modify the help print so that argument values are accessible
-// Note that this will not shortcut `->required` and other similar options
 
 #include "CLI/CLI.hpp"
 
 #include <iostream>
 
 int main(int argc, char **argv) {
-    CLI::App test;
+    CLI::App test{R"raw(Modify the help print so that argument values are accessible.
+Note that this will not shortcut `->required` and other similar options.)raw"};
 
     // Remove help flag because it shortcuts all processing
     test.set_help_flag();
@@ -22,10 +21,10 @@ int main(int argc, char **argv) {
         if(*help)
             throw CLI::CallForHelp();
     } catch(const CLI::Error &e) {
-        std::cout << "Option string:" << some_option << std::endl;
+        std::cout << "Option -a string in help: " << some_option << std::endl;
         return test.exit(e);
     }
 
-    std::cout << "Option string:" << some_option << std::endl;
+    std::cout << "Option -a string: " << some_option << std::endl;
     return 0;
 }
