@@ -34,7 +34,7 @@ The steps to make a Conan.io release are:
 ```bash
 conan delete '*' # optional, I like to be clean
 
-conan create . CLIUtils/stable
+conan create . cliutils/stable
 conan upload "*" -r cli11 --all
 ```
 
