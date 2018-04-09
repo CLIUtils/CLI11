@@ -1475,7 +1475,7 @@ TEST_F(TApp, ThrowingTransform) {
 // #87
 TEST_F(TApp, CustomDoubleOption) {
 
-    std::pair<int, float> custom_opt;
+    std::pair<int, double> custom_opt;
 
     auto opt = app.add_option("posit", [&custom_opt](CLI::results_t vals) {
         custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
@@ -1487,5 +1487,5 @@ TEST_F(TApp, CustomDoubleOption) {
 
     run();
     EXPECT_EQ(custom_opt.first, 12);
-    EXPECT_FLOAT_EQ(custom_opt.second, 1.5);
+    EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
 }

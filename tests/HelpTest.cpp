@@ -465,7 +465,7 @@ TEST_F(CapturedHelp, RepacedError) {
 // #87
 TEST(THelp, CustomDoubleOption) {
 
-    std::pair<int, float> custom_opt;
+    std::pair<int, double> custom_opt;
 
     CLI::App app;
 
