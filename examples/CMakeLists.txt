@@ -65,7 +65,7 @@ add_cli_exe(prefix_command prefix_command.cpp)
 add_test(NAME prefix_command COMMAND prefix_command -v 3 2 1 -- other one two 3)
 set_property(TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION
     "Prefix: 3 : 2 : 1"
-    "Remaining commands: -- other one two 3")
+    "Remaining commands: other one two 3")
 
 add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)

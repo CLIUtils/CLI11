@@ -581,6 +581,19 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
     EXPECT_EQ(remain, std::vector<std::string>({"two"}));
 }
 
+TEST_F(TApp, OptsUnlimitedEnd) {
+    std::vector<std::string> strs;
+    app.add_option("-s,--str", strs);
+    app.allow_extras();
+
+    args = {"one", "-s", "two", "three", "--", "four"};
+
+    run();
+
+    EXPECT_EQ(strs, std::vector<std::string>({"two", "three"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "four"}));
+}
+
 TEST_F(TApp, RequireOptPriority) {
 
     std::vector<std::string> strs;
