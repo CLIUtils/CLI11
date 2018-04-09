@@ -407,6 +407,33 @@ TEST_F(TApp, PrefixProgram) {
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
 }
 
+TEST_F(TApp, PrefixNoSeparation) {
+
+    app.prefix_command();
+
+    std::vector<int> vals;
+    app.add_option("--vals", vals);
+
+    args = {"--vals", "1", "2", "3", "other"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, PrefixSeparation) {
+
+    app.prefix_command();
+
+    std::vector<int> vals;
+    app.add_option("--vals", vals);
+
+    args = {"--vals", "1", "2", "3", "--", "other"};
+
+    run();
+
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"--", "other"}));
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
 TEST_F(TApp, PrefixSubcom) {
     auto subc = app.add_subcommand("subc");
     subc->prefix_command();
