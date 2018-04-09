@@ -37,7 +37,7 @@ matrix:
     # Docs and clang 3.5
   - compiler: clang
     env:
-    - DEPLOYMAT=yes
+    - DEPLOY_MAT=yes
     addons:
       apt:
         packages:
