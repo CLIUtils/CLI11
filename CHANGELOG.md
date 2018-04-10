@@ -1,3 +1,10 @@
+## In progress
+
+* Make unlimited positionals vs. unlimited options more intuitive [#102]
+
+[#102]: https://github.com/CLIUtils/CLI11/issues/102
+
+
 ## Version 1.5: Optionals
 
 This version introduced support for optionals, along with clarification and examples of custom conversion overloads. Enums now have been dropped from the automatic conversion system, allowing explicit protection for out-of-range ints (or a completely custom conversion). This version has some internal cleanup and improved support for the newest compilers. Several bugs were fixed, as well.
