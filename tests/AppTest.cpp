@@ -543,8 +543,22 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     std::vector<std::string> remain;
     app.add_option("positional", remain);
     run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(remain, std::vector<std::string>());
+
+    app.reset();
+    args = {"--str", "one", "--", "two"};
+
+    run();
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two"}));
+
+    app.reset();
+    args = {"one", "--str", "two"};
+
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"two"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"one"}));
 }
 
 TEST_F(TApp, RequiredOptsUnlimitedShort) {
@@ -577,8 +591,22 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
     std::vector<std::string> remain;
     app.add_option("positional", remain);
     run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
+    EXPECT_EQ(remain, std::vector<std::string>());
+
+    app.reset();
+    args = {"-s", "one", "--", "two"};
+
+    run();
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two"}));
+
+    app.reset();
+    args = {"one", "-s", "two"};
+
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"two"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"one"}));
 }
 
 TEST_F(TApp, OptsUnlimitedEnd) {

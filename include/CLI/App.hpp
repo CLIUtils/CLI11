@@ -1461,12 +1461,6 @@ class App {
                     // If any positionals remain, don't keep eating
                     if(_count_remaining_positionals() > 0)
                         break;
-
-                    // If there are any unlimited positionals, those also take priority
-                    if(std::any_of(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-                           return opt->get_positional() && opt->get_items_expected() < 0;
-                       }))
-                        break;
                 }
                 op->add_result(args.back());
                 parse_order_.push_back(op.get());
