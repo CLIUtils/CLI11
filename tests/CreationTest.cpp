@@ -404,3 +404,15 @@ TEST_F(TApp, SubcommandMinMax) {
     EXPECT_EQ(app.get_require_subcommand_min(), (size_t)3);
     EXPECT_EQ(app.get_require_subcommand_max(), (size_t)7);
 }
+
+TEST_F(TApp, GetOptionList) {
+    int two;
+    auto flag = app.add_flag("--one");
+    auto opt = app.add_option("--two", two);
+
+    auto opt_list = app.get_options();
+
+    ASSERT_EQ(opt_list.size(), static_cast<size_t>(3));
+    EXPECT_EQ(opt_list.at(1), flag);
+    EXPECT_EQ(opt_list.at(2), opt);
+}

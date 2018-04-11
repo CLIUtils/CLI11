@@ -977,6 +977,18 @@ class App {
     /// @name Getters
     ///@{
 
+    /// Get the app or subcommand description
+    std::string get_description() const { return description_; }
+
+    /// Get the list of options (user facing function, so returns raw pointers)
+    std::vector<Option *> get_options() const {
+        std::vector<Option *> options(options_.size());
+        std::transform(std::begin(options_), std::end(options_), std::begin(options), [](const Option_p &val) {
+            return val.get();
+        });
+        return options;
+    }
+
     /// Check the status of ignore_case
     bool get_ignore_case() const { return ignore_case_; }
 

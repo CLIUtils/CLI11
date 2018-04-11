@@ -477,3 +477,9 @@ TEST(THelp, CustomDoubleOption) {
 
     EXPECT_THAT(app.help(), Not(HasSubstr("x 2")));
 }
+
+TEST(THelp, AccessDescription) {
+    CLI::App app{"My description goes here"};
+
+    EXPECT_EQ(app.get_description(), "My description goes here");
+}
