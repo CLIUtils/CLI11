@@ -295,7 +295,7 @@ class Option : public OptionBase<Option> {
     Option *needs(Option *opt) {
         auto tup = requires_.insert(opt);
         if(!tup.second)
-            throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
+            throw OptionAlreadyAdded::Requires(single_name(), opt->single_name());
         return this;
     }
 
@@ -503,18 +503,20 @@ class Option : public OptionBase<Option> {
                 out << " x " << get_expected();
             if(get_expected() == -1)
                 out << " ...";
+            if(get_required())
+                out << " (REQUIRED)";
         }
         if(!envname_.empty())
             out << " (env:" << envname_ << ")";
         if(!requires_.empty()) {
-            out << " Requires:";
+            out << " Needs:";
             for(const Option *opt : requires_)
-                out << " " << opt->get_name();
+                out << " " << opt->single_name();
         }
         if(!excludes_.empty()) {
             out << " Excludes:";
             for(const Option *opt : excludes_)
-                out << " " << opt->get_name();
+                out << " " << opt->single_name();
         }
         return out.str();
     }
