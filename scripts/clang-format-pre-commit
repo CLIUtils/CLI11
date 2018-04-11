@@ -9,13 +9,12 @@ format_file() {
     file="${1}"
     case "$file" in
     *.hpp | *.cpp | .c | *.cc | *.cu | *.h )
-        echo "Formatting: $file"
         clang-format -i -style=file -sort-includes "${1}"
-        if git diff-file --quiet -- "${1}" ; then
+        if git diff-files --quiet -- "${1}" ; then
+            echo "Already formatted: ${1}"
+        else
             git add "${1}"
             echo "Reformatting file: ${1}"
-        else
-            echo "Already formatted: ${1}"
         fi;
         ;;
     *)

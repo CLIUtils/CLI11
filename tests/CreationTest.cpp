@@ -331,13 +331,15 @@ TEST_F(TApp, OptionFromDefaultsSubcommands) {
     EXPECT_EQ(app2->option_defaults()->get_group(), "Something");
 }
 
-TEST_F(TApp, HelpFlagFromDefaultsSubcommands) {
-    app.set_help_flag("--that", "Wow");
+TEST_F(TApp, GetNameCheck) {
+    int x;
+    auto a = app.add_flag("--that");
+    auto b = app.add_flag("-x");
+    auto c = app.add_option("pos", x);
 
-    auto app2 = app.add_subcommand("app2");
-
-    EXPECT_EQ(app2->get_help_ptr()->get_name(), "--that");
-    EXPECT_EQ(app2->get_help_ptr()->get_description(), "Wow");
+    EXPECT_EQ(a->get_name(), "--that");
+    EXPECT_EQ(b->get_name(), "-x");
+    EXPECT_EQ(c->get_name(), "pos");
 }
 
 TEST_F(TApp, SubcommandDefaults) {
