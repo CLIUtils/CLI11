@@ -162,7 +162,7 @@ TEST(THelp, Needs) {
 
     std::string help = app.help();
 
-    EXPECT_THAT(help, HasSubstr("Requires: --op1"));
+    EXPECT_THAT(help, HasSubstr("Needs: --op1"));
 }
 
 TEST(THelp, NeedsPositional) {
@@ -176,7 +176,7 @@ TEST(THelp, NeedsPositional) {
     std::string help = app.help();
 
     EXPECT_THAT(help, HasSubstr("Positionals:"));
-    EXPECT_THAT(help, HasSubstr("Requires: op1"));
+    EXPECT_THAT(help, HasSubstr("Needs: op1"));
 }
 
 TEST(THelp, Excludes) {
@@ -494,4 +494,25 @@ TEST(THelp, AccessDescription) {
     CLI::App app{"My description goes here"};
 
     EXPECT_EQ(app.get_description(), "My description goes here");
+}
+
+TEST(THelp, CleanNeeds) {
+    CLI::App app;
+
+    int x;
+    auto a_name = app.add_option("-a,--alpha", x);
+    app.add_option("-b,--boo", x)->needs(a_name);
+
+    EXPECT_THAT(app.help(), Not(HasSubstr("Requires")));
+    EXPECT_THAT(app.help(), Not(HasSubstr("Needs: -a,--alpha")));
+    EXPECT_THAT(app.help(), HasSubstr("Needs: --alpha"));
+}
+
+TEST(THelp, RequiredPrintout) {
+    CLI::App app;
+
+    int x;
+    app.add_option("-a,--alpha", x)->required();
+
+    EXPECT_THAT(app.help(), HasSubstr("(REQUIRED)"));
 }
