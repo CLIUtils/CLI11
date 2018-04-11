@@ -2,6 +2,7 @@
 
 * Make unlimited positionals vs. unlimited options more intuitive [#102]
 * Add missing getters `get_options` and `get_description` to App [#105]
+* The app name now can be set, and will override the auto name if present [#105]
 
 [#102]: https://github.com/CLIUtils/CLI11/issues/102
 [#105]: https://github.com/CLIUtils/CLI11/issues/105

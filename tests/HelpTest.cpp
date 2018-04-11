@@ -36,7 +36,7 @@ TEST(THelp, Footer) {
 }
 
 TEST(THelp, OptionalPositional) {
-    CLI::App app{"My prog"};
+    CLI::App app{"My prog", "program"};
 
     std::string x;
     app.add_option("something", x, "My option here");
@@ -71,7 +71,7 @@ TEST(THelp, Hidden) {
 }
 
 TEST(THelp, OptionalPositionalAndOptions) {
-    CLI::App app{"My prog"};
+    CLI::App app{"My prog", "AnotherProgram"};
     app.add_flag("-q,--quick");
 
     std::string x;
@@ -82,7 +82,7 @@ TEST(THelp, OptionalPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("My prog"));
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
-    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [something]"));
+    EXPECT_THAT(help, HasSubstr("Usage: AnotherProgram [OPTIONS] [something]"));
 }
 
 TEST(THelp, RequiredPositionalAndOptions) {
@@ -98,7 +98,7 @@ TEST(THelp, RequiredPositionalAndOptions) {
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
     EXPECT_THAT(help, HasSubstr("Positionals:"));
-    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] something"));
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS] something"));
 }
 
 TEST(THelp, MultiOpts) {
@@ -111,7 +111,7 @@ TEST(THelp, MultiOpts) {
 
     EXPECT_THAT(help, HasSubstr("My prog"));
     EXPECT_THAT(help, Not(HasSubstr("Positionals:")));
-    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS]"));
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS]"));
     EXPECT_THAT(help, HasSubstr("INT x 2"));
     EXPECT_THAT(help, HasSubstr("INT ..."));
 }
@@ -128,6 +128,7 @@ TEST(THelp, VectorOpts) {
 
 TEST(THelp, MultiPosOpts) {
     CLI::App app{"My prog"};
+    app.set_name("program");
     std::vector<int> x, y;
     app.add_option("quick", x, "Disc")->expected(2);
     app.add_option("vals", y, "Other");
@@ -243,12 +244,12 @@ TEST(THelp, Subcom) {
     app.add_subcommand("sub2");
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] [SUBCOMMAND]"));
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS] [SUBCOMMAND]"));
 
     app.require_subcommand();
 
     help = app.help();
-    EXPECT_THAT(help, HasSubstr("Usage: program [OPTIONS] SUBCOMMAND"));
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS] SUBCOMMAND"));
 
     help = sub1->help();
     EXPECT_THAT(help, HasSubstr("Usage: sub1"));
@@ -261,6 +262,17 @@ TEST(THelp, Subcom) {
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));
+}
+
+TEST(THelp, MasterName) {
+    CLI::App app{"My prog", "MyRealName"};
+
+    char x[] = "./myprogram";
+
+    std::vector<char *> args = {x};
+    app.parse((int)args.size(), args.data());
+
+    EXPECT_THAT(app.help(), HasSubstr("Usage: MyRealName"));
 }
 
 TEST(THelp, IntDefaults) {

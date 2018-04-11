@@ -64,8 +64,8 @@ class App {
     /// @name Basics
     ///@{
 
-    /// Subcommand name or program name (from parser)
-    std::string name_{"program"};
+    /// Subcommand name or program name (from parser if name is empty)
+    std::string name_;
 
     /// Description of the current program/subcommand
     std::string description_;
@@ -193,7 +193,8 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string description_ = "") : App(description_, nullptr) {
+    App(std::string description_ = "", std::string name = "") : App(description_, nullptr) {
+        name_ = name;
         set_help_flag("-h,--help", "Print this help message and exit");
     }
 
@@ -208,6 +209,12 @@ class App {
     /// to get a pointer to App if needed.
     App *set_callback(std::function<void()> callback) {
         callback_ = callback;
+        return this;
+    }
+
+    /// Set a name for the app (empty will use parser to set the name)
+    App *set_name(std::string name = "") {
+        name_ = name;
         return this;
     }
 
@@ -723,7 +730,10 @@ class App {
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, char **argv) {
-        name_ = argv[0];
+        // If the name is not set, read from command line
+        if(name_.empty())
+            name_ = argv[0];
+
         std::vector<std::string> args;
         for(int i = argc - 1; i > 0; i--)
             args.emplace_back(argv[i]);
@@ -890,7 +900,7 @@ class App {
 
         std::stringstream out;
         out << description_ << std::endl;
-        out << "Usage: " << prev;
+        out << "Usage:" << (prev.empty() ? "" : " ") << prev;
 
         // Check for options_
         bool npos = false;
@@ -1030,6 +1040,7 @@ class App {
 
     /// Get a pointer to the config option. (const)
     const Option *get_config_ptr() const { return config_ptr_; }
+
     /// Get the name of the current app
     std::string get_name() const { return name_; }
 
