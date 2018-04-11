@@ -1,8 +1,10 @@
 ## In progress
 
 * Make unlimited positionals vs. unlimited options more intuitive [#102]
+* Add missing getters `get_options` and `get_description` to App [#105]
 
 [#102]: https://github.com/CLIUtils/CLI11/issues/102
+[#105]: https://github.com/CLIUtils/CLI11/issues/105
 
 
 ## Version 1.5: Optionals
