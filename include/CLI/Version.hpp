@@ -9,7 +9,7 @@ namespace CLI {
 
 #define CLI11_VERSION_MAJOR 1
 #define CLI11_VERSION_MINOR 5
-#define CLI11_VERSION_PATCH 0
-#define CLI11_VERSION "1.5.0"
+#define CLI11_VERSION_PATCH 1
+#define CLI11_VERSION "1.5.1"
 
 } // namespace CLI

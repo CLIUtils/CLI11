@@ -1,15 +1,19 @@
-## In progress
+## Version 1.5.1: Access
 
-* Make unlimited positionals vs. unlimited options more intuitive [#102]
+This patch release adds better access to the App progromatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
+
+* Make mixing unlimited positionals and options more intuitive [#102]
 * Add missing getters `get_options` and `get_description` to App [#105]
 * The app name now can be set, and will override the auto name if present [#105]
 * Add `(REQUIRED)` for required options [#104]
 * Print simple name for Needs/Excludes [#104]
 * Use Needs instead of Requires in help print [#104]
+* Groups now are listed in the original definition order [#106]
 
 [#102]: https://github.com/CLIUtils/CLI11/issues/102
-[#105]: https://github.com/CLIUtils/CLI11/issues/105
 [#104]: https://github.com/CLIUtils/CLI11/pull/104
+[#105]: https://github.com/CLIUtils/CLI11/issues/105
+[#106]: https://github.com/CLIUtils/CLI11/pull/106
 
 
 ## Version 1.5: Optionals

@@ -241,12 +241,16 @@ There are several options that are supported on the main app and subcommands. Th
 * `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 * `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 * `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
-* `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line
-* `.get_subcommands()`: The list of subcommands given on the command line
-* `.get_parent()`: Get the parent App or nullptr if called on master App
-* `.parsed()`: True if this subcommand was given on the command line
+* `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
+* `.get_subcommands()`: The list of subcommands given on the command line.
+* `.get_parent()`: Get the parent App or nullptr if called on master App.
+* `.get_options()`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
+* `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
+* `.get_description()`: Access the description.
+* `.parsed()`: True if this subcommand was given on the command line.
+* `.set_name(name)`: Add or change the name.
 * `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
-* `.allow_extras()`: Do not throw an error if extra arguments are left over
+* `.allow_extras()`: Do not throw an error if extra arguments are left over.
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 * `.set_footer(message)`: Set text to appear at the bottom of the help string.
 * `.set_failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
