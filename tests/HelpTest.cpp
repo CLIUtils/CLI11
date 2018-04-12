@@ -516,3 +516,19 @@ TEST(THelp, RequiredPrintout) {
 
     EXPECT_THAT(app.help(), HasSubstr("(REQUIRED)"));
 }
+
+TEST(THelp, GroupOrder) {
+    CLI::App app;
+
+    app.add_flag("--one")->group("zee");
+    app.add_flag("--two")->group("aee");
+
+    std::string help = app.help();
+
+    auto zee_loc = help.find("zee");
+    auto aee_loc = help.find("aee");
+
+    EXPECT_NE(zee_loc, std::string::npos);
+    EXPECT_NE(aee_loc, std::string::npos);
+    EXPECT_LT(zee_loc, aee_loc);
+}
