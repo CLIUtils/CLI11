@@ -32,8 +32,7 @@ And, if you want to always use it, feel free to install the git hook provided in
 The steps to make a Conan.io release are:
 
 ```bash
-conan delete '*' # optional, I like to be clean
-
+conan remove '*' # optional, I like to be clean
 conan create . cliutils/stable
 conan upload "*" -r cli11 --all
 ```
