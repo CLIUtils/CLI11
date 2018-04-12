@@ -904,11 +904,15 @@ class App {
 
         // Check for options_
         bool npos = false;
-        std::set<std::string> groups;
+        std::vector<std::string> groups;
         for(const Option_p &opt : options_) {
             if(opt->nonpositional()) {
                 npos = true;
-                groups.insert(opt->get_group());
+
+                // Add group if it is not already in there
+                if(std::find(groups.begin(), groups.end(), opt->get_group()) == groups.end()) {
+                    groups.push_back(opt->get_group());
+                }
             }
         }
 
