@@ -1,4 +1,8 @@
-## Version 1.5.1: Access
+### Version 1.5.2: LICENSE in single header mode
+
+This is a quick patch release that makes LICENSE part of the single header file, making it easier to include. No code changes from 1.5.1.
+
+### Version 1.5.1: Access
 
 This patch release adds better access to the App progromatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
 
