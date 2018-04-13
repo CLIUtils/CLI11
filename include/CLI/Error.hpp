@@ -160,7 +160,7 @@ class CallForHelp : public ParseError {
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
 class RuntimeError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RuntimeError)
-    RuntimeError(int exit_code = 1) : RuntimeError("Runtime error", exit_code) {}
+    explicit RuntimeError(int exit_code = 1) : RuntimeError("Runtime error", exit_code) {}
 };
 
 /// Thrown when parsing an INI file and it is missing
@@ -242,7 +242,7 @@ class ExcludesError : public ParseError {
 /// Thrown when too many positionals or options are found
 class ExtrasError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExtrasError)
-    ExtrasError(std::vector<std::string> args)
+    explicit ExtrasError(std::vector<std::string> args)
         : ExtrasError((args.size() > 1 ? "The following arguments were not expected: "
                                        : "The following argument was not expected: ") +
                           detail::rjoin(args, " "),
@@ -279,7 +279,7 @@ class HorribleError : public ParseError {
 /// Thrown when counting a non-existent option
 class OptionNotFound : public Error {
     CLI11_ERROR_DEF(Error, OptionNotFound)
-    OptionNotFound(std::string name) : OptionNotFound(name + " not found", ExitCodes::OptionNotFound) {}
+    explicit OptionNotFound(std::string name) : OptionNotFound(name + " not found", ExitCodes::OptionNotFound) {}
 };
 
 /// @}
