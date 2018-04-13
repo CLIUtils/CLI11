@@ -1,6 +1,6 @@
 ### Version 1.5.2: LICENSE in single header mode
 
-This is a quick patch release that makes LICENSE part of the single header file, making it easier to include. No code changes from 1.5.1.
+This is a quick patch release that makes LICENSE part of the single header file, making it easier to include. Minor cleanup from codacy. No significant code changes from 1.5.1.
 
 ### Version 1.5.1: Access
 

@@ -193,7 +193,7 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string description_ = "", std::string name = "") : App(description_, nullptr) {
+    explicit App(std::string description_ = "", std::string name = "") : App(description_, nullptr) {
         name_ = name;
         set_help_flag("-h,--help", "Print this help message and exit");
     }
