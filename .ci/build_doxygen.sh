@@ -1,3 +1,6 @@
+#!/bin/env sh
+# (Source me)
+
 set -evx
 
 DOXYGEN_URL="ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.13.src.tar.gz"

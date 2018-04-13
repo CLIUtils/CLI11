@@ -26,7 +26,7 @@ namespace CLI {
 
 // This is added after the one above if a class is used directly and builds its own message
 #define CLI11_ERROR_SIMPLE(name)                                                                                       \
-    name(std::string msg) : name(#name, msg, ExitCodes::name) {}
+    explicit name(std::string msg) : name(#name, msg, ExitCodes::name) {}
 
 /// These codes are part of every error in CLI. They can be obtained from e using e.exit_code or as a quick shortcut,
 /// int values from e.get_error_code().
@@ -126,7 +126,7 @@ class BadNameString : public ConstructionError {
 /// Thrown when an option already exists
 class OptionAlreadyAdded : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, OptionAlreadyAdded)
-    OptionAlreadyAdded(std::string name)
+    explicit OptionAlreadyAdded(std::string name)
         : OptionAlreadyAdded(name + " is already added", ExitCodes::OptionAlreadyAdded) {}
     static OptionAlreadyAdded Requires(std::string name, std::string other) {
         return OptionAlreadyAdded(name + " requires " + other, ExitCodes::OptionAlreadyAdded);
@@ -190,13 +190,13 @@ class ConversionError : public ParseError {
 class ValidationError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ValidationError)
     CLI11_ERROR_SIMPLE(ValidationError)
-    ValidationError(std::string name, std::string msg) : ValidationError(name + ": " + msg) {}
+    explicit ValidationError(std::string name, std::string msg) : ValidationError(name + ": " + msg) {}
 };
 
 /// Thrown when a required option is missing
 class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
-    RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
+    explicit RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
     static RequiredError Subcommand(size_t min_subcom) {
         if(min_subcom == 1)
             return RequiredError("A subcommand");
@@ -262,7 +262,7 @@ class INIError : public ParseError {
 /// Thrown when validation fails before parsing
 class InvalidError : public ParseError {
     CLI11_ERROR_DEF(ParseError, InvalidError)
-    InvalidError(std::string name)
+    explicit InvalidError(std::string name)
         : InvalidError(name + ": Too many positional arguments with unlimited expected args", ExitCodes::InvalidError) {
     }
 };

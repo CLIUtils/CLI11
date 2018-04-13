@@ -12,6 +12,7 @@ from functools import reduce
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
+version_finder = re.compile(r"""^#define CLI11_VERSION \"(.*)\"$""", re.MULTILINE)
 verbatim_tag_str = r"""
 ^               # Begin of line
 [^\n^\[]+       # Some characters, not including [ or the end of a line
@@ -30,14 +31,20 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 class HeaderFile(object):
     TAG = "Unknown git revision"
+    LICENSE = "// BSD 3 clause"
+    VERSION = "Unknown"
 
     def __init__(self, base, inc):
         with open(os.path.join(base, inc)) as f:
             inner = f.read()
 
+        version = version_finder.search(inner)
+        if version:
+            self.__class__.VERSION = version.groups()[0]
+
         # add self.verbatim
         if 'CLI11:verbatim' in inner:
-            self.verbatim = ["\n\n// Verbatim copy from {}".format(inc)]
+            self.verbatim = ["\n\n// Verbatim copy from {}:".format(inc)]
             self.verbatim += verbatim_all.findall(inner)
             inner = verbatim_all.sub("", inner)
         else:
@@ -45,7 +52,7 @@ class HeaderFile(object):
 
         self.headers = set(includes_system.findall(inner))
 
-        self.body = '\n// From {}\n\n'.format(inc) + inner[inner.find('namespace'):]
+        self.body = '\n// From {}:\n\n'.format(inc) + inner[inner.find('namespace'):]
 
     def __add__(self, other):
         out = copy(self)
@@ -66,12 +73,18 @@ class HeaderFile(object):
         return '''\
 #pragma once
 
-// Distributed under the 3-Clause BSD License.  See accompanying
-// file LICENSE or https://github.com/CLIUtils/CLI11 for details.
-
-// This file was generated using MakeSingleHeader.py in CLI11/scripts
+// CLI11: Version {self.VERSION}
+// Originally designed by Henry Schreiner
+// https://github.com/CLIUtils/CLI11
+//
+// This is a standalone header file generated ny MakeSingleHeader.py in CLI11/scripts
 // from: {self.TAG}
-// This has the complete CLI library in one file.
+//
+// From LICENSE:
+//
+{self.LICENSE}
+
+// Standard combined includes:
 
 {self.header_str}
 {self.verbatim_str}
@@ -82,12 +95,16 @@ class HeaderFile(object):
 def MakeHeader(output, main_header, include_dir = '../include'):
     # Set tag if possible to class variable
     try:
-        HeaderFile.TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8")
+        HeaderFile.TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8").strip()
     except CalledProcessError:
         pass
 
     base_dir = os.path.abspath(os.path.join(DIR, include_dir))
     main_header = os.path.join(base_dir, main_header)
+    licence_file = os.path.abspath(os.path.join(DIR, '../LICENSE'))
+
+    with open(licence_file) as f:
+        HeaderFile.LICENSE = ''.join('// ' + line for line in f)
 
     with open(main_header) as f:
         header = f.read()

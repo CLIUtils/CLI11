@@ -166,7 +166,8 @@ class App {
     ///@}
 
     /// Special private constructor for subcommand
-    App(std::string description_, App *parent) : description_(std::move(description_)), parent_(parent) {
+    App(std::string description_, std::string name, App *parent)
+        : name_(std::move(name)), description_(std::move(description_)), parent_(parent) {
         // Inherit if not from a nullptr
         if(parent_ != nullptr) {
             if(parent_->help_ptr_ != nullptr)
@@ -193,8 +194,7 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    App(std::string description_ = "", std::string name = "") : App(description_, nullptr) {
-        name_ = name;
+    explicit App(std::string description_ = "", std::string name = "") : App(description_, name, nullptr) {
         set_help_flag("-h,--help", "Print this help message and exit");
     }
 
@@ -643,8 +643,7 @@ class App {
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string name, std::string description = "") {
-        subcommands_.emplace_back(new App(description, this));
-        subcommands_.back()->name_ = name;
+        subcommands_.emplace_back(new App(description, name, this));
         for(const auto &subc : subcommands_)
             if(subc.get() != subcommands_.back().get())
                 if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_))

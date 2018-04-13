@@ -3,7 +3,7 @@
 # Title         : generateDocumentationAndDeploy.sh
 # Date created  : 2016/02/22
 # Notes         :
-__AUTHOR__="Jeroen de Bruijn"
+# Author        : Jeroen de Bruijn
 # Preconditions:
 # - Packages doxygen doxygen-doc doxygen-latex doxygen-gui graphviz
 #   must be installed.
@@ -29,7 +29,7 @@ __AUTHOR__="Jeroen de Bruijn"
 # the gh-pages branch of a repository specified by GH_REPO_REF.
 # Before this script is used there should already be a gh-pages branch in the
 # repository.
-# 
+#
 ################################################################################
 
 ################################################################################
@@ -38,8 +38,8 @@ echo 'Setting up the script...'
 # Exit with nonzero exit code if anything fails
 set -e
 
-GH_REPO_ORG=`echo $TRAVIS_REPO_SLUG | cut -d "/" -f 1`
-GH_REPO_NAME=`echo $TRAVIS_REPO_SLUG | cut -d "/" -f 2`
+GH_REPO_ORG=$(echo $TRAVIS_REPO_SLUG | cut -d "/" -f 1)
+GH_REPO_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d "/" -f 2)
 GH_REPO_REF="github.com/$GH_REPO_ORG/$GH_REPO_NAME.git"
 
 # Create a clean working directory for this script.
