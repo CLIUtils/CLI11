@@ -126,7 +126,7 @@ class BadNameString : public ConstructionError {
 /// Thrown when an option already exists
 class OptionAlreadyAdded : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, OptionAlreadyAdded)
-    OptionAlreadyAdded(std::string name)
+    explicit OptionAlreadyAdded(std::string name)
         : OptionAlreadyAdded(name + " is already added", ExitCodes::OptionAlreadyAdded) {}
     static OptionAlreadyAdded Requires(std::string name, std::string other) {
         return OptionAlreadyAdded(name + " requires " + other, ExitCodes::OptionAlreadyAdded);
@@ -190,13 +190,13 @@ class ConversionError : public ParseError {
 class ValidationError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ValidationError)
     CLI11_ERROR_SIMPLE(ValidationError)
-    ValidationError(std::string name, std::string msg) : ValidationError(name + ": " + msg) {}
+    explicit ValidationError(std::string name, std::string msg) : ValidationError(name + ": " + msg) {}
 };
 
 /// Thrown when a required option is missing
 class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
-    RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
+    explicit RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
     static RequiredError Subcommand(size_t min_subcom) {
         if(min_subcom == 1)
             return RequiredError("A subcommand");
