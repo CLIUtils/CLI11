@@ -1,3 +1,5 @@
+#!/bin/env sh
+# (Source me)
 set -evx
 
 LCOV_URL="http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz"
