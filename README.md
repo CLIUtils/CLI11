@@ -1,16 +1,17 @@
 [![Build Status Linux and macOS][travis-badge]][Travis]
 [![Build Status Windows][appveyor-badge]][AppVeyor]
 [![Code Coverage][codecov-badge]][CodeCov]
+[![Codacy Badge][codacy-badge]][codacy-link]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
 [![License: BSD][license-badge]](./LICENSE)
 [![Latest release][releases-badge]][Github Releases]
 [![DOI][DOI-badge]][DOI-link]
 [![Conan.io][conan-badge]][conan-link]
+[![Try CLI11 1.5 online][wandbox-badge]][wandbox-link]
 
 [Documentation][GitBook] •
 [API Reference][api-docs] •
-[What's new](./CHANGELOG.md) •
-[Try CLI11 1.5 online][wandbox-link]
+[What's new](./CHANGELOG.md)
 
 # CLI11: Command line parser for C++11
 
@@ -444,7 +445,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Clara]:                 https://github.com/philsquared/Clara
 [Version 1.0 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
-[wandbox-online]:        https://img.shields.io/badge/try%20it-online-orange.svg
+[wandbox-badge]:         https://img.shields.io/badge/try-online-blue.svg
 [wandbox-link]:          https://wandbox.org/permlink/3a2C5qg6vUjSSpr7
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
@@ -452,3 +453,5 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Awesome C++]:           https://github.com/fffaraz/awesome-cpp/blob/master/README.md#cli
 [CLI]:                   https://codesynthesis.com/projects/cli/
 [Single file libs]:      https://github.com/nothings/single_file_libs/blob/master/README.md
+[codacy-badge]:          https://api.codacy.com/project/badge/Grade/ac0df3aead2a4421b02070c3f324a0b9
+[codacy-link]:           https://www.codacy.com/app/henryiii/CLI11?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CLIUtils/CLI11&amp;utm_campaign=Badge_Grade
