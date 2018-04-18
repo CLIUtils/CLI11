@@ -137,15 +137,7 @@ template <typename T,
                           !std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
-
-// On GCC 4.7, thread_local is not available, so this optimization
-// is turned off (avoiding multiple initialisations on multiple usages)
-#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER) && __GNUC__ == 4 && (__GNUC_MINOR__ < 8)
     std::istringstream is;
-#else
-    static thread_local std::istringstream is;
-    is.clear();
-#endif
 
     is.str(input);
     is >> output;
