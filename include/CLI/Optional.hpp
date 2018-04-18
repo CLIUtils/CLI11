@@ -9,26 +9,31 @@
 
 // [CLI11:verbatim]
 #ifdef __has_include
-#if defined(CLI11_CPP17) && __has_include(<optional>)
-#include <optional>
-#ifdef __cpp_lib_optional
-#ifndef CLI11_STD_OPTIONAL
+
+#if defined(CLI11_CPP17) && __has_include(<optional>) && \
+    defined(__cpp_lib_optional) && !defined(CLI11_STD_OPTIONAL)
 #define CLI11_STD_OPTIONAL
 #endif
-#endif
-#endif
-#if defined(CLI11_CPP14) && __has_include(<experimental/optional>)
-#include <experimental/optional>
-#ifndef CLI11_EXPERIMENTAL_OPTIONAL
+
+#if defined(CLI11_CPP14) && __has_include(<experimental/optional>) && \
+    !defined(CLI11_EXPERIMENTAL_OPTIONAL)
 #define CLI11_EXPERIMENTAL_OPTIONAL
 #endif
-#endif
-#if __has_include(<boost/optional.hpp>)
-#include <boost/optional.hpp>
-#ifndef CLI11_BOOST_OPTIONAL
+
+#if __has_include(<boost/optional.hpp>) && !defined(CLI11_BOOST_OPTIONAL)
 #define CLI11_BOOST_OPTIONAL
 #endif
+
 #endif
+
+#ifdef CLI11_STD_OPTIONAL
+#include <optional>
+#endif
+#ifdef CLI11_EXPERIMENTAL_OPTIONAL
+#include <experimental/optional>
+#endif
+#ifdef CLI11_BOOST_OPTIONAL
+#include <boost/optional.hpp>
 #endif
 // [CLI11:verbatim]
 
