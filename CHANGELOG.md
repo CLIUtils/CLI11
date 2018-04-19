@@ -1,5 +1,5 @@
 ### Version 1.5.3: Compiler compatibility
-This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58.
+This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
 
 ### Version 1.5.2: LICENSE in single header mode
 
