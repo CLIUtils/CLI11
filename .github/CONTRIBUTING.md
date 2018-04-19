@@ -29,7 +29,7 @@ And, if you want to always use it, feel free to install the git hook provided in
 
 ## For developers releasing to Conan.io
 
-The steps to make a Conan.io release are:
+This is now done by the CI system on tagged releases. Previously, the steps to make a Conan.io release were:
 
 ```bash
 conan remove '*' # optional, I like to be clean

@@ -96,7 +96,7 @@ matrix:
     script:
     - .ci/make_and_test.sh 11
     after_success:
-    - conan create . CLIUtils/stable
+    - conan create . cliutils/stable
     - |
       if [ "${TRAVIS_TAG}" ]
       then
