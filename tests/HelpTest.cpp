@@ -317,6 +317,27 @@ TEST(THelp, OnlyOneHelp) {
     EXPECT_THROW(app.parse(input), CLI::ExtrasError);
 }
 
+TEST(THelp, OnlyOneAllHelp) {
+    CLI::App app{"My prog"};
+
+    // It is not supported to have more than one help flag, last one wins
+    app.set_help_all_flag("--help-all", "No short name allowed");
+    app.set_help_all_flag("--yelp", "Alias for help");
+
+    std::vector<std::string> input{"--help-all"};
+    EXPECT_THROW(app.parse(input), CLI::ExtrasError);
+
+    app.reset();
+    std::vector<std::string> input2{"--yelp"};
+    EXPECT_THROW(app.parse(input2), CLI::CallForAllHelp);
+
+    // Remove the flag
+    app.set_help_all_flag();
+    app.reset();
+    std::vector<std::string> input3{"--yelp"};
+    EXPECT_THROW(app.parse(input3), CLI::ExtrasError);
+}
+
 TEST(THelp, RemoveHelp) {
     CLI::App app{"My prog"};
     app.set_help_flag();
@@ -385,9 +406,9 @@ TEST(THelp, NiceName) {
     auto short_name = app.add_option("more,-x,-y", x);
     auto positional = app.add_option("posit", x);
 
-    EXPECT_EQ(long_name->single_name(), "--long");
-    EXPECT_EQ(short_name->single_name(), "-x");
-    EXPECT_EQ(positional->single_name(), "posit");
+    EXPECT_EQ(long_name->get_name(), "--long");
+    EXPECT_EQ(short_name->get_name(), "-x");
+    EXPECT_EQ(positional->get_name(), "posit");
 }
 
 TEST(Exit, ErrorWithHelp) {
@@ -397,6 +418,18 @@ TEST(Exit, ErrorWithHelp) {
     try {
         app.parse(input);
     } catch(const CLI::CallForHelp &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Success), e.get_exit_code());
+    }
+}
+
+TEST(Exit, ErrorWithAllHelp) {
+    CLI::App app{"My prog"};
+    app.set_help_all_flag("--help-all", "All help");
+
+    std::vector<std::string> input{"--help-all"};
+    try {
+        app.parse(input);
+    } catch(const CLI::CallForAllHelp &e) {
         EXPECT_EQ(static_cast<int>(CLI::ExitCodes::Success), e.get_exit_code());
     }
 }
@@ -451,6 +484,29 @@ TEST_F(CapturedHelp, JustAnError) {
 TEST_F(CapturedHelp, CallForHelp) {
     EXPECT_EQ(run(CLI::CallForHelp()), 0);
     EXPECT_EQ(out.str(), app.help());
+    EXPECT_EQ(err.str(), "");
+}
+TEST_F(CapturedHelp, CallForAllHelp) {
+    EXPECT_EQ(run(CLI::CallForAllHelp()), 0);
+    EXPECT_EQ(out.str(), app.help("", CLI::AppFormatMode::All));
+    EXPECT_EQ(err.str(), "");
+}
+TEST_F(CapturedHelp, CallForAllHelpOutput) {
+    app.add_subcommand("one");
+    CLI::App *sub = app.add_subcommand("two");
+    sub->add_flag("--three");
+
+    EXPECT_EQ(run(CLI::CallForAllHelp()), 0);
+    EXPECT_EQ(out.str(), app.help("", CLI::AppFormatMode::All));
+    EXPECT_EQ(err.str(), "");
+    EXPECT_THAT(out.str(), HasSubstr("one"));
+    EXPECT_THAT(out.str(), HasSubstr("two"));
+    EXPECT_THAT(out.str(), HasSubstr("--three"));
+}
+TEST_F(CapturedHelp, NewFormattedHelp) {
+    app.formatter([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
+    EXPECT_EQ(run(CLI::CallForHelp()), 0);
+    EXPECT_EQ(out.str(), "New Help");
     EXPECT_EQ(err.str(), "");
 }
 

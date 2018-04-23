@@ -16,6 +16,7 @@
 #include "CLI/Macros.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
+#include "CLI/Formatter.hpp"
 
 namespace CLI {
 
@@ -48,12 +49,17 @@ template <typename CRTP> class OptionBase {
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
+    /// @brief A formatter to print out help
+    /// Used by the default App help formatter.
+    std::function<std::string(const Option *, OptionFormatMode)> formatter_{OptionFormatter()};
+
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
         other->required(required_);
         other->ignore_case(ignore_case_);
         other->configurable(configurable_);
         other->multi_option_policy(multi_option_policy_);
+        other->formatter(formatter_);
     }
 
   public:
@@ -74,6 +80,12 @@ template <typename CRTP> class OptionBase {
 
     /// Support Plumbum term
     CRTP *mandatory(bool value = true) { return required(value); }
+
+    /// Set a formatter for this option
+    CRTP *formatter(std::function<std::string(const Option *, OptionFormatMode)> value) {
+        formatter_ = value;
+        return static_cast<CRTP *>(this);
+    }
 
     // Getters
 
@@ -250,11 +262,11 @@ class Option : public OptionBase<Option> {
     Option *expected(int value) {
         // Break if this is a flag
         if(type_size_ == 0)
-            throw IncorrectConstruction::SetFlag(single_name());
+            throw IncorrectConstruction::SetFlag(get_name(true, true));
 
         // Setting 0 is not allowed
         else if(value == 0)
-            throw IncorrectConstruction::Set0Opt(single_name());
+            throw IncorrectConstruction::Set0Opt(get_name());
 
         // No change is okay, quit now
         else if(expected_ == value)
@@ -262,11 +274,11 @@ class Option : public OptionBase<Option> {
 
         // Type must be a vector
         else if(type_size_ >= 0)
-            throw IncorrectConstruction::ChangeNotVector(single_name());
+            throw IncorrectConstruction::ChangeNotVector(get_name());
 
         // TODO: Can support multioption for non-1 values (except for join)
         else if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
-            throw IncorrectConstruction::AfterMultiOpt(single_name());
+            throw IncorrectConstruction::AfterMultiOpt(get_name());
 
         expected_ = value;
         return this;
@@ -295,7 +307,7 @@ class Option : public OptionBase<Option> {
     Option *needs(Option *opt) {
         auto tup = requires_.insert(opt);
         if(!tup.second)
-            throw OptionAlreadyAdded::Requires(single_name(), opt->single_name());
+            throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
         return this;
     }
 
@@ -356,7 +368,7 @@ class Option : public OptionBase<Option> {
 
         for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name());
+                throw OptionAlreadyAdded(opt->get_name(true, true));
 
         return this;
     }
@@ -365,7 +377,7 @@ class Option : public OptionBase<Option> {
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
 
         if(get_items_expected() < 0)
-            throw IncorrectConstruction::MultiOptionPolicy(single_name());
+            throw IncorrectConstruction::MultiOptionPolicy(get_name());
         multi_option_policy_ = value;
         return this;
     }
@@ -376,6 +388,21 @@ class Option : public OptionBase<Option> {
 
     /// The number of arguments the option expects
     int get_type_size() const { return type_size_; }
+
+    /// The type name (for help printing)
+    std::string get_typeval() const { return typeval_; }
+
+    /// The environment variable associated to this value
+    std::string get_envname() const { return envname_; }
+
+    /// The set of options needed
+    std::set<Option *> get_needs() const { return requires_; }
+
+    /// The set of options excluded
+    std::set<Option *> get_excludes() const { return excludes_; }
+
+    /// The default value (for help printing)
+    std::string get_defaultval() const { return defaultval_; }
 
     /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
@@ -416,90 +443,64 @@ class Option : public OptionBase<Option> {
     /// Get the description
     const std::string &get_description() const { return description_; }
 
-    // Just the pname
-    std::string get_pname() const { return pname_; }
-
     ///@}
     /// @name Help tools
     ///@{
 
-    /// Gets a , sep list of names. Does not include the positional name if opt_only=true.
-    std::string get_name(bool opt_only = false) const {
-        std::vector<std::string> name_list;
-        if(!opt_only && pname_.length() > 0)
-            name_list.push_back(pname_);
-        for(const std::string &sname : snames_)
-            name_list.push_back("-" + sname);
-        for(const std::string &lname : lnames_)
-            name_list.push_back("--" + lname);
-        return detail::join(name_list);
-    }
+    /// \brief Gets a comma seperated list of names.
+    /// Will include / prefer the positional name if positional is true.
+    /// If all_options is false, pick just the most descriptive name to show.
+    /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
+    std::string get_name(bool positional = false, //<[input] Show the positional name
+                         bool all_options = false //<[input] Show every option
+                         ) const {
 
-    /// The name and any extras needed for positionals
-    std::string help_positional() const {
-        std::string out = pname_;
-        if(get_expected() > 1)
-            out = out + "(" + std::to_string(get_expected()) + "x)";
-        else if(get_expected() == -1)
-            out = out + "...";
-        out = get_required() ? out : "[" + out + "]";
-        return out;
-    }
+        if(all_options) {
 
-    /// The most descriptive name available
-    std::string single_name() const {
-        if(!lnames_.empty())
-            return std::string("--") + lnames_[0];
-        else if(!snames_.empty())
-            return std::string("-") + snames_[0];
-        else
-            return pname_;
-    }
+            std::vector<std::string> name_list;
 
-    /// The first half of the help print, name plus default, etc. Setting opt_only to true avoids the positional name.
-    std::string help_name(bool opt_only = false) const {
-        std::stringstream out;
-        out << get_name(opt_only) << help_aftername();
-        return out.str();
-    }
+            /// The all list wil never include a positional unless asked or that's the only name.
+            if((positional && pname_.length()) || (snames_.empty() && lnames_.empty()))
+                name_list.push_back(pname_);
 
-    /// pname with type info
-    std::string help_pname() const {
-        std::stringstream out;
-        out << get_pname() << help_aftername();
-        return out.str();
-    }
+            for(const std::string &sname : snames_)
+                name_list.push_back("-" + sname);
 
-    /// This is the part after the name is printed but before the description
-    std::string help_aftername() const {
-        std::stringstream out;
+            for(const std::string &lname : lnames_)
+                name_list.push_back("--" + lname);
 
-        if(get_type_size() != 0) {
-            if(!typeval_.empty())
-                out << " " << typeval_;
-            if(!defaultval_.empty())
-                out << "=" << defaultval_;
-            if(get_expected() > 1)
-                out << " x " << get_expected();
-            if(get_expected() == -1)
-                out << " ...";
-            if(get_required())
-                out << " (REQUIRED)";
+            return detail::join(name_list);
+
+        } else {
+
+            // This returns the positional name no matter what
+            if(positional)
+                return pname_;
+
+            // Prefer long name
+            else if(!lnames_.empty())
+                return std::string("--") + lnames_[0];
+
+            // Or short name if no long name
+            else if(!snames_.empty())
+                return std::string("-") + snames_[0];
+
+            // If positional is the only name, it's okay to use that
+            else
+                return pname_;
         }
-        if(!envname_.empty())
-            out << " (env:" << envname_ << ")";
-        if(!requires_.empty()) {
-            out << " Needs:";
-            for(const Option *opt : requires_)
-                out << " " << opt->single_name();
-        }
-        if(!excludes_.empty()) {
-            out << " Excludes:";
-            for(const Option *opt : excludes_)
-                out << " " << opt->single_name();
-        }
-        return out.str();
     }
+
+    /// \brief Call this with a OptionFormatMode to run the currently configured help formatter.
+    ///
+    /// Changed in Version 1.6:
+    ///
+    /// * `help_positinoal` MOVED TO `help_usage` (name not included) or Usage mode
+    /// * `help_name` CHANGED to `help_name` with different true/false flags
+    /// * `pname` with type info MOVED to `help_name`
+    /// * `help_aftername()` MOVED to `help_opts()`
+    /// * Instead of `opt->help_mode()` use `opt->help(mode)`
+    std::string help(OptionFormatMode mode) const { return formatter_(this, mode); }
 
     ///@}
     /// @name Parser tools
@@ -514,7 +515,7 @@ class Option : public OptionBase<Option> {
                 for(const std::function<std::string(std::string &)> &vali : validators_) {
                     std::string err_msg = vali(result);
                     if(!err_msg.empty())
-                        throw ValidationError(single_name(), err_msg);
+                        throw ValidationError(get_name(), err_msg);
                 }
         }
 
@@ -542,7 +543,7 @@ class Option : public OptionBase<Option> {
             // For now, vector of non size 1 types are not supported but possibility included here
             if((get_items_expected() > 0 && results_.size() != static_cast<size_t>(get_items_expected())) ||
                (get_items_expected() < 0 && results_.size() < static_cast<size_t>(-get_items_expected())))
-                throw ArgumentMismatch(single_name(), get_items_expected(), results_.size());
+                throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
             else
                 local_result = !callback_(results_);
         }
@@ -651,17 +652,6 @@ class Option : public OptionBase<Option> {
 
     /// Get the typename for this option
     std::string get_type_name() const { return typeval_; }
-
-    ///@}
-
-  protected:
-    /// @name App Helpers
-    ///@{
-    /// Can print positional name detailed option if true
-    bool _has_help_positional() const {
-        return get_positional() && (has_description() || !requires_.empty() || !excludes_.empty());
-    }
-    ///@}
 };
 
 } // namespace CLI

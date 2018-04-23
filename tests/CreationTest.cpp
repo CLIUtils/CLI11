@@ -75,7 +75,7 @@ TEST_F(TApp, RecoverSubcommands) {
     CLI::App *app3 = app.add_subcommand("app3");
     CLI::App *app4 = app.add_subcommand("app4");
 
-    EXPECT_EQ(app.get_subcommands(false), std::vector<CLI::App *>({app1, app2, app3, app4}));
+    EXPECT_EQ(app.get_subcommands({}), std::vector<CLI::App *>({app1, app2, app3, app4}));
 }
 
 TEST_F(TApp, MultipleSubcomMatchingWithCase) {
@@ -329,10 +329,17 @@ TEST_F(TApp, GetNameCheck) {
     auto a = app.add_flag("--that");
     auto b = app.add_flag("-x");
     auto c = app.add_option("pos", x);
+    auto d = app.add_option("one,-o,--other", x);
 
-    EXPECT_EQ(a->get_name(), "--that");
-    EXPECT_EQ(b->get_name(), "-x");
-    EXPECT_EQ(c->get_name(), "pos");
+    EXPECT_EQ(a->get_name(false, true), "--that");
+    EXPECT_EQ(b->get_name(false, true), "-x");
+    EXPECT_EQ(c->get_name(false, true), "pos");
+
+    EXPECT_EQ(d->get_name(), "--other");
+    EXPECT_EQ(d->get_name(false, false), "--other");
+    EXPECT_EQ(d->get_name(false, true), "-o,--other");
+    EXPECT_EQ(d->get_name(true, true), "one,-o,--other");
+    EXPECT_EQ(d->get_name(true, false), "one");
 }
 
 TEST_F(TApp, SubcommandDefaults) {

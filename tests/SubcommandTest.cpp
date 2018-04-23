@@ -448,6 +448,13 @@ TEST_F(TApp, PrefixSubcom) {
     EXPECT_EQ(subc->remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
 }
 
+TEST_F(TApp, InheritHelpAllFlag) {
+    app.set_help_all_flag("--help-all");
+    auto subc = app.add_subcommand("subc");
+    auto help_opt_list = subc->get_options([](const CLI::Option *opt) { return opt->get_name() == "--help-all"; });
+    EXPECT_EQ(help_opt_list.size(), (size_t)1);
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App *start;
@@ -536,6 +543,8 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
 
     run();
     EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ((size_t)2, app.get_subcommands({}).size());
+    EXPECT_EQ((size_t)1, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size());
 
     app.reset();
     args = {"SuB1"};

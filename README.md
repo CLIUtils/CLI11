@@ -193,6 +193,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 * `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
 * `->configurable(false)`: Disable this option from being in an ini configuration file.
+* `->formatter(fmt)`: Set the formatter, with signature `std::string(const Option*, OptionFormatMode)`. See Formatting for more details.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
@@ -247,6 +248,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.get_parent()`: Get the parent App or nullptr if called on master App.
 * `.get_options()`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 * `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
+* `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
 * `.get_description()`: Access the description.
 * `.parsed()`: True if this subcommand was given on the command line.
 * `.set_name(name)`: Add or change the name.
@@ -254,6 +256,8 @@ There are several options that are supported on the main app and subcommands. Th
 * `.allow_extras()`: Do not throw an error if extra arguments are left over.
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 * `.set_footer(message)`: Set text to appear at the bottom of the help string.
+* `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
+* `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 * `.set_failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 * `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 
@@ -300,11 +304,22 @@ app.option_defaults()->required();
 
 The default settings for options are inherited to subcommands, as well.
 
+## Formatting
+
+The job of formatting help printouts is delegated to a formatter callable object on Apps and Options. You are free to replace either formatter by calling `formatter(fmt)` on an `App` or `Option`. 
+CLI11 comes with a default App formatter functional, `AppFormatter`, and a default `OptionFormatter` as well. They are both customizable; you can set `label(key, value)` to replace the default labels like `REQUIRED`, and `column_width(n)` to set the width of the columns before you add the functional to the app or option. You can also override almost any stage of the formatting process in a subclass of either formatter. If you want to make a new formatter from scratch, you can do
+that too; you just need to implement the correct signature. The first argument is a const pointer to the App or Option in question. The App formatter will get a `std::string` usage name as the second option, and both end with with a mode. Both formatters return a `std::string`.
+
+The `AppFormatMode` can be `Normal`, `All`, or `Sub`, and it indicates the situation the help was called in. `Sub` is optional, but the default formatter uses it to make sure expanded subcommands are called with
+their own formatter since you can't access anything but the call operator once a formatter has been set.
+
+The `OptionFormatMode` also has three values, depending on the calling situation: `Positional`, `Optional`, and `Usage`. The default formatter uses these to print out the option in each of these situations.
+
 ## Subclassing
 
-The App class was designed allow toolkits to subclass it, to provide preset default options (see above) and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, than can removed/replaced using `.set_help_flag(name, help_string)`. You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
+The App class was designed allow toolkits to subclass it, to provide preset default options (see above) and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, than can removed/replaced using `.set_help_flag(name, help_string)`. You can also set a help-all flag with `.set_help_all_flag(name, help_string)`; this will expand the subcommands (one level only). You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
 but before run behavior, while
-still giving the user freedom to `set_callback` on the main app.  
+still giving the user freedom to `set_callback` on the main app.
 
 The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector.
 

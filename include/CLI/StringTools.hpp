@@ -104,15 +104,16 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
     return trim(s, filter);
 }
 /// Print a two part "help" string
-inline void format_help(std::stringstream &out, std::string name, std::string description, size_t wid) {
+inline std::ostream &format_help(std::ostream &out, std::string name, std::string description, size_t wid) {
     name = "  " + name;
     out << std::setw(static_cast<int>(wid)) << std::left << name;
     if(!description.empty()) {
         if(name.length() >= wid)
-            out << std::endl << std::setw(static_cast<int>(wid)) << "";
+            out << "\n" << std::setw(static_cast<int>(wid)) << "";
         out << description;
     }
-    out << std::endl;
+    out << "\n";
+    return out;
 }
 
 /// Verify the first character of an option

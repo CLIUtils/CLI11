@@ -1,3 +1,29 @@
+### Version 1.6: Formatters
+
+Added a new formatting system. You can now set the formatter on Apps and Options.
+
+* Added `AppFormatter` and `OptionFormatter`, and `formatter` slot
+* Added `help_all` support (not added by default)
+* Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
+* Added `get_groups()` to get groups
+* Added getters for the missing parts of options (help no longer uses any private parts)
+
+Changes to the help system (most normal users will not notice this):
+
+* Renamed `single_name` to `get_name(false, false)` (the default)
+* The old `get_name()` is now `get_name(false, true)`
+* The old `get_pname()` is now `get_name(true, false)`
+* Removed `help_*` functions
+* Protected function `_has_help_positional` removed
+* `format_help` can now be chained
+
+
+Other small changes:
+
+* Testing (only) now uses submodules.
+* Removed `requires` in favor of `needs` (deprecated in last version)
+* Better CMake policy handling
+
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
 

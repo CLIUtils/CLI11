@@ -71,7 +71,7 @@ add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)
 set_property(TEST enum_fail PROPERTY PASS_REGULAR_EXPRESSION
-    "Could not convert: -l,--level = 4")
+    "Could not convert: --level = 4")
 
 add_cli_exe(modhelp modhelp.cpp)
 add_test(NAME modhelp COMMAND modhelp -a test -h)
@@ -83,3 +83,5 @@ add_test(NAME subcom_in_files COMMAND subcommand_main subcommand_a -f this.txt -
 set_property(TEST subcom_in_files PROPERTY PASS_REGULAR_EXPRESSION
     "Working on file: this\.txt"
     "Using foo!")
+
+add_cli_exe(formatter formatter.cpp)

@@ -24,6 +24,7 @@
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
+#include "CLI/Formatter.hpp"
 
 namespace CLI {
 
@@ -102,6 +103,12 @@ class App {
     /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
 
+    /// A pointer to the help all flag if there is one INHERITABLE
+    Option *help_all_ptr_{nullptr};
+
+    /// This is the formatter for help printing. Default provided. INHERITABLE
+    std::function<std::string(const App *, std::string, AppFormatMode)> formatter_{AppFormatter()};
+
     /// The error message printing function INHERITABLE
     std::function<std::string(const App *, const Error &e)> failure_message_ = FailureMessage::simple;
 
@@ -141,7 +148,7 @@ class App {
     /// True if this command/subcommand was parsed
     bool parsed_{false};
 
-    /// Minimum required subcommands
+    /// Minimum required subcommands (not inheritable!)
     size_t require_subcommand_min_ = 0;
 
     /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited INHERITABLE
@@ -171,7 +178,10 @@ class App {
         // Inherit if not from a nullptr
         if(parent_ != nullptr) {
             if(parent_->help_ptr_ != nullptr)
-                set_help_flag(parent_->help_ptr_->get_name(), parent_->help_ptr_->get_description());
+                set_help_flag(parent_->help_ptr_->get_name(false, true), parent_->help_ptr_->get_description());
+            if(parent_->help_all_ptr_ != nullptr)
+                set_help_all_flag(parent_->help_all_ptr_->get_name(false, true),
+                                  parent_->help_all_ptr_->get_description());
 
             /// OptionDefaults
             option_defaults_ = parent_->option_defaults_;
@@ -185,6 +195,7 @@ class App {
             fallthrough_ = parent_->fallthrough_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
+            formatter_ = parent_->formatter_;
             require_subcommand_max_ = parent_->require_subcommand_max_;
         }
     }
@@ -247,6 +258,12 @@ class App {
                     throw OptionAlreadyAdded(subc->name_);
             }
         }
+        return this;
+    }
+
+    /// Set the help formatter
+    App *formatter(std::function<std::string(const App *, std::string, AppFormatMode)> fmt) {
+        formatter_ = fmt;
         return this;
     }
 
@@ -386,6 +403,22 @@ class App {
         }
 
         return help_ptr_;
+    }
+
+    /// Set a help all flag, replaced the existing one if present
+    Option *set_help_all_flag(std::string name = "", std::string description = "") {
+        if(help_all_ptr_ != nullptr) {
+            remove_option(help_all_ptr_);
+            help_all_ptr_ = nullptr;
+        }
+
+        // Empty name will simply remove the help flag
+        if(!name.empty()) {
+            help_all_ptr_ = add_flag(name, description);
+            help_all_ptr_->configurable(false);
+        }
+
+        return help_all_ptr_;
     }
 
     /// Add option for flag
@@ -764,6 +797,11 @@ class App {
             return e.get_exit_code();
         }
 
+        if(dynamic_cast<const CLI::CallForAllHelp *>(&e) != nullptr) {
+            out << help("", AppFormatMode::All);
+            return e.get_exit_code();
+        }
+
         if(e.get_exit_code() != static_cast<int>(ExitCodes::Success)) {
             if(failure_message_)
                 err << failure_message_(this, e) << std::flush;
@@ -801,18 +839,43 @@ class App {
         throw OptionNotFound(name);
     }
 
-    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command line
-    /// order)
-    std::vector<App *> get_subcommands(bool parsed = true) const {
-        if(parsed) {
-            return parsed_subcommands_;
-        } else {
-            std::vector<App *> subcomms(subcommands_.size());
-            std::transform(std::begin(subcommands_), std::end(subcommands_), std::begin(subcomms), [](const App_p &v) {
-                return v.get();
-            });
-            return subcomms;
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by by default, in command
+    /// line order; use parsed = false to get the original definition list.)
+    std::vector<App *> get_subcommands() const { return parsed_subcommands_; }
+
+    /// Get a filtered subcommand pointer list from the original definition list. An empty function will provide all
+    /// subcommands (const)
+    std::vector<const App *> get_subcommands(const std::function<bool(const App *)> &filter) const {
+        std::vector<const App *> subcomms(subcommands_.size());
+        std::transform(std::begin(subcommands_), std::end(subcommands_), std::begin(subcomms), [](const App_p &v) {
+            return v.get();
+        });
+
+        if(filter) {
+            subcomms.erase(std::remove_if(std::begin(subcomms),
+                                          std::end(subcomms),
+                                          [&filter](const App *app) { return !filter(app); }),
+                           std::end(subcomms));
         }
+
+        return subcomms;
+    }
+
+    /// Get a filtered subcommand pointer list from the original definition list. An empty function will provide all
+    /// subcommands
+    std::vector<App *> get_subcommands(const std::function<bool(App *)> &filter) {
+        std::vector<App *> subcomms(subcommands_.size());
+        std::transform(std::begin(subcommands_), std::end(subcommands_), std::begin(subcomms), [](const App_p &v) {
+            return v.get();
+        });
+
+        if(filter) {
+            subcomms.erase(
+                std::remove_if(std::begin(subcomms), std::end(subcomms), [&filter](App *app) { return !filter(app); }),
+                std::end(subcomms));
+        }
+
+        return subcomms;
     }
 
     /// Check to see if given subcommand was selected
@@ -885,105 +948,20 @@ class App {
         return out.str();
     }
 
-    /// Makes a help message, with a column wid for column 1
-    std::string help(size_t wid = 30, std::string prev = "") const {
-        // Delegate to subcommand if needed
+    /// Makes a help message, using the currently configured formatter
+    /// Will only do one subcommand at a time
+    std::string help(std::string prev = "", AppFormatMode mode = AppFormatMode::Normal) const {
         if(prev.empty())
-            prev = name_;
+            prev = get_name();
         else
-            prev += " " + name_;
+            prev += " " + get_name();
 
+        // Delegate to subcommand if needed
         auto selected_subcommands = get_subcommands();
         if(!selected_subcommands.empty())
-            return selected_subcommands.at(0)->help(wid, prev);
-
-        std::stringstream out;
-        out << description_ << std::endl;
-        out << "Usage:" << (prev.empty() ? "" : " ") << prev;
-
-        // Check for options_
-        bool npos = false;
-        std::vector<std::string> groups;
-        for(const Option_p &opt : options_) {
-            if(opt->nonpositional()) {
-                npos = true;
-
-                // Add group if it is not already in there
-                if(std::find(groups.begin(), groups.end(), opt->get_group()) == groups.end()) {
-                    groups.push_back(opt->get_group());
-                }
-            }
-        }
-
-        if(npos)
-            out << " [OPTIONS]";
-
-        // Positionals
-        bool pos = false;
-        for(const Option_p &opt : options_)
-            if(opt->get_positional()) {
-                // A hidden positional should still show up in the usage statement
-                // if(detail::to_lower(opt->get_group()).empty())
-                //    continue;
-                out << " " << opt->help_positional();
-                if(opt->_has_help_positional())
-                    pos = true;
-            }
-
-        if(!subcommands_.empty()) {
-            if(require_subcommand_min_ > 0)
-                out << " SUBCOMMAND";
-            else
-                out << " [SUBCOMMAND]";
-        }
-
-        out << std::endl;
-
-        // Positional descriptions
-        if(pos) {
-            out << std::endl << "Positionals:" << std::endl;
-            for(const Option_p &opt : options_) {
-                if(detail::to_lower(opt->get_group()).empty())
-                    continue; // Hidden
-                if(opt->_has_help_positional())
-                    detail::format_help(out, opt->help_pname(), opt->get_description(), wid);
-            }
-        }
-
-        // Options
-        if(npos) {
-            for(const std::string &group : groups) {
-                if(detail::to_lower(group).empty())
-                    continue; // Hidden
-                out << std::endl << group << ":" << std::endl;
-                for(const Option_p &opt : options_) {
-                    if(opt->nonpositional() && opt->get_group() == group)
-                        detail::format_help(out, opt->help_name(true), opt->get_description(), wid);
-                }
-            }
-        }
-
-        // Subcommands
-        if(!subcommands_.empty()) {
-            std::set<std::string> subcmd_groups_seen;
-            for(const App_p &com : subcommands_) {
-                const std::string &group_key = detail::to_lower(com->get_group());
-                if(group_key.empty() || subcmd_groups_seen.count(group_key) != 0)
-                    continue; // Hidden or not in a group
-
-                subcmd_groups_seen.insert(group_key);
-                out << std::endl << com->get_group() << ":" << std::endl;
-                for(const App_p &new_com : subcommands_)
-                    if(detail::to_lower(new_com->get_group()) == group_key)
-                        detail::format_help(out, new_com->get_name(), new_com->description_, wid);
-            }
-        }
-
-        if(!footer_.empty()) {
-            out << std::endl << footer_ << std::endl;
-        }
-
-        return out.str();
+            return selected_subcommands.at(0)->help(prev);
+        else
+            return formatter_(this, prev, mode);
     }
 
     ///@}
@@ -993,12 +971,20 @@ class App {
     /// Get the app or subcommand description
     std::string get_description() const { return description_; }
 
-    /// Get the list of options (user facing function, so returns raw pointers)
-    std::vector<Option *> get_options() const {
-        std::vector<Option *> options(options_.size());
+    /// Get the list of options (user facing function, so returns raw pointers), has optional filter function
+    std::vector<const Option *> get_options(const std::function<bool(const Option *)> filter = {}) const {
+        std::vector<const Option *> options(options_.size());
         std::transform(std::begin(options_), std::end(options_), std::begin(options), [](const Option_p &val) {
             return val.get();
         });
+
+        if(filter) {
+            options.erase(std::remove_if(std::begin(options),
+                                         std::end(options),
+                                         [&filter](const Option *opt) { return !filter(opt); }),
+                          std::end(options));
+        }
+
         return options;
     }
 
@@ -1035,6 +1021,9 @@ class App {
     /// Get a pointer to the help flag. (const)
     const Option *get_help_ptr() const { return help_ptr_; }
 
+    /// Get a pointer to the help all flag. (const)
+    const Option *get_help_all_ptr() const { return help_all_ptr_; }
+
     /// Get a pointer to the config option.
     Option *get_config_ptr() { return config_ptr_; }
 
@@ -1056,6 +1045,20 @@ class App {
         }
 
         return local_name == name_to_check;
+    }
+
+    /// Get the groups available directly from this option (in order)
+    std::vector<std::string> get_groups() const {
+        std::vector<std::string> groups;
+
+        for(const Option_p &opt : options_) {
+            // Add group if it is not already in there
+            if(std::find(groups.begin(), groups.end(), opt->get_group()) == groups.end()) {
+                groups.push_back(opt->get_group());
+            }
+        }
+
+        return groups;
     }
 
     /// This gets a vector of pointers with the original parse order
@@ -1161,6 +1164,10 @@ class App {
             throw CallForHelp();
         }
 
+        if(help_all_ptr_ != nullptr && help_all_ptr_->count() > 0) {
+            throw CallForAllHelp();
+        }
+
         // Process an INI file
         if(config_ptr_ != nullptr) {
             if(*config_ptr_) {
@@ -1221,20 +1228,20 @@ class App {
             if(opt->get_required() || opt->count() != 0) {
                 // Make sure enough -N arguments parsed (+N is already handled in parsing function)
                 if(opt->get_items_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_items_expected()))
-                    throw ArgumentMismatch::AtLeast(opt->single_name(), -opt->get_items_expected());
+                    throw ArgumentMismatch::AtLeast(opt->get_name(), -opt->get_items_expected());
 
                 // Required but empty
                 if(opt->get_required() && opt->count() == 0)
-                    throw RequiredError(opt->single_name());
+                    throw RequiredError(opt->get_name());
             }
             // Requires
             for(const Option *opt_req : opt->requires_)
                 if(opt->count() > 0 && opt_req->count() == 0)
-                    throw RequiresError(opt->single_name(), opt_req->single_name());
+                    throw RequiresError(opt->get_name(), opt_req->get_name());
             // Excludes
             for(const Option *opt_ex : opt->excludes_)
                 if(opt->count() > 0 && opt_ex->count() != 0)
-                    throw ExcludesError(opt->single_name(), opt_ex->single_name());
+                    throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
         auto selected_subcommands = get_subcommands();
@@ -1508,7 +1515,7 @@ class App {
             }
 
             if(num > 0) {
-                throw ArgumentMismatch::TypedAtLeast(op->single_name(), num, op->get_type_name());
+                throw ArgumentMismatch::TypedAtLeast(op->get_name(), num, op->get_type_name());
             }
         }
 
@@ -1524,7 +1531,7 @@ namespace FailureMessage {
 inline std::string simple(const App *app, const Error &e) {
     std::string header = std::string(e.what()) + "\n";
     if(app->get_help_ptr() != nullptr)
-        header += "Run with " + app->get_help_ptr()->single_name() + " for more information.\n";
+        header += "Run with " + app->get_help_ptr()->get_name() + " for more information.\n";
     return header;
 }
 
