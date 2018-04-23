@@ -3,6 +3,7 @@
 int main(int argc, char **argv) {
 
     CLI::App app("K3Pi goofit fitter");
+    app.set_help_all_flag("--help-all", "Expand all help");
     app.add_flag("--random", "Some random flag");
     CLI::App *start = app.add_subcommand("start", "A great subcommand");
     CLI::App *stop = app.add_subcommand("stop", "Do you really want to stop?");
