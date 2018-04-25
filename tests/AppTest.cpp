@@ -1234,43 +1234,6 @@ TEST_F(TApp, NeedsMixedFlags) {
     run();
 }
 
-#ifndef CLI11_CPP20
-
-TEST_F(TApp, RequiresMixedFlags) {
-    CLI::Option *opt1 = app.add_flag("--opt1");
-    app.add_flag("--opt2");
-    app.add_flag("--opt3");
-    app.add_flag("--optall")->requires(opt1, "--opt2", "--opt3");
-
-    run();
-
-    app.reset();
-    args = {"--opt1"};
-    run();
-
-    app.reset();
-    args = {"--opt2"};
-    run();
-
-    app.reset();
-    args = {"--optall"};
-    EXPECT_THROW(run(), CLI::RequiresError);
-
-    app.reset();
-    args = {"--optall", "--opt1"};
-    EXPECT_THROW(run(), CLI::RequiresError);
-
-    app.reset();
-    args = {"--optall", "--opt2", "--opt1"};
-    EXPECT_THROW(run(), CLI::RequiresError);
-
-    app.reset();
-    args = {"--optall", "--opt1", "--opt2", "--opt3"};
-    run();
-}
-
-#endif
-
 TEST_F(TApp, NeedsChainedFlags) {
     CLI::Option *opt1 = app.add_flag("--opt1");
     CLI::Option *opt2 = app.add_flag("--opt2")->needs(opt1);

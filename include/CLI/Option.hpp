@@ -313,26 +313,6 @@ class Option : public OptionBase<Option> {
         return needs(opt1, args...);
     }
 
-#ifndef CLI11_CPP20
-    /// Sets required options \deprecated
-    CLI11_DEPRECATED("Use needs instead of requires (eventual keyword clash)")
-    Option *requires(Option *opt) { return needs(opt); }
-
-    /// Can find a string if needed \deprecated
-    template <typename T = App> Option *requires(std::string opt_name) {
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
-            if(opt.get() != this && opt->check_name(opt_name))
-                return needs(opt.get());
-        throw IncorrectConstruction::MissingOption(opt_name);
-    }
-
-    /// Any number supported, any mix of string and Opt \deprecated
-    template <typename A, typename B, typename... ARG> Option *requires(A opt, B opt1, ARG... args) {
-        requires(opt);
-        return requires(opt1, args...);
-    }
-#endif
-
     /// Sets excluded options
     Option *excludes(Option *opt) {
         excludes_.insert(opt);
