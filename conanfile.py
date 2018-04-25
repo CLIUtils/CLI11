@@ -18,7 +18,7 @@ class HelloConan(ConanFile):
     license = "BSD 3 clause"
     description = "Command Line Interface toolkit for C++11"
 
-    exports_sources = "LICENSE", "README.md", "include/*", "cmake/*", "CMakeLists.txt", "tests/*"
+    exports_sources = "LICENSE", "README.md", "include/*", "extern/*", "cmake/*", "CMakeLists.txt", "tests/*"
 
     def build(self): # this is not building a library, just tests
         cmake = CMake(self)

@@ -7,48 +7,8 @@
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF)
 
-if(CMAKE_VERSION VERSION_LESS 3.11)
-    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
-    include(DownloadProject)
-    download_project(PROJ                googletest
-                     GIT_REPOSITORY      https://github.com/google/googletest.git
-                     GIT_TAG             release-1.8.0
-                     UPDATE_DISCONNECTED 1
-                     QUIET
-    )
-    
-    # CMake warning suppression will not be needed in version 1.9
-    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_SOURCE_DIR} EXCLUDE_FROM_ALL)
-else()
-    include(FetchContent)
-    FetchContent_Declare(googletest
-        GIT_REPOSITORY      https://github.com/google/googletest.git
-        GIT_TAG             release-1.8.0)
-    FetchContent_GetProperties(googletest)
-    if(NOT googletest_POPULATED)
-        FetchContent_Populate(googletest)
-        set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
-        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-    endif()
-endif()
-
-
-
-if(CMAKE_CONFIGURATION_TYPES)
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
-        --force-new-ctest-process --output-on-failure 
-        --build-config "$<CONFIGURATION>")
-else()
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
-        --force-new-ctest-process --output-on-failure)
-endif()
-set_target_properties(check PROPERTIES FOLDER "Scripts")
-
-#include_directories(${gtest_SOURCE_DIR}/include)
-
-# More modern way to do the last line, less messy but needs newish CMake:
-# target_include_directories(gtest INTERFACE ${gtest_SOURCE_DIR}/include)
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
+add_subdirectory("${CLI11_SOURCE_DIR}/extern/googletest" "${CLI11_BINARY_DIR}/extern/googletest" EXCLUDE_FROM_ALL)
 
 
 if(GOOGLE_TEST_INDIVIDUAL)

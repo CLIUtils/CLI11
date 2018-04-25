@@ -3,6 +3,7 @@ branches:
     - master
 
 install:
+  - git submodule update --init --recursive
   - set PATH=C:\Python36;%PATH%
   - cmake --version
   - pip install conan
