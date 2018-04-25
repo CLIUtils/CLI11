@@ -1,3 +1,21 @@
+if(NOT EXISTS "${CLI11_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
+    message(FATAL_ERROR "You have requested tests be built, but googletest is not downloaded. Please run:
+    git submodule update --init")
+endif()
+
+# If submodule is available, add sanitizers
+# Set SANITIZE_ADDRESS, SANITIZE_MEMORY, SANITIZE_THREAD or SANITIZE_UNDEFINED
+if(EXISTS "${CLI11_SOURCE_DIR}/extern/sanitizers/cmake/FindSanitizers.cmake")
+    set(CMAKE_MODULE_PATH "${CLI11_SOURCE_DIR}/extern/sanitizers/cmake" ${CMAKE_MODULE_PATH})
+    find_package(Sanitizers)
+    if(SANITIZE_ADDRESS)
+        message(STATUS "You might want to use \"${ASan_WRAPPER}\" to run your program")
+    endif()
+else()
+    macro(add_sanitizers)
+    endmacro()
+endif()
+
 set(GOOGLE_TEST_INDIVIDUAL OFF)
 include(AddGoogletest)
 
@@ -23,6 +41,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 foreach(T ${CLI11_TESTS})
 
     add_executable(${T} ${T}.cpp ${CLI11_headers})
+    add_sanitizers(${T})
     target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 
@@ -40,6 +59,7 @@ endforeach()
 foreach(T ${CLI11_MULTIONLY_TESTS})
 
     add_executable(${T} ${T}.cpp ${CLI11_headers})
+    add_sanitizers(${T})
     target_link_libraries(${T} PUBLIC CLI11)
     add_gtest(${T})
 
