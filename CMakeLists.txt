@@ -61,11 +61,6 @@ include(CMakeDependentOption)
 # Allow IDE's to group targets into folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL Coverage)
-    include(CodeCoverage)
-    setup_target_for_coverage(CLI11_coverage ctest coverage)
-endif()
-
 file(GLOB CLI11_headers "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/*")
 # To see in IDE, must be listed for target
 

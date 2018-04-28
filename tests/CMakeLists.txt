@@ -103,3 +103,13 @@ if(Boost_FOUND)
     target_compile_definitions(OptionalTest PUBLIC CLI11_BOOST_OPTIONAL)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL Coverage)
+    include(CodeCoverage)
+    setup_target_for_coverage(
+        NAME CLI11_coverage
+        EXECUTABLE ctest
+        DEPENDENCIES
+          ${CLI11_TESTS}
+          ${CLI11_MULTIONLY_TESTS})
+endif()
+
