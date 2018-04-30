@@ -16,7 +16,6 @@
 #include "CLI/Macros.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
-#include "CLI/Formatter.hpp"
 
 namespace CLI {
 
@@ -49,17 +48,12 @@ template <typename CRTP> class OptionBase {
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
-    /// @brief A formatter to print out help
-    /// Used by the default App help formatter.
-    std::function<std::string(const Option *, OptionFormatMode)> formatter_{OptionFormatter()};
-
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
         other->required(required_);
         other->ignore_case(ignore_case_);
         other->configurable(configurable_);
         other->multi_option_policy(multi_option_policy_);
-        other->formatter(formatter_);
     }
 
   public:
@@ -80,12 +74,6 @@ template <typename CRTP> class OptionBase {
 
     /// Support Plumbum term
     CRTP *mandatory(bool value = true) { return required(value); }
-
-    /// Set a formatter for this option
-    CRTP *formatter(std::function<std::string(const Option *, OptionFormatMode)> value) {
-        formatter_ = value;
-        return static_cast<CRTP *>(this);
-    }
 
     // Getters
 
@@ -490,17 +478,6 @@ class Option : public OptionBase<Option> {
                 return pname_;
         }
     }
-
-    /// \brief Call this with a OptionFormatMode to run the currently configured help formatter.
-    ///
-    /// Changed in Version 1.6:
-    ///
-    /// * `help_positinoal` MOVED TO `help_usage` (name not included) or Usage mode
-    /// * `help_name` CHANGED to `help_name` with different true/false flags
-    /// * `pname` with type info MOVED to `help_name`
-    /// * `help_aftername()` MOVED to `help_opts()`
-    /// * Instead of `opt->help_mode()` use `opt->help(mode)`
-    std::string help(OptionFormatMode mode) const { return formatter_(this, mode); }
 
     ///@}
     /// @name Parser tools

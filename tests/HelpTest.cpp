@@ -570,7 +570,7 @@ TEST(THelp, RequiredPrintout) {
     int x;
     app.add_option("-a,--alpha", x)->required();
 
-    EXPECT_THAT(app.help(), HasSubstr("(REQUIRED)"));
+    EXPECT_THAT(app.help(), HasSubstr(" REQUIRED"));
 }
 
 TEST(THelp, GroupOrder) {

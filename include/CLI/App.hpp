@@ -24,7 +24,7 @@
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
-#include "CLI/Formatter.hpp"
+#include "CLI/FormatterFwd.hpp"
 
 namespace CLI {
 
@@ -107,7 +107,7 @@ class App {
     Option *help_all_ptr_{nullptr};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE
-    std::function<std::string(const App *, std::string, AppFormatMode)> formatter_{AppFormatter()};
+    std::function<std::string(const App *, std::string, AppFormatMode)> formatter_{Formatter()};
 
     /// The error message printing function INHERITABLE
     std::function<std::string(const App *, const Error &e)> failure_message_ = FailureMessage::simple;
