@@ -193,7 +193,6 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 * `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
 * `->configurable(false)`: Disable this option from being in an ini configuration file.
-* `->formatter(fmt)`: Set the formatter, with signature `std::string(const Option*, OptionFormatMode)`. See Formatting for more details.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
@@ -306,14 +305,12 @@ The default settings for options are inherited to subcommands, as well.
 
 ## Formatting
 
-The job of formatting help printouts is delegated to a formatter callable object on Apps and Options. You are free to replace either formatter by calling `formatter(fmt)` on an `App` or `Option`. 
-CLI11 comes with a default App formatter functional, `AppFormatter`, and a default `OptionFormatter` as well. They are both customizable; you can set `label(key, value)` to replace the default labels like `REQUIRED`, and `column_width(n)` to set the width of the columns before you add the functional to the app or option. You can also override almost any stage of the formatting process in a subclass of either formatter. If you want to make a new formatter from scratch, you can do
-that too; you just need to implement the correct signature. The first argument is a const pointer to the App or Option in question. The App formatter will get a `std::string` usage name as the second option, and both end with with a mode. Both formatters return a `std::string`.
+The job of formatting help printouts is delegated to a formatter callable object on Apps and Options. You are free to replace either formatter by calling `formatter(fmt)` on an `App`, where fmt is any copyable callable with the correct signature. 
+CLI11 comes with a default App formatter functional, `Formatter`. It is customizable; you can set `label(key, value)` to replace the default labels like `REQUIRED`, and `column_width(n)` to set the width of the columns before you add the functional to the app or option. You can also override almost any stage of the formatting process in a subclass of either formatter. If you want to make a new formatter from scratch, you can do
+that too; you just need to implement the correct signature. The first argument is a const pointer to the in question. The formatter will get a `std::string` usage name as the second option, and a `AppFormatMode` mode for the final option. It should return a `std::string`.
 
 The `AppFormatMode` can be `Normal`, `All`, or `Sub`, and it indicates the situation the help was called in. `Sub` is optional, but the default formatter uses it to make sure expanded subcommands are called with
 their own formatter since you can't access anything but the call operator once a formatter has been set.
-
-The `OptionFormatMode` also has three values, depending on the calling situation: `Positional`, `Optional`, and `Usage`. The default formatter uses these to print out the option in each of these situations.
 
 ## Subclassing
 

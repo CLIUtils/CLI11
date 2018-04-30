@@ -1,17 +1,15 @@
 #include <CLI/CLI.hpp>
 
-class MyFormatter : public CLI::OptionFormatter {
+class MyFormatter : public CLI::Formatter {
   public:
-    std::string make_opts(const CLI::Option *) const override { return " OPTION"; }
+    std::string make_option_opts(const CLI::Option *) const override { return " OPTION"; }
 };
 
 int main(int argc, char **argv) {
     CLI::App app;
     app.set_help_all_flag("--help-all", "Show all help");
 
-    app.option_defaults()->formatter(MyFormatter());
-
-    CLI::AppFormatter fmt;
+    MyFormatter fmt;
     fmt.column_width(15);
     app.formatter(fmt);
 

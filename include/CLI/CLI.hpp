@@ -24,12 +24,10 @@
 
 #include "CLI/Validators.hpp"
 
-#include "CLI/Formatter.hpp"
+#include "CLI/FormatterFwd.hpp"
 
 #include "CLI/Option.hpp"
 
-#include "CLI/OptionFormatter.hpp"
-
 #include "CLI/App.hpp"
 
-#include "CLI/AppFormatter.hpp"
+#include "CLI/Formatter.hpp"

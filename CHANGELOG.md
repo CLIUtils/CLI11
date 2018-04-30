@@ -1,8 +1,8 @@
-### Version 1.6: Formatters
+### Version 1.6: Formatting
 
-Added a new formatting system. You can now set the formatter on Apps and Options.
+Added a new formatting system. You can now set the formatter on Apps.
 
-* Added `AppFormatter` and `OptionFormatter`, and `formatter` slot
+* Added `CLI::Formatter` and `formatter` slot for apps, inherited.
 * Added `help_all` support (not added by default)
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
 * Added `get_groups()` to get groups

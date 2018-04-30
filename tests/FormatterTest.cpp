@@ -25,10 +25,10 @@ TEST(Formatter, Nothing) {
 TEST(Formatter, OptCustomize) {
     CLI::App app{"My prog"};
 
-    CLI::OptionFormatter optfmt;
+    CLI::Formatter optfmt;
     optfmt.column_width(25);
     optfmt.label("REQUIRED", "(MUST HAVE)");
-    app.option_defaults()->formatter(optfmt);
+    app.formatter(optfmt);
 
     int v;
     app.add_option("--opt", v, "Something")->required();
@@ -40,7 +40,7 @@ TEST(Formatter, OptCustomize) {
               "My prog\n"
               "Usage: [OPTIONS]\n\n"
               "Options:\n"
-              "  -h,--help                   Print this help message and exit\n"
+              "  -h,--help              Print this help message and exit\n"
               "  --opt INT (MUST HAVE)  Something\n");
 }
 
@@ -48,7 +48,7 @@ TEST(Formatter, AptCustomize) {
     CLI::App app{"My prog"};
     app.add_subcommand("subcom1", "This");
 
-    CLI::AppFormatter appfmt;
+    CLI::Formatter appfmt;
     appfmt.column_width(20);
     appfmt.label("Usage", "Run");
     app.formatter(appfmt);
@@ -60,7 +60,7 @@ TEST(Formatter, AptCustomize) {
               "My prog\n"
               "Run: [OPTIONS] [SUBCOMMAND]\n\n"
               "Options:\n"
-              "  -h,--help                   Print this help message and exit\n\n"
+              "  -h,--help         Print this help message and exit\n\n"
               "Subcommands:\n"
               "  subcom1           This\n"
               "  subcom2           This\n");
