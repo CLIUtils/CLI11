@@ -500,11 +500,11 @@ class App {
     }
 #endif
 
-    /// Add set of options (No default)
+    /// Add set of options (No default, temp refernce, such as an inline set)
     template <typename T>
     Option *add_set(std::string name,
-                    T &member,           ///< The selected member of the set
-                    std::set<T> options, ///< The set of possibilities
+                    T &member,                   ///< The selected member of the set
+                    const std::set<T> &&options, ///< The set of possibilities
                     std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -522,11 +522,33 @@ class App {
         return opt;
     }
 
-    /// Add set of options
+    /// Add set of options (No default, non-temp refernce, such as an existing set)
     template <typename T>
     Option *add_set(std::string name,
-                    T &member,           ///< The selected member of the set
-                    std::set<T> options, ///< The set of posibilities
+                    T &member,                  ///< The selected member of the set
+                    const std::set<T> &options, ///< The set of possibilities
+                    std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            bool retval = detail::lexical_cast(res[0], member);
+            if(!retval)
+                throw ConversionError(res[0], simple_name);
+            return std::find(std::begin(options), std::end(options), member) != std::end(options);
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<T>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+        return opt;
+    }
+
+    /// Add set of options (with default, R value, such as an inline set)
+    template <typename T>
+    Option *add_set(std::string name,
+                    T &member,                   ///< The selected member of the set
+                    const std::set<T> &&options, ///< The set of posibilities
                     std::string description,
                     bool defaulted) {
 
@@ -550,10 +572,38 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (no default)
+    /// Add set of options (with default, L value refernce, such as an existing set)
+    template <typename T>
+    Option *add_set(std::string name,
+                    T &member,                  ///< The selected member of the set
+                    const std::set<T> &options, ///< The set of posibilities
+                    std::string description,
+                    bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            bool retval = detail::lexical_cast(res[0], member);
+            if(!retval)
+                throw ConversionError(res[0], simple_name);
+            return std::find(std::begin(options), std::end(options), member) != std::end(options);
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        std::string typeval = detail::type_name<T>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+        if(defaulted) {
+            std::stringstream out;
+            out << member;
+            opt->set_default_str(out.str());
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore case (no default, R value)
     Option *add_set_ignore_case(std::string name,
-                                std::string &member,           ///< The selected member of the set
-                                std::set<std::string> options, ///< The set of possibilities
+                                std::string &member,                   ///< The selected member of the set
+                                const std::set<std::string> &&options, ///< The set of possibilities
                                 std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -578,15 +628,74 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case
+    /// Add set of options, string only, ignore case (no default, L value)
     Option *add_set_ignore_case(std::string name,
-                                std::string &member,           ///< The selected member of the set
-                                std::set<std::string> options, ///< The set of posibilities
+                                std::string &member,                  ///< The selected member of the set
+                                const std::set<std::string> &options, ///< The set of possibilities
+                                std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore case (default, R value)
+    Option *add_set_ignore_case(std::string name,
+                                std::string &member,                   ///< The selected member of the set
+                                const std::set<std::string> &&options, ///< The set of posibilities
                                 std::string description,
                                 bool defaulted) {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->set_custom_option(typeval);
+        if(defaulted) {
+            opt->set_default_str(member);
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore case (default, L value)
+    Option *add_set_ignore_case(std::string name,
+                                std::string &member,                  ///< The selected member of the set
+                                const std::set<std::string> &options, ///< The set of posibilities
+                                std::string description,
+                                bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;

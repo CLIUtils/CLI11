@@ -992,6 +992,21 @@ TEST_F(TApp, FailSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, FailLValueSet) {
+
+    int choice;
+    std::set<int> vals{1, 2, 3};
+    app.add_set("-q,--quick", choice, vals);
+    app.add_set("-s,--slow", choice, vals, "", true);
+
+    args = {"--quick=hello"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+    args = {"--slow=hello"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, InSetIgnoreCase) {
 
     std::string choice;
@@ -1479,4 +1494,73 @@ TEST_F(TApp, CustomDoubleOption) {
     run();
     EXPECT_EQ(custom_opt.first, 12);
     EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+}
+
+// #113
+TEST_F(TApp, AddRemoveSetItems) {
+    std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
+
+    std::string type1, type2;
+    app.add_set("--type1", type1, items);
+    app.add_set("--type2", type2, items, "", true);
+
+    args = {"--type1", "TYPE1", "--type2", "TYPE2"};
+
+    run();
+    EXPECT_EQ(type1, "TYPE1");
+    EXPECT_EQ(type2, "TYPE2");
+
+    items.insert("TYPE6");
+    items.insert("TYPE7");
+
+    items.erase("TYPE1");
+    items.erase("TYPE2");
+
+    app.reset();
+    args = {"--type1", "TYPE6", "--type2", "TYPE7"};
+    run();
+    EXPECT_EQ(type1, "TYPE6");
+    EXPECT_EQ(type2, "TYPE7");
+
+    app.reset();
+    args = {"--type1", "TYPE1"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+    args = {"--type2", "TYPE2"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, AddRemoveSetItemsNoCase) {
+    std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
+
+    std::string type1, type2;
+    app.add_set_ignore_case("--type1", type1, items);
+    app.add_set_ignore_case("--type2", type2, items, "", true);
+
+    args = {"--type1", "TYPe1", "--type2", "TyPE2"};
+
+    run();
+    EXPECT_EQ(type1, "TYPE1");
+    EXPECT_EQ(type2, "TYPE2");
+
+    items.insert("TYPE6");
+    items.insert("TYPE7");
+
+    items.erase("TYPE1");
+    items.erase("TYPE2");
+
+    app.reset();
+    args = {"--type1", "TyPE6", "--type2", "tYPE7"};
+    run();
+    EXPECT_EQ(type1, "TYPE6");
+    EXPECT_EQ(type2, "TYPE7");
+
+    app.reset();
+    args = {"--type1", "TYPe1"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+    args = {"--type2", "TYpE2"};
+    EXPECT_THROW(run(), CLI::ConversionError);
 }
