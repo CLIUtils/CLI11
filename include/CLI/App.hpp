@@ -503,8 +503,8 @@ class App {
     /// Add set of options (No default)
     template <typename T>
     Option *add_set(std::string name,
-                    T &member,           ///< The selected member of the set
-                    std::set<T> options, ///< The set of possibilities
+                    T &member,                  ///< The selected member of the set
+                    const std::set<T> &options, ///< The set of possibilities
                     std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -525,8 +525,8 @@ class App {
     /// Add set of options
     template <typename T>
     Option *add_set(std::string name,
-                    T &member,           ///< The selected member of the set
-                    std::set<T> options, ///< The set of posibilities
+                    T &member,                  ///< The selected member of the set
+                    const std::set<T> &options, ///< The set of posibilities
                     std::string description,
                     bool defaulted) {
 
@@ -552,8 +552,8 @@ class App {
 
     /// Add set of options, string only, ignore case (no default)
     Option *add_set_ignore_case(std::string name,
-                                std::string &member,           ///< The selected member of the set
-                                std::set<std::string> options, ///< The set of possibilities
+                                std::string &member,                  ///< The selected member of the set
+                                const std::set<std::string> &options, ///< The set of possibilities
                                 std::string description = "") {
 
         std::string simple_name = CLI::detail::split(name, ',').at(0);
@@ -580,8 +580,8 @@ class App {
 
     /// Add set of options, string only, ignore case
     Option *add_set_ignore_case(std::string name,
-                                std::string &member,           ///< The selected member of the set
-                                std::set<std::string> options, ///< The set of posibilities
+                                std::string &member,                  ///< The selected member of the set
+                                const std::set<std::string> &options, ///< The set of posibilities
                                 std::string description,
                                 bool defaulted) {
 
