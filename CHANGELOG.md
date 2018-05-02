@@ -1,6 +1,6 @@
 ### Version 1.6: Formatting
 
-Added a new formatting system. You can now set the formatter on Apps.
+Added a new formatting system. [#109] You can now set the formatter on Apps.
 
 * Added `CLI::Formatter` and `formatter` slot for apps, inherited.
 * Added `help_all` support (not added by default)
@@ -18,11 +18,18 @@ Changes to the help system (most normal users will not notice this):
 * `format_help` can now be chained
 
 
-Other small changes:
+Other changes:
 
-* Testing (only) now uses submodules.
-* Removed `requires` in favor of `needs` (deprecated in last version)
-* Better CMake policy handling
+* Using `add_set` will now capture L-values for sets, allowing further modification [#113]
+* Testing (only) now uses submodules. [#111]
+* Removed `requires` in favor of `needs` (deprecated in last version) [#112]
+* Better CMake policy handling [#110]
+
+[#109]: https://github.com/CLIUtils/CLI11/pull/109
+[#110]: https://github.com/CLIUtils/CLI11/pull/110
+[#111]: https://github.com/CLIUtils/CLI11/pull/111
+[#112]: https://github.com/CLIUtils/CLI11/pull/112
+[#113]: https://github.com/CLIUtils/CLI11/issues/113
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
@@ -45,7 +52,7 @@ This patch release adds better access to the App progromatically, to assist with
 
 [#102]: https://github.com/CLIUtils/CLI11/issues/102
 [#104]: https://github.com/CLIUtils/CLI11/pull/104
-[#105]: https://github.com/CLIUtils/CLI11/issues/105
+[#105]: https://github.com/CLIUtils/CLI11/pull/105
 [#106]: https://github.com/CLIUtils/CLI11/pull/106
 
 

@@ -992,6 +992,21 @@ TEST_F(TApp, FailSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, FailLValueSet) {
+
+    int choice;
+    std::set<int> vals{1, 2, 3};
+    app.add_set("-q,--quick", choice, vals);
+    app.add_set("-s,--slow", choice, vals, "", true);
+
+    args = {"--quick=hello"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    app.reset();
+    args = {"--slow=hello"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, InSetIgnoreCase) {
 
     std::string choice;
