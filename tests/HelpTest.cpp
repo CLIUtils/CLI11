@@ -665,4 +665,25 @@ TEST(THelp, CombinedValidatorsPathyText) {
     std::string help = app.help();
     EXPECT_THAT(help, Not(HasSubstr("TEXT")));
     EXPECT_THAT(help, HasSubstr("PATH"));
+
+// #113 Part 2
+TEST(THelp, ChangingSet) {
+    CLI::App app;
+
+    std::set<int> vals{1, 2, 3};
+    int val;
+    app.add_set("--val", val, vals);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, Not(HasSubstr("4")));
+
+    vals.insert(4);
+    vals.erase(1);
+
+    help = app.help();
+
+    EXPECT_THAT(help, Not(HasSubstr("1")));
+    EXPECT_THAT(help, HasSubstr("4"));
 }
