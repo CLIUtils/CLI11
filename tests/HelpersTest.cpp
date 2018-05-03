@@ -155,6 +155,63 @@ TEST(Validators, PathNotExistsDir) {
     EXPECT_NE(CLI::ExistingPath(mydir), "");
 }
 
+TEST(Validators, CombinedAndRange) {
+    auto crange = CLI::Range(0, 12) & CLI::Range(4, 16);
+    EXPECT_TRUE(crange("4").empty());
+    EXPECT_TRUE(crange("12").empty());
+    EXPECT_TRUE(crange("7").empty());
+
+    EXPECT_FALSE(crange("-2").empty());
+    EXPECT_FALSE(crange("2").empty());
+    EXPECT_FALSE(crange("15").empty());
+    EXPECT_FALSE(crange("16").empty());
+    EXPECT_FALSE(crange("18").empty());
+}
+
+TEST(Validators, CombinedOrRange) {
+    auto crange = CLI::Range(0, 4) | CLI::Range(8, 12);
+
+    EXPECT_FALSE(crange("-2").empty());
+    EXPECT_TRUE(crange("2").empty());
+    EXPECT_FALSE(crange("5").empty());
+    EXPECT_TRUE(crange("8").empty());
+    EXPECT_TRUE(crange("12").empty());
+    EXPECT_FALSE(crange("16").empty());
+}
+
+TEST(Validators, CombinedPaths) {
+    std::string myfile{"TestFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+
+    std::string dir{"../tests"};
+    std::string notpath{"nondirectory"};
+
+    auto path_or_dir = CLI::ExistingPath | CLI::ExistingDirectory;
+    EXPECT_TRUE(path_or_dir(dir).empty());
+    EXPECT_TRUE(path_or_dir(myfile).empty());
+    EXPECT_FALSE(path_or_dir(notpath).empty());
+
+    auto file_or_dir = CLI::ExistingFile | CLI::ExistingDirectory;
+    EXPECT_TRUE(file_or_dir(dir).empty());
+    EXPECT_TRUE(file_or_dir(myfile).empty());
+    EXPECT_FALSE(file_or_dir(notpath).empty());
+
+    auto path_and_dir = CLI::ExistingPath & CLI::ExistingDirectory;
+    EXPECT_TRUE(path_and_dir(dir).empty());
+    EXPECT_FALSE(path_and_dir(myfile).empty());
+    EXPECT_FALSE(path_and_dir(notpath).empty());
+
+    auto path_and_file = CLI::ExistingFile & CLI::ExistingDirectory;
+    EXPECT_FALSE(path_and_file(dir).empty());
+    EXPECT_FALSE(path_and_file(myfile).empty());
+    EXPECT_FALSE(path_and_file(notpath).empty());
+
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+}
+
 // Yes, this is testing an app_helper :)
 TEST(AppHelper, TempfileCreated) {
     std::string name = "TestFileNotUsed.txt";

@@ -588,3 +588,81 @@ TEST(THelp, GroupOrder) {
     EXPECT_NE(aee_loc, std::string::npos);
     EXPECT_LT(zee_loc, aee_loc);
 }
+
+TEST(THelp, ValidatorsText) {
+    CLI::App app;
+
+    std::string filename;
+    int x;
+    unsigned int y;
+    app.add_option("--f1", filename)->check(CLI::ExistingFile);
+    app.add_option("--f3", x)->check(CLI::Range(1, 4));
+    app.add_option("--f4", y)->check(CLI::Range(12));
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("FILE"));
+    EXPECT_THAT(help, HasSubstr("INT in [1 - 4]"));
+    EXPECT_THAT(help, HasSubstr("INT in [0 - 12]")); // Loses UINT
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+}
+
+TEST(THelp, ValidatorsNonPathText) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f2", filename)->check(CLI::NonexistentPath);
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("PATH"));
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+}
+
+TEST(THelp, ValidatorsDirText) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f2", filename)->check(CLI::ExistingDirectory);
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("DIR"));
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+}
+
+TEST(THelp, ValidatorsPathText) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f2", filename)->check(CLI::ExistingPath);
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("PATH"));
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+}
+
+TEST(THelp, CombinedValidatorsText) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f1", filename)->check(CLI::ExistingFile | CLI::ExistingDirectory);
+
+    // This would be nice if it put something other than string, but would it be path or file?
+    // Can't programatically tell!
+    // (Users can use ExistingPath, by the way)
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("TEXT"));
+    EXPECT_THAT(help, Not(HasSubstr("PATH")));
+    EXPECT_THAT(help, Not(HasSubstr("FILE")));
+}
+
+// Don't do this in real life, please
+TEST(THelp, CombinedValidatorsPathyText) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f1", filename)->check(CLI::ExistingPath | CLI::NonexistentPath);
+
+    // Combining validators with the same type string is OK
+    std::string help = app.help();
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("PATH"));
+}
