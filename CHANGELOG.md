@@ -1,4 +1,4 @@
-### Version 1.6: Formatting
+### Version 1.6: Formatting help
 
 Added a new formatting system. [#109] You can now set the formatter on Apps.
 
@@ -17,10 +17,18 @@ Changes to the help system (most normal users will not notice this):
 * Protected function `_has_help_positional` removed
 * `format_help` can now be chained
 
+Validators are now much more powerful [#118], all build in validators upgraded to the new form:
+
+* A subclass of `CLI::Validator` is now also accepted.
+* They now can set the type name to things like `PATH` and `INT in [1-4]`.
+* Validators can be combined with `&` and `|`.
+* Old form simple validators are still accepted.
 
 Other changes:
 
 * Using `add_set` will now capture L-values for sets, allowing further modification [#113]
+* Internally, `type_name` is now a lambda function; for sets, this reads the set live [#116] 
+* Dropped duplicate way to run `get_type_name` (`get_typeval`)
 * Testing (only) now uses submodules. [#111]
 * Removed `requires` in favor of `needs` (deprecated in last version) [#112]
 * Better CMake policy handling [#110]
@@ -30,6 +38,8 @@ Other changes:
 [#111]: https://github.com/CLIUtils/CLI11/pull/111
 [#112]: https://github.com/CLIUtils/CLI11/pull/112
 [#113]: https://github.com/CLIUtils/CLI11/issues/113
+[#116]: https://github.com/CLIUtils/CLI11/pull/116
+[#118]: https://github.com/CLIUtils/CLI11/pull/118
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
