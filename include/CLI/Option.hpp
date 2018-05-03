@@ -272,6 +272,14 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Adds a validator with a built in type name
+    Option *check(const Validator &validator) {
+        validators_.emplace_back(validator.func);
+        if(!validator.tname.empty())
+            set_type_name(validator.tname);
+        return this;
+    }
+
     /// Adds a validator
     Option *check(std::function<std::string(const std::string &)> validator) {
         validators_.emplace_back(validator);

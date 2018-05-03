@@ -18,74 +18,171 @@
 namespace CLI {
 
 /// @defgroup validator_group Validators
+
 /// @brief Some validators that are provided
 ///
-/// These are simple `void(std::string&)` validators that are useful. They throw
-/// a ValidationError if they fail (or the normally expected error if the cast fails)
+/// These are simple `std::string(const std::string&)` validators that are useful. They return
+/// a string if the validation fails. A custom struct is provided, as well, with the same user
+/// semantics, but with the ability to provide a new type name.
 /// @{
 
-/// Check for an existing file
-inline std::string ExistingFile(const std::string &filename) {
-    struct stat buffer;
-    bool exist = stat(filename.c_str(), &buffer) == 0;
-    bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
-    if(!exist) {
-        return "File does not exist: " + filename;
-    } else if(is_dir) {
-        return "File is actually a directory: " + filename;
-    }
-    return std::string();
-}
+///
+struct Validator {
+    /// This is the type name, if emtpy the type name will not be changed
+    std::string tname;
+    std::function<std::string(const std::string &filename)> func;
 
-/// Check for an existing directory
-inline std::string ExistingDirectory(const std::string &filename) {
-    struct stat buffer;
-    bool exist = stat(filename.c_str(), &buffer) == 0;
-    bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
-    if(!exist) {
-        return "Directory does not exist: " + filename;
-    } else if(!is_dir) {
-        return "Directory is actually a file: " + filename;
+    /// This is the required operator for a validator - provided to help
+    /// users (CLI11 uses the func directly)
+    std::string operator()(const std::string &filename) const { return func(filename); };
+
+    /// Combining validators is a new validator
+    Validator operator&(const Validator &other) const {
+        Validator newval;
+        newval.tname = (tname == other.tname ? tname : "");
+
+        // Give references (will make a copy in lambda function)
+        const std::function<std::string(const std::string &filename)> &f1 = func;
+        const std::function<std::string(const std::string &filename)> &f2 = other.func;
+
+        newval.func = [f1, f2](const std::string &filename) {
+            std::string s1 = f1(filename);
+            std::string s2 = f2(filename);
+            if(!s1.empty() && !s2.empty())
+                return s1 + " & " + s2;
+            else
+                return s1 + s2;
+        };
+        return newval;
     }
-    return std::string();
-}
+
+    /// Combining validators is a new validator
+    Validator operator|(const Validator &other) const {
+        Validator newval;
+        newval.tname = (tname == other.tname ? tname : "");
+
+        // Give references (will make a copy in lambda function)
+        const std::function<std::string(const std::string &filename)> &f1 = func;
+        const std::function<std::string(const std::string &filename)> &f2 = other.func;
+
+        newval.func = [f1, f2](const std::string &filename) {
+            std::string s1 = f1(filename);
+            std::string s2 = f2(filename);
+            if(s1.empty() || s2.empty())
+                return std::string();
+            else
+                return s1 + " & " + s2;
+        };
+        return newval;
+    }
+};
+
+// The implemntation of the built in validators is using the Validator class;
+// the user is only expected to use the const static versions (since there's no setup).
+// Therefore, this is in detail.
+namespace detail {
+
+/// Check for an existing file (returns error message if check fails)
+struct ExistingFileValidator : public Validator {
+    ExistingFileValidator() {
+        tname = "FILE";
+        func = [](const std::string &filename) {
+            struct stat buffer;
+            bool exist = stat(filename.c_str(), &buffer) == 0;
+            bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
+            if(!exist) {
+                return "File does not exist: " + filename;
+            } else if(is_dir) {
+                return "File is actually a directory: " + filename;
+            }
+            return std::string();
+        };
+    }
+};
+
+/// Check for an existing directory (returns error message if check fails)
+struct ExistingDirectoryValidator : public Validator {
+    ExistingDirectoryValidator() {
+        tname = "DIR";
+        func = [](const std::string &filename) {
+            struct stat buffer;
+            bool exist = stat(filename.c_str(), &buffer) == 0;
+            bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
+            if(!exist) {
+                return "Directory does not exist: " + filename;
+            } else if(!is_dir) {
+                return "Directory is actually a file: " + filename;
+            }
+            return std::string();
+        };
+    }
+};
 
 /// Check for an existing path
-inline std::string ExistingPath(const std::string &filename) {
-    struct stat buffer;
-    bool const exist = stat(filename.c_str(), &buffer) == 0;
-    if(!exist) {
-        return "Path does not exist: " + filename;
+struct ExistingPathValidator : public Validator {
+    ExistingPathValidator() {
+        tname = "PATH";
+        func = [](const std::string &filename) {
+            struct stat buffer;
+            bool const exist = stat(filename.c_str(), &buffer) == 0;
+            if(!exist) {
+                return "Path does not exist: " + filename;
+            }
+            return std::string();
+        };
     }
-    return std::string();
-}
+};
 
-/// Check for a non-existing path
-inline std::string NonexistentPath(const std::string &filename) {
-    struct stat buffer;
-    bool exist = stat(filename.c_str(), &buffer) == 0;
-    if(exist) {
-        return "Path already exists: " + filename;
+/// Check for an non-existing path
+struct NonexistentPathValidator : public Validator {
+    NonexistentPathValidator() {
+        tname = "PATH";
+        func = [](const std::string &filename) {
+            struct stat buffer;
+            bool exist = stat(filename.c_str(), &buffer) == 0;
+            if(exist) {
+                return "Path already exists: " + filename;
+            }
+            return std::string();
+        };
     }
-    return std::string();
-}
+};
+} // namespace detail
 
-/// Produce a range validator function
-template <typename T> std::function<std::string(const std::string &)> Range(T min, T max) {
-    return [min, max](std::string input) {
-        T val;
-        detail::lexical_cast(input, val);
-        if(val < min || val > max)
-            return "Value " + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
+// Static is not needed here, because global const implies static.
 
-        return std::string();
-    };
-}
+/// Check for existing file (returns error message if check fails)
+const static detail::ExistingFileValidator ExistingFile;
 
-/// Range of one value is 0 to value
-template <typename T> std::function<std::string(const std::string &)> Range(T max) {
-    return Range(static_cast<T>(0), max);
-}
+/// Check for an existing directory (returns error message if check fails)
+const static detail::ExistingDirectoryValidator ExistingDirectory;
+
+/// Check for an existing path
+const static detail::ExistingPathValidator ExistingPath;
+
+/// Check for an non-existing path
+const static detail::NonexistentPathValidator NonexistentPath;
+
+///  Produce a range (factory). Min and max are inclusive.
+struct Range : public Validator {
+    template <typename T> Range(T min, T max) {
+        std::stringstream out;
+        out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
+
+        tname = out.str();
+        func = [min, max](std::string input) {
+            T val;
+            detail::lexical_cast(input, val);
+            if(val < min || val > max)
+                return "Value " + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
+
+            return std::string();
+        };
+    }
+
+    /// Range of one value is 0 to value
+    template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
+};
 
 /// @}
 
