@@ -538,7 +538,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_type_name(
+        opt->set_type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
 
         return opt;
@@ -589,7 +589,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_type_name(
+        opt->set_type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
         if(defaulted) {
             std::stringstream out;
@@ -648,7 +648,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_type_name([&options]() {
+        opt->set_type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
 
@@ -708,7 +708,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_type_name([&options]() {
+        opt->set_type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
         if(defaulted) {

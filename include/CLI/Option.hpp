@@ -631,11 +631,11 @@ class Option : public OptionBase<Option> {
 
     /// Set the type name displayed on this option
     void set_type_name(std::string typeval) {
-        typeval_ = [typeval]() { return typeval; };
+        set_type_name_fn([typeval]() { return typeval; });
     }
 
     /// Set the type function to run when displayed on this option
-    void set_type_name(std::function<std::string()> typefun) { typeval_ = typefun; }
+    void set_type_name_fn(std::function<std::string()> typefun) { typeval_ = typefun; }
 
     /// Get the typename for this option
     std::string get_type_name() const { return typeval_(); }
