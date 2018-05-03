@@ -111,13 +111,9 @@ matrix:
     install:
     - brew update
     - echo 'brew "python"' > Brewfile
-    - echo 'brew "conan"' >> Brewfile
     - echo 'brew "ccache"' >> Brewfile
     - brew bundle
     - python -m ensurepip --user
-    - conan user
-    after_success:
-    - conan create . CLIUtils/CLI11
 
 install: skip
 
