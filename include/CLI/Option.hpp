@@ -171,7 +171,7 @@ class Option : public OptionBase<Option> {
     std::string defaultval_;
 
     /// A human readable type value, set when App creates this
-    std::string typeval_;
+    std::function<std::string()> typeval_;
 
     /// True if this option has a default
     bool default_{false};
@@ -384,9 +384,6 @@ class Option : public OptionBase<Option> {
 
     /// The number of arguments the option expects
     int get_type_size() const { return type_size_; }
-
-    /// The type name (for help printing)
-    std::string get_typeval() const { return typeval_; }
 
     /// The environment variable associated to this value
     std::string get_envname() const { return envname_; }
@@ -612,7 +609,7 @@ class Option : public OptionBase<Option> {
 
     /// Set a custom option, typestring, type_size
     void set_custom_option(std::string typeval, int type_size = 1) {
-        typeval_ = typeval;
+        set_type_name(typeval);
         type_size_ = type_size;
         if(type_size_ == 0)
             required_ = false;
@@ -633,10 +630,15 @@ class Option : public OptionBase<Option> {
     }
 
     /// Set the type name displayed on this option
-    void set_type_name(std::string val) { typeval_ = val; }
+    void set_type_name(std::string typeval) {
+        typeval_ = [typeval]() { return typeval; };
+    }
+
+    /// Set the type function to run when displayed on this option
+    void set_type_name(std::function<std::string()> typefun) { typeval_ = typefun; }
 
     /// Get the typename for this option
-    std::string get_type_name() const { return typeval_; }
+    std::string get_type_name() const { return typeval_(); }
 };
 
 } // namespace CLI

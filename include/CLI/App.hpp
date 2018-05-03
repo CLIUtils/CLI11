@@ -538,9 +538,9 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        std::string typeval = detail::type_name<T>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->set_type_name(
+            [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
+
         return opt;
     }
 
@@ -589,9 +589,8 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        std::string typeval = detail::type_name<T>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->set_type_name(
+            [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
         if(defaulted) {
             std::stringstream out;
             out << member;
@@ -649,9 +648,9 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->set_type_name([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
 
         return opt;
     }
@@ -709,9 +708,9 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->set_type_name([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
         if(defaulted) {
             opt->set_default_str(member);
         }

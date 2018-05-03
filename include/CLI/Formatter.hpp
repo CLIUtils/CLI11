@@ -193,8 +193,8 @@ inline std::string Formatter::make_option_opts(const Option *opt) const {
     std::stringstream out;
 
     if(opt->get_type_size() != 0) {
-        if(!opt->get_typeval().empty())
-            out << " " << get_label(opt->get_typeval());
+        if(!opt->get_type_name().empty())
+            out << " " << get_label(opt->get_type_name());
         if(!opt->get_defaultval().empty())
             out << "=" << opt->get_defaultval();
         if(opt->get_expected() > 1)
