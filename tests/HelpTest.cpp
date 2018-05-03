@@ -665,6 +665,7 @@ TEST(THelp, CombinedValidatorsPathyText) {
     std::string help = app.help();
     EXPECT_THAT(help, Not(HasSubstr("TEXT")));
     EXPECT_THAT(help, HasSubstr("PATH"));
+}
 
 // #113 Part 2
 TEST(THelp, ChangingSet) {
@@ -681,6 +682,68 @@ TEST(THelp, ChangingSet) {
 
     vals.insert(4);
     vals.erase(1);
+
+    help = app.help();
+
+    EXPECT_THAT(help, Not(HasSubstr("1")));
+    EXPECT_THAT(help, HasSubstr("4"));
+}
+
+TEST(THelp, ChangingSetDefaulted) {
+    CLI::App app;
+
+    std::set<int> vals{1, 2, 3};
+    int val = 2;
+    app.add_set("--val", val, vals, "", true);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, Not(HasSubstr("4")));
+
+    vals.insert(4);
+    vals.erase(1);
+
+    help = app.help();
+
+    EXPECT_THAT(help, Not(HasSubstr("1")));
+    EXPECT_THAT(help, HasSubstr("4"));
+}
+TEST(THelp, ChangingCaselessSet) {
+    CLI::App app;
+
+    std::set<std::string> vals{"1", "2", "3"};
+    std::string val;
+    app.add_set_ignore_case("--val", val, vals);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, Not(HasSubstr("4")));
+
+    vals.insert("4");
+    vals.erase("1");
+
+    help = app.help();
+
+    EXPECT_THAT(help, Not(HasSubstr("1")));
+    EXPECT_THAT(help, HasSubstr("4"));
+}
+
+TEST(THelp, ChangingCaselessSetDefaulted) {
+    CLI::App app;
+
+    std::set<std::string> vals{"1", "2", "3"};
+    std::string val = "2";
+    app.add_set_ignore_case("--val", val, vals, "", true);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, Not(HasSubstr("4")));
+
+    vals.insert("4");
+    vals.erase("1");
 
     help = app.help();
 
