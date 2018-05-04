@@ -78,7 +78,7 @@ struct Validator {
 };
 
 // The implemntation of the built in validators is using the Validator class;
-// the user is only expected to use the const static versions (since there's no setup).
+// the user is only expected to use the const (static) versions (since there's no setup).
 // Therefore, this is in detail.
 namespace detail {
 
@@ -152,16 +152,16 @@ struct NonexistentPathValidator : public Validator {
 // Static is not needed here, because global const implies static.
 
 /// Check for existing file (returns error message if check fails)
-const static detail::ExistingFileValidator ExistingFile;
+const detail::ExistingFileValidator ExistingFile;
 
 /// Check for an existing directory (returns error message if check fails)
-const static detail::ExistingDirectoryValidator ExistingDirectory;
+const detail::ExistingDirectoryValidator ExistingDirectory;
 
 /// Check for an existing path
-const static detail::ExistingPathValidator ExistingPath;
+const detail::ExistingPathValidator ExistingPath;
 
 /// Check for an non-existing path
-const static detail::NonexistentPathValidator NonexistentPath;
+const detail::NonexistentPathValidator NonexistentPath;
 
 ///  Produce a range (factory). Min and max are inclusive.
 struct Range : public Validator {
