@@ -238,8 +238,11 @@ class Option : public OptionBase<Option> {
     /// Count the total number of times an option was passed
     size_t count() const { return results_.size(); }
 
+    /// True if the option was not passed
+    size_t empty() const { return results_.empty(); }
+
     /// This class is true if option is passed.
-    operator bool() const { return count() > 0; }
+    operator bool() const { return !empty(); }
 
     /// Clear the parsed results (mostly for testing)
     void clear() { results_.clear(); }
@@ -593,9 +596,15 @@ class Option : public OptionBase<Option> {
             return std::find(std::begin(lnames_), std::end(lnames_), name) != std::end(lnames_);
     }
 
-    /// Puts a result at the end, unless last_ is set, in which case it just keeps the last one
+    /// Puts a result at the end
     void add_result(std::string s) {
         results_.push_back(s);
+        callback_run_ = false;
+    }
+
+    /// Set the results vector all at once
+    void set_results(std::vector<std::string> results) {
+        results_ = results;
         callback_run_ = false;
     }
 

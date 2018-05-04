@@ -243,9 +243,10 @@ There are several options that are supported on the main app and subcommands. Th
 * `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 * `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
 * `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
-* `.get_subcommands()`: The list of subcommands given on the command line.
+* `.get_subcommands(filter)`: The list of subcommands given on the command line.
 * `.get_parent()`: Get the parent App or nullptr if called on master App.
-* `.get_options()`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
+* `.get_option(name)`: Get an option pointer by option name
+* `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 * `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
 * `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
 * `.get_description()`: Access the description.
@@ -260,7 +261,7 @@ There are several options that are supported on the main app and subcommands. Th
 * `.set_failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 * `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 
-> Note: if you have a fixed number of required positional options, that will match before subcommand names.
+> Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
 ## Configuration file
 
