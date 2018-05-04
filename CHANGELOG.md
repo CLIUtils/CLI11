@@ -17,7 +17,7 @@ Changes to the help system (most normal users will not notice this):
 * Protected function `_has_help_positional` removed
 * `format_help` can now be chained
 
-Validators are now much more powerful [#118], all build in validators upgraded to the new form:
+Validators are now much more powerful [#118], all built in validators upgraded to the new form:
 
 * A subclass of `CLI::Validator` is now also accepted.
 * They now can set the type name to things like `PATH` and `INT in [1-4]`.

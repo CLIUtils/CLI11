@@ -171,7 +171,9 @@ class Option : public OptionBase<Option> {
     std::string defaultval_;
 
     /// A human readable type value, set when App creates this
-    std::function<std::string()> typeval_;
+    ///
+    /// This is a lambda function so "types" can be dynamic, such as when a set prints its contents.
+    std::function<std::string()> type_name_;
 
     /// True if this option has a default
     bool default_{false};
@@ -635,10 +637,10 @@ class Option : public OptionBase<Option> {
     }
 
     /// Set the type function to run when displayed on this option
-    void set_type_name_fn(std::function<std::string()> typefun) { typeval_ = typefun; }
+    void set_type_name_fn(std::function<std::string()> typefun) { type_name_ = typefun; }
 
     /// Get the typename for this option
-    std::string get_type_name() const { return typeval_(); }
+    std::string get_type_name() const { return type_name_(); }
 };
 
 } // namespace CLI
