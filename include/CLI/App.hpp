@@ -7,6 +7,7 @@
 #include <deque>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <numeric>
 #include <set>
@@ -14,17 +15,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <iterator>
 
 // CLI Library includes
 #include "CLI/Error.hpp"
+#include "CLI/FormatterFwd.hpp"
 #include "CLI/Ini.hpp"
 #include "CLI/Macros.hpp"
 #include "CLI/Option.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
-#include "CLI/FormatterFwd.hpp"
 
 namespace CLI {
 
@@ -1096,6 +1096,16 @@ class App {
         return options;
     }
 
+    /// Get an option by name
+    const Option *get_option(std::string name) const {
+        for(const Option_p &opt : options_) {
+            if(opt->check_name(name)) {
+                return opt.get();
+            }
+        }
+        throw OptionNotFound(name);
+    }
+
     /// Check the status of ignore_case
     bool get_ignore_case() const { return ignore_case_; }
 
@@ -1404,28 +1414,28 @@ class App {
         if(!op->get_configurable())
             throw INIError::NotConfigurable(current.fullname);
 
-        if(op->results_.empty()) {
+        if(op->empty()) {
             // Flag parsing
             if(op->get_type_size() == 0) {
                 if(current.inputs.size() == 1) {
                     std::string val = current.inputs.at(0);
                     val = detail::to_lower(val);
                     if(val == "true" || val == "on" || val == "yes")
-                        op->results_ = {""};
+                        op->set_results({""});
                     else if(val == "false" || val == "off" || val == "no")
                         ;
                     else
                         try {
                             size_t ui = std::stoul(val);
                             for(size_t i = 0; i < ui; i++)
-                                op->results_.emplace_back("");
+                                op->add_result("");
                         } catch(const std::invalid_argument &) {
                             throw ConversionError::TrueFalse(current.fullname);
                         }
                 } else
                     throw ConversionError::TooManyInputsFlag(current.fullname);
             } else {
-                op->results_ = current.inputs;
+                op->set_results(current.inputs);
                 op->run_callback();
             }
         }

@@ -26,6 +26,7 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
+* Better support for manual options with `get_option`, `set_results`, and `empty` [#119]
 * Using `add_set` will now capture L-values for sets, allowing further modification [#113]
 * Internally, `type_name` is now a lambda function; for sets, this reads the set live [#116] 
 * Dropped duplicate way to run `get_type_name` (`get_typeval`)
@@ -40,6 +41,7 @@ Other changes:
 [#113]: https://github.com/CLIUtils/CLI11/issues/113
 [#116]: https://github.com/CLIUtils/CLI11/pull/116
 [#118]: https://github.com/CLIUtils/CLI11/pull/118
+[#118]: https://github.com/CLIUtils/CLI11/pull/119
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
