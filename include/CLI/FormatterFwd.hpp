@@ -3,8 +3,8 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include <string>
 #include <map>
+#include <string>
 
 #include "CLI/StringTools.hpp"
 
@@ -72,10 +72,16 @@ class Formatter {
     ///@{
 
     /// This prints out a group of options
-    virtual std::string make_group(std::string group, std::vector<const Option *> opts, bool is_positional) const;
+    ///
+    /// Use the filter to pick out the items you want in your group
+    virtual std::string
+    make_group(const App *app, std::string group, bool is_positional, std::function<bool(const Option *)> filter) const;
+
+    /// This prints out just the positionals "group"
+    virtual std::string make_positionals(const App *app) const;
 
     /// This prints out all the groups of options
-    virtual std::string make_groups(const App *app, AppFormatMode mode) const;
+    std::string make_groups(const App *app, AppFormatMode mode) const;
 
     /// This prints out all the subcommands
     virtual std::string make_subcommands(const App *app, AppFormatMode mode) const;
@@ -102,6 +108,7 @@ class Formatter {
     /// @name Options
     ///@{
 
+    /// This prints out an option help line, either positional or optional form
     virtual std::string make_option(const Option *opt, bool is_positional) const {
         std::stringstream out;
         detail::format_help(

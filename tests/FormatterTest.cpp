@@ -4,8 +4,8 @@
 #include "CLI/CLI.hpp"
 #endif
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <fstream>
 
 using ::testing::HasSubstr;

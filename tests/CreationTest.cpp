@@ -2,7 +2,10 @@
 #include <cstdlib>
 
 TEST_F(TApp, AddingExistingShort) {
-    app.add_flag("-c,--count");
+    CLI::Option *opt = app.add_flag("-c,--count");
+    EXPECT_EQ(opt->get_lnames(), std::vector<std::string>({"count"}));
+    EXPECT_EQ(opt->get_snames(), std::vector<std::string>({"c"}));
+
     EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
 }
 

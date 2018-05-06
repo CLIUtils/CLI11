@@ -1,10 +1,10 @@
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "CLI/Timer.hpp"
-#include <string>
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <chrono>
-#include <thread>
 #include <sstream>
+#include <string>
+#include <thread>
 
 using ::testing::HasSubstr;
 

@@ -28,7 +28,7 @@ namespace CLI {
 
 ///
 struct Validator {
-    /// This is the type name, if emtpy the type name will not be changed
+    /// This is the type name, if empty the type name will not be changed
     std::string tname;
     std::function<std::string(const std::string &filename)> func;
 
@@ -77,7 +77,7 @@ struct Validator {
     }
 };
 
-// The implemntation of the built in validators is using the Validator class;
+// The implementation of the built in validators is using the Validator class;
 // the user is only expected to use the const (static) versions (since there's no setup).
 // Therefore, this is in detail.
 namespace detail {

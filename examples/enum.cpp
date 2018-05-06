@@ -1,5 +1,5 @@
-#include <sstream>
 #include <CLI/CLI.hpp>
+#include <sstream>
 
 enum class Level : int { High, Medium, Low };
 

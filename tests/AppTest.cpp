@@ -1,6 +1,6 @@
 #include "app_helper.hpp"
-#include <cstdlib>
 #include <complex>
+#include <cstdlib>
 
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");

@@ -33,6 +33,8 @@ Other changes:
 * Testing (only) now uses submodules. [#111]
 * Removed `requires` in favor of `needs` (deprecated in last version) [#112]
 * Better CMake policy handling [#110]
+* Includes are properly sorted [#120]
+* `lname` and `sname` have getters, added `const get_parent` [#120] 
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -42,6 +44,7 @@ Other changes:
 [#116]: https://github.com/CLIUtils/CLI11/pull/116
 [#118]: https://github.com/CLIUtils/CLI11/pull/118
 [#118]: https://github.com/CLIUtils/CLI11/pull/119
+[#120]: https://github.com/CLIUtils/CLI11/pull/120
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.

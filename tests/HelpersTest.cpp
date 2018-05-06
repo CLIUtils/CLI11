@@ -1,10 +1,10 @@
 #include "app_helper.hpp"
 
+#include <complex>
+#include <cstdint>
 #include <cstdio>
 #include <fstream>
-#include <cstdint>
 #include <string>
-#include <complex>
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');

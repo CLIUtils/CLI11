@@ -402,6 +402,12 @@ class Option : public OptionBase<Option> {
     /// The default value (for help printing)
     std::string get_defaultval() const { return defaultval_; }
 
+    /// Get the long names
+    const std::vector<std::string> get_lnames() const { return lnames_; }
+
+    /// Get the short names
+    const std::vector<std::string> get_snames() const { return snames_; }
+
     /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
 
