@@ -1,6 +1,6 @@
-### Version 1.6: Formatting help
+## Version 1.6: Formatting help
 
-Added a new formatting system. [#109] You can now set the formatter on Apps.
+Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating all formatting code.
 
 * Added `CLI::Formatter` and `formatter` slot for apps, inherited.
 * Added `help_all` support (not added by default)
@@ -27,6 +27,7 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 Other changes:
 
 * Better support for manual options with `get_option`, `set_results`, and `empty` [#119]
+* `lname` and `sname` have getters, added `const get_parent` [#120]
 * Using `add_set` will now capture L-values for sets, allowing further modification [#113]
 * Internally, `type_name` is now a lambda function; for sets, this reads the set live [#116] 
 * Dropped duplicate way to run `get_type_name` (`get_typeval`)
@@ -34,7 +35,6 @@ Other changes:
 * Removed `requires` in favor of `needs` (deprecated in last version) [#112]
 * Better CMake policy handling [#110]
 * Includes are properly sorted [#120]
-* `lname` and `sname` have getters, added `const get_parent` [#120] 
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -43,7 +43,7 @@ Other changes:
 [#113]: https://github.com/CLIUtils/CLI11/issues/113
 [#116]: https://github.com/CLIUtils/CLI11/pull/116
 [#118]: https://github.com/CLIUtils/CLI11/pull/118
-[#118]: https://github.com/CLIUtils/CLI11/pull/119
+[#119]: https://github.com/CLIUtils/CLI11/pull/119
 [#120]: https://github.com/CLIUtils/CLI11/pull/120
 
 ### Version 1.5.3: Compiler compatibility
