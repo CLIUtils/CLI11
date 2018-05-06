@@ -4,8 +4,8 @@
 #include "CLI/CLI.hpp"
 #endif
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <fstream>
 
 using ::testing::HasSubstr;
@@ -492,7 +492,8 @@ TEST_F(CapturedHelp, CallForAllHelp) {
     EXPECT_EQ(err.str(), "");
 }
 TEST_F(CapturedHelp, CallForAllHelpOutput) {
-    app.add_subcommand("one");
+    app.set_help_all_flag("--help-all", "Help all");
+    app.add_subcommand("one", "One description");
     CLI::App *sub = app.add_subcommand("two");
     sub->add_flag("--three");
 
@@ -502,6 +503,20 @@ TEST_F(CapturedHelp, CallForAllHelpOutput) {
     EXPECT_THAT(out.str(), HasSubstr("one"));
     EXPECT_THAT(out.str(), HasSubstr("two"));
     EXPECT_THAT(out.str(), HasSubstr("--three"));
+
+    EXPECT_EQ(out.str(),
+              "My Test Program\n"
+              "Usage: [OPTIONS] [SUBCOMMAND]\n"
+              "\n"
+              "Options:\n"
+              "  -h,--help                   Print this help message and exit\n"
+              "  --help-all                  Help all\n"
+              "\n"
+              "Subcommands:\n"
+              "one -> One description\n"
+              "two\n"
+              "Options:\n"
+              "  --three                     \n");
 }
 TEST_F(CapturedHelp, NewFormattedHelp) {
     app.formatter([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });

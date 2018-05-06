@@ -1,8 +1,8 @@
 #include "app_helper.hpp"
 
+#include "gmock/gmock.h"
 #include <cstdio>
 #include <sstream>
-#include "gmock/gmock.h"
 
 using ::testing::HasSubstr;
 using ::testing::Not;

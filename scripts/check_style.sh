@@ -3,7 +3,7 @@ set -evx
 
 clang-format --version
 
-git ls-files -- '*.cpp' '*.hpp' | xargs clang-format -i -style=file
+git ls-files -- '*.cpp' '*.hpp' | xargs clang-format -sort-includes -i -style=file
 
 git diff --exit-code --color
 

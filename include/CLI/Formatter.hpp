@@ -10,42 +10,44 @@
 
 namespace CLI {
 
-inline std::string
-Formatter::make_group(std::string group, std::vector<const Option *> opts, bool is_positional) const {
+inline std::string Formatter::make_group(const App *app,
+                                         std::string group,
+                                         bool is_positional,
+                                         std::function<bool(const Option *)> filter) const {
     std::stringstream out;
-    out << "\n" << group << ":\n";
-    for(const Option *opt : opts) {
-        out << make_option(opt, is_positional);
+    std::vector<const Option *> opts = app->get_options(filter);
+
+    if(!opts.empty()) {
+        out << "\n" << group << ":\n";
+        for(const Option *opt : opts) {
+            out << make_option(opt, is_positional);
+        }
     }
 
     return out.str();
 }
 
+inline std::string Formatter::make_positionals(const App *app) const {
+    return make_group(app, get_label("Positionals"), true, [](const Option *opt) {
+        return !opt->get_group().empty() && opt->get_positional();
+    });
+}
+
 inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) const {
     std::stringstream out;
     std::vector<std::string> groups = app->get_groups();
-    std::vector<const Option *> positionals =
-        app->get_options([](const Option *opt) { return !opt->get_group().empty() && opt->get_positional(); });
-
-    if(!positionals.empty())
-        out << make_group(get_label("Positionals"), positionals, true);
 
     // Options
     for(const std::string &group : groups) {
-        std::vector<const Option *> grouped_items =
-            app->get_options([&group](const Option *opt) { return opt->nonpositional() && opt->get_group() == group; });
+        if(!group.empty()) {
+            out << make_group(app, group, false, [app, mode, &group](const Option *opt) {
+                return opt->get_group() == group                    // Must be in the right group
+                       && opt->nonpositional()                      // Must not be a positional
+                       && (mode != AppFormatMode::Sub               // If mode is Sub, then
+                           || (app->get_help_ptr() != opt           // Ignore help pointer
+                               && app->get_help_all_ptr() != opt)); // Ignore help all pointer
+            });
 
-        if(mode == AppFormatMode::Sub) {
-            grouped_items.erase(std::remove_if(grouped_items.begin(),
-                                               grouped_items.end(),
-                                               [app](const Option *opt) {
-                                                   return app->get_help_ptr() == opt || app->get_help_all_ptr() == opt;
-                                               }),
-                                grouped_items.end());
-        }
-
-        if(!group.empty() && !grouped_items.empty()) {
-            out << make_group(group, grouped_items, false);
             if(group != groups.back())
                 out << "\n";
         }
@@ -113,21 +115,19 @@ inline std::string Formatter::make_footer(const App *app) const {
 
 inline std::string Formatter::operator()(const App *app, std::string name, AppFormatMode mode) const {
 
+    // This immediatly forwards to the make_expanded method. This is done this way so that subcommands can
+    // have overridden formatters
+    if(mode == AppFormatMode::Sub)
+        return make_expanded(app);
+
     std::stringstream out;
-    if(mode == AppFormatMode::Normal) {
-        out << make_description(app);
-        out << make_usage(app, name);
-        out << make_groups(app, mode);
-        out << make_subcommands(app, mode);
-        out << make_footer(app);
-    } else if(mode == AppFormatMode::Sub) {
-        out << make_expanded(app);
-    } else if(mode == AppFormatMode::All) {
-        out << make_description(app);
-        out << make_usage(app, name);
-        out << make_groups(app, mode);
-        out << make_subcommands(app, mode);
-    }
+
+    out << make_description(app);
+    out << make_usage(app, name);
+    out << make_positionals(app);
+    out << make_groups(app, mode);
+    out << make_subcommands(app, mode);
+    out << make_footer(app);
 
     return out.str();
 }
@@ -151,8 +151,6 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
     // For each group, filter out and print subcommands
     for(const std::string &group : subcmd_groups_seen) {
         out << "\n" << group << ":\n";
-        if(mode == AppFormatMode::All)
-            out << "\n";
         std::vector<const App *> subcommands_group = app->get_subcommands(
             [&group](const App *app) { return detail::to_lower(app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
@@ -177,7 +175,10 @@ inline std::string Formatter::make_subcommand(const App *sub) const {
 
 inline std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    out << sub->get_name() << "\n  " << sub->get_description();
+    if(sub->get_description().empty())
+        out << sub->get_name();
+    else
+        out << sub->get_name() << " -> " << sub->get_description();
     out << make_groups(sub, AppFormatMode::Sub);
     return out.str();
 }

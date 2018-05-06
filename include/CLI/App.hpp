@@ -1013,8 +1013,8 @@ class App {
         for(const Option_p &opt : options_) {
 
             // Only process option with a long-name and configurable
-            if(!opt->lnames_.empty() && opt->get_configurable()) {
-                std::string name = prefix + opt->lnames_[0];
+            if(!opt->get_lnames().empty() && opt->get_configurable()) {
+                std::string name = prefix + opt->get_lnames()[0];
                 std::string value;
 
                 // Non-flags
@@ -1025,8 +1025,8 @@ class App {
                         value = detail::inijoin(opt->results());
 
                     // If the option has a default and is requested by optional argument
-                    else if(default_also && !opt->defaultval_.empty())
-                        value = opt->defaultval_;
+                    else if(default_also && !opt->get_defaultval().empty())
+                        value = opt->get_defaultval();
                     // Flag, one passed
                 } else if(opt->count() == 1) {
                     value = "true";
@@ -1147,6 +1147,9 @@ class App {
 
     /// Get the parent of this subcommand (or nullptr if master app)
     App *get_parent() { return parent_; }
+
+    /// Get the parent of this subcommand (or nullptr if master app) (const version)
+    const App *get_parent() const { return parent_; }
 
     /// Get a pointer to the config option. (const)
     const Option *get_config_ptr() const { return config_ptr_; }
