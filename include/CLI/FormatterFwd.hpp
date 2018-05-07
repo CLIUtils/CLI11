@@ -21,10 +21,15 @@ class App;
 enum class AppFormatMode {
     Normal, //< The normal, detailed help
     All,    //< A fully expanded help
-    Sub,    //<  Used when printed as part of expanded subcommand
+    Sub,    //< Used when printed as part of expanded subcommand
 };
 
-class Formatter {
+/// This is the minimum requirements to run a formatter.
+///
+/// A user can subclass this is if they do not care at all
+/// about the structure in CLI::Formatter.
+class FormatterBase {
+  protected:
     /// @name Options
     ///@{
 
@@ -40,9 +45,14 @@ class Formatter {
     ///@{
 
   public:
-    Formatter() = default;
-    Formatter(const Formatter &) = default;
-    Formatter(Formatter &&) = default;
+    FormatterBase() = default;
+    FormatterBase(const FormatterBase &) = default;
+    FormatterBase(FormatterBase &&) = default;
+    virtual ~FormatterBase() = default;
+
+    /// This is the key method that puts together help
+    virtual std::string make_help(const App *, std::string, AppFormatMode) const = 0;
+
     ///@}
     /// @name Setters
     ///@{
@@ -67,6 +77,30 @@ class Formatter {
 
     /// Get the current column width
     size_t get_column_width() const { return column_width_; }
+
+    ///@}
+};
+
+/// This is a specialty override for lambda functions
+class FormatterLambda final : public FormatterBase {
+    using funct_t = std::function<std::string(const App *, std::string, AppFormatMode)>;
+
+    funct_t lambda_;
+
+  public:
+    explicit FormatterLambda(funct_t funct) : lambda_(funct) {}
+
+    /// This will simply call the lambda function
+    std::string make_help(const App *app, std::string name, AppFormatMode mode) const override {
+        return lambda_(app, name, mode);
+    }
+};
+
+class Formatter : public FormatterBase {
+  public:
+    Formatter() = default;
+    Formatter(const Formatter &) = default;
+    Formatter(Formatter &&) = default;
 
     /// @name Overridables
     ///@{
@@ -102,7 +136,7 @@ class Formatter {
     virtual std::string make_usage(const App *app, std::string name) const;
 
     /// This puts everything together
-    virtual std::string operator()(const App *, std::string, AppFormatMode) const;
+    std::string make_help(const App *, std::string, AppFormatMode) const override;
 
     ///@}
     /// @name Options
