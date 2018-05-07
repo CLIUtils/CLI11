@@ -106,8 +106,8 @@ class App {
     /// A pointer to the help all flag if there is one INHERITABLE
     Option *help_all_ptr_{nullptr};
 
-    /// This is the formatter for help printing. Default provided. INHERITABLE
-    std::function<std::string(const App *, std::string, AppFormatMode)> formatter_{Formatter()};
+    /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
+    std::shared_ptr<FormatterBase> formatter_{new Formatter()};
 
     /// The error message printing function INHERITABLE
     std::function<std::string(const App *, const Error &e)> failure_message_ = FailureMessage::simple;
@@ -262,8 +262,14 @@ class App {
     }
 
     /// Set the help formatter
-    App *formatter(std::function<std::string(const App *, std::string, AppFormatMode)> fmt) {
+    App *formatter(std::shared_ptr<FormatterBase> fmt) {
         formatter_ = fmt;
+        return this;
+    }
+
+    /// Set the help formatter
+    App *formatter(std::function<std::string(const App *, std::string, AppFormatMode)> fmt) {
+        formatter_ = std::make_shared<FormatterLambda>(fmt);
         return this;
     }
 
@@ -1071,12 +1077,15 @@ class App {
         if(!selected_subcommands.empty())
             return selected_subcommands.at(0)->help(prev);
         else
-            return formatter_(this, prev, mode);
+            return formatter_->make_help(this, prev, mode);
     }
 
     ///@}
     /// @name Getters
     ///@{
+
+    /// Access the formatter
+    std::shared_ptr<FormatterBase> get_formatter() const { return formatter_; }
 
     /// Get the app or subcommand description
     std::string get_description() const { return description_; }

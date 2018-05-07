@@ -2,6 +2,7 @@
 
 class MyFormatter : public CLI::Formatter {
   public:
+    using Formatter::Formatter;
     std::string make_option_opts(const CLI::Option *) const override { return " OPTION"; }
 };
 
@@ -9,8 +10,8 @@ int main(int argc, char **argv) {
     CLI::App app;
     app.set_help_all_flag("--help-all", "Show all help");
 
-    MyFormatter fmt;
-    fmt.column_width(15);
+    auto fmt = std::make_shared<MyFormatter>();
+    fmt->column_width(15);
     app.formatter(fmt);
 
     app.add_flag("--flag", "This is a flag");
