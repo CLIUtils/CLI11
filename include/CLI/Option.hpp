@@ -209,6 +209,9 @@ class Option : public OptionBase<Option> {
     /// Options store a callback to do all the work
     callback_t callback_;
 
+    /// Options can short-circuit for help options or similar (called before parsing is validated)
+    bool short_circuit_{false};
+
     ///@}
     /// @name Parsing results
     ///@{
@@ -383,6 +386,14 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Options with a short circuit set will run this function before parsing is finished.
+    ///
+    /// This is set on help functions, for example, to escape the normal validation.
+    Option *short_circuit(bool value = true) {
+        short_circuit_ = value;
+        return this;
+    }
+
     ///@}
     /// @name Accessors
     ///@{
@@ -401,6 +412,12 @@ class Option : public OptionBase<Option> {
 
     /// The default value (for help printing)
     std::string get_defaultval() const { return defaultval_; }
+
+    /// See if this is supposed to short circuit (skip validation, INI, etc) (Used for help flags)
+    bool get_short_circuit() const { return short_circuit_; }
+
+    /// Get the callback function
+    callback_t get_callback() const { return callback_; }
 
     /// Get the long names
     const std::vector<std::string> get_lnames() const { return lnames_; }

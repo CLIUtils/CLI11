@@ -389,7 +389,7 @@ class App {
         return opt;
     }
 
-    /// Set a help flag, replaced the existing one if present
+    /// Set a help flag, replace the existing one if present
     Option *set_help_flag(std::string name = "", std::string description = "") {
         if(help_ptr_ != nullptr) {
             remove_option(help_ptr_);
@@ -398,7 +398,8 @@ class App {
 
         // Empty name will simply remove the help flag
         if(!name.empty()) {
-            help_ptr_ = add_flag(name, description);
+            help_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForHelp(); }, description);
+            help_ptr_->short_circuit(true);
             help_ptr_->configurable(false);
         }
 
@@ -412,9 +413,10 @@ class App {
             help_all_ptr_ = nullptr;
         }
 
-        // Empty name will simply remove the help flag
+        // Empty name will simply remove the help all flag
         if(!name.empty()) {
-            help_all_ptr_ = add_flag(name, description);
+            help_all_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForAllHelp(); }, description);
+            help_all_ptr_->short_circuit(true);
             help_all_ptr_->configurable(false);
         }
 
@@ -1281,13 +1283,9 @@ class App {
             _parse_single(args, positional_only);
         }
 
-        if(help_ptr_ != nullptr && help_ptr_->count() > 0) {
-            throw CallForHelp();
-        }
-
-        if(help_all_ptr_ != nullptr && help_all_ptr_->count() > 0) {
-            throw CallForAllHelp();
-        }
+        for(const Option_p &opt : options_)
+            if(opt->get_short_circuit() && opt->count() > 0)
+                opt->run_callback();
 
         // Process an INI file
         if(config_ptr_ != nullptr) {
