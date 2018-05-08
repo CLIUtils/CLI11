@@ -2,7 +2,7 @@
 
 class MyFormatter : public CLI::Formatter {
   public:
-    using Formatter::Formatter;
+    MyFormatter() : Formatter() {}
     std::string make_option_opts(const CLI::Option *) const override { return " OPTION"; }
 };
 

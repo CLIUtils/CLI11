@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "CLI/StringTools.hpp"
 
@@ -88,7 +89,7 @@ class FormatterLambda final : public FormatterBase {
     funct_t lambda_;
 
   public:
-    explicit FormatterLambda(funct_t funct) : lambda_(funct) {}
+    explicit FormatterLambda(funct_t funct) : lambda_(std::move(funct)) {}
 
     /// This will simply call the lambda function
     std::string make_help(const App *app, std::string name, AppFormatMode mode) const override {
