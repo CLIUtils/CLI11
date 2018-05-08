@@ -16,6 +16,7 @@
 #include "CLI/Macros.hpp"
 #include "CLI/Split.hpp"
 #include "CLI/StringTools.hpp"
+#include "CLI/Validators.hpp"
 
 namespace CLI {
 

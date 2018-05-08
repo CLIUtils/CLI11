@@ -42,7 +42,7 @@ enum class ExitCodes {
     RequiresError,
     ExcludesError,
     ExtrasError,
-    INIError,
+    ConfigError,
     InvalidError,
     HorribleError,
     OptionNotFound,
@@ -257,12 +257,12 @@ class ExtrasError : public ParseError {
 };
 
 /// Thrown when extra values are found in an INI file
-class INIError : public ParseError {
-    CLI11_ERROR_DEF(ParseError, INIError)
-    CLI11_ERROR_SIMPLE(INIError)
-    static INIError Extras(std::string item) { return INIError("INI was not able to parse " + item); }
-    static INIError NotConfigurable(std::string item) {
-        return INIError(item + ": This option is not allowed in a configuration file");
+class ConfigError : public ParseError {
+    CLI11_ERROR_DEF(ParseError, ConfigError)
+    CLI11_ERROR_SIMPLE(ConfigError)
+    static ConfigError Extras(std::string item) { return ConfigError("INI was not able to parse " + item); }
+    static ConfigError NotConfigurable(std::string item) {
+        return ConfigError(item + ": This option is not allowed in a configuration file");
     }
 };
 

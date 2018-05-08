@@ -33,7 +33,7 @@ TEST(Formatter, Nothing) {
 TEST(Formatter, NothingLambda) {
     CLI::App app{"My prog"};
 
-    app.formatter(
+    app.formatter_fn(
         [](const CLI::App *, std::string, CLI::AppFormatMode) { return std::string("This is really simple"); });
 
     std::string help = app.help();

@@ -17,9 +17,9 @@
 #include <vector>
 
 // CLI Library includes
+#include "CLI/ConfigFwd.hpp"
 #include "CLI/Error.hpp"
 #include "CLI/FormatterFwd.hpp"
-#include "CLI/Ini.hpp"
 #include "CLI/Macros.hpp"
 #include "CLI/Option.hpp"
 #include "CLI/Split.hpp"
@@ -75,7 +75,7 @@ class App {
     bool allow_extras_{false};
 
     /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
-    bool allow_ini_extras_{false};
+    bool allow_config_extras_{false};
 
     ///  If true, return immediately on an unrecognised option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
@@ -170,6 +170,9 @@ class App {
     /// Pointer to the config option
     Option *config_ptr_{nullptr};
 
+    /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
+    std::shared_ptr<Config> config_formatter_{new ConfigINI()};
+
     ///@}
 
     /// Special private constructor for subcommand
@@ -189,13 +192,14 @@ class App {
             // INHERITABLE
             failure_message_ = parent_->failure_message_;
             allow_extras_ = parent_->allow_extras_;
-            allow_ini_extras_ = parent_->allow_ini_extras_;
+            allow_config_extras_ = parent_->allow_config_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
             fallthrough_ = parent_->fallthrough_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
             formatter_ = parent_->formatter_;
+            config_formatter_ = parent_->config_formatter_;
             require_subcommand_max_ = parent_->require_subcommand_max_;
         }
     }
@@ -237,9 +241,9 @@ class App {
 
     /// Remove the error when extras are left over on the command line.
     /// Will also call App::allow_extras().
-    App *allow_ini_extras(bool allow = true) {
+    App *allow_config_extras(bool allow = true) {
         allow_extras(allow);
-        allow_ini_extras_ = allow;
+        allow_config_extras_ = allow;
         return this;
     }
 
@@ -268,8 +272,14 @@ class App {
     }
 
     /// Set the help formatter
-    App *formatter(std::function<std::string(const App *, std::string, AppFormatMode)> fmt) {
+    App *formatter_fn(std::function<std::string(const App *, std::string, AppFormatMode)> fmt) {
         formatter_ = std::make_shared<FormatterLambda>(fmt);
+        return this;
+    }
+
+    /// Set the config formatter
+    App *config_formatter(std::shared_ptr<Config> fmt) {
+        config_formatter_ = fmt;
         return this;
     }
 
@@ -1015,53 +1025,8 @@ class App {
 
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include
     /// default arguments. Prefix will add a string to the beginning of each option.
-    std::string
-    config_to_str(bool default_also = false, std::string prefix = "", bool write_description = false) const {
-        std::stringstream out;
-        for(const Option_p &opt : options_) {
-
-            // Only process option with a long-name and configurable
-            if(!opt->get_lnames().empty() && opt->get_configurable()) {
-                std::string name = prefix + opt->get_lnames()[0];
-                std::string value;
-
-                // Non-flags
-                if(opt->get_type_size() != 0) {
-
-                    // If the option was found on command line
-                    if(opt->count() > 0)
-                        value = detail::inijoin(opt->results());
-
-                    // If the option has a default and is requested by optional argument
-                    else if(default_also && !opt->get_defaultval().empty())
-                        value = opt->get_defaultval();
-                    // Flag, one passed
-                } else if(opt->count() == 1) {
-                    value = "true";
-
-                    // Flag, multiple passed
-                } else if(opt->count() > 1) {
-                    value = std::to_string(opt->count());
-
-                    // Flag, not present
-                } else if(opt->count() == 0 && default_also) {
-                    value = "false";
-                }
-
-                if(!value.empty()) {
-                    if(write_description && opt->has_description()) {
-                        if(static_cast<int>(out.tellp()) != 0) {
-                            out << std::endl;
-                        }
-                        out << "; " << detail::fix_newlines("; ", opt->get_description()) << std::endl;
-                    }
-                    out << name << "=" << value << std::endl;
-                }
-            }
-        }
-        for(const App_p &subcom : subcommands_)
-            out << subcom->config_to_str(default_also, prefix + subcom->name_ + ".");
-        return out.str();
+    std::string config_to_str(bool default_also = false, bool write_description = false) const {
+        return config_formatter_->to_config(this, default_also, write_description, "");
     }
 
     /// Makes a help message, using the currently configured formatter
@@ -1087,6 +1052,9 @@ class App {
     /// Access the formatter
     std::shared_ptr<FormatterBase> get_formatter() const { return formatter_; }
 
+    /// Access the config formatter
+    std::shared_ptr<Config> get_config_formatter() const { return config_formatter_; }
+
     /// Get the app or subcommand description
     std::string get_description() const { return description_; }
 
@@ -1110,6 +1078,16 @@ class App {
     /// Get an option by name
     const Option *get_option(std::string name) const {
         for(const Option_p &opt : options_) {
+            if(opt->check_name(name)) {
+                return opt.get();
+            }
+        }
+        throw OptionNotFound(name);
+    }
+
+    /// Get an option by name (non-const version)
+    Option *get_option(std::string name) {
+        for(Option_p &opt : options_) {
             if(opt->check_name(name)) {
                 return opt.get();
             }
@@ -1142,7 +1120,7 @@ class App {
     bool get_allow_extras() const { return allow_extras_; }
 
     /// Get the status of allow extras
-    bool get_allow_ini_extras() const { return allow_ini_extras_; }
+    bool get_allow_config_extras() const { return allow_config_extras_; }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
@@ -1156,14 +1134,14 @@ class App {
     /// Get a pointer to the config option.
     Option *get_config_ptr() { return config_ptr_; }
 
+    /// Get a pointer to the config option. (const)
+    const Option *get_config_ptr() const { return config_ptr_; }
+
     /// Get the parent of this subcommand (or nullptr if master app)
     App *get_parent() { return parent_; }
 
     /// Get the parent of this subcommand (or nullptr if master app) (const version)
     const App *get_parent() const { return parent_; }
-
-    /// Get a pointer to the config option. (const)
-    const Option *get_config_ptr() const { return config_ptr_; }
 
     /// Get the name of the current app
     std::string get_name() const { return name_; }
@@ -1304,12 +1282,8 @@ class App {
             }
             if(!config_name_.empty()) {
                 try {
-                    std::vector<detail::ini_ret_t> values = detail::parse_ini(config_name_);
-                    while(!values.empty()) {
-                        if(!_parse_ini(values)) {
-                            throw INIError::Extras(values.back().fullname);
-                        }
-                    }
+                    std::vector<ConfigItem> values = config_formatter_->from_file(config_name_);
+                    _parse_config(values);
                 } catch(const FileError &) {
                     if(config_required_)
                         throw;
@@ -1387,70 +1361,54 @@ class App {
         }
     }
 
-    /// Parse one ini param, return false if not found in any subcommand, remove if it is
+    /// Parse one config param, return false if not found in any subcommand, remove if it is
     ///
     /// If this has more than one dot.separated.name, go into the subcommand matching it
     /// Returns true if it managed to find the option, if false you'll need to remove the arg manually.
-    bool _parse_ini(std::vector<detail::ini_ret_t> &args) {
-        detail::ini_ret_t &current = args.back();
-        std::string parent = current.parent(); // respects current.level
-        std::string name = current.name();
-
-        // If a parent is listed, go to a subcommand
-        if(!parent.empty()) {
-            current.level++;
-            for(const App_p &com : subcommands_)
-                if(com->check_name(parent))
-                    return com->_parse_ini(args);
-            return false;
+    void _parse_config(std::vector<ConfigItem> &args) {
+        for(ConfigItem item : args) {
+            if(!_parse_single_config(item) && !allow_config_extras_)
+                throw ConfigError::Extras(item.fullname());
         }
+    }
 
-        auto op_ptr = std::find_if(
-            std::begin(options_), std::end(options_), [name](const Option_p &v) { return v->check_lname(name); });
-
-        if(op_ptr == std::end(options_)) {
-            if(allow_ini_extras_) {
-                // Should we worry about classifying the extras properly?
-                missing_.emplace_back(detail::Classifer::NONE, current.fullname);
-                args.pop_back();
-                return true;
+    /// Fill in a single config option
+    bool _parse_single_config(const ConfigItem &item, size_t level = 0) {
+        if(level < item.parents.size()) {
+            App *subcom;
+            try {
+                std::cout << item.parents.at(level) << std::endl;
+                subcom = get_subcommand(item.parents.at(level));
+            } catch(const OptionNotFound &) {
+                return false;
             }
-            return false;
+            return subcom->_parse_single_config(item, level + 1);
         }
 
-        // Let's not go crazy with pointer syntax
-        Option_p &op = *op_ptr;
+        Option *op;
+        try {
+            op = get_option("--" + item.name);
+        } catch(const OptionNotFound &) {
+            // If the option was not present
+            if(get_allow_config_extras())
+                // Should we worry about classifying the extras properly?
+                missing_.emplace_back(detail::Classifer::NONE, item.fullname());
+            return false;
+        }
 
         if(!op->get_configurable())
-            throw INIError::NotConfigurable(current.fullname);
+            throw ConfigError::NotConfigurable(item.fullname());
 
         if(op->empty()) {
             // Flag parsing
             if(op->get_type_size() == 0) {
-                if(current.inputs.size() == 1) {
-                    std::string val = current.inputs.at(0);
-                    val = detail::to_lower(val);
-                    if(val == "true" || val == "on" || val == "yes")
-                        op->set_results({""});
-                    else if(val == "false" || val == "off" || val == "no")
-                        ;
-                    else
-                        try {
-                            size_t ui = std::stoul(val);
-                            for(size_t i = 0; i < ui; i++)
-                                op->add_result("");
-                        } catch(const std::invalid_argument &) {
-                            throw ConversionError::TrueFalse(current.fullname);
-                        }
-                } else
-                    throw ConversionError::TooManyInputsFlag(current.fullname);
+                op->set_results(config_formatter_->to_flag(item));
             } else {
-                op->set_results(current.inputs);
+                op->set_results(item.inputs);
                 op->run_callback();
             }
         }
 
-        args.pop_back();
         return true;
     }
 

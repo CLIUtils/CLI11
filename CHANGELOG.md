@@ -1,12 +1,11 @@
 ## Version 1.6: Formatting help
 
-Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating all formatting code.
+Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating most formatting code.
 
 * Added `CLI::Formatter` and `formatter` slot for apps, inherited.
+* `FormatterBase` is the minimum required
+* `FormatterLambda` provides for the easy addition of an arbitrary function
 * Added `help_all` support (not added by default)
-* Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
-* Added `get_groups()` to get groups
-* Added getters for the missing parts of options (help no longer uses any private parts)
 
 Changes to the help system (most normal users will not notice this):
 
@@ -17,6 +16,17 @@ Changes to the help system (most normal users will not notice this):
 * Protected function `_has_help_positional` removed
 * `format_help` can now be chained
 
+
+New for Config file reading and writing [#121]:
+
+* Overridable, bidirectional Config
+* ConfigINI provided and used by default
+* Renamed ini to config in many places
+* Has `config_formatter()` and `get_config_formatter()`
+* Dropped prefix argument from `config_to_str`
+* Added `ConfigItem`
+
+
 Validators are now much more powerful [#118], all built in validators upgraded to the new form:
 
 * A subclass of `CLI::Validator` is now also accepted.
@@ -26,6 +36,9 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
+* Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
+* Added `get_groups()` to get groups
+* Added getters for the missing parts of options (help no longer uses any private parts)
 * Better support for manual options with `get_option`, `set_results`, and `empty` [#119]
 * `lname` and `sname` have getters, added `const get_parent` [#120]
 * Using `add_set` will now capture L-values for sets, allowing further modification [#113]
@@ -35,6 +48,7 @@ Other changes:
 * Removed `requires` in favor of `needs` (deprecated in last version) [#112]
 * Better CMake policy handling [#110]
 * Includes are properly sorted [#120]
+* Help flags now use new `short_circuit` property to simplify parsing [#121]
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -45,6 +59,7 @@ Other changes:
 [#118]: https://github.com/CLIUtils/CLI11/pull/118
 [#119]: https://github.com/CLIUtils/CLI11/pull/119
 [#120]: https://github.com/CLIUtils/CLI11/pull/120
+[#121]: https://github.com/CLIUtils/CLI11/pull/121
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.

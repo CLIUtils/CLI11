@@ -15,13 +15,13 @@ TEST(StringBased, First) {
 
     ofile.seekg(0, std::ios::beg);
 
-    std::vector<CLI::detail::ini_ret_t> output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)2, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
@@ -36,13 +36,13 @@ TEST(StringBased, FirstWithComments) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)2, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
@@ -56,16 +56,16 @@ TEST(StringBased, Quotes) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)3, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
-    EXPECT_EQ("five", output.at(2).name());
+    EXPECT_EQ("five", output.at(2).name);
     EXPECT_EQ((size_t)1, output.at(2).inputs.size());
     EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
 }
@@ -79,16 +79,16 @@ TEST(StringBased, Vector) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)3, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
-    EXPECT_EQ("five", output.at(2).name());
+    EXPECT_EQ("five", output.at(2).name);
     EXPECT_EQ((size_t)3, output.at(2).inputs.size());
     EXPECT_EQ("six", output.at(2).inputs.at(0));
     EXPECT_EQ("and", output.at(2).inputs.at(1));
@@ -103,13 +103,13 @@ TEST(StringBased, Spaces) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)2, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
+    EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
@@ -123,16 +123,17 @@ TEST(StringBased, Sections) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)2, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ("second", output.at(1).parent());
+    EXPECT_EQ("two", output.at(1).name);
+    EXPECT_EQ("second", output.at(1).parents.at(0));
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
+    EXPECT_EQ("second.two", output.at(1).fullname());
 }
 
 TEST(StringBased, SpacesSections) {
@@ -146,14 +147,15 @@ TEST(StringBased, SpacesSections) {
 
     ofile.seekg(0, std::ios::beg);
 
-    auto output = CLI::detail::parse_ini(ofile);
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     EXPECT_EQ((size_t)2, output.size());
-    EXPECT_EQ("one", output.at(0).name());
+    EXPECT_EQ("one", output.at(0).name);
     EXPECT_EQ((size_t)1, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name());
-    EXPECT_EQ("second", output.at(1).parent());
+    EXPECT_EQ("two", output.at(1).name);
+    EXPECT_EQ((size_t)1, output.at(1).parents.size());
+    EXPECT_EQ("second", output.at(1).parents.at(0));
     EXPECT_EQ((size_t)1, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
@@ -199,7 +201,7 @@ TEST_F(TApp, IniSuccessOnUnknownOption) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    app.allow_ini_extras(true);
+    app.allow_config_extras(true);
 
     {
         std::ofstream out{tmpini};
@@ -209,7 +211,7 @@ TEST_F(TApp, IniSuccessOnUnknownOption) {
 
     int two = 0;
     app.add_option("--two", two);
-    EXPECT_NO_THROW(run());
+    run();
     EXPECT_EQ(99, two);
 }
 
@@ -217,7 +219,7 @@ TEST_F(TApp, IniGetRemainingOption) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    app.allow_ini_extras(true);
+    app.allow_config_extras(true);
 
     std::string ExtraOption = "three";
     std::string ExtraOptionValue = "3";
@@ -238,7 +240,7 @@ TEST_F(TApp, IniGetNoRemaining) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    app.allow_ini_extras(true);
+    app.allow_config_extras(true);
 
     {
         std::ofstream out{tmpini};
@@ -413,7 +415,7 @@ TEST_F(TApp, IniLayered) {
     auto subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
-    ASSERT_NO_THROW(run());
+    run();
 
     EXPECT_EQ(1, one);
     EXPECT_EQ(2, two);
@@ -432,7 +434,7 @@ TEST_F(TApp, IniFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::INIError);
+    EXPECT_THROW(run(), CLI::ConfigError);
 }
 
 TEST_F(TApp, IniConfigurable) {
@@ -467,7 +469,7 @@ TEST_F(TApp, IniNotConfigurable) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::INIError);
+    EXPECT_THROW(run(), CLI::ConfigError);
 }
 
 TEST_F(TApp, IniSubFailure) {
@@ -483,7 +485,7 @@ TEST_F(TApp, IniSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::INIError);
+    EXPECT_THROW(run(), CLI::ConfigError);
 }
 
 TEST_F(TApp, IniNoSubFailure) {
@@ -498,7 +500,7 @@ TEST_F(TApp, IniNoSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::INIError);
+    EXPECT_THROW(run(), CLI::ConfigError);
 }
 
 TEST_F(TApp, IniFlagConvertFailure) {
@@ -638,7 +640,7 @@ TEST_F(TApp, IniOutputShortSingleDescription) {
 
     run();
 
-    std::string str = app.config_to_str(true, "", true);
+    std::string str = app.config_to_str(true, true);
     EXPECT_THAT(str, HasSubstr("; " + description + "\n" + flag + "=false\n"));
 }
 
@@ -652,7 +654,7 @@ TEST_F(TApp, IniOutputShortDoubleDescription) {
 
     run();
 
-    std::string str = app.config_to_str(true, "", true);
+    std::string str = app.config_to_str(true, true);
     EXPECT_EQ(str, "; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n");
 }
 
@@ -663,7 +665,7 @@ TEST_F(TApp, IniOutputMultiLineDescription) {
 
     run();
 
-    std::string str = app.config_to_str(true, "", true);
+    std::string str = app.config_to_str(true, true);
     EXPECT_THAT(str, HasSubstr("; Some short description.\n"));
     EXPECT_THAT(str, HasSubstr("; That has lines.\n"));
     EXPECT_THAT(str, HasSubstr(flag + "=false\n"));

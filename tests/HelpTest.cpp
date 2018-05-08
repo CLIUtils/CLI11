@@ -519,7 +519,7 @@ TEST_F(CapturedHelp, CallForAllHelpOutput) {
               "  --three                     \n");
 }
 TEST_F(CapturedHelp, NewFormattedHelp) {
-    app.formatter([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
+    app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
     EXPECT_EQ(run(CLI::CallForHelp()), 0);
     EXPECT_EQ(out.str(), "New Help");
     EXPECT_EQ(err.str(), "");
