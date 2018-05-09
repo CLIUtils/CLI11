@@ -192,6 +192,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 * `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 * `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 * `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
+* `->each(void(std::string)>`: Run this function on each value received, as it is received.
 * `->configurable(false)`: Disable this option from being in a configuration file.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).

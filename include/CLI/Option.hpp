@@ -308,6 +308,15 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
+    Option *each(std::function<void(std::string)> func) {
+        validators_.emplace_back([func](std::string &inout) {
+            func(inout);
+            return std::string();
+        });
+        return this;
+    }
+
     /// Sets required options
     Option *needs(Option *opt) {
         auto tup = requires_.insert(opt);
