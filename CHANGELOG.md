@@ -36,6 +36,7 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
+* Added `->each()` to make adding custom callbacks easier [#126]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
 * Added `get_groups()` to get groups
 * Added getters for the missing parts of options (help no longer uses any private parts)
@@ -60,6 +61,7 @@ Other changes:
 [#119]: https://github.com/CLIUtils/CLI11/pull/119
 [#120]: https://github.com/CLIUtils/CLI11/pull/120
 [#121]: https://github.com/CLIUtils/CLI11/pull/121
+[#126]: https://github.com/CLIUtils/CLI11/pull/126
 
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.

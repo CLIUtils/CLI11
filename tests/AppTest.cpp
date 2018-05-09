@@ -1478,6 +1478,23 @@ TEST_F(TApp, ThrowingTransform) {
     }
 }
 
+// This was added to make running a simple function on each item easier
+TEST_F(TApp, EachItem) {
+
+    std::vector<std::string> results;
+    std::vector<std::string> dummy;
+
+    auto opt = app.add_option("--vec", dummy);
+
+    opt->each([&results](std::string item) { results.push_back(item); });
+
+    args = {"--vec", "one", "two", "three"};
+
+    run();
+
+    EXPECT_EQ(results, dummy);
+}
+
 // #87
 TEST_F(TApp, CustomDoubleOption) {
 
