@@ -328,10 +328,7 @@ class App {
                        T &variable, ///< The variable to set
                        std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
-        CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
-            return detail::lexical_cast(res[0], variable);
-        };
+        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
         Option *opt = add_option(name, fun, description, false);
         opt->set_custom_option(detail::type_name<T>());
@@ -345,10 +342,7 @@ class App {
                        std::string description,
                        bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
-        CLI::callback_t fun = [&variable, simple_name](CLI::results_t res) {
-            return detail::lexical_cast(res[0], variable);
-        };
+        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
         Option *opt = add_option(name, fun, description, defaulted);
         opt->set_custom_option(detail::type_name<T>());
