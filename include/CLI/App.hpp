@@ -881,7 +881,7 @@ class App {
 
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
-    void parse(int argc, char **argv) {
+    void parse(int argc, const char *const *argv) {
         // If the name is not set, read from command line
         if(name_.empty())
             name_ = argv[0];
