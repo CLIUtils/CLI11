@@ -13,7 +13,8 @@
 
 namespace CLI {
 
-// Use one of these on all error classes
+// Use one of these on all error classes.
+// These are temporary and are undef'd at the end of this file.
 #define CLI11_ERROR_DEF(parent, name)                                                                                  \
   protected:                                                                                                           \
     name(std::string name, std::string msg, int exit_code) : parent(std::move(name), std::move(msg), exit_code) {}     \
@@ -288,6 +289,9 @@ class OptionNotFound : public Error {
     CLI11_ERROR_DEF(Error, OptionNotFound)
     explicit OptionNotFound(std::string name) : OptionNotFound(name + " not found", ExitCodes::OptionNotFound) {}
 };
+
+#undef CLI11_ERROR_DEF
+#undef CLI11_ERROR_SIMPLE
 
 /// @}
 
