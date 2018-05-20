@@ -180,7 +180,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 
 * `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
 * `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option.
-* `->set_custom_option(typename, N)`: Set the name and intrinsic size of an option. The parser will require multiples of this number.
+* `->set_custom_option(typename, N)`: Set the name and (optional) intrinsic size of an option. The parser will require multiples of this number if negative.
 * `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
 * `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
