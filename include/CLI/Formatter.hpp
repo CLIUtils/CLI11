@@ -10,27 +10,26 @@
 
 namespace CLI {
 
-inline std::string Formatter::make_group(const App *app,
-                                         std::string group,
-                                         bool is_positional,
-                                         std::function<bool(const Option *)> filter) const {
+inline std::string
+Formatter::make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const {
     std::stringstream out;
-    std::vector<const Option *> opts = app->get_options(filter);
 
-    if(!opts.empty()) {
-        out << "\n" << group << ":\n";
-        for(const Option *opt : opts) {
-            out << make_option(opt, is_positional);
-        }
+    out << "\n" << group << ":\n";
+    for(const Option *opt : opts) {
+        out << make_option(opt, is_positional);
     }
 
     return out.str();
 }
 
 inline std::string Formatter::make_positionals(const App *app) const {
-    return make_group(app, get_label("Positionals"), true, [](const Option *opt) {
-        return !opt->get_group().empty() && opt->get_positional();
-    });
+    std::vector<const Option *> opts =
+        app->get_options([](const Option *opt) { return !opt->get_group().empty() && opt->get_positional(); });
+
+    if(opts.empty())
+        return std::string();
+    else
+        return make_group(get_label("Positionals"), true, opts);
 }
 
 inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) const {
@@ -39,14 +38,15 @@ inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) co
 
     // Options
     for(const std::string &group : groups) {
-        if(!group.empty()) {
-            out << make_group(app, group, false, [app, mode, &group](const Option *opt) {
-                return opt->get_group() == group                    // Must be in the right group
-                       && opt->nonpositional()                      // Must not be a positional
-                       && (mode != AppFormatMode::Sub               // If mode is Sub, then
-                           || (app->get_help_ptr() != opt           // Ignore help pointer
-                               && app->get_help_all_ptr() != opt)); // Ignore help all pointer
-            });
+        std::vector<const Option *> opts = app->get_options([app, mode, &group](const Option *opt) {
+            return opt->get_group() == group                    // Must be in the right group
+                   && opt->nonpositional()                      // Must not be a positional
+                   && (mode != AppFormatMode::Sub               // If mode is Sub, then
+                       || (app->get_help_ptr() != opt           // Ignore help pointer
+                           && app->get_help_all_ptr() != opt)); // Ignore help all pointer
+        });
+        if(!group.empty() && !opts.empty()) {
+            out << make_group(group, false, opts);
 
             if(group != groups.back())
                 out << "\n";
