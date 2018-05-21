@@ -106,11 +106,9 @@ class Formatter : public FormatterBase {
     /// @name Overridables
     ///@{
 
-    /// This prints out a group of options
+    /// This prints out a group of options with title
     ///
-    /// Use the filter to pick out the items you want in your group
-    virtual std::string
-    make_group(const App *app, std::string group, bool is_positional, std::function<bool(const Option *)> filter) const;
+    virtual std::string make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const;
 
     /// This prints out just the positionals "group"
     virtual std::string make_positionals(const App *app) const;
