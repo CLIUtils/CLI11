@@ -89,7 +89,7 @@ To use, there are two methods:
 
 1. Copy `CLI11.hpp` from the [most recent release][Github Releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
 2. Use `CLI/*.hpp` files. You could check out the repository as a submodule, for example. You can use the `CLI11::CLI11` interface target when linking from `add_subdirectory`.
-   You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. You can also use [Conan.io][conan-link].
+   You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. You can also use [Conan.io][conan-link] or [Hunter].
    (These are just conveniences to allow you to use your favorite method of managing packages; it's just header only so including the correct path and
    using C++11 is all you really need.)
 
@@ -470,3 +470,4 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Single file libs]:      https://github.com/nothings/single_file_libs/blob/master/README.md
 [codacy-badge]:          https://api.codacy.com/project/badge/Grade/ac0df3aead2a4421b02070c3f324a0b9
 [codacy-link]:           https://www.codacy.com/app/henryiii/CLI11?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CLIUtils/CLI11&amp;utm_campaign=Badge_Grade
+[Hunter]:                https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
