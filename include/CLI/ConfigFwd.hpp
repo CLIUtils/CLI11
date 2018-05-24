@@ -78,6 +78,9 @@ class Config {
 
         return from_config(input);
     }
+
+    /// virtual destructor
+    virtual ~Config() = default;
 };
 
 /// This converter works with INI files
