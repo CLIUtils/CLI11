@@ -3,12 +3,9 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-namespace CLI {
-
-// Note that all code in CLI11 must be in a namespace, even if it just a define.
+// [CLI11:verbatim]
 
 // The following version macro is very similar to the one in PyBind11
-
 #if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
 #if __cplusplus >= 201402L
 #define CLI11_CPP14
@@ -41,4 +38,4 @@ namespace CLI {
 #define CLI11_DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
-} // namespace CLI
+// [CLI11:verbatim]
