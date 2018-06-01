@@ -63,6 +63,9 @@ Other changes:
 [#121]: https://github.com/CLIUtils/CLI11/pull/121
 [#126]: https://github.com/CLIUtils/CLI11/pull/126
 
+### Version 1.5.4: Optionals
+This version fixes the optional search in the single file version; some macros were not yet defined when it did the search. You can define the `CLI11_*_OPTIONAL` macros to 0 if needed to eliminate the search.
+
 ### Version 1.5.3: Compiler compatibility
 This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
 
