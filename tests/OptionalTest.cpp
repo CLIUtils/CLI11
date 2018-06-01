@@ -3,7 +3,7 @@
 
 #include "app_helper.hpp"
 
-#ifdef CLI11_STD_OPTIONAL
+#if CLI11_STD_OPTIONAL
 
 TEST_F(TApp, StdOptionalTest) {
     std::optional<int> opt;
@@ -25,7 +25,7 @@ TEST_F(TApp, StdOptionalTest) {
 }
 
 #endif
-#ifdef CLI11_EXPERIMENTAL_OPTIONAL
+#if CLI11_EXPERIMENTAL_OPTIONAL
 
 TEST_F(TApp, ExperimentalOptionalTest) {
     std::experimental::optional<int> opt;
@@ -47,7 +47,7 @@ TEST_F(TApp, ExperimentalOptionalTest) {
 }
 
 #endif
-#ifdef CLI11_BOOST_OPTIONAL
+#if CLI11_BOOST_OPTIONAL
 
 TEST_F(TApp, BoostOptionalTest) {
     boost::optional<int> opt;
@@ -70,6 +70,6 @@ TEST_F(TApp, BoostOptionalTest) {
 
 #endif
 
-#ifndef CLI11_OPTIONAL
+#if !CLI11_OPTIONAL
 TEST_F(TApp, DISABLED_OptionalTest) {}
 #endif

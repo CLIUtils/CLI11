@@ -167,7 +167,7 @@ An option name must start with a alphabetic character or underscore. For long op
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
-On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL` before including CLI11 to manually add support for `boost::optional`. See [CLI11 Internals] for information on how this was done and how you can add your own converters.
+On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL 1` before including CLI11 to manually add support (or 0 to remove) for `boost::optional`. See [CLI11 Internals] for information on how this was done and how you can add your own converters.
 
 ### Example
 
