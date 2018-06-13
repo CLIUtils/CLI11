@@ -11,7 +11,7 @@
 #ifdef __has_include
 
 #if defined(CLI11_CPP17) && __has_include(<optional>) && \
-    defined(__cpp_lib_optional) && !defined(CLI11_STD_OPTIONAL)
+     !defined(CLI11_STD_OPTIONAL)
 #define CLI11_STD_OPTIONAL 1
 #endif
 
