@@ -17,11 +17,11 @@ add_option(CLI::App &app, std::string name, cx &variable, std::string descriptio
     };
 
     CLI::Option *opt = app.add_option(name, fun, description, defaulted);
-    opt->set_custom_option("COMPLEX", 2);
+    opt->type_name("COMPLEX")->type_size(2);
     if(defaulted) {
         std::stringstream out;
         out << variable;
-        opt->set_default_str(out.str());
+        opt->default_str(out.str());
     }
     return opt;
 }

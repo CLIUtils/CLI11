@@ -1504,7 +1504,7 @@ TEST_F(TApp, CustomDoubleOption) {
         custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
         return true;
     });
-    opt->set_custom_option("INT FLOAT", 2);
+    opt->type_name("INT FLOAT")->type_size(2);
 
     args = {"12", "1.5"};
 

@@ -222,8 +222,8 @@ TEST(THelp, ManualSetters) {
     int x = 1;
 
     CLI::Option *op1 = app.add_option("--op", x);
-    op1->set_default_str("12");
-    op1->set_type_name("BIGGLES");
+    op1->default_str("12");
+    op1->type_name("BIGGLES");
     EXPECT_EQ(x, 1);
 
     std::string help = app.help();
@@ -231,7 +231,7 @@ TEST(THelp, ManualSetters) {
     EXPECT_THAT(help, HasSubstr("=12"));
     EXPECT_THAT(help, HasSubstr("BIGGLES"));
 
-    op1->set_default_val("14");
+    op1->default_val("14");
     EXPECT_EQ(x, 14);
     help = app.help();
     EXPECT_THAT(help, HasSubstr("=14"));
@@ -556,7 +556,7 @@ TEST(THelp, CustomDoubleOption) {
         custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
         return true;
     });
-    opt->set_custom_option("INT FLOAT", 2);
+    opt->type_name("INT FLOAT")->type_size(2);
 
     EXPECT_THAT(app.help(), Not(HasSubstr("x 2")));
 }
