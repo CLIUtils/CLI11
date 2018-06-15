@@ -331,7 +331,7 @@ class App {
         CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_custom_option(detail::type_name<T>());
+        opt->type_name(detail::type_name<T>());
         return opt;
     }
 
@@ -345,11 +345,11 @@ class App {
         CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_custom_option(detail::type_name<T>());
+        opt->type_name(detail::type_name<T>());
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            opt->set_default_str(out.str());
+            opt->default_str(out.str());
         }
         return opt;
     }
@@ -371,7 +371,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_custom_option(detail::type_name<T>(), -1);
+        opt->type_name(detail::type_name<T>())->type_size(-1);
         return opt;
     }
 
@@ -393,9 +393,9 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_custom_option(detail::type_name<T>(), -1);
+        opt->type_name(detail::type_name<T>())->type_size(-1);
         if(defaulted)
-            opt->set_default_str("[" + detail::join(variable) + "]");
+            opt->default_str("[" + detail::join(variable) + "]");
         return opt;
     }
 
@@ -440,7 +440,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(name);
-        opt->set_custom_option("", 0);
+        opt->type_size(0);
         return opt;
     }
 
@@ -460,7 +460,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(name);
-        opt->set_custom_option("", 0);
+        opt->type_size(0);
         return opt;
     }
 
@@ -480,7 +480,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(name);
-        opt->set_custom_option("", 0);
+        opt->type_size(0);
         opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
         return opt;
     }
@@ -499,7 +499,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(name);
-        opt->set_custom_option("", 0);
+        opt->type_size(0);
         return opt;
     }
 
@@ -530,7 +530,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->type_name(typeval);
         return opt;
     }
 
@@ -550,7 +550,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_type_name_fn(
+        opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
 
         return opt;
@@ -575,11 +575,11 @@ class App {
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->type_name(typeval);
         if(defaulted) {
             std::stringstream out;
             out << member;
-            opt->set_default_str(out.str());
+            opt->default_str(out.str());
         }
         return opt;
     }
@@ -601,12 +601,12 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_type_name_fn(
+        opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
         if(defaulted) {
             std::stringstream out;
             out << member;
-            opt->set_default_str(out.str());
+            opt->default_str(out.str());
         }
         return opt;
     }
@@ -634,7 +634,7 @@ class App {
         Option *opt = add_option(name, fun, description, false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->type_name(typeval);
 
         return opt;
     }
@@ -660,7 +660,7 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, false);
-        opt->set_type_name_fn([&options]() {
+        opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
 
@@ -691,9 +691,9 @@ class App {
         Option *opt = add_option(name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
-        opt->set_custom_option(typeval);
+        opt->type_name(typeval);
         if(defaulted) {
-            opt->set_default_str(member);
+            opt->default_str(member);
         }
         return opt;
     }
@@ -720,11 +720,11 @@ class App {
         };
 
         Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_type_name_fn([&options]() {
+        opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
         if(defaulted) {
-            opt->set_default_str(member);
+            opt->default_str(member);
         }
         return opt;
     }
@@ -749,11 +749,11 @@ class App {
         };
 
         CLI::Option *opt = add_option(name, fun, description, defaulted);
-        opt->set_custom_option(label, 2);
+        opt->type_name(label)->type_size(2);
         if(defaulted) {
             std::stringstream out;
             out << variable;
-            opt->set_default_str(out.str());
+            opt->default_str(out.str());
         }
         return opt;
     }

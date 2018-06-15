@@ -174,7 +174,7 @@ class Option : public OptionBase<Option> {
     /// A human readable type value, set when App creates this
     ///
     /// This is a lambda function so "types" can be dynamic, such as when a set prints its contents.
-    std::function<std::string()> type_name_;
+    std::function<std::string()> type_name_{[]() { return std::string(); }};
 
     /// True if this option has a default
     bool default_{false};
@@ -285,7 +285,7 @@ class Option : public OptionBase<Option> {
     Option *check(const Validator &validator) {
         validators_.emplace_back(validator.func);
         if(!validator.tname.empty())
-            set_type_name(validator.tname);
+            type_name(validator.tname);
         return this;
     }
 
@@ -630,15 +630,17 @@ class Option : public OptionBase<Option> {
     }
 
     /// Puts a result at the end
-    void add_result(std::string s) {
+    Option *add_result(std::string s) {
         results_.push_back(s);
         callback_run_ = false;
+        return this;
     }
 
     /// Set the results vector all at once
-    void set_results(std::vector<std::string> results) {
+    Option *set_results(std::vector<std::string> results) {
         results_ = results;
         callback_run_ = false;
+        return this;
     }
 
     /// Get a copy of the results
@@ -651,35 +653,43 @@ class Option : public OptionBase<Option> {
     /// @name Custom options
     ///@{
 
-    /// Set a custom option, typestring, type_size
-    void set_custom_option(std::string typeval, int type_size = 1) {
-        set_type_name(typeval);
+    /// Set the type function to run when displayed on this option
+    Option *type_name_fn(std::function<std::string()> typefun) {
+        type_name_ = typefun;
+        return this;
+    }
+
+    /// Set a custom option typestring
+    Option *type_name(std::string typeval) {
+        type_name_fn([typeval]() { return typeval; });
+        return this;
+    }
+
+    /// Set a custom option size
+    Option *type_size(int type_size) {
         type_size_ = type_size;
         if(type_size_ == 0)
             required_ = false;
         if(type_size < 0)
             expected_ = -1;
+        return this;
     }
 
     /// Set the default value string representation
-    void set_default_str(std::string val) { defaultval_ = val; }
+    Option *default_str(std::string val) {
+        defaultval_ = val;
+        return this;
+    }
 
     /// Set the default value string representation and evaluate
-    void set_default_val(std::string val) {
-        set_default_str(val);
+    Option *default_val(std::string val) {
+        default_str(val);
         auto old_results = results_;
         results_ = {val};
         run_callback();
         results_ = std::move(old_results);
+        return this;
     }
-
-    /// Set the type name displayed on this option
-    void set_type_name(std::string typeval) {
-        set_type_name_fn([typeval]() { return typeval; });
-    }
-
-    /// Set the type function to run when displayed on this option
-    void set_type_name_fn(std::function<std::string()> typefun) { type_name_ = typefun; }
 
     /// Get the typename for this option
     std::string get_type_name() const { return type_name_(); }

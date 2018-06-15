@@ -36,6 +36,7 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
+* Dropped `set_*` names on options, using `type_name` and `type_size` instead of `set_custom_option`. Methods return this.
 * Added `->each()` to make adding custom callbacks easier [#126]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
 * Added `get_groups()` to get groups

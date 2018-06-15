@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
     Level level;
     app.add_set("-l,--level", level, {Level::High, Level::Medium, Level::Low}, "Level settings")
-        ->set_type_name("enum/Level in {High=0, Medium=1, Low=2}");
+        ->type_name("enum/Level in {High=0, Medium=1, Low=2}");
 
     CLI11_PARSE(app, argc, argv);
 
