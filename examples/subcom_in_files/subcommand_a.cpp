@@ -18,7 +18,7 @@ void setup_subcommand_a(CLI::App &app) {
     sub->add_flag("--with-foo", opt->with_foo, "Counter");
 
     // Set the run function as callback to be called when this subcommand is issued.
-    sub->set_callback([opt]() { run_subcommand_a(*opt); });
+    sub->callback([opt]() { run_subcommand_a(*opt); });
 }
 
 /// The function that runs our code.

@@ -362,7 +362,7 @@ TEST_F(TApp, SubcommandDefaults) {
     app.prefix_command();
     app.ignore_case();
     app.fallthrough();
-    app.set_footer("footy");
+    app.footer("footy");
     app.group("Stuff");
     app.require_subcommand(2, 3);
 

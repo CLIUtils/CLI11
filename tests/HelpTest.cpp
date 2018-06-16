@@ -24,7 +24,7 @@ TEST(THelp, Basic) {
 
 TEST(THelp, Footer) {
     CLI::App app{"My prog"};
-    app.set_footer("Report bugs to bugs@example.com");
+    app.footer("Report bugs to bugs@example.com");
 
     std::string help = app.help();
 
@@ -128,7 +128,7 @@ TEST(THelp, VectorOpts) {
 
 TEST(THelp, MultiPosOpts) {
     CLI::App app{"My prog"};
-    app.set_name("program");
+    app.name("program");
     std::vector<int> x, y;
     app.add_option("quick", x, "Disc")->expected(2);
     app.add_option("vals", y, "Other");
@@ -535,7 +535,7 @@ TEST_F(CapturedHelp, NormalError) {
 }
 
 TEST_F(CapturedHelp, RepacedError) {
-    app.set_failure_message(CLI::FailureMessage::help);
+    app.failure_message(CLI::FailureMessage::help);
 
     EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
     EXPECT_EQ(out.str(), "");
