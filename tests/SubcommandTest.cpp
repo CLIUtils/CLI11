@@ -178,10 +178,10 @@ TEST_F(TApp, FooFooProblem) {
 
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
-    sub1->set_callback([]() { throw CLI::Success(); });
+    sub1->callback([]() { throw CLI::Success(); });
     auto sub2 = app.add_subcommand("sub2");
     bool val = false;
-    sub2->set_callback([&val]() { val = true; });
+    sub2->callback([&val]() { val = true; });
 
     args = {"sub2"};
     EXPECT_FALSE(val);
@@ -191,9 +191,9 @@ TEST_F(TApp, Callbacks) {
 
 TEST_F(TApp, RuntimeErrorInCallback) {
     auto sub1 = app.add_subcommand("sub1");
-    sub1->set_callback([]() { throw CLI::RuntimeError(); });
+    sub1->callback([]() { throw CLI::RuntimeError(); });
     auto sub2 = app.add_subcommand("sub2");
-    sub2->set_callback([]() { throw CLI::RuntimeError(2); });
+    sub2->callback([]() { throw CLI::RuntimeError(2); });
 
     args = {"sub1"};
     EXPECT_THROW(run(), CLI::RuntimeError);
@@ -309,7 +309,7 @@ TEST_F(TApp, CallbackOrdering) {
     app.add_option("--val", val);
 
     auto sub = app.add_subcommand("sub");
-    sub->set_callback([&val, &sub_val]() { sub_val = val; });
+    sub->callback([&val, &sub_val]() { sub_val = val; });
 
     args = {"sub", "--val=2"};
     run();
@@ -573,7 +573,7 @@ TEST_F(SubcommandProgram, HelpOrder) {
 
 TEST_F(SubcommandProgram, Callbacks) {
 
-    start->set_callback([]() { throw CLI::Success(); });
+    start->callback([]() { throw CLI::Success(); });
 
     run();
 
@@ -668,8 +668,8 @@ TEST_F(SubcommandProgram, MixedOrderExtras) {
 
 TEST_F(SubcommandProgram, CallbackOrder) {
     std::vector<int> callback_order;
-    start->set_callback([&callback_order]() { callback_order.push_back(1); });
-    stop->set_callback([&callback_order]() { callback_order.push_back(2); });
+    start->callback([&callback_order]() { callback_order.push_back(1); });
+    stop->callback([&callback_order]() { callback_order.push_back(2); });
 
     args = {"start", "stop"};
     run();

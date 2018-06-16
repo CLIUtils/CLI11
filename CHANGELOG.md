@@ -36,7 +36,9 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
-* Dropped `set_*` names on options, using `type_name` and `type_size` instead of `set_custom_option`. Methods return this.
+* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`
+* Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`.
+* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`
 * Added `->each()` to make adding custom callbacks easier [#126]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
 * Added `get_groups()` to get groups

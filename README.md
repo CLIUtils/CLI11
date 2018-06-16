@@ -232,7 +232,7 @@ subcommand name from matching.
 If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an `App` pointer or a string name was collected on the command line.
 
-For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.set_callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
+For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][Click] like series of commands (order is preserved).
@@ -254,14 +254,14 @@ There are several options that are supported on the main app and subcommands. Th
 * `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
 * `.get_description()`: Access the description.
 * `.parsed()`: True if this subcommand was given on the command line.
-* `.set_name(name)`: Add or change the name.
-* `.set_callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
+* `.name(name)`: Add or change the name.
+* `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 * `.allow_extras()`: Do not throw an error if extra arguments are left over.
 * `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
-* `.set_footer(message)`: Set text to appear at the bottom of the help string.
+* `.footer(message)`: Set text to appear at the bottom of the help string.
 * `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
 * `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
-* `.set_failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
+* `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 * `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
@@ -320,7 +320,7 @@ their own formatter since you can't access anything but the call operator once a
 
 The App class was designed allow toolkits to subclass it, to provide preset default options (see above) and setup/teardown code. Subcommands remain an unsubclassed `App`, since those are not expected to need setup and teardown. The default `App` only adds a help flag, `-h,--help`, than can removed/replaced using `.set_help_flag(name, help_string)`. You can also set a help-all flag with `.set_help_all_flag(name, help_string)`; this will expand the subcommands (one level only). You can remove options if you have pointers to them using `.remove_option(opt)`. You can add a `pre_callback` override to customize the after parse
 but before run behavior, while
-still giving the user freedom to `set_callback` on the main app.
+still giving the user freedom to `callback` on the main app.
 
 The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector.
 

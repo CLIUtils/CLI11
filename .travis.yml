@@ -56,7 +56,7 @@ matrix:
         .ci/build_docs.sh
       fi
 
-    # GCC 6 and Coverage
+    # GCC 7 and coverage (8 does not support lcov, wait till 9 and new lcov)
   - compiler: gcc
     env:
     - GCC_VER=7

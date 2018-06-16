@@ -222,13 +222,13 @@ class App {
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
-    App *set_callback(std::function<void()> callback) {
+    App *callback(std::function<void()> callback) {
         callback_ = callback;
         return this;
     }
 
     /// Set a name for the app (empty will use parser to set the name)
-    App *set_name(std::string name = "") {
+    App *name(std::string name = "") {
         name_ = name;
         return this;
     }
@@ -901,7 +901,7 @@ class App {
     }
 
     /// Provide a function to print a help message. The function gets access to the App pointer and error.
-    void set_failure_message(std::function<std::string(const App *, const Error &e)> function) {
+    void failure_message(std::function<std::string(const App *, const Error &e)> function) {
         failure_message_ = function;
     }
 
@@ -1012,7 +1012,7 @@ class App {
     ///@{
 
     /// Set footer.
-    App *set_footer(std::string footer) {
+    App *footer(std::string footer) {
         footer_ = footer;
         return this;
     }
