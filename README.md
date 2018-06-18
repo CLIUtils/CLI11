@@ -405,14 +405,15 @@ As of version 1.0, this library is available under a 3-Clause BSD license. See t
 This project was created by [Henry Schreiner](https://github.com/henryiii).
 Significant features and/or improvements to the code were contributed by:
 
-* [Marcus Brinkmann](https://github.com/lambdafu)
-* [Jonas Nilsson](https://github.com/SkyToGround)
+* [Anton](https://github.com/SX91)
 * [Doug Johnston](https://github.com/dvj)
+* [Jonas Nilsson](https://github.com/SkyToGround)
 * [Lucas Czech](https://github.com/lczech)
+* [Marcus Brinkmann](https://github.com/lambdafu)
 * [Mathias Soeken](https://github.com/msoeken)
 * [Nathan Hourt](https://github.com/nathanhourt)
+* [Sean Fisk](https://github.com/seanfisk)
 * [Stéphane Del Pino](https://github.com/delpinux)
-* [Anton](https://github.com/SX91)
 
 CLI11 was developed at the [University of Cincinnati] to support of the [GooFit] library under [NSF Award 1414736]. Version 0.9 was featured in a [DIANA/HEP] meeting at CERN ([see the slides][DIANA slides]). Please give it a try! Feedback is always welcome.
 
