@@ -665,6 +665,10 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Provided for backward compatibility \deprecated
+    CLI11_DEPRECATED("Please use type_name instead")
+    Option *set_type_name(std::string typeval) { return type_name(typeval); }
+
     /// Set a custom option size
     Option *type_size(int type_size) {
         type_size_ = type_size;
