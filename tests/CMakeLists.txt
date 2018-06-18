@@ -30,6 +30,7 @@ set(CLI11_TESTS
     FormatterTest
     NewParseTest
     OptionalTest
+    DeprecatedTest
     )
 
 set(CLI11_MULTIONLY_TESTS
@@ -66,6 +67,13 @@ foreach(T ${CLI11_MULTIONLY_TESTS})
 
 endforeach()
 
+# Add -Wno-deprecated-declarations to DeprecatedTest
+if(NOT MSVC)
+    target_compile_options(DeprecatedTest PRIVATE -Wno-deprecated-declarations)
+    if(TARGET DeprecatedTest_Single)
+        target_compile_options(DeprecatedTest_Single PRIVATE -Wno-deprecated-declarations)
+    endif()
+endif()
 
 # Link test (build error if inlines missing)
 add_library(link_test_1 link_test_1.cpp)

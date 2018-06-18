@@ -561,6 +561,14 @@ TEST(THelp, CustomDoubleOption) {
     EXPECT_THAT(app.help(), Not(HasSubstr("x 2")));
 }
 
+TEST(THelp, CheckEmptyTypeName) {
+    CLI::App app;
+
+    auto opt = app.add_flag("-f,--flag");
+    std::string name = opt->get_type_name();
+    EXPECT_TRUE(name.empty());
+}
+
 TEST(THelp, AccessDescription) {
     CLI::App app{"My description goes here"};
 
