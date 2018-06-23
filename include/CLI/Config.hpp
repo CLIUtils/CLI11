@@ -29,7 +29,7 @@ ConfigINI::to_config(const App *app, bool default_also, bool write_description, 
 
                 // If the option was found on command line
                 if(opt->count() > 0)
-                    value = detail::inijoin(opt->results());
+                    value = detail::ini_join(opt->results());
 
                 // If the option has a default and is requested by optional argument
                 else if(default_also && !opt->get_defaultval().empty())

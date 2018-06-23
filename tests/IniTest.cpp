@@ -7,6 +7,13 @@
 using ::testing::HasSubstr;
 using ::testing::Not;
 
+TEST(StringBased, IniJoin) {
+    std::vector<std::string> items = {"one", "two", "three four"};
+    std::string result = "one two \"three four\"";
+
+    EXPECT_EQ(CLI::detail::ini_join(items), result);
+}
+
 TEST(StringBased, First) {
     std::stringstream ofile;
 

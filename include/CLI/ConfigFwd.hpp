@@ -16,7 +16,8 @@ class App;
 
 namespace detail {
 
-inline std::string inijoin(std::vector<std::string> args) {
+/// Comma separated join, adds quotes if needed
+inline std::string ini_join(std::vector<std::string> args) {
     std::ostringstream s;
     size_t start = 0;
     for(const auto &arg : args) {
@@ -37,6 +38,7 @@ inline std::string inijoin(std::vector<std::string> args) {
 
 } // namespace detail
 
+/// Holds values to load into Options
 struct ConfigItem {
     /// This is the list of parents
     std::vector<std::string> parents;
