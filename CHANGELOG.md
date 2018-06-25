@@ -25,6 +25,7 @@ New for Config file reading and writing [#121]:
 * Has `config_formatter()` and `get_config_formatter()`
 * Dropped prefix argument from `config_to_str`
 * Added `ConfigItem`
+* Added an example of a custom config format using [json](https://github.com/nlohmann/json) [#138]
 
 
 Validators are now much more powerful [#118], all built in validators upgraded to the new form:
@@ -36,9 +37,9 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
-* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`
-* Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`.
-* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`
+* Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`. [#136]
+* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val` [#136]
+* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name` [#136]
 * Added `->each()` to make adding custom callbacks easier [#126]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
 * Added `get_groups()` to get groups
@@ -53,6 +54,7 @@ Other changes:
 * Better CMake policy handling [#110]
 * Includes are properly sorted [#120]
 * Help flags now use new `short_circuit` property to simplify parsing [#121]
+* Const added to argv [#126]
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -65,6 +67,8 @@ Other changes:
 [#120]: https://github.com/CLIUtils/CLI11/pull/120
 [#121]: https://github.com/CLIUtils/CLI11/pull/121
 [#126]: https://github.com/CLIUtils/CLI11/pull/126
+[#127]: https://github.com/CLIUtils/CLI11/pull/127
+[#138]: https://github.com/CLIUtils/CLI11/pull/138
 
 ### Version 1.5.4: Optionals
 This version fixes the optional search in the single file version; some macros were not yet defined when it did the search. You can define the `CLI11_*_OPTIONAL` macros to 0 if needed to eliminate the search.
