@@ -14,6 +14,30 @@ function(add_cli_exe T)
     endif()
 endfunction()
 
+option(CLI11_EXAMPLE_JSON OFF)
+if(CLI11_EXAMPLE_JSON)
+    if(CMAKE_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+        message(WARNING "The json example requires GCC 4.9+ (requirement on json library)")
+    endif()
+    add_cli_exe(json json.cpp)
+    target_include_directories(json PUBLIC SYSTEM ../extern/json/single_include)
+
+    add_test(NAME json_config_out COMMAND json --item 2)
+    set_property(TEST json_config_out PROPERTY PASS_REGULAR_EXPRESSION
+        "{"
+        "\"item\": \"2\""
+        "\"simple\": false"
+        "}")
+
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/input.json" [=[{"item":3,"simple":false}]=])
+    add_test(NAME json_config_in COMMAND json --config "${CMAKE_CURRENT_BINARY_DIR}/input.json")
+    set_property(TEST json_config_in PROPERTY PASS_REGULAR_EXPRESSION
+        "{"
+        "\"item\": \"3\""
+        "\"simple\": false"
+        "}")
+endif()
+
 add_cli_exe(simple simple.cpp)
 add_test(NAME simple_basic COMMAND simple)
 add_test(NAME simple_all COMMAND simple -f filename.txt -c 12 --flag --flag -d 1.2)
