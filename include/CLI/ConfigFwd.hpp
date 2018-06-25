@@ -70,27 +70,7 @@ class Config {
     virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
 
     /// Convert a flag to a bool
-    virtual std::vector<std::string> to_flag(const ConfigItem &) const = 0;
-
-    /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
-    std::vector<ConfigItem> from_file(const std::string &name) {
-        std::ifstream input{name};
-        if(!input.good())
-            throw FileError::Missing(name);
-
-        return from_config(input);
-    }
-
-    /// virtual destructor
-    virtual ~Config() = default;
-};
-
-/// This converter works with INI files
-class ConfigINI : public Config {
-  public:
-    std::string to_config(const App *, bool default_also, bool write_description, std::string prefix) const override;
-
-    std::vector<std::string> to_flag(const ConfigItem &item) const override {
+    virtual std::vector<std::string> to_flag(const ConfigItem &item) const {
         if(item.inputs.size() == 1) {
             std::string val = item.inputs.at(0);
             val = detail::to_lower(val);
@@ -111,6 +91,24 @@ class ConfigINI : public Config {
             throw ConversionError::TooManyInputsFlag(item.fullname());
         }
     }
+
+    /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
+    std::vector<ConfigItem> from_file(const std::string &name) {
+        std::ifstream input{name};
+        if(!input.good())
+            throw FileError::Missing(name);
+
+        return from_config(input);
+    }
+
+    /// virtual destructor
+    virtual ~Config() = default;
+};
+
+/// This converter works with INI files
+class ConfigINI : public Config {
+  public:
+    std::string to_config(const App *, bool default_also, bool write_description, std::string prefix) const override;
 
     std::vector<ConfigItem> from_config(std::istream &input) const override {
         std::string line;
