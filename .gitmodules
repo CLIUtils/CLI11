@@ -4,3 +4,6 @@
 [submodule "extern/sanitizers"]
 	path = extern/sanitizers
 	url = ../../arsenm/sanitizers-cmake
+[submodule "extern/json"]
+	path = extern/json
+	url = ../../nlohmann/json.git

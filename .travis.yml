@@ -76,9 +76,9 @@ matrix:
     - ". .ci/build_lcov.sh"
     - ".ci/run_codecov.sh"
     script:
-    - .ci/make_and_test.sh 11
-    - .ci/make_and_test.sh 14
-    - .ci/make_and_test.sh 17
+    - .ci/make_and_test.sh 11 -DCLI11_EXAMPLE_JSON=ON
+    - .ci/make_and_test.sh 14 -DCLI11_EXAMPLE_JSON=ON
+    - .ci/make_and_test.sh 17 -DCLI11_EXAMPLE_JSON=ON
 
     # GCC 4.7 and Conan
   - compiler: gcc
