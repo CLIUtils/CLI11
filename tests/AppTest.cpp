@@ -1581,3 +1581,17 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     args = {"--type2", "TYpE2"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
+
+// #128
+TEST_F(TApp, RepeatingMultiArgumentOptions) {
+    std::vector<std::string> entries;
+    app.add_option("--entry", entries, "set a key and value")->type_name("KEY VALUE")->type_size(-2);
+
+    args = {"--entry", "key1", "value1", "--entry", "key2", "value2"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(entries, std::vector<std::string>({"key1", "value1", "key2", "value2"}));
+
+    app.reset();
+    args.pop_back();
+    ASSERT_THROW(run(), CLI::ValidationError);
+}
