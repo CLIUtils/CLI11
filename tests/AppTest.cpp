@@ -1593,5 +1593,5 @@ TEST_F(TApp, RepeatingMultiArgumentOptions) {
 
     app.reset();
     args.pop_back();
-    ASSERT_THROW(run(), CLI::ValidationError);
+    ASSERT_THROW(run(), CLI::ArgumentMismatch);
 }
