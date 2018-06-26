@@ -560,12 +560,18 @@ class Option : public OptionBase<Option> {
             local_result = !callback_(partial_result);
 
         } else {
-            // For now, vector of non size 1 types are not supported but possibility included here
-            if((get_items_expected() > 0 && results_.size() != static_cast<size_t>(get_items_expected())) ||
-               (get_items_expected() < 0 && results_.size() < static_cast<size_t>(-get_items_expected())))
-                throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
-            else
-                local_result = !callback_(results_);
+            // Exact number required
+            if(get_items_expected() > 0) {
+                if(results_.size() != static_cast<size_t>(get_items_expected()))
+                    throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
+                // Variable length list
+            } else if(get_items_expected() < 0) {
+                // Require that this be a multiple of expected size and at least as many as expected
+                if(results_.size() < static_cast<size_t>(-get_items_expected()) ||
+                   results_.size() % static_cast<size_t>(std::abs(get_type_size())) != 0)
+                    throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
+            }
+            local_result = !callback_(results_);
         }
 
         if(local_result)
