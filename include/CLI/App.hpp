@@ -1208,7 +1208,7 @@ class App {
 
     /// This returns the number of remaining options, minus the -- seperator
     size_t remaining_size(bool recurse = false) const {
-        size_t count = static_cast<size_t>(std::count_if(
+        auto count = static_cast<size_t>(std::count_if(
             std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifer, std::string> &val) {
                 return val.first != detail::Classifer::POSITIONAL_MARK;
             }));
