@@ -3,29 +3,29 @@
 Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating most formatting code.
 
 * Added `CLI::Formatter` and `formatter` slot for apps, inherited.
-* `FormatterBase` is the minimum required
-* `FormatterLambda` provides for the easy addition of an arbitrary function
-* Added `help_all` support (not added by default)
+* `FormatterBase` is the minimum required.
+* `FormatterLambda` provides for the easy addition of an arbitrary function.
+* Added `help_all` support (not added by default).
 
 Changes to the help system (most normal users will not notice this):
 
-* Renamed `single_name` to `get_name(false, false)` (the default)
-* The old `get_name()` is now `get_name(false, true)`
-* The old `get_pname()` is now `get_name(true, false)`
-* Removed `help_*` functions
-* Protected function `_has_help_positional` removed
-* `format_help` can now be chained
+* Renamed `single_name` to `get_name(false, false)` (the default).
+* The old `get_name()` is now `get_name(false, true)`.
+* The old `get_pname()` is now `get_name(true, false)`.
+* Removed `help_*` functions.
+* Protected function `_has_help_positional` removed.
+* `format_help` can now be chained.
 
 
 New for Config file reading and writing [#121]:
 
-* Overridable, bidirectional Config
-* ConfigINI provided and used by default
-* Renamed ini to config in many places
-* Has `config_formatter()` and `get_config_formatter()`
-* Dropped prefix argument from `config_to_str`
-* Added `ConfigItem`
-* Added an example of a custom config format using [json](https://github.com/nlohmann/json) [#138]
+* Overridable, bidirectional Config.
+* ConfigINI provided and used by default.
+* Renamed ini to config in many places.
+* Has `config_formatter()` and `get_config_formatter()`.
+* Dropped prefix argument from `config_to_str`.
+* Added `ConfigItem`.
+* Added an example of a custom config format using [nlohmann/json]. [#138]
 
 
 Validators are now much more powerful [#118], all built in validators upgraded to the new form:
@@ -37,24 +37,27 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
+* Fixing `parse(args)`'s `args` setting and ordering after parse. [#141]
+* Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141]
 * Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`. [#136]
-* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val` [#136]
-* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name` [#136]
-* Added `->each()` to make adding custom callbacks easier [#126]
-* Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering
-* Added `get_groups()` to get groups
-* Added getters for the missing parts of options (help no longer uses any private parts)
-* Better support for manual options with `get_option`, `set_results`, and `empty` [#119]
-* `lname` and `sname` have getters, added `const get_parent` [#120]
-* Using `add_set` will now capture L-values for sets, allowing further modification [#113]
-* Internally, `type_name` is now a lambda function; for sets, this reads the set live [#116] 
-* Dropped duplicate way to run `get_type_name` (`get_typeval`)
+* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`. [#136]
+* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`. [#136]
+* Fixed support `N<-1` for `type_size`. [#140]
+* Added `->each()` to make adding custom callbacks easier. [#126]
+* Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering.
+* Added `get_groups()` to get groups.
+* Added getters for the missing parts of options (help no longer uses any private parts).
+* Better support for manual options with `get_option`, `set_results`, and `empty`. [#119]
+* `lname` and `sname` have getters, added `const get_parent`. [#120]
+* Using `add_set` will now capture L-values for sets, allowing further modification. [#113]
+* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116] 
+* Dropped duplicate way to run `get_type_name` (`get_typeval`).
 * Testing (only) now uses submodules. [#111]
-* Removed `requires` in favor of `needs` (deprecated in last version) [#112]
-* Better CMake policy handling [#110]
-* Includes are properly sorted [#120]
-* Help flags now use new `short_circuit` property to simplify parsing [#121]
-* Const added to argv [#126]
+* Removed `requires` in favor of `needs` (deprecated in last version). [#112]
+* Better CMake policy handling. [#110]
+* Includes are properly sorted. [#120]
+* Help flags now use new `short_circuit` property to simplify parsing. [#121]
+* Const added to argv. [#126]
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -69,6 +72,10 @@ Other changes:
 [#126]: https://github.com/CLIUtils/CLI11/pull/126
 [#127]: https://github.com/CLIUtils/CLI11/pull/127
 [#138]: https://github.com/CLIUtils/CLI11/pull/138
+[#140]: https://github.com/CLIUtils/CLI11/pull/140
+[#141]: https://github.com/CLIUtils/CLI11/pull/141
+
+[nlohmann/json]: https://github.com/nlohmann/json
 
 ### Version 1.5.4: Optionals
 This version fixes the optional search in the single file version; some macros were not yet defined when it did the search. You can define the `CLI11_*_OPTIONAL` macros to 0 if needed to eliminate the search.
