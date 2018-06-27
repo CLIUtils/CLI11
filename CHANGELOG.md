@@ -15,6 +15,8 @@ Changes to the help system (most normal users will not notice this):
 * Removed `help_*` functions.
 * Protected function `_has_help_positional` removed.
 * `format_help` can now be chained.
+* Added getters for the missing parts of options (help no longer uses any private parts).
+* Help flags now use new `short_circuit` property to simplify parsing. [#121]
 
 
 New for Config file reading and writing [#121]:
@@ -38,7 +40,6 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 Other changes:
 
 * Fixing `parse(args)`'s `args` setting and ordering after parse. [#141]
-* Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141]
 * Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`. [#136]
 * Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`. [#136]
 * Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`. [#136]
@@ -46,18 +47,20 @@ Other changes:
 * Added `->each()` to make adding custom callbacks easier. [#126]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering.
 * Added `get_groups()` to get groups.
-* Added getters for the missing parts of options (help no longer uses any private parts).
 * Better support for manual options with `get_option`, `set_results`, and `empty`. [#119]
 * `lname` and `sname` have getters, added `const get_parent`. [#120]
 * Using `add_set` will now capture L-values for sets, allowing further modification. [#113]
-* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116] 
 * Dropped duplicate way to run `get_type_name` (`get_typeval`).
-* Testing (only) now uses submodules. [#111]
 * Removed `requires` in favor of `needs` (deprecated in last version). [#112]
+* Const added to argv. [#126]
+
+Backend and testing changes:
+
+* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116] 
+* Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141]
 * Better CMake policy handling. [#110]
 * Includes are properly sorted. [#120]
-* Help flags now use new `short_circuit` property to simplify parsing. [#121]
-* Const added to argv. [#126]
+* Testing (only) now uses submodules. [#111]
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
