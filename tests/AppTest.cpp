@@ -1472,3 +1472,23 @@ TEST_F(TApp, RepeatingMultiArgumentOptions) {
     args.pop_back();
     ASSERT_THROW(run(), CLI::ArgumentMismatch);
 }
+
+// #122
+TEST_F(TApp, EmptyOptionEach) {
+    std::string q;
+    app.add_option("--each", {})->each([&q](std::string s) { q = s; });
+
+    args = {"--each", "that"};
+    run();
+
+    EXPECT_EQ(q, "that");
+}
+
+// #122
+TEST_F(TApp, EmptyOptionFail) {
+    std::string q;
+    app.add_option("--each", {});
+
+    args = {"--each", "that"};
+    run();
+}
