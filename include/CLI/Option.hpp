@@ -226,12 +226,10 @@ class Option : public OptionBase<Option> {
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
-    Option(std::string name,
-           std::string description = "",
-           std::function<bool(results_t)> callback = [](results_t) { return true; },
-           bool default_ = true,
-           App *parent = nullptr)
-        : description_(std::move(description)), default_(default_), parent_(parent), callback_(std::move(callback)) {
+    Option(
+        std::string name, std::string description, std::function<bool(results_t)> callback, bool default_, App *parent)
+        : description_(std::move(description)), default_(default_), parent_(parent),
+          callback_(callback ? std::move(callback) : [](results_t) { return true; }) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(name));
     }
 
