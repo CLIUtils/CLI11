@@ -326,7 +326,6 @@ TEST_F(TApp, MissingValueNonRequiredOpt) {
 
     args = {"-c"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"--count"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -340,7 +339,6 @@ TEST_F(TApp, MissingValueMoreThan) {
 
     args = {"-v", "2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"--vals", "4"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -410,7 +408,6 @@ TEST_F(TApp, RequiredOptsDouble) {
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
-    app.clear();
     args = {"--str", "one", "two"};
 
     run();
@@ -426,7 +423,6 @@ TEST_F(TApp, RequiredOptsDoubleShort) {
     args = {"-s", "one"};
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"-s", "one", "-s", "one", "-s", "one"};
 
@@ -440,7 +436,6 @@ TEST_F(TApp, RequiredOptsDoubleNeg) {
     args = {"-s", "one"};
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"-s", "one", "two", "-s", "three"};
 
@@ -503,7 +498,6 @@ TEST_F(TApp, RequiredOptsUnlimited) {
 
     args = {"--str"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"--str", "one", "--str", "two"};
     run();
@@ -546,7 +540,6 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
 
     args = {"-s"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"-s", "one", "-s", "two"};
     run();
@@ -660,15 +653,12 @@ TEST_F(TApp, RequiredFlags) {
     app.add_flag("-b")->mandatory(); // Alternate term
 
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"-a"};
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"-b"};
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"-a", "-b"};
     run();
@@ -854,7 +844,6 @@ TEST_F(TApp, FileExists) {
     args = {"--file", myfile};
 
     EXPECT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
@@ -934,7 +923,6 @@ TEST_F(TApp, FailSet) {
 
     args = {"--quick", "3", "--quick=2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-    app.clear();
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -949,7 +937,6 @@ TEST_F(TApp, FailLValueSet) {
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
-    app.clear();
 
     args = {"--slow=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -974,7 +961,6 @@ TEST_F(TApp, InSetIgnoreCase) {
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
-    app.clear();
 
     args = {"--quick=one", "--quick=two"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -1038,7 +1024,6 @@ TEST_F(TApp, VectorFancyOpts) {
 
     args = {"one", "two"};
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     EXPECT_THROW(run(), CLI::ParseError);
 }
@@ -1089,7 +1074,6 @@ TEST_F(TApp, ExcludesFlags) {
 
     args = {"--nostr", "-s"};
     EXPECT_THROW(run(), CLI::ExcludesError);
-    app.clear();
 
     args = {"--string", "--nostr"};
     EXPECT_THROW(run(), CLI::ExcludesError);
@@ -1111,7 +1095,6 @@ TEST_F(TApp, ExcludesMixedFlags) {
 
     args = {"--no", "--opt1"};
     EXPECT_THROW(run(), CLI::ExcludesError);
-    app.clear();
 
     args = {"--no", "--opt2"};
     EXPECT_THROW(run(), CLI::ExcludesError);
@@ -1133,15 +1116,12 @@ TEST_F(TApp, NeedsMultiFlags) {
 
     args = {"--optall"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt2", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
     run();
@@ -1163,15 +1143,12 @@ TEST_F(TApp, NeedsMixedFlags) {
 
     args = {"--optall"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt2", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
     run();
@@ -1189,19 +1166,15 @@ TEST_F(TApp, NeedsChainedFlags) {
 
     args = {"--opt2"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--opt3"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--opt3", "--opt2"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--opt3", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
-    app.clear();
 
     args = {"--opt2", "--opt1"};
     run();
@@ -1235,11 +1208,9 @@ TEST_F(TApp, RangeInt) {
 
     args = {"--one=1"};
     EXPECT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     args = {"--one=7"};
     EXPECT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     args = {"--one=3"};
     run();
@@ -1259,11 +1230,9 @@ TEST_F(TApp, RangeDouble) {
 
     args = {"--one=1"};
     EXPECT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     args = {"--one=7"};
     EXPECT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     args = {"--one=3"};
     run();
@@ -1385,7 +1354,6 @@ TEST_F(TApp, ThrowingTransform) {
     args = {"-mone"};
 
     ASSERT_THROW(run(), CLI::ValidationError);
-    app.clear();
 
     try {
         run();
@@ -1456,7 +1424,6 @@ TEST_F(TApp, AddRemoveSetItems) {
 
     args = {"--type1", "TYPE1"};
     EXPECT_THROW(run(), CLI::ConversionError);
-    app.clear();
 
     args = {"--type2", "TYPE2"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -1488,7 +1455,6 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
 
     args = {"--type1", "TYPe1"};
     EXPECT_THROW(run(), CLI::ConversionError);
-    app.clear();
 
     args = {"--type2", "TYpE2"};
     EXPECT_THROW(run(), CLI::ConversionError);

@@ -326,11 +326,9 @@ TEST(THelp, OnlyOneAllHelp) {
 
     std::vector<std::string> input{"--help-all"};
     EXPECT_THROW(app.parse(input), CLI::ExtrasError);
-    app.clear();
 
     std::vector<std::string> input2{"--yelp"};
     EXPECT_THROW(app.parse(input2), CLI::CallForAllHelp);
-    app.clear();
 
     // Remove the flag
     app.set_help_all_flag();

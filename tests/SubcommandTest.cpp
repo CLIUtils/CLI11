@@ -36,7 +36,6 @@ TEST_F(TApp, BasicSubcommands) {
 
     args = {"SUb2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     args = {"SUb2"};
     try {
@@ -44,7 +43,6 @@ TEST_F(TApp, BasicSubcommands) {
     } catch(const CLI::ExtrasError &e) {
         EXPECT_THAT(e.what(), HasSubstr("SUb2"));
     }
-    app.clear();
 
     args = {"sub1", "extra"};
     try {
@@ -82,7 +80,6 @@ TEST_F(TApp, MultiSubFallthrough) {
     app.require_subcommand(1);
 
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     args = {"sub1"};
     run();
@@ -195,11 +192,9 @@ TEST_F(TApp, RuntimeErrorInCallback) {
     } catch(const CLI::RuntimeError &e) {
         EXPECT_EQ(1, e.get_exit_code());
     }
-    app.clear();
 
     args = {"sub2"};
     EXPECT_THROW(run(), CLI::RuntimeError);
-    app.clear();
 
     args = {"sub2"};
     try {
@@ -319,7 +314,6 @@ TEST_F(TApp, RequiredSubCom) {
     app.require_subcommand();
 
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"sub1"};
     run();
@@ -358,7 +352,6 @@ TEST_F(TApp, Required1SubCom) {
     app.add_subcommand("sub3");
 
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"sub1"};
     run();
@@ -502,7 +495,6 @@ TEST_F(SubcommandProgram, MultipleArgs) {
 TEST_F(SubcommandProgram, CaseCheck) {
     args = {"Start"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     args = {"start"};
     run();
@@ -582,15 +574,12 @@ TEST_F(SubcommandProgram, ExtrasErrors) {
 
     args = {"one", "two", "start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     args = {"start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     args = {"one", "two"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 }
 
 TEST_F(SubcommandProgram, OrderedExtras) {
@@ -598,7 +587,6 @@ TEST_F(SubcommandProgram, OrderedExtras) {
     app.allow_extras();
     args = {"one", "two", "start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.clear();
 
     start->allow_extras();
 
