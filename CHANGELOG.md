@@ -45,6 +45,7 @@ Other changes:
 * Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`. [#136]
 * Fixed support `N<-1` for `type_size`. [#140]
 * Added `->each()` to make adding custom callbacks easier. [#126]
+* Allow empty options `add_option("-n",{})` to be edited later with `each` [#142]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering.
 * Added `get_groups()` to get groups.
 * Better support for manual options with `get_option`, `set_results`, and `empty`. [#119]
@@ -77,6 +78,7 @@ Backend and testing changes:
 [#138]: https://github.com/CLIUtils/CLI11/pull/138
 [#140]: https://github.com/CLIUtils/CLI11/pull/140
 [#141]: https://github.com/CLIUtils/CLI11/pull/141
+[#142]: https://github.com/CLIUtils/CLI11/pull/142
 
 [nlohmann/json]: https://github.com/nlohmann/json
 
