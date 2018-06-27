@@ -21,12 +21,12 @@ TEST_F(TApp, BasicSubcommands) {
     run();
     EXPECT_EQ((size_t)0, app.get_subcommands().size());
 
-    app.reset();
     args = {"sub1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
+    EXPECT_EQ((size_t)1, app.get_subcommands().size());
 
-    app.reset();
+    app.clear();
     EXPECT_EQ((size_t)0, app.get_subcommands().size());
 
     args = {"sub2"};
@@ -34,19 +34,18 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_EQ((size_t)1, app.get_subcommands().size());
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 
-    app.reset();
     args = {"SUb2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
+    app.clear();
 
-    app.reset();
     args = {"SUb2"};
     try {
         run();
     } catch(const CLI::ExtrasError &e) {
         EXPECT_THAT(e.what(), HasSubstr("SUb2"));
     }
+    app.clear();
 
-    app.reset();
     args = {"sub1", "extra"};
     try {
         run();
@@ -72,22 +71,19 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(app.got_subcommand(sub2));
     EXPECT_TRUE(*sub2);
 
-    app.reset();
     app.require_subcommand();
 
     run();
 
-    app.reset();
     app.require_subcommand(2);
 
     run();
 
-    app.reset();
     app.require_subcommand(1);
 
     EXPECT_THROW(run(), CLI::ExtrasError);
+    app.clear();
 
-    app.reset();
     args = {"sub1"};
     run();
 
@@ -109,24 +105,21 @@ TEST_F(TApp, RequiredAndSubcoms) { // #23
     auto bar = app.add_subcommand("bar");
 
     args = {"bar", "foo"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(*foo);
     EXPECT_FALSE(*bar);
     EXPECT_EQ(baz, "bar");
 
-    app.reset();
     args = {"foo"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_FALSE(*foo);
     EXPECT_EQ(baz, "foo");
 
-    app.reset();
     args = {"foo", "foo"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(*foo);
     EXPECT_EQ(baz, "foo");
 
-    app.reset();
     args = {"foo", "other"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
@@ -144,7 +137,6 @@ TEST_F(TApp, RequiredAndSubcomFallthrough) {
     EXPECT_TRUE(bar);
     EXPECT_EQ(baz, "other");
 
-    app.reset();
     args = {"bar", "other2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
@@ -164,7 +156,6 @@ TEST_F(TApp, FooFooProblem) {
     EXPECT_EQ(baz_str, "");
     EXPECT_EQ(other_str, "foo");
 
-    app.reset();
     baz_str = "";
     other_str = "";
     baz->required();
@@ -198,19 +189,18 @@ TEST_F(TApp, RuntimeErrorInCallback) {
     args = {"sub1"};
     EXPECT_THROW(run(), CLI::RuntimeError);
 
-    app.reset();
     args = {"sub1"};
     try {
         run();
     } catch(const CLI::RuntimeError &e) {
         EXPECT_EQ(1, e.get_exit_code());
     }
+    app.clear();
 
-    app.reset();
     args = {"sub2"};
     EXPECT_THROW(run(), CLI::RuntimeError);
+    app.clear();
 
-    app.reset();
     args = {"sub2"};
     try {
         run();
@@ -316,7 +306,6 @@ TEST_F(TApp, CallbackOrdering) {
     EXPECT_EQ(2, val);
     EXPECT_EQ(2, sub_val);
 
-    app.reset();
     args = {"--val=2", "sub"};
     run();
     EXPECT_EQ(2, val);
@@ -330,11 +319,9 @@ TEST_F(TApp, RequiredSubCom) {
     app.require_subcommand();
 
     EXPECT_THROW(run(), CLI::RequiredError);
-
-    app.reset();
+    app.clear();
 
     args = {"sub1"};
-
     run();
 }
 
@@ -347,21 +334,15 @@ TEST_F(TApp, SubComExtras) {
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra"}));
     EXPECT_EQ(sub->remaining(), std::vector<std::string>());
 
-    app.reset();
-
     args = {"extra1", "extra2", "sub"};
     run();
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra1", "extra2"}));
     EXPECT_EQ(sub->remaining(), std::vector<std::string>());
 
-    app.reset();
-
     args = {"sub", "extra1", "extra2"};
     run();
     EXPECT_EQ(app.remaining(), std::vector<std::string>());
     EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra1", "extra2"}));
-
-    app.reset();
 
     args = {"extra1", "extra2", "sub", "extra3", "extra4"};
     run();
@@ -377,12 +358,11 @@ TEST_F(TApp, Required1SubCom) {
     app.add_subcommand("sub3");
 
     EXPECT_THROW(run(), CLI::RequiredError);
+    app.clear();
 
-    app.reset();
     args = {"sub1"};
     run();
 
-    app.reset();
     args = {"sub1", "sub2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
@@ -522,16 +502,14 @@ TEST_F(SubcommandProgram, MultipleArgs) {
 TEST_F(SubcommandProgram, CaseCheck) {
     args = {"Start"};
     EXPECT_THROW(run(), CLI::ExtrasError);
+    app.clear();
 
-    app.reset();
     args = {"start"};
     run();
 
-    app.reset();
     start->ignore_case();
     run();
 
-    app.reset();
     args = {"Start"};
     run();
 }
@@ -546,12 +524,12 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     EXPECT_EQ((size_t)2, app.get_subcommands({}).size());
     EXPECT_EQ((size_t)1, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size());
 
-    app.reset();
     args = {"SuB1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
+    EXPECT_EQ((size_t)1, app.get_subcommands().size());
 
-    app.reset();
+    app.clear();
     EXPECT_EQ((size_t)0, app.get_subcommands().size());
 
     args = {"sUb2"};
@@ -576,8 +554,6 @@ TEST_F(SubcommandProgram, Callbacks) {
     start->callback([]() { throw CLI::Success(); });
 
     run();
-
-    app.reset();
 
     args = {"start"};
 
@@ -606,15 +582,15 @@ TEST_F(SubcommandProgram, ExtrasErrors) {
 
     args = {"one", "two", "start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.reset();
+    app.clear();
 
     args = {"start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.reset();
+    app.clear();
 
     args = {"one", "two"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.reset();
+    app.clear();
 }
 
 TEST_F(SubcommandProgram, OrderedExtras) {
@@ -622,7 +598,7 @@ TEST_F(SubcommandProgram, OrderedExtras) {
     app.allow_extras();
     args = {"one", "two", "start", "three", "four"};
     EXPECT_THROW(run(), CLI::ExtrasError);
-    app.reset();
+    app.clear();
 
     start->allow_extras();
 
@@ -632,7 +608,6 @@ TEST_F(SubcommandProgram, OrderedExtras) {
     EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "four"}));
     EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four"}));
 
-    app.reset();
     args = {"one", "two", "start", "three", "--", "four"};
 
     run();
@@ -656,7 +631,6 @@ TEST_F(SubcommandProgram, MixedOrderExtras) {
     EXPECT_EQ(stop->remaining(), std::vector<std::string>({"five", "six"}));
     EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four", "five", "six"}));
 
-    app.reset();
     args = {"one", "two", "stop", "three", "four", "start", "five", "six"};
     run();
 
@@ -675,7 +649,6 @@ TEST_F(SubcommandProgram, CallbackOrder) {
     run();
     EXPECT_EQ(callback_order, std::vector<int>({1, 2}));
 
-    app.reset();
     callback_order.clear();
 
     args = {"stop", "start"};
@@ -728,7 +701,6 @@ TEST_F(ManySubcommands, Required1Fuzzy) {
     run();
     EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
 
-    app.reset();
     app.require_subcommand(-1);
 
     run();
@@ -742,7 +714,6 @@ TEST_F(ManySubcommands, Required2Fuzzy) {
     EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
     EXPECT_EQ(app.remaining(true), vs_t({"sub3"}));
 
-    app.reset();
     app.require_subcommand(-2);
 
     run();
@@ -753,13 +724,11 @@ TEST_F(ManySubcommands, Unlimited) {
     run();
     EXPECT_EQ(app.remaining(true), vs_t());
 
-    app.reset();
     app.require_subcommand();
 
     run();
     EXPECT_EQ(app.remaining(true), vs_t());
 
-    app.reset();
     app.require_subcommand(2, 0); // 2 or more
 
     run();
