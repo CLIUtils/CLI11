@@ -11,13 +11,11 @@ TEST_F(TApp, StdOptionalTest) {
     run();
     EXPECT_FALSE(opt);
 
-    app.reset();
     args = {"-c", "1"};
     run();
     EXPECT_TRUE(opt);
     EXPECT_EQ(*opt, 1);
 
-    app.reset();
     args = {"--count", "3"};
     run();
     EXPECT_TRUE(opt);
@@ -33,13 +31,11 @@ TEST_F(TApp, ExperimentalOptionalTest) {
     run();
     EXPECT_FALSE(opt);
 
-    app.reset();
     args = {"-c", "1"};
     run();
     EXPECT_TRUE(opt);
     EXPECT_EQ(*opt, 1);
 
-    app.reset();
     args = {"--count", "3"};
     run();
     EXPECT_TRUE(opt);
@@ -55,13 +51,11 @@ TEST_F(TApp, BoostOptionalTest) {
     run();
     EXPECT_FALSE(opt);
 
-    app.reset();
     args = {"-c", "1"};
     run();
     EXPECT_TRUE(opt);
     EXPECT_EQ(*opt, 1);
 
-    app.reset();
     args = {"--count", "3"};
     run();
     EXPECT_TRUE(opt);

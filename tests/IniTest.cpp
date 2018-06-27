@@ -193,7 +193,6 @@ TEST_F(TApp, IniNotRequired) {
     EXPECT_EQ(99, two);
     EXPECT_EQ(3, three);
 
-    app.reset();
     one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
@@ -238,7 +237,7 @@ TEST_F(TApp, IniGetRemainingOption) {
 
     int two = 0;
     app.add_option("--two", two);
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     std::vector<std::string> ExpectedRemaining = {ExtraOption};
     EXPECT_EQ(app.remaining(), ExpectedRemaining);
 }
@@ -256,7 +255,7 @@ TEST_F(TApp, IniGetNoRemaining) {
 
     int two = 0;
     app.add_option("--two", two);
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_EQ(app.remaining().size(), (size_t)0);
 }
 
@@ -291,7 +290,6 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
     EXPECT_EQ(99, two);
     EXPECT_EQ(3, three);
 
-    app.reset();
     args = {"--config", tmpini2};
     run();
 
@@ -360,18 +358,16 @@ TEST_F(TApp, IniRequired) {
 
     run();
 
-    app.reset();
     one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
     run();
 
-    app.reset();
     args = {};
 
     EXPECT_THROW(run(), CLI::RequiredError);
+    app.clear();
 
-    app.reset();
     args = {"--two=2"};
 
     EXPECT_THROW(run(), CLI::RequiredError);
@@ -458,7 +454,7 @@ TEST_F(TApp, IniConfigurable) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(value);
 }
 
@@ -538,7 +534,7 @@ TEST_F(TApp, IniFlagNumbers) {
         out << "flag=3" << std::endl;
     }
 
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(boo);
 }
 

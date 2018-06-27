@@ -878,6 +878,21 @@ class App {
     ///@}
     /// @name Parsing
     ///@{
+    //
+    /// Reset the parsed data
+    void clear() {
+
+        parsed_ = false;
+        missing_.clear();
+        parsed_subcommands_.clear();
+
+        for(const Option_p &opt : options_) {
+            opt->clear();
+        }
+        for(const App_p &app : subcommands_) {
+            app->clear();
+        }
+    }
 
     /// Parses the command line - throws errors
     /// This must be called after the options are in but before the rest of the program.
@@ -895,6 +910,10 @@ class App {
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.
     void parse(std::vector<std::string> &args) {
+        // Clear if parsed
+        if(parsed_)
+            clear();
+
         _validate();
         _parse(args);
         run_callback();
@@ -928,21 +947,6 @@ class App {
         }
 
         return e.get_exit_code();
-    }
-
-    /// Reset the parsed data
-    void reset() {
-
-        parsed_ = false;
-        missing_.clear();
-        parsed_subcommands_.clear();
-
-        for(const Option_p &opt : options_) {
-            opt->clear();
-        }
-        for(const App_p &app : subcommands_) {
-            app->reset();
-        }
     }
 
     ///@}

@@ -152,13 +152,10 @@ TEST_F(TApp, BoolAndIntFlags) {
     EXPECT_EQ(1, iflag);
     EXPECT_EQ((unsigned int)1, uflag);
 
-    app.reset();
-
     args = {"-b", "-b"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(bflag);
 
-    app.reset();
     bflag = false;
 
     args = {"-iiiuu"};
@@ -173,10 +170,8 @@ TEST_F(TApp, BoolOnlyFlag) {
     app.add_flag("-b", bflag)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
 
     args = {"-b"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(bflag);
-
-    app.reset();
 
     args = {"-b", "-b"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -331,8 +326,7 @@ TEST_F(TApp, MissingValueNonRequiredOpt) {
 
     args = {"-c"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    app.reset();
+    app.clear();
 
     args = {"--count"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -346,8 +340,7 @@ TEST_F(TApp, MissingValueMoreThan) {
 
     args = {"-v", "2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    app.reset();
+    app.clear();
 
     args = {"--vals", "4"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -362,8 +355,6 @@ TEST_F(TApp, NoMissingValueMoreThan) {
     args = {"-v", "2", "3", "4"};
     run();
     EXPECT_EQ(vals1, std::vector<int>({2, 3, 4}));
-
-    app.reset();
 
     args = {"--vals", "2", "3", "4"};
     run();
@@ -419,7 +410,7 @@ TEST_F(TApp, RequiredOptsDouble) {
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
-    app.reset();
+    app.clear();
     args = {"--str", "one", "two"};
 
     run();
@@ -435,8 +426,7 @@ TEST_F(TApp, RequiredOptsDoubleShort) {
     args = {"-s", "one"};
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    app.reset();
+    app.clear();
 
     args = {"-s", "one", "-s", "one", "-s", "one"};
 
@@ -450,20 +440,15 @@ TEST_F(TApp, RequiredOptsDoubleNeg) {
     args = {"-s", "one"};
 
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    app.reset();
+    app.clear();
 
     args = {"-s", "one", "two", "-s", "three"};
 
-    EXPECT_NO_THROW(run());
-
+    ASSERT_NO_THROW(run());
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two", "three"}));
 
-    app.reset();
     args = {"-s", "one", "two"};
-
-    EXPECT_NO_THROW(run());
-
+    ASSERT_NO_THROW(run());
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 }
 
@@ -483,7 +468,6 @@ TEST_F(TApp, PositionalNoSpace) {
     EXPECT_EQ(options.size(), (size_t)1);
     EXPECT_EQ(options.at(0), "Test");
 
-    app.reset();
     args = {"-OTest", "param1", "param2"};
     run();
 
@@ -505,7 +489,6 @@ TEST_F(TApp, PositionalNoSpaceLong) {
     EXPECT_EQ(options.size(), (size_t)1);
     EXPECT_EQ(options.at(0), "Test");
 
-    app.reset();
     args = {"--option=Test", "param1", "param2"};
     run();
 
@@ -520,25 +503,22 @@ TEST_F(TApp, RequiredOptsUnlimited) {
 
     args = {"--str"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    app.clear();
 
-    app.reset();
     args = {"--str", "one", "--str", "two"};
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
-    app.reset();
     args = {"--str", "one", "two"};
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
     // It's better to feed a hungry option than to feed allow_extras
-    app.reset();
     app.allow_extras();
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(app.remaining(), std::vector<std::string>({}));
 
-    app.reset();
     app.allow_extras(false);
     std::vector<std::string> remain;
     app.add_option("positional", remain);
@@ -546,14 +526,12 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(remain, std::vector<std::string>());
 
-    app.reset();
     args = {"--str", "one", "--", "two"};
 
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two"}));
 
-    app.reset();
     args = {"one", "--str", "two"};
 
     run();
@@ -568,25 +546,22 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
 
     args = {"-s"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    app.clear();
 
-    app.reset();
     args = {"-s", "one", "-s", "two"};
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
-    app.reset();
     args = {"-s", "one", "two"};
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
 
     // It's better to feed a hungry option than to feed allow_extras
-    app.reset();
     app.allow_extras();
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(app.remaining(), std::vector<std::string>({}));
 
-    app.reset();
     app.allow_extras(false);
     std::vector<std::string> remain;
     app.add_option("positional", remain);
@@ -594,14 +569,12 @@ TEST_F(TApp, RequiredOptsUnlimitedShort) {
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(remain, std::vector<std::string>());
 
-    app.reset();
     args = {"-s", "one", "--", "two"};
 
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two"}));
 
-    app.reset();
     args = {"one", "-s", "two"};
 
     run();
@@ -635,7 +608,6 @@ TEST_F(TApp, RequireOptPriority) {
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
 
-    app.reset();
     args = {"two", "three", "--str", "one", "four"};
     run();
 
@@ -656,7 +628,6 @@ TEST_F(TApp, RequireOptPriorityShort) {
     EXPECT_EQ(strs, std::vector<std::string>({"one"}));
     EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
 
-    app.reset();
     args = {"two", "three", "-s", "one", "four"};
     run();
 
@@ -689,17 +660,16 @@ TEST_F(TApp, RequiredFlags) {
     app.add_flag("-b")->mandatory(); // Alternate term
 
     EXPECT_THROW(run(), CLI::RequiredError);
-
-    app.reset();
+    app.clear();
 
     args = {"-a"};
     EXPECT_THROW(run(), CLI::RequiredError);
+    app.clear();
 
-    app.reset();
     args = {"-b"};
     EXPECT_THROW(run(), CLI::RequiredError);
+    app.clear();
 
-    app.reset();
     args = {"-a", "-b"};
     run();
 }
@@ -715,12 +685,10 @@ TEST_F(TApp, CallbackFlags) {
     run();
     EXPECT_EQ(value, (size_t)0);
 
-    app.reset();
     args = {"-v"};
     run();
     EXPECT_EQ(value, (size_t)1);
 
-    app.reset();
     args = {"-vv"};
     run();
     EXPECT_EQ(value, (size_t)2);
@@ -740,12 +708,10 @@ TEST_F(TApp, CallbackFlagsAuto) {
     run();
     EXPECT_EQ(value, (size_t)0);
 
-    app.reset();
     args = {"-v"};
     run();
     EXPECT_EQ(value, (size_t)1);
 
-    app.reset();
     args = {"-vv"};
     run();
     EXPECT_EQ(value, (size_t)2);
@@ -782,8 +748,6 @@ TEST_F(TApp, ForcedPositional) {
     EXPECT_TRUE(one->count());
     EXPECT_EQ(answers1, posit);
 
-    app.reset();
-
     args = {"--", "--one", "two", "three"};
     std::vector<std::string> answers2 = {"--one", "two", "three"};
     run();
@@ -818,8 +782,6 @@ TEST_F(TApp, BigPositional) {
     run();
     EXPECT_EQ(args, vec);
 
-    app.reset();
-
     args = {"one", "two"};
     run();
 
@@ -840,7 +802,7 @@ TEST_F(TApp, Reset) {
     EXPECT_EQ((size_t)1, app.count("-d"));
     EXPECT_DOUBLE_EQ(1.2, doub);
 
-    app.reset();
+    app.clear();
 
     EXPECT_EQ((size_t)0, app.count("--simple"));
     EXPECT_EQ((size_t)0, app.count("-d"));
@@ -866,7 +828,7 @@ TEST_F(TApp, RemoveOption) {
 
 TEST_F(TApp, FileNotExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    EXPECT_NO_THROW(CLI::NonexistentPath(myfile));
+    ASSERT_NO_THROW(CLI::NonexistentPath(myfile));
 
     std::string filename;
     app.add_option("--file", filename)->check(CLI::NonexistentPath);
@@ -874,8 +836,6 @@ TEST_F(TApp, FileNotExists) {
 
     run();
     EXPECT_EQ(myfile, filename);
-
-    app.reset();
 
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
@@ -894,8 +854,7 @@ TEST_F(TApp, FileExists) {
     args = {"--file", myfile};
 
     EXPECT_THROW(run(), CLI::ValidationError);
-
-    app.reset();
+    app.clear();
 
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
@@ -916,8 +875,6 @@ TEST_F(TApp, InSet) {
     run();
     EXPECT_EQ("two", choice);
 
-    app.reset();
-
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -929,14 +886,11 @@ TEST_F(TApp, InSetWithDefault) {
 
     run();
     EXPECT_EQ("one", choice);
-    app.reset();
 
     args = {"--quick", "two"};
 
     run();
     EXPECT_EQ("two", choice);
-
-    app.reset();
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -949,14 +903,11 @@ TEST_F(TApp, InCaselessSetWithDefault) {
 
     run();
     EXPECT_EQ("one", choice);
-    app.reset();
 
     args = {"--quick", "tWo"};
 
     run();
     EXPECT_EQ("two", choice);
-
-    app.reset();
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -972,8 +923,6 @@ TEST_F(TApp, InIntSet) {
     run();
     EXPECT_EQ(2, choice);
 
-    app.reset();
-
     args = {"--quick", "4"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -985,8 +934,7 @@ TEST_F(TApp, FailSet) {
 
     args = {"--quick", "3", "--quick=2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    app.reset();
+    app.clear();
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -1001,8 +949,8 @@ TEST_F(TApp, FailLValueSet) {
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
+    app.clear();
 
-    app.reset();
     args = {"--slow=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -1016,21 +964,18 @@ TEST_F(TApp, InSetIgnoreCase) {
     run();
     EXPECT_EQ("one", choice);
 
-    app.reset();
     args = {"--quick", "two"};
     run();
     EXPECT_EQ("Two", choice); // Keeps caps from set
 
-    app.reset();
     args = {"--quick", "ThrEE"};
     run();
     EXPECT_EQ("THREE", choice); // Keeps caps from set
 
-    app.reset();
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
+    app.clear();
 
-    app.reset();
     args = {"--quick=one", "--quick=two"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
@@ -1073,7 +1018,6 @@ TEST_F(TApp, VectorUnlimString) {
     EXPECT_EQ((size_t)3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 
-    app.reset();
     args = {"-s", "mystring", "mystring2", "mystring3"};
     run();
     EXPECT_EQ((size_t)3, app.count("--string"));
@@ -1092,11 +1036,10 @@ TEST_F(TApp, VectorFancyOpts) {
     EXPECT_EQ((size_t)3, app.count("--string"));
     EXPECT_EQ(answer, strvec);
 
-    app.reset();
     args = {"one", "two"};
     EXPECT_THROW(run(), CLI::RequiredError);
+    app.clear();
 
-    app.reset();
     EXPECT_THROW(run(), CLI::ParseError);
 }
 
@@ -1122,15 +1065,12 @@ TEST_F(TApp, NeedsFlags) {
 
     run();
 
-    app.reset();
     args = {"-s"};
     run();
 
-    app.reset();
     args = {"-s", "--both"};
     run();
 
-    app.reset();
     args = {"--both"};
     EXPECT_THROW(run(), CLI::RequiresError);
 }
@@ -1141,19 +1081,16 @@ TEST_F(TApp, ExcludesFlags) {
 
     run();
 
-    app.reset();
     args = {"-s"};
     run();
 
-    app.reset();
     args = {"--nostr"};
     run();
 
-    app.reset();
     args = {"--nostr", "-s"};
     EXPECT_THROW(run(), CLI::ExcludesError);
+    app.clear();
 
-    app.reset();
     args = {"--string", "--nostr"};
     EXPECT_THROW(run(), CLI::ExcludesError);
 }
@@ -1166,19 +1103,16 @@ TEST_F(TApp, ExcludesMixedFlags) {
 
     run();
 
-    app.reset();
     args = {"--no"};
     run();
 
-    app.reset();
     args = {"--opt2"};
     run();
 
-    app.reset();
     args = {"--no", "--opt1"};
     EXPECT_THROW(run(), CLI::ExcludesError);
+    app.clear();
 
-    app.reset();
     args = {"--no", "--opt2"};
     EXPECT_THROW(run(), CLI::ExcludesError);
 }
@@ -1191,27 +1125,24 @@ TEST_F(TApp, NeedsMultiFlags) {
 
     run();
 
-    app.reset();
     args = {"--opt1"};
     run();
 
-    app.reset();
     args = {"--opt2"};
     run();
 
-    app.reset();
     args = {"--optall"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt2", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
     run();
 }
@@ -1224,27 +1155,24 @@ TEST_F(TApp, NeedsMixedFlags) {
 
     run();
 
-    app.reset();
     args = {"--opt1"};
     run();
 
-    app.reset();
     args = {"--opt2"};
     run();
 
-    app.reset();
     args = {"--optall"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt2", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--optall", "--opt1", "--opt2", "--opt3"};
     run();
 }
@@ -1256,31 +1184,28 @@ TEST_F(TApp, NeedsChainedFlags) {
 
     run();
 
-    app.reset();
     args = {"--opt1"};
     run();
 
-    app.reset();
     args = {"--opt2"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--opt3"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--opt3", "--opt2"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--opt3", "--opt1"};
     EXPECT_THROW(run(), CLI::RequiresError);
+    app.clear();
 
-    app.reset();
     args = {"--opt2", "--opt1"};
     run();
 
-    app.reset();
     args = {"--opt1", "--opt2", "--opt3"};
     run();
 }
@@ -1297,11 +1222,9 @@ TEST_F(TApp, Env) {
     EXPECT_EQ(2, val);
     EXPECT_EQ((size_t)1, vopt->count());
 
-    app.reset();
     vopt->required();
     run();
 
-    app.reset();
     unset_env("CLI11_TEST_ENV_TMP");
     EXPECT_THROW(run(), CLI::RequiredError);
 }
@@ -1312,20 +1235,18 @@ TEST_F(TApp, RangeInt) {
 
     args = {"--one=1"};
     EXPECT_THROW(run(), CLI::ValidationError);
+    app.clear();
 
-    app.reset();
     args = {"--one=7"};
     EXPECT_THROW(run(), CLI::ValidationError);
+    app.clear();
 
-    app.reset();
     args = {"--one=3"};
     run();
 
-    app.reset();
     args = {"--one=5"};
     run();
 
-    app.reset();
     args = {"--one=6"};
     run();
 }
@@ -1338,20 +1259,18 @@ TEST_F(TApp, RangeDouble) {
 
     args = {"--one=1"};
     EXPECT_THROW(run(), CLI::ValidationError);
+    app.clear();
 
-    app.reset();
     args = {"--one=7"};
     EXPECT_THROW(run(), CLI::ValidationError);
+    app.clear();
 
-    app.reset();
     args = {"--one=3"};
     run();
 
-    app.reset();
     args = {"--one=5"};
     run();
 
-    app.reset();
     args = {"--one=6"};
     run();
 }
@@ -1367,7 +1286,7 @@ TEST_F(TApp, AllowExtras) {
 
     args = {"-x", "-f"};
 
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_TRUE(val);
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x"}));
 }
@@ -1377,9 +1296,8 @@ TEST_F(TApp, AllowExtrasOrder) {
     app.allow_extras();
 
     args = {"-x", "-f"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "-f"}));
-    app.reset();
 
     std::vector<std::string> left_over = app.remaining();
     app.parse(left_over);
@@ -1462,14 +1380,12 @@ TEST_F(TApp, ThrowingTransform) {
     auto m = app.add_option("-m,--mess", val);
     m->transform([](std::string) -> std::string { throw CLI::ValidationError("My Message"); });
 
-    EXPECT_NO_THROW(run());
-    app.reset();
+    ASSERT_NO_THROW(run());
 
     args = {"-mone"};
 
     ASSERT_THROW(run(), CLI::ValidationError);
-
-    app.reset();
+    app.clear();
 
     try {
         run();
@@ -1533,17 +1449,15 @@ TEST_F(TApp, AddRemoveSetItems) {
     items.erase("TYPE1");
     items.erase("TYPE2");
 
-    app.reset();
     args = {"--type1", "TYPE6", "--type2", "TYPE7"};
     run();
     EXPECT_EQ(type1, "TYPE6");
     EXPECT_EQ(type2, "TYPE7");
 
-    app.reset();
     args = {"--type1", "TYPE1"};
     EXPECT_THROW(run(), CLI::ConversionError);
+    app.clear();
 
-    app.reset();
     args = {"--type2", "TYPE2"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -1567,17 +1481,15 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     items.erase("TYPE1");
     items.erase("TYPE2");
 
-    app.reset();
     args = {"--type1", "TyPE6", "--type2", "tYPE7"};
     run();
     EXPECT_EQ(type1, "TYPE6");
     EXPECT_EQ(type2, "TYPE7");
 
-    app.reset();
     args = {"--type1", "TYPe1"};
     EXPECT_THROW(run(), CLI::ConversionError);
+    app.clear();
 
-    app.reset();
     args = {"--type2", "TYpE2"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -1588,10 +1500,9 @@ TEST_F(TApp, RepeatingMultiArgumentOptions) {
     app.add_option("--entry", entries, "set a key and value")->type_name("KEY VALUE")->type_size(-2);
 
     args = {"--entry", "key1", "value1", "--entry", "key2", "value2"};
-    EXPECT_NO_THROW(run());
+    ASSERT_NO_THROW(run());
     EXPECT_EQ(entries, std::vector<std::string>({"key1", "value1", "key2", "value2"}));
 
-    app.reset();
     args.pop_back();
     ASSERT_THROW(run(), CLI::ArgumentMismatch);
 }
