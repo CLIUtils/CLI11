@@ -1365,9 +1365,12 @@ class App {
             size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
                 args = remaining(false);
-                std::reverse(std::begin(args), std::end(args));
                 throw ExtrasError(args);
             }
+        }
+
+        if(parent_ == nullptr) {
+            args = remaining(false);
         }
     }
 
