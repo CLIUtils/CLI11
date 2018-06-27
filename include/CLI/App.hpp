@@ -914,6 +914,11 @@ class App {
         if(parsed_)
             clear();
 
+        // Redundant (set by _parse on commands/subcommands)
+        // but placed here to make sure this is cleared when
+        // running parse after an error is thrown, even by _validate.
+        parsed_ = true;
+
         _validate();
         _parse(args);
         run_callback();

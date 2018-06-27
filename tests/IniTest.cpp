@@ -366,7 +366,6 @@ TEST_F(TApp, IniRequired) {
     args = {};
 
     EXPECT_THROW(run(), CLI::RequiredError);
-    app.clear();
 
     args = {"--two=2"};
 
