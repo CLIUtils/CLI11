@@ -60,6 +60,20 @@ set_property(TEST subcommands_all PROPERTY PASS_REGULAR_EXPRESSION
     "Subcommand: start"
     "Subcommand: stop")
 
+add_cli_exe(validators validators.cpp)
+add_test(NAME validators_help COMMAND validators --help)
+set_property(TEST validators_help PROPERTY PASS_REGULAR_EXPRESSION
+    "  -f,--file FILE              File name"
+    "  -v,--value INT in [3 - 6]   Value in range")
+add_test(NAME validators_file COMMAND validators --file nonex.xxx)
+set_property(TEST validators_file PROPERTY PASS_REGULAR_EXPRESSION
+    "--file: File does not exist: nonex.xxx"
+    "Run with --help for more information.")
+add_test(NAME validators_plain COMMAND validators --value 9)
+set_property(TEST validators_plain PROPERTY PASS_REGULAR_EXPRESSION
+    "--value: Value 9 not in range 3 to 6"
+    "Run with --help for more information.")
+
 add_cli_exe(groups groups.cpp)
 add_test(NAME groups_none COMMAND groups)
 set_property(TEST groups_none PROPERTY PASS_REGULAR_EXPRESSION
