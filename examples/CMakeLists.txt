@@ -16,11 +16,14 @@ endfunction()
 
 option(CLI11_EXAMPLE_JSON OFF)
 if(CLI11_EXAMPLE_JSON)
+    if(NOT EXISTS "${CLI11_SOURCE_DIR}/extern/json/single_include/nlohmann/json.hpp")
+        message(ERROR "You are missing the json package for CLI11_EXAMPLE_JSON. Please update your submodules (git submodule update --init)")
+    endif()
     if(CMAKE_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
         message(WARNING "The json example requires GCC 4.9+ (requirement on json library)")
     endif()
     add_cli_exe(json json.cpp)
-    target_include_directories(json PUBLIC SYSTEM ../extern/json/single_include)
+    target_include_directories(json PUBLIC SYSTEM "${CLI11_SOURCE_DIR}/extern/json/single_include")
 
     add_test(NAME json_config_out COMMAND json --item 2)
     set_property(TEST json_config_out PROPERTY PASS_REGULAR_EXPRESSION
