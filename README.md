@@ -464,7 +464,7 @@ CLI11 was developed at the [University of Cincinnati] to support of the [GooFit]
 [Version 1.3 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [Version 1.6 post]:      https://iscinumpy.gitlab.io/post/announcing-cli11-16/
 [wandbox-badge]:         https://img.shields.io/badge/try-online-blue.svg
-[wandbox-link]:          https://wandbox.org/permlink/Z4uwGhnhD2wm2r7Z
+[wandbox-link]:          https://wandbox.org/permlink/95DStlyHsquYH3k6
 [releases-badge]:        https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:      https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
 [DIANA slides]:          https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
