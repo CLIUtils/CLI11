@@ -129,7 +129,7 @@ deploy:
   skip_cleanup: true
   file: build/include/CLI11.hpp
   on:
-    repo: cliutils/CLI11
+    repo: CLIUtils/CLI11
     tags: true
     condition: "$DEPLOY_MAT = yes"
 notifications:
