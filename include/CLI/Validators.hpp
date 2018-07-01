@@ -30,11 +30,14 @@ namespace CLI {
 struct Validator {
     /// This is the type name, if empty the type name will not be changed
     std::string tname;
-    std::function<std::string(const std::string &filename)> func;
+
+    /// This it the base function that is to be called.
+    /// Returns a string error message if validation fails.
+    std::function<std::string(const std::string &)> func;
 
     /// This is the required operator for a validator - provided to help
-    /// users (CLI11 uses the func directly)
-    std::string operator()(const std::string &filename) const { return func(filename); };
+    /// users (CLI11 uses the member `func` directly)
+    std::string operator()(const std::string &str) const { return func(str); };
 
     /// Combining validators is a new validator
     Validator operator&(const Validator &other) const {
@@ -165,6 +168,10 @@ const detail::NonexistentPathValidator NonexistentPath;
 
 ///  Produce a range (factory). Min and max are inclusive.
 struct Range : public Validator {
+    /// This produces a range with min and max inclusive.
+    ///
+    /// Note that the constructor is templated, but the struct is not, so C++17 is not
+    /// needed to provide nice syntax for Range(a,b).
     template <typename T> Range(T min, T max) {
         std::stringstream out;
         out << detail::type_name<T>() << " in [" << min << " - " << max << "]";

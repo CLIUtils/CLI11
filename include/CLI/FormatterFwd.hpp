@@ -86,9 +86,11 @@ class FormatterBase {
 class FormatterLambda final : public FormatterBase {
     using funct_t = std::function<std::string(const App *, std::string, AppFormatMode)>;
 
+    /// The lambda to hold and run
     funct_t lambda_;
 
   public:
+    /// Create a FormatterLambda with a lambda function
     explicit FormatterLambda(funct_t funct) : lambda_(std::move(funct)) {}
 
     /// This will simply call the lambda function

@@ -51,6 +51,7 @@ template <typename CRTP> class OptionBase {
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
+    /// Copy the contents to another similar class (one based on OptionBase)
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
         other->required(required_);
@@ -440,7 +441,7 @@ class Option : public OptionBase<Option> {
     /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
 
-    /// \breif The total number of expected values (including the type)
+    /// \brief The total number of expected values (including the type)
     /// This is positive if exactly this number is expected, and negitive for at least N values
     ///
     /// v = fabs(size_type*expected)
