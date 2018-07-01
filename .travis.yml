@@ -49,6 +49,7 @@ matrix:
     - .ci/make_and_test.sh 11
     after_success:
     - export DOXYFILE=$TRAVIS_BUILD_DIR/docs/Doxyfile
+    - export DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - |
       if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]
       then
