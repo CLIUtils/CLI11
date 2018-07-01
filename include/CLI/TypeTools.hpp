@@ -12,18 +12,24 @@ namespace CLI {
 
 // Type tools
 
-// We could check to see if C++14 is being used, but it does not hurt to redefine this
-// (even Google does this: https://github.com/google/skia/blob/master/include/private/SkTLogic.h)
-// It is not in the std namespace anyway, so no harm done.
+/// A copy of enable_if_t from C++14, compatible with C++11.
+///
+/// We could check to see if C++14 is being used, but it does not hurt to redefine this
+/// (even Google does this: https://github.com/google/skia/blob/master/include/private/SkTLogic.h)
+/// It is not in the std namespace anyway, so no harm done.
 
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
 
+/// Check to see if something is a vector (fail check by default)
 template <typename T> struct is_vector { static const bool value = false; };
 
+/// Check to see if something is a vector (true if actually a vector)
 template <class T, class A> struct is_vector<std::vector<T, A>> { static bool const value = true; };
 
+/// Check to see if something is bool (fail check by default)
 template <typename T> struct is_bool { static const bool value = false; };
 
+/// Check to see if something is bool (true if actually a bool)
 template <> struct is_bool<bool> { static bool const value = true; };
 
 namespace detail {

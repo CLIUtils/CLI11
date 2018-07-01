@@ -1632,6 +1632,7 @@ class App {
 
 namespace FailureMessage {
 
+/// Printout a clean, simple message on error (the default in CLI11 1.5+)
 inline std::string simple(const App *app, const Error &e) {
     std::string header = std::string(e.what()) + "\n";
     if(app->get_help_ptr() != nullptr)
@@ -1639,6 +1640,7 @@ inline std::string simple(const App *app, const Error &e) {
     return header;
 }
 
+/// Printout the full help string on error (if this fn is set, the old default for CLI11)
 inline std::string help(const App *app, const Error &e) {
     std::string header = std::string("ERROR: ") + e.get_name() + ": " + e.what() + "\n";
     header += app->help();

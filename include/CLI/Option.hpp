@@ -30,6 +30,8 @@ using Option_p = std::unique_ptr<Option>;
 
 enum class MultiOptionPolicy { Throw, TakeLast, TakeFirst, Join };
 
+/// This is the CRTP base class for Option and OptionDefaults. It was designed this way
+/// to share parts of the class; an OptionDefaults can copy to an Option.
 template <typename CRTP> class OptionBase {
     friend App;
 
@@ -123,6 +125,8 @@ template <typename CRTP> class OptionBase {
     }
 };
 
+/// This is a version of OptionBase that only supports setting values,
+/// for defaults. It is stored as the default option in an App.
 class OptionDefaults : public OptionBase<OptionDefaults> {
   public:
     OptionDefaults() = default;
@@ -287,7 +291,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Adds a validator
+    /// Adds a validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
     Option *check(std::function<std::string(const std::string &)> validator) {
         validators_.emplace_back(validator);
         return this;

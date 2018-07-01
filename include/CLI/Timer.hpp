@@ -17,6 +17,7 @@
 
 namespace CLI {
 
+/// This is a simple timer with pretty printing. Creating the timer starts counting.
 class Timer {
   protected:
     /// This is a typedef to make clocks easier to use

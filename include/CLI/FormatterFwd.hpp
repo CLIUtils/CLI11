@@ -97,6 +97,8 @@ class FormatterLambda final : public FormatterBase {
     }
 };
 
+/// This is the default Formatter for CLI11. It pretty prints help output, and is broken into quite a few
+/// overridable methods, to be highly customizable with minimal effort.
 class Formatter : public FormatterBase {
   public:
     Formatter() = default;
