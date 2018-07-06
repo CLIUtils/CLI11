@@ -1,3 +1,8 @@
+## Since last version
+* Added fix and test for including Windows.h [#145]
+
+[#145]: https://github.com/CLIUtils/CLI11/pull/145
+
 ## Version 1.6: Formatting help
 
 Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating most formatting code.
