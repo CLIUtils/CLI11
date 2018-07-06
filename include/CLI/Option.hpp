@@ -546,7 +546,8 @@ class Option : public OptionBase<Option> {
 
         // Num items expected or length of vector, always at least 1
         // Only valid for a trimming policy
-        int trim_size = std::min(std::max(std::abs(get_items_expected()), 1), static_cast<int>(results_.size()));
+        int trim_size =
+            std::min<int>(std::max<int>(std::abs(get_items_expected()), 1), static_cast<int>(results_.size()));
 
         // Operation depends on the policy setting
         if(multi_option_policy_ == MultiOptionPolicy::TakeLast) {
