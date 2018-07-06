@@ -160,7 +160,7 @@ app.add_set(option_name,
 
 app.add_set_ignore_case(... // String only
 
-App* subcom = app.add_subcommand(name, discription);
+App* subcom = app.add_subcommand(name, description);
 ```
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`. The set options allow your users to pick from a set of predefined options; you can add an existing set if you need to modify the set later, or you can use an initializer list.
