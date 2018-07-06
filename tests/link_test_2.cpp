@@ -4,7 +4,7 @@
 
 int do_nothing();
 
-// Verifies there are no ungarded inlines
+// Verifies there are no unguarded inlines
 TEST(Link, DoNothing) {
     int a = do_nothing();
     EXPECT_EQ(7, a);

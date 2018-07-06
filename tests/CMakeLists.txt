@@ -33,6 +33,10 @@ set(CLI11_TESTS
     DeprecatedTest
     )
 
+if(WIN32)
+    list(APPEND CLI11_TESTS WindowsTest)
+endif()
+
 set(CLI11_MULTIONLY_TESTS
     TimerTest
     )
