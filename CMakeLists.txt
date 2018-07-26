@@ -113,14 +113,37 @@ export(TARGETS CLI11
 export(PACKAGE CLI11)
 
 # Single file test
-find_package(PythonInterp)
-cmake_dependent_option(CLI11_SINGLE_FILE "Generate a single header file" ON "CUR_PROJ;PYTHONINTERP_FOUND" OFF)
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    set(Python_ADDITIONAL_VERSIONS 2.7 3.4 3.5 3.6 3.7 3.8)
+    find_package(PythonInterp)
+    set(Python_VERSION ${PYTHON_VERSION_STRING})
+    set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+else()
+    find_package(Python)
+endif()
+
+if(Python_Interpreter_FOUND OR PYTHONINTERP_FOUND)
+    if(Python_VERSION VERSION_LESS 2.7)
+        set(CLI11_PYTHON_FOUND FALSE)
+    else()
+        set(CLI11_PYTHON_FOUND TRUE)
+    endif()
+else()
+    set(CLI11_PYTHON_FOUND FALSE)
+endif()
+
+cmake_dependent_option(CLI11_SINGLE_FILE "Generate a single header file" ON "CUR_PROJ;CLI11_PYTHON_FOUND" OFF)
 
 if(CLI11_SINGLE_FILE)
-    find_package(PythonInterp REQUIRED)
+    if(NOT CLI11_PYTHON_FOUND)
+        message(FATAL_ERROR "CLI11_SINGLE_FILE requires Python 2.7 or 3 (not found)")
+    else()
+        message(STATUS "Building single file include using Python ${Python_VERSION} at ${Python_EXECUTABLE}")
+    endif()
+
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
-        COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
+        COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py" "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI11_headers}
         )
     add_custom_target(generate_cli_single_file ALL
