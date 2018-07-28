@@ -112,33 +112,16 @@ export(TARGETS CLI11
 # Register in the user cmake package registry
 export(PACKAGE CLI11)
 
-# Single file test
-if(CMAKE_VERSION VERSION_LESS 3.12)
-    set(Python_ADDITIONAL_VERSIONS 2.7 3.4 3.5 3.6 3.7 3.8)
-    find_package(PythonInterp)
-    set(Python_VERSION ${PYTHON_VERSION_STRING})
-    set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
-else()
-    find_package(Python)
-endif()
-
-if(Python_Interpreter_FOUND OR PYTHONINTERP_FOUND)
-    if(Python_VERSION VERSION_LESS 2.7)
-        set(CLI11_PYTHON_FOUND FALSE)
-    else()
-        set(CLI11_PYTHON_FOUND TRUE)
-    endif()
-else()
-    set(CLI11_PYTHON_FOUND FALSE)
-endif()
-
-cmake_dependent_option(CLI11_SINGLE_FILE "Generate a single header file" ON "CUR_PROJ;CLI11_PYTHON_FOUND" OFF)
+option(CLI11_SINGLE_FILE "Generate a single header file" OFF)
 
 if(CLI11_SINGLE_FILE)
-    if(NOT CLI11_PYTHON_FOUND)
-        message(FATAL_ERROR "CLI11_SINGLE_FILE requires Python 2.7 or 3 (not found)")
+# Single file test
+    if(CMAKE_VERSION VERSION_LESS 3.12)
+        find_package(PythonInterp REQUIRED)
+        set(Python_VERSION ${PYTHON_VERSION_STRING})
+        set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
     else()
-        message(STATUS "Building single file include using Python ${Python_VERSION} at ${Python_EXECUTABLE}")
+        find_package(Python REQUIRED)
     endif()
 
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
