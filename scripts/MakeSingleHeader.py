@@ -7,8 +7,9 @@ import re
 import argparse
 import operator
 from copy import copy
-from subprocess import check_output, CalledProcessError
 from functools import reduce
+
+import subprocess
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
@@ -44,7 +45,7 @@ class HeaderFile(object):
 
         # add self.verbatim
         if 'CLI11:verbatim' in inner:
-            self.verbatim = ["\n\n// Verbatim copy from {}:".format(inc)]
+            self.verbatim = ["\n\n// Verbatim copy from {0}:".format(inc)]
             self.verbatim += verbatim_all.findall(inner)
             inner = verbatim_all.sub("", inner)
         else:
@@ -52,7 +53,7 @@ class HeaderFile(object):
 
         self.headers = set(includes_system.findall(inner))
 
-        self.body = '\n// From {}:\n\n'.format(inc) + inner[inner.find('namespace'):]
+        self.body = '\n// From {0}:\n\n'.format(inc) + inner[inner.find('namespace'):]
 
         self.namespace = None
 
@@ -111,8 +112,11 @@ class HeaderFile(object):
 def MakeHeader(output, main_header, include_dir = '../include', namespace=None, macro=None):
     # Set tag if possible to class variable
     try:
-        HeaderFile.TAG = check_output(['git', 'describe', '--tags', '--always'], cwd=str(DIR)).decode("utf-8").strip()
-    except CalledProcessError:
+        proc = subprocess.Popen(['git', 'describe', '--tags', '--always'], cwd=str(DIR), stdout=subprocess.PIPE)
+        out, _ = proc.communicate()
+        if proc.returncode == 0:
+            HeaderFile.TAG = out.decode("utf-8").strip()
+    except OSError:
         pass
 
     base_dir = os.path.abspath(os.path.join(DIR, include_dir))
