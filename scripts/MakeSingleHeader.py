@@ -9,7 +9,7 @@ import operator
 from copy import copy
 from functools import reduce
 
-import subprocess
+from subprocess import Popen, PIPE
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
 includes_system = re.compile(r"""^#include \<(.*)\>$""", re.MULTILINE)
@@ -112,12 +112,13 @@ class HeaderFile(object):
 def MakeHeader(output, main_header, include_dir = '../include', namespace=None, macro=None):
     # Set tag if possible to class variable
     try:
-        proc = subprocess.Popen(['git', 'describe', '--tags', '--always'], cwd=str(DIR), stdout=subprocess.PIPE)
+        proc = Popen(['git', 'describe', '--tags', '--always'], cwd=str(DIR), stdout=PIPE)
         out, _ = proc.communicate()
-        if proc.returncode == 0:
-            HeaderFile.TAG = out.decode("utf-8").strip()
     except OSError:
         pass
+    else:
+        if proc.returncode == 0:
+            HeaderFile.TAG = out.decode("utf-8").strip()
 
     base_dir = os.path.abspath(os.path.join(DIR, include_dir))
     main_header = os.path.join(base_dir, main_header)
