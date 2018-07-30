@@ -4,11 +4,10 @@ from __future__ import print_function, unicode_literals
 
 import os
 import re
-import argparse
-import operator
+from argparse import ArgumentParser
+from operator import add
 from copy import copy
 from functools import reduce
-
 from subprocess import Popen, PIPE
 
 includes_local = re.compile(r"""^#include "(.*)"$""", re.MULTILINE)
@@ -79,7 +78,6 @@ class HeaderFile(object):
         self.verbatim = [x.replace(before, after) for x in self.verbatim]
         self.body = self.body.replace(before, after)
 
-
     def __str__(self):
         result = '''\
 #pragma once
@@ -133,12 +131,12 @@ def MakeHeader(output, main_header, include_dir = '../include', namespace=None, 
     include_files = includes_local.findall(header)
 
     headers = [HeaderFile(base_dir, inc) for inc in include_files]
-    single_header = reduce(operator.add, headers)
+    single_header = reduce(add, headers)
 
-    if macro:
-        before, after = macro
-        print("Converting macros", before, "->", after)
-        single_header.macro_replacement(before, after)
+    if macro is not None:
+        before = 'CLI11_'
+        print("Converting macros", before, "->", macro)
+        single_header.macro_replacement(before, macro)
 
     if namespace:
         print("Adding namespace", namespace)
@@ -150,14 +148,13 @@ def MakeHeader(output, main_header, include_dir = '../include', namespace=None, 
     print("Created", output)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage='Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros).')
+    parser = ArgumentParser(usage='Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros).')
     parser.add_argument("output", help="Single header file output")
     parser.add_argument("--main", default='CLI/CLI.hpp', help="The main include file that defines the other files")
     parser.add_argument("--include", default='../include', help="The include directory")
     parser.add_argument("--namespace", help="Add an optional namespace")
-    parser.add_argument("--macro", nargs=2, help="Macro replacement: CLI11_ NEW_PREFIX_")
+    parser.add_argument("--macro", help="Replaces CLI11_ with NEW_PREFIX_")
     args = parser.parse_args()
-
 
     MakeHeader(args.output, args.main, args.include, args.namespace, args.macro)
 
