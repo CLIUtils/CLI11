@@ -7,7 +7,7 @@
 [![Latest release][releases-badge]][Github Releases]
 [![DOI][DOI-badge]][DOI-link]
 [![Conan.io][conan-badge]][conan-link]
-[![Try CLI11 1.5.2 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 1.6 online][wandbox-badge]][wandbox-link]
 
 [Documentation][GitBook] •
 [API Reference][api-docs] •
