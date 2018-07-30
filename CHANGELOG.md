@@ -1,7 +1,16 @@
-## Since last version
+## Version 1.6.1: Platform fixes
+This version provides a few fixes for special cases, such as mixing with `Windows.h` and better defaults
+for systems like Hunter. The one new feature is the ability to produce "branded" single file output for
+providing custom namespaces or custom macro names.
+
 * Added fix and test for including Windows.h [#145]
+* No longer build single file by default if main project, supports systems stuck on Python 2.6 [#149], [#151]
+* Branding support for single file output [#150]
 
 [#145]: https://github.com/CLIUtils/CLI11/pull/145
+[#149]: https://github.com/CLIUtils/CLI11/pull/149
+[#150]: https://github.com/CLIUtils/CLI11/pull/150
+[#151]: https://github.com/CLIUtils/CLI11/pull/151
 
 ## Version 1.6: Formatting help
 
