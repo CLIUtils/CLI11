@@ -1,6 +1,6 @@
 # CLI11: Command line parser for C++11
 
-<!-- banner -->
+![CLI11 Logo](./docs/CLI11_300.png)
 
 [![Build Status Linux and macOS][travis-badge]][travis]
 [![Build Status Windows][appveyor-badge]][appveyor]
