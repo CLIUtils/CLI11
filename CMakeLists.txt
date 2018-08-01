@@ -1,7 +1,13 @@
-cmake_minimum_required(VERSION 3.4...3.11)
+cmake_minimum_required(VERSION 3.4)
+# Note: this is a header only library. If you have an older CMake than 3.4,
+# just add the CLI11/include directory and that's all you need to do.
 
+# Make sure users don't get warnings on a tested (3.4 to 3.12) version
+# of CMake. For most of the policies, the new version is better (hence the change).
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_VERSION})
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+    cmake_policy(VERSION 3.12)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -13,9 +19,8 @@ file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/Version.hpp"
 # Pick out just the version
 string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
 
+# Add the project
 project(CLI11 LANGUAGES CXX VERSION ${VERSION_STRING})
-
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 # Only if built as the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
