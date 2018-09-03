@@ -1,4 +1,17 @@
+## Version 1.6.2: More special case fixes
+
+This version adds fixes for several warnings, including an experimental optional error on Clang 7.
+
+* Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156]
+* Fixed warning about local variable hiding class member with MSVC [#157]
+* Fixed compile error with default settings on Clang 7 and libc++ [#158]
+
+[#156]: https://github.com/CLIUtils/CLI11/issues/156
+[#157]: https://github.com/CLIUtils/CLI11/issues/157
+[#158]: https://github.com/CLIUtils/CLI11/issues/158
+
 ## Version 1.6.1: Platform fixes
+
 This version provides a few fixes for special cases, such as mixing with `Windows.h` and better defaults
 for systems like Hunter. The one new feature is the ability to produce "branded" single file output for
 providing custom namespaces or custom macro names.
