@@ -10,13 +10,16 @@
 // [CLI11:verbatim]
 #ifdef __has_include
 
+// You can explicitly enable or disable support
+// by defining these to 1 or 0.
 #if defined(CLI11_CPP17) && __has_include(<optional>) && \
      !defined(CLI11_STD_OPTIONAL)
 #define CLI11_STD_OPTIONAL 1
 #endif
 
 #if defined(CLI11_CPP14) && __has_include(<experimental/optional>) && \
-    !defined(CLI11_EXPERIMENTAL_OPTIONAL)
+    !defined(CLI11_EXPERIMENTAL_OPTIONAL) \
+    && (!defined(CLI11_STD_OPTIONAL) || CLI11_STD_OPTIONAL != 0)
 #define CLI11_EXPERIMENTAL_OPTIONAL 1
 #endif
 
