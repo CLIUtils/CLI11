@@ -79,8 +79,16 @@ target_include_directories(CLI11 INTERFACE
 # Make add_subdirectory work like find_package
 add_library(CLI11::CLI11 ALIAS CLI11)
 
+option(CLI11_INSTALL "Install the CLI11 folder to include during install process" ${CUR_PROJ})
+
 # This folder should be installed
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
+if(CLI11_INSTALL)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CLI DESTINATION include)
+
+    # Make an export target
+    install(TARGETS CLI11
+            EXPORT CLI11Targets)
+endif()
 
 # Use find_package on the installed package
 # Since we have no custom code, we can directly write this
@@ -95,27 +103,26 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
     )
 
-# Make version available in the install
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-        DESTINATION lib/cmake/CLI11)
+# These installs only make sense for a local project
+if(CUR_PROJ)
+    # Make version available in the install
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake"
+            DESTINATION lib/cmake/CLI11)
 
-# Make an export target
-install(TARGETS CLI11
-        EXPORT CLI11Targets)
+    # Install the export target as a file
+    install(EXPORT CLI11Targets
+            FILE CLI11Config.cmake
+            NAMESPACE CLI11::
+            DESTINATION lib/cmake/CLI11)
 
-# Install the export target as a file
-install(EXPORT CLI11Targets
-        FILE CLI11Config.cmake
-        NAMESPACE CLI11::
-        DESTINATION lib/cmake/CLI11)
+    # Use find_package on the installed package
+    export(TARGETS CLI11
+           NAMESPACE CLI11::
+           FILE CLI11Targets.cmake)
 
-# Use find_package on the installed package
-export(TARGETS CLI11
-       NAMESPACE CLI11::
-       FILE CLI11Targets.cmake)
-
-# Register in the user cmake package registry
-export(PACKAGE CLI11)
+    # Register in the user cmake package registry
+    export(PACKAGE CLI11)
+endif()
 
 option(CLI11_SINGLE_FILE "Generate a single header file" OFF)
 
