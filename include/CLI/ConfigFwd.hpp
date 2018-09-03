@@ -117,7 +117,7 @@ class ConfigINI : public Config {
         std::vector<ConfigItem> output;
 
         while(getline(input, line)) {
-            std::vector<std::string> items;
+            std::vector<std::string> items_buffer;
 
             detail::trim(line);
             size_t len = line.length();
@@ -132,10 +132,10 @@ class ConfigINI : public Config {
                 if(pos != std::string::npos) {
                     out.name = detail::trim_copy(line.substr(0, pos));
                     std::string item = detail::trim_copy(line.substr(pos + 1));
-                    items = detail::split_up(item);
+                    items_buffer = detail::split_up(item);
                 } else {
                     out.name = detail::trim_copy(line);
-                    items = {"ON"};
+                    items_buffer = {"ON"};
                 }
 
                 if(detail::to_lower(section) != "default") {
@@ -149,7 +149,7 @@ class ConfigINI : public Config {
                     out.parents.insert(out.parents.end(), plist.begin(), plist.end());
                 }
 
-                out.inputs.insert(std::end(out.inputs), std::begin(items), std::end(items));
+                out.inputs.insert(std::end(out.inputs), std::begin(items_buffer), std::end(items_buffer));
             }
         }
         return output;
