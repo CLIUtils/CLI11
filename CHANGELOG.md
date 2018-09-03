@@ -1,3 +1,7 @@
+## Version 1.9: IN PROGRESS
+
+* GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required.
+
 ## Version 1.8: Transformers, default strings, and flags
 
 Set handling has been completely replaced by a new backend that works as a Validator or Transformer. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support. The final bool "defaults" flag when creating options has been replaced by `->capture_default_str()` (ending an old limitation in construction made this possible); the old method is still available but may be removed in future versions.
