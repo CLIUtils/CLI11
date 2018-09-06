@@ -126,3 +126,5 @@ set_property(TEST subcom_in_files PROPERTY PASS_REGULAR_EXPRESSION
     "Using foo!")
 
 add_cli_exe(formatter formatter.cpp)
+
+add_cli_exe(nested nested.cpp)

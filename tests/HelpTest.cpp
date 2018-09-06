@@ -511,10 +511,11 @@ TEST_F(CapturedHelp, CallForAllHelpOutput) {
               "  --help-all                  Help all\n"
               "\n"
               "Subcommands:\n"
-              "one -> One description\n"
+              "one\n"
+              "  One description\n\n"
               "two\n"
-              "Options:\n"
-              "  --three                     \n");
+              "  Options:\n"
+              "    --three                     \n\n");
 }
 TEST_F(CapturedHelp, NewFormattedHelp) {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });

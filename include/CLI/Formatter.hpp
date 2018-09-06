@@ -158,8 +158,7 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
                 out << make_subcommand(new_com);
             } else {
                 out << new_com->help(new_com->get_name(), AppFormatMode::Sub);
-                if(new_com != subcommands_group.back())
-                    out << "\n";
+                out << "\n";
             }
         }
     }
@@ -175,12 +174,19 @@ inline std::string Formatter::make_subcommand(const App *sub) const {
 
 inline std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    if(sub->get_description().empty())
-        out << sub->get_name();
-    else
-        out << sub->get_name() << " -> " << sub->get_description();
+    out << sub->get_name() << "\n";
+
+    out << make_description(sub);
+    out << make_positionals(sub);
     out << make_groups(sub, AppFormatMode::Sub);
-    return out.str();
+    out << make_subcommands(sub, AppFormatMode::Sub);
+
+    // Drop blank spaces
+    std::string tmp = detail::find_and_replace(out.str(), "\n\n", "\n");
+    tmp = tmp.substr(0, tmp.size() - 1); // Remove the final '\n'
+
+    // Indent all but the first line (the name)
+    return detail::find_and_replace(tmp, "\n", "\n  ") + "\n";
 }
 
 inline std::string Formatter::make_option_name(const Option *opt, bool is_positional) const {
