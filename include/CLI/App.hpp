@@ -1341,6 +1341,10 @@ class App {
 
         // Verify required options
         for(const Option_p &opt : options_) {
+            // Exit if a help flag was passed (requirements not required in that case)
+            if(_any_help_flag())
+                break;
+
             // Required or partially filled
             if(opt->get_required() || opt->count() != 0) {
                 // Make sure enough -N arguments parsed (+N is already handled in parsing function)
@@ -1377,6 +1381,21 @@ class App {
         if(parent_ == nullptr) {
             args = remaining(false);
         }
+    }
+
+    /// Return True if a help flag detected (checks all parents)
+    bool _any_help_flag() const {
+        bool result = false;
+        const Option *help_ptr = get_help_ptr();
+        const Option *help_all_ptr = get_help_all_ptr();
+        if(help_ptr != nullptr && help_ptr->count() > 0)
+            result = true;
+        if(help_all_ptr != nullptr && help_all_ptr->count() > 0)
+            result = true;
+        if(parent_ != nullptr)
+            return result || parent_->_any_help_flag();
+        else
+            return result;
     }
 
     /// Parse one config param, return false if not found in any subcommand, remove if it is
