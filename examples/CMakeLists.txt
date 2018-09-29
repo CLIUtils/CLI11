@@ -128,3 +128,7 @@ set_property(TEST subcom_in_files PROPERTY PASS_REGULAR_EXPRESSION
 add_cli_exe(formatter formatter.cpp)
 
 add_cli_exe(nested nested.cpp)
+
+add_cli_exe(subcom_help subcom_help.cpp)
+add_test(NAME subcom_help_normal COMMAND subcom_help sub --help)
+add_test(NAME subcom_help_reversed COMMAND subcom_help --help sub)
