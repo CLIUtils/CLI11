@@ -70,7 +70,7 @@ constexpr const char *type_name() {
 }
 
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value && std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
