@@ -76,6 +76,11 @@ constexpr const char *type_name() {
     return "TEXT";
 }
 
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "ENUM";
+}
+
 // Lexical cast
 
 /// Signed integers / enums
