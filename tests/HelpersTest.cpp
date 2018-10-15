@@ -403,6 +403,10 @@ TEST(Types, TypeName) {
 
     std::string text2_name = CLI::detail::type_name<char *>();
     EXPECT_EQ("TEXT", text2_name);
+
+    enum test_enum {E1, E2, E3};
+    std::string enum_name = CLI::detail::type_name<test_enum>();
+    EXPECT_EQ("ENUM", enum_name);
 }
 
 TEST(Types, OverflowSmall) {

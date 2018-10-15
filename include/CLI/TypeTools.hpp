@@ -32,6 +32,14 @@ template <typename T> struct is_bool { static const bool value = false; };
 /// Check to see if something is bool (true if actually a bool)
 template <> struct is_bool<bool> { static bool const value = true; };
 
+/// Check to see if something is a string (fail check by default)
+template <typename T> struct is_string { static const bool value = false; };
+
+/// Check to see if something is string (true if actually a std::string or const char*)
+template <> struct is_string<std::string> { static bool const value = true; };
+template <> struct is_string<const char*> { static bool const value = true; };
+template <> struct is_string<      char*> { static bool const value = true; };
+
 namespace detail {
 // Based generally on https://rmf.io/cxx11/almost-static-if
 /// Simple empty scoped class
@@ -70,10 +78,15 @@ constexpr const char *type_name() {
 }
 
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value,
-                      detail::enabler> = detail::dummy>
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value
+                      && is_string<T>::value, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
+}
+
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "ENUM";
 }
 
 // Lexical cast
