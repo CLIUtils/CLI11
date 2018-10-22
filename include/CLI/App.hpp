@@ -1395,7 +1395,6 @@ class App {
         if(level < item.parents.size()) {
             App *subcom;
             try {
-                std::cout << item.parents.at(level) << std::endl;
                 subcom = get_subcommand(item.parents.at(level));
             } catch(const OptionNotFound &) {
                 return false;
