@@ -212,6 +212,10 @@ class RequiredError : public ParseError {
             return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
                                  ExitCodes::RequiredError);
     }
+    static RequiredError SubcommandMax(size_t max_subcom) {
+        return RequiredError("Requires at most " + std::to_string(max_subcom) + " subcommands",
+                             ExitCodes::RequiredError);
+    }
 };
 
 /// Thrown when the wrong number of arguments has been received

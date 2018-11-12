@@ -145,8 +145,8 @@ class App {
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
 
-    /// True if this command/subcommand was parsed
-    bool parsed_{false};
+    /// Counts the number of times this command/subcommand was parsed
+    size_t parsed_ = 0;
 
     /// Minimum required subcommands (not inheritable!)
     size_t require_subcommand_min_ = 0;
@@ -284,7 +284,7 @@ class App {
     }
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
-    bool parsed() const { return parsed_; }
+    bool parsed() const { return parsed_ > 0; }
 
     /// Get the OptionDefault object, to set option defaults
     OptionDefaults *option_defaults() { return &option_defaults_; }
@@ -826,6 +826,10 @@ class App {
         throw OptionNotFound(subcom);
     }
 
+    /// No argument version of count counts the number of times this subcommand was
+    /// passed in. The main app will return 1.
+    size_t count() const { return parsed_; }
+
     /// Changes the group membership
     App *group(std::string name) {
         group_ = name;
@@ -870,7 +874,7 @@ class App {
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
     /// This allows the subcommand to be directly checked.
-    operator bool() const { return parsed_; }
+    operator bool() const { return parsed_ > 0; }
 
     ///@}
     /// @name Extras for subclassing
@@ -917,15 +921,16 @@ class App {
     /// Changes the vector to the remaining options.
     void parse(std::vector<std::string> &args) {
         // Clear if parsed
-        if(parsed_)
+        if(parsed_ > 0)
             clear();
 
-        // Redundant (set by _parse on commands/subcommands)
+        // _parse is incremented in commands/subcommands,
         // but placed here to make sure this is cleared when
         // running parse after an error is thrown, even by _validate.
-        parsed_ = true;
-
+        parsed_ = 1;
         _validate();
+        parsed_ = 0;
+
         _parse(args);
         run_callback();
     }
@@ -1016,11 +1021,11 @@ class App {
     /// Check to see if given subcommand was selected
     bool got_subcommand(App *subcom) const {
         // get subcom needed to verify that this was a real subcommand
-        return get_subcommand(subcom)->parsed_;
+        return get_subcommand(subcom)->parsed_ > 0;
     }
 
     /// Check with name instead of pointer to see if subcommand was selected
-    bool got_subcommand(std::string name) const { return get_subcommand(name)->parsed_; }
+    bool got_subcommand(std::string name) const { return get_subcommand(name)->parsed_ > 0; }
 
     ///@}
     /// @name Help
@@ -1282,19 +1287,21 @@ class App {
         return detail::Classifer::NONE;
     }
 
-    /// Internal parse function
-    void _parse(std::vector<std::string> &args) {
-        parsed_ = true;
-        bool positional_only = false;
+    // The parse function is now broken into several parts, and part of process
 
-        while(!args.empty()) {
-            _parse_single(args, positional_only);
-        }
-
+    /// Collect and process all shortcircuits, runs on subcommands too.
+    void _process_shortcircuits() {
         for(const Option_p &opt : options_)
             if(opt->get_short_circuit() && opt->count() > 0)
                 opt->run_callback();
 
+        for(App_p &sub : subcommands_) {
+            sub->_process_shortcircuits();
+        }
+    }
+
+    /// Read and process an ini file (main app only)
+    void _process_ini() {
         // Process an INI file
         if(config_ptr_ != nullptr) {
             if(*config_ptr_) {
@@ -1311,8 +1318,10 @@ class App {
                 }
             }
         }
+    }
 
-        // Get envname options if not yet passed
+    /// Get envname options if not yet passed. Runs on *all* subcommands.
+    void _process_env() {
         for(const Option_p &opt : options_) {
             if(opt->count() == 0 && !opt->envname_.empty()) {
                 char *buffer = nullptr;
@@ -1338,14 +1347,26 @@ class App {
             }
         }
 
-        // Process callbacks
+        for(App_p &sub : subcommands_) {
+            sub->_process_env();
+        }
+    }
+
+    /// Process callbacks. Runs on *all* subcommands.
+    void _process_callbacks() {
         for(const Option_p &opt : options_) {
             if(opt->count() > 0 && !opt->get_callback_run()) {
                 opt->run_callback();
             }
         }
 
-        // Verify required options
+        for(App_p &sub : subcommands_) {
+            sub->_process_callbacks();
+        }
+    }
+
+    /// Verify required options and cross requirements. Subcommands too (only if selected).
+    void _process_requirements() {
         for(const Option_p &opt : options_) {
             // Exit if a help flag was passed (requirements not required in that case)
             if(_any_help_flag())
@@ -1374,8 +1395,27 @@ class App {
         auto selected_subcommands = get_subcommands();
         if(require_subcommand_min_ > selected_subcommands.size())
             throw RequiredError::Subcommand(require_subcommand_min_);
+        if(require_subcommand_max_ != 0 && require_subcommand_max_ < selected_subcommands.size())
+            throw RequiredError::SubcommandMax(require_subcommand_max_);
 
-        // Convert missing (pairs) to extras (string only)
+        for(App_p &sub : subcommands_) {
+            if(sub->count() > 0)
+                sub->_process_requirements();
+        }
+    }
+
+    /// Process callbacks and such.
+    void _process() {
+        _process_shortcircuits();
+        _process_ini();
+        _process_env();
+        _process_callbacks();
+        _process_requirements();
+    }
+
+    /// Throw an error if anything is left over and should not be.
+    /// Modifies the args to fill in the missing items before throwing.
+    void _process_extras(std::vector<std::string> &args) {
         if(!(allow_extras_ || prefix_command_)) {
             size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
@@ -1384,7 +1424,28 @@ class App {
             }
         }
 
+        for(App_p &sub : subcommands_) {
+            if(sub->count() > 0)
+                sub->_process_extras(args);
+        }
+    }
+
+    /// Internal parse function
+    void _parse(std::vector<std::string> &args) {
+        parsed_++;
+        bool positional_only = false;
+
+        while(!args.empty()) {
+            _parse_single(args, positional_only);
+        }
+
         if(parent_ == nullptr) {
+            _process();
+
+            // Throw error if any items are left over (depending on settings)
+            _process_extras(args);
+
+            // Convert missing (pairs) to extras (string only)
             args = remaining(false);
         }
     }

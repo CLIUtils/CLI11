@@ -1,3 +1,14 @@
+## Version 1.7.0: Parse breakup
+
+The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
+Passing the same subcommand multiple times is better supported.
+
+* Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered.
+* Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on.
+* New error constructor: `RequiredError`: `SubcommandMax`. Hard to access, since subcommands that don't register will become extras.
+* Calling parse multiple times is now officially supported without `clear` (automatic).
+
+
 ## Version 1.6.2: Help-all
 
 This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7. Several smaller fixes.

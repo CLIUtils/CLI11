@@ -64,21 +64,19 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(app.got_subcommand(sub1));
     EXPECT_TRUE(*sub1);
     EXPECT_TRUE(sub1->parsed());
+    EXPECT_EQ(sub1->count(), (size_t)1);
 
     EXPECT_TRUE(app.got_subcommand("sub2"));
     EXPECT_TRUE(app.got_subcommand(sub2));
     EXPECT_TRUE(*sub2);
 
     app.require_subcommand();
-
     run();
 
     app.require_subcommand(2);
-
     run();
 
     app.require_subcommand(1);
-
     EXPECT_THROW(run(), CLI::ExtrasError);
 
     args = {"sub1"};
@@ -90,6 +88,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(*sub1);
     EXPECT_FALSE(*sub2);
     EXPECT_FALSE(sub2->parsed());
+    EXPECT_EQ(sub2->count(), (size_t)0);
 
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
