@@ -200,7 +200,7 @@ class Option : public OptionBase<Option> {
     std::vector<std::function<std::string(std::string &)>> validators_;
 
     /// A list of options that are required with this option
-    std::set<Option *> requires_;
+    std::set<Option *> needs_;
 
     /// A list of options that are excluded with this option
     std::set<Option *> excludes_;
@@ -322,7 +322,7 @@ class Option : public OptionBase<Option> {
 
     /// Sets required options
     Option *needs(Option *opt) {
-        auto tup = requires_.insert(opt);
+        auto tup = needs_.insert(opt);
         if(!tup.second)
             throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
         return this;
@@ -340,6 +340,18 @@ class Option : public OptionBase<Option> {
     template <typename A, typename B, typename... ARG> Option *needs(A opt, B opt1, ARG... args) {
         needs(opt);
         return needs(opt1, args...);
+    }
+
+    /// Remove needs link from an option. Returns true if the option really was in the needs list.
+    bool remove_needs(Option *opt) {
+        auto iterator = std::find(std::begin(needs_), std::end(needs_), opt);
+
+        if(iterator != std::end(needs_)) {
+            needs_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /// Sets excluded options
@@ -367,6 +379,18 @@ class Option : public OptionBase<Option> {
     template <typename A, typename B, typename... ARG> Option *excludes(A opt, B opt1, ARG... args) {
         excludes(opt);
         return excludes(opt1, args...);
+    }
+
+    /// Remove needs link from an option. Returns true if the option really was in the needs list.
+    bool remove_excludes(Option *opt) {
+        auto iterator = std::find(std::begin(excludes_), std::end(excludes_), opt);
+
+        if(iterator != std::end(excludes_)) {
+            excludes_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /// Sets environment variable to read if no option given
@@ -418,7 +442,7 @@ class Option : public OptionBase<Option> {
     std::string get_envname() const { return envname_; }
 
     /// The set of options needed
-    std::set<Option *> get_needs() const { return requires_; }
+    std::set<Option *> get_needs() const { return needs_; }
 
     /// The set of options excluded
     std::set<Option *> get_excludes() const { return excludes_; }

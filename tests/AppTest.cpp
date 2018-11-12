@@ -816,6 +816,34 @@ TEST_F(TApp, RemoveOption) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(TApp, RemoveNeedsLinks) {
+    auto one = app.add_flag("--one");
+    auto two = app.add_flag("--two");
+
+    two->needs(one);
+    one->needs(two);
+
+    EXPECT_TRUE(app.remove_option(one));
+
+    args = {"--two"};
+
+    run();
+}
+
+TEST_F(TApp, RemoveExcludesLinks) {
+    auto one = app.add_flag("--one");
+    auto two = app.add_flag("--two");
+
+    two->excludes(one);
+    one->excludes(two);
+
+    EXPECT_TRUE(app.remove_option(one));
+
+    args = {"--two"};
+
+    run(); // Mostly hoping it does not crash
+}
+
 TEST_F(TApp, FileNotExists) {
     std::string myfile{"TestNonFileNotUsed.txt"};
     ASSERT_NO_THROW(CLI::NonexistentPath(myfile));

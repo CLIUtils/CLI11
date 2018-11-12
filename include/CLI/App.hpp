@@ -781,6 +781,12 @@ class App {
 
     /// Removes an option from the App. Takes an option pointer. Returns true if found and removed.
     bool remove_option(Option *opt) {
+        // Make sure no links exist
+        for(Option_p &op : options_) {
+            op->remove_needs(opt);
+            op->remove_excludes(opt);
+        }
+
         auto iterator =
             std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });
         if(iterator != std::end(options_)) {
@@ -1356,7 +1362,7 @@ class App {
                     throw RequiredError(opt->get_name());
             }
             // Requires
-            for(const Option *opt_req : opt->requires_)
+            for(const Option *opt_req : opt->needs_)
                 if(opt->count() > 0 && opt_req->count() == 0)
                     throw RequiresError(opt->get_name(), opt_req->get_name());
             // Excludes
