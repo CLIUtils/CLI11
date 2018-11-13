@@ -458,6 +458,9 @@ Significant features and/or improvements to the code were contributed by:
 -   [Nathan Hourt](https://github.com/nathanhourt)
 -   [Sean Fisk](https://github.com/seanfisk)
 -   [Stéphane Del Pino](https://github.com/delpinux)
+-   [Mak Kolybabi](https://github.com/mogigoma)
+-   [Paweł Bylica](https://github.com/chfast)
+
 
 ## License
 

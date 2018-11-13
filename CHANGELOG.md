@@ -1,6 +1,6 @@
 ## Version 1.6.2: Help-all
 
-This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7.
+This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7. Several smaller fixes.
 
 * Fixed help-all formatting [#163]
     * Printing help-all on nested command now fixed (App)
@@ -11,11 +11,16 @@ This version fixes some formatting bugs with help-all. It also adds fixes for se
 * Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156]
 * Fixed warning about local variable hiding class member with MSVC [#157]
 * Fixed compile error with default settings on Clang 7 and libc++ [#158]
+* Fixed special case of `--help` on subcommands (general fix planned for 1.7) [#168]
+* Removing an option with links  [#179]
 
 [#156]: https://github.com/CLIUtils/CLI11/issues/156
 [#157]: https://github.com/CLIUtils/CLI11/issues/157
 [#158]: https://github.com/CLIUtils/CLI11/issues/158
 [#163]: https://github.com/CLIUtils/CLI11/pull/163
+[#168]: https://github.com/CLIUtils/CLI11/issues/168
+[#179]: https://github.com/CLIUtils/CLI11/pull/179
+
 
 ## Version 1.6.1: Platform fixes
 
