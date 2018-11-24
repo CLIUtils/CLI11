@@ -438,6 +438,8 @@ struct SubcommandProgram : public TApp {
     int count;
 
     SubcommandProgram() {
+        app.set_help_all_flag("--help-all");
+
         start = app.add_subcommand("start", "Start prog");
         stop = app.add_subcommand("stop", "Stop prog");
 
@@ -539,6 +541,18 @@ TEST_F(SubcommandProgram, HelpOrder) {
 
     args = {"-h", "start"};
     EXPECT_THROW(run(), CLI::CallForHelp);
+}
+
+TEST_F(SubcommandProgram, HelpAllOrder) {
+
+    args = {"--help-all"};
+    EXPECT_THROW(run(), CLI::CallForAllHelp);
+
+    args = {"start", "--help-all"};
+    EXPECT_THROW(run(), CLI::CallForAllHelp);
+
+    args = {"--help-all", "start"};
+    EXPECT_THROW(run(), CLI::CallForAllHelp);
 }
 
 TEST_F(SubcommandProgram, Callbacks) {

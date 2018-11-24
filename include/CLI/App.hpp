@@ -1389,7 +1389,7 @@ class App {
         }
     }
 
-    /// Return True if a help flag detected (checks all parents)
+    /// Return True if a help flag detected (checks all parents) (only run if help called before subcommand)
     bool _any_help_flag() const {
         bool result = false;
         const Option *help_ptr = get_help_ptr();
