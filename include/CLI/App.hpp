@@ -409,8 +409,13 @@ class App {
         // Empty name will simply remove the help flag
         if(!name.empty()) {
             help_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForHelp(); }, description);
-            help_ptr_->short_circuit(true);
             help_ptr_->configurable(false);
+
+            // We could do this:
+            // help_ptr_->short_circuit(true);
+            // But, we have a special override for help flags
+            // and that way all other things (like subcommands)
+            // get filled.
         }
 
         return help_ptr_;
@@ -426,8 +431,13 @@ class App {
         // Empty name will simply remove the help all flag
         if(!name.empty()) {
             help_all_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForAllHelp(); }, description);
-            help_all_ptr_->short_circuit(true);
             help_all_ptr_->configurable(false);
+
+            // We could do this:
+            // help_all_ptr_->short_circuit(true);
+            // But, we have a special override for help flags
+            // and that way all other things (like subcommands)
+            // get filled.
         }
 
         return help_all_ptr_;

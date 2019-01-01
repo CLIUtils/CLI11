@@ -735,3 +735,18 @@ TEST_F(ManySubcommands, Unlimited) {
     run();
     EXPECT_EQ(app.remaining(true), vs_t());
 }
+
+TEST_F(ManySubcommands, HelpFlags) {
+
+    args = {"-h"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"sub2", "-h"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"-h", "sub2"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+}
