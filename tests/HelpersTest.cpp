@@ -356,6 +356,20 @@ TEST(SplitUp, Simple) {
     EXPECT_EQ(oput, result);
 }
 
+TEST(SplitUp, SimpleDifferentQuotes) {
+    std::vector<std::string> oput = {"one", "two three"};
+    std::string orig{R"(one `two three`)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
+}
+
+TEST(SplitUp, SimpleDifferentQuotes2) {
+    std::vector<std::string> oput = {"one", "two three"};
+    std::string orig{R"(one 'two three')"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    EXPECT_EQ(oput, result);
+}
+
 TEST(SplitUp, Layered) {
     std::vector<std::string> output = {R"(one 'two three')"};
     std::string orig{R"("one 'two three'")"};

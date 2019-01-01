@@ -149,17 +149,21 @@ inline std::string remove_underscore(std::string str) {
 }
 
 /// Split a string '"one two" "three"' into 'one two', 'three'
+/// Quote characters can be ` ' or "
 inline std::vector<std::string> split_up(std::string str) {
 
-    std::vector<char> delims = {'\'', '\"'};
+    const std::string delims("\'\"`");
     auto find_ws = [](char ch) { return std::isspace<char>(ch, std::locale()); };
     trim(str);
 
     std::vector<std::string> output;
 
     while(!str.empty()) {
-        if(str[0] == '\'') {
-            auto end = str.find('\'', 1);
+        if(delims.find_first_of(str[0]) != std::string::npos) {
+            auto end = str.find_first_of(str[0], 1);
+            while((end != std::string::npos) && (str[end - 1] == '\\')) { // deal with escaped quotes
+                end = str.find_first_of(str[0], end + 1);
+            }
             if(end != std::string::npos) {
                 output.push_back(str.substr(1, end - 1));
                 str = str.substr(end + 1);
@@ -167,16 +171,6 @@ inline std::vector<std::string> split_up(std::string str) {
                 output.push_back(str.substr(1));
                 str = "";
             }
-        } else if(str[0] == '\"') {
-            auto end = str.find('\"', 1);
-            if(end != std::string::npos) {
-                output.push_back(str.substr(1, end - 1));
-                str = str.substr(end + 1);
-            } else {
-                output.push_back(str.substr(1));
-                str = "";
-            }
-
         } else {
             auto it = std::find_if(std::begin(str), std::end(str), find_ws);
             if(it != std::end(str)) {
@@ -210,7 +204,7 @@ inline std::string fix_newlines(std::string leader, std::string input) {
     return input;
 }
 
-/// Find and replace a subtring with another substring
+/// Find and replace a substring with another substring
 inline std::string find_and_replace(std::string str, std::string from, std::string to) {
 
     size_t start_pos = 0;
