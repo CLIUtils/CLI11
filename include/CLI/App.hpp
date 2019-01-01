@@ -528,7 +528,7 @@ class App {
     }
 #endif
 
-    /// Add set of options (No default, temp refernce, such as an inline set)
+    /// Add set of options (No default, temp reference, such as an inline set)
     template <typename T>
     Option *add_set(std::string name,
                     T &member,                   ///< The selected member of the set
@@ -550,7 +550,7 @@ class App {
         return opt;
     }
 
-    /// Add set of options (No default, non-temp refernce, such as an existing set)
+    /// Add set of options (No default, non-temp reference, such as an existing set)
     template <typename T>
     Option *add_set(std::string name,
                     T &member,                  ///< The selected member of the set
@@ -576,7 +576,7 @@ class App {
     template <typename T>
     Option *add_set(std::string name,
                     T &member,                   ///< The selected member of the set
-                    const std::set<T> &&options, ///< The set of posibilities
+                    const std::set<T> &&options, ///< The set of possibilities
                     std::string description,
                     bool defaulted) {
 
@@ -600,11 +600,11 @@ class App {
         return opt;
     }
 
-    /// Add set of options (with default, L value refernce, such as an existing set)
+    /// Add set of options (with default, L value reference, such as an existing set)
     template <typename T>
     Option *add_set(std::string name,
                     T &member,                  ///< The selected member of the set
-                    const std::set<T> &options, ///< The set of posibilities
+                    const std::set<T> &options, ///< The set of possibilities
                     std::string description,
                     bool defaulted) {
 
@@ -726,6 +726,242 @@ class App {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
                 return detail::to_lower(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        opt->type_name_fn([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
+        if(defaulted) {
+            opt->default_str(member);
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore (no default, R value)
+    Option *add_set_ignore_underscore(std::string name,
+                                      std::string &member,                   ///< The selected member of the set
+                                      const std::set<std::string> &&options, ///< The set of possibilities
+                                      std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
+            member = detail::remove_underscore(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::remove_underscore(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->type_name(typeval);
+
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore (no default, L value)
+    Option *add_set_ignore_underscore(std::string name,
+                                      std::string &member,                  ///< The selected member of the set
+                                      const std::set<std::string> &options, ///< The set of possibilities
+                                      std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            member = detail::remove_underscore(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::remove_underscore(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        opt->type_name_fn([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
+
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore (default, R value)
+    Option *add_set_ignore_underscore(std::string name,
+                                      std::string &member,                   ///< The selected member of the set
+                                      const std::set<std::string> &&options, ///< The set of possibilities
+                                      std::string description,
+                                      bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
+            member = detail::remove_underscore(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::remove_underscore(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->type_name(typeval);
+        if(defaulted) {
+            opt->default_str(member);
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore (default, L value)
+    Option *add_set_ignore_underscore(std::string name,
+                                      std::string &member,                  ///< The selected member of the set
+                                      const std::set<std::string> &options, ///< The set of possibilities
+                                      std::string description,
+                                      bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            member = detail::remove_underscore(res[0]);
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::remove_underscore(val) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        opt->type_name_fn([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
+        if(defaulted) {
+            opt->default_str(member);
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore and case(no default, R value)
+    Option *add_set_ignore_case_underscore(std::string name,
+                                           std::string &member,                   ///< The selected member of the set
+                                           const std::set<std::string> &&options, ///< The set of possibilities
+                                           std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(detail::remove_underscore(res[0]));
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(detail::remove_underscore(val)) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->type_name(typeval);
+
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore and case(no default, L value)
+    Option *add_set_ignore_case_underscore(std::string name,
+                                           std::string &member,                  ///< The selected member of the set
+                                           const std::set<std::string> &options, ///< The set of possibilities
+                                           std::string description = "") {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(detail::remove_underscore(res[0]));
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(detail::remove_underscore(val)) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, false);
+        opt->type_name_fn([&options]() {
+            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
+        });
+
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore and case (default, R value)
+    Option *add_set_ignore_case_underscore(std::string name,
+                                           std::string &member,                   ///< The selected member of the set
+                                           const std::set<std::string> &&options, ///< The set of possibilities
+                                           std::string description,
+                                           bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(detail::remove_underscore(res[0]));
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(detail::remove_underscore(val)) == member;
+            });
+            if(iter == std::end(options))
+                throw ConversionError(member, simple_name);
+            else {
+                member = *iter;
+                return true;
+            }
+        };
+
+        Option *opt = add_option(name, fun, description, defaulted);
+        std::string typeval = detail::type_name<std::string>();
+        typeval += " in {" + detail::join(options) + "}";
+        opt->type_name(typeval);
+        if(defaulted) {
+            opt->default_str(member);
+        }
+        return opt;
+    }
+
+    /// Add set of options, string only, ignore underscore and case (default, L value)
+    Option *add_set_ignore_case_underscore(std::string name,
+                                           std::string &member,                  ///< The selected member of the set
+                                           const std::set<std::string> &options, ///< The set of possibilities
+                                           std::string description,
+                                           bool defaulted) {
+
+        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
+            member = detail::to_lower(detail::remove_underscore(res[0]));
+            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
+                return detail::to_lower(detail::remove_underscore(val)) == member;
             });
             if(iter == std::end(options))
                 throw ConversionError(member, simple_name);
