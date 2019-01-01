@@ -139,6 +139,9 @@ class App {
     /// If true, the program name is not case sensitive INHERITABLE
     bool ignore_case_{false};
 
+    /// If true, the program should ignore underscores INHERITABLE
+    bool ignore_underscore_{false};
+
     /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.  INHERITABLE
     bool fallthrough_{false};
 
@@ -195,6 +198,7 @@ class App {
             allow_config_extras_ = parent_->allow_config_extras_;
             prefix_command_ = parent_->prefix_command_;
             ignore_case_ = parent_->ignore_case_;
+            ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
@@ -256,6 +260,18 @@ class App {
     /// Ignore case. Subcommand inherit value.
     App *ignore_case(bool value = true) {
         ignore_case_ = value;
+        if(parent_ != nullptr) {
+            for(const auto &subc : parent_->subcommands_) {
+                if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
+                    throw OptionAlreadyAdded(subc->name_);
+            }
+        }
+        return this;
+    }
+
+    /// Ignore underscore. Subcommand inherit value.
+    App *ignore_underscore(bool value = true) {
+        ignore_underscore_ = value;
         if(parent_ != nullptr) {
             for(const auto &subc : parent_->subcommands_) {
                 if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
@@ -670,7 +686,7 @@ class App {
     /// Add set of options, string only, ignore case (default, R value)
     Option *add_set_ignore_case(std::string name,
                                 std::string &member,                   ///< The selected member of the set
-                                const std::set<std::string> &&options, ///< The set of posibilities
+                                const std::set<std::string> &&options, ///< The set of possibilities
                                 std::string description,
                                 bool defaulted) {
 
@@ -701,7 +717,7 @@ class App {
     /// Add set of options, string only, ignore case (default, L value)
     Option *add_set_ignore_case(std::string name,
                                 std::string &member,                  ///< The selected member of the set
-                                const std::set<std::string> &options, ///< The set of posibilities
+                                const std::set<std::string> &options, ///< The set of possibilities
                                 std::string description,
                                 bool defaulted) {
 
@@ -1119,6 +1135,9 @@ class App {
     /// Check the status of ignore_case
     bool get_ignore_case() const { return ignore_case_; }
 
+    /// Check the status of ignore_case
+    bool get_ignore_underscore() const { return ignore_underscore_; }
+
     /// Check the status of fallthrough
     bool get_fallthrough() const { return fallthrough_; }
 
@@ -1170,6 +1189,10 @@ class App {
     /// Check the name, case insensitive if set
     bool check_name(std::string name_to_check) const {
         std::string local_name = name_;
+        if(ignore_underscore_) {
+            local_name = detail::remove_underscore(name_);
+            name_to_check = detail::remove_underscore(name_to_check);
+        }
         if(ignore_case_) {
             local_name = detail::to_lower(name_);
             name_to_check = detail::to_lower(name_to_check);
