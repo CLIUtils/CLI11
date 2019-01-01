@@ -994,6 +994,66 @@ TEST_F(TApp, InSetIgnoreCase) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
+TEST_F(TApp, InSetIgnoreCaseLValue) {
+
+    std::set<std::string> options{"one", "Two", "THREE"};
+    std::string choice;
+    app.add_set_ignore_case("-q,--quick", choice, options);
+
+    args = {"--quick", "One"};
+    run();
+    EXPECT_EQ("one", choice);
+
+    args = {"--quick", "two"};
+    run();
+    EXPECT_EQ("Two", choice); // Keeps caps from set
+
+    args = {"--quick", "ThrEE"};
+    run();
+    EXPECT_EQ("THREE", choice); // Keeps caps from set
+
+    options.clear();
+    args = {"--quick", "ThrEE"};
+    run();
+    EXPECT_EQ("THREE", choice); // this will now fail since options was cleared
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    args = {"--quick=one", "--quick=two"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
+TEST_F(TApp, InSetIgnoreCasePointer) {
+
+    std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
+    std::string choice;
+    app.add_set_ignore_case("-q,--quick", choice, *options);
+
+    args = {"--quick", "One"};
+    run();
+    EXPECT_EQ("one", choice);
+
+    args = {"--quick", "two"};
+    run();
+    EXPECT_EQ("Two", choice); // Keeps caps from set
+
+    args = {"--quick", "ThrEE"};
+    run();
+    EXPECT_EQ("THREE", choice); // Keeps caps from set
+
+    delete options;
+    args = {"--quick", "ThrEE"};
+    run();
+    EXPECT_EQ("THREE", choice); // this could cause a seg fault
+
+    args = {"--quick", "four"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    args = {"--quick=one", "--quick=two"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
 TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;

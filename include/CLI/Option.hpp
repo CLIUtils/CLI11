@@ -94,7 +94,7 @@ template <typename CRTP> class OptionBase {
     /// The status of ignore case
     bool get_ignore_case() const { return ignore_case_; }
 
-    /// The status of ignore case
+    /// The status of ignore_underscore
     bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// The status of configurable
@@ -153,7 +153,7 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
         return this;
     }
 
-    /// Ignore the case of the option name
+    /// Ignore underscores in the option name
     OptionDefaults *ignore_underscore(bool value = true) {
         ignore_underscore_ = value;
         return this;
@@ -427,7 +427,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Ignore underscore
+    /// Ignore underscores in the option names
     ///
     /// The template hides the fact that we don't have the definition of App yet.
     /// You are never expected to add an argument to the template here.

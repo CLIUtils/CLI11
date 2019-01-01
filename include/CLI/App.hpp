@@ -1371,7 +1371,7 @@ class App {
     /// Check the status of ignore_case
     bool get_ignore_case() const { return ignore_case_; }
 
-    /// Check the status of ignore_case
+    /// Check the status of ignore_underscore
     bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// Check the status of fallthrough
@@ -1422,7 +1422,7 @@ class App {
     /// Get the name of the current app
     std::string get_name() const { return name_; }
 
-    /// Check the name, case insensitive if set
+    /// Check the name, case insensitive and underscore insensitive if set
     bool check_name(std::string name_to_check) const {
         std::string local_name = name_;
         if(ignore_underscore_) {
