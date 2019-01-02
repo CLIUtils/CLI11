@@ -479,7 +479,7 @@ class Option : public OptionBase<Option> {
     int get_expected() const { return expected_; }
 
     /// \brief The total number of expected values (including the type)
-    /// This is positive if exactly this number is expected, and negitive for at least N values
+    /// This is positive if exactly this number is expected, and negative for at least N values
     ///
     /// v = fabs(size_type*expected)
     /// !MultiOptionPolicy::Throw
@@ -518,7 +518,7 @@ class Option : public OptionBase<Option> {
     /// @name Help tools
     ///@{
 
-    /// \brief Gets a comma seperated list of names.
+    /// \brief Gets a comma separated list of names.
     /// Will include / prefer the positional name if positional is true.
     /// If all_options is false, pick just the most descriptive name to show.
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
@@ -530,7 +530,7 @@ class Option : public OptionBase<Option> {
 
             std::vector<std::string> name_list;
 
-            /// The all list wil never include a positional unless asked or that's the only name.
+            /// The all list will never include a positional unless asked or that's the only name.
             if((positional && pname_.length()) || (snames_.empty() && lnames_.empty()))
                 name_list.push_back(pname_);
 

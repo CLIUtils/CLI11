@@ -471,6 +471,7 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_FALSE(app.get_prefix_command());
     EXPECT_FALSE(app.get_ignore_case());
     EXPECT_FALSE(app.get_ignore_underscore());
+    EXPECT_FALSE(app.get_allow_windows_style_options());
     EXPECT_FALSE(app.get_fallthrough());
     EXPECT_EQ(app.get_footer(), "");
     EXPECT_EQ(app.get_group(), "Subcommands");
@@ -481,6 +482,7 @@ TEST_F(TApp, SubcommandDefaults) {
     app.prefix_command();
     app.ignore_case();
     app.ignore_underscore();
+    app.allow_windows_style_options();
     app.fallthrough();
     app.footer("footy");
     app.group("Stuff");
@@ -493,6 +495,7 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_TRUE(app2->get_prefix_command());
     EXPECT_TRUE(app2->get_ignore_case());
     EXPECT_TRUE(app2->get_ignore_underscore());
+    EXPECT_TRUE(app2->get_allow_windows_style_options());
     EXPECT_TRUE(app2->get_fallthrough());
     EXPECT_EQ(app2->get_footer(), "footy");
     EXPECT_EQ(app2->get_group(), "Stuff");

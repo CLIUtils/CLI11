@@ -115,7 +115,7 @@ inline std::string Formatter::make_footer(const App *app) const {
 
 inline std::string Formatter::make_help(const App *app, std::string name, AppFormatMode mode) const {
 
-    // This immediatly forwards to the make_expanded method. This is done this way so that subcommands can
+    // This immediately forwards to the make_expanded method. This is done this way so that subcommands can
     // have overridden formatters
     if(mode == AppFormatMode::Sub)
         return make_expanded(app);

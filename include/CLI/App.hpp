@@ -38,7 +38,7 @@ namespace CLI {
 #endif
 
 namespace detail {
-enum class Classifer { NONE, POSITIONAL_MARK, SHORT, LONG, SUBCOMMAND };
+enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS, SUBCOMMAND };
 struct AppFriend;
 } // namespace detail
 
@@ -116,7 +116,7 @@ class App {
     /// @name Parsing
     ///@{
 
-    using missing_t = std::vector<std::pair<detail::Classifer, std::string>>;
+    using missing_t = std::vector<std::pair<detail::Classifier, std::string>>;
 
     /// Pair of classifier, string for missing options. (extra detail is removed on returning from parse)
     ///
@@ -144,6 +144,9 @@ class App {
 
     /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.  INHERITABLE
     bool fallthrough_{false};
+
+    /// Allow '/' for options for windows like options INHERITABLE
+    bool allow_windows_style_options_{false};
 
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
@@ -200,6 +203,7 @@ class App {
             ignore_case_ = parent_->ignore_case_;
             ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
+            allow_windows_style_options_ = parent_->allow_windows_style_options_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
             formatter_ = parent_->formatter_;
@@ -251,7 +255,7 @@ class App {
         return this;
     }
 
-    /// Do not parse anything after the first unrecognised option and return
+    /// Do not parse anything after the first unrecognized option and return
     App *prefix_command(bool allow = true) {
         prefix_command_ = allow;
         return this;
@@ -266,6 +270,12 @@ class App {
                     throw OptionAlreadyAdded(subc->name_);
             }
         }
+        return this;
+    }
+
+    /// Ignore case. Subcommand inherit value.
+    App *allow_windows_style_options(bool value = true) {
+        allow_windows_style_options_ = value;
         return this;
     }
 
@@ -1172,42 +1182,33 @@ class App {
     /// the function takes an optional boolean argument specifying if the programName is included in the string to
     /// process
     void parse(std::string commandline, bool program_name_included = false) {
-        detail::trim(commandline);
+
         if(program_name_included) {
-            // try to determine the programName
-            auto esp = commandline.find_first_of(' ', 1);
-            while(!ExistingFile(commandline.substr(0, esp)).empty()) {
-                esp = commandline.find_first_of(' ', esp + 1);
-                if(esp == std::string::npos) {
-                    // if we have reached the end and haven't found a valid file just assume the first argument is the
-                    // program name
-                    esp = commandline.find_first_of(' ', 1);
-                    break;
-                }
-            }
+            auto nstr = detail::split_program_name(commandline);
             if(name_.empty()) {
-                name_ = commandline.substr(0, esp);
-                detail::rtrim(name_);
+                name_ = nstr.first;
             }
-            // strip the program name
-            commandline = commandline.substr(esp + 1);
+            commandline = std::move(nstr.second);
+        } else {
+            detail::trim(commandline);
         }
-        // the first section of code is to deal with quoted arguments after and '='
+        // the first section of code is to deal with quoted arguments after an '='
         if(!commandline.empty()) {
-            size_t offset = commandline.length() - 1;
-            auto qeq = commandline.find_last_of('=', offset);
-            while(qeq != std::string::npos) {
-                if((commandline[qeq + 1] == '\"') || (commandline[qeq + 1] == '\'') || (commandline[qeq + 1] == '`')) {
-                    auto astart = commandline.find_last_of("- \"\'`", qeq - 1);
+            auto escape_detect = [](std::string &str, size_t offset) {
+                auto next = str[offset + 1];
+                if((next == '\"') || (next == '\'') || (next == '`')) {
+                    auto astart = str.find_last_of("-/ \"\'`", offset - 1);
                     if(astart != std::string::npos) {
-                        if(commandline[astart] == '-') {
-                            commandline[qeq] = ' '; // interpret this a space so the split_up works properly
-                            offset = (astart == 0) ? 0 : (astart - 1);
+                        if(str[astart] == (str[offset] == '=') ? '-' : '/') {
+                            str[offset] = ' '; // interpret this a space so the split_up works properly
                         }
                     }
                 }
-                offset = qeq - 1;
-                qeq = commandline.find_last_of('=', offset);
+                return offset + 1;
+            };
+            commandline = detail::find_and_modify(commandline, "=", escape_detect);
+            if(allow_windows_style_options_) {
+                commandline = detail::find_and_modify(commandline, ":", escape_detect);
             }
         }
 
@@ -1339,8 +1340,8 @@ class App {
         return this;
     }
 
-    /// Produce a string that could be read in as a config of the current values of the App. Set default_also to include
-    /// default arguments. Prefix will add a string to the beginning of each option.
+    /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
+    /// include default arguments. Prefix will add a string to the beginning of each option.
     std::string config_to_str(bool default_also = false, bool write_description = false) const {
         return config_formatter_->to_config(this, default_also, write_description, "");
     }
@@ -1432,6 +1433,9 @@ class App {
     /// Check the status of fallthrough
     bool get_fallthrough() const { return fallthrough_; }
 
+    /// Check the status of the allow windows style options
+    bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
+
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
 
@@ -1512,7 +1516,7 @@ class App {
     /// This returns the missing options from the current subcommand
     std::vector<std::string> remaining(bool recurse = false) const {
         std::vector<std::string> miss_list;
-        for(const std::pair<detail::Classifer, std::string> &miss : missing_) {
+        for(const std::pair<detail::Classifier, std::string> &miss : missing_) {
             miss_list.push_back(std::get<1>(miss));
         }
 
@@ -1526,11 +1530,11 @@ class App {
         return miss_list;
     }
 
-    /// This returns the number of remaining options, minus the -- seperator
+    /// This returns the number of remaining options, minus the -- separator
     size_t remaining_size(bool recurse = false) const {
         auto count = static_cast<size_t>(std::count_if(
-            std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifer, std::string> &val) {
-                return val.first != detail::Classifer::POSITIONAL_MARK;
+            std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifier, std::string> &val) {
+                return val.first != detail::Classifier::POSITIONAL_MARK;
             }));
         if(recurse) {
             for(const App_p &sub : subcommands_) {
@@ -1582,18 +1586,20 @@ class App {
     }
 
     /// Selects a Classifier enum based on the type of the current argument
-    detail::Classifer _recognize(const std::string &current) const {
+    detail::Classifier _recognize(const std::string &current) const {
         std::string dummy1, dummy2;
 
         if(current == "--")
-            return detail::Classifer::POSITIONAL_MARK;
+            return detail::Classifier::POSITIONAL_MARK;
         if(_valid_subcommand(current))
-            return detail::Classifer::SUBCOMMAND;
+            return detail::Classifier::SUBCOMMAND;
         if(detail::split_long(current, dummy1, dummy2))
-            return detail::Classifer::LONG;
+            return detail::Classifier::LONG;
         if(detail::split_short(current, dummy1, dummy2))
-            return detail::Classifer::SHORT;
-        return detail::Classifer::NONE;
+            return detail::Classifier::SHORT;
+        if((allow_windows_style_options_) && (detail::split_windows(current, dummy1, dummy2)))
+            return detail::Classifier::WINDOWS;
+        return detail::Classifier::NONE;
     }
 
     // The parse function is now broken into several parts, and part of process
@@ -1800,7 +1806,7 @@ class App {
             // If the option was not present
             if(get_allow_config_extras())
                 // Should we worry about classifying the extras properly?
-                missing_.emplace_back(detail::Classifer::NONE, item.fullname());
+                missing_.emplace_back(detail::Classifier::NONE, item.fullname());
             return false;
         }
 
@@ -1820,29 +1826,27 @@ class App {
         return true;
     }
 
-    /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing from
-    /// master
+    /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing
+    /// from master
     void _parse_single(std::vector<std::string> &args, bool &positional_only) {
 
-        detail::Classifer classifer = positional_only ? detail::Classifer::NONE : _recognize(args.back());
-        switch(classifer) {
-        case detail::Classifer::POSITIONAL_MARK:
-            missing_.emplace_back(classifer, args.back());
+        detail::Classifier classifier = positional_only ? detail::Classifier::NONE : _recognize(args.back());
+        switch(classifier) {
+        case detail::Classifier::POSITIONAL_MARK:
+            missing_.emplace_back(classifier, args.back());
             args.pop_back();
             positional_only = true;
             break;
-        case detail::Classifer::SUBCOMMAND:
+        case detail::Classifier::SUBCOMMAND:
             _parse_subcommand(args);
             break;
-        case detail::Classifer::LONG:
+        case detail::Classifier::LONG:
+        case detail::Classifier::SHORT:
+        case detail::Classifier::WINDOWS:
             // If already parsed a subcommand, don't accept options_
-            _parse_arg(args, true);
+            _parse_arg(args, classifier);
             break;
-        case detail::Classifer::SHORT:
-            // If already parsed a subcommand, don't accept options_
-            _parse_arg(args, false);
-            break;
-        case detail::Classifer::NONE:
+        case detail::Classifier::NONE:
             // Probably a positional or something for a parent (sub)command
             _parse_positional(args);
         }
@@ -1879,11 +1883,11 @@ class App {
             return parent_->_parse_positional(args);
         else {
             args.pop_back();
-            missing_.emplace_back(detail::Classifer::NONE, positional);
+            missing_.emplace_back(detail::Classifier::NONE, positional);
 
             if(prefix_command_) {
                 while(!args.empty()) {
-                    missing_.emplace_back(detail::Classifer::NONE, args.back());
+                    missing_.emplace_back(detail::Classifier::NONE, args.back());
                     args.pop_back();
                 }
             }
@@ -1913,9 +1917,7 @@ class App {
     }
 
     /// Parse a short (false) or long (true) argument, must be at the top of the list
-    void _parse_arg(std::vector<std::string> &args, bool second_dash) {
-
-        detail::Classifer current_type = second_dash ? detail::Classifer::LONG : detail::Classifer::SHORT;
+    void _parse_arg(std::vector<std::string> &args, detail::Classifier current_type) {
 
         std::string current = args.back();
 
@@ -1923,23 +1925,41 @@ class App {
         std::string value;
         std::string rest;
 
-        if(second_dash) {
+        switch(current_type) {
+        case detail::Classifier::LONG:
             if(!detail::split_long(current, name, value))
                 throw HorribleError("Long parsed but missing (you should not see this):" + args.back());
-        } else {
+            break;
+        case detail::Classifier::SHORT:
             if(!detail::split_short(current, name, rest))
                 throw HorribleError("Short parsed but missing! You should not see this");
+            break;
+        case detail::Classifier::WINDOWS:
+            if(!detail::split_windows(current, name, value))
+                throw HorribleError("windows option parsed but missing! You should not see this");
+            break;
+        default:
+            throw HorribleError("parsing got called with invalid option! You should not see this");
         }
 
-        auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name, second_dash](const Option_p &opt) {
-            return second_dash ? opt->check_lname(name) : opt->check_sname(name);
+        auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name, current_type](const Option_p &opt) {
+            switch(current_type) {
+            case detail::Classifier::LONG:
+                return opt->check_lname(name);
+            case detail::Classifier::SHORT:
+                return opt->check_sname(name);
+            case detail::Classifier::WINDOWS:
+                return opt->check_lname(name) || opt->check_sname(name);
+            default:
+                return false;
+            }
         });
 
         // Option not found
         if(op_ptr == std::end(options_)) {
             // If a subcommand, try the master command
             if(parent_ != nullptr && fallthrough_)
-                return parent_->_parse_arg(args, second_dash);
+                return parent_->_parse_arg(args, current_type);
             // Otherwise, add to missing
             else {
                 args.pop_back();
@@ -1981,7 +2001,7 @@ class App {
 
         // Unlimited vector parser
         if(num < 0) {
-            while(!args.empty() && _recognize(args.back()) == detail::Classifer::NONE) {
+            while(!args.empty() && _recognize(args.back()) == detail::Classifier::NONE) {
                 if(collected >= -num) {
                     // We could break here for allow extras, but we don't
 
@@ -1996,7 +2016,7 @@ class App {
             }
 
             // Allow -- to end an unlimited list and "eat" it
-            if(!args.empty() && _recognize(args.back()) == detail::Classifer::POSITIONAL_MARK)
+            if(!args.empty() && _recognize(args.back()) == detail::Classifier::POSITIONAL_MARK)
                 args.pop_back();
 
         } else {

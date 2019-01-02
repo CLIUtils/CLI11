@@ -26,12 +26,28 @@ inline bool split_short(const std::string &current, std::string &name, std::stri
 // Returns false if not a long option. Otherwise, sets opt name and other side of = and returns true
 inline bool split_long(const std::string &current, std::string &name, std::string &value) {
     if(current.size() > 2 && current.substr(0, 2) == "--" && valid_first_char(current[2])) {
-        auto loc = current.find("=");
+        auto loc = current.find_first_of('=');
         if(loc != std::string::npos) {
             name = current.substr(2, loc - 2);
             value = current.substr(loc + 1);
         } else {
             name = current.substr(2);
+            value = "";
+        }
+        return true;
+    } else
+        return false;
+}
+
+// Returns false if not a windows style option. Otherwise, sets opt name and value and returns true
+inline bool split_windows(const std::string &current, std::string &name, std::string &value) {
+    if(current.size() > 1 && current[0] == '/' && valid_first_char(current[1])) {
+        auto loc = current.find_first_of(':');
+        if(loc != std::string::npos) {
+            name = current.substr(1, loc - 1);
+            value = current.substr(loc + 1);
+        } else {
+            name = current.substr(1);
             value = "";
         }
         return true;
