@@ -750,3 +750,30 @@ TEST_F(ManySubcommands, HelpFlags) {
 
     EXPECT_THROW(run(), CLI::CallForHelp);
 }
+
+TEST_F(ManySubcommands, MaxCommands) {
+
+    app.require_subcommand(2);
+
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    // The extra subcommand counts as an extra
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(sub2->remaining().size(), 1);
+
+    // Currently, setting sub2 to throw causes an extras error
+    // In the future, would passing on up to app's extras be better?
+
+    app.allow_extras(false);
+    sub1->allow_extras(false);
+    sub2->allow_extras(false);
+
+    args = {"sub1", "sub2"};
+
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}

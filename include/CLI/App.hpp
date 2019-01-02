@@ -1404,8 +1404,8 @@ class App {
         auto selected_subcommands = get_subcommands();
         if(require_subcommand_min_ > selected_subcommands.size())
             throw RequiredError::Subcommand(require_subcommand_min_);
-        if(require_subcommand_max_ != 0 && require_subcommand_max_ < selected_subcommands.size())
-            throw RequiredError::SubcommandMax(require_subcommand_max_);
+
+        // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
         for(App_p &sub : subcommands_) {
             if(sub->count() > 0)

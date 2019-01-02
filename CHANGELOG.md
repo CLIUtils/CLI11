@@ -5,8 +5,8 @@ Passing the same subcommand multiple times is better supported.
 
 * Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered.
 * Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on.
-* New error constructor: `RequiredError`: `SubcommandMax`. Hard to access, since subcommands that don't register will become extras.
 * Calling parse multiple times is now officially supported without `clear` (automatic).
+* Dropped the mostly undocumented `short_curcuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly.
 
 
 ## Version 1.6.2: Help-all
