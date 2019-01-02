@@ -410,12 +410,6 @@ class App {
         if(!name.empty()) {
             help_ptr_ = add_flag(name, description);
             help_ptr_->configurable(false);
-
-            // We could do this:
-            // help_ptr_->short_circuit(true);
-            // But, we have a special override for help flags
-            // and that way all other things (like subcommands)
-            // get filled.
         }
 
         return help_ptr_;
@@ -432,12 +426,6 @@ class App {
         if(!name.empty()) {
             help_all_ptr_ = add_flag(name, description);
             help_all_ptr_->configurable(false);
-
-            // We could do this:
-            // help_all_ptr_->short_circuit(true);
-            // But, we have a special override for help flags
-            // and that way all other things (like subcommands)
-            // get filled.
         }
 
         return help_all_ptr_;
@@ -1299,17 +1287,6 @@ class App {
 
     // The parse function is now broken into several parts, and part of process
 
-    /// Collect and process all shortcircuits, runs on subcommands too.
-    void _process_shortcircuits() {
-        for(const Option_p &opt : options_)
-            if(opt->get_short_circuit() && opt->count() > 0)
-                opt->run_callback();
-
-        for(App_p &sub : subcommands_) {
-            sub->_process_shortcircuits();
-        }
-    }
-
     /// Read and process an ini file (main app only)
     void _process_ini() {
         // Process an INI file
@@ -1438,7 +1415,6 @@ class App {
 
     /// Process callbacks and such.
     void _process() {
-        _process_shortcircuits();
         _process_ini();
         _process_env();
         _process_callbacks();
