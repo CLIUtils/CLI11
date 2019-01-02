@@ -408,7 +408,7 @@ class App {
 
         // Empty name will simply remove the help flag
         if(!name.empty()) {
-            help_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForHelp(); }, description);
+            help_ptr_ = add_flag(name, description);
             help_ptr_->configurable(false);
 
             // We could do this:
@@ -430,7 +430,7 @@ class App {
 
         // Empty name will simply remove the help all flag
         if(!name.empty()) {
-            help_all_ptr_ = add_flag_function(name, [](size_t) -> void { throw CallForAllHelp(); }, description);
+            help_all_ptr_ = add_flag(name, description);
             help_all_ptr_->configurable(false);
 
             // We could do this:
@@ -1375,12 +1375,34 @@ class App {
         }
     }
 
+    /// Run help flag processing if any are found.
+    ///
+    /// The flags allow recursive calls to remember if there was a help flag on a parent.
+    void _process_help_flags(bool trigger_help = false, bool trigger_all_help = false) const {
+        const Option *help_ptr = get_help_ptr();
+        const Option *help_all_ptr = get_help_all_ptr();
+
+        if(help_ptr != nullptr && help_ptr->count() > 0)
+            trigger_help = true;
+        if(help_all_ptr != nullptr && help_all_ptr->count() > 0)
+            trigger_all_help = true;
+
+        // If there were parsed subcommands, call those. First subcommand wins if there are multiple ones.
+        if(!parsed_subcommands_.empty()) {
+            for(const App *sub : parsed_subcommands_)
+                sub->_process_help_flags(trigger_help, trigger_all_help);
+
+            // Only the final subcommand should call for help. All help wins over help.
+        } else if(trigger_all_help) {
+            throw CallForAllHelp();
+        } else if(trigger_help) {
+            throw CallForHelp();
+        }
+    }
+
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements() {
         for(const Option_p &opt : options_) {
-            // Exit if a help flag was passed (requirements not required in that case)
-            if(_any_help_flag())
-                break;
 
             // Required or partially filled
             if(opt->get_required() || opt->count() != 0) {
@@ -1420,6 +1442,7 @@ class App {
         _process_ini();
         _process_env();
         _process_callbacks();
+        _process_help_flags();
         _process_requirements();
     }
 
@@ -1458,21 +1481,6 @@ class App {
             // Convert missing (pairs) to extras (string only)
             args = remaining(false);
         }
-    }
-
-    /// Return True if a help flag detected (checks all parents) (only run if help called before subcommand)
-    bool _any_help_flag() const {
-        bool result = false;
-        const Option *help_ptr = get_help_ptr();
-        const Option *help_all_ptr = get_help_all_ptr();
-        if(help_ptr != nullptr && help_ptr->count() > 0)
-            result = true;
-        if(help_all_ptr != nullptr && help_all_ptr->count() > 0)
-            result = true;
-        if(parent_ != nullptr)
-            return result || parent_->_any_help_flag();
-        else
-            return result;
     }
 
     /// Parse one config param, return false if not found in any subcommand, remove if it is
