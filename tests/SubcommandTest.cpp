@@ -64,21 +64,19 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(app.got_subcommand(sub1));
     EXPECT_TRUE(*sub1);
     EXPECT_TRUE(sub1->parsed());
+    EXPECT_EQ(sub1->count(), (size_t)1);
 
     EXPECT_TRUE(app.got_subcommand("sub2"));
     EXPECT_TRUE(app.got_subcommand(sub2));
     EXPECT_TRUE(*sub2);
 
     app.require_subcommand();
-
     run();
 
     app.require_subcommand(2);
-
     run();
 
     app.require_subcommand(1);
-
     EXPECT_THROW(run(), CLI::ExtrasError);
 
     args = {"sub1"};
@@ -90,6 +88,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(*sub1);
     EXPECT_FALSE(*sub2);
     EXPECT_FALSE(sub2->parsed());
+    EXPECT_EQ(sub2->count(), (size_t)0);
 
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
@@ -735,4 +734,46 @@ TEST_F(ManySubcommands, Unlimited) {
 
     run();
     EXPECT_EQ(app.remaining(true), vs_t());
+}
+
+TEST_F(ManySubcommands, HelpFlags) {
+
+    args = {"-h"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"sub2", "-h"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    args = {"-h", "sub2"};
+
+    EXPECT_THROW(run(), CLI::CallForHelp);
+}
+
+TEST_F(ManySubcommands, MaxCommands) {
+
+    app.require_subcommand(2);
+
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    // The extra subcommand counts as an extra
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(sub2->remaining().size(), 1);
+
+    // Currently, setting sub2 to throw causes an extras error
+    // In the future, would passing on up to app's extras be better?
+
+    app.allow_extras(false);
+    sub1->allow_extras(false);
+    sub2->allow_extras(false);
+
+    args = {"sub1", "sub2"};
+
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
 }

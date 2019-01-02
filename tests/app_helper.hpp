@@ -16,6 +16,7 @@ struct TApp : public ::testing::Test {
     input_t args;
 
     void run() {
+        // It is okay to re-parse - clear is called automatically before a parse.
         input_t newargs = args;
         std::reverse(std::begin(newargs), std::end(newargs));
         app.parse(newargs);

@@ -1520,3 +1520,25 @@ TEST_F(TApp, EmptyOptionFail) {
     args = {"--each", "that"};
     run();
 }
+
+TEST_F(TApp, BeforeRequirements) {
+    app.add_flag_function("-a", [](size_t) { throw CLI::Success(); });
+    app.add_flag_function("-b", [](size_t) { throw CLI::CallForHelp(); });
+
+    args = {"extra"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+    args = {"-a", "extra"};
+    EXPECT_THROW(run(), CLI::Success);
+
+    args = {"-b", "extra"};
+    EXPECT_THROW(run(), CLI::CallForHelp);
+
+    // These run in definition order.
+    args = {"-a", "-b", "extra"};
+    EXPECT_THROW(run(), CLI::Success);
+
+    // Currently, the original order is not preserved when calling callbacks
+    // args = {"-b", "-a", "extra"};
+    // EXPECT_THROW(run(), CLI::CallForHelp);
+}
