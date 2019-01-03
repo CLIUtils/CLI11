@@ -48,6 +48,20 @@ TEST_F(TApp, AddingExistingWithCaseAfter2) {
     EXPECT_THROW(cat->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
+TEST_F(TApp, AddingExistingWithUnderscoreAfter) {
+    auto count = app.add_flag("--underscore");
+    app.add_flag("--under_score");
+
+    EXPECT_THROW(count->ignore_underscore(), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AddingExistingWithUnderscoreAfter2) {
+    auto count = app.add_flag("--under_score");
+    app.add_flag("--underscore");
+
+    EXPECT_THROW(count->ignore_underscore(), CLI::OptionAlreadyAdded);
+}
+
 TEST_F(TApp, AddingMultipleInfPositionals) {
     std::vector<std::string> one, two;
     app.add_option("one", one);
