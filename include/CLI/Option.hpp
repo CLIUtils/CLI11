@@ -45,6 +45,9 @@ template <typename CRTP> class OptionBase {
     /// Ignore the case when matching (option, not value)
     bool ignore_case_{false};
 
+    /// Ignore underscores when matching (option, not value)
+    bool ignore_underscore_{false};
+
     /// Allow this option to be given in a configuration file
     bool configurable_{true};
 
@@ -56,6 +59,7 @@ template <typename CRTP> class OptionBase {
         other->group(group_);
         other->required(required_);
         other->ignore_case(ignore_case_);
+        other->ignore_underscore(ignore_underscore_);
         other->configurable(configurable_);
         other->multi_option_policy(multi_option_policy_);
     }
@@ -89,6 +93,9 @@ template <typename CRTP> class OptionBase {
 
     /// The status of ignore case
     bool get_ignore_case() const { return ignore_case_; }
+
+    /// The status of ignore_underscore
+    bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// The status of configurable
     bool get_configurable() const { return configurable_; }
@@ -143,6 +150,12 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
     /// Ignore the case of the option name
     OptionDefaults *ignore_case(bool value = true) {
         ignore_case_ = value;
+        return this;
+    }
+
+    /// Ignore underscores in the option name
+    OptionDefaults *ignore_underscore(bool value = true) {
+        ignore_underscore_ = value;
         return this;
     }
 };
@@ -411,6 +424,20 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Ignore underscores in the option names
+    ///
+    /// The template hides the fact that we don't have the definition of App yet.
+    /// You are never expected to add an argument to the template here.
+    template <typename T = App> Option *ignore_underscore(bool value = true) {
+        ignore_underscore_ = value;
+        auto *parent = dynamic_cast<T *>(parent_);
+        for(const Option_p &opt : parent->options_)
+            if(opt.get() != this && *opt == *this)
+                throw OptionAlreadyAdded(opt->get_name(true, true));
+
+        return this;
+    }
+
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
 
@@ -602,7 +629,7 @@ class Option : public OptionBase<Option> {
         for(const std::string &lname : lnames_)
             if(other.check_lname(lname))
                 return true;
-        // We need to do the inverse, just in case we are ignore_case
+        // We need to do the inverse, just in case we are ignore_case or ignore underscore
         for(const std::string &sname : other.snames_)
             if(check_sname(sname))
                 return true;
@@ -625,13 +652,17 @@ class Option : public OptionBase<Option> {
                 local_pname = detail::to_lower(local_pname);
                 name = detail::to_lower(name);
             }
+            if(ignore_underscore_) {
+                local_pname = detail::remove_underscore(local_pname);
+                name = detail::remove_underscore(name);
+            }
             return name == local_pname;
         }
     }
 
     /// Requires "-" to be removed from string
     bool check_sname(std::string name) const {
-        if(ignore_case_) {
+        if(ignore_case_) { // there can be no extra underscores in check_sname
             name = detail::to_lower(name);
             return std::find_if(std::begin(snames_), std::end(snames_), [&name](std::string local_sname) {
                        return detail::to_lower(local_sname) == name;
@@ -643,9 +674,22 @@ class Option : public OptionBase<Option> {
     /// Requires "--" to be removed from string
     bool check_lname(std::string name) const {
         if(ignore_case_) {
-            name = detail::to_lower(name);
+            if(ignore_underscore_) {
+                name = detail::to_lower(detail::remove_underscore(name));
+                return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
+                           return detail::to_lower(detail::remove_underscore(local_sname)) == name;
+                       }) != std::end(lnames_);
+            } else {
+                name = detail::to_lower(name);
+                return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
+                           return detail::to_lower(local_sname) == name;
+                       }) != std::end(lnames_);
+            }
+
+        } else if(ignore_underscore_) {
+            name = detail::remove_underscore(name);
             return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
-                       return detail::to_lower(local_sname) == name;
+                       return detail::remove_underscore(local_sname) == name;
                    }) != std::end(lnames_);
         } else
             return std::find(std::begin(lnames_), std::end(lnames_), name) != std::end(lnames_);

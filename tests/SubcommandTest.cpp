@@ -530,6 +530,43 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 }
 
+TEST_F(SubcommandProgram, UnderscoreCheck) {
+    args = {"start_"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+    args = {"start"};
+    run();
+
+    start->ignore_underscore();
+    run();
+
+    args = {"_start_"};
+    run();
+}
+
+TEST_F(TApp, SubcomInheritUnderscoreCheck) {
+    app.ignore_underscore();
+    auto sub1 = app.add_subcommand("sub_option1");
+    auto sub2 = app.add_subcommand("sub_option2");
+
+    run();
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ((size_t)2, app.get_subcommands({}).size());
+    EXPECT_EQ((size_t)1, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size());
+
+    args = {"suboption1"};
+    run();
+    EXPECT_EQ(sub1, app.get_subcommands().at(0));
+    EXPECT_EQ((size_t)1, app.get_subcommands().size());
+
+    app.clear();
+    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+
+    args = {"_suboption2"};
+    run();
+    EXPECT_EQ(sub2, app.get_subcommands().at(0));
+}
+
 TEST_F(SubcommandProgram, HelpOrder) {
 
     args = {"-h"};

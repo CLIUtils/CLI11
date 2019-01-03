@@ -142,6 +142,12 @@ inline std::string to_lower(std::string str) {
     return str;
 }
 
+/// remove underscores from a string
+inline std::string remove_underscore(std::string str) {
+    str.erase(std::remove(std::begin(str), std::end(str), '_'), std::end(str));
+    return str;
+}
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
 inline std::vector<std::string> split_up(std::string str) {
 

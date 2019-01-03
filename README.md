@@ -162,7 +162,7 @@ try {
 }
 ```
 
-The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). You should not assume that the option values have been set inside the catch block; for example, help flags intentionally short-circuit all other processing for speed and to ensure required options and the like do not interfere. 
+The try/catch block ensures that `-h,--help` or a parse error will exit with the correct return code (selected from `CLI::ExitCodes`). (The return here should be inside `main`). You should not assume that the option values have been set inside the catch block; for example, help flags intentionally short-circuit all other processing for speed and to ensure required options and the like do not interfere.
 
 </p></details>
 </br>
@@ -197,6 +197,10 @@ app.add_set(option_name,
 
 app.add_set_ignore_case(... // String only
 
+app.add_set_ignore_underscore(... // String only
+
+app.add_set_ignore_case_underscore(... // String only
+
 App* subcom = app.add_subcommand(name, description);
 ```
 
@@ -212,7 +216,7 @@ On a compiler that supports C++17's `__has_include`, you can also use `std::opti
 -   `"this"` Can only be passed positionally
 -   `"-a,-b,-c"` No limit to the number of non-positional option names
 
-The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup. 
+The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup.
 
 #### Option options
 
@@ -227,6 +231,7 @@ Before parsing, you can set the following options:
 -   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
+-   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with optionone.  This does not apply to short form options since they only have one character
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
@@ -279,6 +284,8 @@ Multiple subcommands are allowed, to allow [`Click`][click] like series of comma
 There are several options that are supported on the main app and subcommands. These are:
 
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
+-   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
+
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
@@ -340,7 +347,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `multi_option_policy`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_underscore`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();
@@ -351,7 +358,7 @@ The default settings for options are inherited to subcommands, as well.
 
 ### Formatting
 
-The job of formatting help printouts is delegated to a formatter callable object on Apps and Options. You are free to replace either formatter by calling `formatter(fmt)` on an `App`, where fmt is any copyable callable with the correct signature. 
+The job of formatting help printouts is delegated to a formatter callable object on Apps and Options. You are free to replace either formatter by calling `formatter(fmt)` on an `App`, where fmt is any copyable callable with the correct signature.
 CLI11 comes with a default App formatter functional, `Formatter`. It is customizable; you can set `label(key, value)` to replace the default labels like `REQUIRED`, and `column_width(n)` to set the width of the columns before you add the functional to the app or option. You can also override almost any stage of the formatting process in a subclass of either formatter. If you want to make a new formatter from scratch, you can do
 that too; you just need to implement the correct signature. The first argument is a const pointer to the in question. The formatter will get a `std::string` usage name as the second option, and a `AppFormatMode` mode for the final option. It should return a `std::string`.
 
@@ -387,7 +394,7 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
 
 ### Utilities
 
-There are a few other utilities that are often useful in CLI programming. These are in separate headers, and do not appear in `CLI11.hpp`, but are completely independent and can be used as needed. The `Timer`/`AutoTimer` class allows you to easily time a block of code, with custom print output. 
+There are a few other utilities that are often useful in CLI programming. These are in separate headers, and do not appear in `CLI11.hpp`, but are completely independent and can be used as needed. The `Timer`/`AutoTimer` class allows you to easily time a block of code, with custom print output.
 
 ```cpp
 {
