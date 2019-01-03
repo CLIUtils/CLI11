@@ -264,7 +264,7 @@ everything after that is positional only.
 
 ### Subcommands
 
-Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
+Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. `->ignore_underscore()` is similar, but for underscores. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
 case).
 
 If you want to require that at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well. If you give two arguments, that sets the min and max number allowed.
@@ -345,7 +345,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 ### Inheriting defaults
 
-Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
+Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
 Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_underscore`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
@@ -467,6 +467,8 @@ Significant features and/or improvements to the code were contributed by:
 -   [Stéphane Del Pino](https://github.com/delpinux)
 -   [Mak Kolybabi](https://github.com/mogigoma)
 -   [Paweł Bylica](https://github.com/chfast)
+-   [Philip Top](https://github.com/phlptp)
+-   [almikhayl](https://github.com/almikhayl)
 
 
 ## License
