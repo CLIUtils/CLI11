@@ -434,7 +434,6 @@ class Option : public OptionBase<Option> {
     template <typename T = App> Option *ignore_underscore(bool value = true) {
         ignore_underscore_ = value;
         auto *parent = dynamic_cast<T *>(parent_);
-
         for(const Option_p &opt : parent->options_)
             if(opt.get() != this && *opt == *this)
                 throw OptionAlreadyAdded(opt->get_name(true, true));
