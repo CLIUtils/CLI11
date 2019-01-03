@@ -994,6 +994,7 @@ TEST_F(TApp, InSetIgnoreCase) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
+/*
 TEST_F(TApp, InSetIgnoreCaseLValue) {
 
     std::set<std::string> options{"one", "Two", "THREE"};
@@ -1053,7 +1054,7 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
     args = {"--quick=one", "--quick=two"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
-
+*/
 TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;
