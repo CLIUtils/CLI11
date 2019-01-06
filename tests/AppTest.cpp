@@ -38,6 +38,18 @@ TEST_F(TApp, DashedOptions) {
     EXPECT_EQ((size_t)2, app.count("--that"));
 }
 
+TEST_F(TApp, DashedOptionsSingleString) {
+    app.add_flag("-c");
+    app.add_flag("--q");
+    app.add_flag("--this,--that");
+
+    app.parse("-c --q --this --that");
+    EXPECT_EQ((size_t)1, app.count("-c"));
+    EXPECT_EQ((size_t)1, app.count("--q"));
+    EXPECT_EQ((size_t)2, app.count("--this"));
+    EXPECT_EQ((size_t)2, app.count("--that"));
+}
+
 TEST_F(TApp, OneFlagRef) {
     int ref;
     app.add_flag("-c,--count", ref);
@@ -58,6 +70,16 @@ TEST_F(TApp, OneString) {
     EXPECT_EQ(str, "mystring");
 }
 
+TEST_F(TApp, OneStringSingleStringInput) {
+    std::string str;
+    app.add_option("-s,--string", str);
+
+    app.parse("--string mystring");
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
 TEST_F(TApp, OneStringEqualVersion) {
     std::string str;
     app.add_option("-s,--string", str);
@@ -66,6 +88,84 @@ TEST_F(TApp, OneStringEqualVersion) {
     EXPECT_EQ((size_t)1, app.count("-s"));
     EXPECT_EQ((size_t)1, app.count("--string"));
     EXPECT_EQ(str, "mystring");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleString) {
+    std::string str;
+    app.add_option("-s,--string", str);
+    app.parse("--string=mystring");
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuoted) {
+    std::string str;
+    app.add_option("-s,--string", str);
+    app.parse("--string=\"this is my quoted string\"");
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "this is my quoted string");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultiple) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse("--string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`");
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleInMiddle) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse(R"raw(--string="this is my quoted string" -t "qst\"ring 2" -m=`"quoted string"`")raw");
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qst\"ring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedEscapedCharacters) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse(R"raw(--string="this is my \"quoted\" string" -t 'qst\'ring 2' -m=`"quoted\` string"`")raw");
+    EXPECT_EQ(str, "this is my \"quoted\" string");
+    EXPECT_EQ(str2, "qst\'ring 2");
+    EXPECT_EQ(str3, "\"quoted` string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqual) {
+    std::string str, str2, str3, str4;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.add_option("-j,--jstr", str4);
+    app.parse("--string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"` --jstr=Unquoted");
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+    EXPECT_EQ(str4, "Unquoted");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqualAndProgram) {
+    std::string str, str2, str3, str4;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.add_option("-j,--jstr", str4);
+    app.parse("program --string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"` --jstr=Unquoted",
+              true);
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+    EXPECT_EQ(str4, "Unquoted");
 }
 
 TEST_F(TApp, TogetherInt) {
@@ -107,6 +207,15 @@ TEST_F(TApp, DefaultStringAgain) {
     EXPECT_EQ(str, "previous");
 }
 
+TEST_F(TApp, DefaultStringAgainEmpty) {
+    std::string str = "previous";
+    app.add_option("-s,--string", str);
+    app.parse("   ");
+    EXPECT_EQ((size_t)0, app.count("-s"));
+    EXPECT_EQ((size_t)0, app.count("--string"));
+    EXPECT_EQ(str, "previous");
+}
+
 TEST_F(TApp, DualOptions) {
 
     std::string str = "previous";
@@ -131,6 +240,30 @@ TEST_F(TApp, LotsOfFlags) {
 
     args = {"-a", "-b", "-aA"};
     run();
+    EXPECT_EQ((size_t)2, app.count("-a"));
+    EXPECT_EQ((size_t)1, app.count("-b"));
+    EXPECT_EQ((size_t)1, app.count("-A"));
+}
+
+TEST_F(TApp, LotsOfFlagsSingleString) {
+
+    app.add_flag("-a");
+    app.add_flag("-A");
+    app.add_flag("-b");
+
+    app.parse("-a -b -aA");
+    EXPECT_EQ((size_t)2, app.count("-a"));
+    EXPECT_EQ((size_t)1, app.count("-b"));
+    EXPECT_EQ((size_t)1, app.count("-A"));
+}
+
+TEST_F(TApp, LotsOfFlagsSingleStringExtraSpace) {
+
+    app.add_flag("-a");
+    app.add_flag("-A");
+    app.add_flag("-b");
+
+    app.parse("  -a    -b    -aA   ");
     EXPECT_EQ((size_t)2, app.count("-a"));
     EXPECT_EQ((size_t)1, app.count("-b"));
     EXPECT_EQ((size_t)1, app.count("-A"));
@@ -686,7 +819,7 @@ TEST_F(TApp, CallbackFlags) {
     EXPECT_THROW(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
 }
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 201402L || _MSC_VER >= 1900
 TEST_F(TApp, CallbackFlagsAuto) {
 
     size_t value = 0;
@@ -1381,7 +1514,7 @@ TEST_F(TApp, RangeDouble) {
     run();
 }
 
-// Check to make sure progromatic access to left over is available
+// Check to make sure programmatic access to left over is available
 TEST_F(TApp, AllowExtras) {
 
     app.allow_extras();

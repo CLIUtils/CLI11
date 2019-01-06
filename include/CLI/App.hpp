@@ -1167,6 +1167,58 @@ class App {
         parse(args);
     }
 
+    /// parse a single string as if it contained command line arguments
+    /// this function splits the string into arguments then calls parse(std::vector<std::string> &)
+    /// the function takes an optional boolean argument specifying if the programName is included in the string to
+    /// process
+    void parse(std::string commandline, bool ProgramNameIncluded = false) {
+        detail::trim(commandline);
+        if(ProgramNameIncluded) {
+            // try to determine the programName
+            auto esp = commandline.find_first_of(' ', 1);
+            while(!ExistingFile(commandline.substr(0, esp)).empty()) {
+                esp = commandline.find_first_of(' ', esp + 1);
+                if(esp == std::string::npos) {
+                    // if we have reached the end and haven't found a valid file just assume the first argument is the
+                    // program name
+                    esp = commandline.find_first_of(' ', 1);
+                    break;
+                }
+            }
+            if(name_.empty()) {
+                name_ = commandline.substr(0, esp);
+                detail::rtrim(name_);
+            }
+            // strip the program name
+            commandline = commandline.substr(esp + 1);
+        }
+        // the first section of code is to deal with quoted arguments after and '='
+        if(!commandline.empty()) {
+            size_t offset = commandline.length() - 1;
+            auto qeq = commandline.find_last_of('=', offset);
+            while(qeq != std::string::npos) {
+                if((commandline[qeq + 1] == '\"') || (commandline[qeq + 1] == '\'') || (commandline[qeq + 1] == '`')) {
+                    auto astart = commandline.find_last_of("- \"\'`", qeq - 1);
+                    if(astart != std::string::npos) {
+                        if(commandline[astart] == '-') {
+                            commandline[qeq] = ' '; // interpret this a space so the split_up works properly
+                            offset = (astart == 0) ? 0 : (astart - 1);
+                        }
+                    }
+                }
+                offset = qeq - 1;
+                qeq = commandline.find_last_of('=', offset);
+            }
+        }
+
+        auto args = detail::split_up(std::move(commandline));
+        // remove all empty strings
+        args.erase(std::remove(args.begin(), args.end(), std::string()), args.end());
+        std::reverse(args.begin(), args.end());
+
+        parse(args);
+    }
+
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.
     void parse(std::vector<std::string> &args) {

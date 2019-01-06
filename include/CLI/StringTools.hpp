@@ -148,18 +148,38 @@ inline std::string remove_underscore(std::string str) {
     return str;
 }
 
+/// Find and replace a substring with another substring
+inline std::string find_and_replace(std::string str, std::string from, std::string to) {
+
+    size_t start_pos = 0;
+
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+
+    return str;
+}
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
+/// Quote characters can be ` ' or "
 inline std::vector<std::string> split_up(std::string str) {
 
-    std::vector<char> delims = {'\'', '\"'};
+    const std::string delims("\'\"`");
     auto find_ws = [](char ch) { return std::isspace<char>(ch, std::locale()); };
     trim(str);
 
     std::vector<std::string> output;
-
+    bool embeddedQuote = false;
+    char keyChar = ' ';
     while(!str.empty()) {
-        if(str[0] == '\'') {
-            auto end = str.find('\'', 1);
+        if(delims.find_first_of(str[0]) != std::string::npos) {
+            keyChar = str[0];
+            auto end = str.find_first_of(keyChar, 1);
+            while((end != std::string::npos) && (str[end - 1] == '\\')) { // deal with escaped quotes
+                end = str.find_first_of(keyChar, end + 1);
+                embeddedQuote = true;
+            }
             if(end != std::string::npos) {
                 output.push_back(str.substr(1, end - 1));
                 str = str.substr(end + 1);
@@ -167,16 +187,6 @@ inline std::vector<std::string> split_up(std::string str) {
                 output.push_back(str.substr(1));
                 str = "";
             }
-        } else if(str[0] == '\"') {
-            auto end = str.find('\"', 1);
-            if(end != std::string::npos) {
-                output.push_back(str.substr(1, end - 1));
-                str = str.substr(end + 1);
-            } else {
-                output.push_back(str.substr(1));
-                str = "";
-            }
-
         } else {
             auto it = std::find_if(std::begin(str), std::end(str), find_ws);
             if(it != std::end(str)) {
@@ -188,9 +198,13 @@ inline std::vector<std::string> split_up(std::string str) {
                 str = "";
             }
         }
+        // transform any embedded quotes into the regular character
+        if(embeddedQuote) {
+            output.back() = find_and_replace(output.back(), std::string("\\") + keyChar, std::string(1, keyChar));
+            embeddedQuote = false;
+        }
         trim(str);
     }
-
     return output;
 }
 
@@ -208,19 +222,6 @@ inline std::string fix_newlines(std::string leader, std::string input) {
         }
     }
     return input;
-}
-
-/// Find and replace a subtring with another substring
-inline std::string find_and_replace(std::string str, std::string from, std::string to) {
-
-    size_t start_pos = 0;
-
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
-
-    return str;
 }
 
 } // namespace detail
