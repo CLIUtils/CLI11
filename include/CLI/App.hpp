@@ -1212,6 +1212,8 @@ class App {
         }
 
         auto args = detail::split_up(std::move(commandline));
+        // remove all empty strings
+        args.erase(std::remove(args.begin(), args.end(), std::string()), args.end());
         std::reverse(args.begin(), args.end());
 
         parse(args);

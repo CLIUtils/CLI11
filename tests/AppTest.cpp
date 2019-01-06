@@ -119,6 +119,28 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultiple) {
     EXPECT_EQ(str3, "\"quoted string\"");
 }
 
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleInMiddle) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse(R"raw(--string="this is my quoted string" -t "qst\"ring 2" -m=`"quoted string"`")raw");
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qst\"ring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedEscapedCharacters) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse(R"raw(--string="this is my \"quoted\" string" -t 'qst\'ring 2' -m=`"quoted\` string"`")raw");
+    EXPECT_EQ(str, "this is my \"quoted\" string");
+    EXPECT_EQ(str2, "qst\'ring 2");
+    EXPECT_EQ(str3, "\"quoted` string\"");
+}
+
 TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqual) {
     std::string str, str2, str3, str4;
     app.add_option("-s,--string", str);
@@ -188,7 +210,7 @@ TEST_F(TApp, DefaultStringAgain) {
 TEST_F(TApp, DefaultStringAgainEmpty) {
     std::string str = "previous";
     app.add_option("-s,--string", str);
-    app.parse("");
+    app.parse("   ");
     EXPECT_EQ((size_t)0, app.count("-s"));
     EXPECT_EQ((size_t)0, app.count("--string"));
     EXPECT_EQ(str, "previous");
@@ -230,6 +252,18 @@ TEST_F(TApp, LotsOfFlagsSingleString) {
     app.add_flag("-b");
 
     app.parse("-a -b -aA");
+    EXPECT_EQ((size_t)2, app.count("-a"));
+    EXPECT_EQ((size_t)1, app.count("-b"));
+    EXPECT_EQ((size_t)1, app.count("-A"));
+}
+
+TEST_F(TApp, LotsOfFlagsSingleStringExtraSpace) {
+
+    app.add_flag("-a");
+    app.add_flag("-A");
+    app.add_flag("-b");
+
+    app.parse("  -a    -b    -aA   ");
     EXPECT_EQ((size_t)2, app.count("-a"));
     EXPECT_EQ((size_t)1, app.count("-b"));
     EXPECT_EQ((size_t)1, app.count("-A"));
