@@ -33,7 +33,7 @@ set(CLI11_TESTS
     NewParseTest
     OptionalTest
     DeprecatedTest
-	StringParseTest
+    StringParseTest
     )
 
 if(WIN32)

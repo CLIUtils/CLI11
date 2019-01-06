@@ -1154,7 +1154,7 @@ class App {
         }
     }
 
-    /// Parses the command line - throws errors
+    /// Parses the command line - throws errors.
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv) {
         // If the name is not set, read from command line
@@ -1167,13 +1167,13 @@ class App {
         parse(args);
     }
 
-    /// parse a single string as if it contained command line arguments
-    /// this function splits the string into arguments then calls parse(std::vector<std::string> &)
+    /// Parse a single string as if it contained command line arguments.
+    /// This function splits the string into arguments then calls parse(std::vector<std::string> &)
     /// the function takes an optional boolean argument specifying if the programName is included in the string to
     /// process
-    void parse(std::string commandline, bool ProgramNameIncluded = false) {
+    void parse(std::string commandline, bool program_name_included = false) {
         detail::trim(commandline);
-        if(ProgramNameIncluded) {
+        if(program_name_included) {
             // try to determine the programName
             auto esp = commandline.find_first_of(' ', 1);
             while(!ExistingFile(commandline.substr(0, esp)).empty()) {

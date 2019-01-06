@@ -371,7 +371,8 @@ The App class was designed allow toolkits to subclass it, to provide preset defa
 but before run behavior, while
 still giving the user freedom to `callback` on the main app.
 
-The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector.
+The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
+including the program name in the string.
 
 Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
 
