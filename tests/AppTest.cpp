@@ -1120,6 +1120,20 @@ TEST_F(TApp, InIntSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, InIntSetWindows) {
+
+    int choice;
+    app.add_set("-q,--quick", choice, {1, 2, 3});
+    app.allow_windows_style_options();
+    args = {"/q", "2"};
+
+    run();
+    EXPECT_EQ(2, choice);
+
+    args = {"/q4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
 TEST_F(TApp, FailSet) {
 
     int choice;

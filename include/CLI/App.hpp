@@ -1943,16 +1943,12 @@ class App {
         }
 
         auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name, current_type](const Option_p &opt) {
-            switch(current_type) {
-            case detail::Classifier::LONG:
+            if(current_type == detail::Classifier::LONG)
                 return opt->check_lname(name);
-            case detail::Classifier::SHORT:
+            if(current_type == detail::Classifier::SHORT)
                 return opt->check_sname(name);
-            case detail::Classifier::WINDOWS:
-                return opt->check_lname(name) || opt->check_sname(name);
-            default:
-                return false;
-            }
+            // this will only get called for detail::Classifier::WINDOWS
+            return opt->check_lname(name) || opt->check_sname(name);
         });
 
         // Option not found
