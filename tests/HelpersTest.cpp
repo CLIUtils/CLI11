@@ -32,6 +32,42 @@ TEST(String, InvalidName) {
     EXPECT_TRUE(CLI::detail::valid_name_string("va-li-d"));
     EXPECT_FALSE(CLI::detail::valid_name_string("vali&d"));
     EXPECT_TRUE(CLI::detail::valid_name_string("_valid"));
+    EXPECT_FALSE(CLI::detail::valid_name_string("/valid"));
+}
+
+TEST(StringTools, Modify) {
+    int cnt = 0;
+    std::string newString = CLI::detail::find_and_modify("======", "=", [&cnt](std::string &str, size_t index) {
+        if((++cnt) % 2 == 0) {
+            str[index] = ':';
+        }
+        return index + 1;
+    });
+    EXPECT_EQ(newString, "=:=:=:");
+}
+
+TEST(StringTools, Modify2) {
+    int cnt = 0;
+    std::string newString =
+        CLI::detail::find_and_modify("this is a string test", "is", [&cnt](std::string &str, size_t index) {
+            if((index > 1) && (str[index - 1] != ' ')) {
+                str[index] = 'a';
+                str[index + 1] = 't';
+            }
+            return index + 1;
+        });
+    EXPECT_EQ(newString, "that is a string test");
+}
+
+TEST(StringTools, Modify3) {
+    int cnt = 0;
+    // this picks up 3 sets of 3 after the 'b' then collapses the new first set
+    std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [&cnt](std::string &str, size_t index) {
+        str.erase(index, 3);
+        str.insert(str.begin(), 'a');
+        return 0;
+    });
+    EXPECT_EQ(newString, "aba");
 }
 
 TEST(Trim, Various) {
@@ -210,6 +246,36 @@ TEST(Validators, CombinedPaths) {
 
     std::remove(myfile.c_str());
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+}
+
+TEST(Validators, ProgramNameSplit) {
+    TempFile myfile{"program_name1.exe"};
+    {
+        std::ofstream out{myfile};
+        out << "useless string doesn't matter" << std::endl;
+    }
+    auto res =
+        CLI::detail::split_program_name(std::string("./") + std::string(myfile) + " this is a bunch of extra stuff  ");
+    EXPECT_EQ(res.first, std::string("./") + std::string(myfile));
+    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+
+    TempFile myfile2{"program name1.exe"};
+    {
+        std::ofstream out{myfile2};
+        out << "useless string doesn't matter" << std::endl;
+    }
+    res = CLI::detail::split_program_name(std::string("   ") + std::string("./") + std::string(myfile2) +
+                                          "      this is a bunch of extra stuff  ");
+    EXPECT_EQ(res.first, std::string("./") + std::string(myfile2));
+    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+
+    res = CLI::detail::split_program_name("./program_name    this is a bunch of extra stuff  ");
+    EXPECT_EQ(res.first, "./program_name"); // test sectioning of first argument even if it can't detect the file
+    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+
+    res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
+    EXPECT_EQ(res.first, std::string("./") + std::string(myfile));
+    EXPECT_TRUE(res.second.empty());
 }
 
 // Yes, this is testing an app_helper :)

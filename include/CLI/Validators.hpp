@@ -191,6 +191,33 @@ struct Range : public Validator {
     template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
 };
 
+namespace detail {
+/// split a string into a program name and command line arguments
+/// the string is assumed to contain a file name followed by other arguments
+/// the return value contains is a pair with the first argument containing the program name and the second everything
+/// else
+inline std::pair<std::string, std::string> split_program_name(std::string commandline) {
+    // try to determine the programName
+    std::pair<std::string, std::string> vals;
+    trim(commandline);
+    auto esp = commandline.find_first_of(' ', 1);
+    while(!ExistingFile(commandline.substr(0, esp)).empty()) {
+        esp = commandline.find_first_of(' ', esp + 1);
+        if(esp == std::string::npos) {
+            // if we have reached the end and haven't found a valid file just assume the first argument is the
+            // program name
+            esp = commandline.find_first_of(' ', 1);
+            break;
+        }
+    }
+    vals.first = commandline.substr(0, esp);
+    rtrim(vals.first);
+    // strip the program name
+    vals.second = (esp != std::string::npos) ? commandline.substr(esp + 1) : std::string{};
+    ltrim(vals.second);
+    return vals;
+}
+} // namespace detail
 /// @}
 
 } // namespace CLI

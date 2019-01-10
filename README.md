@@ -255,6 +255,14 @@ On the command line, options can be given as:
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
+If allow_windows_style_options() is specified in the application or subcommand options can also be given as:
+-   `/a` (flag)
+-   `/f filename` (option)
+-   `/long` (long flag)
+-   `/file filename` (space)
+-   `/file:filename` (colon)
+=  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
+
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
 If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
 
@@ -285,7 +293,7 @@ There are several options that are supported on the main app and subcommands. Th
 
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
-
+-   `.allow_windows_style_options()`:  Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.

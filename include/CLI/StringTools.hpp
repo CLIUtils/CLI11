@@ -161,6 +161,16 @@ inline std::string find_and_replace(std::string str, std::string from, std::stri
     return str;
 }
 
+/// Find a trigger string and call a modify callable function that takes the current string and starting position of the
+/// trigger and returns the position in the string to search for the next trigger string
+template <typename Callable> inline std::string find_and_modify(std::string str, std::string trigger, Callable modify) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(trigger, start_pos)) != std::string::npos) {
+        start_pos = modify(str, start_pos);
+    }
+    return str;
+}
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be ` ' or "
 inline std::vector<std::string> split_up(std::string str) {

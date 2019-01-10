@@ -10,6 +10,15 @@ TEST_F(TApp, OneFlagShort) {
     EXPECT_EQ((size_t)1, app.count("--count"));
 }
 
+TEST_F(TApp, OneFlagShortWindows) {
+    app.add_flag("-c,--count");
+    args = {"/c"};
+    app.allow_windows_style_options();
+    run();
+    EXPECT_EQ((size_t)1, app.count("-c"));
+    EXPECT_EQ((size_t)1, app.count("--count"));
+}
+
 TEST_F(TApp, CountNonExist) {
     app.add_flag("-c,--count");
     args = {"-c"};
@@ -70,6 +79,17 @@ TEST_F(TApp, OneString) {
     EXPECT_EQ(str, "mystring");
 }
 
+TEST_F(TApp, OneStringWindowsStyle) {
+    std::string str;
+    app.add_option("-s,--string", str);
+    args = {"/string", "mystring"};
+    app.allow_windows_style_options();
+    run();
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
 TEST_F(TApp, OneStringSingleStringInput) {
     std::string str;
     app.add_option("-s,--string", str);
@@ -84,6 +104,17 @@ TEST_F(TApp, OneStringEqualVersion) {
     std::string str;
     app.add_option("-s,--string", str);
     args = {"--string=mystring"};
+    run();
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
+TEST_F(TApp, OneStringEqualVersionWindowsStyle) {
+    std::string str;
+    app.add_option("-s,--string", str);
+    args = {"/string:mystring"};
+    app.allow_windows_style_options();
     run();
     EXPECT_EQ((size_t)1, app.count("-s"));
     EXPECT_EQ((size_t)1, app.count("--string"));
@@ -114,6 +145,18 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultiple) {
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
     app.parse("--string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`");
+    EXPECT_EQ(str, "this is my quoted string");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleMixedStyle) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.allow_windows_style_options();
+    app.parse("/string:\"this is my quoted string\" /t 'qstring 2' -m=`\"quoted string\"`");
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -1077,6 +1120,20 @@ TEST_F(TApp, InIntSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, InIntSetWindows) {
+
+    int choice;
+    app.add_set("-q,--quick", choice, {1, 2, 3});
+    app.allow_windows_style_options();
+    args = {"/q", "2"};
+
+    run();
+    EXPECT_EQ(2, choice);
+
+    args = {"/q4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
 TEST_F(TApp, FailSet) {
 
     int choice;
@@ -1547,14 +1604,28 @@ TEST_F(TApp, AllowExtrasOrder) {
 TEST_F(TApp, CheckShortFail) {
     args = {"--two"};
 
-    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, false), CLI::HorribleError);
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::SHORT), CLI::HorribleError);
 }
 
 // Test horrible error
 TEST_F(TApp, CheckLongFail) {
     args = {"-t"};
 
-    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, true), CLI::HorribleError);
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::LONG), CLI::HorribleError);
+}
+
+// Test horrible error
+TEST_F(TApp, CheckWindowsFail) {
+    args = {"-t"};
+
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::WINDOWS), CLI::HorribleError);
+}
+
+// Test horrible error
+TEST_F(TApp, CheckOtherFail) {
+    args = {"-t"};
+
+    EXPECT_THROW(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::NONE), CLI::HorribleError);
 }
 
 // Test horrible error
