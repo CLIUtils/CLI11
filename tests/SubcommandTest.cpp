@@ -798,7 +798,7 @@ TEST_F(ManySubcommands, MaxCommands) {
     // The extra subcommand counts as an extra
     args = {"sub1", "sub2", "sub3"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(sub2->remaining().size(), 1);
+    EXPECT_EQ(sub2->remaining().size(), (size_t)1);
 
     // Currently, setting sub2 to throw causes an extras error
     // In the future, would passing on up to app's extras be better?
