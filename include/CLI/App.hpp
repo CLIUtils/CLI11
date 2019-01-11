@@ -261,7 +261,7 @@ class App {
         return this;
     }
 
-    /// Ignore case. Subcommand inherit value.
+    /// Ignore case. Subcommands inherit value.
     App *ignore_case(bool value = true) {
         ignore_case_ = value;
         if(parent_ != nullptr) {
@@ -273,13 +273,13 @@ class App {
         return this;
     }
 
-    /// Ignore case. Subcommand inherit value.
+    /// Allow windows style options, such as `/opt`. First matching short or long name used. Subcommands inherit value.
     App *allow_windows_style_options(bool value = true) {
         allow_windows_style_options_ = value;
         return this;
     }
 
-    /// Ignore underscore. Subcommand inherit value.
+    /// Ignore underscore. Subcommands inherit value.
     App *ignore_underscore(bool value = true) {
         ignore_underscore_ = value;
         if(parent_ != nullptr) {

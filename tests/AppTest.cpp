@@ -19,6 +19,28 @@ TEST_F(TApp, OneFlagShortWindows) {
     EXPECT_EQ((size_t)1, app.count("--count"));
 }
 
+TEST_F(TApp, WindowsLongShortMix1) {
+    app.allow_windows_style_options();
+
+    auto a = app.add_flag("-c");
+    auto b = app.add_flag("--c");
+    args = {"/c"};
+    run();
+    EXPECT_EQ((size_t)1, a->count());
+    EXPECT_EQ((size_t)0, b->count());
+}
+
+TEST_F(TApp, WindowsLongShortMix2) {
+    app.allow_windows_style_options();
+
+    auto a = app.add_flag("--c");
+    auto b = app.add_flag("-c");
+    args = {"/c"};
+    run();
+    EXPECT_EQ((size_t)1, a->count());
+    EXPECT_EQ((size_t)0, b->count());
+}
+
 TEST_F(TApp, CountNonExist) {
     app.add_flag("-c,--count");
     args = {"-c"};
