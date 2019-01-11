@@ -234,5 +234,17 @@ inline std::string fix_newlines(std::string leader, std::string input) {
     return input;
 }
 
+inline size_t escape_detect(std::string &str, size_t offset) {
+    auto next = str[offset + 1];
+    if((next == '\"') || (next == '\'') || (next == '`')) {
+        auto astart = str.find_last_of("-/ \"\'`", offset - 1);
+        if(astart != std::string::npos) {
+            if(str[astart] == (str[offset] == '=') ? '-' : '/')
+                str[offset] = ' '; // interpret this as a space so the split_up works properly
+        }
+    }
+    return offset + 1;
+};
+
 } // namespace detail
 } // namespace CLI

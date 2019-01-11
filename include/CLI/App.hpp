@@ -1193,21 +1193,9 @@ class App {
             detail::trim(commandline);
         // the next section of code is to deal with quoted arguments after an '=' or ':' for windows like operations
         if(!commandline.empty()) {
-            auto escape_detect = [](std::string &str, size_t offset) {
-                auto next = str[offset + 1];
-                if((next == '\"') || (next == '\'') || (next == '`')) {
-                    auto astart = str.find_last_of("-/ \"\'`", offset - 1);
-                    if(astart != std::string::npos) {
-                        if(str[astart] == (str[offset] == '=') ? '-' : '/')
-                            str[offset] = ' '; // interpret this as a space so the split_up works properly
-                    }
-                }
-                return (offset + 1);
-            };
-
-            commandline = detail::find_and_modify(commandline, "=", escape_detect);
+            commandline = detail::find_and_modify(commandline, "=", detail::escape_detect);
             if(allow_windows_style_options_)
-                commandline = detail::find_and_modify(commandline, ":", escape_detect);
+                commandline = detail::find_and_modify(commandline, ":", detail::escape_detect);
         }
 
         auto args = detail::split_up(std::move(commandline));
