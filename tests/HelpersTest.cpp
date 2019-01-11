@@ -47,9 +47,8 @@ TEST(StringTools, Modify) {
 }
 
 TEST(StringTools, Modify2) {
-    int cnt = 0;
     std::string newString =
-        CLI::detail::find_and_modify("this is a string test", "is", [&cnt](std::string &str, size_t index) {
+        CLI::detail::find_and_modify("this is a string test", "is", [](std::string &str, size_t index) {
             if((index > 1) && (str[index - 1] != ' ')) {
                 str[index] = 'a';
                 str[index + 1] = 't';
@@ -60,9 +59,8 @@ TEST(StringTools, Modify2) {
 }
 
 TEST(StringTools, Modify3) {
-    int cnt = 0;
     // this picks up 3 sets of 3 after the 'b' then collapses the new first set
-    std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [&cnt](std::string &str, size_t index) {
+    std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [](std::string &str, size_t index) {
         str.erase(index, 3);
         str.insert(str.begin(), 'a');
         return 0;
