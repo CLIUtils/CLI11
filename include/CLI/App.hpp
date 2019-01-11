@@ -145,8 +145,14 @@ class App {
     /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.  INHERITABLE
     bool fallthrough_{false};
 
-    /// Allow '/' for options for windows like options INHERITABLE
-    bool allow_windows_style_options_{false};
+    /// Allow '/' for options for Windows like options. Defaults to true on Windows, false otherwise. INHERITABLE
+    bool allow_windows_style_options_{
+#ifdef _WIN32
+        true
+#else
+        false
+#endif
+    };
 
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
