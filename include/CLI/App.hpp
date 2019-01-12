@@ -182,8 +182,8 @@ class App {
     ///@}
 
     /// Special private constructor for subcommand
-    App(std::string description_, std::string name, App *parent)
-        : name_(std::move(name)), description_(std::move(description_)), parent_(parent) {
+    App(std::string description, std::string app_name, App *parent)
+        : name_(std::move(app_name)), description_(std::move(description)), parent_(parent) {
         // Inherit if not from a nullptr
         if(parent_ != nullptr) {
             if(parent_->help_ptr_ != nullptr)
@@ -217,7 +217,7 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    explicit App(std::string description_ = "", std::string name = "") : App(description_, name, nullptr) {
+    explicit App(std::string description = "", std::string app_name = "") : App(description, app_name, nullptr) {
         set_help_flag("-h,--help", "Print this help message and exit");
     }
 
@@ -230,14 +230,14 @@ class App {
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
-    App *callback(std::function<void()> callback) {
-        callback_ = callback;
+    App *callback(std::function<void()> app_callback) {
+        callback_ = std::move(app_callback);
         return this;
     }
 
     /// Set a name for the app (empty will use parser to set the name)
-    App *name(std::string name = "") {
-        name_ = name;
+    App *name(std::string app_name = "") {
+        name_ = app_name;
         return this;
     }
 
@@ -333,15 +333,18 @@ class App {
     ///     std::string filename;
     ///     program.add_option("filename", filename, "description of filename");
     ///
-    Option *add_option(std::string name, callback_t callback, std::string description = "", bool defaulted = false) {
-        Option myopt{name, description, callback, defaulted, this};
+    Option *add_option(std::string option_name,
+                       callback_t option_callback,
+                       std::string description = "",
+                       bool defaulted = false) {
+        Option myopt{option_name, description, option_callback, defaulted, this};
 
         if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) {
                return *v == myopt;
            }) == std::end(options_)) {
             options_.emplace_back();
             Option_p &option = options_.back();
-            option.reset(new Option(name, description, callback, defaulted, this));
+            option.reset(new Option(option_name, description, option_callback, defaulted, this));
             option_defaults_.copy_to(option.get());
             return option.get();
         } else
@@ -350,27 +353,27 @@ class App {
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
     template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
-    Option *add_option(std::string name,
+    Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string description = "") {
 
         CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name(detail::type_name<T>());
         return opt;
     }
 
     /// Add option for non-vectors with a default print
     template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
-    Option *add_option(std::string name,
+    Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string description,
                        bool defaulted) {
 
         CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name(detail::type_name<T>());
         if(defaulted) {
             std::stringstream out;
@@ -382,7 +385,7 @@ class App {
 
     /// Add option for vectors (no default)
     template <typename T>
-    Option *add_option(std::string name,
+    Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description = "") {
 
@@ -396,14 +399,14 @@ class App {
             return (!variable.empty()) && retval;
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name(detail::type_name<T>())->type_size(-1);
         return opt;
     }
 
     /// Add option for vectors
     template <typename T>
-    Option *add_option(std::string name,
+    Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description,
                        bool defaulted) {
@@ -418,7 +421,7 @@ class App {
             return (!variable.empty()) && retval;
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name(detail::type_name<T>())->type_size(-1);
         if(defaulted)
             opt->default_str("[" + detail::join(variable) + "]");
@@ -426,15 +429,15 @@ class App {
     }
 
     /// Set a help flag, replace the existing one if present
-    Option *set_help_flag(std::string name = "", std::string description = "") {
+    Option *set_help_flag(std::string flag_name = "", std::string description = "") {
         if(help_ptr_ != nullptr) {
             remove_option(help_ptr_);
             help_ptr_ = nullptr;
         }
 
         // Empty name will simply remove the help flag
-        if(!name.empty()) {
-            help_ptr_ = add_flag(name, description);
+        if(!flag_name.empty()) {
+            help_ptr_ = add_flag(flag_name, description);
             help_ptr_->configurable(false);
         }
 
@@ -442,15 +445,15 @@ class App {
     }
 
     /// Set a help all flag, replaced the existing one if present
-    Option *set_help_all_flag(std::string name = "", std::string description = "") {
+    Option *set_help_all_flag(std::string help_name = "", std::string description = "") {
         if(help_all_ptr_ != nullptr) {
             remove_option(help_all_ptr_);
             help_all_ptr_ = nullptr;
         }
 
         // Empty name will simply remove the help all flag
-        if(!name.empty()) {
-            help_all_ptr_ = add_flag(name, description);
+        if(!help_name.empty()) {
+            help_all_ptr_ = add_flag(help_name, description);
             help_all_ptr_->configurable(false);
         }
 
@@ -458,12 +461,12 @@ class App {
     }
 
     /// Add option for flag
-    Option *add_flag(std::string name, std::string description = "") {
+    Option *add_flag(std::string flag_name, std::string description = "") {
         CLI::callback_t fun = [](CLI::results_t) { return true; };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(name);
+            throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
         return opt;
     }
@@ -471,19 +474,19 @@ class App {
     /// Add option for flag integer
     template <typename T,
               enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
-    Option *add_flag(std::string name,
-                     T &count, ///< A variable holding the count
+    Option *add_flag(std::string flag_name,
+                     T &flag_count, ///< A variable holding the count
                      std::string description = "") {
 
-        count = 0;
-        CLI::callback_t fun = [&count](CLI::results_t res) {
-            count = static_cast<T>(res.size());
+        flag_count = 0;
+        CLI::callback_t fun = [&flag_count](CLI::results_t res) {
+            flag_count = static_cast<T>(res.size());
             return true;
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(name);
+            throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
         return opt;
     }
@@ -491,59 +494,58 @@ class App {
     /// Bool version - defaults to allowing multiple passings, but can be forced to one if
     /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
-    Option *add_flag(std::string name,
-                     T &count, ///< A variable holding true if passed
+    Option *add_flag(std::string flag_name,
+                     T &flag_count, ///< A variable holding true if passed
                      std::string description = "") {
 
-        count = false;
-        CLI::callback_t fun = [&count](CLI::results_t res) {
-            count = true;
+        flag_count = false;
+        CLI::callback_t fun = [&flag_count](CLI::results_t res) {
+            flag_count = true;
             return res.size() == 1;
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(name);
+            throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
         opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
         return opt;
     }
 
     /// Add option for callback
-    Option *add_flag_function(std::string name,
+    Option *add_flag_function(std::string flag_name,
                               std::function<void(size_t)> function, ///< A function to call, void(size_t)
                               std::string description = "") {
 
         CLI::callback_t fun = [function](CLI::results_t res) {
-            auto count = static_cast<size_t>(res.size());
-            function(count);
+            function(res.size());
             return true;
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(name);
+            throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
         return opt;
     }
 
 #ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
-    Option *add_flag(std::string name,
+    Option *add_flag(std::string flag_name,
                      std::function<void(size_t)> function, ///< A function to call, void(size_t)
                      std::string description = "") {
-        return add_flag_function(name, function, description);
+        return add_flag_function(flag_name, std::move(function), description);
     }
 #endif
 
     /// Add set of options (No default, temp reference, such as an inline set)
     template <typename T>
-    Option *add_set(std::string name,
+    Option *add_set(std::string option_name,
                     T &member,                   ///< The selected member of the set
                     const std::set<T> &&options, ///< The set of possibilities
                     std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
@@ -551,7 +553,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -560,12 +562,12 @@ class App {
 
     /// Add set of options (No default, non-temp reference, such as an existing set)
     template <typename T>
-    Option *add_set(std::string name,
+    Option *add_set(std::string option_name,
                     T &member,                  ///< The selected member of the set
                     const std::set<T> &options, ///< The set of possibilities
                     std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
@@ -573,7 +575,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
 
@@ -582,13 +584,13 @@ class App {
 
     /// Add set of options (with default, R value, such as an inline set)
     template <typename T>
-    Option *add_set(std::string name,
+    Option *add_set(std::string option_name,
                     T &member,                   ///< The selected member of the set
                     const std::set<T> &&options, ///< The set of possibilities
                     std::string description,
                     bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
@@ -596,7 +598,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -610,13 +612,13 @@ class App {
 
     /// Add set of options (with default, L value reference, such as an existing set)
     template <typename T>
-    Option *add_set(std::string name,
+    Option *add_set(std::string option_name,
                     T &member,                  ///< The selected member of the set
                     const std::set<T> &options, ///< The set of possibilities
                     std::string description,
                     bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             bool retval = detail::lexical_cast(res[0], member);
             if(!retval)
@@ -624,7 +626,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
         if(defaulted) {
@@ -636,12 +638,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore case (no default, R value)
-    Option *add_set_ignore_case(std::string name,
+    Option *add_set_ignore_case(std::string option_name,
                                 std::string &member,                   ///< The selected member of the set
                                 const std::set<std::string> &&options, ///< The set of possibilities
                                 std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -655,7 +657,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -664,12 +666,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore case (no default, L value)
-    Option *add_set_ignore_case(std::string name,
+    Option *add_set_ignore_case(std::string option_name,
                                 std::string &member,                  ///< The selected member of the set
                                 const std::set<std::string> &options, ///< The set of possibilities
                                 std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -683,7 +685,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -692,13 +694,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore case (default, R value)
-    Option *add_set_ignore_case(std::string name,
+    Option *add_set_ignore_case(std::string option_name,
                                 std::string &member,                   ///< The selected member of the set
                                 const std::set<std::string> &&options, ///< The set of possibilities
                                 std::string description,
                                 bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -712,7 +714,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -723,13 +725,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore case (default, L value)
-    Option *add_set_ignore_case(std::string name,
+    Option *add_set_ignore_case(std::string option_name,
                                 std::string &member,                  ///< The selected member of the set
                                 const std::set<std::string> &options, ///< The set of possibilities
                                 std::string description,
                                 bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::to_lower(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -743,7 +745,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -754,12 +756,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore (no default, R value)
-    Option *add_set_ignore_underscore(std::string name,
+    Option *add_set_ignore_underscore(std::string option_name,
                                       std::string &member,                   ///< The selected member of the set
                                       const std::set<std::string> &&options, ///< The set of possibilities
                                       std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::remove_underscore(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -773,7 +775,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -782,12 +784,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore (no default, L value)
-    Option *add_set_ignore_underscore(std::string name,
+    Option *add_set_ignore_underscore(std::string option_name,
                                       std::string &member,                  ///< The selected member of the set
                                       const std::set<std::string> &options, ///< The set of possibilities
                                       std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::remove_underscore(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -801,7 +803,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -810,13 +812,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore (default, R value)
-    Option *add_set_ignore_underscore(std::string name,
+    Option *add_set_ignore_underscore(std::string option_name,
                                       std::string &member,                   ///< The selected member of the set
                                       const std::set<std::string> &&options, ///< The set of possibilities
                                       std::string description,
                                       bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::remove_underscore(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -830,7 +832,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -841,13 +843,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore (default, L value)
-    Option *add_set_ignore_underscore(std::string name,
+    Option *add_set_ignore_underscore(std::string option_name,
                                       std::string &member,                  ///< The selected member of the set
                                       const std::set<std::string> &options, ///< The set of possibilities
                                       std::string description,
                                       bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::remove_underscore(res[0]);
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -861,7 +863,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -872,12 +874,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore and case(no default, R value)
-    Option *add_set_ignore_case_underscore(std::string name,
+    Option *add_set_ignore_case_underscore(std::string option_name,
                                            std::string &member,                   ///< The selected member of the set
                                            const std::set<std::string> &&options, ///< The set of possibilities
                                            std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::to_lower(detail::remove_underscore(res[0]));
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -891,7 +893,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -900,12 +902,12 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore and case(no default, L value)
-    Option *add_set_ignore_case_underscore(std::string name,
+    Option *add_set_ignore_case_underscore(std::string option_name,
                                            std::string &member,                  ///< The selected member of the set
                                            const std::set<std::string> &options, ///< The set of possibilities
                                            std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::to_lower(detail::remove_underscore(res[0]));
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -919,7 +921,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, false);
+        Option *opt = add_option(option_name, fun, description, false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -928,13 +930,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore and case (default, R value)
-    Option *add_set_ignore_case_underscore(std::string name,
+    Option *add_set_ignore_case_underscore(std::string option_name,
                                            std::string &member,                   ///< The selected member of the set
                                            const std::set<std::string> &&options, ///< The set of possibilities
                                            std::string description,
                                            bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
             member = detail::to_lower(detail::remove_underscore(res[0]));
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -948,7 +950,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -959,13 +961,13 @@ class App {
     }
 
     /// Add set of options, string only, ignore underscore and case (default, L value)
-    Option *add_set_ignore_case_underscore(std::string name,
+    Option *add_set_ignore_case_underscore(std::string option_name,
                                            std::string &member,                  ///< The selected member of the set
                                            const std::set<std::string> &options, ///< The set of possibilities
                                            std::string description,
                                            bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
             member = detail::to_lower(detail::remove_underscore(res[0]));
             auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
@@ -979,7 +981,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(name, fun, description, defaulted);
+        Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -991,13 +993,13 @@ class App {
 
     /// Add a complex number
     template <typename T>
-    Option *add_complex(std::string name,
+    Option *add_complex(std::string option_name,
                         T &variable,
                         std::string description = "",
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
 
-        std::string simple_name = CLI::detail::split(name, ',').at(0);
+        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
             if(res[1].back() == 'i')
                 res[1].pop_back();
@@ -1008,7 +1010,7 @@ class App {
             return worked;
         };
 
-        CLI::Option *opt = add_option(name, fun, description, defaulted);
+        CLI::Option *opt = add_option(option_name, fun, description, defaulted);
         opt->type_name(label)->type_size(2);
         if(defaulted) {
             std::stringstream out;
@@ -1019,9 +1021,9 @@ class App {
     }
 
     /// Set a configuration ini file option, or clear it if no name passed
-    Option *set_config(std::string name = "",
+    Option *set_config(std::string option_name = "",
                        std::string default_filename = "",
-                       std::string help = "Read an ini file",
+                       std::string help_message = "Read an ini file",
                        bool required = false) {
 
         // Remove existing config if present
@@ -1029,10 +1031,10 @@ class App {
             remove_option(config_ptr_);
 
         // Only add config if option passed
-        if(!name.empty()) {
+        if(!option_name.empty()) {
             config_name_ = default_filename;
             config_required_ = required;
-            config_ptr_ = add_option(name, config_name_, help, !default_filename.empty());
+            config_ptr_ = add_option(option_name, config_name_, help_message, !default_filename.empty());
             config_ptr_->configurable(false);
         }
 
@@ -1061,8 +1063,8 @@ class App {
     ///@{
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
-    App *add_subcommand(std::string name, std::string description = "") {
-        subcommands_.emplace_back(new App(description, name, this));
+    App *add_subcommand(std::string subcommand_name, std::string description = "") {
+        subcommands_.emplace_back(new App(description, subcommand_name, this));
         for(const auto &subc : subcommands_)
             if(subc.get() != subcommands_.back().get())
                 if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_))
@@ -1091,8 +1093,8 @@ class App {
     size_t count() const { return parsed_; }
 
     /// Changes the group membership
-    App *group(std::string name) {
-        group_ = name;
+    App *group(std::string group_name) {
+        group_ = group_name;
         return this;
     }
 
@@ -1259,13 +1261,13 @@ class App {
     ///@{
 
     /// Counts the number of times the given option was passed.
-    size_t count(std::string name) const {
+    size_t count(std::string option_name) const {
         for(const Option_p &opt : options_) {
-            if(opt->check_name(name)) {
+            if(opt->check_name(option_name)) {
                 return opt->count();
             }
         }
-        throw OptionNotFound(name);
+        throw OptionNotFound(option_name);
     }
 
     /// Get a subcommand pointer list to the currently selected subcommands (after parsing by by default, in command
@@ -1314,15 +1316,15 @@ class App {
     }
 
     /// Check with name instead of pointer to see if subcommand was selected
-    bool got_subcommand(std::string name) const { return get_subcommand(name)->parsed_ > 0; }
+    bool got_subcommand(std::string subcommand_name) const { return get_subcommand(subcommand_name)->parsed_ > 0; }
 
     ///@}
     /// @name Help
     ///@{
 
     /// Set footer.
-    App *footer(std::string footer) {
-        footer_ = footer;
+    App *footer(std::string footer_string) {
+        footer_ = std::move(footer_string);
         return this;
     }
 
@@ -1391,23 +1393,23 @@ class App {
     }
 
     /// Get an option by name
-    const Option *get_option(std::string name) const {
+    const Option *get_option(std::string option_name) const {
         for(const Option_p &opt : options_) {
-            if(opt->check_name(name)) {
+            if(opt->check_name(option_name)) {
                 return opt.get();
             }
         }
-        throw OptionNotFound(name);
+        throw OptionNotFound(option_name);
     }
 
     /// Get an option by name (non-const version)
-    Option *get_option(std::string name) {
+    Option *get_option(std::string option_name) {
         for(Option_p &opt : options_) {
-            if(opt->check_name(name)) {
+            if(opt->check_name(option_name)) {
                 return opt.get();
             }
         }
-        throw OptionNotFound(name);
+        throw OptionNotFound(option_name);
     }
 
     /// Check the status of ignore_case
@@ -1518,16 +1520,16 @@ class App {
 
     /// This returns the number of remaining options, minus the -- separator
     size_t remaining_size(bool recurse = false) const {
-        auto count = static_cast<size_t>(std::count_if(
+        auto remaining_options = static_cast<size_t>(std::count_if(
             std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifier, std::string> &val) {
                 return val.first != detail::Classifier::POSITIONAL_MARK;
             }));
         if(recurse) {
             for(const App_p &sub : subcommands_) {
-                count += sub->remaining_size(recurse);
+                remaining_options += sub->remaining_size(recurse);
             }
         }
-        return count;
+        return remaining_options;
     }
 
     ///@}
@@ -1537,10 +1539,10 @@ class App {
     ///
     /// Currently checks to see if multiple positionals exist with -1 args
     void _validate() const {
-        auto count = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
+        auto pcount = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
             return opt->get_items_expected() < 0 && opt->get_positional();
         });
-        if(count > 1)
+        if(pcount > 1)
             throw InvalidError(name_);
         for(const App_p &app : subcommands_)
             app->_validate();
@@ -1907,35 +1909,36 @@ class App {
 
         std::string current = args.back();
 
-        std::string name;
+        std::string arg_name;
         std::string value;
         std::string rest;
 
         switch(current_type) {
         case detail::Classifier::LONG:
-            if(!detail::split_long(current, name, value))
+            if(!detail::split_long(current, arg_name, value))
                 throw HorribleError("Long parsed but missing (you should not see this):" + args.back());
             break;
         case detail::Classifier::SHORT:
-            if(!detail::split_short(current, name, rest))
+            if(!detail::split_short(current, arg_name, rest))
                 throw HorribleError("Short parsed but missing! You should not see this");
             break;
         case detail::Classifier::WINDOWS:
-            if(!detail::split_windows(current, name, value))
+            if(!detail::split_windows(current, arg_name, value))
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
         default:
             throw HorribleError("parsing got called with invalid option! You should not see this");
         }
 
-        auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [name, current_type](const Option_p &opt) {
-            if(current_type == detail::Classifier::LONG)
-                return opt->check_lname(name);
-            if(current_type == detail::Classifier::SHORT)
-                return opt->check_sname(name);
-            // this will only get called for detail::Classifier::WINDOWS
-            return opt->check_lname(name) || opt->check_sname(name);
-        });
+        auto op_ptr =
+            std::find_if(std::begin(options_), std::end(options_), [arg_name, current_type](const Option_p &opt) {
+                if(current_type == detail::Classifier::LONG)
+                    return opt->check_lname(arg_name);
+                if(current_type == detail::Classifier::SHORT)
+                    return opt->check_sname(arg_name);
+                // this will only get called for detail::Classifier::WINDOWS
+                return opt->check_lname(arg_name) || opt->check_sname(arg_name);
+            });
 
         // Option not found
         if(op_ptr == std::end(options_)) {

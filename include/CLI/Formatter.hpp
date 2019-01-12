@@ -6,7 +6,7 @@
 #include <string>
 
 #include "CLI/App.hpp"
-#include "CLI/Formatter.hpp"
+//#include "CLI/Formatter.hpp"
 
 namespace CLI {
 
@@ -152,7 +152,7 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
     for(const std::string &group : subcmd_groups_seen) {
         out << "\n" << group << ":\n";
         std::vector<const App *> subcommands_group = app->get_subcommands(
-            [&group](const App *app) { return detail::to_lower(app->get_group()) == detail::to_lower(group); });
+            [&group](const App *sub_app) { return detail::to_lower(sub_app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
             if(mode != AppFormatMode::All) {
                 out << make_subcommand(new_com);
