@@ -3,7 +3,7 @@
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
 Passing the same subcommand multiple times is better supported. A few new features were added as well, including Windows style option support, parsing strings directly, and ignoring underscores in names.
 
-* Support Windows style options with `->allow_windows_style_options`. [#187]
+* Support Windows style options with `->allow_windows_style_options`. [#187] On by default on Windows. [#190]
 * Added `parse(string)` to split up and parse a command-line style string directly. [#186]
 * Added `ignore_underscore` and related functions, to ignore underscores when matching names. [#185]
 * Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179]
@@ -11,12 +11,15 @@ Passing the same subcommand multiple times is better supported. A few new featur
 * Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
 * Dropped the mostly undocumented `short_curcuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
 * Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined (`CLI11_TESTING` may eventually be removed) [#183]
+* Cleanup warnings [#191]
 
 [#179]: https://github.com/CLIUtils/CLI11/pull/179
 [#183]: https://github.com/CLIUtils/CLI11/pull/183
 [#185]: https://github.com/CLIUtils/CLI11/pull/185
 [#186]: https://github.com/CLIUtils/CLI11/pull/186
 [#187]: https://github.com/CLIUtils/CLI11/pull/187
+[#190]: https://github.com/CLIUtils/CLI11/pull/190
+[#191]: https://github.com/CLIUtils/CLI11/pull/191
 
 ## Version 1.6.2: Help-all
 
