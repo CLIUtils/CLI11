@@ -6,7 +6,7 @@
 #include <string>
 
 #include "CLI/App.hpp"
-//#include "CLI/Formatter.hpp"
+#include "CLI/FormatterFwd.hpp"
 
 namespace CLI {
 
