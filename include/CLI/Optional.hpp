@@ -15,12 +15,16 @@
 #if defined(CLI11_CPP17) && __has_include(<optional>) && \
      !defined(CLI11_STD_OPTIONAL)
 #define CLI11_STD_OPTIONAL 1
+#elif !defined(CLI11_STD_OPTIONAL)
+#define CLI11_STD_OPTIONAL 0
 #endif
 
 #if defined(CLI11_CPP14) && __has_include(<experimental/optional>) && \
     !defined(CLI11_EXPERIMENTAL_OPTIONAL) \
     && (!defined(CLI11_STD_OPTIONAL) || CLI11_STD_OPTIONAL == 0)
 #define CLI11_EXPERIMENTAL_OPTIONAL 1
+#elif !defined(CLI11_EXPERIMENTAL_OPTIONAL)
+#define CLI11_EXPERIMENTAL_OPTIONAL 0
 #endif
 
 #if __has_include(<boost/optional.hpp>) && !defined(CLI11_BOOST_OPTIONAL)
@@ -28,6 +32,8 @@
 #if BOOST_VERSION >= 105800
 #define CLI11_BOOST_OPTIONAL 1
 #endif
+#elif !defined(CLI11_BOOST_OPTIONAL)
+#define CLI11_BOOST_OPTIONAL 0
 #endif
 
 #endif

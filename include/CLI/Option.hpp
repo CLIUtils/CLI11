@@ -241,11 +241,14 @@ class Option : public OptionBase<Option> {
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
-    Option(
-        std::string name, std::string description, std::function<bool(results_t)> callback, bool defaulted, App *parent)
+    Option(std::string option_name,
+           std::string description,
+           std::function<bool(results_t)> callback,
+           bool defaulted,
+           App *parent)
         : description_(std::move(description)), default_(defaulted), parent_(parent),
           callback_(callback ? std::move(callback) : [](results_t) { return true; }) {
-        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(name));
+        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name));
     }
 
   public:
@@ -703,8 +706,8 @@ class Option : public OptionBase<Option> {
     }
 
     /// Set the results vector all at once
-    Option *set_results(std::vector<std::string> results) {
-        results_ = results;
+    Option *set_results(std::vector<std::string> result_vector) {
+        results_ = std::move(result_vector);
         callback_run_ = false;
         return this;
     }
@@ -736,11 +739,11 @@ class Option : public OptionBase<Option> {
     Option *set_type_name(std::string typeval) { return type_name(typeval); }
 
     /// Set a custom option size
-    Option *type_size(int type_size) {
-        type_size_ = type_size;
+    Option *type_size(int option_type_size) {
+        type_size_ = option_type_size;
         if(type_size_ == 0)
             required_ = false;
-        if(type_size < 0)
+        if(option_type_size < 0)
             expected_ = -1;
         return this;
     }

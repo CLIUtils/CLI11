@@ -17,9 +17,9 @@ namespace CLI {
 // These are temporary and are undef'd at the end of this file.
 #define CLI11_ERROR_DEF(parent, name)                                                                                  \
   protected:                                                                                                           \
-    name(std::string name, std::string msg, int exit_code) : parent(std::move(name), std::move(msg), exit_code) {}     \
-    name(std::string name, std::string msg, ExitCodes exit_code)                                                       \
-        : parent(std::move(name), std::move(msg), exit_code) {}                                                        \
+    name(std::string ename, std::string msg, int exit_code) : parent(std::move(ename), std::move(msg), exit_code) {}   \
+    name(std::string ename, std::string msg, ExitCodes exit_code)                                                      \
+        : parent(std::move(ename), std::move(msg), exit_code) {}                                                       \
                                                                                                                        \
   public:                                                                                                              \
     name(std::string msg, ExitCodes exit_code) : parent(#name, std::move(msg), exit_code) {}                           \
@@ -61,16 +61,16 @@ enum class ExitCodes {
 
 /// All errors derive from this one
 class Error : public std::runtime_error {
-    int exit_code;
-    std::string name{"Error"};
+    int actual_exit_code;
+    std::string error_name{"Error"};
 
   public:
-    int get_exit_code() const { return exit_code; }
+    int get_exit_code() const { return actual_exit_code; }
 
-    std::string get_name() const { return name; }
+    std::string get_name() const { return error_name; }
 
     Error(std::string name, std::string msg, int exit_code = static_cast<int>(ExitCodes::BaseClass))
-        : runtime_error(msg), exit_code(exit_code), name(std::move(name)) {}
+        : runtime_error(msg), actual_exit_code(exit_code), error_name(std::move(name)) {}
 
     Error(std::string name, std::string msg, ExitCodes exit_code) : Error(name, msg, static_cast<int>(exit_code)) {}
 };
@@ -158,7 +158,7 @@ class CallForHelp : public ParseError {
     CallForHelp() : CallForHelp("This should be caught in your main function, see examples", ExitCodes::Success) {}
 };
 
-/// Usually somethign like --help-all on command line
+/// Usually something like --help-all on command line
 class CallForAllHelp : public ParseError {
     CLI11_ERROR_DEF(ParseError, CallForAllHelp)
     CallForAllHelp()

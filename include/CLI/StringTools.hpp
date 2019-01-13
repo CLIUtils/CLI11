@@ -234,6 +234,10 @@ inline std::string fix_newlines(std::string leader, std::string input) {
     return input;
 }
 
+/// This function detects an equal or colon followed by an escaped quote after an argument
+/// then modifies the string to replace the equality with a space.  This is needed
+/// to allow the split up function to work properly and is intended to be used with the find_and_modify function
+/// the return value is the offset+1 which is required by the find_and_modify function.
 inline size_t escape_detect(std::string &str, size_t offset) {
     auto next = str[offset + 1];
     if((next == '\"') || (next == '\'') || (next == '`')) {
@@ -244,7 +248,7 @@ inline size_t escape_detect(std::string &str, size_t offset) {
         }
     }
     return offset + 1;
-};
+}
 
 } // namespace detail
 } // namespace CLI
