@@ -1356,18 +1356,6 @@ class App {
             return formatter_->make_help(this, prev, mode);
     }
 
-    /// Provided for backwards compatibility \deprecated
-    CLI11_DEPRECATED("Please use footer instead")
-    App *set_footer(std::string msg) { return footer(msg); }
-
-    /// Provided for backwards compatibility \deprecated
-    CLI11_DEPRECATED("Please use name instead")
-    App *set_name(std::string msg) { return name(msg); }
-
-    /// Provided for backwards compatibility \deprecated
-    CLI11_DEPRECATED("Please use callback instead")
-    App *set_callback(std::function<void()> fn) { return callback(fn); }
-
     ///@}
     /// @name Getters
     ///@{

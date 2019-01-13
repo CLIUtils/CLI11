@@ -12,6 +12,7 @@ Passing the same subcommand multiple times is better supported. A few new featur
 * Dropped the mostly undocumented `short_curcuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
 * Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined (`CLI11_TESTING` may eventually be removed) [#183]
 * Cleanup warnings [#191]
+* Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192]
 
 [#179]: https://github.com/CLIUtils/CLI11/pull/179
 [#183]: https://github.com/CLIUtils/CLI11/pull/183
@@ -20,6 +21,7 @@ Passing the same subcommand multiple times is better supported. A few new featur
 [#187]: https://github.com/CLIUtils/CLI11/pull/187
 [#190]: https://github.com/CLIUtils/CLI11/pull/190
 [#191]: https://github.com/CLIUtils/CLI11/pull/191
+[#192]: https://github.com/CLIUtils/CLI11/pull/192
 
 ## Version 1.6.2: Help-all
 
