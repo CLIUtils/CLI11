@@ -683,7 +683,7 @@ TEST_F(TApp, IniOutputVector) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("vector=1 2 3\n", str);
+    EXPECT_EQ("vector=\"1 2 3\"\n", str);
 }
 
 TEST_F(TApp, IniOutputFlag) {
@@ -765,6 +765,21 @@ TEST_F(TApp, IniQuotedOutput) {
     EXPECT_EQ("I am a \"confusing\" string", val2);
 
     std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
+    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+}
+
+TEST_F(TApp, DefaultsIniQuotedOutput) {
+
+    std::string val1{"I am a string"};
+    app.add_option("--val1", val1, "", true);
+
+    std::string val2{R"(I am a "confusing" string)"};
+    app.add_option("--val2", val2, "", true);
+
+    run();
+
+    std::string str = app.config_to_str(true);
     EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
     EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
 }
