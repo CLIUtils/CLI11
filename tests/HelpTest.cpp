@@ -530,6 +530,34 @@ TEST_F(CapturedHelp, NormalError) {
     EXPECT_THAT(err.str(), HasSubstr("for more information"));
     EXPECT_THAT(err.str(), Not(HasSubstr("ExtrasError")));
     EXPECT_THAT(err.str(), HasSubstr("Thing"));
+    EXPECT_THAT(err.str(), Not(HasSubstr(" or ")));
+    EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
+}
+
+TEST_F(CapturedHelp, DoubleError) {
+    app.set_help_all_flag("--help-all");
+    EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
+    EXPECT_EQ(out.str(), "");
+    EXPECT_THAT(err.str(), HasSubstr("for more information"));
+    EXPECT_THAT(err.str(), HasSubstr(" --help "));
+    EXPECT_THAT(err.str(), HasSubstr(" --help-all "));
+    EXPECT_THAT(err.str(), HasSubstr(" or "));
+    EXPECT_THAT(err.str(), Not(HasSubstr("ExtrasError")));
+    EXPECT_THAT(err.str(), HasSubstr("Thing"));
+    EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
+}
+
+TEST_F(CapturedHelp, AllOnlyError) {
+    app.set_help_all_flag("--help-all");
+    app.set_help_flag();
+    EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
+    EXPECT_EQ(out.str(), "");
+    EXPECT_THAT(err.str(), HasSubstr("for more information"));
+    EXPECT_THAT(err.str(), Not(HasSubstr(" --help ")));
+    EXPECT_THAT(err.str(), HasSubstr(" --help-all "));
+    EXPECT_THAT(err.str(), Not(HasSubstr(" or ")));
+    EXPECT_THAT(err.str(), Not(HasSubstr("ExtrasError")));
+    EXPECT_THAT(err.str(), HasSubstr("Thing"));
     EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
 }
 
