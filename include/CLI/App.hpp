@@ -1055,6 +1055,11 @@ class App {
             op->remove_excludes(opt);
         }
 
+        if(help_ptr_ == opt)
+            help_ptr_ = nullptr;
+        if(help_all_ptr_ == opt)
+            help_all_ptr_ = nullptr;
+
         auto iterator =
             std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });
         if(iterator != std::end(options_)) {
