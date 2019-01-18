@@ -2023,9 +2023,28 @@ namespace FailureMessage {
 
 /// Printout a clean, simple message on error (the default in CLI11 1.5+)
 inline std::string simple(const App *app, const Error &e) {
+    const bool has_help = app->get_help_ptr() != nullptr;
+    const bool has_help_all = app->get_help_all_ptr() != nullptr;
+
     std::string header = std::string(e.what()) + "\n";
-    if(app->get_help_ptr() != nullptr)
-        header += "Run with " + app->get_help_ptr()->get_name() + " for more information.\n";
+
+    if(has_help || has_help_all) {
+        header += "Run with ";
+
+        if(has_help) {
+            header += app->get_help_ptr()->get_name();
+        }
+
+        if(has_help_all) {
+            if(has_help) {
+                header += " or ";
+            }
+            header += app->get_help_all_ptr()->get_name();
+        }
+
+        header += " for more information.\n";
+    }
+
     return header;
 }
 
