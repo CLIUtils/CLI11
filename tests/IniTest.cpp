@@ -683,7 +683,7 @@ TEST_F(TApp, IniOutputVector) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("vector=\"1 2 3\"\n", str);
+    EXPECT_EQ("vector=1 2 3\n", str);
 }
 
 TEST_F(TApp, IniOutputFlag) {
