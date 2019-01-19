@@ -478,6 +478,8 @@ Significant features and/or improvements to the code were contributed by:
 -   [Paweł Bylica](https://github.com/chfast)
 -   [Philip Top](https://github.com/phlptp)
 -   [almikhayl](https://github.com/almikhayl)
+-   [nurelin](https://github.com/nurelin)
+-   [ncihneg](https://github.com/ncihneg)
 
 
 ## License
