@@ -2023,27 +2023,19 @@ namespace FailureMessage {
 
 /// Printout a clean, simple message on error (the default in CLI11 1.5+)
 inline std::string simple(const App *app, const Error &e) {
-    const bool has_help = app->get_help_ptr() != nullptr;
-    const bool has_help_all = app->get_help_all_ptr() != nullptr;
-
     std::string header = std::string(e.what()) + "\n";
+    std::vector<std::string> names;
 
-    if(has_help || has_help_all) {
-        header += "Run with ";
+    // Collect names
+    if(app->get_help_ptr() != nullptr)
+        names.push_back(app->get_help_ptr()->get_name());
 
-        if(has_help) {
-            header += app->get_help_ptr()->get_name();
-        }
+    if(app->get_help_all_ptr() != nullptr)
+        names.push_back(app->get_help_all_ptr()->get_name());
 
-        if(has_help_all) {
-            if(has_help) {
-                header += " or ";
-            }
-            header += app->get_help_all_ptr()->get_name();
-        }
-
-        header += " for more information.\n";
-    }
+    // If any names found, suggest those
+    if(!names.empty())
+        header += "Run with " + detail::join(names, " or ") + " for more information.\n";
 
     return header;
 }
