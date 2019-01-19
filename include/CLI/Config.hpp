@@ -54,7 +54,7 @@ ConfigINI::to_config(const App *app, bool default_also, bool write_description, 
                     }
                     out << "; " << detail::fix_newlines("; ", opt->get_description()) << std::endl;
                 }
-                out << name << "=" << value << std::endl;
+                out << name << "=" << detail::add_quotes_if_needed(value) << std::endl;
             }
         }
     }
