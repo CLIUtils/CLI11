@@ -355,6 +355,49 @@ TEST(THelp, RemoveHelp) {
     }
 }
 
+TEST(THelp, RemoveOtherMethodHelp) {
+    CLI::App app{"My prog"};
+
+    // Don't do this. Just in case, let's make sure it works.
+    app.remove_option(const_cast<CLI::Option *>(app.get_help_ptr()));
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("-h,--help")));
+    EXPECT_THAT(help, Not(HasSubstr("Options:")));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+
+    std::vector<std::string> input{"--help"};
+    try {
+        app.parse(input);
+    } catch(const CLI::ParseError &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ExtrasError), e.get_exit_code());
+    }
+}
+
+TEST(THelp, RemoveOtherMethodHelpAll) {
+    CLI::App app{"My prog"};
+
+    app.set_help_all_flag("--help-all");
+    // Don't do this. Just in case, let's make sure it works.
+    app.remove_option(const_cast<CLI::Option *>(app.get_help_all_ptr()));
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, Not(HasSubstr("--help-all")));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+
+    std::vector<std::string> input{"--help-all"};
+    try {
+        app.parse(input);
+    } catch(const CLI::ParseError &e) {
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ExtrasError), e.get_exit_code());
+    }
+}
+
 TEST(THelp, NoHelp) {
     CLI::App app{"My prog"};
     app.set_help_flag();
