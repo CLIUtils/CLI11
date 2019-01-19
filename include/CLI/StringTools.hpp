@@ -250,5 +250,17 @@ inline size_t escape_detect(std::string &str, size_t offset) {
     return offset + 1;
 }
 
+/// Add quotes if the string contains spaces
+inline std::string &add_quotes_if_needed(std::string &str) {
+    if((str.front() != '"' && str.front() != '\'') || str.front() != str.back()) {
+        char quote = str.find('"') < str.find('\'') ? '\'' : '"';
+        if(str.find(' ') != std::string::npos) {
+            str.insert(0, 1, quote);
+            str.append(1, quote);
+        }
+    }
+    return str;
+}
+
 } // namespace detail
 } // namespace CLI

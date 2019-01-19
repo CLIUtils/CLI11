@@ -768,3 +768,18 @@ TEST_F(TApp, IniQuotedOutput) {
     EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
     EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
 }
+
+TEST_F(TApp, DefaultsIniQuotedOutput) {
+
+    std::string val1{"I am a string"};
+    app.add_option("--val1", val1, "", true);
+
+    std::string val2{R"(I am a "confusing" string)"};
+    app.add_option("--val2", val2, "", true);
+
+    run();
+
+    std::string str = app.config_to_str(true);
+    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
+    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+}
