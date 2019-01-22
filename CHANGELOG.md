@@ -7,7 +7,8 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * Added `parse(string)` to split up and parse a command-line style string directly. [#186]
 * Added `ignore_underscore` and related functions, to ignore underscores when matching names. [#185]
 * The default INI Config will now add quotes to strings with spaces [#195]
-* The default message now will mention the help--all flag also if present [#197]
+* The default message now will mention the help-all flag also if present [#197]
+* Added `->description` to set Option descriptions [#199]
 * Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179]
 * Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179]
 * Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
@@ -26,6 +27,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 [#192]: https://github.com/CLIUtils/CLI11/pull/192
 [#197]: https://github.com/CLIUtils/CLI11/pull/197
 [#195]: https://github.com/CLIUtils/CLI11/issues/195
+[#199]: https://github.com/CLIUtils/CLI11/pull/199
 
 ## Version 1.6.2: Help-all
 
@@ -125,7 +127,7 @@ Other changes:
 
 Backend and testing changes:
 
-* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116] 
+* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116]
 * Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141]
 * Better CMake policy handling. [#110]
 * Includes are properly sorted. [#120]
@@ -221,7 +223,7 @@ This version adds lots of smaller fixes and additions after the refactor in vers
 * Added `ExistingPath` validator  [#73]
 * `app.allow_ini_extras()` added to allow extras in INI files [#70]
 * Multiline INI comments now supported
-* Descriptions can now be written with `config_to_str` [#66] 
+* Descriptions can now be written with `config_to_str` [#66]
 * Double printing of error message fixed [#77]
 * Renamed `requires` to `needs` to avoid C++20 keyword [#75], [#82]
 * MakeSingleHeader now works if outside of git [#78]
@@ -260,7 +262,7 @@ favorite CLI programs. Error messages and help messages are better and more flex
 * Footers can be added to help [#42](https://github.com/CLIUtils/CLI11/pull/42)
 * Help flags are easier to customize [#43](https://github.com/CLIUtils/CLI11/pull/43)
 * Subcommand now support groups [#46](https://github.com/CLIUtils/CLI11/pull/46)
-* `CLI::RuntimeError` added, for easy exit with error codes [#45](https://github.com/CLIUtils/CLI11/pull/45) 
+* `CLI::RuntimeError` added, for easy exit with error codes [#45](https://github.com/CLIUtils/CLI11/pull/45)
 * The clang-format script is now no longer "hidden" [#48](https://github.com/CLIUtils/CLI11/pull/48)
 * The order is now preserved for subcommands (list and callbacks) [#49](https://github.com/CLIUtils/CLI11/pull/49)
 * Tests now run individually, utilizing CMake 3.10 additions if possible [#50](https://github.com/CLIUtils/CLI11/pull/50)
@@ -277,7 +279,7 @@ favorite CLI programs. Error messages and help messages are better and more flex
 * Allow options to be disabled from INI file, rename `add_config` to `set_config` [#60](https://github.com/CLIUtils/CLI11/pull/60)
 
 > ### Converting from CLI11 1.2:
-> 
+>
 > * `app.parse` no longer returns a vector. Instead, use `app.remaining(true)`.
 > * `"hidden"` is no longer a special group name, instead use `""`
 > * Validators API has changed to return an error string; use `.empty()` to get the old bool back
@@ -302,8 +304,8 @@ This release focuses on making CLI11 behave properly in corner cases, and with c
 This release incorporates feedback from the release announcement. The examples are slowly being expanded, some corner cases improved, and some new functionality for tricky parsing situations.
 
 * Added simple support for enumerations, allow non-printable objects [#12](https://github.com/CLIUtils/CLI11/issues/12)
-* Added `app.parse_order()` with original parse order ([#13](https://github.com/CLIUtils/CLI11/issues/13), [#16](https://github.com/CLIUtils/CLI11/pull/16)) 
-* Added `prefix_command()`, which is like `allow_extras` but instantly stops and returns. ([#8](https://github.com/CLIUtils/CLI11/issues/8), [#17](https://github.com/CLIUtils/CLI11/pull/17)) 
+* Added `app.parse_order()` with original parse order ([#13](https://github.com/CLIUtils/CLI11/issues/13), [#16](https://github.com/CLIUtils/CLI11/pull/16))
+* Added `prefix_command()`, which is like `allow_extras` but instantly stops and returns. ([#8](https://github.com/CLIUtils/CLI11/issues/8), [#17](https://github.com/CLIUtils/CLI11/pull/17))
 * Removed Windows warning ([#10](https://github.com/CLIUtils/CLI11/issues/10), [#20](https://github.com/CLIUtils/CLI11/pull/20))
 * Some improvements to CMake, detect Python and no dependencies on Python 2 (like Python 3) ([#18](https://github.com/CLIUtils/CLI11/issues/18), [#21](https://github.com/CLIUtils/CLI11/pull/21))
 
