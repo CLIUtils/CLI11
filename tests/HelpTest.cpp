@@ -645,6 +645,15 @@ TEST(THelp, AccessDescription) {
     EXPECT_EQ(app.get_description(), "My description goes here");
 }
 
+TEST(THelp, SetDescriptionAfterCreation) {
+    CLI::App app{""};
+
+    app.description("My description goes here");
+
+    EXPECT_EQ(app.get_description(), "My description goes here");
+    EXPECT_THAT(app.help(), HasSubstr("My description goes here"));
+}
+
 TEST(THelp, AccessOptionDescription) {
     CLI::App app{};
 
