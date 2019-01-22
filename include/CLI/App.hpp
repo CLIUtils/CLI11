@@ -1375,9 +1375,9 @@ class App {
     std::string get_description() const { return description_; }
 
     /// Set the description
-    App *description(const std::string &description) { 
-        description_ = description; 
-        return this; 
+    App *description(const std::string &description) {
+        description_ = description;
+        return this;
     }
 
     /// Get the list of options (user facing function, so returns raw pointers), has optional filter function
