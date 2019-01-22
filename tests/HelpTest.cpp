@@ -645,6 +645,26 @@ TEST(THelp, AccessDescription) {
     EXPECT_EQ(app.get_description(), "My description goes here");
 }
 
+TEST(THelp, AccessOptionDescription) {
+    CLI::App app{};
+
+    int x;
+    auto opt = app.add_option("-a,--alpha", x, "My description goes here");
+
+    EXPECT_EQ(opt->get_description(), "My description goes here");
+}
+
+TEST(THelp, SetOptionDescriptionAfterCreation) {
+    CLI::App app{};
+
+    int x;
+    auto opt = app.add_option("-a,--alpha", x);
+    opt->description("My description goes here");
+
+    EXPECT_EQ(opt->get_description(), "My description goes here");
+    EXPECT_THAT(app.help(), HasSubstr("My description goes here"));
+}
+
 TEST(THelp, CleanNeeds) {
     CLI::App app;
 
