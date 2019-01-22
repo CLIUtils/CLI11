@@ -518,7 +518,10 @@ class Option : public OptionBase<Option> {
     const std::string &get_description() const { return description_; }
 
     /// Set the description
-    Option* description(const std::string &description) { description_ = description; return this; }
+    Option *description(const std::string &description) {
+        description_ = description;
+        return this;
+    }
 
     ///@}
     /// @name Help tools
