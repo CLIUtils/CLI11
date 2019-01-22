@@ -1374,6 +1374,12 @@ class App {
     /// Get the app or subcommand description
     std::string get_description() const { return description_; }
 
+    /// Set the description
+    App *description(const std::string &description) {
+        description_ = description;
+        return this;
+    }
+
     /// Get the list of options (user facing function, so returns raw pointers), has optional filter function
     std::vector<const Option *> get_options(const std::function<bool(const Option *)> filter = {}) const {
         std::vector<const Option *> options(options_.size());

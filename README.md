@@ -232,6 +232,7 @@ Before parsing, you can set the following options:
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with optionone.  This does not apply to short form options since they only have one character
+-   `.description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
@@ -306,6 +307,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 -   `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
 -   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
+-   `.description(str)`: Set/change the description.
 -   `.get_description()`: Access the description.
 -   `.parsed()`: True if this subcommand was given on the command line.
 -   `.name(name)`: Add or change the name.
@@ -478,8 +480,9 @@ Significant features and/or improvements to the code were contributed by:
 -   [Paweł Bylica](https://github.com/chfast)
 -   [Philip Top](https://github.com/phlptp)
 -   [almikhayl](https://github.com/almikhayl)
--   [nurelin](https://github.com/nurelin)
--   [ncihneg](https://github.com/ncihneg)
+-   [nurelin](https://github.com/nurelin) <!-- help_all in message -->
+-   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
+-   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
 
 
 ## License
