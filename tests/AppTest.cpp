@@ -296,6 +296,65 @@ TEST_F(TApp, OneStringAgain) {
     EXPECT_EQ(str, "mystring");
 }
 
+TEST_F(TApp, OneStringFunction) {
+    std::string str;
+    app.add_option_function<std::string>("-s,--string", [&str](const std::string &val) {
+        str = val;
+        return true;
+    });
+    args = {"--string", "mystring"};
+    run();
+    EXPECT_EQ((size_t)1, app.count("-s"));
+    EXPECT_EQ((size_t)1, app.count("--string"));
+    EXPECT_EQ(str, "mystring");
+}
+
+TEST_F(TApp, doubleFunction) {
+    double res;
+    app.add_option_function<double>("--val", [&res](double val) {
+        res = std::abs(val + 54);
+        return true;
+    });
+    args = {"--val", "-354.356"};
+    run();
+    EXPECT_EQ(res, 300.356);
+}
+
+TEST_F(TApp, doubleFunctionFail) {
+    double res;
+    app.add_option_function<double>("--val", [&res](double val) {
+        res = std::abs(val + 54);
+        return true;
+    });
+    args = {"--val", "not_double"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, doubleVectorFunction) {
+    std::vector<double> res;
+    app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
+        res = val;
+        std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
+        return true;
+    });
+    args = {"--val", "5", "--val", "6", "--val", "7"};
+    run();
+    EXPECT_EQ(res.size(), 3);
+    EXPECT_EQ(res[0], 10.0);
+    EXPECT_EQ(res[2], 12.0);
+}
+
+TEST_F(TApp, doubleVectorFunctionFail) {
+    std::vector<double> res;
+    app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
+        res = val;
+        std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
+        return true;
+    });
+    args = {"--val", "five", "--val", "nine", "--val", "7"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, DefaultStringAgain) {
     std::string str = "previous";
     app.add_option("-s,--string", str);
