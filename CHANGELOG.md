@@ -1,7 +1,7 @@
 ## Version 1.7: Parse breakup (in progress)
 
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
-Passing the same subcommand multiple times is better supported. Several new features were added as well, including Windows style option support, parsing strings directly, and ignoring underscores in names.
+Passing the same subcommand multiple times is better supported. Several new features were added as well, including Windows style option support, parsing strings directly, and ignoring underscores in names. Adding a set that you plan to change later must now be done with `add_mutable_set`.
 
 * Support Windows style options with `->allow_windows_style_options`. [#187] On by default on Windows. [#190]
 * Added `parse(string)` to split up and parse a command-line style string directly. [#186]
@@ -9,6 +9,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * The default INI Config will now add quotes to strings with spaces [#195]
 * The default message now will mention the help-all flag also if present [#197]
 * Added `->description` to set Option descriptions [#199]
+* Mutating sets (introduced in Version 1.6) now have a clear add method, `add_mutable_set*`, since the set reference should not expire [#200]
 * Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179]
 * Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179]
 * Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
@@ -28,6 +29,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 [#197]: https://github.com/CLIUtils/CLI11/pull/197
 [#195]: https://github.com/CLIUtils/CLI11/issues/195
 [#199]: https://github.com/CLIUtils/CLI11/pull/199
+[#200]: https://github.com/CLIUtils/CLI11/pull/200
 
 ## Version 1.6.2: Help-all
 
