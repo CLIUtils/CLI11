@@ -172,6 +172,39 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultiple) {
     EXPECT_EQ(str3, "\"quoted string\"");
 }
 
+TEST_F(TApp, OneStringEqualVersionSingleStringEmbeddedEqual) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("-m,--mstr", str3);
+    app.parse("--string=\"app=\\\"test1 b\\\" test2=\\\"frogs\\\"\" -t 'qstring 2' -m=`\"quoted string\"`");
+    EXPECT_EQ(str, "app=\"test1 b\" test2=\"frogs\"");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+
+    app.parse("--string=\"app='test1 b' test2='frogs'\" -t 'qstring 2' -m=`\"quoted string\"`");
+    EXPECT_EQ(str, "app='test1 b' test2='frogs'");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
+TEST_F(TApp, OneStringEqualVersionSingleStringEmbeddedEqualWindowsStyle) {
+    std::string str, str2, str3;
+    app.add_option("-s,--string", str);
+    app.add_option("-t,--tstr", str2);
+    app.add_option("--mstr", str3);
+    app.allow_windows_style_options();
+    app.parse("/string:\"app:\\\"test1 b\\\" test2:\\\"frogs\\\"\" /t 'qstring 2' /mstr:`\"quoted string\"`");
+    EXPECT_EQ(str, "app:\"test1 b\" test2:\"frogs\"");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+
+    app.parse("/string:\"app:'test1 b' test2:'frogs'\" /t 'qstring 2' /mstr:`\"quoted string\"`");
+    EXPECT_EQ(str, "app:'test1 b' test2:'frogs'");
+    EXPECT_EQ(str2, "qstring 2");
+    EXPECT_EQ(str3, "\"quoted string\"");
+}
+
 TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleMixedStyle) {
     std::string str, str2, str3;
     app.add_option("-s,--string", str);
