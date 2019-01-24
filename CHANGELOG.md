@@ -13,10 +13,16 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179]
 * Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179]
 * Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
-* Dropped the mostly undocumented `short_curcuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
+* Dropped the mostly undocumented `short_circuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
 * Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined (`CLI11_TESTING` may eventually be removed) [#183]
 * Cleanup warnings [#191]
 * Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192]
+
+> ### Converting from CLI11 1.6:
+>
+> * `->short_circuit()` is no longer needed, just remove it if you were using it - raising an exception will happen in the proper place now without it.
+> * `->add_set*` becomes `->add_mutable_set*` if you were using the editable set feature
+> * `footer`, `name`, `callback`, and `type_name` must be used instead of the `set_*` versions (deprecated previously).
 
 [#179]: https://github.com/CLIUtils/CLI11/pull/179
 [#183]: https://github.com/CLIUtils/CLI11/pull/183
