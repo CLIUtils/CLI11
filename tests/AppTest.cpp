@@ -1168,12 +1168,12 @@ TEST_F(TApp, FailSet) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, FailLValueSet) {
+TEST_F(TApp, FailMutableSet) {
 
     int choice;
     std::set<int> vals{1, 2, 3};
-    app.add_set("-q,--quick", choice, vals);
-    app.add_set("-s,--slow", choice, vals, "", true);
+    app.add_mutable_set("-q,--quick", choice, vals);
+    app.add_mutable_set("-s,--slow", choice, vals, "", true);
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -1206,12 +1206,11 @@ TEST_F(TApp, InSetIgnoreCase) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
-/*
-TEST_F(TApp, InSetIgnoreCaseLValue) {
+TEST_F(TApp, InSetIgnoreCaseMutableValue) {
 
     std::set<std::string> options{"one", "Two", "THREE"};
     std::string choice;
-    app.add_set_ignore_case("-q,--quick", choice, options);
+    app.add_mutable_set_ignore_case("-q,--quick", choice, options);
 
     args = {"--quick", "One"};
     run();
@@ -1227,14 +1226,7 @@ TEST_F(TApp, InSetIgnoreCaseLValue) {
 
     options.clear();
     args = {"--quick", "ThrEE"};
-    run();
-    EXPECT_EQ("THREE", choice); // this will now fail since options was cleared
-
-    args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, InSetIgnoreCasePointer) {
@@ -1258,7 +1250,7 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
     delete options;
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice); // this could cause a seg fault
+    EXPECT_EQ("THREE", choice); // this does not throw a segfault
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -1266,7 +1258,7 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
     args = {"--quick=one", "--quick=two"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
-*/
+
 TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;
@@ -1765,8 +1757,8 @@ TEST_F(TApp, AddRemoveSetItems) {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
-    app.add_set("--type1", type1, items);
-    app.add_set("--type2", type2, items, "", true);
+    app.add_mutable_set("--type1", type1, items);
+    app.add_mutable_set("--type2", type2, items, "", true);
 
     args = {"--type1", "TYPE1", "--type2", "TYPE2"};
 
@@ -1796,8 +1788,8 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
-    app.add_set_ignore_case("--type1", type1, items);
-    app.add_set_ignore_case("--type2", type2, items, "", true);
+    app.add_mutable_set_ignore_case("--type1", type1, items);
+    app.add_mutable_set_ignore_case("--type2", type2, items, "", true);
 
     args = {"--type1", "TYPe1", "--type2", "TyPE2"};
 

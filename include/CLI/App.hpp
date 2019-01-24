@@ -547,8 +547,8 @@ class App {
     /// Add set of options (No default, temp reference, such as an inline set)
     template <typename T>
     Option *add_set(std::string option_name,
-                    T &member,                   ///< The selected member of the set
-                    const std::set<T> &&options, ///< The set of possibilities
+                    T &member,           ///< The selected member of the set
+                    std::set<T> options, ///< The set of possibilities
                     std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
@@ -566,12 +566,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options (No default, non-temp reference, such as an existing set)
+    /// Add set of options (No default, set can be changed afterwords - do not destroy the set)
     template <typename T>
-    Option *add_set(std::string option_name,
-                    T &member,                  ///< The selected member of the set
-                    const std::set<T> &options, ///< The set of possibilities
-                    std::string description = "") {
+    Option *add_mutable_set(std::string option_name,
+                            T &member,                  ///< The selected member of the set
+                            const std::set<T> &options, ///< The set of possibilities
+                            std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -588,11 +588,11 @@ class App {
         return opt;
     }
 
-    /// Add set of options (with default, R value, such as an inline set)
+    /// Add set of options (with default, static set, such as an inline set)
     template <typename T>
     Option *add_set(std::string option_name,
-                    T &member,                   ///< The selected member of the set
-                    const std::set<T> &&options, ///< The set of possibilities
+                    T &member,           ///< The selected member of the set
+                    std::set<T> options, ///< The set of possibilities
                     std::string description,
                     bool defaulted) {
 
@@ -616,13 +616,13 @@ class App {
         return opt;
     }
 
-    /// Add set of options (with default, L value reference, such as an existing set)
+    /// Add set of options (with default, set can be changed afterwards - do not destroy the set)
     template <typename T>
-    Option *add_set(std::string option_name,
-                    T &member,                  ///< The selected member of the set
-                    const std::set<T> &options, ///< The set of possibilities
-                    std::string description,
-                    bool defaulted) {
+    Option *add_mutable_set(std::string option_name,
+                            T &member,                  ///< The selected member of the set
+                            const std::set<T> &options, ///< The set of possibilities
+                            std::string description,
+                            bool defaulted) {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -643,10 +643,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (no default, R value)
+    /// Add set of options, string only, ignore case (no default, static set)
     Option *add_set_ignore_case(std::string option_name,
-                                std::string &member,                   ///< The selected member of the set
-                                const std::set<std::string> &&options, ///< The set of possibilities
+                                std::string &member,           ///< The selected member of the set
+                                std::set<std::string> options, ///< The set of possibilities
                                 std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
@@ -671,11 +671,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (no default, L value)
-    Option *add_set_ignore_case(std::string option_name,
-                                std::string &member,                  ///< The selected member of the set
-                                const std::set<std::string> &options, ///< The set of possibilities
-                                std::string description = "") {
+    /// Add set of options, string only, ignore case (no default, set can be changed afterwards - do not destroy the
+    /// set)
+    Option *add_mutable_set_ignore_case(std::string option_name,
+                                        std::string &member,                  ///< The selected member of the set
+                                        const std::set<std::string> &options, ///< The set of possibilities
+                                        std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -699,10 +700,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (default, R value)
+    /// Add set of options, string only, ignore case (default, static set)
     Option *add_set_ignore_case(std::string option_name,
-                                std::string &member,                   ///< The selected member of the set
-                                const std::set<std::string> &&options, ///< The set of possibilities
+                                std::string &member,           ///< The selected member of the set
+                                std::set<std::string> options, ///< The set of possibilities
                                 std::string description,
                                 bool defaulted) {
 
@@ -730,12 +731,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (default, L value)
-    Option *add_set_ignore_case(std::string option_name,
-                                std::string &member,                  ///< The selected member of the set
-                                const std::set<std::string> &options, ///< The set of possibilities
-                                std::string description,
-                                bool defaulted) {
+    /// Add set of options, string only, ignore case (default, set can be changed afterwards - do not destroy the set)
+    Option *add_mutable_set_ignore_case(std::string option_name,
+                                        std::string &member,                  ///< The selected member of the set
+                                        const std::set<std::string> &options, ///< The set of possibilities
+                                        std::string description,
+                                        bool defaulted) {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -761,10 +762,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (no default, R value)
+    /// Add set of options, string only, ignore underscore (no default, static set)
     Option *add_set_ignore_underscore(std::string option_name,
-                                      std::string &member,                   ///< The selected member of the set
-                                      const std::set<std::string> &&options, ///< The set of possibilities
+                                      std::string &member,           ///< The selected member of the set
+                                      std::set<std::string> options, ///< The set of possibilities
                                       std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
@@ -789,11 +790,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (no default, L value)
-    Option *add_set_ignore_underscore(std::string option_name,
-                                      std::string &member,                  ///< The selected member of the set
-                                      const std::set<std::string> &options, ///< The set of possibilities
-                                      std::string description = "") {
+    /// Add set of options, string only, ignore underscore (no default, set can be changed afterwards - do not destroy
+    /// the set)
+    Option *add_mutable_set_ignore_underscore(std::string option_name,
+                                              std::string &member,                  ///< The selected member of the set
+                                              const std::set<std::string> &options, ///< The set of possibilities
+                                              std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -817,10 +819,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (default, R value)
+    /// Add set of options, string only, ignore underscore (default, static set)
     Option *add_set_ignore_underscore(std::string option_name,
-                                      std::string &member,                   ///< The selected member of the set
-                                      const std::set<std::string> &&options, ///< The set of possibilities
+                                      std::string &member,           ///< The selected member of the set
+                                      std::set<std::string> options, ///< The set of possibilities
                                       std::string description,
                                       bool defaulted) {
 
@@ -848,12 +850,13 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (default, L value)
-    Option *add_set_ignore_underscore(std::string option_name,
-                                      std::string &member,                  ///< The selected member of the set
-                                      const std::set<std::string> &options, ///< The set of possibilities
-                                      std::string description,
-                                      bool defaulted) {
+    /// Add set of options, string only, ignore underscore (default, set can be changed afterwards - do not destroy the
+    /// set)
+    Option *add_mutable_set_ignore_underscore(std::string option_name,
+                                              std::string &member,                  ///< The selected member of the set
+                                              const std::set<std::string> &options, ///< The set of possibilities
+                                              std::string description,
+                                              bool defaulted) {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -879,10 +882,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore and case(no default, R value)
+    /// Add set of options, string only, ignore underscore and case (no default, static set)
     Option *add_set_ignore_case_underscore(std::string option_name,
-                                           std::string &member,                   ///< The selected member of the set
-                                           const std::set<std::string> &&options, ///< The set of possibilities
+                                           std::string &member,           ///< The selected member of the set
+                                           std::set<std::string> options, ///< The set of possibilities
                                            std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
@@ -907,11 +910,12 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore and case(no default, L value)
-    Option *add_set_ignore_case_underscore(std::string option_name,
-                                           std::string &member,                  ///< The selected member of the set
-                                           const std::set<std::string> &options, ///< The set of possibilities
-                                           std::string description = "") {
+    /// Add set of options, string only, ignore underscore and case (no default, set can be changed afterwards - do not
+    /// destroy the set)
+    Option *add_mutable_set_ignore_case_underscore(std::string option_name,
+                                                   std::string &member, ///< The selected member of the set
+                                                   const std::set<std::string> &options, ///< The set of possibilities
+                                                   std::string description = "") {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
@@ -935,10 +939,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore and case (default, R value)
+    /// Add set of options, string only, ignore underscore and case (default, static set)
     Option *add_set_ignore_case_underscore(std::string option_name,
-                                           std::string &member,                   ///< The selected member of the set
-                                           const std::set<std::string> &&options, ///< The set of possibilities
+                                           std::string &member,           ///< The selected member of the set
+                                           std::set<std::string> options, ///< The set of possibilities
                                            std::string description,
                                            bool defaulted) {
 
@@ -966,12 +970,13 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore and case (default, L value)
-    Option *add_set_ignore_case_underscore(std::string option_name,
-                                           std::string &member,                  ///< The selected member of the set
-                                           const std::set<std::string> &options, ///< The set of possibilities
-                                           std::string description,
-                                           bool defaulted) {
+    /// Add set of options, string only, ignore underscore and case (default, set can be changed afterwards - do not
+    /// destroy the set)
+    Option *add_mutable_set_ignore_case_underscore(std::string option_name,
+                                                   std::string &member, ///< The selected member of the set
+                                                   const std::set<std::string> &options, ///< The set of possibilities
+                                                   std::string description,
+                                                   bool defaulted) {
 
         std::string simple_name = CLI::detail::split(option_name, ',').at(0);
         CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {

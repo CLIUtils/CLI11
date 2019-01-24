@@ -795,7 +795,7 @@ TEST(THelp, ChangingSet) {
 
     std::set<int> vals{1, 2, 3};
     int val;
-    app.add_set("--val", val, vals);
+    app.add_mutable_set("--val", val, vals);
 
     std::string help = app.help();
 
@@ -816,7 +816,7 @@ TEST(THelp, ChangingSetDefaulted) {
 
     std::set<int> vals{1, 2, 3};
     int val = 2;
-    app.add_set("--val", val, vals, "", true);
+    app.add_mutable_set("--val", val, vals, "", true);
 
     std::string help = app.help();
 
@@ -836,7 +836,7 @@ TEST(THelp, ChangingCaselessSet) {
 
     std::set<std::string> vals{"1", "2", "3"};
     std::string val;
-    app.add_set_ignore_case("--val", val, vals);
+    app.add_mutable_set_ignore_case("--val", val, vals);
 
     std::string help = app.help();
 
@@ -857,7 +857,7 @@ TEST(THelp, ChangingCaselessSetDefaulted) {
 
     std::set<std::string> vals{"1", "2", "3"};
     std::string val = "2";
-    app.add_set_ignore_case("--val", val, vals, "", true);
+    app.add_mutable_set_ignore_case("--val", val, vals, "", true);
 
     std::string help = app.help();
 
