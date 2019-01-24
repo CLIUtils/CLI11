@@ -190,17 +190,17 @@ app.add_flag_function(option_name,
              help_string="")
 
 app.add_set(option_name,
-            variable_to_bind_to,
-            set_of_possible_options,
+            variable_to_bind_to,     // Same type as stored by set
+            set_of_possible_options, // Set will be copied, ignores changes
             help_string="",
             default=false)
 app.add_mutable_set(... // Set can change later, keeps reference
 
-app.add_set_ignore_case(... // String only
-app.add__mutable_set_ignore_case(... // String only
-app.add_set_ignore_underscore(... // String only
-app.add__mutable_set_ignore_underscore(... // String only
-app.add_set_ignore_case_underscore(... // String only
+app.add_set_ignore_case(...                    // String only
+app.add_mutable_set_ignore_case(...            // String only
+app.add_set_ignore_underscore(...              // String only
+app.add_mutable_set_ignore_underscore(...      // String only
+app.add_set_ignore_case_underscore(...         // String only
 app.add_mutable_set_ignore_case_underscore(... // String only
 
 App* subcom = app.add_subcommand(name, description);
@@ -234,7 +234,7 @@ Before parsing, you can set the following options:
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with optionone.  This does not apply to short form options since they only have one character
--   `.description(str)`: Set/change the description.
+-   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.

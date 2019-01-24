@@ -1,4 +1,4 @@
-## Version 1.7: Parse breakup (in progress)
+## Version 1.7: Parse breakup
 
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
 Passing the same subcommand multiple times is better supported. Several new features were added as well, including Windows style option support, parsing strings directly, and ignoring underscores in names. Adding a set that you plan to change later must now be done with `add_mutable_set`.
