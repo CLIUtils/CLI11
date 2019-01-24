@@ -10,14 +10,17 @@ def get_version():
     except Exception:
         return None
 
-class HelloConan(ConanFile):
+class CLI11Conan(ConanFile):
     name = "CLI11"
     version = get_version()
-    url = "https://github.com/CLIUtils/CLI11"
-    settings = "os", "compiler", "arch", "build_type"
-    license = "BSD 3 clause"
     description = "Command Line Interface toolkit for C++11"
+    topics = ("cli", "c++11", "parser", "cli11")
+    url = "https://github.com/CLIUtils/CLI11"
+    homepage = "https://github.com/CLIUtils/CLI11"
+    author = "Henry Schreiner <hschrein@cern.ch>"
+    license = "BSD-3-Clause"
 
+    settings = "os", "compiler", "arch", "build_type"
     exports_sources = "LICENSE", "README.md", "include/*", "extern/*", "cmake/*", "CMakeLists.txt", "tests/*"
 
     def build(self): # this is not building a library, just tests
