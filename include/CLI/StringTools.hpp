@@ -243,7 +243,7 @@ inline size_t escape_detect(std::string &str, size_t offset) {
     if((next == '\"') || (next == '\'') || (next == '`')) {
         auto astart = str.find_last_of("-/ \"\'`", offset - 1);
         if(astart != std::string::npos) {
-            if(str[astart] == (str[offset] == '=') ? '-' : '/')
+            if(str[astart] == ((str[offset] == '=') ? '-' : '/'))
                 str[offset] = ' '; // interpret this as a space so the split_up works properly
         }
     }
