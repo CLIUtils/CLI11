@@ -13,9 +13,9 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.6 online][wandbox-badge]][wandbox-link]
 
+[What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
-[API Reference][api-docs] •
-[What's new](./CHANGELOG.md)
+[API Reference][api-docs]
 
 CLI11 is a command line parser for C++11 and beyond that provides a rich feature set with a simple and intuitive interface.
 
