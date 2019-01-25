@@ -1080,11 +1080,11 @@ class App {
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string subcommand_name, std::string description = "") {
-        subcommands_.emplace_back(new App(description, subcommand_name, this));
+        CLI::App_p subcom(new App(description, subcommand_name, this));
         for(const auto &subc : subcommands_)
-            if(subc.get() != subcommands_.back().get())
-                if(subc->check_name(subcommands_.back()->name_) || subcommands_.back()->check_name(subc->name_))
-                    throw OptionAlreadyAdded(subc->name_);
+            if(subc->check_name(subcommand_name) || subcom->check_name(subc->name_))
+                throw OptionAlreadyAdded(subc->name_);
+        subcommands_.push_back(std::move(subcom));
         return subcommands_.back().get();
     }
 
