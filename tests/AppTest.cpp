@@ -339,7 +339,7 @@ TEST_F(TApp, doubleVectorFunction) {
     });
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
-    EXPECT_EQ(res.size(), 3);
+    EXPECT_EQ(res.size(), (size_t)3);
     EXPECT_EQ(res[0], 10.0);
     EXPECT_EQ(res[2], 12.0);
 }
