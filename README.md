@@ -71,7 +71,7 @@ An acceptable CLI parser library should be all of the following:
 -   Usable subcommand syntax, with support for multiple subcommands, nested subcommands, and optional fallthrough (explained later).
 -   Ability to add a configuration file (`ini` format), and produce it as well.
 -   Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
--   Work with standard types, simple custom types, and extendible to exotic types.
+-   Work with standard types, simple custom types, and extensible to exotic types.
 -   Permissively licensed.
 
 ### Other parsers
@@ -92,7 +92,7 @@ After I wrote this, I also found the following libraries:
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [GFlags][]              | The Google Commandline Flags library. Uses macros heavily, and is limited in scope, missing things like subcommands. It provides a simple syntax and supports config files/env vars. |
 | [GetOpt][]              | Very limited C solution with long, convoluted syntax. Does not support much of anything, like help generation. Always available on UNIX, though (but in different flavors).          |
-| [ProgramOptions.hxx][]  | Intresting library, less powerful and no subcommands. Nice callback system.                                                                                                          |
+| [ProgramOptions.hxx][]  | Interesting library, less powerful and no subcommands. Nice callback system.                                                                                                          |
 | [Args][]                | Also interesting, and supports subcommands. I like the optional-like design, but CLI11 is cleaner and provides direct value access, and is less verbose.                             |
 | [Argument Aggregator][] | I'm a big fan of the [fmt][] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands.                                                   |
 | [Clara][]               | Simple library built for the excellent [Catch][] testing framework. Unique syntax, limited scope.                                                                                    |
@@ -239,7 +239,7 @@ Before parsing, you can set the following options:
 -   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
--   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with optionone.  This does not apply to short form options since they only have one character
+-   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
@@ -285,7 +285,7 @@ Subcommands are supported, and can be nested infinitely. To add a subcommand, ca
 case).
 
 If you want to require that at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well. If you give two arguments, that sets the min and max number allowed.
-0 for the max number allowed will allow an unlimited number of subcommands. As a handy shortcut, a single negative value N will set "up to N" values. Limiting the maximimum number allows you to keep arguments that match a previous
+0 for the max number allowed will allow an unlimited number of subcommands. As a handy shortcut, a single negative value N will set "up to N" values. Limiting the maximum number allows you to keep arguments that match a previous
 subcommand name from matching.
 
 If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
@@ -295,6 +295,9 @@ For many cases, however, using an app's callback may be easier. Every app execut
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).
+
+Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
+Nameless subcommands function a little like groups in the main `App`.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
 
 #### Subcommand options
 
@@ -307,7 +310,8 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
--   `.add_subcommand(name, description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
+-   `.add_subcommand(name="", description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
+-   `.add_subcommand(shared_ptr<App>)` Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands given on the command line.
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.

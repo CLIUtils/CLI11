@@ -49,7 +49,7 @@ std::string help(const App *app, const Error &e);
 
 class App;
 
-using App_p = std::unique_ptr<App>;
+using App_p = std::shared_ptr<App>;
 
 /// Creates a command line program, with very few defaults.
 /** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
@@ -77,8 +77,11 @@ class App {
     /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
     bool allow_config_extras_{false};
 
-    ///  If true, return immediately on an unrecognised option (implies allow_extras) INHERITABLE
+    ///  If true, return immediately on an unrecognized option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
+
+    /// if set to true the name was automatically generated from the command line vs a user set name
+    bool has_automatic_name_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
@@ -244,6 +247,7 @@ class App {
     /// Set a name for the app (empty will use parser to set the name)
     App *name(std::string app_name = "") {
         name_ = app_name;
+        has_automatic_name_ = false;
         return this;
     }
 
@@ -1124,17 +1128,29 @@ class App {
     ///@{
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
-    App *add_subcommand(std::string subcommand_name, std::string description = "") {
-        CLI::App_p subcom(new App(description, subcommand_name, this));
-        for(const auto &subc : subcommands_)
-            if(subc->check_name(subcommand_name) || subcom->check_name(subc->name_))
-                throw OptionAlreadyAdded(subc->name_);
+    App *add_subcommand(std::string subcommand_name = "", std::string description = "") {
+        CLI::App_p subcom = std::shared_ptr<App>(new App(description, subcommand_name, this));
+        return add_subcommand(std::move(subcom));
+    }
+
+    /// Add a previously created app as a subcommand
+    App *add_subcommand(CLI::App_p subcom) {
+        if(!subcom)
+            throw IncorrectConstruction("passed App is not valid");
+        if(!subcom->name_.empty()) {
+            for(const auto &subc : subcommands_)
+                if(subc->check_name(subcom->name_) || subcom->check_name(subc->name_))
+                    throw OptionAlreadyAdded(subc->name_);
+        }
+        subcom->parent_ = this;
         subcommands_.push_back(std::move(subcom));
         return subcommands_.back().get();
     }
-
     /// Check to see if a subcommand is part of this command (doesn't have to be in command line)
+    /// returns the first subcommand if passed a nullptr
     App *get_subcommand(App *subcom) const {
+        if(subcom == nullptr)
+            throw OptionNotFound("nullptr passed");
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr.get() == subcom)
                 return subcom;
@@ -1148,9 +1164,41 @@ class App {
                 return subcomptr.get();
         throw OptionNotFound(subcom);
     }
+    /// Get a pointer to subcommand by index
+    App *get_subcommand(int index = 0) const {
+        if((index >= 0) && (index < subcommands_.size()))
+            return subcommands_[index].get();
+        throw OptionNotFound(std::to_string(index));
+    }
+
+    /// Check to see if a subcommand is part of this command and get a shared_ptr to it
+    CLI::App_p get_subcommand_ptr(App *subcom) const {
+        if(subcom == nullptr)
+            throw OptionNotFound("nullptr passed");
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr.get() == subcom)
+                return subcomptr;
+        throw OptionNotFound(subcom->get_name());
+    }
+
+    /// Check to see if a subcommand is part of this command (text version)
+    CLI::App_p get_subcommand_ptr(std::string subcom) const {
+        for(const App_p &subcomptr : subcommands_)
+            if(subcomptr->check_name(subcom))
+                return subcomptr;
+        throw OptionNotFound(subcom);
+    }
+
+    /// Get an owning pointer to subcommand by index
+    CLI::App_p get_subcommand_ptr(int index = 0) const {
+        if((index >= 0) && (index < subcommands_.size()))
+            return subcommands_[index];
+        throw OptionNotFound(std::to_string(index));
+    }
 
     /// No argument version of count counts the number of times this subcommand was
-    /// passed in. The main app will return 1.
+    /// passed in. The main app will return 1. Unnamed subcommands will also return 1 unless
+    /// otherwise modified in a callback
     size_t count() const { return parsed_; }
 
     /// Changes the group membership
@@ -1215,10 +1263,9 @@ class App {
     /// Reset the parsed data
     void clear() {
 
-        parsed_ = false;
+        parsed_ = 0;
         missing_.clear();
         parsed_subcommands_.clear();
-
         for(const Option_p &opt : options_) {
             opt->clear();
         }
@@ -1231,8 +1278,10 @@ class App {
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv) {
         // If the name is not set, read from command line
-        if(name_.empty())
+        if((name_.empty()) || (has_automatic_name_)) {
+            has_automatic_name_ = true;
             name_ = argv[0];
+        }
 
         std::vector<std::string> args;
         for(int i = argc - 1; i > 0; i--)
@@ -1248,7 +1297,8 @@ class App {
 
         if(program_name_included) {
             auto nstr = detail::split_program_name(commandline);
-            if(name_.empty()) {
+            if((name_.empty()) || (has_automatic_name_)) {
+                has_automatic_name_ = true;
                 name_ = nstr.first;
             }
             commandline = std::move(nstr.second);
@@ -1276,11 +1326,14 @@ class App {
         if(parsed_ > 0)
             clear();
 
-        // _parse is incremented in commands/subcommands,
+        // parsed_ is incremented in commands/subcommands,
         // but placed here to make sure this is cleared when
-        // running parse after an error is thrown, even by _validate.
+        // running parse after an error is thrown, even by _validate or _configure.
         parsed_ = 1;
         _validate();
+        _configure();
+        // set the parent as nullptr as this object should be the top now
+        parent_ = nullptr;
         parsed_ = 0;
 
         _parse(args);
@@ -1599,10 +1652,28 @@ class App {
         });
         if(pcount > 1)
             throw InvalidError(name_);
-        for(const App_p &app : subcommands_)
+        for(const App_p &app : subcommands_) {
             app->_validate();
+        }
     }
 
+    /// configure subcommands to enable parsing through the current object
+    /// set the correct fallthrough and prefix for nameless subcommands and
+    /// makes sure parent is set correctly
+    void _configure() {
+        for(const App_p &app : subcommands_) {
+            if(app->has_automatic_name_) {
+                app->name_.clear();
+            }
+            if(app->name_.empty()) {
+                app->fallthrough_ = false; // make sure fallthrough_ is false to prevent infinite loop
+                app->prefix_command_ = false;
+            }
+            // make sure the parent is set to be this object in preparation for parse
+            app->parent_ = this;
+            app->_configure();
+        }
+    }
     /// Internal function to run (App) callback, top down
     void run_callback() {
         pre_callback();
@@ -1768,7 +1839,7 @@ class App {
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
         for(App_p &sub : subcommands_) {
-            if(sub->count() > 0)
+            if((sub->count() > 0) || (sub->name_.empty()))
                 sub->_process_requirements();
         }
     }
@@ -1799,9 +1870,17 @@ class App {
         }
     }
 
+    /// Internal function to recursively increment the parsed counter on the current app as well unnamed subcommands
+    void increment_parsed() {
+        ++parsed_;
+        for(App_p &sub : subcommands_) {
+            if(sub->get_name().empty())
+                sub->increment_parsed();
+        }
+    }
     /// Internal parse function
     void _parse(std::vector<std::string> &args) {
-        parsed_++;
+        increment_parsed();
         bool positional_only = false;
 
         while(!args.empty()) {
@@ -1833,13 +1912,12 @@ class App {
     /// Fill in a single config option
     bool _parse_single_config(const ConfigItem &item, size_t level = 0) {
         if(level < item.parents.size()) {
-            App *subcom;
             try {
-                subcom = get_subcommand(item.parents.at(level));
+                auto subcom = get_subcommand(item.parents.at(level));
+                return subcom->_parse_single_config(item, level + 1);
             } catch(const OptionNotFound &) {
                 return false;
             }
-            return subcom->_parse_single_config(item, level + 1);
         }
 
         Option *op;
@@ -1922,6 +2000,18 @@ class App {
             }
         }
 
+        for(auto &subc : subcommands_) {
+            if(subc->name_.empty()) {
+                subc->_parse_positional(args);
+                if(subc->missing_.empty()) { // check if it was used and is not in the missing category
+                    return;
+                } else {
+                    args.push_back(std::move(subc->missing_.front().second));
+                    subc->missing_.clear();
+                }
+            }
+        }
+
         if(parent_ != nullptr && fallthrough_)
             return parent_->_parse_positional(args);
         else {
@@ -1997,6 +2087,17 @@ class App {
 
         // Option not found
         if(op_ptr == std::end(options_)) {
+            for(auto &subc : subcommands_) {
+                if(subc->name_.empty()) {
+                    subc->_parse_arg(args, current_type);
+                    if(subc->missing_.empty()) { // check if it was used and is not in the missing category
+                        return;
+                    } else {
+                        args.push_back(std::move(subc->missing_.front().second));
+                        subc->missing_.clear();
+                    }
+                }
+            }
             // If a subcommand, try the master command
             if(parent_ != nullptr && fallthrough_)
                 return parent_->_parse_arg(args, current_type);
