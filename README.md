@@ -401,7 +401,7 @@ Every `add_` option you have seen so far depends on one method that takes a lamb
 
 Other values can be added as long as they support `operator>>` (and defaults can be printed if they support `operator<<`). To add an enum, for example, provide a custom `operator>>` with an `istream` (inside the CLI namespace is fine if you don't want to interfere with an existing `operator>>`).
 
-If you wanted to extend this to support a completely new type, just use a lambda. An example of a new parser for `complex<double>` that supports all of the features of a standard `add_options` call is in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
+If you wanted to extend this to support a completely new type, use a lambda or add a specialization of the lexical_cast function template in the namespace `CLI::detail` with the type you need to convert to. Some examples of some new parsers for `complex<double>` that support all of the features of a standard `add_options` call are in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
 #### Example
 
