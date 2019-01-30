@@ -315,7 +315,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
--   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognised item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
+-   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 -   `.footer(message)`: Set text to appear at the bottom of the help string.
 -   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
@@ -336,7 +336,7 @@ app.set_config(option_name="",
 If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default (other formats can be added by an adept user). An example of a file:
 
 ```ini
-; Commments are supported, using a ;
+; Comments are supported, using a ;
 ; The default section is [default], case insensitive
 
 value = 1
@@ -384,7 +384,7 @@ but before run behavior, while
 still giving the user freedom to `callback` on the main app.
 
 The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
-including the program name in the string.
+including the program name in the string, and false otherwise.
 
 Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
 
@@ -401,7 +401,8 @@ If you wanted to extend this to support a completely new type, just use a lambda
 
 ```cpp
 app.add_option("--fancy-count", [](std::vector<std::string> val){
-    std::cout << "This option was given " << val.size() << " times." << std::endl
+    std::cout << "This option was given " << val.size() << " times." << std::endl;
+    return true;
     });
 ```
 
