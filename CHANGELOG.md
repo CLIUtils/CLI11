@@ -1,3 +1,16 @@
+## Version 1.7.1: Quick patch
+
+This version provides a quick patch for a (correct) warning from GCC 8 for the windows options code.
+
+
+* Fix for Windows style option parsing [#201]
+* Improve `add_subcommand` when throwing an exception [#204]
+* Better metadata for Conan package [#202]
+
+[#201]: https://github.com/CLIUtils/CLI11/pull/201
+[#202]: https://github.com/CLIUtils/CLI11/pull/202
+[#204]: https://github.com/CLIUtils/CLI11/pull/204
+
 ## Version 1.7: Parse breakup
 
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
