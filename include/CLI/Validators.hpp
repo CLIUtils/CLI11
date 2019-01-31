@@ -150,6 +150,49 @@ struct NonexistentPathValidator : public Validator {
         };
     }
 };
+
+/// validate the given string is a legal ipv4 address
+struct IPV4Validator : public Validator {
+    IPV4Validator() {
+        tname = "IPV4";
+        func = [](const std::string &ip_addr) {
+            auto result = CLI::detail::split(ip_addr, '.');
+            if(result.size() != 4) {
+                return "Invalid IPV4 address must have four parts " + ip_addr;
+            }
+            int num;
+            bool retval = true;
+            for(const auto &var : result) {
+                retval &= detail::lexical_cast(var, num);
+                if(!retval) {
+                    return "Failed parsing number " + var;
+                }
+                if(num < 0 || num > 255) {
+                    return "Each IP number must be between 0 and 255 " + var;
+                }
+            }
+            return std::string();
+        };
+    }
+};
+
+/// validate the argument is a number and equal greater then 0
+struct PositiveNumber : public Validator {
+    PositiveNumber() {
+        tname = "positive number";
+        func = [](const std::string &number_str) {
+            int number;
+            if(!detail::lexical_cast(number_str, number)) {
+                return "Failed parsing number " + number_str;
+            }
+            if(number < 0) {
+                return "number less then 0 " + number_str;
+            }
+            return std::string();
+        };
+    }
+};
+
 } // namespace detail
 
 // Static is not needed here, because global const implies static.
@@ -165,6 +208,12 @@ const detail::ExistingPathValidator ExistingPath;
 
 /// Check for an non-existing path
 const detail::NonexistentPathValidator NonexistentPath;
+
+/// Check for an existing path
+const detail::IPV4Validator ValidIPV4;
+
+/// Check for an non-existing path
+const detail::PositiveNumber PositiveNumber;
 
 ///  Produce a range (factory). Min and max are inclusive.
 struct Range : public Validator {
