@@ -189,6 +189,38 @@ TEST(Validators, PathNotExistsDir) {
     EXPECT_NE(CLI::ExistingPath(mydir), "");
 }
 
+TEST(Validators, IPValidate1) {
+    std::string ip = "1.1.1.1";
+    EXPECT_TRUE(CLI::ValidIPV4(ip).empty());
+    ip = "224.255.0.1";
+    EXPECT_TRUE(CLI::ValidIPV4(ip).empty());
+    ip = "-1.255.0.1";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "1.256.0.1";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "1.256.0.1";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "aaa";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "11.22";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+}
+
+TEST(Validators, PositiveValidator) {
+    std::string num = "1.1.1.1";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    num = "1";
+    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    num = "10000";
+    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    num = "0";
+    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    num = "-1";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    num = "a";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+}
+
 TEST(Validators, CombinedAndRange) {
     auto crange = CLI::Range(0, 12) & CLI::Range(4, 16);
     EXPECT_TRUE(crange("4").empty());
