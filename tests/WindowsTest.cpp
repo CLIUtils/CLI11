@@ -8,6 +8,6 @@ TEST_F(TApp, WindowsTestSimple) {
     app.add_flag("-c,--count");
     args = {"-c"};
     run();
-    EXPECT_EQ((size_t)1, app.count("-c"));
-    EXPECT_EQ((size_t)1, app.count("--count"));
+    EXPECT_EQ(1u, app.count("-c"));
+    EXPECT_EQ(1u, app.count("--count"));
 }

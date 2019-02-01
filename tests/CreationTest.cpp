@@ -479,8 +479,8 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_FALSE(app.get_fallthrough());
     EXPECT_EQ(app.get_footer(), "");
     EXPECT_EQ(app.get_group(), "Subcommands");
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
 
     app.allow_extras();
     app.prefix_command();
@@ -512,39 +512,39 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_TRUE(app2->get_fallthrough());
     EXPECT_EQ(app2->get_footer(), "footy");
     EXPECT_EQ(app2->get_group(), "Stuff");
-    EXPECT_EQ(app2->get_require_subcommand_min(), (size_t)0);
-    EXPECT_EQ(app2->get_require_subcommand_max(), (size_t)3);
+    EXPECT_EQ(app2->get_require_subcommand_min(), 0u);
+    EXPECT_EQ(app2->get_require_subcommand_max(), 3u);
 }
 
 TEST_F(TApp, SubcommandMinMax) {
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
 
     app.require_subcommand();
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)1);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_min(), 1u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
 
     app.require_subcommand(2);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)2);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)2);
+    EXPECT_EQ(app.get_require_subcommand_min(), 2u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 2u);
 
     app.require_subcommand(0);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)0);
+    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
 
     app.require_subcommand(-2);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)0);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)2);
+    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 2u);
 
     app.require_subcommand(3, 7);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), (size_t)3);
-    EXPECT_EQ(app.get_require_subcommand_max(), (size_t)7);
+    EXPECT_EQ(app.get_require_subcommand_min(), 3u);
+    EXPECT_EQ(app.get_require_subcommand_max(), 7u);
 }
 
 TEST_F(TApp, GetOptionList) {
