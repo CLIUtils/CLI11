@@ -1961,3 +1961,94 @@ TEST_F(TApp, BeforeRequirements) {
     // args = {"-b", "-a", "extra"};
     // EXPECT_THROW(run(), CLI::CallForHelp);
 }
+
+// #209
+TEST_F(TApp, CustomUserSepParse) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx", "1,2,3"};
+    auto opt = app.add_option("--idx", vals, "", ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+
+    app.remove_option(opt);
+
+    app.add_option("--idx", vals, "", true, ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
+// #209
+TEST_F(TApp, DefaultUserSepParse) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx", "1 2 3"};
+    auto opt = app.add_option("--idx", vals, "");
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    app.remove_option(opt);
+    app.add_option("--idx", vals, "", true);
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
+// #209
+TEST_F(TApp, BadUserSepParse) {
+
+    std::vector<int> vals;
+    app.add_option("--idx", vals, "");
+
+    args = {"--idx", "1,2,3"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// #209
+TEST_F(TApp, CustomUserSepParse2) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx", "1,2,"};
+    auto opt = app.add_option("--idx", vals, "", ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+
+    app.remove_option(opt);
+
+    app.add_option("--idx", vals, "", true, ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+}
+
+// #209
+TEST_F(TApp, CustomUserSepParse3) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx",
+            "1",
+            ","
+            "2"};
+    auto opt = app.add_option("--idx", vals, "", ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+    app.remove_option(opt);
+
+    app.add_option("--idx", vals, "", false, ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+}
+
+// #209
+TEST_F(TApp, CustomUserSepParse4) {
+
+    std::vector<int> vals;
+    args = {"--idx", "1,    2"};
+    auto opt = app.add_option("--idx", vals, "", ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+
+    app.remove_option(opt);
+
+    app.add_option("--idx", vals, "", true, ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2}));
+}

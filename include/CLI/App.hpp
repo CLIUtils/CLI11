@@ -413,14 +413,19 @@ class App {
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string description = "") {
+                       std::string description = "",
+                       char delimiter = ' ') {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
+        CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
             bool retval = true;
             variable.clear();
-            for(const auto &a : res) {
-                variable.emplace_back();
-                retval &= detail::lexical_cast(a, variable.back());
+            for(const auto &elem : res) {
+                for(const auto &var : CLI::detail::split(elem, delimiter)) {
+                    if(!var.empty()) {
+                        variable.emplace_back();
+                        retval &= detail::lexical_cast(var, variable.back());
+                    }
+                }
             }
             return (!variable.empty()) && retval;
         };
@@ -435,14 +440,19 @@ class App {
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description,
-                       bool defaulted) {
+                       bool defaulted,
+                       char delimiter = ' ') {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
+        CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
             bool retval = true;
             variable.clear();
             for(const auto &a : res) {
-                variable.emplace_back();
-                retval &= detail::lexical_cast(a, variable.back());
+                for(const auto &var : CLI::detail::split(a, delimiter)) {
+                    if(!var.empty()) {
+                        variable.emplace_back();
+                        retval &= detail::lexical_cast(var, variable.back());
+                    }
+                }
             }
             return (!variable.empty()) && retval;
         };
