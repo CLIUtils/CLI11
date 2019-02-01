@@ -203,7 +203,7 @@ TEST_F(TApp, AddingComplexParserDetail) {
         if(!rsearch) {
             skip_tests = true;
         } else {
-            EXPECT_EQ(m.size(), (size_t)9);
+            EXPECT_EQ(m.size(), 9u);
         }
 
     } catch(...) {

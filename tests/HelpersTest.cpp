@@ -8,7 +8,7 @@
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
-    ASSERT_EQ((size_t)3, out.size());
+    ASSERT_EQ(3u, out.size());
     EXPECT_EQ("one", out.at(0));
     EXPECT_EQ("two", out.at(1));
     EXPECT_EQ("three", out.at(2));
@@ -16,13 +16,13 @@ TEST(Split, SimpleByToken) {
 
 TEST(Split, Single) {
     auto out = CLI::detail::split("one", '.');
-    ASSERT_EQ((size_t)1, out.size());
+    ASSERT_EQ(1u, out.size());
     EXPECT_EQ("one", out.at(0));
 }
 
 TEST(Split, Empty) {
     auto out = CLI::detail::split("", '.');
-    ASSERT_EQ((size_t)1, out.size());
+    ASSERT_EQ(1u, out.size());
     EXPECT_EQ("", out.at(0));
 }
 

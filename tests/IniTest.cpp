@@ -24,12 +24,12 @@ TEST(StringBased, First) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)2, output.size());
+    EXPECT_EQ(2u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -45,12 +45,12 @@ TEST(StringBased, FirstWithComments) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)2, output.size());
+    EXPECT_EQ(2u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -65,15 +65,15 @@ TEST(StringBased, Quotes) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)3, output.size());
+    EXPECT_EQ(3u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name);
-    EXPECT_EQ((size_t)1, output.at(2).inputs.size());
+    EXPECT_EQ(1u, output.at(2).inputs.size());
     EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
 }
 
@@ -88,15 +88,15 @@ TEST(StringBased, Vector) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)3, output.size());
+    EXPECT_EQ(3u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("five", output.at(2).name);
-    EXPECT_EQ((size_t)3, output.at(2).inputs.size());
+    EXPECT_EQ(3u, output.at(2).inputs.size());
     EXPECT_EQ("six", output.at(2).inputs.at(0));
     EXPECT_EQ("and", output.at(2).inputs.at(1));
     EXPECT_EQ("seven", output.at(2).inputs.at(2));
@@ -112,12 +112,12 @@ TEST(StringBased, Spaces) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)2, output.size());
+    EXPECT_EQ(2u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -132,13 +132,13 @@ TEST(StringBased, Sections) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)2, output.size());
+    EXPECT_EQ(2u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
     EXPECT_EQ("second", output.at(1).parents.at(0));
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
     EXPECT_EQ("second.two", output.at(1).fullname());
 }
@@ -156,14 +156,14 @@ TEST(StringBased, SpacesSections) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ((size_t)2, output.size());
+    EXPECT_EQ(2u, output.size());
     EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ((size_t)1, output.at(0).inputs.size());
+    EXPECT_EQ(1u, output.at(0).inputs.size());
     EXPECT_EQ("three", output.at(0).inputs.at(0));
     EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ((size_t)1, output.at(1).parents.size());
+    EXPECT_EQ(1u, output.at(1).parents.size());
     EXPECT_EQ("second", output.at(1).parents.at(0));
-    EXPECT_EQ((size_t)1, output.at(1).inputs.size());
+    EXPECT_EQ(1u, output.at(1).inputs.size());
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
@@ -256,7 +256,7 @@ TEST_F(TApp, IniGetNoRemaining) {
     int two = 0;
     app.add_option("--two", two);
     ASSERT_NO_THROW(run());
-    EXPECT_EQ(app.remaining().size(), (size_t)0);
+    EXPECT_EQ(app.remaining().size(), 0u);
 }
 
 TEST_F(TApp, IniNotRequiredNotDefault) {

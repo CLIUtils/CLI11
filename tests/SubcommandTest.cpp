@@ -19,19 +19,19 @@ TEST_F(TApp, BasicSubcommands) {
     EXPECT_THROW(app.get_subcommand("sub3"), CLI::OptionNotFound);
 
     run();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
 
     args = {"sub1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ((size_t)1, app.get_subcommands().size());
+    EXPECT_EQ(1u, app.get_subcommands().size());
 
     app.clear();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
 
     args = {"sub2"};
     run();
-    EXPECT_EQ((size_t)1, app.get_subcommands().size());
+    EXPECT_EQ(1u, app.get_subcommands().size());
     EXPECT_EQ(sub2, app.get_subcommands().at(0));
 
     args = {"SUb2"};
@@ -64,7 +64,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(app.got_subcommand(sub1));
     EXPECT_TRUE(*sub1);
     EXPECT_TRUE(sub1->parsed());
-    EXPECT_EQ(sub1->count(), (size_t)1);
+    EXPECT_EQ(sub1->count(), 1u);
 
     EXPECT_TRUE(app.got_subcommand("sub2"));
     EXPECT_TRUE(app.got_subcommand(sub2));
@@ -88,7 +88,7 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_TRUE(*sub1);
     EXPECT_FALSE(*sub2);
     EXPECT_FALSE(sub2->parsed());
-    EXPECT_EQ(sub2->count(), (size_t)0);
+    EXPECT_EQ(sub2->count(), 0u);
 
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
@@ -415,8 +415,8 @@ TEST_F(TApp, PrefixSubcom) {
     args = {"--simple", "subc", "other", "--simple", "--mine"};
     run();
 
-    EXPECT_EQ(app.remaining_size(), (size_t)0);
-    EXPECT_EQ(app.remaining_size(true), (size_t)3);
+    EXPECT_EQ(app.remaining_size(), 0u);
+    EXPECT_EQ(app.remaining_size(true), 3u);
     EXPECT_EQ(subc->remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
 }
 
@@ -424,7 +424,7 @@ TEST_F(TApp, InheritHelpAllFlag) {
     app.set_help_all_flag("--help-all");
     auto subc = app.add_subcommand("subc");
     auto help_opt_list = subc->get_options([](const CLI::Option *opt) { return opt->get_name() == "--help-all"; });
-    EXPECT_EQ(help_opt_list.size(), (size_t)1);
+    EXPECT_EQ(help_opt_list.size(), 1u);
 }
 
 struct SubcommandProgram : public TApp {
@@ -474,7 +474,7 @@ TEST_F(SubcommandProgram, Multiple) {
     args = {"-d", "start", "-ffilename", "stop"};
 
     run();
-    EXPECT_EQ((size_t)2, app.get_subcommands().size());
+    EXPECT_EQ(2u, app.get_subcommands().size());
     EXPECT_EQ(1, dummy);
     EXPECT_EQ("filename", file);
 }
@@ -490,7 +490,7 @@ TEST_F(SubcommandProgram, MultipleArgs) {
 
     run();
 
-    EXPECT_EQ((size_t)2, app.get_subcommands().size());
+    EXPECT_EQ(2u, app.get_subcommands().size());
 }
 
 TEST_F(SubcommandProgram, CaseCheck) {
@@ -513,17 +513,17 @@ TEST_F(TApp, SubcomInheritCaseCheck) {
     auto sub2 = app.add_subcommand("sub2");
 
     run();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
-    EXPECT_EQ((size_t)2, app.get_subcommands({}).size());
-    EXPECT_EQ((size_t)1, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
+    EXPECT_EQ(2u, app.get_subcommands({}).size());
+    EXPECT_EQ(1u, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size());
 
     args = {"SuB1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ((size_t)1, app.get_subcommands().size());
+    EXPECT_EQ(1u, app.get_subcommands().size());
 
     app.clear();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
 
     args = {"sUb2"};
     run();
@@ -550,17 +550,17 @@ TEST_F(TApp, SubcomInheritUnderscoreCheck) {
     auto sub2 = app.add_subcommand("sub_option2");
 
     run();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
-    EXPECT_EQ((size_t)2, app.get_subcommands({}).size());
-    EXPECT_EQ((size_t)1, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
+    EXPECT_EQ(2u, app.get_subcommands({}).size());
+    EXPECT_EQ(1u, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size());
 
     args = {"suboption1"};
     run();
     EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ((size_t)1, app.get_subcommands().size());
+    EXPECT_EQ(1u, app.get_subcommands().size());
 
     app.clear();
-    EXPECT_EQ((size_t)0, app.get_subcommands().size());
+    EXPECT_EQ(0u, app.get_subcommands().size());
 
     args = {"_suboption2"};
     run();
@@ -798,7 +798,7 @@ TEST_F(ManySubcommands, MaxCommands) {
     // The extra subcommand counts as an extra
     args = {"sub1", "sub2", "sub3"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(sub2->remaining().size(), (size_t)1);
+    EXPECT_EQ(sub2->remaining().size(), 1u);
 
     // Currently, setting sub2 to throw causes an extras error
     // In the future, would passing on up to app's extras be better?
