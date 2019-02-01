@@ -151,7 +151,7 @@ struct NonexistentPathValidator : public Validator {
     }
 };
 
-/// validate the given string is a legal ipv4 address
+/// Validate the given string is a legal ipv4 address
 struct IPV4Validator : public Validator {
     IPV4Validator() {
         tname = "IPV4";
@@ -176,10 +176,10 @@ struct IPV4Validator : public Validator {
     }
 };
 
-/// validate the argument is a number and equal greater then 0
+/// Validate the argument is a number and equal greater then 0
 struct PositiveNumber : public Validator {
     PositiveNumber() {
-        tname = "positive number";
+        tname = "POSITIVE";
         func = [](const std::string &number_str) {
             int number;
             if(!detail::lexical_cast(number_str, number)) {
@@ -209,13 +209,13 @@ const detail::ExistingPathValidator ExistingPath;
 /// Check for an non-existing path
 const detail::NonexistentPathValidator NonexistentPath;
 
-/// Check for an existing path
+/// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;
 
-/// Check for an non-existing path
+/// Check for a positive number
 const detail::PositiveNumber PositiveNumber;
 
-///  Produce a range (factory). Min and max are inclusive.
+/// Produce a range (factory). Min and max are inclusive.
 struct Range : public Validator {
     /// This produces a range with min and max inclusive.
     ///
@@ -241,10 +241,10 @@ struct Range : public Validator {
 };
 
 namespace detail {
-/// split a string into a program name and command line arguments
+/// Split a string into a program name and command line arguments
 /// the string is assumed to contain a file name followed by other arguments
 /// the return value contains is a pair with the first argument containing the program name and the second everything
-/// else
+/// else.
 inline std::pair<std::string, std::string> split_program_name(std::string commandline) {
     // try to determine the programName
     std::pair<std::string, std::string> vals;
