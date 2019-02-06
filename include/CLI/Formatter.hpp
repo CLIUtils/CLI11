@@ -140,6 +140,10 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
     // Make a list in definition order of the groups seen
     std::vector<std::string> subcmd_groups_seen;
     for(const App *com : subcommands) {
+        if(com->get_name().empty()) {
+            out << make_expanded(com);
+            continue;
+        }
         std::string group_key = com->get_group();
         if(!group_key.empty() &&
            std::find_if(subcmd_groups_seen.begin(), subcmd_groups_seen.end(), [&group_key](std::string a) {
@@ -154,6 +158,8 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
         std::vector<const App *> subcommands_group = app->get_subcommands(
             [&group](const App *sub_app) { return detail::to_lower(sub_app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
+            if(new_com->get_name().empty())
+                continue;
             if(mode != AppFormatMode::All) {
                 out << make_subcommand(new_com);
             } else {

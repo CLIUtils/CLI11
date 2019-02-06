@@ -223,6 +223,17 @@ TEST_F(TApp, NoFallThroughPositionals) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(TApp, NamelessSubComPositionals) {
+
+    auto sub = app.add_subcommand();
+    int val = 1;
+    sub->add_option("val", val);
+
+    args = {"2"};
+    run();
+    EXPECT_EQ(val, 2);
+}
+
 TEST_F(TApp, FallThroughRegular) {
     app.fallthrough();
     int val = 1;
@@ -365,6 +376,7 @@ TEST_F(TApp, BadSubcomSearch) {
     auto two = one->add_subcommand("two");
 
     EXPECT_THROW(app.get_subcommand(two), CLI::OptionNotFound);
+    EXPECT_THROW(app.get_subcommand_ptr(two), CLI::OptionNotFound);
 }
 
 TEST_F(TApp, PrefixProgram) {
@@ -732,6 +744,32 @@ TEST_F(ManySubcommands, Required4Failure) {
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 
+TEST_F(ManySubcommands, manyIndexQuery) {
+    auto s1 = app.get_subcommand(0);
+    auto s2 = app.get_subcommand(1);
+    auto s3 = app.get_subcommand(2);
+    auto s4 = app.get_subcommand(3);
+    EXPECT_EQ(s1, sub1);
+    EXPECT_EQ(s2, sub2);
+    EXPECT_EQ(s3, sub3);
+    EXPECT_EQ(s4, sub4);
+    EXPECT_THROW(app.get_subcommand(4), CLI::OptionNotFound);
+    auto s0 = app.get_subcommand();
+    EXPECT_EQ(s0, sub1);
+}
+
+TEST_F(ManySubcommands, manyIndexQueryPtr) {
+    auto s1 = app.get_subcommand_ptr(0);
+    auto s2 = app.get_subcommand_ptr(1);
+    auto s3 = app.get_subcommand_ptr(2);
+    auto s4 = app.get_subcommand_ptr(3);
+    EXPECT_EQ(s1.get(), sub1);
+    EXPECT_EQ(s2.get(), sub2);
+    EXPECT_EQ(s3.get(), sub3);
+    EXPECT_EQ(s4.get(), sub4);
+    EXPECT_THROW(app.get_subcommand_ptr(4), CLI::OptionNotFound);
+}
+
 TEST_F(ManySubcommands, Required1Fuzzy) {
 
     app.require_subcommand(0, 1);
@@ -813,4 +851,155 @@ TEST_F(ManySubcommands, MaxCommands) {
 
     args = {"sub1", "sub2", "sub3"};
     EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(TApp, UnnamedSub) {
+    double val;
+    auto sub = app.add_subcommand("", "empty name");
+    sub->add_option("-v,--value", val);
+    args = {"-v", "4.56"};
+
+    run();
+    EXPECT_EQ(val, 4.56);
+}
+
+TEST_F(TApp, UnnamedSubMix) {
+    double val, val2, val3;
+    app.add_option("-t", val2);
+    auto sub1 = app.add_subcommand("", "empty name");
+    sub1->add_option("-v,--value", val);
+    auto sub2 = app.add_subcommand("", "empty name2");
+    sub2->add_option("-m,--mix", val3);
+    args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
+
+    run();
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(val3, 4.56);
+}
+
+TEST_F(TApp, UnnamedSubMixExtras) {
+    double val, val2;
+    app.add_option("-t", val2);
+    auto sub = app.add_subcommand("", "empty name");
+    sub->add_option("-v,--value", val);
+    args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
+    app.allow_extras();
+    run();
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(app.remaining_size(), 2);
+    EXPECT_EQ(sub->remaining_size(), 0);
+}
+
+TEST_F(TApp, UnnamedSubNoExtras) {
+    double val, val2;
+    app.add_option("-t", val2);
+    auto sub = app.add_subcommand();
+    sub->add_option("-v,--value", val);
+    args = {"-t", "5.93", "-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(app.remaining_size(), 0);
+    EXPECT_EQ(sub->remaining_size(), 0);
+}
+
+TEST(SharedSubTests, SharedSubcommand) {
+    double val, val2, val3, val4;
+    CLI::App app1{"test program1"};
+
+    app1.add_option("-t", val2);
+    auto sub = app1.add_subcommand("", "empty name");
+    sub->add_option("-v,--value", val);
+    sub->add_option("-g", val4);
+    CLI::App app2{"test program2"};
+    app2.add_option("-m", val3);
+    // extract an owning ptr from app1 and add it to app2
+    auto subown = app1.get_subcommand_ptr(sub);
+    // add the extracted subcommand to a different app
+    app2.add_subcommand(std::move(subown));
+    EXPECT_THROW(app2.add_subcommand(CLI::App_p{}), CLI::IncorrectConstruction);
+    input_t args1 = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
+    input_t args2 = {"-m", "4.56", "-g", "8.235"};
+    std::reverse(std::begin(args1), std::end(args1));
+    std::reverse(std::begin(args2), std::end(args2));
+    app1.allow_extras();
+    app1.parse(args1);
+
+    app2.parse(args2);
+
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(val3, 4.56);
+    EXPECT_EQ(val4, 8.235);
+}
+
+TEST(SharedSubTests, SharedSubIndependent) {
+    double val, val2, val4;
+    CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
+    app1->allow_extras();
+    app1->add_option("-t", val2);
+    auto sub = app1->add_subcommand("", "empty name");
+    sub->add_option("-v,--value", val);
+    sub->add_option("-g", val4);
+
+    // extract an owning ptr from app1 and add it to app2
+    auto subown = app1->get_subcommand_ptr(sub);
+
+    input_t args1 = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
+    input_t args2 = {"-m", "4.56", "-g", "8.235"};
+    std::reverse(std::begin(args1), std::end(args1));
+    std::reverse(std::begin(args2), std::end(args2));
+
+    app1->parse(args1);
+    // destroy the first parser
+    app1 = nullptr;
+    // parse with the extracted subcommand
+    subown->parse(args2);
+
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(val4, 8.235);
+}
+
+TEST(SharedSubTests, SharedSubIndependentReuse) {
+    double val, val2, val4;
+    CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
+    app1->allow_extras();
+    app1->add_option("-t", val2);
+    auto sub = app1->add_subcommand("", "empty name");
+    sub->add_option("-v,--value", val);
+    sub->add_option("-g", val4);
+
+    // extract an owning ptr from app1 and add it to app2
+    auto subown = app1->get_subcommand_ptr(sub);
+
+    input_t args1 = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
+    std::reverse(std::begin(args1), std::end(args1));
+    auto args2 = args1;
+    app1->parse(args1);
+
+    // parse with the extracted subcommand
+    subown->parse("program1 -m 4.56 -g 8.235", true);
+
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+    EXPECT_EQ(val4, 8.235);
+    val = 0.0;
+    val2 = 0.0;
+    EXPECT_EQ(subown->get_name(), "program1");
+    // this tests the name reset in subcommand since it was automatic
+    app1->parse(args2);
+    EXPECT_EQ(val, -3.0);
+    EXPECT_EQ(val2, 5.93);
+}
+
+TEST_F(ManySubcommands, getSubtests) {
+    CLI::App_p sub2p = app.get_subcommand_ptr(sub2);
+    EXPECT_EQ(sub2p.get(), sub2);
+    EXPECT_THROW(app.get_subcommand_ptr(nullptr), CLI::OptionNotFound);
+    EXPECT_THROW(app.get_subcommand(nullptr), CLI::OptionNotFound);
+    CLI::App_p sub3p = app.get_subcommand_ptr(2);
+    EXPECT_EQ(sub3p.get(), sub3);
 }

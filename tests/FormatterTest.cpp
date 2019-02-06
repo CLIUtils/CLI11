@@ -134,3 +134,30 @@ TEST(Formatter, AllSub) {
     EXPECT_THAT(help, HasSubstr("--insub"));
     EXPECT_THAT(help, HasSubstr("subcom"));
 }
+
+TEST(Formatter, NamelessSub) {
+    CLI::App app{"My prog"};
+    CLI::App *sub = app.add_subcommand("", "This subcommand");
+    sub->add_flag("--insub", "MyFlag");
+
+    std::string help = app.help("", CLI::AppFormatMode::Normal);
+    EXPECT_THAT(help, HasSubstr("--insub"));
+    EXPECT_THAT(help, HasSubstr("This subcommand"));
+}
+
+TEST(Formatter, NamelessSubInGroup) {
+    CLI::App app{"My prog"};
+    CLI::App *sub = app.add_subcommand("", "This subcommand");
+    CLI::App *sub2 = app.add_subcommand("sub2", "subcommand2");
+    sub->add_flag("--insub", "MyFlag");
+    int val;
+    sub2->add_option("pos", val, "positional");
+    sub->group("group1");
+    sub2->group("group1");
+    std::string help = app.help("", CLI::AppFormatMode::Normal);
+    EXPECT_THAT(help, HasSubstr("--insub"));
+    EXPECT_THAT(help, HasSubstr("This subcommand"));
+    EXPECT_THAT(help, HasSubstr("group1"));
+    EXPECT_THAT(help, HasSubstr("sub2"));
+    EXPECT_TRUE(help.find("pos") == std::string::npos);
+}
