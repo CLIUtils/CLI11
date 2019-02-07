@@ -69,27 +69,16 @@ class Config {
     /// Convert a configuration into an app
     virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
 
-    /// Convert a flag to a bool
-    virtual std::vector<std::string> to_flag(const ConfigItem &item) const {
+    /// Convert a flag to a bool representation
+    virtual std::string to_flag(const ConfigItem &item) const {
         if(item.inputs.size() == 1) {
-            std::string val = item.inputs.at(0);
-            val = detail::to_lower(val);
-
-            if(val == "true" || val == "on" || val == "yes") {
-                return std::vector<std::string>(1);
-            } else if(val == "false" || val == "off" || val == "no") {
-                return std::vector<std::string>();
-            } else {
-                try {
-                    size_t ui = std::stoul(val);
-                    return std::vector<std::string>(ui);
-                } catch(const std::invalid_argument &) {
-                    throw ConversionError::TrueFalse(item.fullname());
-                }
+            try {
+                return detail::to_flag_value(item.inputs.at(0));
+            } catch(const std::invalid_argument &) {
+                throw ConversionError::TrueFalse(item.fullname());
             }
-        } else {
-            throw ConversionError::TooManyInputsFlag(item.fullname());
         }
+        throw ConversionError::TooManyInputsFlag(item.fullname());
     }
 
     /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure

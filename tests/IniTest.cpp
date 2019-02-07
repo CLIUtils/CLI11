@@ -608,6 +608,62 @@ TEST_F(TApp, IniFlags) {
     EXPECT_EQ(true, five);
 }
 
+TEST_F(TApp, IniFalseFlags) {
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=-2" << std::endl;
+        out << "three=false" << std::endl;
+        out << "four=1" << std::endl;
+        out << "five" << std::endl;
+    }
+
+    int two;
+    bool three, four, five;
+    app.add_flag("--two", two);
+    app.add_flag("--three", three);
+    app.add_flag("--four", four);
+    app.add_flag("--five", five);
+
+    run();
+
+    EXPECT_EQ(-2, two);
+    EXPECT_EQ(false, three);
+    EXPECT_EQ(true, four);
+    EXPECT_EQ(true, five);
+}
+
+TEST_F(TApp, IniFalseFlagsDef) {
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2" << std::endl;
+        out << "three=true" << std::endl;
+        out << "four=on" << std::endl;
+        out << "five" << std::endl;
+    }
+
+    int two;
+    bool three, four, five;
+    app.add_flag("--two{false}", two);
+    app.add_flag("--three", three);
+    app.add_flag("!--four", four);
+    app.add_flag("--five", five);
+
+    run();
+
+    EXPECT_EQ(-2, two);
+    EXPECT_EQ(true, three);
+    EXPECT_EQ(false, four);
+    EXPECT_EQ(true, five);
+}
+
 TEST_F(TApp, IniOutputSimple) {
 
     int v;

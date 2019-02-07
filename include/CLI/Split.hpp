@@ -67,6 +67,26 @@ inline std::vector<std::string> split_names(std::string current) {
     return output;
 }
 
+/// extract negation arguments basically everything after a '|' and before the next comma
+inline std::vector<std::string> get_false_flags(const std::string &str) {
+    std::vector<std::string> output = split_names(str);
+    output.erase(std::remove_if(output.begin(),
+                                output.end(),
+                                [](const std::string &name) {
+                                    return ((name.empty()) ||
+                                            ((name.find("{false}") == std::string::npos) && (name[0] != '!')));
+                                }),
+                 output.end());
+    for(auto &flag : output) {
+        auto false_loc = flag.find("{false}");
+        if(false_loc != std::string::npos) {
+            flag.erase(false_loc, std::string::npos);
+        }
+        flag.erase(0, flag.find_first_not_of("-!"));
+    }
+    return output;
+}
+
 /// Get a vector of short names, one of long names, and a single name
 inline std::tuple<std::vector<std::string>, std::vector<std::string>, std::string>
 get_names(const std::vector<std::string> &input) {

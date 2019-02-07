@@ -538,7 +538,6 @@ class App {
     /// Add option for flag
     Option *add_flag(std::string flag_name, std::string description = "") {
         CLI::callback_t fun = [](CLI::results_t) { return true; };
-
         Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(flag_name);
@@ -552,14 +551,21 @@ class App {
     Option *add_flag(std::string flag_name,
                      T &flag_count, ///< A variable holding the count
                      std::string description = "") {
-
         flag_count = 0;
+        Option *opt;
         CLI::callback_t fun = [&flag_count](CLI::results_t res) {
-            flag_count = static_cast<T>(res.size());
+            detail::sum_flag_vector(res, flag_count);
             return true;
         };
+        if(detail::has_false_flags(flag_name)) {
+            std::vector<std::string> neg = detail::get_false_flags(flag_name);
+            detail::remove_false_flag_notation(flag_name);
+            opt = add_option(flag_name, fun, description, false);
+            opt->fnames_ = std::move(neg);
+        } else {
+            opt = add_option(flag_name, fun, description, false);
+        }
 
-        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
@@ -570,16 +576,23 @@ class App {
     /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
-                     T &flag_count, ///< A variable holding true if passed
+                     T &flag_result, ///< A variable holding true if passed
                      std::string description = "") {
-
-        flag_count = false;
-        CLI::callback_t fun = [&flag_count](CLI::results_t res) {
-            flag_count = true;
+        flag_result = false;
+        Option *opt;
+        CLI::callback_t fun = [&flag_result](CLI::results_t res) {
+            flag_result = (res[0][0] != '-');
             return res.size() == 1;
         };
+        if(detail::has_false_flags(flag_name)) {
+            std::vector<std::string> neg = detail::get_false_flags(flag_name);
+            detail::remove_false_flag_notation(flag_name);
+            opt = add_option(flag_name, fun, std::move(description), false);
+            opt->fnames_ = std::move(neg);
+        } else {
+            opt = add_option(flag_name, fun, std::move(description), false);
+        }
 
-        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
@@ -589,15 +602,25 @@ class App {
 
     /// Add option for callback
     Option *add_flag_function(std::string flag_name,
-                              std::function<void(size_t)> function, ///< A function to call, void(size_t)
+                              std::function<void(int)> function, ///< A function to call, void(size_t)
                               std::string description = "") {
 
         CLI::callback_t fun = [function](CLI::results_t res) {
-            function(res.size());
+            int flag_count = 0;
+            detail::sum_flag_vector(res, flag_count);
+            function(flag_count);
             return true;
         };
+        Option *opt;
+        if(detail::has_false_flags(flag_name)) {
+            std::vector<std::string> neg = detail::get_false_flags(flag_name);
+            detail::remove_false_flag_notation(flag_name);
+            opt = add_option(flag_name, fun, std::move(description), false);
+            opt->fnames_ = std::move(neg);
+        } else {
+            opt = add_option(flag_name, fun, std::move(description), false);
+        }
 
-        Option *opt = add_option(flag_name, fun, description, false);
         if(opt->get_positional())
             throw IncorrectConstruction::PositionalFlag(flag_name);
         opt->type_size(0);
@@ -607,9 +630,9 @@ class App {
 #ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
     Option *add_flag(std::string flag_name,
-                     std::function<void(size_t)> function, ///< A function to call, void(size_t)
+                     std::function<void(int)> function, ///< A function to call, void(int)
                      std::string description = "") {
-        return add_flag_function(flag_name, std::move(function), description);
+        return add_flag_function(std::move(flag_name), std::move(function), std::move(description));
     }
 #endif
 
@@ -628,7 +651,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -650,7 +673,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
 
@@ -673,7 +696,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         std::string typeval = detail::type_name<T>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -701,7 +724,7 @@ class App {
             return std::find(std::begin(options), std::end(options), member) != std::end(options);
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         opt->type_name_fn(
             [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
         if(defaulted) {
@@ -732,7 +755,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -761,7 +784,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -790,7 +813,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -821,7 +844,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -851,7 +874,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -880,7 +903,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -909,7 +932,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -941,7 +964,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -971,7 +994,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -1000,7 +1023,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, false);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -1029,7 +1052,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         std::string typeval = detail::type_name<std::string>();
         typeval += " in {" + detail::join(options) + "}";
         opt->type_name(typeval);
@@ -1061,7 +1084,7 @@ class App {
             }
         };
 
-        Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         opt->type_name_fn([&options]() {
             return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
         });
@@ -1090,7 +1113,7 @@ class App {
             return worked;
         };
 
-        CLI::Option *opt = add_option(option_name, std::move(fun), description, defaulted);
+        CLI::Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
         opt->type_name(label)->type_size(2);
         if(defaulted) {
             std::stringstream out;
@@ -1149,7 +1172,7 @@ class App {
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string subcommand_name = "", std::string description = "") {
-        CLI::App_p subcom = std::shared_ptr<App>(new App(description, subcommand_name, this));
+        CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(description), subcommand_name, this));
         return add_subcommand(std::move(subcom));
     }
 
@@ -1186,7 +1209,7 @@ class App {
     }
     /// Get a pointer to subcommand by index
     App *get_subcommand(int index = 0) const {
-        if((index >= 0) && (index < subcommands_.size()))
+        if((index >= 0) && (index < static_cast<int>(subcommands_.size())))
             return subcommands_[index].get();
         throw OptionNotFound(std::to_string(index));
     }
@@ -1211,7 +1234,7 @@ class App {
 
     /// Get an owning pointer to subcommand by index
     CLI::App_p get_subcommand_ptr(int index = 0) const {
-        if((index >= 0) && (index < subcommands_.size()))
+        if((index >= 0) && (index < static_cast<int>(subcommands_.size())))
             return subcommands_[index];
         throw OptionNotFound(std::to_string(index));
     }
@@ -1957,7 +1980,12 @@ class App {
         if(op->empty()) {
             // Flag parsing
             if(op->get_type_size() == 0) {
-                op->set_results(config_formatter_->to_flag(item));
+                auto res = config_formatter_->to_flag(item);
+                if(op->check_fname(item.name)) {
+                    res = (res == "1") ? "-1" : ((res[0] == '-') ? res.substr(1) : std::string("-" + res));
+                }
+                op->add_result(res);
+
             } else {
                 op->set_results(item.inputs);
                 op->run_callback();
@@ -2138,18 +2166,27 @@ class App {
 
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;
-
+        // deal with flag like things
+        if(num == 0) {
+            try {
+                auto res = (value.empty()) ? std ::string("1") : detail::to_flag_value(value);
+                if(op->check_fname(arg_name)) {
+                    res = (res == "1") ? "-1" : ((res[0] == '-') ? res.substr(1) : std::string("-" + res));
+                }
+                op->add_result(res);
+                parse_order_.push_back(op.get());
+            } catch(const std::invalid_argument &) {
+                throw ConversionError::TrueFalse(arg_name);
+            }
+        }
         // --this=value
-        if(!value.empty()) {
+        else if(!value.empty()) {
             // If exact number expected
             if(num > 0)
                 num--;
             op->add_result(value);
             parse_order_.push_back(op.get());
             collected += 1;
-        } else if(num == 0) {
-            op->add_result("");
-            parse_order_.push_back(op.get());
             // -Trest
         } else if(!rest.empty()) {
             if(num > 0)

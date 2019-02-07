@@ -80,7 +80,8 @@ constexpr const char *type_name() {
 
 /// Signed integers / enums
 template <typename T,
-          enable_if_t<(std::is_integral<T>::value && std::is_signed<T>::value), detail::enabler> = detail::dummy>
+          enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value, detail::enabler> =
+              detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
         size_t n = 0;
@@ -96,7 +97,8 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Unsigned integers
 template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value, detail::enabler> =
+              detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
@@ -109,6 +111,24 @@ bool lexical_cast(std::string input, T &output) {
     } catch(const std::invalid_argument &) {
         return false;
     } catch(const std::out_of_range &) {
+        return false;
+    }
+}
+
+/// boolean values
+template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
+bool lexical_cast(std::string input, T &output) {
+    try {
+        auto out = to_flag_value(input);
+        if(out == "1") {
+            output = true;
+        } else if(out == "-1") {
+            output = false;
+        } else {
+            output = (std::stoll(out) > 0);
+        }
+        return true;
+    } catch(const std::invalid_argument &) {
         return false;
     }
 }
@@ -148,6 +168,38 @@ bool lexical_cast(std::string input, T &output) {
     is.str(input);
     is >> output;
     return !is.fail() && !is.rdbuf()->in_avail();
+}
+
+/// sum a vector of flag representations
+/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
+/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
+/// common true and false strings then uses stoll to convert the rest for summing
+template <typename T,
+          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
+    int64_t count{0};
+    static const auto trueString = std::string("1");
+    static const auto falseString = std::string("-1");
+    for(auto &flag : flags) {
+        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+    }
+    output = (count > 0) ? static_cast<T>(count) : T{0};
+}
+
+/// sum a vector of flag representations
+/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
+/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
+/// common true and false strings then uses stoll to convert the rest for summing
+template <typename T,
+          enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
+void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
+    int64_t count{0};
+    static const auto trueString = std::string("1");
+    static const auto falseString = std::string("-1");
+    for(auto &flag : flags) {
+        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+    }
+    output = static_cast<T>(count);
 }
 
 } // namespace detail

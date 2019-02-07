@@ -173,6 +173,10 @@ class Option : public OptionBase<Option> {
     /// A list of the long names (`--a`) without the leading dashes
     std::vector<std::string> lnames_;
 
+    /// A list of the negation names, should be duplicates of what is in snames or lnames but trigger a false response
+    /// on a flag
+    std::vector<std::string> fnames_;
+
     /// A positional name
     std::string pname_;
 
@@ -478,6 +482,9 @@ class Option : public OptionBase<Option> {
     /// Get the short names
     const std::vector<std::string> get_snames() const { return snames_; }
 
+    /// get the negative flag names
+    const std::vector<std::string> get_fnames() const { return fnames_; }
+
     /// The number of times the option expects to be included
     int get_expected() const { return expected_; }
 
@@ -542,12 +549,27 @@ class Option : public OptionBase<Option> {
             /// The all list will never include a positional unless asked or that's the only name.
             if((positional && pname_.length()) || (snames_.empty() && lnames_.empty()))
                 name_list.push_back(pname_);
+            if((get_items_expected() == 0) && (!fnames_.empty())) {
+                for(const std::string &sname : snames_) {
+                    name_list.push_back("-" + sname);
+                    if(check_fname(sname)) {
+                        name_list.back() += "{false}";
+                    }
+                }
 
-            for(const std::string &sname : snames_)
-                name_list.push_back("-" + sname);
+                for(const std::string &lname : lnames_) {
+                    name_list.push_back("--" + lname);
+                    if(check_fname(lname)) {
+                        name_list.back() += "{false}";
+                    }
+                }
+            } else {
+                for(const std::string &sname : snames_)
+                    name_list.push_back("-" + sname);
 
-            for(const std::string &lname : lnames_)
-                name_list.push_back("--" + lname);
+                for(const std::string &lname : lnames_)
+                    name_list.push_back("--" + lname);
+            }
 
             return detail::join(name_list);
 
@@ -651,62 +673,55 @@ class Option : public OptionBase<Option> {
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
     bool check_name(std::string name) const {
 
-        if(name.length() > 2 && name.substr(0, 2) == "--")
+        if(name.length() > 2 && name[0] == '-' && name[1] == '-')
             return check_lname(name.substr(2));
-        else if(name.length() > 1 && name.substr(0, 1) == "-")
+        else if(name.length() > 1 && name.front() == '-')
             return check_sname(name.substr(1));
         else {
             std::string local_pname = pname_;
-            if(ignore_case_) {
-                local_pname = detail::to_lower(local_pname);
-                name = detail::to_lower(name);
-            }
             if(ignore_underscore_) {
                 local_pname = detail::remove_underscore(local_pname);
                 name = detail::remove_underscore(name);
+            }
+            if(ignore_case_) {
+                local_pname = detail::to_lower(local_pname);
+                name = detail::to_lower(name);
             }
             return name == local_pname;
         }
     }
 
     /// Requires "-" to be removed from string
-    bool check_sname(std::string name) const {
-        if(ignore_case_) { // there can be no extra underscores in check_sname
-            name = detail::to_lower(name);
-            return std::find_if(std::begin(snames_), std::end(snames_), [&name](std::string local_sname) {
-                       return detail::to_lower(local_sname) == name;
-                   }) != std::end(snames_);
-        } else
-            return std::find(std::begin(snames_), std::end(snames_), name) != std::end(snames_);
-    }
+    bool check_sname(std::string name) const { return detail::check_is_member(name, snames_, ignore_case_); }
 
     /// Requires "--" to be removed from string
     bool check_lname(std::string name) const {
-        if(ignore_case_) {
-            if(ignore_underscore_) {
-                name = detail::to_lower(detail::remove_underscore(name));
-                return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
-                           return detail::to_lower(detail::remove_underscore(local_sname)) == name;
-                       }) != std::end(lnames_);
-            } else {
-                name = detail::to_lower(name);
-                return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
-                           return detail::to_lower(local_sname) == name;
-                       }) != std::end(lnames_);
-            }
+        return detail::check_is_member(name, lnames_, ignore_case_, ignore_underscore_);
+    }
 
-        } else if(ignore_underscore_) {
-            name = detail::remove_underscore(name);
-            return std::find_if(std::begin(lnames_), std::end(lnames_), [&name](std::string local_sname) {
-                       return detail::remove_underscore(local_sname) == name;
-                   }) != std::end(lnames_);
-        } else
-            return std::find(std::begin(lnames_), std::end(lnames_), name) != std::end(lnames_);
+    /// Requires "--" to be removed from string
+    bool check_fname(std::string name) const {
+        if(fnames_.empty()) {
+            return false;
+        }
+        return detail::check_is_member(name, fnames_, ignore_case_, ignore_underscore_);
     }
 
     /// Puts a result at the end
     Option *add_result(std::string s) {
-        results_.push_back(s);
+        results_.push_back(std::move(s));
+        callback_run_ = false;
+        return this;
+    }
+
+    /// Puts a result at the end
+    Option *add_result(std::vector<std::string> s) {
+        if(results_.empty()) {
+            results_ = std::move(s);
+        } else {
+            results_.insert(results_.end(), s.begin(), s.end());
+        }
+
         callback_run_ = false;
         return this;
     }

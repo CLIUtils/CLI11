@@ -68,6 +68,20 @@ TEST(StringTools, Modify3) {
     EXPECT_EQ(newString, "aba");
 }
 
+TEST(StringTools, flagValues) {
+    EXPECT_EQ(CLI::detail::to_flag_value("0"), "-1");
+    EXPECT_EQ(CLI::detail::to_flag_value("t"), "1");
+    EXPECT_EQ(CLI::detail::to_flag_value("1"), "1");
+    EXPECT_EQ(CLI::detail::to_flag_value("6"), "6");
+    EXPECT_EQ(CLI::detail::to_flag_value("-6"), "-6");
+    EXPECT_EQ(CLI::detail::to_flag_value("false"), "-1");
+    EXPECT_EQ(CLI::detail::to_flag_value("YES"), "1");
+    EXPECT_THROW(CLI::detail::to_flag_value("frog"), std::invalid_argument);
+    EXPECT_THROW(CLI::detail::to_flag_value("q"), std::invalid_argument);
+    EXPECT_EQ(CLI::detail::to_flag_value("NO"), "-1");
+    EXPECT_EQ(CLI::detail::to_flag_value("4755263255233"), "4755263255233");
+}
+
 TEST(Trim, Various) {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -566,6 +580,20 @@ TEST(Types, LexicalCastDouble) {
 
     std::string extra_input = "9.12i";
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, x));
+}
+
+TEST(Types, LexicalCastBool) {
+    std::string input = "false";
+    bool x;
+    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
+    EXPECT_FALSE(x);
+
+    std::string bad_input = "happy";
+    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
+
+    std::string input_true = "EnaBLE";
+    EXPECT_TRUE(CLI::detail::lexical_cast(input_true, x));
+    EXPECT_TRUE(x);
 }
 
 TEST(Types, LexicalCastString) {
