@@ -1981,15 +1981,15 @@ TEST_F(TApp, CustomUserSepParse) {
 // #209
 TEST_F(TApp, DefaultUserSepParse) {
 
-    std::vector<int> vals = {1, 2, 3};
-    args = {"--idx", "1 2 3"};
+    std::vector<std::string> vals;
+    args = {"--idx", "1 2 3", "4 5 6"};
     auto opt = app.add_option("--idx", vals, "");
     run();
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    EXPECT_EQ(vals, std::vector<std::string>({"1 2 3", "4 5 6"}));
     app.remove_option(opt);
     app.add_option("--idx", vals, "", true);
     run();
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    EXPECT_EQ(vals, std::vector<std::string>({"1 2 3", "4 5 6"}));
 }
 
 // #209
@@ -2051,4 +2051,20 @@ TEST_F(TApp, CustomUserSepParse4) {
     app.add_option("--idx", vals, "", true, ',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
+}
+
+// #218
+TEST_F(TApp, CustomUserSepParse5) {
+
+    std::vector<std::string> bar;
+    args = {"this", "is", "a", "test"};
+    auto opt = app.add_option("bar", bar, "bar");
+    run();
+    EXPECT_EQ(bar, std::vector<std::string>({"this", "is", "a", "test"}));
+
+    app.remove_option(opt);
+    args = {"this", "is", "a", "test"};
+    app.add_option("bar", bar, "bar", true);
+    run();
+    EXPECT_EQ(bar, std::vector<std::string>({"this", "is", "a", "test"}));
 }
