@@ -651,18 +651,8 @@ class App {
                     std::set<T> options, ///< The set of possibilities
                     std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            bool retval = detail::lexical_cast(res[0], member);
-            if(!retval)
-                throw ConversionError(res[0], simple_name);
-            return std::find(std::begin(options), std::end(options), member) != std::end(options);
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        std::string typeval = detail::type_name<T>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{options});
         return opt;
     }
 
@@ -673,18 +663,8 @@ class App {
                             const std::set<T> &options, ///< The set of possibilities
                             std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            bool retval = detail::lexical_cast(res[0], member);
-            if(!retval)
-                throw ConversionError(res[0], simple_name);
-            return std::find(std::begin(options), std::end(options), member) != std::end(options);
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        opt->type_name_fn(
-            [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{&options});
         return opt;
     }
 
@@ -696,23 +676,8 @@ class App {
                     std::string description,
                     bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            bool retval = detail::lexical_cast(res[0], member);
-            if(!retval)
-                throw ConversionError(res[0], simple_name);
-            return std::find(std::begin(options), std::end(options), member) != std::end(options);
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        std::string typeval = detail::type_name<T>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-        if(defaulted) {
-            std::stringstream out;
-            out << member;
-            opt->default_str(out.str());
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{options});
         return opt;
     }
 
@@ -724,22 +689,8 @@ class App {
                             std::string description,
                             bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            bool retval = detail::lexical_cast(res[0], member);
-            if(!retval)
-                throw ConversionError(res[0], simple_name);
-            return std::find(std::begin(options), std::end(options), member) != std::end(options);
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        opt->type_name_fn(
-            [&options]() { return std::string(detail::type_name<T>()) + " in {" + detail::join(options) + "}"; });
-        if(defaulted) {
-            std::stringstream out;
-            out << member;
-            opt->default_str(out.str());
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{&options});
         return opt;
     }
 
@@ -749,25 +700,8 @@ class App {
                                 std::set<std::string> options, ///< The set of possibilities
                                 std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{options, CLI::ignore_case});
         return opt;
     }
 
@@ -778,25 +712,8 @@ class App {
                                         const std::set<std::string> &options, ///< The set of possibilities
                                         std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{&options, CLI::ignore_case});
         return opt;
     }
 
@@ -807,27 +724,8 @@ class App {
                                 std::string description,
                                 bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{options, CLI::ignore_case});
         return opt;
     }
 
@@ -838,27 +736,8 @@ class App {
                                         std::string description,
                                         bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{&options, CLI::ignore_case});
         return opt;
     }
 
@@ -868,25 +747,8 @@ class App {
                                       std::set<std::string> options, ///< The set of possibilities
                                       std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::remove_underscore(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::remove_underscore(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{options, CLI::ignore_underscore});
         return opt;
     }
 
@@ -897,25 +759,8 @@ class App {
                                               const std::set<std::string> &options, ///< The set of possibilities
                                               std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::remove_underscore(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::remove_underscore(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{options, CLI::ignore_underscore});
         return opt;
     }
 
@@ -926,27 +771,8 @@ class App {
                                       std::string description,
                                       bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::remove_underscore(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::remove_underscore(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{options, CLI::ignore_underscore});
         return opt;
     }
 
@@ -958,27 +784,8 @@ class App {
                                               std::string description,
                                               bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::remove_underscore(res[0]);
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::remove_underscore(val) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{&options, CLI::ignore_underscore});
         return opt;
     }
 
@@ -988,25 +795,8 @@ class App {
                                            std::set<std::string> options, ///< The set of possibilities
                                            std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(detail::remove_underscore(res[0]));
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(detail::remove_underscore(val)) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{options, CLI::ignore_underscore, CLI::ignore_case});
         return opt;
     }
 
@@ -1017,25 +807,8 @@ class App {
                                                    const std::set<std::string> &options, ///< The set of possibilities
                                                    std::string description = "") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(detail::remove_underscore(res[0]));
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(detail::remove_underscore(val)) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), false);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-
+        Option *opt = add_option(option_name, member, std::move(description));
+        opt->check(IsMember{&options, CLI::ignore_underscore, CLI::ignore_case});
         return opt;
     }
 
@@ -1046,27 +819,8 @@ class App {
                                            std::string description,
                                            bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(detail::remove_underscore(res[0]));
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(detail::remove_underscore(val)) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        std::string typeval = detail::type_name<std::string>();
-        typeval += " in {" + detail::join(options) + "}";
-        opt->type_name(typeval);
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{options, CLI::ignore_underscore, CLI::ignore_case});
         return opt;
     }
 
@@ -1078,27 +832,8 @@ class App {
                                                    std::string description,
                                                    bool defaulted) {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&member, &options, simple_name](CLI::results_t res) {
-            member = detail::to_lower(detail::remove_underscore(res[0]));
-            auto iter = std::find_if(std::begin(options), std::end(options), [&member](std::string val) {
-                return detail::to_lower(detail::remove_underscore(val)) == member;
-            });
-            if(iter == std::end(options))
-                throw ConversionError(member, simple_name);
-            else {
-                member = *iter;
-                return true;
-            }
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(description), defaulted);
-        opt->type_name_fn([&options]() {
-            return std::string(detail::type_name<std::string>()) + " in {" + detail::join(options) + "}";
-        });
-        if(defaulted) {
-            opt->default_str(member);
-        }
+        Option *opt = add_option(option_name, member, std::move(description), defaulted);
+        opt->check(IsMember{&options, CLI::ignore_underscore, CLI::ignore_case});
         return opt;
     }
 

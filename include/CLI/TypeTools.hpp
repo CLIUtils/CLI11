@@ -4,6 +4,7 @@
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
 #include <exception>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -21,16 +22,27 @@ namespace CLI {
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
 
 /// Check to see if something is a vector (fail check by default)
-template <typename T> struct is_vector { static const bool value = false; };
+template <typename T> struct is_vector : std::false_type {};
 
 /// Check to see if something is a vector (true if actually a vector)
-template <class T, class A> struct is_vector<std::vector<T, A>> { static bool const value = true; };
+template <class T, class A> struct is_vector<std::vector<T, A>> : std::true_type {};
 
 /// Check to see if something is bool (fail check by default)
-template <typename T> struct is_bool { static const bool value = false; };
+template <typename T> struct is_bool : std::false_type {};
 
 /// Check to see if something is bool (true if actually a bool)
-template <> struct is_bool<bool> { static bool const value = true; };
+template <> struct is_bool<bool> : std::true_type {};
+
+/// Check to see if something is a shared pointer
+template <typename T> struct is_shared_ptr : std::false_type {};
+
+/// Check to see if something is a shared pointer (True if really a shared pointer)
+template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+/// Check to see if something is copyable pointer
+template <typename T> struct is_copyable_ptr {
+    static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
+};
 
 namespace detail {
 // Based generally on https://rmf.io/cxx11/almost-static-if

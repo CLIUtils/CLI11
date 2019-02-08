@@ -3,6 +3,7 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
+#include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
 
 #include <functional>
@@ -31,13 +32,24 @@ struct Validator {
     /// This is the type name, if empty the type name will not be changed
     std::string tname;
 
+    /// This is the type function, if empty the tname will be used
+    std::function<std::string()> tname_function;
+
     /// This it the base function that is to be called.
     /// Returns a string error message if validation fails.
-    std::function<std::string(const std::string &)> func;
+    std::function<std::string(std::string &)> func;
+
+  public:
+    /// This is the required operator for a validator - provided to help
+    /// users (CLI11 uses the member `func` directly)
+    std::string operator()(std::string &str) const { return func(str); };
 
     /// This is the required operator for a validator - provided to help
     /// users (CLI11 uses the member `func` directly)
-    std::string operator()(const std::string &str) const { return func(str); };
+    std::string operator()(const std::string &str) const {
+        std::string value = str;
+        return func(value);
+    };
 
     /// Combining validators is a new validator
     Validator operator&(const Validator &other) const {
@@ -45,10 +57,10 @@ struct Validator {
         newval.tname = (tname == other.tname ? tname : "");
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(const std::string &filename)> &f1 = func;
-        const std::function<std::string(const std::string &filename)> &f2 = other.func;
+        const std::function<std::string(std::string & filename)> &f1 = func;
+        const std::function<std::string(std::string & filename)> &f2 = other.func;
 
-        newval.func = [f1, f2](const std::string &filename) {
+        newval.func = [f1, f2](std::string &filename) {
             std::string s1 = f1(filename);
             std::string s2 = f2(filename);
             if(!s1.empty() && !s2.empty())
@@ -65,10 +77,10 @@ struct Validator {
         newval.tname = (tname == other.tname ? tname : "");
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(const std::string &filename)> &f1 = func;
-        const std::function<std::string(const std::string &filename)> &f2 = other.func;
+        const std::function<std::string(std::string & filename)> &f1 = func;
+        const std::function<std::string(std::string & filename)> &f2 = other.func;
 
-        newval.func = [f1, f2](const std::string &filename) {
+        newval.func = [f1, f2](std::string &filename) {
             std::string s1 = f1(filename);
             std::string s2 = f2(filename);
             if(s1.empty() || s2.empty())
@@ -89,7 +101,7 @@ namespace detail {
 struct ExistingFileValidator : public Validator {
     ExistingFileValidator() {
         tname = "FILE";
-        func = [](const std::string &filename) {
+        func = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -107,7 +119,7 @@ struct ExistingFileValidator : public Validator {
 struct ExistingDirectoryValidator : public Validator {
     ExistingDirectoryValidator() {
         tname = "DIR";
-        func = [](const std::string &filename) {
+        func = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -125,7 +137,7 @@ struct ExistingDirectoryValidator : public Validator {
 struct ExistingPathValidator : public Validator {
     ExistingPathValidator() {
         tname = "PATH";
-        func = [](const std::string &filename) {
+        func = [](std::string &filename) {
             struct stat buffer;
             bool const exist = stat(filename.c_str(), &buffer) == 0;
             if(!exist) {
@@ -140,7 +152,7 @@ struct ExistingPathValidator : public Validator {
 struct NonexistentPathValidator : public Validator {
     NonexistentPathValidator() {
         tname = "PATH";
-        func = [](const std::string &filename) {
+        func = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             if(exist) {
@@ -155,7 +167,7 @@ struct NonexistentPathValidator : public Validator {
 struct IPV4Validator : public Validator {
     IPV4Validator() {
         tname = "IPV4";
-        func = [](const std::string &ip_addr) {
+        func = [](std::string &ip_addr) {
             auto result = CLI::detail::split(ip_addr, '.');
             if(result.size() != 4) {
                 return "Invalid IPV4 address must have four parts " + ip_addr;
@@ -180,7 +192,7 @@ struct IPV4Validator : public Validator {
 struct PositiveNumber : public Validator {
     PositiveNumber() {
         tname = "POSITIVE";
-        func = [](const std::string &number_str) {
+        func = [](std::string &number_str) {
             int number;
             if(!detail::lexical_cast(number_str, number)) {
                 return "Failed parsing number " + number_str;
@@ -226,7 +238,7 @@ struct Range : public Validator {
         out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
 
         tname = out.str();
-        func = [min, max](std::string input) {
+        func = [min, max](std::string &input) {
             T val;
             detail::lexical_cast(input, val);
             if(val < min || val > max)
@@ -239,6 +251,81 @@ struct Range : public Validator {
     /// Range of one value is 0 to value
     template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
 };
+
+/// Verify items are in a set
+struct IsMember : public Validator {
+    using filter_fn_t = std::function<std::string(std::string)>;
+
+    /// This checks to see if an item is in a set: pointer version. The pointer-like must be copyable. (Normal pointers
+    /// and shared pointers by default).
+    ///
+    /// Note that the constructor is templated, but the struct is not, so C++17 is not
+    /// needed to provide nice syntax for IsMember(set).
+    template <typename T, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
+    explicit IsMember(T set,
+                      std::function<typename std::decay<decltype(*set)>::type::value_type(
+                          typename std::decay<decltype(*set)>::type::value_type)> filter_fn = {}) {
+        using item_t = typename std::decay<decltype(*set)>::type::value_type;
+
+        tname_function = [set]() {
+            std::stringstream out;
+            out << detail::type_name<item_t>() << " in {" << detail::join(*set, ",") << "}";
+            return out.str();
+        };
+
+        func = [set, filter_fn](std::string &input) {
+            auto result = std::find_if(std::begin(*set), std::end(*set), [filter_fn, input](item_t v) {
+                item_t a = v;
+                item_t b;
+                if(!detail::lexical_cast(input, b))
+                    throw ConversionError(input); // name is added later
+
+                if(filter_fn) {
+                    a = filter_fn(a);
+                    b = filter_fn(b);
+                }
+                return a == b;
+            });
+
+            if(result == std::end(*set)) {
+                return input + " not in {" + detail::join(*set, ",") + "}";
+            } else {
+                // Make sure the version in the input string is identical to the one in the set
+                // Requires std::stringstream << be supported on T.
+                std::stringstream out;
+                out << *result;
+                input = out.str();
+                return std::string();
+            }
+        };
+    }
+
+    /// This checks to see if an item is in a set: non-pointer version.
+    ///
+    /// Internally copies into a shared pointer and sends it
+    /// through the next constructor to avoid duplicating logic.
+    template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy, typename... Args>
+    explicit IsMember(T set, Args &&... other) : IsMember(std::make_shared<T>(set), other...) {}
+
+    /// Shortcut to allow inplace initilizer lists to be used as sets.
+    ///
+    /// Vector used internally to ensure order preservation.
+    template <typename... Args>
+    explicit IsMember(std::initializer_list<std::string> items, Args &&... other)
+        : IsMember(std::vector<std::string>(items), other...) {}
+
+    /// You can pass in as many filter functions as you like, they nest
+    template <typename T, typename... Args>
+    IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : IsMember(
+              set, [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); }, other...) {}
+};
+
+/// Helper function to allow ignore_case to be passed to IsMember
+inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
+
+/// Helper function to allow ignore_underscore to be passed to IsMember
+inline std::string ignore_underscore(std::string item) { return detail::remove_underscore(item); }
 
 namespace detail {
 /// Split a string into a program name and command line arguments

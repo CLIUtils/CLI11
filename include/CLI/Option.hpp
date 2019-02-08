@@ -304,7 +304,9 @@ class Option : public OptionBase<Option> {
     /// Adds a validator with a built in type name
     Option *check(const Validator &validator) {
         validators_.emplace_back(validator.func);
-        if(!validator.tname.empty())
+        if(validator.tname_function)
+            type_name_fn(validator.tname_function);
+        else if(!validator.tname.empty())
             type_name(validator.tname);
         return this;
     }
@@ -606,7 +608,14 @@ class Option : public OptionBase<Option> {
         if(!validators_.empty()) {
             for(std::string &result : results_)
                 for(const std::function<std::string(std::string &)> &vali : validators_) {
-                    std::string err_msg = vali(result);
+                    std::string err_msg;
+
+                    try {
+                        err_msg = vali(result);
+                    } catch(const ConversionError &err) {
+                        throw ConversionError(err.what(), get_name());
+                    }
+
                     if(!err_msg.empty())
                         throw ValidationError(get_name(), err_msg);
                 }
