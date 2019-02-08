@@ -418,17 +418,22 @@ class App {
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description = "",
-                       char delimiter = ' ') {
+                       char delimiter = '\0') {
 
         CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
             bool retval = true;
             variable.clear();
             for(const auto &elem : res) {
-                for(const auto &var : CLI::detail::split(elem, delimiter)) {
-                    if(!var.empty()) {
-                        variable.emplace_back();
-                        retval &= detail::lexical_cast(var, variable.back());
+                if(delimiter != '\0') {
+                    for(const auto &var : CLI::detail::split(elem, delimiter)) {
+                        if(!var.empty()) {
+                            variable.emplace_back();
+                            retval &= detail::lexical_cast(var, variable.back());
+                        }
                     }
+                } else {
+                    variable.emplace_back();
+                    retval &= detail::lexical_cast(elem, variable.back());
                 }
             }
             return (!variable.empty()) && retval;
@@ -445,17 +450,22 @@ class App {
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string description,
                        bool defaulted,
-                       char delimiter = ' ') {
+                       char delimiter = '\0') {
 
         CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
             bool retval = true;
             variable.clear();
-            for(const auto &a : res) {
-                for(const auto &var : CLI::detail::split(a, delimiter)) {
-                    if(!var.empty()) {
-                        variable.emplace_back();
-                        retval &= detail::lexical_cast(var, variable.back());
+            for(const auto &elem : res) {
+                if(delimiter != '\0') {
+                    for(const auto &var : CLI::detail::split(elem, delimiter)) {
+                        if(!var.empty()) {
+                            variable.emplace_back();
+                            retval &= detail::lexical_cast(var, variable.back());
+                        }
                     }
+                } else {
+                    variable.emplace_back();
+                    retval &= detail::lexical_cast(elem, variable.back());
                 }
             }
             return (!variable.empty()) && retval;
