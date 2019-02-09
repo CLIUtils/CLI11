@@ -1,3 +1,19 @@
+## Version 1.8: Flags and Sets
+
+This version adds inverted flags, which can cancel or reduce the count of flags, and can also support basic number assignment. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
+
+* Much more powerful flags with different values [#211]
+* Support for composable unnamed subcommands [#216]
+* Custom vector separator [#209], [#221]
+* Validators added for IP4 addresses and positive numbers [#210]
+
+[#209]: https://github.com/CLIUtils/CLI11/pull/209
+[#210]: https://github.com/CLIUtils/CLI11/pull/210
+[#211]: https://github.com/CLIUtils/CLI11/pull/211
+[#216]: https://github.com/CLIUtils/CLI11/pull/216
+[#221]: https://github.com/CLIUtils/CLI11/pull/221
+
+
 ## Version 1.7.1: Quick patch
 
 This version provides a quick patch for a (correct) warning from GCC 8 for the windows options code.

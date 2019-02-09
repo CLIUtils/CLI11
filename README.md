@@ -523,11 +523,12 @@ Significant features and/or improvements to the code were contributed by:
 -   [Stéphane Del Pino](https://github.com/delpinux)
 -   [Mak Kolybabi](https://github.com/mogigoma)
 -   [Paweł Bylica](https://github.com/chfast)
--   [Philip Top](https://github.com/phlptp)
+-   [Philip Top](https://github.com/phlptp) <!-- Major features in 1.7 and 1.8>
 -   [almikhayl](https://github.com/almikhayl)
 -   [nurelin](https://github.com/nurelin) <!-- help_all in message -->
 -   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
 -   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
+-   [Rafi Wiener](https://github.com/rafiw) <!-- INI, +ive validators and vector separators -->
 
 
 ## License
