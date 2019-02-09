@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <locale>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -161,6 +162,42 @@ inline std::string find_and_replace(std::string str, std::string from, std::stri
     return str;
 }
 
+/// check if the flag definitions has possible false flags
+inline bool has_false_flags(const std::string &flags) { return (flags.find_first_of("{!") != std::string::npos); }
+
+inline void remove_false_flag_notation(std::string &flags) {
+    flags = detail::find_and_replace(flags, "{false}", std::string{});
+    flags = detail::find_and_replace(flags, "{true}", std::string{});
+    flags.erase(std::remove(flags.begin(), flags.end(), '!'), flags.end());
+}
+
+/// Check if a string is a member of a list of strings and optionally ignore case or ignore underscores
+inline bool check_is_member(std::string name,
+                            const std::vector<std::string> names,
+                            bool ignore_case = false,
+                            bool ignore_underscore = false) {
+    if(ignore_case) {
+        if(ignore_underscore) {
+            name = detail::to_lower(detail::remove_underscore(name));
+            return std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                       return detail::to_lower(detail::remove_underscore(local_name)) == name;
+                   }) != std::end(names);
+        } else {
+            name = detail::to_lower(name);
+            return std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                       return detail::to_lower(local_name) == name;
+                   }) != std::end(names);
+        }
+
+    } else if(ignore_underscore) {
+        name = detail::remove_underscore(name);
+        return std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                   return detail::remove_underscore(local_name) == name;
+               }) != std::end(names);
+    } else
+        return std::find(std::begin(names), std::end(names), name) != std::end(names);
+}
+
 /// Find a trigger string and call a modify callable function that takes the current string and starting position of the
 /// trigger and returns the position in the string to search for the next trigger string
 template <typename Callable> inline std::string find_and_modify(std::string str, std::string trigger, Callable modify) {
@@ -171,6 +208,49 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
     return str;
 }
 
+/// generate a vector of values that represent a boolean  they will be either "+" or "-"
+inline std::string to_flag_value(std::string val) {
+    val = detail::to_lower(val);
+    std::string ret;
+    if(val.size() == 1) {
+        switch(val[0]) {
+        case '0':
+        case 'f':
+        case 'n':
+        case '-':
+            ret = "-1";
+            break;
+        case '1':
+        case 't':
+        case 'y':
+        case '+':
+            ret = "1";
+            break;
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            ret = val;
+            break;
+        default:
+            throw std::invalid_argument("unrecognized character");
+        }
+        return ret;
+    }
+    if(val == "true" || val == "on" || val == "yes" || val == "enable") {
+        ret = "1";
+    } else if(val == "false" || val == "off" || val == "no" || val == "disable") {
+        ret = "-1";
+    } else {
+        auto ui = std::stoll(val);
+        ret = (ui == 0) ? "-1" : val;
+    }
+    return ret;
+}
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be ` ' or "
 inline std::vector<std::string> split_up(std::string str) {

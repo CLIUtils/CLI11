@@ -59,10 +59,7 @@ inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) co
 inline std::string Formatter::make_description(const App *app) const {
     std::string desc = app->get_description();
 
-    if(!desc.empty())
-        return desc + "\n";
-    else
-        return "";
+    return (!desc.empty()) ? desc + "\n" : std::string{};
 }
 
 inline std::string Formatter::make_usage(const App *app, std::string name) const {
@@ -243,7 +240,6 @@ inline std::string Formatter::make_option_usage(const Option *opt) const {
         out << "(" << std::to_string(opt->get_expected()) << "x)";
     else if(opt->get_expected() < 0)
         out << "...";
-
     return opt->get_required() ? out.str() : "[" + out.str() + "]";
 }
 

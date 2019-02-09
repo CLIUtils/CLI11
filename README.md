@@ -186,11 +186,14 @@ app.add_option_function<type>(option_name,
 app.add_complex(... // Special case: support for complex numbers
 
 app.add_flag(option_name,
-             int_or_bool = nothing,
+             help_string="")
+
+app.add_flag(option_name,
+             int_or_bool,
              help_string="")
 
 app.add_flag_function(option_name,
-             function <void(size_t count)>,
+             function <void(int count)>,
              help_string="")
 
 app.add_set(option_name,
@@ -212,7 +215,33 @@ App* subcom = app.add_subcommand(name, description);
 
 An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`. The set options allow your users to pick from a set of predefined options, and you can use an initializer list directly if you like. If you need to modify the set later, use the `mutable` forms.
 
-The `add_option_function<type>(...` function will typically require the template parameter be given unless a std::function object with an exact match is passed.  The type can be any type supported by the `add_option` function
+The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
+
+Flag options specified through the functions
+
+```cpp
+app.add_flag(option_name,
+             int_or_bool,
+             help_string="")
+
+app.add_flag_function(option_name,
+             function <void(int count)>,
+             help_string="")
+```
+
+allow a syntax for the option names to default particular options to a false value if some flags are passed.  For example:
+
+```cpp
+app.add_flag("--flag,!--no-flag,result,"help for flag");`
+``````
+
+specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
+passed result will contain false or -1 if result is a signed integer type, or 0 if it is an unsigned type.  An
+alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; this is equivalent to the previous
+example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `int_or_bool` is a boolean value the
+default behavior is to take the last value given, while if `int_or_bool` is an integer type the behavior will be to sum
+all the given arguments and return the result.  This can be modifed if needed by changing the `multi_option_policy` on
+each flag (this is not inherited).
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
@@ -241,7 +270,7 @@ Before parsing, you can set the following options:
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->description(str)`: Set/change the description.
--   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which always default to take last).
+-   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 -   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
@@ -261,6 +290,7 @@ On the command line, options can be given as:
 -   `-ffilename` (no space required)
 -   `-abcf filename` (flags and option can be combined)
 -   `--long` (long flag)
+-   `--long_flag=true` (long flag with equals)
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
@@ -271,6 +301,8 @@ If allow_windows_style_options() is specified in the application or subcommand o
 -   `/file filename` (space)
 -   `/file:filename` (colon)
 =  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
+
+Long flag options may be given with and `=<value>` to allow specifying a false value See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default (true or false) values.
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
 If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
@@ -360,7 +392,7 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`; or `false`, `off`, `0`, `no` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`,`enable`; or `false`, `off`, `0`, `no`,`disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
 
 To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.

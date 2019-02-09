@@ -83,6 +83,25 @@ TEST(Formatter, OptCustomizeSimple) {
               "  --opt INT (MUST HAVE)  Something\n");
 }
 
+TEST(Formatter, FalseFlagExample) {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+    app.get_formatter()->label("REQUIRED", "(MUST HAVE)");
+
+    int v;
+    app.add_flag("--opt,!--no_opt", v, "Something");
+
+    bool flag;
+    app.add_flag("!-O,--opt2,--no_opt2{false}", flag, "Something else");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("--no_opt{false}"));
+    EXPECT_THAT(help, HasSubstr("--no_opt2{false}"));
+    EXPECT_THAT(help, HasSubstr("-O{false}"));
+}
+
 TEST(Formatter, AppCustomize) {
     CLI::App app{"My prog"};
     app.add_subcommand("subcom1", "This");

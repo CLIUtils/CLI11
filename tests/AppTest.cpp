@@ -91,6 +91,57 @@ TEST_F(TApp, OneFlagRef) {
     EXPECT_EQ(1, ref);
 }
 
+TEST_F(TApp, OneFlagRefValue) {
+    int ref;
+    app.add_flag("-c,--count", ref);
+    args = {"--count=7"};
+    run();
+    EXPECT_EQ(1u, app.count("-c"));
+    EXPECT_EQ(1u, app.count("--count"));
+    EXPECT_EQ(7, ref);
+}
+
+TEST_F(TApp, OneFlagRefValueFalse) {
+    int ref;
+    app.add_flag("-c,--count", ref);
+    args = {"--count=false"};
+    run();
+    EXPECT_EQ(1u, app.count("-c"));
+    EXPECT_EQ(1u, app.count("--count"));
+    EXPECT_EQ(-1, ref);
+
+    args = {"--count=0"};
+    run();
+    EXPECT_EQ(1u, app.count("-c"));
+    EXPECT_EQ(1u, app.count("--count"));
+    EXPECT_EQ(-1, ref);
+
+    args = {"--count=happy"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, FlagNegation) {
+    int ref;
+    app.add_flag("-c,--count,--ncount{false}", ref);
+    args = {"--count", "-c", "--ncount"};
+    run();
+    EXPECT_EQ(3u, app.count("-c"));
+    EXPECT_EQ(3u, app.count("--count"));
+    EXPECT_EQ(3u, app.count("--ncount"));
+    EXPECT_EQ(1, ref);
+}
+
+TEST_F(TApp, FlagNegationShortcutNotation) {
+    int ref;
+    app.add_flag("-c,--count,!--ncount", ref);
+    args = {"--count", "-c", "--ncount"};
+    run();
+    EXPECT_EQ(3u, app.count("-c"));
+    EXPECT_EQ(3u, app.count("--count"));
+    EXPECT_EQ(3u, app.count("--ncount"));
+    EXPECT_EQ(1, ref);
+}
+
 TEST_F(TApp, OneString) {
     std::string str;
     app.add_option("-s,--string", str);
@@ -465,6 +516,23 @@ TEST_F(TApp, BoolOnlyFlag) {
 
     args = {"-b", "-b"};
     EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, BoolOption) {
+    bool bflag;
+    app.add_option("-b", bflag);
+
+    args = {"-b", "false"};
+    run();
+    EXPECT_FALSE(bflag);
+
+    args = {"-b", "1"};
+    run();
+    EXPECT_TRUE(bflag);
+
+    args = {"-b", "-7"};
+    run();
+    EXPECT_FALSE(bflag);
 }
 
 TEST_F(TApp, ShortOpts) {
@@ -972,6 +1040,64 @@ TEST_F(TApp, CallbackFlags) {
     args = {"-vv"};
     run();
     EXPECT_EQ(value, 2u);
+
+    EXPECT_THROW(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, CallbackFlagsFalse) {
+    int value = 0;
+
+    auto func = [&value](int x) { value = x; };
+
+    app.add_flag_function("-v,-f{false},--val,--fval{false}", func);
+
+    run();
+    EXPECT_EQ(value, 0u);
+
+    args = {"-f"};
+    run();
+    EXPECT_EQ(value, -1);
+
+    args = {"-vfv"};
+    run();
+    EXPECT_EQ(value, 1);
+
+    args = {"--fval"};
+    run();
+    EXPECT_EQ(value, -1);
+
+    args = {"--fval=2"};
+    run();
+    EXPECT_EQ(value, -2);
+
+    EXPECT_THROW(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
+}
+
+TEST_F(TApp, CallbackFlagsFalseShortcut) {
+    int value = 0;
+
+    auto func = [&value](int x) { value = x; };
+
+    app.add_flag_function("-v,!-f,--val,!--fval", func);
+
+    run();
+    EXPECT_EQ(value, 0u);
+
+    args = {"-f"};
+    run();
+    EXPECT_EQ(value, -1);
+
+    args = {"-vfv"};
+    run();
+    EXPECT_EQ(value, 1);
+
+    args = {"--fval"};
+    run();
+    EXPECT_EQ(value, -1);
+
+    args = {"--fval=2"};
+    run();
+    EXPECT_EQ(value, -2);
 
     EXPECT_THROW(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
 }
