@@ -176,7 +176,7 @@ struct IPV4Validator : public Validator {
     }
 };
 
-/// Validate the argument is a number and equal greater then 0
+/// Validate the argument is a number and greater than or equal to 0
 struct PositiveNumber : public Validator {
     PositiveNumber() {
         tname = "POSITIVE";
@@ -186,7 +186,7 @@ struct PositiveNumber : public Validator {
                 return "Failed parsing number " + number_str;
             }
             if(number < 0) {
-                return "number less then 0 " + number_str;
+                return "Number less then 0 " + number_str;
             }
             return std::string();
         };
