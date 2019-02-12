@@ -75,7 +75,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         endif()
     endif()
 
-    if(NOT CMAKE_VERSION VERSION_LESS 3.6)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.6 AND CLANG_TIDY)
         # Add clang-tidy if available
         option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy" OFF)
         find_program(
