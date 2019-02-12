@@ -156,6 +156,8 @@ class App {
         false
 #endif
     };
+    /// specify that positional arguments come at the end of the argument sequence not inheritable
+    bool positionals_at_end_{false};
 
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
@@ -286,6 +288,12 @@ class App {
     /// Allow windows style options, such as `/opt`. First matching short or long name used. Subcommands inherit value.
     App *allow_windows_style_options(bool value = true) {
         allow_windows_style_options_ = value;
+        return this;
+    }
+
+    /// specify that the positional arguments are only at the end of the sequence
+    App *positionals_at_end(bool value = true) {
+        positionals_at_end_ = value;
         return this;
     }
 
@@ -1575,6 +1583,9 @@ class App {
     /// Check the status of the allow windows style options
     bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
 
+    /// Check the status of the allow windows style options
+    bool get_positionals_at_end() const { return positionals_at_end_; }
+
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
 
@@ -2018,6 +2029,9 @@ class App {
         case detail::Classifier::NONE:
             // Probably a positional or something for a parent (sub)command
             _parse_positional(args);
+            if(positionals_at_end_) {
+                positional_only = true;
+            }
         }
     }
 
@@ -2063,6 +2077,9 @@ class App {
         if(parent_ != nullptr && fallthrough_)
             return parent_->_parse_positional(args);
         else {
+            if(positionals_at_end_) {
+                throw CLI::ExtrasError(args);
+            }
             args.pop_back();
             missing_.emplace_back(detail::Classifier::NONE, positional);
 

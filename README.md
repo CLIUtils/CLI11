@@ -240,7 +240,7 @@ passed result will contain false or -1 if result is a signed integer type, or 0 
 alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; this is equivalent to the previous
 example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `int_or_bool` is a boolean value the
 default behavior is to take the last value given, while if `int_or_bool` is an integer type the behavior will be to sum
-all the given arguments and return the result.  This can be modifed if needed by changing the `multi_option_policy` on
+all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on
 each flag (this is not inherited).
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
@@ -276,6 +276,8 @@ Before parsing, you can set the following options:
 -   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
 -   `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 -   `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
+-   `->check(CLI::PositiveNumber)`: Requires the number be greater or equal to 0
+-   `->check(CLI::ValidIPV4)`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`
 -   `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
 -   `->each(void(std::string)>`: Run this function on each value received, as it is received.
 -   `->configurable(false)`: Disable this option from being in a configuration file.
@@ -357,6 +359,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
+-   `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.  
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 -   `.footer(message)`: Set text to appear at the bottom of the help string.
 -   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.

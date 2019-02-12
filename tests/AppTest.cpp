@@ -828,6 +828,25 @@ TEST_F(TApp, PositionalNoSpace) {
     EXPECT_EQ(options.at(0), "Test");
 }
 
+// Tests positionals at end
+TEST_F(TApp, PositionalAtEnd) {
+    std::string options;
+    std::string foo;
+
+    app.add_option("-O", options);
+    app.add_option("foo", foo);
+    app.positionals_at_end();
+    EXPECT_TRUE(app.get_positionals_at_end());
+    args = {"-O", "Test", "param1"};
+    run();
+
+    EXPECT_EQ(options, "Test");
+    EXPECT_EQ(foo, "param1");
+
+    args = {"param2", "-O", "Test"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
 TEST_F(TApp, PositionalNoSpaceLong) {
     std::vector<std::string> options;
     std::string foo, bar;
