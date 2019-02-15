@@ -18,6 +18,8 @@
 
 namespace CLI {
 
+class Option;
+
 /// @defgroup validator_group Validators
 
 /// @brief Some validators that are provided
@@ -28,7 +30,10 @@ namespace CLI {
 /// @{
 
 ///
-struct Validator {
+class Validator {
+    friend Option;
+
+  protected:
     /// This is the type name, if empty the type name will not be changed
     std::string tname;
 
@@ -98,7 +103,8 @@ struct Validator {
 namespace detail {
 
 /// Check for an existing file (returns error message if check fails)
-struct ExistingFileValidator : public Validator {
+class ExistingFileValidator : public Validator {
+  public:
     ExistingFileValidator() {
         tname = "FILE";
         func = [](std::string &filename) {
@@ -116,7 +122,8 @@ struct ExistingFileValidator : public Validator {
 };
 
 /// Check for an existing directory (returns error message if check fails)
-struct ExistingDirectoryValidator : public Validator {
+class ExistingDirectoryValidator : public Validator {
+  public:
     ExistingDirectoryValidator() {
         tname = "DIR";
         func = [](std::string &filename) {
@@ -134,7 +141,8 @@ struct ExistingDirectoryValidator : public Validator {
 };
 
 /// Check for an existing path
-struct ExistingPathValidator : public Validator {
+class ExistingPathValidator : public Validator {
+  public:
     ExistingPathValidator() {
         tname = "PATH";
         func = [](std::string &filename) {
@@ -149,7 +157,8 @@ struct ExistingPathValidator : public Validator {
 };
 
 /// Check for an non-existing path
-struct NonexistentPathValidator : public Validator {
+class NonexistentPathValidator : public Validator {
+  public:
     NonexistentPathValidator() {
         tname = "PATH";
         func = [](std::string &filename) {
@@ -164,7 +173,8 @@ struct NonexistentPathValidator : public Validator {
 };
 
 /// Validate the given string is a legal ipv4 address
-struct IPV4Validator : public Validator {
+class IPV4Validator : public Validator {
+  public:
     IPV4Validator() {
         tname = "IPV4";
         func = [](std::string &ip_addr) {
@@ -189,7 +199,8 @@ struct IPV4Validator : public Validator {
 };
 
 /// Validate the argument is a number and greater than or equal to 0
-struct PositiveNumber : public Validator {
+class PositiveNumber : public Validator {
+  public:
     PositiveNumber() {
         tname = "POSITIVE";
         func = [](std::string &number_str) {
@@ -228,7 +239,8 @@ const detail::IPV4Validator ValidIPV4;
 const detail::PositiveNumber PositiveNumber;
 
 /// Produce a range (factory). Min and max are inclusive.
-struct Range : public Validator {
+class Range : public Validator {
+  public:
     /// This produces a range with min and max inclusive.
     ///
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
@@ -253,7 +265,8 @@ struct Range : public Validator {
 };
 
 /// Verify items are in a set
-struct IsMember : public Validator {
+class IsMember : public Validator {
+  public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
     /// This checks to see if an item is in a set: pointer version. The pointer-like must be copyable. (Normal pointers
@@ -306,13 +319,6 @@ struct IsMember : public Validator {
     /// through the next constructor to avoid duplicating logic.
     template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy, typename... Args>
     explicit IsMember(T set, Args &&... other) : IsMember(std::make_shared<T>(set), other...) {}
-
-    /// Shortcut to allow inplace initilizer lists to be used as sets.
-    ///
-    /// Vector used internally to ensure order preservation.
-    template <typename... Args>
-    explicit IsMember(std::initializer_list<std::string> items, Args &&... other)
-        : IsMember(std::vector<std::string>(items), other...) {}
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
