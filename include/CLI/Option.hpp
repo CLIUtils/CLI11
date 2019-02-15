@@ -330,6 +330,27 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Allow a set to be quickly created in place
+    template <typename... Args> Option *set(std::string arg, Args... args) {
+        std::vector<std::string> vect = {arg, args...};
+        check(IsMember(vect));
+        return this;
+    }
+
+    /// Allow a set to be quickly created in place - modifier functions
+    template <typename... Args> Option *set(std::function<std::string(std::string)> fn, std::string arg, Args... args) {
+        std::vector<std::string> vect = {arg, args...};
+        check(IsMember(vect, fn));
+        return this;
+    }
+
+    /// Allow a set to be quickly created in place - combine functions
+    template <typename... Args>
+    Option *
+    set(std::function<std::string(std::string)> fn1, std::function<std::string(std::string)> fn2, Args... args) {
+        return set([fn1, fn2](std::string v) { return fn1(fn2(v)); }, args...);
+    }
+
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
         validators_.emplace_back([func](std::string &inout) {

@@ -41,6 +41,25 @@ TEST_F(TApp, SimpleSetsPtrs) {
     EXPECT_EQ(value, "four");
 }
 
+TEST_F(TApp, ShortcutSets) {
+    std::string value;
+    auto opt = app.add_option("-s,--set", value)->set("one", "two", "three");
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, "one");
+
+    std::string value2;
+    auto opt2 = app.add_option("--set2", value2)->set(CLI::ignore_case, "One", "two", "three");
+    args = {"--set2", "onE"};
+    run();
+    EXPECT_EQ(1u, app.count("--set2"));
+    EXPECT_EQ(1u, opt2->count());
+    EXPECT_EQ(value2, "One");
+}
+
 // Classic sets
 
 TEST_F(TApp, SetWithDefaults) {

@@ -269,16 +269,27 @@ class IsMember : public Validator {
   public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
-    /// This checks to see if an item is in a set: pointer version. The pointer-like must be copyable. (Normal pointers
-    /// and shared pointers by default).
-    ///
-    /// Note that the constructor is templated, but the struct is not, so C++17 is not
-    /// needed to provide nice syntax for IsMember(set).
-    template <typename T, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
-    explicit IsMember(T set,
-                      std::function<typename std::decay<decltype(*set)>::type::value_type(
-                          typename std::decay<decltype(*set)>::type::value_type)> filter_fn = {}) {
-        using item_t = typename std::decay<decltype(*set)>::type::value_type;
+    /// This checks to see if an item is in a set: shared_pointer version. (Empty function)
+    template <typename T>
+    explicit IsMember(std::shared_ptr<T> set)
+        : IsMember(set, std::function<typename T::value_type(typename T::value_type)>{}) {}
+
+    /// This checks to see if an item is in a set: pointer version. (Empty function)
+    template <typename T, enable_if_t<std::is_pointer<T>::value, detail::enabler> = detail::dummy>
+    explicit IsMember(T set)
+        : IsMember(set,
+                   std::function<typename std::remove_pointer<T>::type::value_type(
+                       typename std::remove_pointer<T>::type::value_type)>{}) {}
+
+    /// This checks to see if an item is in a set: copy version. (Empty function)
+    template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
+    explicit IsMember(T set) : IsMember(set, std::function<typename T::value_type(typename T::value_type)>()) {}
+
+    /// This checks to see if an item is in a set: shared_pointer version.
+    template <typename T, typename F> explicit IsMember(std::shared_ptr<T> set, F filter_function) {
+
+        using item_t = typename T::value_type;
+        std::function<item_t(item_t)> filter_fn = filter_function;
 
         tname_function = [set]() {
             std::stringstream out;
@@ -313,18 +324,86 @@ class IsMember : public Validator {
         };
     }
 
-    /// This checks to see if an item is in a set: non-pointer version.
-    ///
-    /// Internally copies into a shared pointer and sends it
-    /// through the next constructor to avoid duplicating logic.
-    template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy, typename... Args>
-    explicit IsMember(T set, Args &&... other) : IsMember(std::make_shared<T>(set), other...) {}
+    /// This checks to see if an item is in a set: pointer version.
+    template <typename T, typename F, enable_if_t<std::is_pointer<T>::value, detail::enabler> = detail::dummy>
+    explicit IsMember(T set, F filter_function) {
+        using item_t = typename std::remove_pointer<T>::type::value_type;
+        std::function<item_t(item_t)> filter_fn = filter_function;
+
+        tname_function = [set]() {
+            std::stringstream out;
+            out << detail::type_name<item_t>() << " in {" << detail::join(*set, ",") << "}";
+            return out.str();
+        };
+
+        func = [set, filter_fn](std::string &input) {
+            auto result = std::find_if(std::begin(*set), std::end(*set), [filter_fn, input](item_t v) {
+                item_t a = v;
+                item_t b;
+                if(!detail::lexical_cast(input, b))
+                    throw ConversionError(input); // name is added later
+
+                if(filter_fn) {
+                    a = filter_fn(a);
+                    b = filter_fn(b);
+                }
+                return a == b;
+            });
+
+            if(result == std::end(*set)) {
+                return input + " not in {" + detail::join(*set, ",") + "}";
+            } else {
+                // Make sure the version in the input string is identical to the one in the set
+                // Requires std::stringstream << be supported on T.
+                std::stringstream out;
+                out << *result;
+                input = out.str();
+                return std::string();
+            }
+        };
+    }
+
+    /// This checks to see if an item is in a set: copy version.
+    template <typename T, typename F, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
+    explicit IsMember(T set, F filter_function) {
+        using item_t = typename T::value_type;
+        std::function<item_t(item_t)> filter_fn = filter_function;
+
+        std::stringstream out;
+        out << detail::type_name<item_t>() << " in {" << detail::join(set, ",") << "}";
+        tname = out.str();
+
+        func = [set, filter_fn](std::string &input) {
+            auto result = std::find_if(std::begin(set), std::end(set), [filter_fn, input](item_t v) {
+                item_t a = v;
+                item_t b;
+                if(!detail::lexical_cast(input, b))
+                    throw ConversionError(input); // name is added later
+
+                if(filter_fn) {
+                    a = filter_fn(a);
+                    b = filter_fn(b);
+                }
+                return a == b;
+            });
+
+            if(result == std::end(set)) {
+                return input + " not in {" + detail::join(set, ",") + "}";
+            } else {
+                // Make sure the version in the input string is identical to the one in the set
+                // Requires std::stringstream << be supported on T.
+                std::stringstream out;
+                out << *result;
+                input = out.str();
+                return std::string();
+            }
+        };
+    }
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : IsMember(
-              set, [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); }, other...) {}
+        : IsMember(set, [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); }, other...) {}
 };
 
 /// Helper function to allow ignore_case to be passed to IsMember
@@ -359,6 +438,7 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
     ltrim(vals.second);
     return vals;
 }
+
 } // namespace detail
 /// @}
 

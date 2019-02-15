@@ -603,9 +603,9 @@ TEST_F(TApp, IniFlags) {
     run();
 
     EXPECT_EQ(2, two);
-    EXPECT_EQ(true, three);
-    EXPECT_EQ(true, four);
-    EXPECT_EQ(true, five);
+    EXPECT_TRUE(three);
+    EXPECT_TRUE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniFalseFlags) {
@@ -631,9 +631,9 @@ TEST_F(TApp, IniFalseFlags) {
     run();
 
     EXPECT_EQ(-2, two);
-    EXPECT_EQ(false, three);
-    EXPECT_EQ(true, four);
-    EXPECT_EQ(true, five);
+    EXPECT_FALSE(three);
+    EXPECT_TRUE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniFalseFlagsDef) {
@@ -659,9 +659,9 @@ TEST_F(TApp, IniFalseFlagsDef) {
     run();
 
     EXPECT_EQ(-2, two);
-    EXPECT_EQ(true, three);
-    EXPECT_EQ(false, four);
-    EXPECT_EQ(true, five);
+    EXPECT_TRUE(three);
+    EXPECT_FALSE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniOutputSimple) {
