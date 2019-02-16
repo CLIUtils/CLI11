@@ -290,49 +290,12 @@ class IsMember : public Validator {
     template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set) : IsMember(set, std::function<typename T::value_type(typename T::value_type)>()) {}
 
-    /// This checks to see if an item is in a set: shared_pointer version.
-    template <typename T, typename F> explicit IsMember(std::shared_ptr<T> set, F filter_function) {
-
-        using item_t = typename T::value_type;
-        std::function<item_t(item_t)> filter_fn = filter_function;
-
-        tname_function = [set]() {
-            std::stringstream out;
-            out << detail::type_name<item_t>() << " in {" << detail::join(*set, ",") << "}";
-            return out.str();
-        };
-
-        func = [set, filter_fn](std::string &input) {
-            auto result = std::find_if(std::begin(*set), std::end(*set), [filter_fn, input](item_t v) {
-                item_t a = v;
-                item_t b;
-                if(!detail::lexical_cast(input, b))
-                    throw ConversionError(input); // name is added later
-
-                if(filter_fn) {
-                    a = filter_fn(a);
-                    b = filter_fn(b);
-                }
-                return a == b;
-            });
-
-            if(result == std::end(*set)) {
-                return input + " not in {" + detail::join(*set, ",") + "}";
-            } else {
-                // Make sure the version in the input string is identical to the one in the set
-                // Requires std::stringstream << be supported on T.
-                std::stringstream out;
-                out << *result;
-                input = out.str();
-                return std::string();
-            }
-        };
-    }
-
     /// This checks to see if an item is in a set: pointer version.
-    template <typename T, typename F, enable_if_t<std::is_pointer<T>::value, detail::enabler> = detail::dummy>
+    template <typename T, typename F, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set, F filter_function) {
-        using item_t = typename std::remove_pointer<T>::type::value_type;
+        using set_t = typename std::pointer_traits<T>::element_type;
+        using item_t = typename set_t::value_type;
+
         std::function<item_t(item_t)> filter_fn = filter_function;
 
         tname_function = [set]() {
