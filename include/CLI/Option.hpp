@@ -330,25 +330,17 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Allow a set to be quickly created in place
-    template <typename... Args> Option *set(std::string arg, Args... args) {
-        std::vector<std::string> vect = {arg, args...};
-        check(IsMember(vect));
+    /// Allow a set to be quickly created
+    template <typename... Args> Option *set(Args &&... args) {
+        check(IsMember(std::forward<Args>(args)...));
         return this;
     }
 
-    /// Allow a set to be quickly created in place - modifier functions
-    template <typename... Args> Option *set(std::function<std::string(std::string)> fn, std::string arg, Args... args) {
-        std::vector<std::string> vect = {arg, args...};
-        check(IsMember(vect, fn));
+    /// Allow a set to be quickly created
+    template <typename... Args> Option *set(std::initializer_list<std::string> tmpset, Args &&... args) {
+        std::vector<std::string> myset(tmpset);
+        check(IsMember(myset, std::forward<Args>(args)...));
         return this;
-    }
-
-    /// Allow a set to be quickly created in place - combine functions
-    template <typename... Args>
-    Option *
-    set(std::function<std::string(std::string)> fn1, std::function<std::string(std::string)> fn2, Args... args) {
-        return set([fn1, fn2](std::string v) { return fn1(fn2(v)); }, args...);
     }
 
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)

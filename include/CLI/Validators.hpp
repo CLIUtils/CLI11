@@ -269,6 +269,11 @@ class IsMember : public Validator {
   public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
+    /// This allows in-place construction
+    template <typename... Args>
+    explicit IsMember(std::initializer_list<std::string> values, Args &&... args)
+        : IsMember(std::vector<std::string>(values), std::forward<Args>(args)...) {}
+
     /// This checks to see if an item is in a set: shared_pointer version. (Empty function)
     template <typename T>
     explicit IsMember(std::shared_ptr<T> set)

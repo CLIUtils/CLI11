@@ -41,23 +41,51 @@ TEST_F(TApp, SimpleSetsPtrs) {
     EXPECT_EQ(value, "four");
 }
 
-TEST_F(TApp, ShortcutSets) {
+TEST_F(TApp, SimiShortcutSets) {
     std::string value;
-    auto opt = app.add_option("-s,--set", value)->set("one", "two", "three");
-    args = {"-s", "one"};
+    auto opt = app.add_option("--set", value)->check(CLI::IsMember({"one", "two", "three"}));
+    args = {"--set", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
     EXPECT_EQ(1u, app.count("--set"));
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, "one");
 
     std::string value2;
-    auto opt2 = app.add_option("--set2", value2)->set(CLI::ignore_case, "One", "two", "three");
+    auto opt2 = app.add_option("--set2", value2)->check(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
     args = {"--set2", "onE"};
     run();
     EXPECT_EQ(1u, app.count("--set2"));
     EXPECT_EQ(1u, opt2->count());
     EXPECT_EQ(value2, "One");
+}
+
+TEST_F(TApp, ShortcutSets) {
+    std::string value;
+    auto opt = app.add_option("--set", value)->set({"one", "two", "three"});
+    args = {"--set", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, "one");
+
+    std::string value2;
+    auto opt2 = app.add_option("--set2", value2)->set({"One", "two", "three"}, CLI::ignore_case);
+    args = {"--set2", "onE"};
+    run();
+    EXPECT_EQ(1u, app.count("--set2"));
+    EXPECT_EQ(1u, opt2->count());
+    EXPECT_EQ(value2, "One");
+}
+
+TEST_F(TApp, NumericalSets) {
+    int value;
+    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<int>({1, 2, 3})});
+    args = {"-s", "1"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 1);
 }
 
 // Classic sets
