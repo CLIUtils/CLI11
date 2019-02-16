@@ -330,19 +330,51 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Allow a set to be quickly created
-    template <typename... Args> Option *set(Args &&... args) {
-        check(IsMember(std::forward<Args>(args)...));
+    /// Allow a set to be quickly created, strings followed optionally by functions.
+    ///
+    /// Start: Will always have std::string
+    template <typename... Args> Option *choices(std::string value, Args &&... args) {
+        std::vector<std::string> values = {value};
+        return choices(values, std::forward<Args>(args)...);
+    }
+
+  private:
+    /// Final function called - no function
+    Option *choices(std::vector<std::string> values) {
+        check(IsMember(values));
         return this;
     }
 
-    /// Allow a set to be quickly created
-    template <typename... Args> Option *set(std::initializer_list<std::string> tmpset, Args &&... args) {
-        std::vector<std::string> myset(tmpset);
-        check(IsMember(myset, std::forward<Args>(args)...));
+    /// Final function called - function present
+    template <typename T,
+              enable_if_t<std::is_assignable<std::function<std::string(std::string)>, T>::value &&
+                              !(std::is_same<T, const char *>::value || std::is_same<T, char *>::value),
+                          detail::enabler> = detail::dummy>
+    Option *choices(std::vector<std::string> values, T fn) {
+        check(IsMember(values, fn));
         return this;
     }
 
+    /// Append a string
+    template <typename T,
+              typename... Args,
+              enable_if_t<std::is_assignable<std::string, T>::value, detail::enabler> = detail::dummy>
+    Option *choices(std::vector<std::string> values, T value, Args &&... args) {
+        values.push_back(std::move(value));
+        return choices(values, std::forward<Args>(args)...);
+    }
+
+    /// Combine functions
+    template <typename... Args>
+    Option *choices(std::vector<std::string> values,
+                    std::function<std::string(std::string)> fn1,
+                    std::function<std::string(std::string)> fn2,
+                    Args &&... args) {
+        std::function<std::string(std::string)> fn = [fn1, fn2](std::string val) { return fn1(fn2(val)); };
+        return choices(values, fn, std::forward<Args>(args)...);
+    }
+
+  public:
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
         validators_.emplace_back([func](std::string &inout) {

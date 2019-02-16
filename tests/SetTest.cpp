@@ -59,9 +59,29 @@ TEST_F(TApp, SimiShortcutSets) {
     EXPECT_EQ(value2, "One");
 }
 
-TEST_F(TApp, ShortcutSets) {
+/*
+
+ //template <typename T, enable_if_t<std::is_assignable<std::function<std::string(std::string)>, T>::value &&
+ !(std::is_same<T, const char *>::value || std::is_same<T, char *>::value), detail::enabler> = detail::dummy>
+ //int check_compile(T fn) const {return 2;}
+
+ //template <typename T, enable_if_t<std::is_assignable<std::string, T>::value, detail::enabler> = detail::dummy>
+ //int check_compile(T str) const {return 3;}
+
+ std::string value;
+ int a = app.add_option("--set", value)->check_compile("this");
+ int b = app.add_option("--set2", value)->check_compile(CLI::ignore_case);
+
+
+ EXPECT_EQ(a, 3);
+ EXPECT_EQ(b, 2);
+
+ */
+
+TEST_F(TApp, ShortCutSets) {
+
     std::string value;
-    auto opt = app.add_option("--set", value)->set({"one", "two", "three"});
+    auto opt = app.add_option("--set", value)->choices("one", "two", "three");
     args = {"--set", "one"};
     run();
     EXPECT_EQ(1u, app.count("--set"));
@@ -69,12 +89,21 @@ TEST_F(TApp, ShortcutSets) {
     EXPECT_EQ(value, "one");
 
     std::string value2;
-    auto opt2 = app.add_option("--set2", value2)->set({"One", "two", "three"}, CLI::ignore_case);
+    auto opt2 = app.add_option("--set2", value2)->choices("One", "two", "three", CLI::ignore_case);
     args = {"--set2", "onE"};
     run();
     EXPECT_EQ(1u, app.count("--set2"));
     EXPECT_EQ(1u, opt2->count());
     EXPECT_EQ(value2, "One");
+
+    std::string value3;
+    auto opt3 =
+        app.add_option("--set3", value3)->choices("O_ne", "two", "three", CLI::ignore_case, CLI::ignore_underscore);
+    args = {"--set3", "onE"};
+    run();
+    EXPECT_EQ(1u, app.count("--set3"));
+    EXPECT_EQ(1u, opt3->count());
+    EXPECT_EQ(value3, "O_ne");
 }
 
 TEST_F(TApp, NumericalSets) {
