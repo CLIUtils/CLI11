@@ -340,7 +340,7 @@ class Option : public OptionBase<Option> {
 
   private:
     /// Final function called - no function
-    Option *choices(std::vector<std::string> values) {
+    Option *choices(std::vector<std::string> &values) {
         check(IsMember(values));
         return this;
     }
@@ -350,7 +350,7 @@ class Option : public OptionBase<Option> {
               enable_if_t<std::is_assignable<std::function<std::string(std::string)>, T>::value &&
                               !(std::is_same<T, const char *>::value || std::is_same<T, char *>::value),
                           detail::enabler> = detail::dummy>
-    Option *choices(std::vector<std::string> values, T fn) {
+    Option *choices(std::vector<std::string> &values, T fn) {
         check(IsMember(values, fn));
         return this;
     }
@@ -359,14 +359,14 @@ class Option : public OptionBase<Option> {
     template <typename T,
               typename... Args,
               enable_if_t<std::is_assignable<std::string, T>::value, detail::enabler> = detail::dummy>
-    Option *choices(std::vector<std::string> values, T value, Args &&... args) {
+    Option *choices(std::vector<std::string> &values, T value, Args &&... args) {
         values.push_back(std::move(value));
         return choices(values, std::forward<Args>(args)...);
     }
 
     /// Combine functions
     template <typename... Args>
-    Option *choices(std::vector<std::string> values,
+    Option *choices(std::vector<std::string> &values,
                     std::function<std::string(std::string)> fn1,
                     std::function<std::string(std::string)> fn2,
                     Args &&... args) {
