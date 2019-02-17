@@ -1,17 +1,28 @@
-## Version 1.8: Flags and Sets
+## Version 1.8: Sets and Flags
 
-This version adds inverted flags, which can cancel or reduce the count of flags, and can also support basic number assignment. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
+Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support basic number assignment. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
 
+* New `CL::IsMember` validator replaces set validation [#222]
 * Much more powerful flags with different values [#211]
 * Support for composable unnamed subcommands [#216]
 * Custom vector separator [#209], [#221]
 * Validators added for IP4 addresses and positive numbers [#210]
+
+> ### Converting from CLI11 1.7:
+>
+> * `app.add_set("--name", value, {"choice1", "choice2"})` should become `app.add_option("--name", value)->check(CLI::IsMember({"choice1", "choice2"}))`
+> * The `_mutable` versions of this can be replaced by passing a pointer or shared pointer into `IsMember`
+> * The `_ignore_case` version of this can be replaced by adding `CLI::ignore_case` to the argument list in `IsMember`
+> * The `_ignore_underscore` version of this can be replaced by adding `CLI::ignore_underscore` to the argument list in `IsMember`
+> * The `_ignore_case_underscore` version of this can be replaced by adding both functions listed above to the argument list in `IsMember`
+> * An error with sets now produces a `ValidationError` instead of a `ConversionError`
 
 [#209]: https://github.com/CLIUtils/CLI11/pull/209
 [#210]: https://github.com/CLIUtils/CLI11/pull/210
 [#211]: https://github.com/CLIUtils/CLI11/pull/211
 [#216]: https://github.com/CLIUtils/CLI11/pull/216
 [#221]: https://github.com/CLIUtils/CLI11/pull/221
+[#222]: https://github.com/CLIUtils/CLI11/pull/222
 
 
 ## Version 1.7.1: Quick patch

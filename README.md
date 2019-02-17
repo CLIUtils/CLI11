@@ -196,24 +196,10 @@ app.add_flag_function(option_name,
              function <void(int count)>,
              help_string="")
 
-app.add_set(option_name,
-            variable_to_bind_to,     // Same type as stored by set
-            set_of_possible_options, // Set will be copied, ignores changes
-            help_string="",
-            default=false)
-app.add_mutable_set(... // Set can change later, keeps reference
-
-app.add_set_ignore_case(...                    // String only
-app.add_mutable_set_ignore_case(...            // String only
-app.add_set_ignore_underscore(...              // String only
-app.add_mutable_set_ignore_underscore(...      // String only
-app.add_set_ignore_case_underscore(...         // String only
-app.add_mutable_set_ignore_case_underscore(... // String only
-
 App* subcom = app.add_subcommand(name, description);
 ```
 
-An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option` or `add_set`. The set options allow your users to pick from a set of predefined options, and you can use an initializer list directly if you like. If you need to modify the set later, use the `mutable` forms.
+An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
 
@@ -229,7 +215,7 @@ app.add_flag_function(option_name,
              help_string="")
 ```
 
-allow a syntax for the option names to default particular options to a false value if some flags are passed.  For example:
+which allow a syntax for the option names to default particular options to a false value if some flags are passed.  For example:
 
 ```cpp
 app.add_flag("--flag,!--no-flag,result,"help for flag");`
@@ -271,6 +257,7 @@ Before parsing, you can set the following options:
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
+-   `->check(CLI::IsMember(...))`: Require an option be a member of a given set. See below for options.
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 -   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
@@ -282,7 +269,18 @@ Before parsing, you can set the following options:
 -   `->each(void(std::string)>`: Run this function on each value received, as it is received.
 -   `->configurable(false)`: Disable this option from being in a configuration file.
 
+
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).
+
+The IsMember validator lets you specify a set of predefined options. You can pass any container or copiable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertable from a string (`const char*` is not, for example). You can use an initializer list of strings directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
+After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`.
+Here are some examples
+of IsMember:
+
+-   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices
+-   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
+-   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work
+-   `auto p = std::make_shared<std::vector<std::string>>("one", "two"); CLI::IsMember(p)`: You can modify `p` later.
 
 On the command line, options can be given as:
 
@@ -359,7 +357,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
--   `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.  
+-   `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 -   `.footer(message)`: Set text to appear at the bottom of the help string.
 -   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.

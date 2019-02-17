@@ -162,7 +162,7 @@ TEST_F(TApp, SetWithDefaultsConversion) {
 
     args = {"-a", "hi"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 TEST_F(TApp, SetWithDefaultsIC) {
@@ -262,7 +262,7 @@ TEST_F(TApp, FailSet) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 
     args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 TEST_F(TApp, FailMutableSet) {
@@ -273,10 +273,10 @@ TEST_F(TApp, FailMutableSet) {
     app.add_mutable_set("-s,--slow", choice, vals, "", true);
 
     args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ValidationError);
 
     args = {"--slow=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 TEST_F(TApp, InSetIgnoreCase) {

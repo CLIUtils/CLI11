@@ -277,13 +277,14 @@ class IsMember : public Validator {
     /// This checks to see if an item is in a set: pointer version. (Empty function)
     template <typename T, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set)
-        : IsMember(set,
+        : IsMember(std::move(set),
                    std::function<typename std::pointer_traits<T>::element_type::value_type(
                        typename std::pointer_traits<T>::element_type::value_type)>{}) {}
 
     /// This checks to see if an item is in a set: copy version. (Empty function)
     template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
-    explicit IsMember(T set) : IsMember(set, std::function<typename T::value_type(typename T::value_type)>()) {}
+    explicit IsMember(T set)
+        : IsMember(std::move(set), std::function<typename T::value_type(typename T::value_type)>()) {}
 
     /// This checks to see if an item is in a set: pointer version. You can pass in a function that will filter
     /// both sides of the comparison before computing the comparison.
@@ -309,7 +310,7 @@ class IsMember : public Validator {
                 item_t a = v;
                 item_t b;
                 if(!detail::lexical_cast(input, b))
-                    throw ConversionError(input); // name is added later
+                    throw ValidationError(input); // name is added later
 
                 // The filter function might be empty, so don't filter if it is.
                 if(filter_fn) {
@@ -356,7 +357,7 @@ class IsMember : public Validator {
                 item_t a = v;
                 item_t b;
                 if(!detail::lexical_cast(input, b))
-                    throw ConversionError(input); // name is added later
+                    throw ValidationError(input); // name is added later
 
                 // The filter function might be empty, so don't filter if it is.
                 if(filter_fn) {
@@ -386,7 +387,9 @@ class IsMember : public Validator {
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : IsMember(set, [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); }, other...) {}
+        : IsMember(std::move(set),
+                   [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+                   other...) {}
 };
 
 /// Helper function to allow ignore_case to be passed to IsMember
