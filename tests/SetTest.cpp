@@ -57,6 +57,28 @@ TEST_F(TApp, SimiShortcutSets) {
     EXPECT_EQ(1u, app.count("--set2"));
     EXPECT_EQ(1u, opt2->count());
     EXPECT_EQ(value2, "One");
+
+    std::string value3;
+    auto opt3 = app.add_option("--set3", value3)
+                    ->check(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
+    args = {"--set3", "onE"};
+    run();
+    EXPECT_EQ(1u, app.count("--set3"));
+    EXPECT_EQ(1u, opt3->count());
+    EXPECT_EQ(value3, "O_ne");
+}
+
+TEST_F(TApp, SetFromCharStarArray) {
+    constexpr const char *names[] = {"one", "two", "three"};
+    std::string value;
+    auto opt = app.add_option("-s,--set", value)
+                   ->check(CLI::IsMember{std::vector<std::string>(std::begin(names), std::end(names))});
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, "one");
 }
 
 /*
@@ -78,32 +100,38 @@ TEST_F(TApp, SimiShortcutSets) {
 
  */
 
-TEST_F(TApp, ShortCutSets) {
-
-    std::string value;
-    auto opt = app.add_option("--set", value)->choices("one", "two", "three");
-    args = {"--set", "one"};
+TEST_F(TApp, OtherTypeSets) {
+    int value;
+    std::vector<int> set = {2, 3, 4};
+    auto opt = app.add_option("--set", value)->check(CLI::IsMember(set));
+    args = {"--set", "3"};
     run();
     EXPECT_EQ(1u, app.count("--set"));
     EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "one");
+    EXPECT_EQ(value, 3);
 
-    std::string value2;
-    auto opt2 = app.add_option("--set2", value2)->choices("One", "two", "three", CLI::ignore_case);
-    args = {"--set2", "onE"};
+    args = {"--set", "5"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    std::vector<int> set2 = {-2, 3, 4};
+    auto opt2 = app.add_option("--set2", value)->check(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
+    args = {"--set2", "-3"};
     run();
     EXPECT_EQ(1u, app.count("--set2"));
     EXPECT_EQ(1u, opt2->count());
-    EXPECT_EQ(value2, "One");
+    EXPECT_EQ(value, 3);
 
-    std::string value3;
-    auto opt3 =
-        app.add_option("--set3", value3)->choices("O_ne", "two", "three", CLI::ignore_case, CLI::ignore_underscore);
-    args = {"--set3", "onE"};
+    args = {"--set2", "-3"};
     run();
-    EXPECT_EQ(1u, app.count("--set3"));
-    EXPECT_EQ(1u, opt3->count());
-    EXPECT_EQ(value3, "O_ne");
+    EXPECT_EQ(1u, app.count("--set2"));
+    EXPECT_EQ(1u, opt2->count());
+    EXPECT_EQ(value, 3);
+
+    args = {"--set2", "2"};
+    run();
+    EXPECT_EQ(1u, app.count("--set2"));
+    EXPECT_EQ(1u, opt2->count());
+    EXPECT_EQ(value, -2);
 }
 
 TEST_F(TApp, NumericalSets) {
