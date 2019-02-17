@@ -285,80 +285,101 @@ class IsMember : public Validator {
     template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set) : IsMember(set, std::function<typename T::value_type(typename T::value_type)>()) {}
 
-    /// This checks to see if an item is in a set: pointer version.
+    /// This checks to see if an item is in a set: pointer version. You can pass in a function that will filter
+    /// both sides of the comparison before computing the comparison.
     template <typename T, typename F, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set, F filter_function) {
+        // Get the type of the contained item - requires a container have ::value_type
         using item_t = typename std::pointer_traits<T>::element_type::value_type;
 
+        // Make a local copy of the filter function, using a std::function if not one already
         std::function<item_t(item_t)> filter_fn = filter_function;
 
+        // This is the type name for help, it will take the current version of the set contents
         tname_function = [set]() {
             std::stringstream out;
             out << detail::type_name<item_t>() << " in {" << detail::join(*set, ",") << "}";
             return out.str();
         };
 
+        // This is the function that validates
+        // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func = [set, filter_fn](std::string &input) {
-            auto result = std::find_if(std::begin(*set), std::end(*set), [filter_fn, input](item_t v) {
+            for(const item_t &v : *set) {
                 item_t a = v;
                 item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ConversionError(input); // name is added later
 
+                // The filter function might be empty, so don't filter if it is.
                 if(filter_fn) {
                     a = filter_fn(a);
                     b = filter_fn(b);
                 }
-                return a == b;
-            });
 
-            if(result == std::end(*set)) {
-                return input + " not in {" + detail::join(*set, ",") + "}";
-            } else {
-                // Make sure the version in the input string is identical to the one in the set
-                // Requires std::stringstream << be supported on T.
-                std::stringstream out;
-                out << *result;
-                input = out.str();
-                return std::string();
+                if(a == b) {
+                    // Make sure the version in the input string is identical to the one in the set
+                    // Requires std::stringstream << be supported on T.
+                    if(filter_fn) {
+                        std::stringstream out;
+                        out << v;
+                        input = out.str();
+                    }
+
+                    // Return empty error string (success)
+                    return std::string();
+                }
             }
+
+            // If you reach this point, the result was not found
+            return input + " not in {" + detail::join(*set, ",") + "}";
         };
     }
 
     /// This checks to see if an item is in a set: copy version.
     template <typename T, typename F, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set, F filter_function) {
+        // Get the type of the contained item - requires a container have ::value_type
         using item_t = typename T::value_type;
+
+        // Make a local copy of the filter function, using a std::function if not one already
         std::function<item_t(item_t)> filter_fn = filter_function;
 
+        // This is the type name for help, since the set contents can't change, we just capture this
         std::stringstream out;
         out << detail::type_name<item_t>() << " in {" << detail::join(set, ",") << "}";
         tname = out.str();
 
+        // This is the function that validates
         func = [set, filter_fn](std::string &input) {
-            auto result = std::find_if(std::begin(set), std::end(set), [filter_fn, input](item_t v) {
+            for(const item_t &v : set) {
                 item_t a = v;
                 item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ConversionError(input); // name is added later
 
+                // The filter function might be empty, so don't filter if it is.
                 if(filter_fn) {
                     a = filter_fn(a);
                     b = filter_fn(b);
                 }
-                return a == b;
-            });
 
-            if(result == std::end(set)) {
-                return input + " not in {" + detail::join(set, ",") + "}";
-            } else {
-                // Make sure the version in the input string is identical to the one in the set
-                // Requires std::stringstream << be supported on T.
-                std::stringstream out;
-                out << *result;
-                input = out.str();
-                return std::string();
+                if(a == b) {
+                    // Make sure the version in the input string is identical to the one in the set
+                    // Requires std::stringstream << be supported on T.
+                    if(filter_fn) {
+                        std::stringstream out;
+                        out << v;
+                        input = out.str();
+                    }
+
+                    // Return empty error string (success)
+                    return std::string();
+                }
             }
+
+            // If you reach this point, the result was not found
+            return input + " not in {" + detail::join(set, ",") + "}";
         };
     }
 
