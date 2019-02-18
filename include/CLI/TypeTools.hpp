@@ -13,6 +13,16 @@ namespace CLI {
 
 // Type tools
 
+// Utilities for type enabling
+namespace detail {
+// Based generally on https://rmf.io/cxx11/almost-static-if
+/// Simple empty scoped class
+enum class enabler {};
+
+/// An instance to use in EnableIf
+constexpr enabler dummy = {};
+} // namespace detail
+
 /// A copy of enable_if_t from C++14, compatible with C++11.
 ///
 /// We could check to see if C++14 is being used, but it does not hurt to redefine this
@@ -44,13 +54,24 @@ template <typename T> struct is_copyable_ptr {
     static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
 };
 
-namespace detail {
-// Based generally on https://rmf.io/cxx11/almost-static-if
-/// Simple empty scoped class
-enum class enabler {};
+/// Handy helper to access the element_type generically. This is not part of is_copyable_ptr because it requires that
+/// pointer_traits<T> be valid.
+template <typename T> struct element_type {
+    using type =
+        typename std::conditional<is_copyable_ptr<T>::value, typename std::pointer_traits<T>::element_type, T>::type;
+};
 
-/// An instance to use in EnableIf
-constexpr enabler dummy = {};
+/// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
+/// the container
+template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
+
+/// This can be specialized to override the type deduction for IsMember.
+template <typename T> struct IsMemberType { using type = T; };
+
+/// The main custom type needed here is const char * should be a string.
+template <> struct IsMemberType<const char *> { using type = std::string; };
+
+namespace detail {
 
 // Type name print
 
