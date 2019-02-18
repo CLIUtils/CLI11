@@ -212,6 +212,17 @@ class RequiredError : public ParseError {
             return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
                                  ExitCodes::RequiredError);
     }
+    static RequiredError Radio(std::vector<std::string> list) {
+        std::string strlist;
+
+        for(auto it = list.cbegin(); it != list.cend(); ++it) {
+            strlist += *it;
+            if(it != list.cend() - 1)
+                strlist += ", ";
+        }
+
+        return RequiredError("Any of [" + strlist + "] options ");
+    }
 };
 
 /// Thrown when the wrong number of arguments has been received

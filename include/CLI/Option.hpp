@@ -39,6 +39,11 @@ template <typename CRTP> class OptionBase {
     /// The group membership
     std::string group_ = std::string("Options");
 
+    /// Radio-group ID. 0 = Not in a radio-group
+    int radio_id_ = 0;
+    /// Is any of the radio-group siblings specified?
+    const CRTP *radio_selected = nullptr;
+
     /// True if this is a required option
     bool required_{false};
 
@@ -57,6 +62,7 @@ template <typename CRTP> class OptionBase {
     /// Copy the contents to another similar class (one based on OptionBase)
     template <typename T> void copy_to(T *other) const {
         other->group(group_);
+        other->radio_id(radio_id_);
         other->required(required_);
         other->ignore_case(ignore_case_);
         other->ignore_underscore(ignore_underscore_);
@@ -74,6 +80,13 @@ template <typename CRTP> class OptionBase {
         ;
     }
 
+    /// Changes the radio-group membership
+    CRTP *radio_id(int id = 0) {
+        radio_id_ = id;
+        return static_cast<CRTP *>(this);
+        ;
+    }
+
     /// Set the option as required
     CRTP *required(bool value = true) {
         required_ = value;
@@ -87,6 +100,9 @@ template <typename CRTP> class OptionBase {
 
     /// Get the group of this option
     const std::string &get_group() const { return group_; }
+
+    /// Get the radio-group of this option
+    int get_radio_id() const { return radio_id_; }
 
     /// True if this is a required option
     bool get_required() const { return required_; }

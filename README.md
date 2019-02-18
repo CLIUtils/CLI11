@@ -267,6 +267,7 @@ Before parsing, you can set the following options:
 -   `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
 -   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
+-   `->radio_id(ID)`: The numeric group ID of mutually exclusive single-select options. Defaults to 0 (none).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->description(str)`: Set/change the description.

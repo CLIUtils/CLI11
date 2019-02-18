@@ -1884,6 +1884,43 @@ class App {
             for(const Option *opt_ex : opt->excludes_)
                 if(opt->count() > 0 && opt_ex->count() != 0)
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
+            // Radio-button group, only if this option is part of one
+            if(int radio_id = opt->get_radio_id()) {
+                const Option *selected = nullptr;
+                if(!opt->radio_selected) {
+                    if(opt->count()) {
+                        opt->radio_selected = opt.get();
+                        selected = opt->radio_selected;
+                    }
+                }
+
+                // Walk all options again and see if any is selected
+                std::vector<std::string> radio_names;
+                for(const Option_p &other_opt : options_) {
+                    // Skip non-members of our radio group
+                    if(other_opt->get_radio_id() != radio_id)
+                        continue;
+
+                    // Store all radio group member names for use in exception
+                    radio_names.push_back(other_opt->get_name());
+
+                    if(other_opt == opt)
+                        continue;
+
+                    if(other_opt->count()) {
+                        if(selected && selected != other_opt.get())
+                            throw ExcludesError(selected->get_name(), other_opt->get_name());
+                        else if(!selected) {
+                            selected = other_opt.get();
+                            other_opt->radio_selected = selected;
+                        }
+                    }
+                }
+
+                if(!selected) {
+                    throw RequiredError::Radio(radio_names);
+                }
+            }
         }
 
         auto selected_subcommands = get_subcommands();
@@ -2186,7 +2223,7 @@ class App {
         // deal with flag like things
         if(num == 0) {
             try {
-                auto res = (value.empty()) ? std ::string("1") : detail::to_flag_value(value);
+                auto res = (value.empty()) ? std::string("1") : detail::to_flag_value(value);
                 if(op->check_fname(arg_name)) {
                     res = (res == "1") ? "-1" : ((res[0] == '-') ? res.substr(1) : std::string("-" + res));
                 }
