@@ -16,7 +16,8 @@ int main(int argc, char **argv) {
     CLI::App app;
 
     Level level;
-    app.add_set("-l,--level", level, {Level::High, Level::Medium, Level::Low}, "Level settings")
+    app.add_option("-l,--level", level, "Level settings")
+        ->check(CLI::IsMember({Level::High, Level::Medium, Level::Low}))
         ->type_name("enum/Level in {High=0, Medium=1, Low=2}");
 
     CLI11_PARSE(app, argc, argv);

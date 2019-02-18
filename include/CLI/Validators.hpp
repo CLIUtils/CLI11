@@ -264,27 +264,35 @@ class Range : public Validator {
     template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
 };
 
+/// This can be specialized to override the type deduction for IsMember.
+template <typename T> struct IsMemberType { using type = T; };
+
+/// The main custom type needed here is const char * should be a string.
+template <> struct IsMemberType<const char *> { using type = std::string; };
+
 /// Verify items are in a set
 class IsMember : public Validator {
   public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
     /// This allows in-place construction using an initializer list
-    template <typename... Args>
-    explicit IsMember(std::initializer_list<std::string> values, Args &&... args)
-        : IsMember(std::vector<std::string>(values), std::forward<Args>(args)...) {}
+    template <typename T, typename... Args>
+    explicit IsMember(std::initializer_list<T> values, Args &&... args)
+        : IsMember(std::vector<T>(values), std::forward<Args>(args)...) {}
 
     /// This checks to see if an item is in a set: pointer version. (Empty function)
     template <typename T, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set)
         : IsMember(std::move(set),
-                   std::function<typename std::pointer_traits<T>::element_type::value_type(
-                       typename std::pointer_traits<T>::element_type::value_type)>{}) {}
+                   std::function<typename IsMemberType<typename std::pointer_traits<T>::element_type::value_type>::type(
+                       typename IsMemberType<typename std::pointer_traits<T>::element_type::value_type>::type)>{}) {}
 
     /// This checks to see if an item is in a set: copy version. (Empty function)
     template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
     explicit IsMember(T set)
-        : IsMember(std::move(set), std::function<typename T::value_type(typename T::value_type)>()) {}
+        : IsMember(std::move(set),
+                   std::function<typename IsMemberType<typename T::value_type>::type(
+                       typename IsMemberType<typename T::value_type>::type)>()) {}
 
     /// This checks to see if an item is in a set: pointer version. You can pass in a function that will filter
     /// both sides of the comparison before computing the comparison.
@@ -292,9 +300,10 @@ class IsMember : public Validator {
     explicit IsMember(T set, F filter_function) {
         // Get the type of the contained item - requires a container have ::value_type
         using item_t = typename std::pointer_traits<T>::element_type::value_type;
+        using local_item_t = typename IsMemberType<item_t>::type;
 
         // Make a local copy of the filter function, using a std::function if not one already
-        std::function<item_t(item_t)> filter_fn = filter_function;
+        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         // This is the type name for help, it will take the current version of the set contents
         tname_function = [set]() {
@@ -307,8 +316,8 @@ class IsMember : public Validator {
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func = [set, filter_fn](std::string &input) {
             for(const item_t &v : *set) {
-                item_t a = v;
-                item_t b;
+                local_item_t a = v;
+                local_item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ValidationError(input); // name is added later
 
@@ -342,9 +351,10 @@ class IsMember : public Validator {
     explicit IsMember(T set, F filter_function) {
         // Get the type of the contained item - requires a container have ::value_type
         using item_t = typename T::value_type;
+        using local_item_t = typename IsMemberType<item_t>::type;
 
         // Make a local copy of the filter function, using a std::function if not one already
-        std::function<item_t(item_t)> filter_fn = filter_function;
+        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         // This is the type name for help, since the set contents can't change, we just capture this
         std::stringstream out;
@@ -354,8 +364,8 @@ class IsMember : public Validator {
         // This is the function that validates
         func = [set, filter_fn](std::string &input) {
             for(const item_t &v : set) {
-                item_t a = v;
-                item_t b;
+                local_item_t a = v;
+                local_item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ValidationError(input); // name is added later
 

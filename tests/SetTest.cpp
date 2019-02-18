@@ -68,7 +68,7 @@ TEST_F(TApp, SimiShortcutSets) {
     EXPECT_EQ(value3, "O_ne");
 }
 
-TEST_F(TApp, SetFromCharStarArray) {
+TEST_F(TApp, SetFromCharStarArrayVector) {
     constexpr const char *names[] = {"one", "two", "three"};
     std::string value;
     auto opt = app.add_option("-s,--set", value)
@@ -80,25 +80,6 @@ TEST_F(TApp, SetFromCharStarArray) {
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, "one");
 }
-
-/*
-
- //template <typename T, enable_if_t<std::is_assignable<std::function<std::string(std::string)>, T>::value &&
- !(std::is_same<T, const char *>::value || std::is_same<T, char *>::value), detail::enabler> = detail::dummy>
- //int check_compile(T fn) const {return 2;}
-
- //template <typename T, enable_if_t<std::is_assignable<std::string, T>::value, detail::enabler> = detail::dummy>
- //int check_compile(T str) const {return 3;}
-
- std::string value;
- int a = app.add_option("--set", value)->check_compile("this");
- int b = app.add_option("--set2", value)->check_compile(CLI::ignore_case);
-
-
- EXPECT_EQ(a, 3);
- EXPECT_EQ(b, 2);
-
- */
 
 TEST_F(TApp, OtherTypeSets) {
     int value;
