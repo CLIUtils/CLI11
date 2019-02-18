@@ -767,7 +767,7 @@ TEST_F(TApp, IniOutputFlag) {
 TEST_F(TApp, IniOutputSet) {
 
     int v;
-    app.add_set("--simple", v, {1, 2, 3});
+    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--simple=2"};
 

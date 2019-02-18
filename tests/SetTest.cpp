@@ -126,11 +126,11 @@ TEST_F(TApp, NumericalSets) {
     EXPECT_EQ(value, 1);
 }
 
-// Classic sets
+// Converted original set tests
 
 TEST_F(TApp, SetWithDefaults) {
     int someint = 2;
-    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
+    app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a1", "-a2"};
 
@@ -139,7 +139,7 @@ TEST_F(TApp, SetWithDefaults) {
 
 TEST_F(TApp, SetWithDefaultsConversion) {
     int someint = 2;
-    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
+    app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a", "hi"};
 
@@ -148,7 +148,7 @@ TEST_F(TApp, SetWithDefaultsConversion) {
 
 TEST_F(TApp, SetWithDefaultsIC) {
     std::string someint = "ho";
-    app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
+    app.add_option("-a", someint, "", true)->check(CLI::IsMember({"Hi", "Ho"}));
 
     args = {"-aHi", "-aHo"};
 
@@ -158,7 +158,7 @@ TEST_F(TApp, SetWithDefaultsIC) {
 TEST_F(TApp, InSet) {
 
     std::string choice;
-    app.add_set("-q,--quick", choice, {"one", "two", "three"});
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember({"one", "two", "three"}));
 
     args = {"--quick", "two"};
 
@@ -172,7 +172,7 @@ TEST_F(TApp, InSet) {
 TEST_F(TApp, InSetWithDefault) {
 
     std::string choice = "one";
-    app.add_set("-q,--quick", choice, {"one", "two", "three"}, "", true);
+    app.add_option("-q,--quick", choice, "", true)->check(CLI::IsMember({"one", "two", "three"}));
 
     run();
     EXPECT_EQ("one", choice);
@@ -189,7 +189,7 @@ TEST_F(TApp, InSetWithDefault) {
 TEST_F(TApp, InCaselessSetWithDefault) {
 
     std::string choice = "one";
-    app.add_set_ignore_case("-q,--quick", choice, {"one", "two", "three"}, "", true);
+    app.add_option("-q,--quick", choice, "", true)->check(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
 
     run();
     EXPECT_EQ("one", choice);
@@ -206,7 +206,7 @@ TEST_F(TApp, InCaselessSetWithDefault) {
 TEST_F(TApp, InIntSet) {
 
     int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--quick", "2"};
 
@@ -220,7 +220,7 @@ TEST_F(TApp, InIntSet) {
 TEST_F(TApp, InIntSetWindows) {
 
     int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
     app.allow_windows_style_options();
     args = {"/q", "2"};
 
@@ -237,7 +237,7 @@ TEST_F(TApp, InIntSetWindows) {
 TEST_F(TApp, FailSet) {
 
     int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--quick", "3", "--quick=2"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
@@ -249,9 +249,9 @@ TEST_F(TApp, FailSet) {
 TEST_F(TApp, FailMutableSet) {
 
     int choice;
-    std::set<int> vals{1, 2, 3};
-    app.add_mutable_set("-q,--quick", choice, vals);
-    app.add_mutable_set("-s,--slow", choice, vals, "", true);
+    auto vals = std::shared_ptr<std::set<int>>(new std::set<int>({1, 2, 3}));
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember(vals));
+    app.add_option("-s,--slow", choice, "", true)->check(CLI::IsMember(vals));
 
     args = {"--quick=hello"};
     EXPECT_THROW(run(), CLI::ValidationError);
@@ -263,7 +263,7 @@ TEST_F(TApp, FailMutableSet) {
 TEST_F(TApp, InSetIgnoreCase) {
 
     std::string choice;
-    app.add_set_ignore_case("-q,--quick", choice, {"one", "Two", "THREE"});
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember({"one", "Two", "THREE"}, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -288,7 +288,7 @@ TEST_F(TApp, InSetIgnoreCaseMutableValue) {
 
     std::set<std::string> options{"one", "Two", "THREE"};
     std::string choice;
-    app.add_mutable_set_ignore_case("-q,--quick", choice, options);
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember(&options, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -311,7 +311,7 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
 
     std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
-    app.add_set_ignore_case("-q,--quick", choice, *options);
+    app.add_option("-q,--quick", choice)->check(CLI::IsMember(*options, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -340,7 +340,8 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
 TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;
-    app.add_set_ignore_underscore("-q,--quick", choice, {"option_one", "option_two", "optionthree"});
+    app.add_option("-q,--quick", choice)
+        ->check(CLI::IsMember({"option_one", "option_two", "optionthree"}, CLI::ignore_underscore));
 
     args = {"--quick", "option_one"};
     run();
@@ -364,7 +365,8 @@ TEST_F(TApp, InSetIgnoreUnderscore) {
 TEST_F(TApp, InSetIgnoreCaseUnderscore) {
 
     std::string choice;
-    app.add_set_ignore_case_underscore("-q,--quick", choice, {"Option_One", "option_two", "OptionThree"});
+    app.add_option("-q,--quick", choice)
+        ->check(CLI::IsMember({"Option_One", "option_two", "OptionThree"}, CLI::ignore_case, CLI::ignore_underscore));
 
     args = {"--quick", "option_one"};
     run();
@@ -390,8 +392,8 @@ TEST_F(TApp, AddRemoveSetItems) {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
-    app.add_mutable_set("--type1", type1, items);
-    app.add_mutable_set("--type2", type2, items, "", true);
+    app.add_option("--type1", type1)->check(CLI::IsMember(&items));
+    app.add_option("--type2", type2, "", true)->check(CLI::IsMember(&items));
 
     args = {"--type1", "TYPE1", "--type2", "TYPE2"};
 
@@ -421,8 +423,8 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
-    app.add_mutable_set_ignore_case("--type1", type1, items);
-    app.add_mutable_set_ignore_case("--type2", type2, items, "", true);
+    app.add_option("--type1", type1)->check(CLI::IsMember(&items, CLI::ignore_case));
+    app.add_option("--type2", type2, "", true)->check(CLI::IsMember(&items, CLI::ignore_case));
 
     args = {"--type1", "TYPe1", "--type2", "TyPE2"};
 
