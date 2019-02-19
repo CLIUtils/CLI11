@@ -10,13 +10,13 @@ static_assert(CLI::is_copyable_ptr<std::shared_ptr<int>>::value == true,
 static_assert(CLI::is_copyable_ptr<int *>::value == true, "is_copyable_ptr should work on pointers");
 static_assert(CLI::is_copyable_ptr<int>::value == false, "is_copyable_ptr should work on non-pointers");
 
-static_assert(CLI::has_mapped_key<std::set<int>>::value == false, "Should not have keys");
-static_assert(CLI::has_mapped_key<std::map<int,int>>::value == true, "Should have keys");
+static_assert(CLI::detail::key_map_adaptor<std::set<int>>::value == false, "Should not have keys");
+static_assert(CLI::detail::key_map_adaptor<std::map<int, int>>::value == true, "Should have keys");
 
 TEST_F(TApp, SimpleMaps) {
     int value;
-    std::map<int,std::string> map = {{1, "one"}, {2, "two"}};
-    auto opt = app.add_option("-s,--set", value)->check(CLI::Mapping(map));
+    std::map<int, std::string> map = {{1, "one"}, {2, "two"}};
+    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
     args = {"-s", "one"};
     run();
     EXPECT_EQ(1u, app.count("-s"));

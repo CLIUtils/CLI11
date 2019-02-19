@@ -34,11 +34,10 @@ template <bool B, class T = void> using enable_if_t = typename std::enable_if<B,
 template <typename... Ts> struct make_void { using type = void; };
 
 /// A copy of std::void_t from C++17 - same reasoning as enable_if_t, it does not hurt to redefine
-template<typename... Ts> using void_t = typename make_void<Ts...>::type;
+template <typename... Ts> using void_t = typename make_void<Ts...>::type;
 
 /// A copy of std::conditional_t from C++14 - same reasoning as enable_if_t, it does not hurt to redefine
-template< bool B, class T, class F >
-using conditional_t = typename std::conditional<B,T,F>::type;
+template <bool B, class T, class F> using conditional_t = typename std::conditional<B, T, F>::type;
 
 /// Check to see if something is a vector (fail check by default)
 template <typename T> struct is_vector : std::false_type {};
@@ -63,6 +62,16 @@ template <typename T> struct is_copyable_ptr {
     static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
 };
 
+/// This can be specialized to override the type deduction for IsMember.
+template <typename T> struct IsMemberType { using type = T; };
+
+/// The main custom type needed here is const char * should be a string.
+template <> struct IsMemberType<const char *> { using type = std::string; };
+
+namespace detail {
+
+// These are utilites for IsMember
+
 /// Handy helper to access the element_type generically. This is not part of is_copyable_ptr because it requires that
 /// pointer_traits<T> be valid.
 template <typename T> struct element_type {
@@ -74,34 +83,30 @@ template <typename T> struct element_type {
 /// the container
 template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
 
-/// Combination of the element type and important types for maps - remove pointer (including smart pointers)
-template <typename T> struct element_map_type {
-    using value_type = typename element_type<T>::type::value_type;
-    using mapped_type = typename element_type<T>::type::mapped_type;
-    using key_type = typename element_type<T>::type::key_type;
+/// Adaptor for map-like structure: This just wraps a normal container in a few utilities that do almost nothing.
+template <typename T, typename _ = void> struct key_map_adaptor : std::false_type {
+    using mapped_type = typename T::value_type;
+    using key_type = typename T::value_type;
+
+    /// Get the first value (really just the underlying value)
+    template <typename Q> static key_type first(Q &&value) { return value; }
+    /// Get the second value (really just the underlying value)
+    template <typename Q> static mapped_type second(Q &&value) { return value; }
 };
 
-/// Check for a map-like structure (false version)
-template <typename T, typename _ = void> struct has_mapped_key : std::false_type {};
+/// Adaptor for map-like structure (true version, must have key_type and mapped_type).
+/// This wraps a mapped container in a few utilities access it in a general way.
+template <typename T>
+struct key_map_adaptor<T, conditional_t<false, void_t<typename T::key_type, typename T::mapped_type>, void>>
+    : std::true_type {
+    using mapped_type = typename T::mapped_type;
+    using key_type = typename T::key_type;
 
-/// Check for a map-like structure (true version, must have key_type and mapped_type)
-template <typename T> struct has_mapped_key <T, conditional_t<
-                          false,
-                          void_t<
-                            typename T::key_type,
-                            typename T::mapped_type
-                          >,
-                        void
-                        >
-                      > : std::true_type {};
-
-/// This can be specialized to override the type deduction for IsMember.
-template <typename T> struct IsMemberType { using type = T; };
-
-/// The main custom type needed here is const char * should be a string.
-template <> struct IsMemberType<const char *> { using type = std::string; };
-
-namespace detail {
+    /// Get the first value (really just the underlying value)
+    template <typename Q> static key_type first(Q &&value) { return value.first; }
+    /// Get the second value (really just the underlying value)
+    template <typename Q> static mapped_type second(Q &&value) { return value.second; }
+};
 
 // Type name print
 
