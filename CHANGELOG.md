@@ -8,6 +8,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 * Support for composable unnamed subcommands [#216]
 * Custom vector separator [#209], [#221]
 * Validators added for IP4 addresses and positive numbers [#210]
+* Minimum required Boost for optional Optionals has been corrected to 1.61
 
 > ### Converting from CLI11 1.7:
 >
