@@ -112,12 +112,12 @@ file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
 # Add boost to test boost::optional if available
 find_package(Boost 1.58)
 if(Boost_FOUND)
-    if (TARGET Boost::boost)
+    if(TARGET Boost::boost)
         target_link_libraries(informational PUBLIC Boost::boost)
         target_link_libraries(OptionalTest PUBLIC Boost::boost)
     else()
-        target_link_libraries(informational PUBLIC ${Boost_INCLUDE_DIR})
-        target_link_libraries(OptionalTest PUBLIC ${BOOST_INCLUDE_DIR})
+        target_include_directories(informational PUBLIC ${Boost_INCLUDE_DIRS})
+        target_include_directories(OptionalTest PUBLIC ${Boost_INCLUDE_DIRS})
     endif()
     # Enforce Boost::Optional even if __has_include is missing on your compiler
     target_compile_definitions(informational PUBLIC CLI11_BOOST_OPTIONAL)
