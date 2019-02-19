@@ -343,4 +343,5 @@ inline std::string &add_quotes_if_needed(std::string &str) {
 }
 
 } // namespace detail
+
 } // namespace CLI

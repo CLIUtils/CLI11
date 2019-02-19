@@ -26,6 +26,7 @@ set(CLI11_TESTS
     IniTest
     SimpleTest
     AppTest
+    SetTest
     CreationTest
     SubcommandTest
     HelpTest
@@ -34,6 +35,7 @@ set(CLI11_TESTS
     OptionalTest
     DeprecatedTest
     StringParseTest
+    TrueFalseTest
     )
 
 if(WIN32)

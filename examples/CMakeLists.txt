@@ -130,7 +130,7 @@ add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)
 set_property(TEST enum_fail PROPERTY PASS_REGULAR_EXPRESSION
-    "Could not convert: --level = 4")
+    "--level: 4 not in {0,1,2}")
 
 add_cli_exe(modhelp modhelp.cpp)
 add_test(NAME modhelp COMMAND modhelp -a test -h)

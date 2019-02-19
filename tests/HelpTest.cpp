@@ -280,7 +280,7 @@ TEST(THelp, IntDefaults) {
 
     int one{1}, two{2};
     app.add_option("--one", one, "Help for one", true);
-    app.add_set("--set", two, {2, 3, 4}, "Help for set", true);
+    app.add_option("--set", two, "Help for set", true)->check(CLI::IsMember({2, 3, 4}));
 
     std::string help = app.help();
 
@@ -295,7 +295,7 @@ TEST(THelp, SetLower) {
     CLI::App app{"My prog"};
 
     std::string def{"One"};
-    app.add_set_ignore_case("--set", def, {"oNe", "twO", "THREE"}, "Help for set", true);
+    app.add_option("--set", def, "Help for set", true)->check(CLI::IsMember({"oNe", "twO", "THREE"}));
 
     std::string help = app.help();
 
@@ -795,7 +795,7 @@ TEST(THelp, ChangingSet) {
 
     std::set<int> vals{1, 2, 3};
     int val;
-    app.add_mutable_set("--val", val, vals);
+    app.add_option("--val", val)->check(CLI::IsMember(&vals));
 
     std::string help = app.help();
 
@@ -816,7 +816,7 @@ TEST(THelp, ChangingSetDefaulted) {
 
     std::set<int> vals{1, 2, 3};
     int val = 2;
-    app.add_mutable_set("--val", val, vals, "", true);
+    app.add_option("--val", val, "", true)->check(CLI::IsMember(&vals));
 
     std::string help = app.help();
 
@@ -836,7 +836,7 @@ TEST(THelp, ChangingCaselessSet) {
 
     std::set<std::string> vals{"1", "2", "3"};
     std::string val;
-    app.add_mutable_set_ignore_case("--val", val, vals);
+    app.add_option("--val", val)->check(CLI::IsMember(&vals, CLI::ignore_case));
 
     std::string help = app.help();
 
@@ -857,7 +857,7 @@ TEST(THelp, ChangingCaselessSetDefaulted) {
 
     std::set<std::string> vals{"1", "2", "3"};
     std::string val = "2";
-    app.add_mutable_set_ignore_case("--val", val, vals, "", true);
+    app.add_option("--val", val, "", true)->check(CLI::IsMember(&vals, CLI::ignore_case));
 
     std::string help = app.help();
 
