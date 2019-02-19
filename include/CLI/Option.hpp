@@ -721,13 +721,16 @@ class Option : public OptionBase<Option> {
         for(const std::string &lname : lnames_)
             if(other.check_lname(lname))
                 return true;
-        // We need to do the inverse, just in case we are ignore_case or ignore underscore
-        for(const std::string &sname : other.snames_)
-            if(check_sname(sname))
-                return true;
-        for(const std::string &lname : other.lnames_)
-            if(check_lname(lname))
-                return true;
+
+        if(ignore_case_ ||
+           ignore_underscore_) { // We need to do the inverse, in case we are ignore_case or ignore underscore
+            for(const std::string &sname : other.snames_)
+                if(check_sname(sname))
+                    return true;
+            for(const std::string &lname : other.lnames_)
+                if(check_lname(lname))
+                    return true;
+        }
         return false;
     }
 

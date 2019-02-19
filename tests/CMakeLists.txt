@@ -36,6 +36,7 @@ set(CLI11_TESTS
     DeprecatedTest
     StringParseTest
     TrueFalseTest
+    OptionGroupTest
     )
 
 if(WIN32)

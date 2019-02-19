@@ -69,6 +69,7 @@ set_property(TEST subcom_partitioned_none PROPERTY PASS_REGULAR_EXPRESSION
     "This is a timer:"
     "--file is required"
     "Run with --help for more information.")
+	
 add_test(NAME subcom_partitioned_all COMMAND subcom_partitioned --file this --count --count -d 1.2)
 set_property(TEST subcom_partitioned_all PROPERTY PASS_REGULAR_EXPRESSION
     "This is a timer:"
@@ -81,6 +82,18 @@ set_property(TEST subcom_partitioned_help PROPERTY PASS_REGULAR_EXPRESSION
     "-f,--file TEXT REQUIRED"
     "-d,--double FLOAT")
 
+add_cli_exe(option_groups option_groups.cpp)
+add_test(NAME option_groups_missing COMMAND option_groups )
+set_property(TEST option_groups_missing PROPERTY PASS_REGULAR_EXPRESSION
+    "Exactly 1 option from"
+    "is required")
+add_test(NAME option_groups_extra COMMAND option_groups --csv --binary)
+set_property(TEST option_groups_extra PROPERTY PASS_REGULAR_EXPRESSION
+    "and 2 were given")
+add_test(NAME option_groups_extra2 COMMAND option_groups --csv --address "192.168.1.1" -o "test.out")
+set_property(TEST option_groups_extra2 PROPERTY PASS_REGULAR_EXPRESSION
+    "at most 1")
+	
 add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
 set_property(TEST validators_help PROPERTY PASS_REGULAR_EXPRESSION

@@ -212,6 +212,27 @@ class RequiredError : public ParseError {
             return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
                                  ExitCodes::RequiredError);
     }
+    static RequiredError Option(size_t min_option, size_t max_option, size_t used, const std::string &option_list) {
+        if((min_option == 1) && (max_option == 1) && (used == 0))
+            return RequiredError("Exactly 1 option from [" + option_list + "]");
+        else if((min_option == 1) && (max_option == 1) && (used > 1))
+            return RequiredError("Exactly 1 option from [" + option_list + "] are required and " +
+                                     std::to_string(used) + " were given",
+                                 ExitCodes::RequiredError);
+        else if((min_option == 1) && (used == 0))
+            return RequiredError("At least 1 option from [" + option_list + "]");
+        else if(used < min_option)
+            return RequiredError("Requires at least " + std::to_string(min_option) + " options used and only " +
+                                     std::to_string(used) + "were given from [" + option_list + "]",
+                                 ExitCodes::RequiredError);
+        else if(max_option == 1)
+            return RequiredError("Requires at most 1 options be used from [" + option_list + "]",
+                                 ExitCodes::RequiredError);
+        else
+            return RequiredError("Requires at most " + std::to_string(max_option) + " options be used and " +
+                                     std::to_string(used) + "were given from [" + option_list + "]",
+                                 ExitCodes::RequiredError);
+    }
 };
 
 /// Thrown when the wrong number of arguments has been received

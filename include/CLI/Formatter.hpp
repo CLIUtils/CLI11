@@ -58,7 +58,24 @@ inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) co
 
 inline std::string Formatter::make_description(const App *app) const {
     std::string desc = app->get_description();
-
+    auto min_options = app->get_require_option_min();
+    auto max_options = app->get_require_option_max();
+    if((max_options == min_options) && (min_options > 0)) {
+        if(min_options == 1) {
+            desc += " [Exactly 1 of the following options is required]";
+        } else {
+            desc += " [Exactly " + std::to_string(min_options) + "options from the following list are required]";
+        }
+    } else if(max_options > 0) {
+        if(min_options > 0) {
+            desc += " [Between " + std::to_string(min_options) + " and " + std::to_string(max_options) +
+                    " of the follow options are required]";
+        } else {
+            desc += " [At most " + std::to_string(max_options) + " of the following options are allowed]";
+        }
+    } else if(min_options > 0) {
+        desc += " [At least " + std::to_string(min_options) + " of the following options are required]";
+    }
     return (!desc.empty()) ? desc + "\n" : std::string{};
 }
 
@@ -90,7 +107,7 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
     }
 
     // Add a marker if subcommands are expected or optional
-    if(!app->get_subcommands({}).empty()) {
+    if(!app->get_subcommands([](const CLI::App *app) { return (!app->get_name().empty()); }).empty()) {
         out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
                                                                                                         : "SUBCOMMANDS")
