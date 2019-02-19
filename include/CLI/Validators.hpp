@@ -57,18 +57,20 @@ class Validator {
         return func(value);
     };
 
-    /// Combining validators is a new validator
+    /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
+    /// same.
     Validator operator&(const Validator &other) const {
         Validator newval;
         newval.tname = (tname == other.tname ? tname : "");
+        newval.tname_function = tname_function;
 
         // Give references (will make a copy in lambda function)
         const std::function<std::string(std::string & filename)> &f1 = func;
         const std::function<std::string(std::string & filename)> &f2 = other.func;
 
-        newval.func = [f1, f2](std::string &filename) {
-            std::string s1 = f1(filename);
-            std::string s2 = f2(filename);
+        newval.func = [f1, f2](std::string &input) {
+            std::string s1 = f1(input);
+            std::string s2 = f2(input);
             if(!s1.empty() && !s2.empty())
                 return s1 + " & " + s2;
             else
@@ -77,22 +79,24 @@ class Validator {
         return newval;
     }
 
-    /// Combining validators is a new validator
+    /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
+    /// same.
     Validator operator|(const Validator &other) const {
         Validator newval;
         newval.tname = (tname == other.tname ? tname : "");
+        newval.tname_function = tname_function;
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & filename)> &f1 = func;
-        const std::function<std::string(std::string & filename)> &f2 = other.func;
+        const std::function<std::string(std::string &)> &f1 = func;
+        const std::function<std::string(std::string &)> &f2 = other.func;
 
-        newval.func = [f1, f2](std::string &filename) {
-            std::string s1 = f1(filename);
-            std::string s2 = f2(filename);
+        newval.func = [f1, f2](std::string &input) {
+            std::string s1 = f1(input);
+            std::string s2 = f2(input);
             if(s1.empty() || s2.empty())
                 return std::string();
             else
-                return s1 + " & " + s2;
+                return s1 + " | " + s2;
         };
         return newval;
     }
@@ -308,7 +312,7 @@ class IsMember : public Validator {
         // This is the type name for help, it will take the current version of the set contents
         tname_function = [set]() {
             std::stringstream out;
-            out << detail::type_name<item_t>() << " in {";
+            out << "{";
             int i = 0; // I don't like counters like this
             for(const auto &v : detail::smart_deref(set))
                 out << (i++ == 0 ? "" : ",") << detail::key_map_adaptor<element_t>::second(v);

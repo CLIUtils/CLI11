@@ -25,6 +25,50 @@ TEST_F(TApp, SimpleMaps) {
     EXPECT_EQ(value, 1);
 }
 
+enum SimpleEnum { SE_one = 1, SE_two = 2 };
+
+std::istream &operator>>(std::istream &in, SimpleEnum &e) {
+    int i;
+    in >> i;
+    e = static_cast<SimpleEnum>(i);
+    return in;
+}
+
+TEST_F(TApp, EnumMap) {
+    SimpleEnum value;
+    std::map<SimpleEnum, std::string> map = {{SE_one, "one"}, {SE_two, "two"}};
+    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, SE_one);
+}
+
+enum class SimpleEnumC { one = 1, two = 2 };
+
+std::istream &operator>>(std::istream &in, SimpleEnumC &e) {
+    int i;
+    in >> i;
+    e = static_cast<SimpleEnumC>(i);
+    return in;
+}
+
+std::ostream &operator<<(std::ostream &in, const SimpleEnumC &e) { return in << static_cast<int>(e); }
+
+TEST_F(TApp, EnumCMap) {
+    SimpleEnumC value;
+    std::map<SimpleEnumC, std::string> map = {{SimpleEnumC::one, "one"}, {SimpleEnumC::two, "two"}};
+    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, SimpleEnumC::one);
+}
+
 TEST_F(TApp, SimpleSets) {
     std::string value;
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<std::string>({"one", "two", "three"})});
