@@ -19,15 +19,6 @@ Set handling has been completely replaced by a new backend that works as a Valid
 > * The `_ignore_case_underscore` version of this can be replaced by adding both functions listed above to the argument list in `IsMember`
 > * An error with sets now produces a `ValidationError` instead of a `ConversionError`
 
-> ### Converting from CLI11 1.7:
->
-> * `app.add_set("--name", value, {"choice1", "choice2"})` should become `app.add_option("--name", value)->check(CLI::IsMember({"choice1", "choice2"}))`
-> * The `_mutable` versions of this can be replaced by passing a pointer or shared pointer into `IsMember`
-> * The `_ignore_case` version of this can be replaced by adding `CLI::ignore_case` to the argument list in `IsMember`
-> * The `_ignore_underscore` version of this can be replaced by adding `CLI::ignore_underscore` to the argument list in `IsMember`
-> * The `_ignore_case_underscore` version of this can be replaced by adding both functions listed above to the argument list in `IsMember`
-> * An error with sets now produces a `ValidationError` instead of a `ConversionError`
-
 [#209]: https://github.com/CLIUtils/CLI11/pull/209
 [#210]: https://github.com/CLIUtils/CLI11/pull/210
 [#211]: https://github.com/CLIUtils/CLI11/pull/211
