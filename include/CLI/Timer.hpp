@@ -119,7 +119,7 @@ class AutoTimer : public Timer {
     AutoTimer(std::string title = "Timer", time_print_t time_print = Simple) : Timer(title, time_print) {}
     // GCC 4.7 does not support using inheriting constructors.
 
-    /// This desctructor prints the string
+    /// This destructor prints the string
     ~AutoTimer() { std::cout << to_string() << std::endl; }
 };
 

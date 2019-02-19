@@ -10,6 +10,26 @@ TEST_F(TApp, OneFlagShort) {
     EXPECT_EQ(1u, app.count("--count"));
 }
 
+TEST_F(TApp, OneFlagShortValues) {
+    app.add_flag("-c{v1},--count{v2}");
+    args = {"-c"};
+    run();
+    EXPECT_EQ(1u, app.count("-c"));
+    EXPECT_EQ(1u, app.count("--count"));
+    auto v = app["-c"]->results();
+    EXPECT_EQ(v[0], "v1");
+}
+
+TEST_F(TApp, OneFlagShortValuesAs) {
+    app.add_flag("-c{1},--count{2}");
+    args = {"-c"};
+    run();
+    EXPECT_EQ(app["-c"]->as<int>(), 1);
+    args = {"--count"};
+    run();
+    EXPECT_EQ(app["-c"]->as<int>(), 2);
+}
+
 TEST_F(TApp, OneFlagShortWindows) {
     app.add_flag("-c,--count");
     args = {"/c"};
@@ -451,6 +471,17 @@ TEST_F(TApp, LotsOfFlags) {
     EXPECT_EQ(2u, app.count("-a"));
     EXPECT_EQ(1u, app.count("-b"));
     EXPECT_EQ(1u, app.count("-A"));
+}
+
+TEST_F(TApp, NumberFlags) {
+
+    int val;
+    app.add_flag("-1{1},-2{2},-3{3},-4{4},-5{5},-6{6}, -7{7}, -8{8}, -9{9}", val);
+
+    args = {"-7"};
+    run();
+    EXPECT_EQ(1u, app.count("-1"));
+    EXPECT_EQ(val, 7);
 }
 
 TEST_F(TApp, LotsOfFlagsSingleString) {
@@ -1064,14 +1095,14 @@ TEST_F(TApp, CallbackFlags) {
 }
 
 TEST_F(TApp, CallbackFlagsFalse) {
-    int value = 0;
+    int64_t value = 0;
 
-    auto func = [&value](int x) { value = x; };
+    auto func = [&value](int64_t x) { value = x; };
 
     app.add_flag_function("-v,-f{false},--val,--fval{false}", func);
 
     run();
-    EXPECT_EQ(value, 0u);
+    EXPECT_EQ(value, 0);
 
     args = {"-f"};
     run();
@@ -1093,14 +1124,14 @@ TEST_F(TApp, CallbackFlagsFalse) {
 }
 
 TEST_F(TApp, CallbackFlagsFalseShortcut) {
-    int value = 0;
+    int64_t value = 0;
 
-    auto func = [&value](int x) { value = x; };
+    auto func = [&value](int64_t x) { value = x; };
 
     app.add_flag_function("-v,!-f,--val,!--fval", func);
 
     run();
-    EXPECT_EQ(value, 0u);
+    EXPECT_EQ(value, 0);
 
     args = {"-f"};
     run();
@@ -1317,231 +1348,22 @@ TEST_F(TApp, FileExists) {
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
-TEST_F(TApp, InSet) {
+TEST_F(TApp, NotFileExists) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 
-    std::string choice;
-    app.add_set("-q,--quick", choice, {"one", "two", "three"});
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(!CLI::ExistingFile);
+    args = {"--file", myfile};
 
-    args = {"--quick", "two"};
+    EXPECT_NO_THROW(run());
 
-    run();
-    EXPECT_EQ("two", choice);
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_THROW(run(), CLI::ValidationError);
 
-    args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InSetWithDefault) {
-
-    std::string choice = "one";
-    app.add_set("-q,--quick", choice, {"one", "two", "three"}, "", true);
-
-    run();
-    EXPECT_EQ("one", choice);
-
-    args = {"--quick", "two"};
-
-    run();
-    EXPECT_EQ("two", choice);
-
-    args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InCaselessSetWithDefault) {
-
-    std::string choice = "one";
-    app.add_set_ignore_case("-q,--quick", choice, {"one", "two", "three"}, "", true);
-
-    run();
-    EXPECT_EQ("one", choice);
-
-    args = {"--quick", "tWo"};
-
-    run();
-    EXPECT_EQ("two", choice);
-
-    args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InIntSet) {
-
-    int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
-
-    args = {"--quick", "2"};
-
-    run();
-    EXPECT_EQ(2, choice);
-
-    args = {"--quick", "4"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InIntSetWindows) {
-
-    int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
-    app.allow_windows_style_options();
-    args = {"/q", "2"};
-
-    run();
-    EXPECT_EQ(2, choice);
-
-    args = {"/q4"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
-}
-
-TEST_F(TApp, FailSet) {
-
-    int choice;
-    app.add_set("-q,--quick", choice, {1, 2, 3});
-
-    args = {"--quick", "3", "--quick=2"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-
-    args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, FailMutableSet) {
-
-    int choice;
-    std::set<int> vals{1, 2, 3};
-    app.add_mutable_set("-q,--quick", choice, vals);
-    app.add_mutable_set("-s,--slow", choice, vals, "", true);
-
-    args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--slow=hello"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InSetIgnoreCase) {
-
-    std::string choice;
-    app.add_set_ignore_case("-q,--quick", choice, {"one", "Two", "THREE"});
-
-    args = {"--quick", "One"};
-    run();
-    EXPECT_EQ("one", choice);
-
-    args = {"--quick", "two"};
-    run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
-
-    args = {"--quick", "ThrEE"};
-    run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
-
-    args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
-TEST_F(TApp, InSetIgnoreCaseMutableValue) {
-
-    std::set<std::string> options{"one", "Two", "THREE"};
-    std::string choice;
-    app.add_mutable_set_ignore_case("-q,--quick", choice, options);
-
-    args = {"--quick", "One"};
-    run();
-    EXPECT_EQ("one", choice);
-
-    args = {"--quick", "two"};
-    run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
-
-    args = {"--quick", "ThrEE"};
-    run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
-
-    options.clear();
-    args = {"--quick", "ThrEE"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, InSetIgnoreCasePointer) {
-
-    std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
-    std::string choice;
-    app.add_set_ignore_case("-q,--quick", choice, *options);
-
-    args = {"--quick", "One"};
-    run();
-    EXPECT_EQ("one", choice);
-
-    args = {"--quick", "two"};
-    run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
-
-    args = {"--quick", "ThrEE"};
-    run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
-
-    delete options;
-    args = {"--quick", "ThrEE"};
-    run();
-    EXPECT_EQ("THREE", choice); // this does not throw a segfault
-
-    args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
-TEST_F(TApp, InSetIgnoreUnderscore) {
-
-    std::string choice;
-    app.add_set_ignore_underscore("-q,--quick", choice, {"option_one", "option_two", "optionthree"});
-
-    args = {"--quick", "option_one"};
-    run();
-    EXPECT_EQ("option_one", choice);
-
-    args = {"--quick", "optiontwo"};
-    run();
-    EXPECT_EQ("option_two", choice); // Keeps underscore from set
-
-    args = {"--quick", "_option_thr_ee"};
-    run();
-    EXPECT_EQ("optionthree", choice); // no underscore
-
-    args = {"--quick", "Option4"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--quick=option_one", "--quick=option_two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
-TEST_F(TApp, InSetIgnoreCaseUnderscore) {
-
-    std::string choice;
-    app.add_set_ignore_case_underscore("-q,--quick", choice, {"Option_One", "option_two", "OptionThree"});
-
-    args = {"--quick", "option_one"};
-    run();
-    EXPECT_EQ("Option_One", choice);
-
-    args = {"--quick", "OptionTwo"};
-    run();
-    EXPECT_EQ("option_two", choice); // Keeps underscore and case from set
-
-    args = {"--quick", "_OPTION_thr_ee"};
-    run();
-    EXPECT_EQ("OptionThree", choice); // no underscore
-
-    args = {"--quick", "Option4"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--quick=option_one", "--quick=option_two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
 TEST_F(TApp, VectorFixedString) {
@@ -1829,7 +1651,6 @@ TEST_F(TApp, AllowExtras) {
 
     bool val = true;
     app.add_flag("-f", val);
-    EXPECT_FALSE(val);
 
     args = {"-x", "-f"};
 
@@ -1895,45 +1716,19 @@ TEST_F(TApp, OptionWithDefaults) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, SetWithDefaults) {
-    int someint = 2;
-    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
-
-    args = {"-a1", "-a2"};
-
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
-TEST_F(TApp, SetWithDefaultsConversion) {
-    int someint = 2;
-    app.add_set("-a", someint, {1, 2, 3, 4}, "", true);
-
-    args = {"-a", "hi"};
-
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, SetWithDefaultsIC) {
-    std::string someint = "ho";
-    app.add_set_ignore_case("-a", someint, {"Hi", "Ho"}, "", true);
-
-    args = {"-aHi", "-aHo"};
-
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
-}
-
 // Added to test ->transform
 TEST_F(TApp, OrderedModifingTransforms) {
     std::vector<std::string> val;
     auto m = app.add_option("-m", val);
-    m->transform([](std::string x) { return x + "1"; });
-    m->transform([](std::string x) { return x + "2"; });
+    // transforms are executed in reverse order or entry
+    m->transform([](const std::string &x) { return x + "1"; });
+    m->transform([](const std::string &x) { return x + "2"; });
 
     args = {"-mone", "-mtwo"};
 
     run();
 
-    EXPECT_EQ(val, std::vector<std::string>({"one12", "two12"}));
+    EXPECT_EQ(val, std::vector<std::string>({"one21", "two21"}));
 }
 
 TEST_F(TApp, ThrowingTransform) {
@@ -1989,69 +1784,6 @@ TEST_F(TApp, CustomDoubleOption) {
     EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
 }
 
-// #113
-TEST_F(TApp, AddRemoveSetItems) {
-    std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
-
-    std::string type1, type2;
-    app.add_mutable_set("--type1", type1, items);
-    app.add_mutable_set("--type2", type2, items, "", true);
-
-    args = {"--type1", "TYPE1", "--type2", "TYPE2"};
-
-    run();
-    EXPECT_EQ(type1, "TYPE1");
-    EXPECT_EQ(type2, "TYPE2");
-
-    items.insert("TYPE6");
-    items.insert("TYPE7");
-
-    items.erase("TYPE1");
-    items.erase("TYPE2");
-
-    args = {"--type1", "TYPE6", "--type2", "TYPE7"};
-    run();
-    EXPECT_EQ(type1, "TYPE6");
-    EXPECT_EQ(type2, "TYPE7");
-
-    args = {"--type1", "TYPE1"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--type2", "TYPE2"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
-TEST_F(TApp, AddRemoveSetItemsNoCase) {
-    std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
-
-    std::string type1, type2;
-    app.add_mutable_set_ignore_case("--type1", type1, items);
-    app.add_mutable_set_ignore_case("--type2", type2, items, "", true);
-
-    args = {"--type1", "TYPe1", "--type2", "TyPE2"};
-
-    run();
-    EXPECT_EQ(type1, "TYPE1");
-    EXPECT_EQ(type2, "TYPE2");
-
-    items.insert("TYPE6");
-    items.insert("TYPE7");
-
-    items.erase("TYPE1");
-    items.erase("TYPE2");
-
-    args = {"--type1", "TyPE6", "--type2", "tYPE7"};
-    run();
-    EXPECT_EQ(type1, "TYPE6");
-    EXPECT_EQ(type2, "TYPE7");
-
-    args = {"--type1", "TYPe1"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-
-    args = {"--type2", "TYpE2"};
-    EXPECT_THROW(run(), CLI::ConversionError);
-}
-
 // #128
 TEST_F(TApp, RepeatingMultiArgumentOptions) {
     std::vector<std::string> entries;
@@ -2068,7 +1800,7 @@ TEST_F(TApp, RepeatingMultiArgumentOptions) {
 // #122
 TEST_F(TApp, EmptyOptionEach) {
     std::string q;
-    app.add_option("--each", {})->each([&q](std::string s) { q = s; });
+    app.add_option("--each")->each([&q](std::string s) { q = s; });
 
     args = {"--each", "that"};
     run();
@@ -2079,7 +1811,7 @@ TEST_F(TApp, EmptyOptionEach) {
 // #122
 TEST_F(TApp, EmptyOptionFail) {
     std::string q;
-    app.add_option("--each", {});
+    app.add_option("--each");
 
     args = {"--each", "that"};
     run();

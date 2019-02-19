@@ -888,8 +888,8 @@ TEST_F(TApp, UnnamedSubMixExtras) {
     run();
     EXPECT_EQ(val, -3.0);
     EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(app.remaining_size(), 2);
-    EXPECT_EQ(sub->remaining_size(), 0);
+    EXPECT_EQ(app.remaining_size(), 2u);
+    EXPECT_EQ(sub->remaining_size(), 0u);
 }
 
 TEST_F(TApp, UnnamedSubNoExtras) {
@@ -901,8 +901,8 @@ TEST_F(TApp, UnnamedSubNoExtras) {
     run();
     EXPECT_EQ(val, -3.0);
     EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(app.remaining_size(), 0);
-    EXPECT_EQ(sub->remaining_size(), 0);
+    EXPECT_EQ(app.remaining_size(), 0u);
+    EXPECT_EQ(sub->remaining_size(), 0u);
 }
 
 TEST(SharedSubTests, SharedSubcommand) {

@@ -516,8 +516,13 @@ TEST_F(TApp, IniFlagConvertFailure) {
         std::ofstream out{tmpini};
         out << "flag=moobook" << std::endl;
     }
-
-    EXPECT_THROW(run(), CLI::ConversionError);
+    run();
+    bool result;
+    auto *opt = app.get_option("--flag");
+    EXPECT_THROW(opt->results(result), CLI::ConversionError);
+    std::string res;
+    opt->results(res);
+    EXPECT_EQ(res, "moobook");
 }
 
 TEST_F(TApp, IniFlagNumbers) {
@@ -603,9 +608,9 @@ TEST_F(TApp, IniFlags) {
     run();
 
     EXPECT_EQ(2, two);
-    EXPECT_EQ(true, three);
-    EXPECT_EQ(true, four);
-    EXPECT_EQ(true, five);
+    EXPECT_TRUE(three);
+    EXPECT_TRUE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniFalseFlags) {
@@ -631,9 +636,9 @@ TEST_F(TApp, IniFalseFlags) {
     run();
 
     EXPECT_EQ(-2, two);
-    EXPECT_EQ(false, three);
-    EXPECT_EQ(true, four);
-    EXPECT_EQ(true, five);
+    EXPECT_FALSE(three);
+    EXPECT_TRUE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniFalseFlagsDef) {
@@ -659,9 +664,9 @@ TEST_F(TApp, IniFalseFlagsDef) {
     run();
 
     EXPECT_EQ(-2, two);
-    EXPECT_EQ(true, three);
-    EXPECT_EQ(false, four);
-    EXPECT_EQ(true, five);
+    EXPECT_TRUE(three);
+    EXPECT_FALSE(four);
+    EXPECT_TRUE(five);
 }
 
 TEST_F(TApp, IniOutputSimple) {
@@ -693,7 +698,7 @@ TEST_F(TApp, IniOutputNoConfigurable) {
 
 TEST_F(TApp, IniOutputShortSingleDescription) {
     std::string flag = "some_flag";
-    std::string description = "Some short description.";
+    const std::string description = "Some short description.";
     app.add_flag("--" + flag, description);
 
     run();
@@ -705,8 +710,8 @@ TEST_F(TApp, IniOutputShortSingleDescription) {
 TEST_F(TApp, IniOutputShortDoubleDescription) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
-    std::string description1 = "First description.";
-    std::string description2 = "Second description.";
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1);
     app.add_flag("--" + flag2, description2);
 
@@ -718,7 +723,7 @@ TEST_F(TApp, IniOutputShortDoubleDescription) {
 
 TEST_F(TApp, IniOutputMultiLineDescription) {
     std::string flag = "some_flag";
-    std::string description = "Some short description.\nThat has lines.";
+    const std::string description = "Some short description.\nThat has lines.";
     app.add_flag("--" + flag, description);
 
     run();
@@ -767,7 +772,7 @@ TEST_F(TApp, IniOutputFlag) {
 TEST_F(TApp, IniOutputSet) {
 
     int v;
-    app.add_set("--simple", v, {1, 2, 3});
+    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--simple=2"};
 

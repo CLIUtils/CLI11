@@ -69,17 +69,17 @@ TEST(StringTools, Modify3) {
 }
 
 TEST(StringTools, flagValues) {
-    EXPECT_EQ(CLI::detail::to_flag_value("0"), "-1");
-    EXPECT_EQ(CLI::detail::to_flag_value("t"), "1");
-    EXPECT_EQ(CLI::detail::to_flag_value("1"), "1");
-    EXPECT_EQ(CLI::detail::to_flag_value("6"), "6");
-    EXPECT_EQ(CLI::detail::to_flag_value("-6"), "-6");
-    EXPECT_EQ(CLI::detail::to_flag_value("false"), "-1");
-    EXPECT_EQ(CLI::detail::to_flag_value("YES"), "1");
+    EXPECT_EQ(CLI::detail::to_flag_value("0"), -1);
+    EXPECT_EQ(CLI::detail::to_flag_value("t"), 1);
+    EXPECT_EQ(CLI::detail::to_flag_value("1"), 1);
+    EXPECT_EQ(CLI::detail::to_flag_value("6"), 6);
+    EXPECT_EQ(CLI::detail::to_flag_value("-6"), -6);
+    EXPECT_EQ(CLI::detail::to_flag_value("false"), -1);
+    EXPECT_EQ(CLI::detail::to_flag_value("YES"), 1);
     EXPECT_THROW(CLI::detail::to_flag_value("frog"), std::invalid_argument);
     EXPECT_THROW(CLI::detail::to_flag_value("q"), std::invalid_argument);
-    EXPECT_EQ(CLI::detail::to_flag_value("NO"), "-1");
-    EXPECT_EQ(CLI::detail::to_flag_value("4755263255233"), "4755263255233");
+    EXPECT_EQ(CLI::detail::to_flag_value("NO"), -1);
+    EXPECT_EQ(CLI::detail::to_flag_value("475555233"), 475555233);
 }
 
 TEST(Trim, Various) {

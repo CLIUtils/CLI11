@@ -41,7 +41,7 @@ class TempFile {
 };
 
 inline void put_env(std::string name, std::string value) {
-#ifdef _MSC_VER
+#ifdef _WIN32
     _putenv_s(name.c_str(), value.c_str());
 #else
     setenv(name.c_str(), value.c_str(), 1);
@@ -49,7 +49,7 @@ inline void put_env(std::string name, std::string value) {
 }
 
 inline void unset_env(std::string name) {
-#ifdef _MSC_VER
+#ifdef _WIN32
     _putenv_s(name.c_str(), "");
 #else
     unsetenv(name.c_str());

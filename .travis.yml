@@ -24,7 +24,7 @@ matrix:
     - .ci/make_and_test.sh 17
 
     # Check style/tidy
-  - compiler: clang 
+  - compiler: clang
     env:
     - CHECK_STYLE=yes
     script:
@@ -103,6 +103,20 @@ matrix:
         conan user -p ${BINFROG_API_KEY} -r origin henryiii
         conan upload "*" -c -r origin --all
       fi
+
+    # GCC 4.8
+  - compiler: gcc
+    env:
+    - GCC_VER=4.8
+    addons:
+      apt:
+        packages:
+        - g++-4.8
+    install:
+    - export CC=gcc-4.8
+    - export CXX=g++-4.8
+    script:
+    - .ci/make_and_test.sh 11
 
     # macOS and clang
   - os: osx

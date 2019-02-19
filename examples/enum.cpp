@@ -1,23 +1,17 @@
 #include <CLI/CLI.hpp>
-#include <sstream>
 
 enum class Level : int { High, Medium, Low };
-
-std::istream &operator>>(std::istream &in, Level &level) {
-    int i;
-    in >> i;
-    level = static_cast<Level>(i);
-    return in;
-}
-
-std::ostream &operator<<(std::ostream &in, const Level &level) { return in << static_cast<int>(level); }
 
 int main(int argc, char **argv) {
     CLI::App app;
 
     Level level;
-    app.add_set("-l,--level", level, {Level::High, Level::Medium, Level::Low}, "Level settings")
-        ->type_name("enum/Level in {High=0, Medium=1, Low=2}");
+    // specify string->value mappings
+    std::vector<std::pair<std::string, Level>> map{
+        {"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    // checked Transform does the translation and checks the results are either in one of the strings or one of the
+    // translations already
+    app.add_option("-l,--level", level, "Level settings")->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
 
     CLI11_PARSE(app, argc, argv);
 

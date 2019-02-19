@@ -3,7 +3,9 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
+#include "StringTools.hpp"
 #include <exception>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -11,6 +13,16 @@
 namespace CLI {
 
 // Type tools
+
+// Utilities for type enabling
+namespace detail {
+// Based generally on https://rmf.io/cxx11/almost-static-if
+/// Simple empty scoped class
+enum class enabler {};
+
+/// An instance to use in EnableIf
+constexpr enabler dummy = {};
+} // namespace detail
 
 /// A copy of enable_if_t from C++14, compatible with C++11.
 ///
@@ -21,24 +33,46 @@ namespace CLI {
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
 
 /// Check to see if something is a vector (fail check by default)
-template <typename T> struct is_vector { static const bool value = false; };
+template <typename T> struct is_vector : std::false_type {};
 
 /// Check to see if something is a vector (true if actually a vector)
-template <class T, class A> struct is_vector<std::vector<T, A>> { static bool const value = true; };
+template <class T, class A> struct is_vector<std::vector<T, A>> : std::true_type {};
 
 /// Check to see if something is bool (fail check by default)
-template <typename T> struct is_bool { static const bool value = false; };
+template <typename T> struct is_bool : std::false_type {};
 
 /// Check to see if something is bool (true if actually a bool)
-template <> struct is_bool<bool> { static bool const value = true; };
+template <> struct is_bool<bool> : std::true_type {};
+
+/// Check to see if something is a shared pointer
+template <typename T> struct is_shared_ptr : std::false_type {};
+
+/// Check to see if something is a shared pointer (True if really a shared pointer)
+template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+/// Check to see if something is copyable pointer
+template <typename T> struct is_copyable_ptr {
+    static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
+};
+
+/// Handy helper to access the element_type generically. This is not part of is_copyable_ptr because it requires that
+/// pointer_traits<T> be valid.
+template <typename T> struct element_type {
+    using type =
+        typename std::conditional<is_copyable_ptr<T>::value, typename std::pointer_traits<T>::element_type, T>::type;
+};
+
+/// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
+/// the container
+template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
+
+/// This can be specialized to override the type deduction for IsMember.
+template <typename T> struct IsMemberType { using type = T; };
+
+/// The main custom type needed here is const char * should be a string.
+template <> struct IsMemberType<const char *> { using type = std::string; };
 
 namespace detail {
-// Based generally on https://rmf.io/cxx11/almost-static-if
-/// Simple empty scoped class
-enum class enabler {};
-
-/// An instance to use in EnableIf
-constexpr enabler dummy = {};
 
 // Type name print
 
@@ -68,9 +102,16 @@ template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail
 constexpr const char *type_name() {
     return "VECTOR";
 }
+/// print name for enumeration types
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "ENUM";
+}
 
+/// print for all other types
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value &&
+                          !std::is_enum<T>::value,
                       detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
@@ -78,10 +119,62 @@ constexpr const char *type_name() {
 
 // Lexical cast
 
-/// Signed integers / enums
-template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value, detail::enabler> =
-              detail::dummy>
+/// convert a flag into an integer value  typically binary flags
+inline int64_t to_flag_value(std::string val) {
+    static const std::string trueString("true");
+    static const std::string falseString("false");
+    if(val == trueString) {
+        return 1;
+    }
+    if(val == falseString) {
+        return -1;
+    }
+    val = detail::to_lower(val);
+    int64_t ret;
+    if(val.size() == 1) {
+        switch(val[0]) {
+        case '0':
+        case 'f':
+        case 'n':
+        case '-':
+            ret = -1;
+            break;
+        case '1':
+        case 't':
+        case 'y':
+        case '+':
+            ret = 1;
+            break;
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            ret = val[0] - '0';
+            break;
+        default:
+            throw std::invalid_argument("unrecognized character");
+        }
+        return ret;
+    }
+    if(val == trueString || val == "on" || val == "yes" || val == "enable") {
+        ret = 1;
+    } else if(val == falseString || val == "off" || val == "no" || val == "disable") {
+        ret = -1;
+    } else {
+        ret = std::stoll(val);
+    }
+    return ret;
+}
+
+/// Signed integers
+template <
+    typename T,
+    enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value && !std::is_enum<T>::value,
+                detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
         size_t n = 0;
@@ -120,13 +213,7 @@ template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::
 bool lexical_cast(std::string input, T &output) {
     try {
         auto out = to_flag_value(input);
-        if(out == "1") {
-            output = true;
-        } else if(out == "-1") {
-            output = false;
-        } else {
-            output = (std::stoll(out) > 0);
-        }
+        output = (out > 0);
         return true;
     } catch(const std::invalid_argument &) {
         return false;
@@ -157,10 +244,22 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
+/// enumerations
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+bool lexical_cast(std::string input, T &output) {
+    typename std::underlying_type<T>::type val;
+    bool retval = detail::lexical_cast(input, val);
+    if(!retval) {
+        return false;
+    }
+    output = static_cast<T>(val);
+    return true;
+}
+
 /// Non-string parsable
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value,
+                          !std::is_assignable<T &, std::string>::value && !std::is_enum<T>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     std::istringstream is;
@@ -178,10 +277,8 @@ template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     int64_t count{0};
-    static const auto trueString = std::string("1");
-    static const auto falseString = std::string("-1");
     for(auto &flag : flags) {
-        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+        count += detail::to_flag_value(flag);
     }
     output = (count > 0) ? static_cast<T>(count) : T{0};
 }
@@ -194,13 +291,12 @@ template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     int64_t count{0};
-    static const auto trueString = std::string("1");
-    static const auto falseString = std::string("-1");
     for(auto &flag : flags) {
-        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+        count += detail::to_flag_value(flag);
     }
     output = static_cast<T>(count);
 }
 
 } // namespace detail
+
 } // namespace CLI

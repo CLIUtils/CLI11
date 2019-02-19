@@ -173,8 +173,11 @@ class Option : public OptionBase<Option> {
     /// A list of the long names (`--a`) without the leading dashes
     std::vector<std::string> lnames_;
 
-    /// A list of the negation names, should be duplicates of what is in snames or lnames but trigger a false response
-    /// on a flag
+    /// A list of the flag names with the appropriate default value, the first part of the pair should be duplicates of
+    /// what is in snames or lnames but will trigger a particular response on a flag
+    std::vector<std::pair<std::string, std::string>> default_flag_values_;
+
+    /// a list of flag names with specified default values;
     std::vector<std::string> fnames_;
 
     /// A positional name
@@ -250,8 +253,7 @@ class Option : public OptionBase<Option> {
            std::function<bool(results_t)> callback,
            bool defaulted,
            App *parent)
-        : description_(std::move(description)), default_(defaulted), parent_(parent),
-          callback_(callback ? std::move(callback) : [](results_t) { return true; }) {
+        : description_(std::move(description)), default_(defaulted), parent_(parent), callback_(std::move(callback)) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name));
     }
 
@@ -304,7 +306,9 @@ class Option : public OptionBase<Option> {
     /// Adds a validator with a built in type name
     Option *check(const Validator &validator) {
         validators_.emplace_back(validator.func);
-        if(!validator.tname.empty())
+        if(validator.tname_function)
+            type_name_fn(validator.tname_function);
+        else if(!validator.tname.empty())
             type_name(validator.tname);
         return this;
     }
@@ -315,9 +319,9 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Adds a validator-like function that can change result
-    Option *transform(std::function<std::string(std::string)> func) {
-        validators_.emplace_back([func](std::string &inout) {
+    /// Adds a validator-like function that can change result runs before any Validators specified through check
+    Option *transform(std::function<std::string(const std::string &)> func) {
+        validators_.insert(validators_.begin(), [func](std::string &inout) {
             try {
                 inout = func(inout);
             } catch(const ValidationError &e) {
@@ -328,6 +332,25 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
+    /// Adds a transformation/validator with a built in type name
+    Option *transform(const Transformer &tform) {
+        validators_.insert(validators_.begin(), tform.func);
+        if(tform.tname_function)
+            type_name_fn(tform.tname_function);
+        else if(!tform.tname.empty())
+            type_name(tform.tname);
+        return this;
+    }
+
+    /// Adds a transformation/validator with a built in check and type name
+    Option *transform(const CheckedTransformer &tform) {
+        validators_.insert(validators_.begin(), tform.func);
+        if(tform.tname_function)
+            type_name_fn(tform.tname_function);
+        else if(!tform.tname.empty())
+            type_name(tform.tname);
+        return this;
+    }
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
         validators_.emplace_back([func](std::string &inout) {
@@ -482,7 +505,7 @@ class Option : public OptionBase<Option> {
     /// Get the short names
     const std::vector<std::string> get_snames() const { return snames_; }
 
-    /// get the negative flag names
+    /// get the flag names with specified default values
     const std::vector<std::string> get_fnames() const { return fnames_; }
 
     /// The number of times the option expects to be included
@@ -553,14 +576,14 @@ class Option : public OptionBase<Option> {
                 for(const std::string &sname : snames_) {
                     name_list.push_back("-" + sname);
                     if(check_fname(sname)) {
-                        name_list.back() += "{false}";
+                        name_list.back() += "{" + get_flag_value(sname, "") + "}";
                     }
                 }
 
                 for(const std::string &lname : lnames_) {
                     name_list.push_back("--" + lname);
                     if(check_fname(lname)) {
-                        name_list.back() += "{false}";
+                        name_list.back() += "{" + get_flag_value(lname, "") + "}";
                     }
                 }
             } else {
@@ -606,12 +629,21 @@ class Option : public OptionBase<Option> {
         if(!validators_.empty()) {
             for(std::string &result : results_)
                 for(const std::function<std::string(std::string &)> &vali : validators_) {
-                    std::string err_msg = vali(result);
+                    std::string err_msg;
+
+                    try {
+                        err_msg = vali(result);
+                    } catch(const ValidationError &err) {
+                        throw ValidationError(err.what(), get_name());
+                    }
+
                     if(!err_msg.empty())
                         throw ValidationError(get_name(), err_msg);
                 }
         }
-
+        if(!(callback_)) {
+            return;
+        }
         bool local_result;
 
         // Num items expected or length of vector, always at least 1
@@ -692,11 +724,11 @@ class Option : public OptionBase<Option> {
     }
 
     /// Requires "-" to be removed from string
-    bool check_sname(std::string name) const { return detail::check_is_member(name, snames_, ignore_case_); }
+    bool check_sname(std::string name) const { return (detail::find_member(name, snames_, ignore_case_) >= 0); }
 
     /// Requires "--" to be removed from string
     bool check_lname(std::string name) const {
-        return detail::check_is_member(name, lnames_, ignore_case_, ignore_underscore_);
+        return (detail::find_member(name, lnames_, ignore_case_, ignore_underscore_) >= 0);
     }
 
     /// Requires "--" to be removed from string
@@ -704,7 +736,30 @@ class Option : public OptionBase<Option> {
         if(fnames_.empty()) {
             return false;
         }
-        return detail::check_is_member(name, fnames_, ignore_case_, ignore_underscore_);
+        return (detail::find_member(name, fnames_, ignore_case_, ignore_underscore_) >= 0);
+    }
+
+    std::string get_flag_value(std::string name, std::string input_value) const {
+        static const std::string trueString{"true"};
+        static const std::string falseString{"false"};
+        static const std::string emptyString{"{}"};
+        auto ind = detail::find_member(name, fnames_, ignore_case_, ignore_underscore_);
+        if(ind < 0) {
+            return (input_value.empty()) ? trueString : input_value;
+        }
+        if((input_value.empty()) || (input_value == emptyString)) {
+            return default_flag_values_[ind].second;
+        }
+        if(default_flag_values_[ind].second == falseString) {
+            try {
+                auto val = detail::to_flag_value(input_value);
+                return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
+            } catch(const std::invalid_argument &) {
+                return input_value;
+            }
+        } else {
+            return input_value;
+        }
     }
 
     /// Puts a result at the end
@@ -735,6 +790,74 @@ class Option : public OptionBase<Option> {
 
     /// Get a copy of the results
     std::vector<std::string> results() const { return results_; }
+
+    /// get the results as a particular type
+    template <typename T,
+              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value, detail::enabler> = detail::dummy>
+    void results(T &output) const {
+        bool retval;
+        if(results_.empty()) {
+            retval = detail::lexical_cast(defaultval_, output);
+        } else if(results_.size() == 1) {
+            retval = detail::lexical_cast(results_[0], output);
+        } else {
+            switch(multi_option_policy_) {
+            case MultiOptionPolicy::TakeFirst:
+                retval = detail::lexical_cast(results_.front(), output);
+                break;
+            case MultiOptionPolicy::TakeLast:
+            default:
+                retval = detail::lexical_cast(results_.back(), output);
+                break;
+            case MultiOptionPolicy::Throw:
+                throw ConversionError(get_name(), results_);
+            case MultiOptionPolicy::Join:
+                retval = detail::lexical_cast(detail::join(results_), output);
+                break;
+            }
+        }
+        if(!retval) {
+            throw ConversionError(get_name(), results_);
+        }
+    }
+    /// get the results as a vector of a particular type
+    template <typename T> void results(std::vector<T> &output, char delim = '\0') const {
+        output.clear();
+        bool retval = true;
+
+        for(const auto &elem : results_) {
+            if(delim != '\0') {
+                for(const auto &var : CLI::detail::split(elem, delim)) {
+                    if(!var.empty()) {
+                        output.emplace_back();
+                        retval &= detail::lexical_cast(var, output.back());
+                    }
+                }
+            } else {
+                output.emplace_back();
+                retval &= detail::lexical_cast(elem, output.back());
+            }
+        }
+
+        if(!retval) {
+            throw ConversionError(get_name(), results_);
+        }
+    }
+
+    /// return the results as a particular type
+    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy> T as() const {
+        T output;
+        results(output);
+        return output;
+    }
+
+    /// get the results as a vector of a particular type
+    template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
+    T as(char delim = '\0') const {
+        std::vector<T> output;
+        results(output, delim);
+        return output;
+    }
 
     /// See if the callback has been run already
     bool get_callback_run() const { return callback_run_; }
