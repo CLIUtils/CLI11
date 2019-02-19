@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <map>
 
 // C standard library
 // Only needed for existence checking
@@ -274,6 +275,7 @@ auto smart_deref(T value) -> decltype(*value) {
 template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy> T smart_deref(T value) {
     return value;
 }
+
 } // namespace detail
 
 /// Verify items are in a set
@@ -344,10 +346,90 @@ class IsMember : public Validator {
         };
     }
 
-    /// You can pass in as many filter functions as you like, they nest
+    /// You can pass in as many filter functions as you like, they nest (string only currently)
     template <typename T, typename... Args>
     IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
         : IsMember(std::move(set),
+                   [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+                   other...) {}
+};
+
+/// Verify items are in a mapping
+class Mapping : public Validator {
+  public:
+    using filter_fn_t = std::function<std::string(std::string)>;
+
+    /// This allows in-place construction using an initializer list
+    template <typename K, typename V, typename... Args>
+    explicit Mapping(std::initializer_list<std::pair<K,V>> values, Args &&... args)
+        : Mapping(std::map<K,V>(values), std::forward<Args>(args)...) {}
+
+    /// This checks to see if an item is in a set (empty function)
+    template <typename T>
+    explicit Mapping(T set)
+        : Mapping(std::move(set),
+                   std::function<typename IsMemberType<typename element_map_type<T>::mapped_type>::type(
+                       typename IsMemberType<typename element_map_type<T>::mapped_type>::type)>()) {}
+
+    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
+    /// both sides of the comparison before computing the comparison.
+    template <typename T, typename F> explicit Mapping(T set, F filter_function) {
+
+        // Get the type of the contained item - requires a container have ::value_type, key_type, and mapped_type
+        using map_item_t = typename element_map_type<T>::mapped_type;
+        using key_item_t = typename element_map_type<T>::key_type;
+        using local_map_item_t = typename IsMemberType<map_item_t>::type;
+        using local_key_item_t = typename IsMemberType<key_item_t>::type;
+
+        // Make a local copy of the filter function, using a std::function if not one already
+        std::function<local_map_item_t(local_map_item_t)> filter_fn = filter_function;
+
+        // This is the type name for help, it will take the current version of the set contents
+        tname_function = [set]() {
+            std::stringstream out;
+            out << detail::type_name<map_item_t>() << " in {";
+            for(auto &pairlike : detail::smart_deref(set))
+                out << pairlike.first << ":" << pairlike.second << ",";
+            out << "}";
+            return out.str();
+        };
+
+        // This is the function that validates
+        // It stores a copy of the set pointer-like, so shared_ptr will stay alive
+        func = [set, filter_fn](std::string &input) {
+            for(const auto &v : detail::smart_deref(set)) {
+                local_map_item_t a = v.second;
+                local_map_item_t b;
+                if(!detail::lexical_cast(input, b))
+                    throw ValidationError(input); // name is added later
+
+                // The filter function might be empty, so don't filter if it is.
+                if(filter_fn) {
+                    a = filter_fn(a);
+                    b = filter_fn(b);
+                }
+
+                if(a == b) {
+                    // Make sure the version in the input string is identical to the one in the set
+                    // Requires std::stringstream << be supported on T.
+                    std::stringstream out;
+                    out << v.first;
+                    input = out.str();
+
+                    // Return empty error string (success)
+                    return std::string();
+                }
+            }
+
+            // If you reach this point, the result was not found
+            return input + " not in {...}";
+        };
+    }
+
+    /// You can pass in as many filter functions as you like, they nest
+    template <typename T, typename... Args>
+    Mapping(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : Mapping(std::move(set),
                    [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                    other...) {}
 };

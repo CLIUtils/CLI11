@@ -28,8 +28,17 @@ constexpr enabler dummy = {};
 /// We could check to see if C++14 is being used, but it does not hurt to redefine this
 /// (even Google does this: https://github.com/google/skia/blob/master/include/private/SkTLogic.h)
 /// It is not in the std namespace anyway, so no harm done.
-
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
+
+/// A copy of std::void_t from C++17 (helper for C++11 and C++14)
+template <typename... Ts> struct make_void { using type = void; };
+
+/// A copy of std::void_t from C++17 - same reasoning as enable_if_t, it does not hurt to redefine
+template<typename... Ts> using void_t = typename make_void<Ts...>::type;
+
+/// A copy of std::conditional_t from C++14 - same reasoning as enable_if_t, it does not hurt to redefine
+template< bool B, class T, class F >
+using conditional_t = typename std::conditional<B,T,F>::type;
 
 /// Check to see if something is a vector (fail check by default)
 template <typename T> struct is_vector : std::false_type {};
@@ -64,6 +73,27 @@ template <typename T> struct element_type {
 /// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
 /// the container
 template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
+
+/// Combination of the element type and important types for maps - remove pointer (including smart pointers)
+template <typename T> struct element_map_type {
+    using value_type = typename element_type<T>::type::value_type;
+    using mapped_type = typename element_type<T>::type::mapped_type;
+    using key_type = typename element_type<T>::type::key_type;
+};
+
+/// Check for a map-like structure (false version)
+template <typename T, typename _ = void> struct has_mapped_key : std::false_type {};
+
+/// Check for a map-like structure (true version, must have key_type and mapped_type)
+template <typename T> struct has_mapped_key <T, conditional_t<
+                          false,
+                          void_t<
+                            typename T::key_type,
+                            typename T::mapped_type
+                          >,
+                        void
+                        >
+                      > : std::true_type {};
 
 /// This can be specialized to override the type deduction for IsMember.
 template <typename T> struct IsMemberType { using type = T; };
