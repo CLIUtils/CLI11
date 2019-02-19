@@ -144,12 +144,15 @@ GTEST_COLOR=1 CTEST_OUTPUT_ON_FAILURE=1 make test
 To set up, add options, and run, your main function will look something like this:
 
 ```cpp
-CLI::App app{"App description"};
+int main(int charc, char** argv) {
+    CLI::App app{"App description"};
 
-std::string filename = "default";
-app.add_option("-f,--file", filename, "A help string");
+    std::string filename = "default";
+    app.add_option("-f,--file", filename, "A help string");
 
-CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app, argc, argv);
+    return 0;
+}
 ```
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
@@ -175,7 +178,7 @@ While all options internally are the same type, there are several ways to add an
 
 ```cpp
 app.add_option(option_name,
-               variable_to_bind_to, // int, float, vector, or string-like
+               variable_to_bind_to, // bool, int, float, vector, or string-like
                help_string="",
                default=false)
 
@@ -272,15 +275,15 @@ Before parsing, you can set the following options:
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).
 
-The IsMember validator lets you specify a set of predefined options. You can pass any container or copiable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertable from a string (`const char*` is not, for example). You can use an initializer list of strings directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
+The `IsMember` validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertible from a string. You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`.
 Here are some examples
-of IsMember:
+of `IsMember`:
 
--   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices
+-   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
 -   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
--   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work
--   `auto p = std::make_shared<std::vector<std::string>>("one", "two"); CLI::IsMember(p)`: You can modify `p` later.
+-   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
+-   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
 
 On the command line, options can be given as:
 
@@ -294,7 +297,7 @@ On the command line, options can be given as:
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
-If allow_windows_style_options() is specified in the application or subcommand options can also be given as:
+If `allow_windows_style_options()` is specified in the application or subcommand options can also be given as:
 -   `/a` (flag)
 -   `/f filename` (option)
 -   `/long` (long flag)

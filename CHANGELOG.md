@@ -4,6 +4,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 
 * New `CL::IsMember` validator replaces set validation [#222]
 * Much more powerful flags with different values [#211]
+* `add_option` now supports bool due to unified bool handling [#211]
 * Support for composable unnamed subcommands [#216]
 * Custom vector separator [#209], [#221]
 * Validators added for IP4 addresses and positive numbers [#210]
