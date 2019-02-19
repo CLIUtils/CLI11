@@ -110,7 +110,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
     )
 
 # Add boost to test boost::optional if available
-find_package(Boost 1.58)
+find_package(Boost 1.61)
 if(Boost_FOUND)
     if(TARGET Boost::boost)
         target_link_libraries(informational PUBLIC Boost::boost)

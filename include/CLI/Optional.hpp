@@ -29,7 +29,7 @@
 
 #if __has_include(<boost/optional.hpp>) && !defined(CLI11_BOOST_OPTIONAL)
 #include <boost/version.hpp>
-#if BOOST_VERSION >= 105800
+#if BOOST_VERSION >= 106100
 #define CLI11_BOOST_OPTIONAL 1
 #endif
 #elif !defined(CLI11_BOOST_OPTIONAL)
