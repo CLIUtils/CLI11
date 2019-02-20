@@ -303,7 +303,12 @@ class Option : public OptionBase<Option> {
 
     /// Adds a validator with a built in type name
     Option *check(const Validator &validator) {
-        validators_.emplace_back(validator.func);
+        std::function<std::string(std::string &)> func = validator.func;
+        validators_.emplace_back([func](const std::string &value) {
+            /// Throw away changes to the string value
+            std::string ignore_changes_value = value;
+            return func(ignore_changes_value);
+        });
         if(validator.tname_function)
             type_name_fn(validator.tname_function);
         else if(!validator.tname.empty())
@@ -314,6 +319,16 @@ class Option : public OptionBase<Option> {
     /// Adds a validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
     Option *check(std::function<std::string(const std::string &)> validator) {
         validators_.emplace_back(validator);
+        return this;
+    }
+
+    /// Adds a transforming validator with a built in type name
+    Option *transform(const Validator &validator) {
+        validators_.emplace_back(validator.func);
+        if(validator.tname_function)
+            type_name_fn(validator.tname_function);
+        else if(!validator.tname.empty())
+            type_name(validator.tname);
         return this;
     }
 
