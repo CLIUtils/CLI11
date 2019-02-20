@@ -1,4 +1,5 @@
 #include "app_helper.hpp"
+#include <map>
 
 static_assert(CLI::is_shared_ptr<std::shared_ptr<int>>::value == true, "is_shared_ptr should work on shared pointers");
 static_assert(CLI::is_shared_ptr<int *>::value == false, "is_shared_ptr should work on pointers");
@@ -8,6 +9,82 @@ static_assert(CLI::is_copyable_ptr<std::shared_ptr<int>>::value == true,
               "is_copyable_ptr should work on shared pointers");
 static_assert(CLI::is_copyable_ptr<int *>::value == true, "is_copyable_ptr should work on pointers");
 static_assert(CLI::is_copyable_ptr<int>::value == false, "is_copyable_ptr should work on non-pointers");
+
+static_assert(CLI::detail::pair_adaptor<std::set<int>>::value == false, "Should not have pairs");
+static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
+static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
+
+TEST_F(TApp, SimpleMaps) {
+    int value;
+    std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 1);
+}
+
+TEST_F(TApp, StringStringMap) {
+    std::string value;
+    std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
+    app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    args = {"-s", "a"};
+    run();
+    EXPECT_EQ(value, "b");
+
+    args = {"-s", "b"};
+    run();
+    EXPECT_EQ(value, "c");
+
+    args = {"-s", "c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, StringStringMapNoModify) {
+    std::string value;
+    std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
+    app.add_option("-s,--set", value)->check(CLI::IsMember(map));
+    args = {"-s", "a"};
+    run();
+    EXPECT_EQ(value, "a");
+
+    args = {"-s", "b"};
+    run();
+    EXPECT_EQ(value, "b");
+
+    args = {"-s", "c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+enum SimpleEnum { SE_one = 1, SE_two = 2 };
+
+TEST_F(TApp, EnumMap) {
+    SimpleEnum value;
+    std::map<std::string, SimpleEnum> map = {{"one", SE_one}, {"two", SE_two}};
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, SE_one);
+}
+
+enum class SimpleEnumC { one = 1, two = 2 };
+
+TEST_F(TApp, EnumCMap) {
+    SimpleEnumC value;
+    std::map<std::string, SimpleEnumC> map = {{"one", SimpleEnumC::one}, {"two", SimpleEnumC::two}};
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    args = {"-s", "one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, SimpleEnumC::one);
+}
 
 TEST_F(TApp, SimpleSets) {
     std::string value;
@@ -51,7 +128,7 @@ TEST_F(TApp, SimiShortcutSets) {
     EXPECT_EQ(value, "one");
 
     std::string value2;
-    auto opt2 = app.add_option("--set2", value2)->check(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
+    auto opt2 = app.add_option("--set2", value2)->transform(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
     args = {"--set2", "onE"};
     run();
     EXPECT_EQ(1u, app.count("--set2"));
@@ -60,7 +137,7 @@ TEST_F(TApp, SimiShortcutSets) {
 
     std::string value3;
     auto opt3 = app.add_option("--set3", value3)
-                    ->check(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
+                    ->transform(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
     args = {"--set3", "onE"};
     run();
     EXPECT_EQ(1u, app.count("--set3"));
@@ -95,7 +172,7 @@ TEST_F(TApp, OtherTypeSets) {
     EXPECT_THROW(run(), CLI::ValidationError);
 
     std::vector<int> set2 = {-2, 3, 4};
-    auto opt2 = app.add_option("--set2", value)->check(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
+    auto opt2 = app.add_option("--set2", value)->transform(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
     args = {"--set2", "-3"};
     run();
     EXPECT_EQ(1u, app.count("--set2"));
@@ -189,7 +266,7 @@ TEST_F(TApp, InSetWithDefault) {
 TEST_F(TApp, InCaselessSetWithDefault) {
 
     std::string choice = "one";
-    app.add_option("-q,--quick", choice, "", true)->check(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
+    app.add_option("-q,--quick", choice, "", true)->transform(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
 
     run();
     EXPECT_EQ("one", choice);
@@ -263,7 +340,7 @@ TEST_F(TApp, FailMutableSet) {
 TEST_F(TApp, InSetIgnoreCase) {
 
     std::string choice;
-    app.add_option("-q,--quick", choice)->check(CLI::IsMember({"one", "Two", "THREE"}, CLI::ignore_case));
+    app.add_option("-q,--quick", choice)->transform(CLI::IsMember({"one", "Two", "THREE"}, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -288,7 +365,7 @@ TEST_F(TApp, InSetIgnoreCaseMutableValue) {
 
     std::set<std::string> options{"one", "Two", "THREE"};
     std::string choice;
-    app.add_option("-q,--quick", choice)->check(CLI::IsMember(&options, CLI::ignore_case));
+    app.add_option("-q,--quick", choice)->transform(CLI::IsMember(&options, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -311,7 +388,7 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
 
     std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
-    app.add_option("-q,--quick", choice)->check(CLI::IsMember(*options, CLI::ignore_case));
+    app.add_option("-q,--quick", choice)->transform(CLI::IsMember(*options, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
@@ -341,7 +418,7 @@ TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;
     app.add_option("-q,--quick", choice)
-        ->check(CLI::IsMember({"option_one", "option_two", "optionthree"}, CLI::ignore_underscore));
+        ->transform(CLI::IsMember({"option_one", "option_two", "optionthree"}, CLI::ignore_underscore));
 
     args = {"--quick", "option_one"};
     run();
@@ -366,7 +443,8 @@ TEST_F(TApp, InSetIgnoreCaseUnderscore) {
 
     std::string choice;
     app.add_option("-q,--quick", choice)
-        ->check(CLI::IsMember({"Option_One", "option_two", "OptionThree"}, CLI::ignore_case, CLI::ignore_underscore));
+        ->transform(
+            CLI::IsMember({"Option_One", "option_two", "OptionThree"}, CLI::ignore_case, CLI::ignore_underscore));
 
     args = {"--quick", "option_one"};
     run();
@@ -423,8 +501,8 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
-    app.add_option("--type1", type1)->check(CLI::IsMember(&items, CLI::ignore_case));
-    app.add_option("--type2", type2, "", true)->check(CLI::IsMember(&items, CLI::ignore_case));
+    app.add_option("--type1", type1)->transform(CLI::IsMember(&items, CLI::ignore_case));
+    app.add_option("--type2", type2, "", true)->transform(CLI::IsMember(&items, CLI::ignore_case));
 
     args = {"--type1", "TYPe1", "--type2", "TyPE2"};
 

@@ -1,26 +1,25 @@
 #include <CLI/CLI.hpp>
+#include <map>
 #include <sstream>
 
 enum class Level : int { High, Medium, Low };
 
-std::istream &operator>>(std::istream &in, Level &level) {
-    int i;
-    in >> i;
-    level = static_cast<Level>(i);
-    return in;
-}
-
-std::ostream &operator<<(std::ostream &in, const Level &level) { return in << static_cast<int>(level); }
-
 int main(int argc, char **argv) {
     CLI::App app;
 
+    std::map<std::string, Level> map = {{"High", Level::High}, {"Medium", Level::Medium}, {"Low", Level::Low}};
+
     Level level;
+
     app.add_option("-l,--level", level, "Level settings")
-        ->check(CLI::IsMember({Level::High, Level::Medium, Level::Low}))
-        ->type_name("enum/Level in {High=0, Medium=1, Low=2}");
+        ->required()
+        ->transform(CLI::IsMember(map, CLI::ignore_case) | CLI::IsMember({Level::High, Level::Medium, Level::Low}));
 
     CLI11_PARSE(app, argc, argv);
+
+    // CLI11's built in enum streaming can be used outside CLI11 like this:
+    using namespace CLI::enums;
+    std::cout << "Enum received: " << level << std::endl;
 
     return 0;
 }

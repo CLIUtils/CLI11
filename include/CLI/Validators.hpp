@@ -57,42 +57,46 @@ class Validator {
         return func(value);
     };
 
-    /// Combining validators is a new validator
+    /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
+    /// same.
     Validator operator&(const Validator &other) const {
         Validator newval;
         newval.tname = (tname == other.tname ? tname : "");
+        newval.tname_function = tname_function;
 
         // Give references (will make a copy in lambda function)
         const std::function<std::string(std::string & filename)> &f1 = func;
         const std::function<std::string(std::string & filename)> &f2 = other.func;
 
-        newval.func = [f1, f2](std::string &filename) {
-            std::string s1 = f1(filename);
-            std::string s2 = f2(filename);
+        newval.func = [f1, f2](std::string &input) {
+            std::string s1 = f1(input);
+            std::string s2 = f2(input);
             if(!s1.empty() && !s2.empty())
-                return s1 + " & " + s2;
+                return s1 + " AND " + s2;
             else
                 return s1 + s2;
         };
         return newval;
     }
 
-    /// Combining validators is a new validator
+    /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
+    /// same.
     Validator operator|(const Validator &other) const {
         Validator newval;
         newval.tname = (tname == other.tname ? tname : "");
+        newval.tname_function = tname_function;
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & filename)> &f1 = func;
-        const std::function<std::string(std::string & filename)> &f2 = other.func;
+        const std::function<std::string(std::string &)> &f1 = func;
+        const std::function<std::string(std::string &)> &f2 = other.func;
 
-        newval.func = [f1, f2](std::string &filename) {
-            std::string s1 = f1(filename);
-            std::string s2 = f2(filename);
+        newval.func = [f1, f2](std::string &input) {
+            std::string s1 = f1(input);
+            std::string s2 = f2(input);
             if(s1.empty() || s2.empty())
                 return std::string();
             else
-                return s1 + " & " + s2;
+                return s1 + " OR " + s2;
         };
         return newval;
     }
@@ -274,6 +278,7 @@ auto smart_deref(T value) -> decltype(*value) {
 template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy> T smart_deref(T value) {
     return value;
 }
+
 } // namespace detail
 
 /// Verify items are in a set
@@ -287,18 +292,19 @@ class IsMember : public Validator {
         : IsMember(std::vector<T>(values), std::forward<Args>(args)...) {}
 
     /// This checks to see if an item is in a set (empty function)
-    template <typename T>
-    explicit IsMember(T set)
-        : IsMember(std::move(set),
-                   std::function<typename IsMemberType<typename element_value_type<T>::type>::type(
-                       typename IsMemberType<typename element_value_type<T>::type>::type)>()) {}
+    template <typename T> explicit IsMember(T set) : IsMember(std::move(set), nullptr) {}
 
     /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
     /// both sides of the comparison before computing the comparison.
     template <typename T, typename F> explicit IsMember(T set, F filter_function) {
+
         // Get the type of the contained item - requires a container have ::value_type
-        using item_t = typename element_value_type<T>::type;
-        using local_item_t = typename IsMemberType<item_t>::type;
+        // if the type does not have first_type and second_type, these are both value_type
+        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
+
+        using local_item_t = typename IsMemberType<item_t>::type; // This will convert bad types to good ones
+                                                                  // (const char * to std::string)
 
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
@@ -306,15 +312,19 @@ class IsMember : public Validator {
         // This is the type name for help, it will take the current version of the set contents
         tname_function = [set]() {
             std::stringstream out;
-            out << detail::type_name<item_t>() << " in {" << detail::join(detail::smart_deref(set), ",") << "}";
+            out << "{";
+            int i = 0; // I don't like counters like this
+            for(const auto &v : detail::smart_deref(set))
+                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
+            out << "}";
             return out.str();
         };
 
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func = [set, filter_fn](std::string &input) {
-            for(const item_t &v : detail::smart_deref(set)) {
-                local_item_t a = v;
+            for(const auto &v : detail::smart_deref(set)) {
+                local_item_t a = detail::pair_adaptor<element_t>::first(v);
                 local_item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ValidationError(input); // name is added later
@@ -328,9 +338,10 @@ class IsMember : public Validator {
                 if(a == b) {
                     // Make sure the version in the input string is identical to the one in the set
                     // Requires std::stringstream << be supported on T.
-                    if(filter_fn) {
+                    // If this is a map, output the map instead.
+                    if(filter_fn || detail::pair_adaptor<element_t>::value) {
                         std::stringstream out;
-                        out << v;
+                        out << detail::pair_adaptor<element_t>::second(v);
                         input = out.str();
                     }
 
@@ -340,11 +351,17 @@ class IsMember : public Validator {
             }
 
             // If you reach this point, the result was not found
-            return input + " not in {" + detail::join(detail::smart_deref(set), ",") + "}";
+            std::stringstream out;
+            out << input << " not in {";
+            int i = 0; // I still don't like counters like this
+            for(const auto &v : detail::smart_deref(set))
+                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
+            out << "}";
+            return out.str();
         };
     }
 
-    /// You can pass in as many filter functions as you like, they nest
+    /// You can pass in as many filter functions as you like, they nest (string only currently)
     template <typename T, typename... Args>
     IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
         : IsMember(std::move(set),
