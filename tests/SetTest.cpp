@@ -337,6 +337,20 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
+TEST_F(TApp, NotInSetIgnoreCasePointer) {
+
+    std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
+    std::string choice;
+    app.add_option("-q,--quick", choice)->check(!CLI::IsMember(*options, CLI::ignore_case));
+
+    args = {"--quick", "One"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"--quick", "four"};
+    run();
+    EXPECT_EQ(choice, "four");
+}
+
 TEST_F(TApp, InSetIgnoreUnderscore) {
 
     std::string choice;

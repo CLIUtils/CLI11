@@ -291,7 +291,7 @@ class App {
         return this;
     }
 
-    /// specify that the positional arguments are only at the end of the sequence
+    /// Specify that the positional arguments are only at the end of the sequence
     App *positionals_at_end(bool value = true) {
         positionals_at_end_ = value;
         return this;

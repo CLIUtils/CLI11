@@ -1317,6 +1317,24 @@ TEST_F(TApp, FileExists) {
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
+TEST_F(TApp, NotFileExists) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(!CLI::ExistingFile);
+    args = {"--file", myfile};
+
+    EXPECT_NO_THROW(run());
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+}
+
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
