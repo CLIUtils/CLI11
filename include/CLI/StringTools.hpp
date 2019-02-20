@@ -13,6 +13,31 @@
 #include <vector>
 
 namespace CLI {
+
+/// Include the items in this namespace to get free conversion of enums to/from streams.
+/// (This is available inside CLI as well, so CLI11 will use this without a using statement).
+namespace enums {
+
+/// output streaming for enumerations
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value>::type>
+std::ostream &operator<<(std::ostream &in, const T &item) {
+    // make sure this is out of the detail namespace otherwise it won't be found when needed
+    return in << static_cast<typename std::underlying_type<T>::type>(item);
+}
+
+/// input streaming for enumerations
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value>::type>
+std::istream &operator>>(std::istream &in, T &item) {
+    typename std::underlying_type<T>::type i;
+    in >> i;
+    item = static_cast<T>(i);
+    return in;
+}
+} // namespace enums
+
+/// Export to CLI namespace
+using namespace enums;
+
 namespace detail {
 
 // Based on http://stackoverflow.com/questions/236129/split-a-string-in-c

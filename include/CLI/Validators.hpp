@@ -72,7 +72,7 @@ class Validator {
             std::string s1 = f1(input);
             std::string s2 = f2(input);
             if(!s1.empty() && !s2.empty())
-                return s1 + " & " + s2;
+                return s1 + " AND " + s2;
             else
                 return s1 + s2;
         };
@@ -96,7 +96,7 @@ class Validator {
             if(s1.empty() || s2.empty())
                 return std::string();
             else
-                return s1 + " | " + s2;
+                return s1 + " OR " + s2;
         };
         return newval;
     }

@@ -237,6 +237,27 @@ TEST(THelp, ManualSetters) {
     EXPECT_THAT(help, HasSubstr("=14"));
 }
 
+TEST(THelp, ManualSetterOverFunction) {
+
+    CLI::App app{"My prog"};
+
+    int x = 1;
+
+    CLI::Option *op1 = app.add_option("--op1", x)->check(CLI::IsMember({1, 2}));
+    CLI::Option *op2 = app.add_option("--op2", x)->transform(CLI::IsMember({1, 2}));
+    op1->default_str("12");
+    op1->type_name("BIGGLES");
+    op2->type_name("QUIGGLES");
+    EXPECT_EQ(x, 1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("=12"));
+    EXPECT_THAT(help, HasSubstr("BIGGLES"));
+    EXPECT_THAT(help, HasSubstr("QUIGGLES"));
+    EXPECT_THAT(help, Not(HasSubstr("1,2")));
+}
+
 TEST(THelp, Subcom) {
     CLI::App app{"My prog"};
 
@@ -782,6 +803,19 @@ TEST(THelp, CombinedValidatorsPathyText) {
 
     std::string filename;
     app.add_option("--f1", filename)->check(CLI::ExistingPath | CLI::NonexistentPath);
+
+    // Combining validators with the same type string is OK
+    std::string help = app.help();
+    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("PATH"));
+}
+
+// Don't do this in real life, please (and transform does nothing here)
+TEST(THelp, CombinedValidatorsPathyTextAsTransform) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f1", filename)->transform(CLI::ExistingPath | CLI::NonexistentPath);
 
     // Combining validators with the same type string is OK
     std::string help = app.help();

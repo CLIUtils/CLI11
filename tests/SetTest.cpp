@@ -26,14 +26,39 @@ TEST_F(TApp, SimpleMaps) {
     EXPECT_EQ(value, 1);
 }
 
-enum SimpleEnum { SE_one = 1, SE_two = 2 };
+TEST_F(TApp, StringStringMap) {
+    std::string value;
+    std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
+    app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    args = {"-s", "a"};
+    run();
+    EXPECT_EQ(value, "b");
 
-std::istream &operator>>(std::istream &in, SimpleEnum &e) {
-    int i;
-    in >> i;
-    e = static_cast<SimpleEnum>(i);
-    return in;
+    args = {"-s", "b"};
+    run();
+    EXPECT_EQ(value, "c");
+
+    args = {"-s", "c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
+
+TEST_F(TApp, StringStringMapNoModify) {
+    std::string value;
+    std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
+    app.add_option("-s,--set", value)->check(CLI::IsMember(map));
+    args = {"-s", "a"};
+    run();
+    EXPECT_EQ(value, "a");
+
+    args = {"-s", "b"};
+    run();
+    EXPECT_EQ(value, "b");
+
+    args = {"-s", "c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+enum SimpleEnum { SE_one = 1, SE_two = 2 };
 
 TEST_F(TApp, EnumMap) {
     SimpleEnum value;
@@ -48,15 +73,6 @@ TEST_F(TApp, EnumMap) {
 }
 
 enum class SimpleEnumC { one = 1, two = 2 };
-
-std::istream &operator>>(std::istream &in, SimpleEnumC &e) {
-    int i;
-    in >> i;
-    e = static_cast<SimpleEnumC>(i);
-    return in;
-}
-
-std::ostream &operator<<(std::ostream &in, const SimpleEnumC &e) { return in << static_cast<int>(e); }
 
 TEST_F(TApp, EnumCMap) {
     SimpleEnumC value;

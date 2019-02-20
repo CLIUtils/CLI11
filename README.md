@@ -261,6 +261,7 @@ Before parsing, you can set the following options:
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(CLI::IsMember(...))`: Require an option be a member of a given set. See below for options.
+-   `->transform(CLI::IsMember(...))`: Require an option be a member of a given set or map. Can change the parse. See below for options.
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 -   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
@@ -283,7 +284,9 @@ of `IsMember`:
 -   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
 -   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
 -   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
+-   `CLI::IsMember(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the key.
 -   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
+-   Note that you can combine validators with `|`, and only the matched validation will modify the output in transform. The first `IsMember` is the only one that will print in help, though the error message will include all Validators.
 
 On the command line, options can be given as:
 
