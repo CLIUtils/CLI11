@@ -46,7 +46,7 @@ inline std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     // Check to see if empty string, give consistent result
     if(s.empty())
-        elems.emplace_back("");
+        elems.emplace_back();
     else {
         std::stringstream ss;
         ss.str(s);
@@ -66,6 +66,21 @@ template <typename T> std::string join(const T &v, std::string delim = ",") {
         if(start++ > 0)
             s << delim;
         s << i;
+    }
+    return s.str();
+}
+
+/// Simple function to join a string from processed elements
+template <typename T,
+          typename Callable,
+          typename = typename std::enable_if<!std::is_constructible<std::string, Callable>::value>::type>
+std::string join(const T &v, Callable func, std::string delim = ",") {
+    std::ostringstream s;
+    size_t start = 0;
+    for(const auto &i : v) {
+        if(start++ > 0)
+            s << delim;
+        s << func(i);
     }
     return s.str();
 }

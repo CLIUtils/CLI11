@@ -527,6 +527,10 @@ TEST(Types, TypeName) {
 
     std::string text2_name = CLI::detail::type_name<char *>();
     EXPECT_EQ("TEXT", text2_name);
+
+    enum class test { test1, test2, test3 };
+    std::string enum_name = CLI::detail::type_name<test>();
+    EXPECT_EQ("ENUM", enum_name);
 }
 
 TEST(Types, OverflowSmall) {
@@ -615,6 +619,25 @@ TEST(Types, LexicalCastParsable) {
 
     EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
+}
+
+TEST(Types, LexicalCastEnum) {
+    enum t1 : char { v1 = 5, v3 = 7, v5 = -9 };
+
+    t1 output;
+    EXPECT_TRUE(CLI::detail::lexical_cast("-9", output));
+    EXPECT_EQ(output, v5);
+
+    EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output));
+    enum class t2 : uint64_t { enum1 = 65, enum2 = 45667, enum3 = 9999999999999 };
+    t2 output2;
+    EXPECT_TRUE(CLI::detail::lexical_cast("65", output2));
+    EXPECT_EQ(output2, t2::enum1);
+
+    EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output2));
+
+    EXPECT_TRUE(CLI::detail::lexical_cast("9999999999999", output2));
+    EXPECT_EQ(output2, t2::enum3);
 }
 
 TEST(FixNewLines, BasicCheck) {

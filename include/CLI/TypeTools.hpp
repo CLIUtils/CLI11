@@ -3,6 +3,7 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
+#include "StringTools.hpp"
 #include <exception>
 #include <memory>
 #include <string>
@@ -140,9 +141,16 @@ template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail
 constexpr const char *type_name() {
     return "VECTOR";
 }
+/// Print name for enumeration types
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "ENUM";
+}
 
+/// Print for all other types
 template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value &&
+                          !std::is_enum<T>::value,
                       detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
@@ -229,10 +237,22 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
+/// enumerations
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+bool lexical_cast(std::string input, T &output) {
+    typename std::underlying_type<T>::type val;
+    bool retval = detail::lexical_cast(input, val);
+    if(!retval) {
+        return false;
+    }
+    output = static_cast<T>(val);
+    return true;
+}
+
 /// Non-string parsable
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value,
+                          !std::is_assignable<T &, std::string>::value && !std::is_enum<T>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     std::istringstream is;
