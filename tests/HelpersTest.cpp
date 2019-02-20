@@ -530,7 +530,7 @@ TEST(Types, TypeName) {
 
     enum class test { test1, test2, test3 };
     std::string enum_name = CLI::detail::type_name<test>();
-    EXPECT_EQ("ENUM", text2_name);
+    EXPECT_EQ("ENUM", enum_name);
 }
 
 TEST(Types, OverflowSmall) {
