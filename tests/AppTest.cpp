@@ -1847,6 +1847,21 @@ TEST_F(TApp, CustomUserSepParse2) {
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }
 
+TEST_F(TApp, CustomUserSepParseFunction) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx", "1,2,3"};
+    auto opt = app.add_option_function<std::vector<int>>("--idx",
+                                                         [&vals](std::vector<int> v) {
+                                                             vals = std::move(v);
+                                                             return true;
+                                                         },
+                                                         "",
+                                                         ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
 // #209
 TEST_F(TApp, CustomUserSepParse3) {
 
