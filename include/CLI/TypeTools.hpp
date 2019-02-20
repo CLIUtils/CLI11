@@ -84,28 +84,32 @@ template <typename T> struct element_type {
 template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
 
 /// Adaptor for map-like structure: This just wraps a normal container in a few utilities that do almost nothing.
-template <typename T, typename _ = void> struct key_map_adaptor : std::false_type {
-    using mapped_type = typename T::value_type;
-    using key_type = typename T::value_type;
+template <typename T, typename _ = void> struct pair_adaptor : std::false_type {
+    using value_type = typename T::value_type;
+    using first_type = typename std::remove_const<value_type>::type;
+    using second_type = typename std::remove_const<value_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static key_type first(Q &&value) { return value; }
+    template <typename Q> static first_type first(Q &&value) { return value; }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static mapped_type second(Q &&value) { return value; }
+    template <typename Q> static second_type second(Q &&value) { return value; }
 };
 
 /// Adaptor for map-like structure (true version, must have key_type and mapped_type).
 /// This wraps a mapped container in a few utilities access it in a general way.
 template <typename T>
-struct key_map_adaptor<T, conditional_t<false, void_t<typename T::key_type, typename T::mapped_type>, void>>
+struct pair_adaptor<
+    T,
+    conditional_t<false, void_t<typename T::value_type::first_type, typename T::value_type::second_type>, void>>
     : std::true_type {
-    using mapped_type = typename T::mapped_type;
-    using key_type = typename T::key_type;
+    using value_type = typename T::value_type;
+    using first_type = typename std::remove_const<typename value_type::first_type>::type;
+    using second_type = typename std::remove_const<typename value_type::second_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static key_type first(Q &&value) { return value.first; }
+    template <typename Q> static first_type first(Q &&value) { return value.first; }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static mapped_type second(Q &&value) { return value.second; }
+    template <typename Q> static second_type second(Q &&value) { return value.second; }
 };
 
 // Type name print

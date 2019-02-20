@@ -10,12 +10,13 @@ static_assert(CLI::is_copyable_ptr<std::shared_ptr<int>>::value == true,
 static_assert(CLI::is_copyable_ptr<int *>::value == true, "is_copyable_ptr should work on pointers");
 static_assert(CLI::is_copyable_ptr<int>::value == false, "is_copyable_ptr should work on non-pointers");
 
-static_assert(CLI::detail::key_map_adaptor<std::set<int>>::value == false, "Should not have keys");
-static_assert(CLI::detail::key_map_adaptor<std::map<int, int>>::value == true, "Should have keys");
+static_assert(CLI::detail::pair_adaptor<std::set<int>>::value == false, "Should not have pairs");
+static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
+static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
 TEST_F(TApp, SimpleMaps) {
     int value;
-    std::map<int, std::string> map = {{1, "one"}, {2, "two"}};
+    std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
     args = {"-s", "one"};
     run();
@@ -36,7 +37,7 @@ std::istream &operator>>(std::istream &in, SimpleEnum &e) {
 
 TEST_F(TApp, EnumMap) {
     SimpleEnum value;
-    std::map<SimpleEnum, std::string> map = {{SE_one, "one"}, {SE_two, "two"}};
+    std::map<std::string, SimpleEnum> map = {{"one", SE_one}, {"two", SE_two}};
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
     args = {"-s", "one"};
     run();
@@ -59,7 +60,7 @@ std::ostream &operator<<(std::ostream &in, const SimpleEnumC &e) { return in << 
 
 TEST_F(TApp, EnumCMap) {
     SimpleEnumC value;
-    std::map<SimpleEnumC, std::string> map = {{SimpleEnumC::one, "one"}, {SimpleEnumC::two, "two"}};
+    std::map<std::string, SimpleEnumC> map = {{"one", SimpleEnumC::one}, {"two", SimpleEnumC::two}};
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember(map));
     args = {"-s", "one"};
     run();

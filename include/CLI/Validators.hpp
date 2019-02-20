@@ -299,9 +299,9 @@ class IsMember : public Validator {
     template <typename T, typename F> explicit IsMember(T set, F filter_function) {
 
         // Get the type of the contained item - requires a container have ::value_type
-        // if the type does not have mapped_type an key_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;                // Removes (smart) pointers if needed
-        using item_t = typename detail::key_map_adaptor<element_t>::mapped_type; // Is value_type if not a map
+        // if the type does not have first_type and second_type, these are both value_type
+        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
 
         using local_item_t = typename IsMemberType<item_t>::type; // This will convert bad types to good ones
                                                                   // (const char * to std::string)
@@ -315,7 +315,7 @@ class IsMember : public Validator {
             out << "{";
             int i = 0; // I don't like counters like this
             for(const auto &v : detail::smart_deref(set))
-                out << (i++ == 0 ? "" : ",") << detail::key_map_adaptor<element_t>::second(v);
+                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
             out << "}";
             return out.str();
         };
@@ -324,7 +324,7 @@ class IsMember : public Validator {
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func = [set, filter_fn](std::string &input) {
             for(const auto &v : detail::smart_deref(set)) {
-                local_item_t a = detail::key_map_adaptor<element_t>::second(v);
+                local_item_t a = detail::pair_adaptor<element_t>::first(v);
                 local_item_t b;
                 if(!detail::lexical_cast(input, b))
                     throw ValidationError(input); // name is added later
@@ -338,10 +338,10 @@ class IsMember : public Validator {
                 if(a == b) {
                     // Make sure the version in the input string is identical to the one in the set
                     // Requires std::stringstream << be supported on T.
-                    // If this is a map, ouptut the map instead.
-                    if(filter_fn || detail::key_map_adaptor<element_t>::value) {
+                    // If this is a map, output the map instead.
+                    if(filter_fn || detail::pair_adaptor<element_t>::value) {
                         std::stringstream out;
-                        out << detail::key_map_adaptor<element_t>::first(v);
+                        out << detail::pair_adaptor<element_t>::second(v);
                         input = out.str();
                     }
 
@@ -355,7 +355,7 @@ class IsMember : public Validator {
             out << input << " not in {";
             int i = 0; // I still don't like counters like this
             for(const auto &v : detail::smart_deref(set))
-                out << (i++ == 0 ? "" : ",") << detail::key_map_adaptor<element_t>::second(v);
+                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
             out << "}";
             return out.str();
         };

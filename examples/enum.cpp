@@ -16,7 +16,7 @@ std::ostream &operator<<(std::ostream &in, const Level &level) { return in << st
 int main(int argc, char **argv) {
     CLI::App app;
 
-    std::map<Level, std::string> map = {{Level::High, "High"}, {Level::Medium, "Medium"}, {Level::Low, "Low"}};
+    std::map<std::string, Level> map = {{"High", Level::High}, {"Medium", Level::Medium}, {"Low", Level::Low}};
 
     Level level;
 
