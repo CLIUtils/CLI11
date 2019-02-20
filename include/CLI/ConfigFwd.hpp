@@ -27,10 +27,10 @@ inline std::string ini_join(std::vector<std::string> args) {
         auto it = std::find_if(arg.begin(), arg.end(), [](char ch) { return std::isspace<char>(ch, std::locale()); });
         if(it == arg.end())
             s << arg;
-        else if(arg.find(R"(")") == std::string::npos)
-            s << R"(")" << arg << R"(")";
+        else if(arg.find_first_of('\"') == std::string::npos)
+            s << '\"' << arg << '\"';
         else
-            s << R"(')" << arg << R"(')";
+            s << '\'' << arg << '\'';
     }
 
     return s.str();

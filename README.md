@@ -178,12 +178,12 @@ While all options internally are the same type, there are several ways to add an
 
 ```cpp
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, or string-like
+               variable_to_bind_to, // bool, int, float, vector, enum, or string-like
                help_string="",
                default=false)
 
 app.add_option_function<type>(option_name,
-               function <void(const type &value)>, // int, float, vector, or string-like
+               function <void(const type &value)>, // int, float, enum, vector, or string-like
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
