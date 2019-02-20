@@ -100,6 +100,29 @@ class Validator {
         };
         return newval;
     }
+
+    /// Create a validator that fails when a given validator succeeds
+    Validator operator!() const {
+        Validator newval;
+        std::string typestring = tname;
+        if(tname.empty()) {
+            typestring = tname_function();
+        }
+        newval.tname = "NOT " + typestring;
+
+        std::string failString = "check " + typestring + " succeeded improperly";
+        // Give references (will make a copy in lambda function)
+        const std::function<std::string(std::string & res)> &f1 = func;
+
+        newval.func = [f1, failString](std::string &test) -> std::string {
+            std::string s1 = f1(test);
+            if(s1.empty())
+                return failString;
+            else
+                return std::string();
+        };
+        return newval;
+    }
 };
 
 // The implementation of the built in validators is using the Validator class;
