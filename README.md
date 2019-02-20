@@ -177,13 +177,15 @@ The initialization is just one line, adding options is just two each. The parse 
 While all options internally are the same type, there are several ways to add an option depending on what you need. The supported values are:
 
 ```cpp
+app.add_option(option_name, help_str="")
+
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, enum, or string-like
+               variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string
                help_string="",
                default=false)
 
 app.add_option_function<type>(option_name,
-               function <void(const type &value)>, // int, float, enum, vector, or string-like
+               function <void(const type &value)>, // int, bool, float, enum, vector, or string-like, or anything with a defined conversion from a string
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
@@ -192,17 +194,19 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             int_or_bool,
+             variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string
              help_string="")
 
 app.add_flag_function(option_name,
-             function <void(int count)>,
+             function <void(int64_t count)>,
              help_string="")
+
+app.add_flag_callback(option_name,function<void(void)>,help_string="")
 
 App* subcom = app.add_subcommand(name, description);
 ```
 
-An option name must start with a alphabetic character or underscore. For long options, anything but an equals sign or a comma is valid after that. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
+An option name must start with a alphabetic character, underscore, or a number. For long options, anything but an equals sign or a comma is valid after that, though for the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
 
@@ -210,27 +214,37 @@ Flag options specified through the functions
 
 ```cpp
 app.add_flag(option_name,
-             int_or_bool,
+             help_string="")
+
+app.add_flag(option_name,
+             variable_to_bind_to,
              help_string="")
 
 app.add_flag_function(option_name,
-             function <void(int count)>,
+             function <void(int64_t count)>,
              help_string="")
+
+app.add_flag_callback(option_name,function<void(void)>,help_string="")
 ```
 
-which allow a syntax for the option names to default particular options to a false value if some flags are passed.  For example:
+which allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
 
 ```cpp
 app.add_flag("--flag,!--no-flag,result,"help for flag");`
 ``````
 
 specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
-passed result will contain false or -1 if result is a signed integer type, or 0 if it is an unsigned type.  An
+passed `result` will contain false or -1 if `result` is a signed integer type, or 0 if it is an unsigned type.  An
 alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; this is equivalent to the previous
-example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `int_or_bool` is a boolean value the
-default behavior is to take the last value given, while if `int_or_bool` is an integer type the behavior will be to sum
-all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on
-each flag (this is not inherited).
+example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `variable_to_bind_to` is anything but an integer value the
+default behavior is to take the last value given, while if `variable_to_bind_to` is an integer type the behavior will be to sum
+all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
+The default value can be any value For example if you wished to define a numerical flag
+```cpp
+app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag")
+```
+using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.  
+
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
@@ -258,6 +272,7 @@ Before parsing, you can set the following options:
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
+-   `->disable_flag_override()`:  from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(CLI::IsMember(...))`: Require an option be a member of a given set. See below for options.
@@ -296,7 +311,7 @@ On the command line, options can be given as:
 -   `-ffilename` (no space required)
 -   `-abcf filename` (flags and option can be combined)
 -   `--long` (long flag)
--   `--long_flag=true` (long flag with equals)
+-   `--long_flag=true` (long flag with equals to override default value)
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
@@ -306,9 +321,10 @@ If `allow_windows_style_options()` is specified in the application or subcommand
 -   `/long` (long flag)
 -   `/file filename` (space)
 -   `/file:filename` (colon)
+-   `/long_flag:false (long flag with : to override the default value)
 =  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
 
-Long flag options may be given with and `=<value>` to allow specifying a false value See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default (true or false) values.
+Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
 If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
@@ -317,10 +333,18 @@ You can access a vector of pointers to the parsed options in the original order 
 If `--` is present in the command line that does not end an unlimited option, then
 everything after that is positional only.
 
+#### Getting results
+In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
+
+- `results()`: retrieves a vector of strings with all the results in the order they were given.
+- `results(variable_to_bind_to)`: gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+- `results(vector_type_variable,delimiter)`: gets the results to a vector type and uses a delimiter to further split the values
+- `Value=as<type>()`: returns the result or default value directly as the specified type if possible.
+- `Vector_value=as<type>(delimiter): same the results function with the delimiter but returns the value directly.  
+
 ### Subcommands
 
-Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. `->ignore_underscore()` is similar, but for underscores. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including ignore
-case).
+Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. `->ignore_underscore()` is similar, but for underscores. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including `ignore_case` and `ignore_underscore`).
 
 If you want to require that at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well. If you give two arguments, that sets the min and max number allowed.
 0 for the max number allowed will allow an unlimited number of subcommands. As a handy shortcut, a single negative value N will set "up to N" values. Limiting the maximum number allows you to keep arguments that match a previous
@@ -335,7 +359,7 @@ You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).
 
 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
-Nameless subcommands function a little like groups in the main `App`.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
+Nameless subcommands function a similarly to groups in the main `App`.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
 
 #### Subcommand options
 
@@ -353,7 +377,8 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands given on the command line.
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.
--   `.get_option(name)`: Get an option pointer by option name
+-   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
+-   `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
 -   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 -   `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
 -   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
@@ -370,6 +395,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
+- `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
@@ -408,7 +434,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_underscore`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `disable_flag_override`,`multi_option_policy`, `ignore_underscore`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();
