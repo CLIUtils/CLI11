@@ -856,11 +856,21 @@ TEST_F(ManySubcommands, MaxCommands) {
 TEST_F(TApp, UnnamedSub) {
     double val;
     auto sub = app.add_subcommand("", "empty name");
-    sub->add_option("-v,--value", val);
+    auto opt = sub->add_option("-v,--value", val);
     args = {"-v", "4.56"};
 
     run();
     EXPECT_EQ(val, 4.56);
+    // make sure unnamed sub options can be found from the main app
+    auto opt2 = app.get_option("-v");
+    EXPECT_EQ(opt, opt2);
+
+    EXPECT_THROW(app.get_option("--vvvv"), CLI::OptionNotFound);
+    // now test in the constant context
+    const auto &appC = app;
+    auto opt3 = appC.get_option("-v");
+    EXPECT_EQ(opt3->get_name(), "--value");
+    EXPECT_THROW(appC.get_option("--vvvv"), CLI::OptionNotFound);
 }
 
 TEST_F(TApp, UnnamedSubMix) {

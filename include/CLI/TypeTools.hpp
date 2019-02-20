@@ -158,10 +158,62 @@ constexpr const char *type_name() {
 
 // Lexical cast
 
-/// Signed integers / enums
-template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value, detail::enabler> =
-              detail::dummy>
+/// convert a flag into an integer value  typically binary flags
+inline int64_t to_flag_value(std::string val) {
+    static const std::string trueString("true");
+    static const std::string falseString("false");
+    if(val == trueString) {
+        return 1;
+    }
+    if(val == falseString) {
+        return -1;
+    }
+    val = detail::to_lower(val);
+    int64_t ret;
+    if(val.size() == 1) {
+        switch(val[0]) {
+        case '0':
+        case 'f':
+        case 'n':
+        case '-':
+            ret = -1;
+            break;
+        case '1':
+        case 't':
+        case 'y':
+        case '+':
+            ret = 1;
+            break;
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            ret = val[0] - '0';
+            break;
+        default:
+            throw std::invalid_argument("unrecognized character");
+        }
+        return ret;
+    }
+    if(val == trueString || val == "on" || val == "yes" || val == "enable") {
+        ret = 1;
+    } else if(val == falseString || val == "off" || val == "no" || val == "disable") {
+        ret = -1;
+    } else {
+        ret = std::stoll(val);
+    }
+    return ret;
+}
+
+/// Signed integers
+template <
+    typename T,
+    enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value && !std::is_enum<T>::value,
+                detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
         size_t n = 0;
@@ -200,13 +252,7 @@ template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::
 bool lexical_cast(std::string input, T &output) {
     try {
         auto out = to_flag_value(input);
-        if(out == "1") {
-            output = true;
-        } else if(out == "-1") {
-            output = false;
-        } else {
-            output = (std::stoll(out) > 0);
-        }
+        output = (out > 0);
         return true;
     } catch(const std::invalid_argument &) {
         return false;
@@ -270,10 +316,8 @@ template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     int64_t count{0};
-    static const auto trueString = std::string("1");
-    static const auto falseString = std::string("-1");
     for(auto &flag : flags) {
-        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+        count += detail::to_flag_value(flag);
     }
     output = (count > 0) ? static_cast<T>(count) : T{0};
 }
@@ -286,10 +330,8 @@ template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     int64_t count{0};
-    static const auto trueString = std::string("1");
-    static const auto falseString = std::string("-1");
     for(auto &flag : flags) {
-        count += (flag == trueString) ? 1 : ((flag == falseString) ? (-1) : std::stoll(flag));
+        count += detail::to_flag_value(flag);
     }
     output = static_cast<T>(count);
 }

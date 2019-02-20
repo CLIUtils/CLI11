@@ -402,9 +402,22 @@ class App {
         opt->type_name(detail::type_name<T>());
         return opt;
     }
+    /// Add option with no description or variable assignment
+    Option *add_option(std::string option_name) {
+        return add_option(option_name, CLI::callback_t(), std::string{}, false);
+    }
+
+    /// Add option with description but with no variable assignment or callback
+    template <typename T,
+              enable_if_t<std::is_const<T>::value && std::is_constructible<std::string, T>::value, detail::enabler> =
+                  detail::dummy>
+    Option *add_option(std::string option_name, T &option_description) {
+        return add_option(option_name, CLI::callback_t(), option_description, false);
+    }
 
     /// Add option for non-vectors with a default print
-    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
+    template <typename T,
+              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string option_description,
@@ -523,7 +536,8 @@ class App {
     }
 
     /// Set a help flag, replace the existing one if present
-    Option *set_help_flag(std::string flag_name = "", std::string help_description = "") {
+    Option *set_help_flag(std::string flag_name = "", const std::string &help_description = "") {
+        // take flag_description by const reference otherwise add_flag tries to assign to help_description
         if(help_ptr_ != nullptr) {
             remove_option(help_ptr_);
             help_ptr_ = nullptr;
@@ -531,7 +545,7 @@ class App {
 
         // Empty name will simply remove the help flag
         if(!flag_name.empty()) {
-            help_ptr_ = add_flag(flag_name, std::move(help_description));
+            help_ptr_ = add_flag(flag_name, help_description);
             help_ptr_->configurable(false);
         }
 
@@ -539,7 +553,8 @@ class App {
     }
 
     /// Set a help all flag, replaced the existing one if present
-    Option *set_help_all_flag(std::string help_name = "", std::string help_description = "") {
+    Option *set_help_all_flag(std::string help_name = "", const std::string &help_description = "") {
+        // take flag_description by const reference otherwise add_flag tries to assign to flag_description
         if(help_all_ptr_ != nullptr) {
             remove_option(help_all_ptr_);
             help_all_ptr_ = nullptr;
@@ -547,109 +562,149 @@ class App {
 
         // Empty name will simply remove the help all flag
         if(!help_name.empty()) {
-            help_all_ptr_ = add_flag(help_name, std::move(help_description));
+            help_all_ptr_ = add_flag(help_name, help_description);
             help_all_ptr_->configurable(false);
         }
 
         return help_all_ptr_;
     }
 
-    /// Add option for flag
-    Option *add_flag(std::string flag_name, std::string flag_description = "") {
-        CLI::callback_t fun = [](CLI::results_t) { return true; };
-        Option *opt = add_option(flag_name, fun, flag_description, false);
-        if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(flag_name);
+  private:
+    /// Internal function for adding a flag
+    Option *_add_flag_internal(std::string flag_name, CLI::callback_t fun, std::string flag_description) {
+        Option *opt;
+        if(detail::has_default_flag_values(flag_name)) {
+            // check for default values and if it has them
+            auto flag_defaults = detail::get_default_flag_values(flag_name);
+            detail::remove_default_flag_values(flag_name);
+            opt = add_option(std::move(flag_name), std::move(fun), std::move(flag_description), false);
+            for(const auto &fname : flag_defaults)
+                opt->fnames_.push_back(fname.first);
+            opt->default_flag_values_ = std::move(flag_defaults);
+        } else {
+            opt = add_option(std::move(flag_name), std::move(fun), std::move(flag_description), false);
+        }
+        // flags cannot have positional values
+        if(opt->get_positional()) {
+            auto pos_name = opt->get_name(true);
+            remove_option(opt);
+            throw IncorrectConstruction::PositionalFlag(pos_name);
+        }
+
         opt->type_size(0);
         return opt;
     }
 
-    /// Add option for flag integer
+  public:
+    /// Add a flag with no description or variable assignment
+    Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, CLI::callback_t(), std::string{}); }
+
+    /// Add flag with description but with no variable assignment or callback
+    /// takes a constant string,  if a variable string is passed that variable will be assigned the results from the
+    /// flag
+    template <typename T,
+              enable_if_t<std::is_const<T>::value && std::is_constructible<std::string, T>::value, detail::enabler> =
+                  detail::dummy>
+    Option *add_flag(std::string flag_name, T &flag_description) {
+        return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
+    }
+
+    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one if
+    /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T,
               enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
                      T &flag_count, ///< A variable holding the count
                      std::string flag_description = "") {
         flag_count = 0;
-        Option *opt;
         CLI::callback_t fun = [&flag_count](CLI::results_t res) {
-            detail::sum_flag_vector(res, flag_count);
+            try {
+                detail::sum_flag_vector(res, flag_count);
+            } catch(const std::invalid_argument &) {
+                return false;
+            }
             return true;
         };
-        if(detail::has_false_flags(flag_name)) {
-            std::vector<std::string> neg = detail::get_false_flags(flag_name);
-            detail::remove_false_flag_notation(flag_name);
-            opt = add_option(flag_name, fun, flag_description, false);
-            opt->fnames_ = std::move(neg);
-        } else {
-            opt = add_option(flag_name, fun, flag_description, false);
-        }
-
-        if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(flag_name);
-        opt->type_size(0);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
-    /// Bool version - defaults to allowing multiple passings, but can be forced to one if
-    /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
-    template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
+    /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes that
+    /// can be converted from a string
+    template <typename T,
+              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value &&
+                              (!std::is_integral<T>::value || is_bool<T>::value) &&
+                              !std::is_constructible<std::function<void(int)>, T>::value,
+                          detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
                      T &flag_result, ///< A variable holding true if passed
                      std::string flag_description = "") {
-        flag_result = false;
-        Option *opt;
-        CLI::callback_t fun = [&flag_result](CLI::results_t res) {
-            flag_result = (res[0][0] != '-');
-            return res.size() == 1;
-        };
-        if(detail::has_false_flags(flag_name)) {
-            std::vector<std::string> neg = detail::get_false_flags(flag_name);
-            detail::remove_false_flag_notation(flag_name);
-            opt = add_option(flag_name, fun, std::move(flag_description), false);
-            opt->fnames_ = std::move(neg);
-        } else {
-            opt = add_option(flag_name, fun, std::move(flag_description), false);
-        }
 
-        if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(flag_name);
-        opt->type_size(0);
+        CLI::callback_t fun = [&flag_result](CLI::results_t res) {
+            if(res.size() != 1) {
+                return false;
+            }
+            return CLI::detail::lexical_cast(res[0], flag_result);
+        };
+        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
         opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
         return opt;
     }
 
-    /// Add option for callback
-    Option *add_flag_function(std::string flag_name,
-                              std::function<void(int)> function, ///< A function to call, void(size_t)
+    /// Vector version to capture multiple flags.
+    template <typename T,
+              enable_if_t<!std::is_assignable<std::function<void(int64_t)>, T>::value, detail::enabler> = detail::dummy>
+    Option *add_flag(std::string flag_name,
+                     std::vector<T> &flag_results, ///< A vector of values with the flag results
+                     std::string flag_description = "") {
+        CLI::callback_t fun = [&flag_results](CLI::results_t res) {
+            bool retval = true;
+            for(const auto &elem : res) {
+                flag_results.emplace_back();
+                retval &= detail::lexical_cast(elem, flag_results.back());
+            }
+            return retval;
+        };
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+    }
+
+    /// Add option for callback that is triggered with a true flag and takes no arguments
+    Option *add_flag_callback(std::string flag_name,
+                              std::function<void(void)> function, ///< A function to call, void(void)
                               std::string flag_description = "") {
 
         CLI::callback_t fun = [function](CLI::results_t res) {
-            int flag_count = 0;
+            if(res.size() != 1) {
+                return false;
+            }
+            bool trigger;
+            auto result = CLI::detail::lexical_cast(res[0], trigger);
+            if(trigger)
+                function();
+            return result;
+        };
+        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+        return opt;
+    }
+
+    /// Add option for callback with an integer value
+    Option *add_flag_function(std::string flag_name,
+                              std::function<void(int64_t)> function, ///< A function to call, void(int)
+                              std::string flag_description = "") {
+
+        CLI::callback_t fun = [function](CLI::results_t res) {
+            int64_t flag_count = 0;
             detail::sum_flag_vector(res, flag_count);
             function(flag_count);
             return true;
         };
-        Option *opt;
-        if(detail::has_false_flags(flag_name)) {
-            std::vector<std::string> neg = detail::get_false_flags(flag_name);
-            detail::remove_false_flag_notation(flag_name);
-            opt = add_option(flag_name, fun, std::move(flag_description), false);
-            opt->fnames_ = std::move(neg);
-        } else {
-            opt = add_option(flag_name, fun, std::move(flag_description), false);
-        }
-
-        if(opt->get_positional())
-            throw IncorrectConstruction::PositionalFlag(flag_name);
-        opt->type_size(0);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
 #ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
     Option *add_flag(std::string flag_name,
-                     std::function<void(int)> function, ///< A function to call, void(int)
+                     std::function<void(int64_t)> function, ///< A function to call, void(int)
                      std::string flag_description = "") {
         return add_flag_function(std::move(flag_name), std::move(function), std::move(flag_description));
     }
@@ -1187,14 +1242,7 @@ class App {
     ///@{
 
     /// Counts the number of times the given option was passed.
-    size_t count(std::string option_name) const {
-        for(const Option_p &opt : options_) {
-            if(opt->check_name(option_name)) {
-                return opt->count();
-            }
-        }
-        throw OptionNotFound(option_name);
-    }
+    size_t count(std::string option_name) const { return get_option(option_name)->count(); }
 
     /// Get a subcommand pointer list to the currently selected subcommands (after parsing by by default, in command
     /// line order; use parsed = false to get the original definition list.)
@@ -1312,25 +1360,67 @@ class App {
         return options;
     }
 
-    /// Get an option by name
-    const Option *get_option(std::string option_name) const {
-        for(const Option_p &opt : options_) {
-            if(opt->check_name(option_name)) {
-                return opt.get();
-            }
-        }
-        throw OptionNotFound(option_name);
-    }
-
-    /// Get an option by name (non-const version)
-    Option *get_option(std::string option_name) {
+    /// Get an option by name (noexcept non-const version)
+    Option *get_option_no_throw(std::string option_name) noexcept {
         for(Option_p &opt : options_) {
             if(opt->check_name(option_name)) {
                 return opt.get();
             }
         }
-        throw OptionNotFound(option_name);
+        for(auto &subc : subcommands_) {
+            // also check down into nameless subcommands
+            if(subc->get_name().empty()) {
+                auto opt = subc->get_option_no_throw(option_name);
+                if(opt != nullptr) {
+                    return opt;
+                }
+            }
+        }
+        return nullptr;
     }
+
+    /// Get an option by name (noexcept const version)
+    const Option *get_option_no_throw(std::string option_name) const noexcept {
+        for(const Option_p &opt : options_) {
+            if(opt->check_name(option_name)) {
+                return opt.get();
+            }
+        }
+        for(const auto &subc : subcommands_) {
+            // also check down into nameless subcommands
+            if(subc->get_name().empty()) {
+                auto opt = subc->get_option_no_throw(option_name);
+                if(opt != nullptr) {
+                    return opt;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    /// Get an option by name
+    const Option *get_option(std::string option_name) const {
+        auto opt = get_option_no_throw(option_name);
+        if(opt == nullptr) {
+            throw OptionNotFound(option_name);
+        }
+        return opt;
+    }
+
+    /// Get an option by name (non-const version)
+    Option *get_option(std::string option_name) {
+        auto opt = get_option_no_throw(option_name);
+        if(opt == nullptr) {
+            throw OptionNotFound(option_name);
+        }
+        return opt;
+    }
+
+    /// Shortcut bracket operator for getting a pointer to an option
+    const Option *operator[](const std::string &option_name) const { return get_option(option_name); }
+
+    /// Shortcut bracket operator for getting a pointer to an option
+    const Option *operator[](const char *option_name) const { return get_option(option_name); }
 
     /// Check the status of ignore_case
     bool get_ignore_case() const { return ignore_case_; }
@@ -1351,7 +1441,7 @@ class App {
     const std::string &get_group() const { return group_; }
 
     /// Get footer.
-    std::string get_footer() const { return footer_; }
+    const std::string &get_footer() const { return footer_; }
 
     /// Get the required min subcommand value
     size_t get_require_subcommand_min() const { return require_subcommand_min_; }
@@ -1526,7 +1616,7 @@ class App {
             return detail::Classifier::LONG;
         if(detail::split_short(current, dummy1, dummy2))
             return detail::Classifier::SHORT;
-        if((allow_windows_style_options_) && (detail::split_windows(current, dummy1, dummy2)))
+        if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
             return detail::Classifier::WINDOWS;
         return detail::Classifier::NONE;
     }
@@ -1735,10 +1825,8 @@ class App {
             }
         }
 
-        Option *op;
-        try {
-            op = get_option("--" + item.name);
-        } catch(const OptionNotFound &) {
+        Option *op = get_option_no_throw("--" + item.name);
+        if(op == nullptr) {
             // If the option was not present
             if(get_allow_config_extras())
                 // Should we worry about classifying the extras properly?
@@ -1753,9 +1841,8 @@ class App {
             // Flag parsing
             if(op->get_type_size() == 0) {
                 auto res = config_formatter_->to_flag(item);
-                if(op->check_fname(item.name)) {
-                    res = (res == "1") ? "-1" : ((res[0] == '-') ? res.substr(1) : std::string("-" + res));
-                }
+                res = op->get_flag_value(item.name, res);
+
                 op->add_result(res);
 
             } else {
@@ -1894,7 +1981,7 @@ class App {
                 throw HorribleError("Short parsed but missing! You should not see this");
             break;
         case detail::Classifier::WINDOWS:
-            if(!detail::split_windows(current, arg_name, value))
+            if(!detail::split_windows_style(current, arg_name, value))
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
         default:
@@ -1946,16 +2033,9 @@ class App {
         int collected = 0;
         // deal with flag like things
         if(num == 0) {
-            try {
-                auto res = (value.empty()) ? std ::string("1") : detail::to_flag_value(value);
-                if(op->check_fname(arg_name)) {
-                    res = (res == "1") ? "-1" : ((res[0] == '-') ? res.substr(1) : std::string("-" + res));
-                }
-                op->add_result(res);
-                parse_order_.push_back(op.get());
-            } catch(const std::invalid_argument &) {
-                throw ConversionError::TrueFalse(arg_name);
-            }
+            auto res = op->get_flag_value(arg_name, value);
+            op->add_result(res);
+            parse_order_.push_back(op.get());
         }
         // --this=value
         else if(!value.empty()) {

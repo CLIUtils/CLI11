@@ -69,14 +69,10 @@ class Config {
     /// Convert a configuration into an app
     virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
 
-    /// Convert a flag to a bool representation
+    /// Get a flag value
     virtual std::string to_flag(const ConfigItem &item) const {
         if(item.inputs.size() == 1) {
-            try {
-                return detail::to_flag_value(item.inputs.at(0));
-            } catch(const std::invalid_argument &) {
-                throw ConversionError::TrueFalse(item.fullname());
-            }
+            return item.inputs.at(0);
         }
         throw ConversionError::TooManyInputsFlag(item.fullname());
     }
@@ -90,7 +86,7 @@ class Config {
         return from_config(input);
     }
 
-    /// virtual destructor
+    /// Virtual destructor
     virtual ~Config() = default;
 };
 

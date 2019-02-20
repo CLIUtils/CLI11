@@ -231,6 +231,9 @@ class ArgumentMismatch : public ParseError {
     static ArgumentMismatch TypedAtLeast(std::string name, int num, std::string type) {
         return ArgumentMismatch(name + ": " + std::to_string(num) + " required " + type + " missing");
     }
+    static ArgumentMismatch FlagOverride(std::string name) {
+        return ArgumentMismatch(name + " was given a disallowed flag override");
+    }
 };
 
 /// Thrown when a requires option is missing
