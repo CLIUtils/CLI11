@@ -1,22 +1,28 @@
 ## Version 1.8: Sets and Flags
 
-Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support basic number assignment. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
+Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support basic number assignment. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
 
-* New `CL::IsMember` validator replaces set validation [#222]
+* New `CLI::IsMember` validator replaces set validation [#222]
+* IsMember also supports container of pairs, transform allows modification of result [#228]
 * Much more powerful flags with different values [#211]
 * `add_option` now supports bool due to unified bool handling [#211]
 * Support for composable unnamed subcommands [#216]
 * Custom vector separator [#209], [#221]
 * Validators added for IP4 addresses and positive numbers [#210]
-* Minimum required Boost for optional Optionals has been corrected to 1.61
+* Minimum required Boost for optional Optionals has been corrected to 1.61 [#226]
+* Positionals can stop options from being parsed with `app.positionals_at_end()` [#223]
+* Validators can be negated with `!` [#230], and now handle tname functions [#228]
+* Better enum support and streaming helper [#233] and [#228]
+* Cleanup for shadow warnings [#232]
 
 > ### Converting from CLI11 1.7:
 >
 > * `app.add_set("--name", value, {"choice1", "choice2"})` should become `app.add_option("--name", value)->check(CLI::IsMember({"choice1", "choice2"}))`
-> * The `_mutable` versions of this can be replaced by passing a pointer or shared pointer into `IsMember`
 > * The `_ignore_case` version of this can be replaced by adding `CLI::ignore_case` to the argument list in `IsMember`
 > * The `_ignore_underscore` version of this can be replaced by adding `CLI::ignore_underscore` to the argument list in `IsMember`
 > * The `_ignore_case_underscore` version of this can be replaced by adding both functions listed above to the argument list in `IsMember`
+> * If you want an exact match to the original choice after one of the modifier functions matches, use `->transform` instead of `->check`
+> * The `_mutable` versions of this can be replaced by passing a pointer or shared pointer into `IsMember`
 > * An error with sets now produces a `ValidationError` instead of a `ConversionError`
 
 [#209]: https://github.com/CLIUtils/CLI11/pull/209
@@ -25,6 +31,12 @@ Set handling has been completely replaced by a new backend that works as a Valid
 [#216]: https://github.com/CLIUtils/CLI11/pull/216
 [#221]: https://github.com/CLIUtils/CLI11/pull/221
 [#222]: https://github.com/CLIUtils/CLI11/pull/222
+[#223]: https://github.com/CLIUtils/CLI11/pull/223
+[#226]: https://github.com/CLIUtils/CLI11/pull/226
+[#228]: https://github.com/CLIUtils/CLI11/pull/228
+[#230]: https://github.com/CLIUtils/CLI11/pull/230
+[#232]: https://github.com/CLIUtils/CLI11/pull/232
+[#233]: https://github.com/CLIUtils/CLI11/pull/233
 
 
 ## Version 1.7.1: Quick patch
