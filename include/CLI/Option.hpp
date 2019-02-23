@@ -339,10 +339,7 @@ class Option : public OptionBase<Option> {
             std::string ignore_changes_value = value;
             return func(ignore_changes_value);
         });
-        if(validator.tname_function)
-            type_name_fn(validator.tname_function);
-        else if(!validator.tname.empty())
-            type_name(validator.tname);
+        _type_name_update(validator);
         return this;
     }
 
@@ -354,17 +351,14 @@ class Option : public OptionBase<Option> {
 
     /// Adds a transforming validator with a built in type name
     Option *transform(const Validator &validator) {
-        validators_.emplace_back(validator.func);
-        if(validator.tname_function)
-            type_name_fn(validator.tname_function);
-        else if(!validator.tname.empty())
-            type_name(validator.tname);
+        validators_.insert(validators_.begin(), validator.func);
+        _type_name_update(validator);
         return this;
     }
 
     /// Adds a validator-like function that can change result
     Option *transform(std::function<std::string(std::string)> func) {
-        validators_.emplace_back([func](std::string &inout) {
+        validators_.insert(validators_.begin(), [func](std::string &inout) {
             try {
                 inout = func(inout);
             } catch(const ValidationError &e) {
@@ -877,9 +871,9 @@ class Option : public OptionBase<Option> {
         bool retval = true;
 
         for(const auto &elem : results_) {
-            output.emplace_back();
-            retval &= detail::lexical_cast(elem, output.back());
-        }
+                        output.emplace_back();
+                retval &= detail::lexical_cast(elem, output.back());
+            }
 
         if(!retval) {
             throw ConversionError(get_name(), results_);
@@ -961,6 +955,12 @@ class Option : public OptionBase<Option> {
             }
         }
         return result_count;
+    }
+    void _type_name_update(const Validator &validator) {
+        if(validator.tname_function)
+            type_name_fn(validator.tname_function);
+        else if(!validator.tname.empty())
+            type_name(validator.tname);
     }
 };
 

@@ -301,8 +301,84 @@ auto smart_deref(T value) -> decltype(*value) {
 template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy> T smart_deref(T value) {
     return value;
 }
+/// Generate a string representation of a set
+template <typename T> std::string generate_set(const T &set) {
+    using element_t = typename detail::element_type<T>::type;
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
+    std::string out(1, '{');
+    out.append(detail::join(detail::smart_deref(set),
+                            [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
+                            ","));
+    out.push_back('}');
+    return out;
+}
 
+/// Generate a string representation of a map
+template <typename T> std::string generate_map(const T &map) {
+    using element_t = typename detail::element_type<T>::type;
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
+    std::string out(1, '{');
+    out.append(detail::join(detail::smart_deref(map),
+                            [](const iteration_type_t &v) {
+                                return std::string("\"") +
+                                       detail::as_string(detail::pair_adaptor<element_t>::first(v)) + "\"->" +
+                                       detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                            },
+                            ","));
+    out.push_back('}');
+    return out;
+}
+
+template <typename> struct sfinae_true : std::true_type {};
+/// Function to check for the existence of a member find function
+template <typename T, typename V>
+static auto test_find(int) -> sfinae_true<decltype(std::declval<T>().find(std::declval<V>()))>;
+template <typename, typename V> static auto test_find(long) -> std::false_type;
 } // namespace detail
+
+template <typename T, typename V> struct has_find : decltype(detail::test_find<T, V>(0)) {};
+
+/// A search function
+template <typename T, typename V>
+std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
+search(const T &set, const V &val) {
+    using element_t = typename detail::element_type<T>::type;
+    for(const auto &v : set) {
+        V a = detail::pair_adaptor<element_t>::first(v);
+        if(a == val) {
+            // Return empty error string (success)
+            return {true, {a, detail::pair_adaptor<element_t>::second(v)}};
+        }
+    }
+    return {false, {}};
+}
+
+/// A search function that uses the built in find function
+template <typename T, typename V, enable_if_t<has_find<T, V>::value, detail::enabler> = detail::dummy>
+std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
+search(const T &set, const V &val) {}
+
+/// A search function with a filter function
+template <typename T, typename V, typename F>
+std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
+search(const T &set, const V &val, F &filter_function) {
+    // do the potentially faster first
+    auto res = search(set, val);
+    if((res.first) || (!(filter_function))) {
+        return res;
+    }
+    // now do a slower search with a translate for each search element
+    using element_t = typename detail::element_type<T>::type;
+    for(const auto &v : set) {
+        V a = detail::pair_adaptor<element_t>::first(v);
+        a = filter_function(a);
+        if(a == val) {
+            // Return empty error string (success)
+            return {true, {detail::pair_adaptor<element_t>::first(v), detail::pair_adaptor<element_t>::second(v)}};
+        }
+    }
+    return {false, {}};
+}
 
 /// Verify items are in a set
 class IsMember : public Validator {
@@ -333,39 +409,29 @@ class IsMember : public Validator {
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         // This is the type name for help, it will take the current version of the set contents
-        tname_function = [set]() {
-            std::stringstream out;
-            out << "{";
-            int i = 0; // I don't like counters like this
-            for(const auto &v : detail::smart_deref(set))
-                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
-            out << "}";
-            return out.str();
-        };
+        tname_function = [set]() { return detail::generate_set(detail::smart_deref(set)); };
 
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func = [set, filter_fn](std::string &input) {
+            local_item_t b;
+            if(!detail::lexical_cast(input, b)) {
+                throw ValidationError(input); // name is added later
+            }
+            if(filter_fn) {
+                b = filter_fn(b);
+            }
             for(const auto &v : detail::smart_deref(set)) {
                 local_item_t a = detail::pair_adaptor<element_t>::first(v);
-                local_item_t b;
-                if(!detail::lexical_cast(input, b))
-                    throw ValidationError(input); // name is added later
-
                 // The filter function might be empty, so don't filter if it is.
                 if(filter_fn) {
                     a = filter_fn(a);
-                    b = filter_fn(b);
                 }
 
                 if(a == b) {
                     // Make sure the version in the input string is identical to the one in the set
-                    // Requires std::stringstream << be supported on T.
-                    // If this is a map, output the map instead.
                     if(filter_fn || detail::pair_adaptor<element_t>::value) {
-                        std::stringstream out;
-                        out << detail::pair_adaptor<element_t>::second(v);
-                        input = out.str();
+                        input = detail::as_string(detail::pair_adaptor<element_t>::first(v));
                     }
 
                     // Return empty error string (success)
@@ -374,13 +440,9 @@ class IsMember : public Validator {
             }
 
             // If you reach this point, the result was not found
-            std::stringstream out;
-            out << input << " not in {";
-            int i = 0; // I still don't like counters like this
-            for(const auto &v : detail::smart_deref(set))
-                out << (i++ == 0 ? "" : ",") << detail::pair_adaptor<element_t>::first(v);
-            out << "}";
-            return out.str();
+            std::string out(" not in ");
+            out += detail::generate_set(detail::smart_deref(set));
+            return out;
         };
     }
 
@@ -392,17 +454,185 @@ class IsMember : public Validator {
                    other...) {}
 };
 
-/// Helper function to allow ignore_case to be passed to IsMember
+/// definition of the default transformation object
+template <typename T> using TransformPairs = std::vector<std::pair<std::string, T>>;
+
+/// Translate named items to other or a value set
+class Transformer : public Validator {
+  public:
+    using filter_fn_t = std::function<std::string(std::string)>;
+
+    /// This allows in-place construction
+    template <typename... Args>
+    explicit Transformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
+        : Transformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
+
+    /// direct map of std::string to std::string
+    template <typename T> explicit Transformer(T mapping) : Transformer(std::move(mapping), nullptr) {}
+
+    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
+    /// both sides of the comparison before computing the comparison.
+    template <typename T, typename F> explicit Transformer(T mapping, F filter_function) {
+
+        static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
+                      "mapping must produce value pairs");
+        // Get the type of the contained item - requires a container have ::value_type
+        // if the type does not have first_type and second_type, these are both value_type
+        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
+        using local_item_t = typename IsMemberType<item_t>::type;            // This will convert bad types to good ones
+                                                                             // (const char * to std::string)
+
+        // Make a local copy of the filter function, using a std::function if not one already
+        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
+
+        // This is the type name for help, it will take the current version of the set contents
+        tname_function = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
+
+        func = [mapping, filter_fn](std::string &input) {
+            local_item_t b;
+            if(!detail::lexical_cast(input, b)) {
+                return std::string();
+                // there is no possible way we can match anything in the mapping if we can't convert so just return
+            }
+            if(filter_fn) {
+                b = filter_fn(b);
+            }
+
+            for(const auto &v : detail::smart_deref(mapping)) {
+                local_item_t a = detail::pair_adaptor<element_t>::first(v);
+
+                // The filter function might be empty, so don't filter if it is.
+                if(filter_fn) {
+                    a = filter_fn(a);
+                }
+
+                if(a == b) {
+                    // transform the input string
+                    // Requires std::stringstream << be supported on T
+                    input = detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                    // Return empty error string (success)
+                    return std::string{};
+                }
+            }
+
+            return std::string{};
+        };
+    }
+
+    /// You can pass in as many filter functions as you like, they nest
+    template <typename T, typename... Args>
+    Transformer(T mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : Transformer(std::move(mapping),
+                      [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+                      other...) {}
+};
+
+/// translate named items to other or a value set
+class CheckedTransformer : public Validator {
+  public:
+    using filter_fn_t = std::function<std::string(std::string)>;
+
+    /// This allows in-place construction
+    template <typename... Args>
+    explicit CheckedTransformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
+        : CheckedTransformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
+
+    /// direct map of std::string to std::string
+    template <typename T> explicit CheckedTransformer(T mapping) : CheckedTransformer(std::move(mapping), nullptr) {}
+
+    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
+    /// both sides of the comparison before computing the comparison.
+    template <typename T, typename F> explicit CheckedTransformer(T mapping, F filter_function) {
+
+        static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
+                      "mapping must produce value pairs");
+        // Get the type of the contained item - requires a container have ::value_type
+        // if the type does not have first_type and second_type, these are both value_type
+        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
+        using local_item_t = typename IsMemberType<item_t>::type;            // This will convert bad types to good ones
+                                                                             // (const char * to std::string)
+        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair //
+                                                                                       // the type of the object pair
+
+        // Make a local copy of the filter function, using a std::function if not one already
+        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
+
+        auto tfunc = [mapping]() {
+            std::string out("value in ");
+            out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
+            out += detail::join(
+                detail::smart_deref(mapping),
+                [](const iteration_type_t &v) { return detail::as_string(detail::pair_adaptor<element_t>::second(v)); },
+                ",");
+            out.push_back('}');
+            return out;
+        };
+        // assign the tname_function
+        tname_function = tfunc;
+
+        func = [mapping, tfunc, filter_fn](std::string &input) {
+            local_item_t b;
+            bool converted = detail::lexical_cast(input, b);
+            if(converted) {
+                if(filter_fn) {
+                    b = filter_fn(b);
+                }
+
+                for(const auto &v : detail::smart_deref(mapping)) {
+                    local_item_t a = detail::pair_adaptor<element_t>::first(v);
+
+                    // The filter function might be empty, so don't filter if it is.
+                    if(filter_fn) {
+                        a = filter_fn(a);
+                    }
+
+                    if(a == b) {
+                        // transform the input string
+                        // Requires std::stringstream << be supported on T
+                        input = detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                        // Return empty error string (success)
+                        return std::string{};
+                    }
+                }
+            }
+            for(const auto &v : detail::smart_deref(mapping)) {
+                auto output_string = detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                if(output_string == input) {
+                    return std::string();
+                }
+            }
+
+            return "Check " + input + " " + tfunc() + " FAILED";
+        };
+    }
+
+    /// You can pass in as many filter functions as you like, they nest
+    template <typename T, typename... Args>
+    CheckedTransformer(T mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : CheckedTransformer(std::move(mapping),
+                             [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+                             other...) {}
+}; // namespace CLI
+
+/// Helper function to allow ignore_case to be passed to IsMember or Transform
 inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
 
-/// Helper function to allow ignore_underscore to be passed to IsMember
+/// Helper function to allow ignore_underscore to be passed to IsMember or Transform
 inline std::string ignore_underscore(std::string item) { return detail::remove_underscore(item); }
+
+/// Helper function to allow checks to ignore spaces to be passed to IsMember or Transform
+inline std::string ignore_space(std::string item) {
+    item.erase(std::remove(std::begin(item), std::end(item), ' '), std::end(item));
+    return item;
+}
 
 namespace detail {
 /// Split a string into a program name and command line arguments
 /// the string is assumed to contain a file name followed by other arguments
-/// the return value contains is a pair with the first argument containing the program name and the second everything
-/// else.
+/// the return value contains is a pair with the first argument containing the program name and the second
+/// everything else.
 inline std::pair<std::string, std::string> split_program_name(std::string commandline) {
     // try to determine the programName
     std::pair<std::string, std::string> vals;

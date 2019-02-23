@@ -27,6 +27,7 @@ set(CLI11_TESTS
     SimpleTest
     AppTest
     SetTest
+	TransformTest
     CreationTest
     SubcommandTest
     HelpTest

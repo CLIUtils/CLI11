@@ -71,7 +71,7 @@ template <> struct IsMemberType<const char *> { using type = std::string; };
 
 namespace detail {
 
-// These are utilites for IsMember
+// These are utilities for IsMember
 
 /// Handy helper to access the element_type generically. This is not part of is_copyable_ptr because it requires that
 /// pointer_traits<T> be valid.
@@ -91,9 +91,9 @@ template <typename T, typename _ = void> struct pair_adaptor : std::false_type {
     using second_type = typename std::remove_const<value_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static first_type first(Q &&value) { return value; }
+    template <typename Q> static first_type first(Q &&pair_value) { return pair_value; }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static second_type second(Q &&value) { return value; }
+    template <typename Q> static second_type second(Q &&pair_value) { return pair_value; }
 };
 
 /// Adaptor for map-like structure (true version, must have key_type and mapped_type).
@@ -108,9 +108,9 @@ struct pair_adaptor<
     using second_type = typename std::remove_const<typename value_type::second_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static first_type first(Q &&value) { return value.first; }
+    template <typename Q> static first_type first(Q &&pair_value) { return pair_value.first; }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static second_type second(Q &&value) { return value.second; }
+    template <typename Q> static second_type second(Q &&pair_value) { return pair_value.second; }
 };
 
 // Type name print
@@ -158,7 +158,7 @@ constexpr const char *type_name() {
 
 // Lexical cast
 
-/// convert a flag into an integer value  typically binary flags
+/// Convert a flag into an integer value  typically binary flags
 inline int64_t to_flag_value(std::string val) {
     static const std::string trueString("true");
     static const std::string falseString("false");
@@ -247,7 +247,7 @@ bool lexical_cast(std::string input, T &output) {
     }
 }
 
-/// boolean values
+/// Boolean values
 template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     try {
@@ -283,7 +283,7 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
-/// enumerations
+/// Enumerations
 template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
 bool lexical_cast(std::string input, T &output) {
     typename std::underlying_type<T>::type val;
@@ -308,7 +308,7 @@ bool lexical_cast(std::string input, T &output) {
     return !is.fail() && !is.rdbuf()->in_avail();
 }
 
-/// sum a vector of flag representations
+/// Sum a vector of flag representations
 /// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
 /// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
 /// common true and false strings then uses stoll to convert the rest for summing
@@ -322,7 +322,7 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     output = (count > 0) ? static_cast<T>(count) : T{0};
 }
 
-/// sum a vector of flag representations
+/// Sum a vector of flag representations
 /// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
 /// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
 /// common true and false strings then uses stoll to convert the rest for summing

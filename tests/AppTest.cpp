@@ -1861,7 +1861,7 @@ TEST_F(TApp, OrderedModifingTransforms) {
 
     run();
 
-    EXPECT_EQ(val, std::vector<std::string>({"one12", "two12"}));
+    EXPECT_EQ(val, std::vector<std::string>({"one21", "two21"}));
 }
 
 TEST_F(TApp, ThrowingTransform) {

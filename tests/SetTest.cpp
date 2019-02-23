@@ -11,13 +11,14 @@ static_assert(CLI::is_copyable_ptr<int *>::value == true, "is_copyable_ptr shoul
 static_assert(CLI::is_copyable_ptr<int>::value == false, "is_copyable_ptr should work on non-pointers");
 
 static_assert(CLI::detail::pair_adaptor<std::set<int>>::value == false, "Should not have pairs");
+static_assert(CLI::detail::pair_adaptor<std::vector<std::string>>::value == false, "Should not have pairs");
 static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
 static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
 TEST_F(TApp, SimpleMaps) {
     int value;
     std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     EXPECT_EQ(1u, app.count("-s"));
@@ -29,7 +30,7 @@ TEST_F(TApp, SimpleMaps) {
 TEST_F(TApp, StringStringMap) {
     std::string value;
     std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
-    app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    app.add_option("-s,--set", value)->transform(CLI::CheckedTransformer(map));
     args = {"-s", "a"};
     run();
     EXPECT_EQ(value, "b");
@@ -39,7 +40,7 @@ TEST_F(TApp, StringStringMap) {
     EXPECT_EQ(value, "c");
 
     args = {"-s", "c"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    EXPECT_EQ(value, "c");
 }
 
 TEST_F(TApp, StringStringMapNoModify) {
@@ -63,7 +64,7 @@ enum SimpleEnum { SE_one = 1, SE_two = 2 };
 TEST_F(TApp, EnumMap) {
     SimpleEnum value;
     std::map<std::string, SimpleEnum> map = {{"one", SE_one}, {"two", SE_two}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     EXPECT_EQ(1u, app.count("-s"));
@@ -77,13 +78,58 @@ enum class SimpleEnumC { one = 1, two = 2 };
 TEST_F(TApp, EnumCMap) {
     SimpleEnumC value;
     std::map<std::string, SimpleEnumC> map = {{"one", SimpleEnumC::one}, {"two", SimpleEnumC::two}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::IsMember(map));
+    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     EXPECT_EQ(1u, app.count("-s"));
     EXPECT_EQ(1u, app.count("--set"));
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, SimpleEnumC::one);
+}
+
+TEST_F(TApp, structMap) {
+    struct tstruct {
+        int val2;
+        double val3;
+        std::string v4;
+    };
+    std::string struct_name;
+    std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
+    auto opt = app.add_option("-s,--set", struct_name)->check(CLI::IsMember(map));
+    args = {"-s", "sone"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(struct_name, "sone");
+
+    args = {"-s", "sthree"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, structMapChange) {
+    struct tstruct {
+        int val2;
+        double val3;
+        std::string v4;
+    };
+    std::string struct_name;
+    std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
+    auto opt = app.add_option("-s,--set", struct_name)
+                   ->transform(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
+    args = {"-s", "s one"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(struct_name, "sone");
+
+    args = {"-s", "sthree"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-s", "S_t_w_o"};
+    run();
+    EXPECT_EQ(struct_name, "stwo");
 }
 
 TEST_F(TApp, SimpleSets) {

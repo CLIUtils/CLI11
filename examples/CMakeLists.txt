@@ -155,7 +155,7 @@ add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)
 set_property(TEST enum_fail PROPERTY PASS_REGULAR_EXPRESSION
-    "--level: 4 not in {High,Medium,Low} | 4 not in {0,1,2}")
+    "--level: Check 4 value in {" "FAILED")
 
 add_cli_exe(digit_args digit_args.cpp)
 add_test(NAME digit_args COMMAND digit_args -h)

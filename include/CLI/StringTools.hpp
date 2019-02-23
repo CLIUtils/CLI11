@@ -57,6 +57,17 @@ inline std::vector<std::string> split(const std::string &s, char delim) {
     }
     return elems;
 }
+/// simple utility to convert various types to a string
+template <typename T> std::string as_string(const T &v) {
+    std::ostringstream s;
+    s << v;
+    return s.str();
+}
+// if the data type is already a string just forward it
+template <typename T, typename = typename std::enable_if<std::is_constructible<std::string, T>::value>::type>
+auto as_string(T &&v) -> decltype(std::forward<T>(v)) {
+    return std::forward<T>(v);
+}
 
 /// Simple function to join a string
 template <typename T> std::string join(const T &v, std::string delim = ",") {
