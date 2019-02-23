@@ -135,6 +135,11 @@ inline std::string Formatter::make_help(const App *app, std::string name, AppFor
         return make_expanded(app);
 
     std::stringstream out;
+    if((app->get_name().empty()) && (app->get_parent() != nullptr)) {
+        if(app->get_group() != "Subcommands") {
+            out << app->get_group() << ':';
+        }
+    }
 
     out << make_description(app);
     out << make_usage(app, name);
@@ -194,7 +199,7 @@ inline std::string Formatter::make_subcommand(const App *sub) const {
 
 inline std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    out << sub->get_name() << "\n";
+    out << sub->get_display_name() << "\n";
 
     out << make_description(sub);
     out << make_positionals(sub);

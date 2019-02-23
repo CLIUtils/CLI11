@@ -94,6 +94,9 @@ add_test(NAME option_groups_extra2 COMMAND option_groups --csv --address "192.16
 set_property(TEST option_groups_extra2 PROPERTY PASS_REGULAR_EXPRESSION
     "at most 1")
 	
+	
+add_cli_exe(ranges ranges.cpp)
+
 add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
 set_property(TEST validators_help PROPERTY PASS_REGULAR_EXPRESSION

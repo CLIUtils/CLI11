@@ -133,6 +133,13 @@ class App {
     /// This is a list of the subcommands collected, in order
     std::vector<App *> parsed_subcommands_;
 
+    /// this is a list of subcommands that are exclusionary to this one
+    std::set<App *> exclude_subcommands_;
+
+    /// This is a list of options which are exclusionary to this App, if the options were used this subcommand should
+    /// not be
+    std::set<Option *> exclude_options_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -1061,6 +1068,19 @@ class App {
     /// otherwise modified in a callback
     size_t count() const { return parsed_; }
 
+    /// Get a count of all the arguments processed in options and subcommands, this excludes arguments which were
+    /// treated as extras.
+    size_t count_all() const {
+        size_t cnt{0};
+        for(auto &opt : options_) {
+            cnt += opt->count();
+        }
+        for(auto &sub : subcommands_) {
+            cnt += sub->count_all();
+        }
+        return cnt;
+    }
+
     /// Changes the group membership
     App *group(std::string group_name) {
         group_ = group_name;
@@ -1266,7 +1286,7 @@ class App {
     /// Counts the number of times the given option was passed.
     size_t count(std::string option_name) const { return get_option(option_name)->count(); }
 
-    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by by default, in command
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command
     /// line order; use parsed = false to get the original definition list.)
     std::vector<App *> get_subcommands() const { return parsed_subcommands_; }
 
@@ -1313,6 +1333,42 @@ class App {
 
     /// Check with name instead of pointer to see if subcommand was selected
     bool got_subcommand(std::string subcommand_name) const { return get_subcommand(subcommand_name)->parsed_ > 0; }
+
+    /// Sets excluded options for the subcommand
+    App *excludes(Option *opt) {
+        exclude_options_.insert(opt);
+        return this;
+    }
+
+    /// Sets excluded subcommands for the subcommand
+    App *excludes(App *app) {
+        exclude_subcommands_.insert(app);
+        // subcommand exclusion should be symmetric
+        app->excludes(this);
+        return this;
+    }
+
+    /// Removes an option from the excludes list of this subcommand
+    bool remove_excludes(Option *opt) {
+        auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
+        if(iterator != std::end(exclude_options_)) {
+            exclude_options_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /// Removes a subcommand from this excludes list of this subcommand
+    bool remove_excludes(App *app) {
+        auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
+        if(iterator != std::end(exclude_subcommands_)) {
+            exclude_subcommands_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     ///@}
     /// @name Help
@@ -1510,6 +1566,9 @@ class App {
     /// Get the name of the current app
     std::string get_name() const { return name_; }
 
+    /// Get a display name for an app
+    std::string get_display_name() const { return (!name_.empty()) ? name_ : "[Option Group: " + get_group() + "]"; }
+
     /// Check the name, case insensitive and underscore insensitive if set
     bool check_name(std::string name_to_check) const {
         std::string local_name = name_;
@@ -1586,18 +1645,25 @@ class App {
         });
         if(pcount > 1)
             throw InvalidError(name_);
+
+        size_t nameless_subs{0};
+        for(const App_p &app : subcommands_) {
+            app->_validate();
+            if(app->get_name().empty())
+                ++nameless_subs;
+        }
+
         if(require_option_min_ > 0) {
             if(require_option_max_ > 0) {
                 if(require_option_max_ < require_option_min_) {
-                    throw(InvalidError("Required min options> required max options", ExitCodes::InvalidError));
+                    throw(InvalidError("Required min options greater than required max options",
+                                       ExitCodes::InvalidError));
                 }
             }
-            if(require_option_min_ > options_.size()) {
-                throw(InvalidError("Required min options> number of available options", ExitCodes::InvalidError));
+            if(require_option_min_ > (options_.size() + nameless_subs)) {
+                throw(InvalidError("Required min options greater than number of available options",
+                                   ExitCodes::InvalidError));
             }
-        }
-        for(const App_p &app : subcommands_) {
-            app->_validate();
         }
     }
 
@@ -1754,6 +1820,32 @@ class App {
 
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements() {
+        // check excludes
+        bool excluded{false};
+        std::string excluder;
+        if(!exclude_options_.empty()) {
+            for(auto &opt : exclude_options_) {
+                if(opt->count() > 0) {
+                    excluded = true;
+                    excluder = opt->get_name();
+                }
+            }
+        }
+        if(!exclude_subcommands_.empty()) {
+            for(auto &subc : exclude_subcommands_) {
+                if(subc->count_all() > 0) {
+                    excluded = true;
+                    excluder = subc->get_display_name();
+                }
+            }
+        }
+        if(excluded) {
+            if(count_all() > 0) {
+                throw ExcludesError(get_display_name(), excluder);
+            }
+            // if we are excluded but didn't receive anything, just return
+            return;
+        }
         size_t used_options = 0;
         for(const Option_p &opt : options_) {
 
@@ -1780,14 +1872,6 @@ class App {
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
 
-        if(require_option_min_ > used_options) {
-            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
-            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
-        }
-        if((require_option_max_ > 0) && (require_option_max_ < used_options)) {
-            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
-            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
-        }
         auto selected_subcommands = get_subcommands();
         if(require_subcommand_min_ > selected_subcommands.size())
             throw RequiredError::Subcommand(require_subcommand_min_);
@@ -1795,8 +1879,25 @@ class App {
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
         for(App_p &sub : subcommands_) {
-            if((sub->count() > 0) || (sub->name_.empty()))
-                sub->_process_requirements();
+            if(sub->name_.empty()) {
+                if(sub->count_all() > 0) {
+                    ++used_options;
+                } else if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
+                    continue;
+                    // if we have met the requirement and there is nothing in this option group skip checking
+                    // requirements
+                }
+            }
+            sub->_process_requirements();
+        }
+
+        if(require_option_min_ > used_options) {
+            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
+            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
+        }
+        if((require_option_max_ > 0) && (require_option_max_ < used_options)) {
+            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
+            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
         }
     }
 
