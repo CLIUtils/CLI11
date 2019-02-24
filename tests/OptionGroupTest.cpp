@@ -18,6 +18,7 @@ TEST_F(TApp, BasicOptionGroup) {
     args = {"--test1", "5"};
     run();
     EXPECT_EQ(res, 5);
+    EXPECT_EQ(app.count_all(), 1);
 }
 
 TEST_F(TApp, BasicOptionGroupExact) {
@@ -96,6 +97,7 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
 
     args = {"--test1", "5", "--test2", "4"};
     EXPECT_NO_THROW(run());
+    EXPECT_EQ(app.count_all(), 2);
 
     args = {"--option", "9"};
     EXPECT_THROW(run(), CLI::RequiredError);
@@ -366,25 +368,88 @@ TEST_F(TApp, InvalidOptions) {
     EXPECT_THROW(ogroup->add_option(opt), CLI::OptionNotFound);
 }
 
-/*
-struct SubcommandProgram : public TApp {
+struct ManyGroups : public TApp {
 
-    CLI::App *start;
-    CLI::App *stop;
-
-    int dummy;
-    std::string file;
-    int count;
-
-    SubcommandProgram() {
-        app.set_help_all_flag("--help-all");
-
-        start = app.add_subcommand("start", "Start prog");
-        stop = app.add_subcommand("stop", "Stop prog");
-
-        app.add_flag("-d", dummy, "My dummy var");
-        start->add_option("-f,--file", file, "File name");
-        stop->add_flag("-c,--count", count, "Some flag opt");
+    CLI::Option_group *main;
+    CLI::Option_group *g1;
+    CLI::Option_group *g2;
+    CLI::Option_group *g3;
+    std::string name1;
+    std::string name2;
+    std::string name3;
+    std::string val1;
+    std::string val2;
+    std::string val3;
+    ManyGroups() {
+        main = app.add_option_group("main", "the main outer group");
+        g1 = main->add_option_group("g1", "group1 description");
+        g2 = main->add_option_group("g2", "group2 description");
+        g3 = main->add_option_group("g3", "group3 description");
+        g1->add_option("--name1", name1)->required();
+        g1->add_option("--val1", val1);
+        g2->add_option("--name2", name2)->required();
+        g2->add_option("--val2", val2);
+        g3->add_option("--name3", name3)->required();
+        g3->add_option("--val3", val3);
     }
 };
-*/
+
+TEST_F(ManyGroups, SingleGroup) {
+    // only 1 group can be used
+    main->require_option(1);
+    args = {"--name1", "test"};
+    run();
+    EXPECT_EQ(name1, "test");
+
+    args = {"--name2", "test", "--val2", "tval"};
+
+    run();
+    EXPECT_EQ(val2, "tval");
+
+    args = {"--name1", "test", "--val2", "tval"};
+
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManyGroups, SingleGroupError) {
+    // only 1 group can be used
+    main->require_option(1);
+    args = {"--name1", "test", "--name2", "test3"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManyGroups, AtMostOneGroup) {
+    // only 1 group can be used
+    main->require_option(0, 1);
+    args = {"--name1", "test", "--name2", "test3"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    args = {};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManyGroups, AtLeastTwoGroups) {
+    // only 1 group can be used
+    main->require_option(2, 0);
+    args = {"--name1", "test", "--name2", "test3"};
+    run();
+
+    args = {"--name1", "test"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManyGroups, BetweenOneAndTwoGroups) {
+    // only 1 group can be used
+    main->require_option(1, 2);
+    args = {"--name1", "test", "--name2", "test3"};
+    run();
+
+    args = {"--name1", "test"};
+    run();
+
+    args = {};
+    EXPECT_THROW(run(), CLI::RequiredError);
+
+    args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}

@@ -527,6 +527,7 @@ TEST_F(TApp, LotsOfFlags) {
     EXPECT_EQ(2u, app.count("-a"));
     EXPECT_EQ(1u, app.count("-b"));
     EXPECT_EQ(1u, app.count("-A"));
+    EXPECT_EQ(app.count_all(), 4u);
 }
 
 TEST_F(TApp, NumberFlags) {
@@ -657,6 +658,7 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ(1u, app.count("-y"));
     EXPECT_EQ((unsigned long long)2, funnyint);
     EXPECT_EQ("zyz", someopt);
+    EXPECT_EQ(app.count_all(), 3u);
 }
 
 TEST_F(TApp, DefaultOpts) {

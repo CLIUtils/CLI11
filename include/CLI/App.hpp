@@ -81,8 +81,11 @@ class App {
     ///  If true, return immediately on an unrecognized option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
 
-    /// if set to true the name was automatically generated from the command line vs a user set name
+    /// If set to true the name was automatically generated from the command line vs a user set name
     bool has_automatic_name_{false};
+
+    /// If set to true the subcommand is required to be processed and used
+    bool required_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
@@ -271,6 +274,12 @@ class App {
     /// Remove the error when extras are left over on the command line.
     App *allow_extras(bool allow = true) {
         allow_extras_ = allow;
+        return this;
+    }
+
+    /// Remove the error when extras are left over on the command line.
+    App *required(bool require = true) {
+        required_ = require;
         return this;
     }
 
@@ -1548,6 +1557,9 @@ class App {
     /// Get the status of allow extras
     bool get_allow_extras() const { return allow_extras_; }
 
+    /// Get the status of required
+    bool get_required() const { return required_; }
+
     /// Get the status of allow extras
     bool get_allow_config_extras() const { return allow_config_extras_; }
 
@@ -1876,36 +1888,21 @@ class App {
                 if(opt->count() > 0 && opt_ex->count() != 0)
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
-
-        auto selected_subcommands = get_subcommands();
-        if(require_subcommand_min_ > selected_subcommands.size())
-            throw RequiredError::Subcommand(require_subcommand_min_);
+        // check for the required number of subcommands
+        if(require_subcommand_min_ > 0) {
+            auto selected_subcommands = get_subcommands();
+            if(require_subcommand_min_ > selected_subcommands.size())
+                throw RequiredError::Subcommand(require_subcommand_min_);
+        }
 
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
-        // run this loop twice to check how many unnamed subcommands were actually used
+        // run this loop to check how many unnamed subcommands were actually used since they are considered options from
+        // the perspective of an App
         for(App_p &sub : subcommands_) {
             if((sub->name_.empty()) && (sub->count_all() > 0)) {
                 ++used_options;
             }
-        }
-        // now process the requirements for subcommands if needed
-        for(App_p &sub : subcommands_) {
-            if(sub->name_.empty()) {
-                if(sub->count_all() == 0) {
-                    if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
-                        continue;
-                        // if we have met the requirement and there is nothing in this option group skip checking
-                        // requirements
-                    }
-                    if((require_option_max_ > 0) && (require_option_max_ >= used_options)) {
-                        continue;
-                        // if we have met the requirement and there is nothing in this option group skip checking
-                        // requirements
-                    }
-                }
-            }
-            sub->_process_requirements();
         }
 
         if((require_option_min_ > used_options) ||
@@ -1919,6 +1916,28 @@ class App {
                 option_list += "," + detail::join(subc_list, [](const App *app) { return app->get_display_name(); });
             }
             throw RequiredError::Option(require_option_min_, require_option_max_, used_options, option_list);
+        }
+
+        // now process the requirements for subcommands if needed
+        for(App_p &sub : subcommands_) {
+            if((sub->name_.empty()) && (sub->required_ == false)) {
+                if(sub->count_all() == 0) {
+                    if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
+                    if((require_option_max_ > 0) && (used_options >= require_option_min_)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
+                }
+            }
+            sub->_process_requirements();
+            if((sub->required_) && (sub->count_all() == 0)) {
+                throw(CLI::RequiredError(sub->get_display_name()));
+            }
         }
     }
 

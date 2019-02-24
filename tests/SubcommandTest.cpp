@@ -837,6 +837,7 @@ TEST_F(ManySubcommands, MaxCommands) {
     args = {"sub1", "sub2", "sub3"};
     EXPECT_NO_THROW(run());
     EXPECT_EQ(sub2->remaining().size(), 1u);
+    EXPECT_EQ(app.count_all(), 2u);
 
     // Currently, setting sub2 to throw causes an extras error
     // In the future, would passing on up to app's extras be better?
@@ -865,6 +866,7 @@ TEST_F(ManySubcommands, SubcommandExclusion) {
 
     args = {"sub1", "sub2", "sub4"};
     EXPECT_NO_THROW(run());
+    EXPECT_EQ(app.count_all(), 3u);
 
     args = {"sub3", "sub4"};
     EXPECT_NO_THROW(run());
@@ -928,6 +930,7 @@ TEST_F(TApp, UnnamedSubMix) {
     EXPECT_EQ(val, -3.0);
     EXPECT_EQ(val2, 5.93);
     EXPECT_EQ(val3, 4.56);
+    EXPECT_EQ(app.count_all(), 3u);
 }
 
 TEST_F(TApp, UnnamedSubMixExtras) {
