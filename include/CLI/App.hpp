@@ -1078,6 +1078,9 @@ class App {
         for(auto &sub : subcommands_) {
             cnt += sub->count_all();
         }
+        if(!get_name().empty()) { // for named subcommands add the number of times the subcommand was called
+            cnt += parsed_;
+        }
         return cnt;
     }
 
@@ -1336,15 +1339,21 @@ class App {
 
     /// Sets excluded options for the subcommand
     App *excludes(Option *opt) {
+        if(opt == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
         exclude_options_.insert(opt);
         return this;
     }
 
     /// Sets excluded subcommands for the subcommand
     App *excludes(App *app) {
-        exclude_subcommands_.insert(app);
+        if((app == this) || (app == nullptr)) {
+            throw OptionNotFound("nullptr passed");
+        }
+        auto res = exclude_subcommands_.insert(app);
         // subcommand exclusion should be symmetric
-        app->excludes(this);
+        app->exclude_subcommands_.insert(this);
         return this;
     }
 
@@ -1823,20 +1832,16 @@ class App {
         // check excludes
         bool excluded{false};
         std::string excluder;
-        if(!exclude_options_.empty()) {
-            for(auto &opt : exclude_options_) {
-                if(opt->count() > 0) {
-                    excluded = true;
-                    excluder = opt->get_name();
-                }
+        for(auto &opt : exclude_options_) {
+            if(opt->count() > 0) {
+                excluded = true;
+                excluder = opt->get_name();
             }
         }
-        if(!exclude_subcommands_.empty()) {
-            for(auto &subc : exclude_subcommands_) {
-                if(subc->count_all() > 0) {
-                    excluded = true;
-                    excluder = subc->get_display_name();
-                }
+        for(auto &subc : exclude_subcommands_) {
+            if(subc->count_all() > 0) {
+                excluded = true;
+                excluder = subc->get_display_name();
             }
         }
         if(excluded) {
@@ -1878,26 +1883,42 @@ class App {
 
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
+        // run this loop twice to check how many unnamed subcommands were actually used
+        for(App_p &sub : subcommands_) {
+            if((sub->name_.empty()) && (sub->count_all() > 0)) {
+                ++used_options;
+            }
+        }
+        // now process the requirements for subcommands if needed
         for(App_p &sub : subcommands_) {
             if(sub->name_.empty()) {
-                if(sub->count_all() > 0) {
-                    ++used_options;
-                } else if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
-                    continue;
-                    // if we have met the requirement and there is nothing in this option group skip checking
-                    // requirements
+                if(sub->count_all() == 0) {
+                    if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
+                    if((require_option_max_ > 0) && (require_option_max_ >= used_options)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
                 }
             }
             sub->_process_requirements();
         }
 
-        if(require_option_min_ > used_options) {
-            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
-            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
-        }
-        if((require_option_max_ > 0) && (require_option_max_ < used_options)) {
-            auto opList = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
-            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, opList);
+        if((require_option_min_ > used_options) ||
+           ((require_option_max_ > 0) && (require_option_max_ < used_options))) {
+            auto option_list = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
+            if(option_list.compare(0, 10, "-h,--help,") == 0) {
+                option_list.erase(0, 10);
+            }
+            auto subc_list = get_subcommands([](App *app) { return (app->get_name().empty()); });
+            if(!subc_list.empty()) {
+                option_list += "," + detail::join(subc_list, [](const App *app) { return app->get_display_name(); });
+            }
+            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, option_list);
         }
     }
 

@@ -853,6 +853,48 @@ TEST_F(ManySubcommands, MaxCommands) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(ManySubcommands, SubcommandExclusion) {
+
+    sub1->excludes(sub3);
+    sub2->excludes(sub3);
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"sub1", "sub2", "sub4"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub3", "sub4"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManySubcommands, SubcommandOptionExclusion) {
+
+    auto excluder_flag = app.add_flag("--exclude");
+    sub1->excludes(excluder_flag)->fallthrough();
+    sub2->excludes(excluder_flag)->fallthrough();
+    sub3->fallthrough();
+    sub4->fallthrough();
+    args = {"sub3", "sub4", "--exclude"};
+    EXPECT_NO_THROW(run());
+
+    // the option comes later so doesn't exclude
+    args = {"sub1", "sub3", "--exclude"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"--exclude", "sub2", "sub4"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"sub1", "--exclude", "sub2", "sub4"};
+    try {
+        run();
+    } catch(const CLI::ExcludesError &ee) {
+        EXPECT_NE(std::string(ee.what()).find("sub1"), std::string::npos);
+    }
+}
+
 TEST_F(TApp, UnnamedSub) {
     double val;
     auto sub = app.add_subcommand("", "empty name");

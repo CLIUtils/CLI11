@@ -216,8 +216,8 @@ class RequiredError : public ParseError {
         if((min_option == 1) && (max_option == 1) && (used == 0))
             return RequiredError("Exactly 1 option from [" + option_list + "]");
         else if((min_option == 1) && (max_option == 1) && (used > 1))
-            return RequiredError("Exactly 1 option from [" + option_list + "] are required and " +
-                                     std::to_string(used) + " were given",
+            return RequiredError("Exactly 1 option from [" + option_list + "] is required and " + std::to_string(used) +
+                                     " were given",
                                  ExitCodes::RequiredError);
         else if((min_option == 1) && (used == 0))
             return RequiredError("At least 1 option from [" + option_list + "]");
@@ -226,7 +226,7 @@ class RequiredError : public ParseError {
                                      std::to_string(used) + "were given from [" + option_list + "]",
                                  ExitCodes::RequiredError);
         else if(max_option == 1)
-            return RequiredError("Requires at most 1 options be used from [" + option_list + "]",
+            return RequiredError("Requires at most 1 options be given from [" + option_list + "]",
                                  ExitCodes::RequiredError);
         else
             return RequiredError("Requires at most " + std::to_string(max_option) + " options be used and " +

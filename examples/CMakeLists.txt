@@ -96,6 +96,15 @@ set_property(TEST option_groups_extra2 PROPERTY PASS_REGULAR_EXPRESSION
 	
 	
 add_cli_exe(ranges ranges.cpp)
+add_test(NAME ranges_range COMMAND ranges --range 1 2 3)
+set_property(TEST ranges_range PROPERTY PASS_REGULAR_EXPRESSION
+    "[2:1:3]")
+add_test(NAME ranges_minmax COMMAND ranges --min 2 --max 3)
+set_property(TEST ranges_minmax PROPERTY PASS_REGULAR_EXPRESSION
+    "[2:1:3]")
+add_test(NAME ranges_error COMMAND ranges --min 2 --max 3 --step 1 --range 1 2 3)
+set_property(TEST ranges_error PROPERTY PASS_REGULAR_EXPRESSION
+    "Exactly 1 option from")
 
 add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
