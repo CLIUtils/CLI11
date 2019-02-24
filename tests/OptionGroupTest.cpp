@@ -355,6 +355,17 @@ TEST_F(TApp, BasicOptionGroupScrewedUpMove) {
     EXPECT_THROW(EmptyGroup.add_option(opt2), CLI::OptionNotFound);
     EXPECT_THROW(app._move_option(opt2, ogroup2), CLI::OptionNotFound);
 }
+
+TEST_F(TApp, InvalidOptions) {
+    auto ogroup = app.add_option_group("clusters");
+    CLI::Option *opt = nullptr;
+    EXPECT_THROW(ogroup->excludes(opt), CLI::OptionNotFound);
+    CLI::App *app_p = nullptr;
+    EXPECT_THROW(ogroup->excludes(app_p), CLI::OptionNotFound);
+    EXPECT_THROW(ogroup->excludes(ogroup), CLI::OptionNotFound);
+    EXPECT_THROW(ogroup->add_option(opt), CLI::OptionNotFound);
+}
+
 /*
 struct SubcommandProgram : public TApp {
 
