@@ -11,7 +11,7 @@
 [![Latest release][releases-badge]][github releases]
 [![DOI][doi-badge]][doi-link]
 [![Conan.io][conan-badge]][conan-link]
-[![Try CLI11 1.6 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 1.7 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
@@ -556,7 +556,7 @@ Significant features and/or improvements to the code were contributed by:
 -   [Stéphane Del Pino](https://github.com/delpinux)
 -   [Mak Kolybabi](https://github.com/mogigoma)
 -   [Paweł Bylica](https://github.com/chfast)
--   [Philip Top](https://github.com/phlptp) <!-- Major features in 1.7 and 1.8>
+-   [Philip Top](https://github.com/phlptp) <!-- Major features in 1.7 and 1.8 -->
 -   [almikhayl](https://github.com/almikhayl)
 -   [nurelin](https://github.com/nurelin) <!-- help_all in message -->
 -   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
@@ -613,7 +613,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [version 1.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [version 1.3 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
-[wandbox-badge]: https://img.shields.io/badge/try-online-blue.svg
+[wandbox-badge]: https://img.shields.io/badge/try_1.7-online-blue.svg
 [wandbox-link]: https://wandbox.org/permlink/k1BzlRwOZ07ieEuD
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]: https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
