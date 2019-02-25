@@ -109,8 +109,8 @@ set_property(TEST ranges_error PROPERTY PASS_REGULAR_EXPRESSION
 add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
 set_property(TEST validators_help PROPERTY PASS_REGULAR_EXPRESSION
-    "  -f,--file FILE              File name"
-    "  -v,--value INT in [3 - 6]   Value in range")
+    "  -f,--file TEXT:FILE[\\r\\n\\t ]+File name"
+    "  -v,--value INT:INT in [3 - 6][\\r\\n\\t ]+Value in range")
 add_test(NAME validators_file COMMAND validators --file nonex.xxx)
 set_property(TEST validators_file PROPERTY PASS_REGULAR_EXPRESSION
     "--file: File does not exist: nonex.xxx"

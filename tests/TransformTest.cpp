@@ -248,3 +248,144 @@ TEST_F(TApp, TransformCascade) {
     run();
     EXPECT_EQ(output, "abcd");
 }
+
+// Test a cascade of transform functions
+TEST_F(TApp, TransformCascadeDeactivate) {
+
+    std::string output;
+    auto opt = app.add_option("-s", output);
+    opt->transform(
+        CLI::Transformer({{"abc", "abcd"}, {"bbc", "bbcd"}, {"cbc", "cbcd"}}, CLI::ignore_case).name("tform1"));
+    opt->transform(
+        CLI::Transformer({{"ab", "abc"}, {"bc", "bbc"}, {"cb", "cbc"}}, CLI::ignore_case, CLI::ignore_underscore)
+            .name("tform2")
+            .active(false));
+    opt->transform(CLI::Transformer({{"a", "ab"}, {"b", "bb"}, {"c", "cb"}}, CLI::ignore_case).name("tform3"));
+    opt->check(CLI::IsMember({"abcd", "bbcd", "cbcd"}).name("check"));
+    args = {"-s", "abcd"};
+    run();
+    EXPECT_EQ(output, "abcd");
+
+    args = {"-s", "Bbc"};
+    run();
+    EXPECT_EQ(output, "bbcd");
+
+    args = {"-s", "C_B"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    auto validator = opt->get_validator("tform2");
+    EXPECT_FALSE(validator->get_active());
+    EXPECT_EQ(validator->get_name(), "tform2");
+    validator->active();
+    EXPECT_TRUE(validator->get_active());
+    args = {"-s", "C_B"};
+    run();
+    EXPECT_EQ(output, "cbcd");
+
+    opt->get_validator("check")->active(false);
+    args = {"-s", "gsdgsgs"};
+    run();
+    EXPECT_EQ(output, "gsdgsgs");
+
+    EXPECT_THROW(opt->get_validator("sdfsdf"), CLI::OptionNotFound);
+}
+
+TEST_F(TApp, IntTransformFn) {
+    std::string value;
+    app.add_option("-s", value)
+        ->transform(
+            CLI::CheckedTransformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}, [](int in) { return in - 10; }));
+    args = {"-s", "25"};
+    run();
+    EXPECT_EQ(value, "5");
+
+    args = {"-s", "6"};
+    run();
+    EXPECT_EQ(value, "6");
+
+    args = {"-s", "45"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-s", "val_4"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, IntTransformNonConvertible) {
+    std::string value;
+    app.add_option("-s", value)->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}));
+    args = {"-s", "15"};
+    run();
+    EXPECT_EQ(value, "5");
+
+    args = {"-s", "18"};
+    run();
+    EXPECT_EQ(value, "6");
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "abcd"};
+    run();
+    EXPECT_EQ(value, "abcd");
+}
+
+TEST_F(TApp, IntTransformNonMerge) {
+    std::string value;
+    app.add_option("-s", value)
+        ->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) &
+                    CLI::Transformer(std::map<int, int>{{25, 5}, {28, 6}, {31, 7}}));
+    args = {"-s", "15"};
+    run();
+    EXPECT_EQ(value, "5");
+
+    args = {"-s", "18"};
+    run();
+    EXPECT_EQ(value, "6");
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "abcd"};
+    run();
+    EXPECT_EQ(value, "abcd");
+
+    args = {"-s", "25"};
+    run();
+    EXPECT_EQ(value, "5");
+
+    args = {"-s", "31"};
+    run();
+    EXPECT_EQ(value, "7");
+
+    auto help = app.help();
+    EXPECT_TRUE(help.find("15->5") != std::string::npos);
+    EXPECT_TRUE(help.find("25->5") != std::string::npos);
+}
+
+TEST_F(TApp, IntTransformMergeWithCustomValidator) {
+    std::string value;
+    app.add_option("-s", value)
+        ->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) |
+                    CLI::Validator([](std::string &element) {
+                        if(element == "frog") {
+                            element = "hops";
+                        }
+                        return std::string{};
+                    }));
+    args = {"-s", "15"};
+    run();
+    EXPECT_EQ(value, "5");
+
+    args = {"-s", "18"};
+    run();
+    EXPECT_EQ(value, "6");
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "frog"};
+    run();
+    EXPECT_EQ(value, "hops");
+
+    args = {"-s", "25"};
+    run();
+    EXPECT_EQ(value, "25");
+
+    auto help = app.help();
+    EXPECT_TRUE(help.find("15->5") != std::string::npos);
+    EXPECT_TRUE(help.find("OR") == std::string::npos);
+}

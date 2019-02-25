@@ -4,11 +4,21 @@
 static_assert(CLI::is_shared_ptr<std::shared_ptr<int>>::value == true, "is_shared_ptr should work on shared pointers");
 static_assert(CLI::is_shared_ptr<int *>::value == false, "is_shared_ptr should work on pointers");
 static_assert(CLI::is_shared_ptr<int>::value == false, "is_shared_ptr should work on non-pointers");
+static_assert(CLI::is_shared_ptr<const std::shared_ptr<int>>::value == true,
+              "is_shared_ptr should work on const shared pointers");
+static_assert(CLI::is_shared_ptr<const int *>::value == false, "is_shared_ptr should work on const pointers");
+static_assert(CLI::is_shared_ptr<const int &>::value == false, "is_shared_ptr should work on const references");
+static_assert(CLI::is_shared_ptr<int &>::value == false, "is_shared_ptr should work on non-const references");
 
 static_assert(CLI::is_copyable_ptr<std::shared_ptr<int>>::value == true,
               "is_copyable_ptr should work on shared pointers");
 static_assert(CLI::is_copyable_ptr<int *>::value == true, "is_copyable_ptr should work on pointers");
 static_assert(CLI::is_copyable_ptr<int>::value == false, "is_copyable_ptr should work on non-pointers");
+static_assert(CLI::is_copyable_ptr<const std::shared_ptr<int>>::value == true,
+              "is_copyable_ptr should work on const shared pointers");
+static_assert(CLI::is_copyable_ptr<const int *>::value == true, "is_copyable_ptr should work on const pointers");
+static_assert(CLI::is_copyable_ptr<const int &>::value == false, "is_copyable_ptr should work on const references");
+static_assert(CLI::is_copyable_ptr<int &>::value == false, "is_copyable_ptr should work on non-const references");
 
 static_assert(CLI::detail::pair_adaptor<std::set<int>>::value == false, "Should not have pairs");
 static_assert(CLI::detail::pair_adaptor<std::vector<std::string>>::value == false, "Should not have pairs");
@@ -130,6 +140,78 @@ TEST_F(TApp, structMapChange) {
     args = {"-s", "S_t_w_o"};
     run();
     EXPECT_EQ(struct_name, "stwo");
+}
+
+TEST_F(TApp, NonCopyableMap) {
+
+    std::string map_name;
+    std::map<std::string, std::unique_ptr<double>> map;
+    map["e1"] = std::unique_ptr<double>(new double(5.7));
+    map["e3"] = std::unique_ptr<double>(new double(23.8));
+    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
+    args = {"-s", "e1"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(map_name, "e1");
+
+    args = {"-s", "e45"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NonCopyableMapWithFunction) {
+
+    std::string map_name;
+    std::map<std::string, std::unique_ptr<double>> map;
+    map["e1"] = std::unique_ptr<double>(new double(5.7));
+    map["e3"] = std::unique_ptr<double>(new double(23.8));
+    auto opt = app.add_option("-s,--set", map_name)->transform(CLI::IsMember(&map, CLI::ignore_underscore));
+    args = {"-s", "e_1"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(map_name, "e1");
+
+    args = {"-s", "e45"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NonCopyableMapNonStringMap) {
+
+    std::string map_name;
+    std::map<int, std::unique_ptr<double>> map;
+    map[4] = std::unique_ptr<double>(new double(5.7));
+    map[17] = std::unique_ptr<double>(new double(23.8));
+    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
+    args = {"-s", "4"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(map_name, "4");
+
+    args = {"-s", "e45"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, CopyableMapMove) {
+
+    std::string map_name;
+    std::map<int, double> map;
+    map[4] = 5.7;
+    map[17] = 23.8;
+    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(std::move(map)));
+    args = {"-s", "4"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(map_name, "4");
+
+    args = {"-s", "e45"};
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 TEST_F(TApp, SimpleSets) {

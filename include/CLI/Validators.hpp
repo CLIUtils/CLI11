@@ -32,50 +32,89 @@ class Option;
 
 ///
 class Validator {
-    friend Option;
-
   protected:
-    /// This is the type name, if empty the type name will not be changed
-    std::string tname;
-
-    /// This is the type function, if empty the tname will be used
-    std::function<std::string()> tname_function;
+    /// This is the description function, if empty the description_ will be used
+    std::function<std::string()> desc_function_{[]() { return std::string{}; }};
 
     /// This it the base function that is to be called.
     /// Returns a string error message if validation fails.
-    std::function<std::string(std::string &)> func;
+    std::function<std::string(std::string &)> func_{[](std::string &) { return std::string{}; }};
+    /// The name for search purposes of the Validator
+    std::string name_;
+    /// Enable for Validator to allow it to be disabled if need be
+    bool active_{true};
 
   public:
+    Validator() = default;
+    /// Construct a Validator with just the description string
+    explicit Validator(std::string validator_desc) : desc_function_([validator_desc]() { return validator_desc; }) {}
+    // Construct Validator from basic information
+    explicit Validator(std::function<std::string(std::string &)> op,
+                       std::string validator_name = "",
+                       std::string validator_desc = "")
+        : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(op)),
+          name_(std::move(validator_name)) {}
+    /// Set the Validator operation function
+    void operation(std::function<std::string(std::string &)> op) { func_ = std::move(op); }
     /// This is the required operator for a validator - provided to help
     /// users (CLI11 uses the member `func` directly)
-    std::string operator()(std::string &str) const { return func(str); };
+    std::string operator()(std::string &str) const { return (active_) ? func_(str) : std::string(); };
 
     /// This is the required operator for a validator - provided to help
     /// users (CLI11 uses the member `func` directly)
     std::string operator()(const std::string &str) const {
         std::string value = str;
-        return func(value);
+        return (active_) ? func_(value) : std::string{};
     };
+
+    /// Specify the type string
+    Validator &description(std::string validator_desc) {
+        desc_function_ = [validator_desc]() { return validator_desc; };
+        return *this;
+    }
+    /// Generate type description information for the validator
+    std::string get_description() const {
+        if(active_) {
+            return desc_function_();
+        }
+        return std::string{};
+    }
+    /// Specify the type string
+    Validator &name(std::string validator_name) {
+        name_ = std::move(validator_name);
+        return *this;
+    }
+    /// Get the name of the Validator
+    const std::string &get_name() const { return name_; }
+    /// Specify whether the Validator is active or not
+    Validator &active(bool active_val = true) {
+        active_ = active_val;
+        return *this;
+    }
+    /// Get a boolean if the validator is active
+    bool get_active() const { return active_; }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
     Validator operator&(const Validator &other) const {
         Validator newval;
-        newval.tname = (tname == other.tname ? tname : "");
-        newval.tname_function = tname_function;
+
+        newval._merge_description(*this, other, " AND ");
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & filename)> &f1 = func;
-        const std::function<std::string(std::string & filename)> &f2 = other.func;
+        const std::function<std::string(std::string & filename)> &f1 = func_;
+        const std::function<std::string(std::string & filename)> &f2 = other.func_;
 
-        newval.func = [f1, f2](std::string &input) {
+        newval.func_ = [f1, f2](std::string &input) {
             std::string s1 = f1(input);
             std::string s2 = f2(input);
             if(!s1.empty() && !s2.empty())
-                return s1 + " AND " + s2;
+                return std::string("(") + s1 + ") AND (" + s2 + ")";
             else
                 return s1 + s2;
         };
+
+        newval.active_ = (active_ & other.active_);
         return newval;
     }
 
@@ -83,48 +122,68 @@ class Validator {
     /// same.
     Validator operator|(const Validator &other) const {
         Validator newval;
-        newval.tname = (tname == other.tname ? tname : "");
-        newval.tname_function = tname_function;
+
+        newval._merge_description(*this, other, " OR ");
 
         // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string &)> &f1 = func;
-        const std::function<std::string(std::string &)> &f2 = other.func;
+        const std::function<std::string(std::string &)> &f1 = func_;
+        const std::function<std::string(std::string &)> &f2 = other.func_;
 
-        newval.func = [f1, f2](std::string &input) {
+        newval.func_ = [f1, f2](std::string &input) {
             std::string s1 = f1(input);
             std::string s2 = f2(input);
             if(s1.empty() || s2.empty())
                 return std::string();
             else
-                return s1 + " OR " + s2;
+                return std::string("(") + s1 + ") OR (" + s2 + ")";
         };
+        newval.active_ = (active_ & other.active_);
         return newval;
     }
 
     /// Create a validator that fails when a given validator succeeds
     Validator operator!() const {
         Validator newval;
-        std::string typestring = tname;
-        if(tname.empty()) {
-            typestring = tname_function();
-        }
-        newval.tname = "NOT " + typestring;
-
-        std::string failString = "check " + typestring + " succeeded improperly";
-        // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & res)> &f1 = func;
-
-        newval.func = [f1, failString](std::string &test) -> std::string {
-            std::string s1 = f1(test);
-            if(s1.empty())
-                return failString;
-            else
-                return std::string();
+        const std::function<std::string()> &dfunc1 = desc_function_;
+        newval.desc_function_ = [dfunc1]() {
+            auto str = dfunc1();
+            return (!str.empty()) ? std::string("NOT ") + str : std::string{};
         };
+        // Give references (will make a copy in lambda function)
+        const std::function<std::string(std::string & res)> &f1 = func_;
+
+        newval.func_ = [f1, dfunc1](std::string &test) -> std::string {
+            std::string s1 = f1(test);
+            if(s1.empty()) {
+                return std::string("check ") + dfunc1() + " succeeded improperly";
+            } else
+                return std::string{};
+        };
+        newval.active_ = active_;
         return newval;
+    }
+
+  private:
+    void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger) {
+
+        const std::function<std::string()> &dfunc1 = val1.desc_function_;
+        const std::function<std::string()> &dfunc2 = val2.desc_function_;
+
+        desc_function_ = [=]() {
+            std::string f1 = dfunc1();
+            std::string f2 = dfunc2();
+            if((f1.empty()) || (f2.empty())) {
+                return f1 + f2;
+            }
+            return std::string("(") + f1 + ")" + merger + "(" + f2 + ")";
+        };
     }
 };
 
+/// Class wrapping some of the accessors of Validator
+class CustomValidator : public Validator {
+  public:
+};
 // The implementation of the built in validators is using the Validator class;
 // the user is only expected to use the const (static) versions (since there's no setup).
 // Therefore, this is in detail.
@@ -133,9 +192,8 @@ namespace detail {
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
   public:
-    ExistingFileValidator() {
-        tname = "FILE";
-        func = [](std::string &filename) {
+    ExistingFileValidator() : Validator("FILE") {
+        func_ = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -152,9 +210,8 @@ class ExistingFileValidator : public Validator {
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
   public:
-    ExistingDirectoryValidator() {
-        tname = "DIR";
-        func = [](std::string &filename) {
+    ExistingDirectoryValidator() : Validator("DIR") {
+        func_ = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
@@ -171,9 +228,8 @@ class ExistingDirectoryValidator : public Validator {
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
   public:
-    ExistingPathValidator() {
-        tname = "PATH";
-        func = [](std::string &filename) {
+    ExistingPathValidator() : Validator("PATH(existing)") {
+        func_ = [](std::string &filename) {
             struct stat buffer;
             bool const exist = stat(filename.c_str(), &buffer) == 0;
             if(!exist) {
@@ -187,9 +243,8 @@ class ExistingPathValidator : public Validator {
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
   public:
-    NonexistentPathValidator() {
-        tname = "PATH";
-        func = [](std::string &filename) {
+    NonexistentPathValidator() : Validator("PATH(non-existing)") {
+        func_ = [](std::string &filename) {
             struct stat buffer;
             bool exist = stat(filename.c_str(), &buffer) == 0;
             if(exist) {
@@ -203,9 +258,8 @@ class NonexistentPathValidator : public Validator {
 /// Validate the given string is a legal ipv4 address
 class IPV4Validator : public Validator {
   public:
-    IPV4Validator() {
-        tname = "IPV4";
-        func = [](std::string &ip_addr) {
+    IPV4Validator() : Validator("IPV4") {
+        func_ = [](std::string &ip_addr) {
             auto result = CLI::detail::split(ip_addr, '.');
             if(result.size() != 4) {
                 return "Invalid IPV4 address must have four parts " + ip_addr;
@@ -229,9 +283,8 @@ class IPV4Validator : public Validator {
 /// Validate the argument is a number and greater than or equal to 0
 class PositiveNumber : public Validator {
   public:
-    PositiveNumber() {
-        tname = "POSITIVE";
-        func = [](std::string &number_str) {
+    PositiveNumber() : Validator("POSITIVE") {
+        func_ = [](std::string &number_str) {
             int number;
             if(!detail::lexical_cast(number_str, number)) {
                 return "Failed parsing number " + number_str;
@@ -276,9 +329,9 @@ class Range : public Validator {
     template <typename T> Range(T min, T max) {
         std::stringstream out;
         out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
+        description(out.str());
 
-        tname = out.str();
-        func = [min, max](std::string &input) {
+        func_ = [min, max](std::string &input) {
             T val;
             detail::lexical_cast(input, val);
             if(val < min || val > max)
@@ -293,12 +346,16 @@ class Range : public Validator {
 };
 
 namespace detail {
-template <typename T, enable_if_t<is_copyable_ptr<T>::value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
 auto smart_deref(T value) -> decltype(*value) {
     return *value;
 }
 
-template <typename T, enable_if_t<!is_copyable_ptr<T>::value, detail::enabler> = detail::dummy> T smart_deref(T value) {
+template <
+    typename T,
+    enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
+typename std::remove_reference<T>::type &smart_deref(T &value) {
     return value;
 }
 /// Generate a string representation of a set
@@ -320,8 +377,7 @@ template <typename T> std::string generate_map(const T &map) {
     std::string out(1, '{');
     out.append(detail::join(detail::smart_deref(map),
                             [](const iteration_type_t &v) {
-                                return std::string("\"") +
-                                       detail::as_string(detail::pair_adaptor<element_t>::first(v)) + "\"->" +
+                                return detail::as_string(detail::pair_adaptor<element_t>::first(v)) + "->" +
                                        detail::as_string(detail::pair_adaptor<element_t>::second(v));
                             },
                             ","));
@@ -330,56 +386,54 @@ template <typename T> std::string generate_map(const T &map) {
 }
 
 template <typename> struct sfinae_true : std::true_type {};
-/// Function to check for the existence of a member find function
+/// Function to check for the existence of a member find function which presumably is more efficient than looping over
+/// everything
 template <typename T, typename V>
 static auto test_find(int) -> sfinae_true<decltype(std::declval<T>().find(std::declval<V>()))>;
 template <typename, typename V> static auto test_find(long) -> std::false_type;
-} // namespace detail
 
-template <typename T, typename V> struct has_find : decltype(detail::test_find<T, V>(0)) {};
+template <typename T, typename V> struct has_find : decltype(test_find<T, V>(0)) {};
 
 /// A search function
-template <typename T, typename V>
-std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
-search(const T &set, const V &val) {
+template <typename T, typename V, enable_if_t<!has_find<T, V>::value, detail::enabler> = detail::dummy>
+auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
     using element_t = typename detail::element_type<T>::type;
-    for(const auto &v : set) {
-        V a = detail::pair_adaptor<element_t>::first(v);
-        if(a == val) {
-            // Return empty error string (success)
-            return {true, {a, detail::pair_adaptor<element_t>::second(v)}};
-        }
-    }
-    return {false, {}};
+    auto &setref = detail::smart_deref(set);
+    auto it = std::find_if(std::begin(setref), std::end(setref), [&val](decltype(*std::begin(setref)) v) {
+        return (detail::pair_adaptor<element_t>::first(v) == val);
+    });
+    return {(it != std::end(setref)), it};
 }
 
 /// A search function that uses the built in find function
 template <typename T, typename V, enable_if_t<has_find<T, V>::value, detail::enabler> = detail::dummy>
-std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
-search(const T &set, const V &val) {}
+auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
+    auto &setref = detail::smart_deref(set);
+    auto it = setref.find(val);
+    return {(it != std::end(setref)), it};
+}
 
 /// A search function with a filter function
-template <typename T, typename V, typename F>
-std::pair<bool, std::pair<V, typename detail::pair_adaptor<typename detail::element_type<T>::type>::second_type>>
-search(const T &set, const V &val, F &filter_function) {
-    // do the potentially faster first
+template <typename T, typename V>
+auto search(const T &set, const V &val, const std::function<V(V)> &filter_function)
+    -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
+    using element_t = typename detail::element_type<T>::type;
+    // do the potentially faster first search
     auto res = search(set, val);
     if((res.first) || (!(filter_function))) {
         return res;
     }
-    // now do a slower search with a translate for each search element
-    using element_t = typename detail::element_type<T>::type;
-    for(const auto &v : set) {
+    // if we haven't found it do the longer linear search with all the element translations
+    auto &setref = detail::smart_deref(set);
+    auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
         V a = detail::pair_adaptor<element_t>::first(v);
         a = filter_function(a);
-        if(a == val) {
-            // Return empty error string (success)
-            return {true, {detail::pair_adaptor<element_t>::first(v), detail::pair_adaptor<element_t>::second(v)}};
-        }
-    }
-    return {false, {}};
+        return (a == val);
+    });
+    return {(it != std::end(setref)), it};
 }
 
+} // namespace detail
 /// Verify items are in a set
 class IsMember : public Validator {
   public:
@@ -391,7 +445,7 @@ class IsMember : public Validator {
         : IsMember(std::vector<T>(values), std::forward<Args>(args)...) {}
 
     /// This checks to see if an item is in a set (empty function)
-    template <typename T> explicit IsMember(T set) : IsMember(std::move(set), nullptr) {}
+    template <typename T> explicit IsMember(T &&set) : IsMember(std::forward<T>(set), nullptr) {}
 
     /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
     /// both sides of the comparison before computing the comparison.
@@ -409,11 +463,11 @@ class IsMember : public Validator {
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         // This is the type name for help, it will take the current version of the set contents
-        tname_function = [set]() { return detail::generate_set(detail::smart_deref(set)); };
+        desc_function_ = [set]() { return detail::generate_set(detail::smart_deref(set)); };
 
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
-        func = [set, filter_fn](std::string &input) {
+        func_ = [set, filter_fn](std::string &input) {
             local_item_t b;
             if(!detail::lexical_cast(input, b)) {
                 throw ValidationError(input); // name is added later
@@ -421,22 +475,15 @@ class IsMember : public Validator {
             if(filter_fn) {
                 b = filter_fn(b);
             }
-            for(const auto &v : detail::smart_deref(set)) {
-                local_item_t a = detail::pair_adaptor<element_t>::first(v);
-                // The filter function might be empty, so don't filter if it is.
+            auto res = detail::search(set, b, filter_fn);
+            if(res.first) {
+                // Make sure the version in the input string is identical to the one in the set
                 if(filter_fn) {
-                    a = filter_fn(a);
+                    input = detail::as_string(detail::pair_adaptor<element_t>::first(*(res.second)));
                 }
 
-                if(a == b) {
-                    // Make sure the version in the input string is identical to the one in the set
-                    if(filter_fn || detail::pair_adaptor<element_t>::value) {
-                        input = detail::as_string(detail::pair_adaptor<element_t>::first(v));
-                    }
-
-                    // Return empty error string (success)
-                    return std::string();
-                }
+                // Return empty error string (success)
+                return std::string{};
             }
 
             // If you reach this point, the result was not found
@@ -448,8 +495,8 @@ class IsMember : public Validator {
 
     /// You can pass in as many filter functions as you like, they nest (string only currently)
     template <typename T, typename... Args>
-    IsMember(T set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : IsMember(std::move(set),
+    IsMember(T &&set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : IsMember(std::forward<T>(set),
                    [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                    other...) {}
 };
@@ -468,7 +515,7 @@ class Transformer : public Validator {
         : Transformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
 
     /// direct map of std::string to std::string
-    template <typename T> explicit Transformer(T mapping) : Transformer(std::move(mapping), nullptr) {}
+    template <typename T> explicit Transformer(T &&mapping) : Transformer(std::forward<T>(mapping), nullptr) {}
 
     /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
     /// both sides of the comparison before computing the comparison.
@@ -487,9 +534,9 @@ class Transformer : public Validator {
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         // This is the type name for help, it will take the current version of the set contents
-        tname_function = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
+        desc_function_ = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
 
-        func = [mapping, filter_fn](std::string &input) {
+        func_ = [mapping, filter_fn](std::string &input) {
             local_item_t b;
             if(!detail::lexical_cast(input, b)) {
                 return std::string();
@@ -498,32 +545,18 @@ class Transformer : public Validator {
             if(filter_fn) {
                 b = filter_fn(b);
             }
-
-            for(const auto &v : detail::smart_deref(mapping)) {
-                local_item_t a = detail::pair_adaptor<element_t>::first(v);
-
-                // The filter function might be empty, so don't filter if it is.
-                if(filter_fn) {
-                    a = filter_fn(a);
-                }
-
-                if(a == b) {
-                    // transform the input string
-                    // Requires std::stringstream << be supported on T
-                    input = detail::as_string(detail::pair_adaptor<element_t>::second(v));
-                    // Return empty error string (success)
-                    return std::string{};
-                }
+            auto res = detail::search(mapping, b, filter_fn);
+            if(res.first) {
+                input = detail::as_string(detail::pair_adaptor<element_t>::second(*res.second));
             }
-
             return std::string{};
         };
     }
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
-    Transformer(T mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : Transformer(std::move(mapping),
+    Transformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : Transformer(std::forward<T>(mapping),
                       [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                       other...) {}
 };
@@ -569,32 +602,20 @@ class CheckedTransformer : public Validator {
             out.push_back('}');
             return out;
         };
-        // assign the tname_function
-        tname_function = tfunc;
 
-        func = [mapping, tfunc, filter_fn](std::string &input) {
+        desc_function_ = tfunc;
+
+        func_ = [mapping, tfunc, filter_fn](std::string &input) {
             local_item_t b;
             bool converted = detail::lexical_cast(input, b);
             if(converted) {
                 if(filter_fn) {
                     b = filter_fn(b);
                 }
-
-                for(const auto &v : detail::smart_deref(mapping)) {
-                    local_item_t a = detail::pair_adaptor<element_t>::first(v);
-
-                    // The filter function might be empty, so don't filter if it is.
-                    if(filter_fn) {
-                        a = filter_fn(a);
-                    }
-
-                    if(a == b) {
-                        // transform the input string
-                        // Requires std::stringstream << be supported on T
-                        input = detail::as_string(detail::pair_adaptor<element_t>::second(v));
-                        // Return empty error string (success)
-                        return std::string{};
-                    }
+                auto res = detail::search(mapping, b, filter_fn);
+                if(res.first) {
+                    input = detail::as_string(detail::pair_adaptor<element_t>::second(*res.second));
+                    return std::string{};
                 }
             }
             for(const auto &v : detail::smart_deref(mapping)) {
@@ -610,8 +631,8 @@ class CheckedTransformer : public Validator {
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
-    CheckedTransformer(T mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : CheckedTransformer(std::move(mapping),
+    CheckedTransformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
+        : CheckedTransformer(std::forward<T>(mapping),
                              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                              other...) {}
 }; // namespace CLI
@@ -625,6 +646,7 @@ inline std::string ignore_underscore(std::string item) { return detail::remove_u
 /// Helper function to allow checks to ignore spaces to be passed to IsMember or Transform
 inline std::string ignore_space(std::string item) {
     item.erase(std::remove(std::begin(item), std::end(item), ' '), std::end(item));
+    item.erase(std::remove(std::begin(item), std::end(item), '\t'), std::end(item));
     return item;
 }
 

@@ -58,6 +58,9 @@ template <typename T> struct is_shared_ptr : std::false_type {};
 /// Check to see if something is a shared pointer (True if really a shared pointer)
 template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
+/// Check to see if something is a shared pointer (True if really a shared pointer)
+template <typename T> struct is_shared_ptr<const std::shared_ptr<T>> : std::true_type {};
+
 /// Check to see if something is copyable pointer
 template <typename T> struct is_copyable_ptr {
     static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
@@ -84,16 +87,20 @@ template <typename T> struct element_type {
 /// the container
 template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
 
-/// Adaptor for map-like structure: This just wraps a normal container in a few utilities that do almost nothing.
+/// Adaptor for set-like structure: This just wraps a normal container in a few utilities that do almost nothing.
 template <typename T, typename _ = void> struct pair_adaptor : std::false_type {
     using value_type = typename T::value_type;
     using first_type = typename std::remove_const<value_type>::type;
     using second_type = typename std::remove_const<value_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static first_type first(Q &&pair_value) { return pair_value; }
+    template <typename Q> static auto first(Q &&pair_value) -> decltype(std::forward<Q>(pair_value)) {
+        return std::forward<Q>(pair_value);
+    }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static second_type second(Q &&pair_value) { return pair_value; }
+    template <typename Q> static auto second(Q &&pair_value) -> decltype(std::forward<Q>(pair_value)) {
+        return std::forward<Q>(pair_value);
+    }
 };
 
 /// Adaptor for map-like structure (true version, must have key_type and mapped_type).
@@ -108,9 +115,13 @@ struct pair_adaptor<
     using second_type = typename std::remove_const<typename value_type::second_type>::type;
 
     /// Get the first value (really just the underlying value)
-    template <typename Q> static first_type first(Q &&pair_value) { return pair_value.first; }
+    template <typename Q> static auto first(Q &&pair_value) -> decltype(std::get<0>(std::forward<Q>(pair_value))) {
+        return std::get<0>(std::forward<Q>(pair_value));
+    }
     /// Get the second value (really just the underlying value)
-    template <typename Q> static second_type second(Q &&pair_value) { return pair_value.second; }
+    template <typename Q> static auto second(Q &&pair_value) -> decltype(std::get<1>(std::forward<Q>(pair_value))) {
+        return std::get<1>(std::forward<Q>(pair_value));
+    }
 };
 
 // Type name print

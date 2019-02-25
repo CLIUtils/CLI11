@@ -561,3 +561,137 @@ TEST_F(TApp, GetOptionList) {
     EXPECT_EQ(opt_list.at(1), flag);
     EXPECT_EQ(opt_list.at(2), opt);
 }
+
+TEST(ValidatorTests, TestValidatorCreation) {
+    std::function<std::string(std::string &)> op1 = [](std::string &val) {
+        return (val.size() >= 5) ? std::string{} : val;
+    };
+    CLI::Validator V(op1, "size");
+
+    EXPECT_EQ(V.get_name(), "size");
+    V.name("harry");
+    EXPECT_EQ(V.get_name(), "harry");
+    EXPECT_TRUE(V.get_active());
+
+    EXPECT_EQ(V("test"), "test");
+    EXPECT_EQ(V("test5"), std::string{});
+
+    EXPECT_EQ(V.get_description(), std::string{});
+    V.description("this is a description");
+    EXPECT_EQ(V.get_description(), "this is a description");
+}
+
+TEST(ValidatorTests, TestValidatorOps) {
+    std::function<std::string(std::string &)> op1 = [](std::string &val) {
+        return (val.size() >= 5) ? std::string{} : val;
+    };
+    std::function<std::string(std::string &)> op2 = [](std::string &val) {
+        return (val.size() >= 9) ? std::string{} : val;
+    };
+    std::function<std::string(std::string &)> op3 = [](std::string &val) {
+        return (val.size() < 3) ? std::string{} : val;
+    };
+    std::function<std::string(std::string &)> op4 = [](std::string &val) {
+        return (val.size() <= 9) ? std::string{} : val;
+    };
+    CLI::Validator V1(op1, "size", "SIZE >= 5");
+
+    CLI::Validator V2(op2, "size2", "SIZE >= 9");
+    CLI::Validator V3(op3, "size3", "SIZE < 3");
+    CLI::Validator V4(op4, "size4", "SIZE <= 9");
+
+    std::string two(2, 'a');
+    std::string four(4, 'a');
+    std::string five(5, 'a');
+    std::string eight(8, 'a');
+    std::string nine(9, 'a');
+    std::string ten(10, 'a');
+    EXPECT_TRUE(V1(five).empty());
+    EXPECT_FALSE(V1(four).empty());
+
+    EXPECT_TRUE(V2(nine).empty());
+    EXPECT_FALSE(V2(eight).empty());
+
+    EXPECT_TRUE(V3(two).empty());
+    EXPECT_FALSE(V3(four).empty());
+
+    EXPECT_TRUE(V4(eight).empty());
+    EXPECT_FALSE(V4(ten).empty());
+
+    auto V1a2 = V1 & V2;
+    EXPECT_EQ(V1a2.get_description(), "(SIZE >= 5) AND (SIZE >= 9)");
+    EXPECT_FALSE(V1a2(five).empty());
+    EXPECT_TRUE(V1a2(nine).empty());
+
+    auto V1a4 = V1 & V4;
+    EXPECT_EQ(V1a4.get_description(), "(SIZE >= 5) AND (SIZE <= 9)");
+    EXPECT_TRUE(V1a4(five).empty());
+    EXPECT_TRUE(V1a4(eight).empty());
+    EXPECT_FALSE(V1a4(ten).empty());
+    EXPECT_FALSE(V1a4(four).empty());
+
+    auto V1o3 = V1 | V3;
+    EXPECT_EQ(V1o3.get_description(), "(SIZE >= 5) OR (SIZE < 3)");
+    EXPECT_TRUE(V1o3(two).empty());
+    EXPECT_TRUE(V1o3(eight).empty());
+    EXPECT_TRUE(V1o3(ten).empty());
+    EXPECT_TRUE(V1o3(two).empty());
+    EXPECT_FALSE(V1o3(four).empty());
+
+    auto m1 = V1o3 & V4;
+    EXPECT_EQ(m1.get_description(), "((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)");
+    EXPECT_TRUE(m1(two).empty());
+    EXPECT_TRUE(m1(eight).empty());
+    EXPECT_FALSE(m1(ten).empty());
+    EXPECT_TRUE(m1(two).empty());
+    EXPECT_TRUE(m1(five).empty());
+    EXPECT_FALSE(m1(four).empty());
+
+    auto m2 = m1 & V2;
+    EXPECT_EQ(m2.get_description(), "(((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)");
+    EXPECT_FALSE(m2(two).empty());
+    EXPECT_FALSE(m2(eight).empty());
+    EXPECT_FALSE(m2(ten).empty());
+    EXPECT_FALSE(m2(two).empty());
+    EXPECT_TRUE(m2(nine).empty());
+    EXPECT_FALSE(m2(four).empty());
+
+    auto m3 = m2 | V3;
+    EXPECT_EQ(m3.get_description(), "((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)) OR (SIZE < 3)");
+    EXPECT_TRUE(m3(two).empty());
+    EXPECT_FALSE(m3(eight).empty());
+    EXPECT_TRUE(m3(nine).empty());
+    EXPECT_FALSE(m3(four).empty());
+
+    auto m4 = V3 | m2;
+    EXPECT_EQ(m4.get_description(), "(SIZE < 3) OR ((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9))");
+    EXPECT_TRUE(m4(two).empty());
+    EXPECT_FALSE(m4(eight).empty());
+    EXPECT_TRUE(m4(nine).empty());
+    EXPECT_FALSE(m4(four).empty());
+}
+
+TEST(ValidatorTests, TestValidatorNegation) {
+
+    std::function<std::string(std::string &)> op1 = [](std::string &val) {
+        return (val.size() >= 5) ? std::string{} : val;
+    };
+
+    CLI::Validator V1(op1, "size", "SIZE >= 5");
+
+    std::string four(4, 'a');
+    std::string five(5, 'a');
+
+    EXPECT_TRUE(V1(five).empty());
+    EXPECT_FALSE(V1(four).empty());
+
+    auto V2 = !V1;
+    EXPECT_FALSE(V2(five).empty());
+    EXPECT_TRUE(V2(four).empty());
+    EXPECT_EQ(V2.get_description(), "NOT SIZE >= 5");
+
+    V2.active(false);
+    EXPECT_TRUE(V2(five).empty());
+    EXPECT_TRUE(V2(four).empty());
+    EXPECT_TRUE(V2.get_description().empty());
+}

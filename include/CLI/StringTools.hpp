@@ -58,25 +58,26 @@ inline std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 /// simple utility to convert various types to a string
-template <typename T> std::string as_string(const T &v) {
+template <typename T> inline std::string as_string(const T &v) {
     std::ostringstream s;
     s << v;
     return s.str();
 }
 // if the data type is already a string just forward it
 template <typename T, typename = typename std::enable_if<std::is_constructible<std::string, T>::value>::type>
-auto as_string(T &&v) -> decltype(std::forward<T>(v)) {
+inline auto as_string(T &&v) -> decltype(std::forward<T>(v)) {
     return std::forward<T>(v);
 }
 
 /// Simple function to join a string
 template <typename T> std::string join(const T &v, std::string delim = ",") {
     std::ostringstream s;
-    size_t start = 0;
-    for(const auto &i : v) {
-        if(start++ > 0)
-            s << delim;
-        s << i;
+    auto beg = std::begin(v);
+    auto end = std::end(v);
+    if(beg != end)
+        s << *beg++;
+    while(beg != end) {
+        s << delim << *beg++;
     }
     return s.str();
 }
@@ -87,11 +88,12 @@ template <typename T,
           typename = typename std::enable_if<!std::is_constructible<std::string, Callable>::value>::type>
 std::string join(const T &v, Callable func, std::string delim = ",") {
     std::ostringstream s;
-    size_t start = 0;
-    for(const auto &i : v) {
-        if(start++ > 0)
-            s << delim;
-        s << func(i);
+    auto beg = std::begin(v);
+    auto end = std::end(v);
+    if(beg != end)
+        s << func(*beg++);
+    while(beg != end) {
+        s << delim << func(*beg++);
     }
     return s.str();
 }
