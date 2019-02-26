@@ -2,6 +2,8 @@
 #include <complex>
 #include <cstdlib>
 
+#include "gmock/gmock.h"
+
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
     args = {"-c"};
@@ -116,6 +118,23 @@ TEST_F(TApp, DashedOptionsSingleString) {
     EXPECT_EQ(1u, app.count("--q"));
     EXPECT_EQ(2u, app.count("--this"));
     EXPECT_EQ(2u, app.count("--that"));
+}
+
+TEST_F(TApp, RequireOptionsError) {
+    using ::testing::HasSubstr;
+    using ::testing::Not;
+    app.add_flag("-c");
+    app.add_flag("--q");
+    app.add_flag("--this,--that");
+    app.require_option(1, 2);
+    try {
+        app.parse("-c --q --this --that");
+    } catch(const CLI::RequiredError &re) {
+        EXPECT_THAT(re.what(), Not(HasSubstr("-h,--help")));
+    }
+
+    EXPECT_NO_THROW(app.parse("-c --q"));
+    EXPECT_NO_THROW(app.parse("-c --this --that"));
 }
 
 TEST_F(TApp, BoolFlagOverride) {

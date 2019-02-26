@@ -897,6 +897,35 @@ TEST_F(ManySubcommands, SubcommandOptionExclusion) {
     }
 }
 
+TEST_F(ManySubcommands, SubcommandRequired) {
+
+    sub1->required();
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub3", "sub4"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManySubcommands, SubcommandDisabled) {
+
+    sub3->disabled();
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    app.allow_extras(false);
+    sub2->allow_extras(false);
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    args = {"sub3", "sub4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    sub3->disabled(false);
+    args = {"sub3", "sub4"};
+    EXPECT_NO_THROW(run());
+}
 TEST_F(TApp, UnnamedSub) {
     double val;
     auto sub = app.add_subcommand("", "empty name");

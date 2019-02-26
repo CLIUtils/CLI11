@@ -392,6 +392,15 @@ struct ManyGroups : public TApp {
         g3->add_option("--name3", name3)->required();
         g3->add_option("--val3", val3);
     }
+
+    void remove_required() {
+        g1->get_option("--name1")->required(false);
+        g2->get_option("--name2")->required(false);
+        g3->get_option("--name3")->required(false);
+        g1->required(false);
+        g2->required(false);
+        g3->required(false);
+    }
 };
 
 TEST_F(ManyGroups, SingleGroup) {
@@ -452,4 +461,43 @@ TEST_F(ManyGroups, BetweenOneAndTwoGroups) {
 
     args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
     EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManyGroups, RequiredFirst) {
+    // only 1 group can be used
+    remove_required();
+    g1->required();
+
+    EXPECT_TRUE(g1->get_required());
+    EXPECT_FALSE(g2->get_required());
+    args = {"--name1", "test", "--name2", "test3"};
+    run();
+
+    args = {"--name2", "test"};
+    try {
+        run();
+    } catch(const CLI::RequiredError &re) {
+        EXPECT_THAT(re.what(), HasSubstr("g1"));
+    }
+
+    args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManyGroups, DisableFirst) {
+    // only 1 group can be used
+    remove_required();
+    g1->disabled();
+
+    EXPECT_TRUE(g1->get_disabled());
+    EXPECT_FALSE(g2->get_disabled());
+    args = {"--name2", "test"};
+
+    run();
+
+    args = {"--name1", "test", "--name2", "test3"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    g1->disabled(false);
+    args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
+    EXPECT_NO_THROW(run());
 }

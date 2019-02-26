@@ -154,6 +154,17 @@ TEST(Formatter, AllSub) {
     EXPECT_THAT(help, HasSubstr("subcom"));
 }
 
+TEST(Formatter, AllSubRequired) {
+    CLI::App app{"My prog"};
+    CLI::App *sub = app.add_subcommand("subcom", "This");
+    sub->add_flag("--insub", "MyFlag");
+    sub->required();
+    std::string help = app.help("", CLI::AppFormatMode::All);
+    EXPECT_THAT(help, HasSubstr("--insub"));
+    EXPECT_THAT(help, HasSubstr("subcom"));
+    EXPECT_THAT(help, HasSubstr("REQUIRED"));
+}
+
 TEST(Formatter, NamelessSub) {
     CLI::App app{"My prog"};
     CLI::App *sub = app.add_subcommand("", "This subcommand");

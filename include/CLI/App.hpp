@@ -1735,7 +1735,7 @@ class App {
         }
 
         for(const App_p &com : subcommands_)
-            if(com->check_name(current) && !*com)
+            if(!com->disabled_ && com->check_name(current) && !*com)
                 return true;
 
         // Check parent if exists, else return false
