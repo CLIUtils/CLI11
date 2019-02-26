@@ -869,22 +869,13 @@ class Option : public OptionBase<Option> {
         }
     }
     /// get the results as a vector of a particular type
-    template <typename T> void results(std::vector<T> &output, char delim = '\0') const {
+    template <typename T> void results(std::vector<T> &output) const {
         output.clear();
         bool retval = true;
 
         for(const auto &elem : results_) {
-            if(delim != '\0') {
-                for(const auto &var : CLI::detail::split(elem, delim)) {
-                    if(!var.empty()) {
-                        output.emplace_back();
-                        retval &= detail::lexical_cast(var, output.back());
-                    }
-                }
-            } else {
-                output.emplace_back();
-                retval &= detail::lexical_cast(elem, output.back());
-            }
+            output.emplace_back();
+            retval &= detail::lexical_cast(elem, output.back());
         }
 
         if(!retval) {
@@ -893,17 +884,9 @@ class Option : public OptionBase<Option> {
     }
 
     /// return the results as a particular type
-    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy> T as() const {
+    template <typename T> T as() const {
         T output;
         results(output);
-        return output;
-    }
-
-    /// get the results as a vector of a particular type
-    template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
-    T as(char delim = '\0') const {
-        T output;
-        results(output, delim);
         return output;
     }
 

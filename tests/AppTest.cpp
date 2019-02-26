@@ -1961,12 +1961,34 @@ TEST_F(TApp, CustomUserSepParse) {
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
     std::vector<int> vals2;
     // check that the results vector gets the results in the same way
-    opt->results(vals2, ',');
+    opt->results(vals2);
     EXPECT_EQ(vals2, vals);
 
     app.remove_option(opt);
 
     app.add_option("--idx", vals, "", true, ',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
+// #209
+TEST_F(TApp, CustomUserSepParseLaterDelimiter) {
+
+    std::vector<int> vals = {1, 2, 3};
+    args = {"--idx", "1,2,3"};
+    auto opt = app.add_option("--idx", vals);
+    opt->delimiter(',');
+    run();
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    std::vector<int> vals2;
+    // check that the results vector gets the results in the same way
+    opt->results(vals2);
+    EXPECT_EQ(vals2, vals);
+
+    app.remove_option(opt);
+
+    opt = app.add_option("--idx", vals, "", true);
+    opt->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
 }
