@@ -84,8 +84,11 @@ class App {
     /// If set to true the name was automatically generated from the command line vs a user set name
     bool has_automatic_name_{false};
 
-    /// If set to true the subcommand is required to be processed and used
+    /// If set to true the subcommand is required to be processed and used, ignored for main app
     bool required_{false};
+
+    /// If set to true the subcommand is disabled and cannot be used, ignored for main app
+    bool disabled_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
@@ -280,6 +283,12 @@ class App {
     /// Remove the error when extras are left over on the command line.
     App *required(bool require = true) {
         required_ = require;
+        return this;
+    }
+
+    /// Disable the subcommand or option group
+    App *disabled(bool disable = true) {
+        disabled_ = disable;
         return this;
     }
 
@@ -1560,6 +1569,9 @@ class App {
     /// Get the status of required
     bool get_required() const { return required_; }
 
+    /// Get the status of required
+    bool get_disabled() const { return disabled_; }
+
     /// Get the status of allow extras
     bool get_allow_config_extras() const { return allow_config_extras_; }
 
@@ -1900,6 +1912,8 @@ class App {
         // run this loop to check how many unnamed subcommands were actually used since they are considered options from
         // the perspective of an App
         for(App_p &sub : subcommands_) {
+            if(sub->disabled_)
+                continue;
             if((sub->name_.empty()) && (sub->count_all() > 0)) {
                 ++used_options;
             }
@@ -1911,7 +1925,7 @@ class App {
             if(option_list.compare(0, 10, "-h,--help,") == 0) {
                 option_list.erase(0, 10);
             }
-            auto subc_list = get_subcommands([](App *app) { return (app->get_name().empty()); });
+            auto subc_list = get_subcommands([](App *app) { return ((app->get_name().empty()) && (!app->disabled_)); });
             if(!subc_list.empty()) {
                 option_list += "," + detail::join(subc_list, [](const App *app) { return app->get_display_name(); });
             }
@@ -1920,6 +1934,8 @@ class App {
 
         // now process the requirements for subcommands if needed
         for(App_p &sub : subcommands_) {
+            if(sub->disabled_)
+                continue;
             if((sub->name_.empty()) && (sub->required_ == false)) {
                 if(sub->count_all() == 0) {
                     if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
@@ -2103,7 +2119,7 @@ class App {
         }
 
         for(auto &subc : subcommands_) {
-            if(subc->name_.empty()) {
+            if((subc->name_.empty()) && (!subc->disabled_)) {
                 subc->_parse_positional(args);
                 if(subc->missing_.empty()) { // check if it was used and is not in the missing category
                     return;
@@ -2139,6 +2155,8 @@ class App {
         if(_count_remaining_positionals(/* required */ true) > 0)
             return _parse_positional(args);
         for(const App_p &com : subcommands_) {
+            if(com->disabled_)
+                continue;
             if(com->check_name(args.back())) {
                 args.pop_back();
                 if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com.get()) ==
@@ -2193,11 +2211,12 @@ class App {
         // Option not found
         if(op_ptr == std::end(options_)) {
             for(auto &subc : subcommands_) {
-                if(subc->name_.empty()) {
+                if((subc->name_.empty()) && (!(subc->disabled_))) {
                     subc->_parse_arg(args, current_type);
                     if(subc->missing_.empty()) { // check if it was used and is not in the missing category
                         return;
                     } else {
+                        // for unnamed subs they shouldn't trigger a missing argument
                         args.push_back(std::move(subc->missing_.front().second));
                         subc->missing_.clear();
                     }
