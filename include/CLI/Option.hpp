@@ -52,7 +52,8 @@ template <typename CRTP> class OptionBase {
     bool configurable_{true};
     /// Disable overriding flag values with '=value'
     bool disable_flag_override_{false};
-
+    /// Specify a delimiter character for vector arguments
+    char delimiter_{'\0'};
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
@@ -64,6 +65,7 @@ template <typename CRTP> class OptionBase {
         other->ignore_underscore(ignore_underscore_);
         other->configurable(configurable_);
         other->disable_flag_override(disable_flag_override_);
+        other->delimiter(delimiter_);
         other->multi_option_policy(multi_option_policy_);
     }
 
@@ -106,6 +108,7 @@ template <typename CRTP> class OptionBase {
     /// The status of configurable
     bool get_disable_flag_override() const { return disable_flag_override_; }
 
+    char get_delimiter() const { return delimiter_; }
     /// The status of the multi option policy
     MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 
@@ -137,6 +140,12 @@ template <typename CRTP> class OptionBase {
         configurable_ = value;
         return static_cast<CRTP *>(this);
     }
+
+    /// Allow in a configuration file
+    CRTP *delimiter(char value = '\0') {
+        delimiter_ = value;
+        return static_cast<CRTP *>(this);
+    }
 };
 
 /// This is a version of OptionBase that only supports setting values,
@@ -165,9 +174,15 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
         return this;
     }
 
-    /// Ignore underscores in the option name
+    /// Disable overriding flag values with an '=<value>' segment
     OptionDefaults *disable_flag_override(bool value = true) {
         disable_flag_override_ = value;
+        return this;
+    }
+
+    /// set a delimiter character to split up single arguments to treat as multiple inputs
+    OptionDefaults *delimiter(char value = '\0') {
+        delimiter_ = value;
         return this;
     }
 };
@@ -793,19 +808,23 @@ class Option : public OptionBase<Option> {
 
     /// Puts a result at the end
     Option *add_result(std::string s) {
-        results_.push_back(std::move(s));
+        _add_result(std::move(s));
+        callback_run_ = false;
+        return this;
+    }
+
+    /// Puts a result at the end and get a count of the number of arguments actually added
+    Option *add_result(std::string s, int &count) {
+        count = _add_result(std::move(s));
         callback_run_ = false;
         return this;
     }
 
     /// Puts a result at the end
     Option *add_result(std::vector<std::string> s) {
-        if(results_.empty()) {
-            results_ = std::move(s);
-        } else {
-            results_.insert(results_.end(), s.begin(), s.end());
+        for(auto &str : s) {
+            _add_result(std::move(str));
         }
-
         callback_run_ = false;
         return this;
     }
@@ -935,6 +954,28 @@ class Option : public OptionBase<Option> {
 
     /// Get the typename for this option
     std::string get_type_name() const { return type_name_(); }
+
+  private:
+    int _add_result(std::string &&result) {
+        int count = 0;
+        if(delimiter_ == '\0') {
+            results_.push_back(std::move(result));
+            ++count;
+        } else {
+            if((result.find_first_of(delimiter_) != std::string::npos)) {
+                for(const auto &var : CLI::detail::split(result, delimiter_)) {
+                    if(!var.empty()) {
+                        results_.push_back(var);
+                        ++count;
+                    }
+                }
+            } else {
+                results_.push_back(std::move(result));
+                ++count;
+            }
+        }
+        return count;
+    }
 };
 
 } // namespace CLI
