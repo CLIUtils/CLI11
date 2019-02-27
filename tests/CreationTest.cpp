@@ -728,4 +728,36 @@ TEST(ValidatorTests, ValidatorDefaults) {
     EXPECT_EQ(V2.get_description(), "check");
     EXPECT_TRUE(V2.get_active());
     EXPECT_TRUE(V2.get_modifying());
+    // This class only support streaming in, not out
+}
+
+class Unstreamable {
+  private:
+    int x_ = -1;
+
+  public:
+    Unstreamable() {}
+    int get_x() const { return x_; }
+    void set_x(int x) { x_ = x; }
+};
+
+std::istream &operator>>(std::istream &in, Unstreamable &value) {
+    int x;
+    in >> x;
+    value.set_x(x);
+    return in;
+}
+
+TEST_F(TApp, MakeUnstreamableOptiions) {
+    Unstreamable value;
+    app.add_option("--value", value);
+
+    // This used to fail to build, since it tries to stream from Unstreamable
+    app.add_option("--value2", value, "", false);
+
+    std::vector<Unstreamable> values;
+    app.add_option("--values", values);
+
+    // This used to fail to build, since it tries to stream from Unstreamable
+    app.add_option("--values2", values, "", false);
 }

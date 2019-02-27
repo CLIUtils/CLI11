@@ -28,8 +28,8 @@ class ConfigJSON : public CLI::Config {
                         j[name] = opt->results();
 
                     // If the option has a default and is requested by optional argument
-                    else if(default_also && !opt->get_defaultval().empty())
-                        j[name] = opt->get_defaultval();
+                    else if(default_also && !opt->get_default_str().empty())
+                        j[name] = opt->get_default_str();
 
                     // Flag, one passed
                 } else if(opt->count() == 1) {

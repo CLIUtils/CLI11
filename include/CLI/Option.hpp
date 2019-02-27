@@ -50,10 +50,16 @@ template <typename CRTP> class OptionBase {
 
     /// Allow this option to be given in a configuration file
     bool configurable_{true};
+
     /// Disable overriding flag values with '=value'
     bool disable_flag_override_{false};
+
     /// Specify a delimiter character for vector arguments
     char delimiter_{'\0'};
+
+    /// Automatically capture default value
+    bool always_capture_default_{false};
+
     /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
@@ -107,7 +113,12 @@ template <typename CRTP> class OptionBase {
     /// The status of configurable
     bool get_disable_flag_override() const { return disable_flag_override_; }
 
+    /// Get the current delimeter char
     char get_delimiter() const { return delimiter_; }
+
+    /// Return true if this will automatically capture the default value for help printing
+    bool get_always_capture_default() const { return always_capture_default_; }
+
     /// The status of the multi option policy
     MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 
@@ -219,16 +230,16 @@ class Option : public OptionBase<Option> {
     /// The description for help strings
     std::string description_;
 
-    /// A human readable default value, usually only set if default is true in creation
-    std::string defaultval_;
+    /// A human readable default value, either manually set, captured, or captured by default
+    std::string default_str_;
 
     /// A human readable type value, set when App creates this
     ///
     /// This is a lambda function so "types" can be dynamic, such as when a set prints its contents.
     std::function<std::string()> type_name_{[]() { return std::string(); }};
 
-    /// True if this option has a default
-    bool default_{false};
+    /// Run this function to capture a default (ignore if empty)
+    std::function<std::string()> default_function_;
 
     ///@}
     /// @name Configuration
@@ -277,10 +288,8 @@ class Option : public OptionBase<Option> {
     Option(std::string option_name,
            std::string option_description,
            std::function<bool(results_t)> callback,
-           bool defaulted,
            App *parent)
-        : description_(std::move(option_description)), default_(defaulted), parent_(parent),
-          callback_(std::move(callback)) {
+        : description_(std::move(option_description)), parent_(parent), callback_(std::move(callback)) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name));
     }
 
@@ -306,6 +315,7 @@ class Option : public OptionBase<Option> {
 
     /// Set the number of expected arguments (Flags don't use this)
     Option *expected(int value) {
+
         // Break if this is a flag
         if(type_size_ == 0)
             throw IncorrectConstruction::SetFlag(get_name(true, true));
@@ -532,8 +542,12 @@ class Option : public OptionBase<Option> {
     /// The set of options excluded
     std::set<Option *> get_excludes() const { return excludes_; }
 
+    /// The default value (for help printing) DEPRECATED Use get_default_str() instead
+    CLI11_DEPRECATED("Use get_default_str() instead")
+    std::string get_defaultval() const { return default_str_; }
+
     /// The default value (for help printing)
-    std::string get_defaultval() const { return defaultval_; }
+    std::string get_default_str() const { return default_str_; }
 
     /// Get the callback function
     callback_t get_callback() const { return callback_; }
@@ -570,9 +584,6 @@ class Option : public OptionBase<Option> {
         return std::abs(type_size_ * expected_) *
                ((multi_option_policy_ != MultiOptionPolicy::Throw || (expected_ < 0 && type_size_ < 0) ? -1 : 1));
     }
-
-    /// True if this has a default value
-    int get_default() const { return default_; }
 
     /// True if the argument can be given directly
     bool get_positional() const { return pname_.length() > 0; }
@@ -843,7 +854,7 @@ class Option : public OptionBase<Option> {
     void results(T &output) const {
         bool retval;
         if(results_.empty()) {
-            retval = detail::lexical_cast(defaultval_, output);
+            retval = detail::lexical_cast(default_str_, output);
         } else if(results_.size() == 1) {
             retval = detail::lexical_cast(results_[0], output);
         } else {
@@ -917,13 +928,27 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Set the default value string representation
-    Option *default_str(std::string val) {
-        defaultval_ = val;
+    /// Set a capture function for the default. Mostly used by App.
+    Option *default_function(const std::function<std::string()> &func) {
+        default_function_ = func;
         return this;
     }
 
-    /// Set the default value string representation and evaluate
+    /// Capture the default value from the original value (if it can be captured)
+    Option *capture_default_str() {
+        if(default_function_) {
+            default_str_ = default_function_();
+        }
+        return this;
+    }
+
+    /// Set the default value string representation (does not change the contained value)
+    Option *default_str(std::string val) {
+        default_str_ = val;
+        return this;
+    }
+
+    /// Set the default value string representation and evaluate into the bound value
     Option *default_val(std::string val) {
         default_str(val);
         auto old_results = results_;

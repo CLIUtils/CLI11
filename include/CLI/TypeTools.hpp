@@ -124,6 +124,43 @@ struct pair_adaptor<
     }
 };
 
+// Check for streamability
+// Based on https://stackoverflow.com/questions/22758291/how-can-i-detect-if-a-type-can-be-streamed-to-an-stdostream
+
+template <typename S, typename T> class is_streamable {
+    template <typename SS, typename TT>
+    static auto test(int) -> decltype(std::declval<SS &>() << std::declval<TT>(), std::true_type());
+
+    template <typename, typename> static auto test(...) -> std::false_type;
+
+  public:
+    static const bool value = decltype(test<S, T>(0))::value;
+};
+
+/// Convert an object to a string (directly forward if this can become a string)
+template <typename T, enable_if_t<std::is_constructible<std::string, T>::value, detail::enabler> = detail::dummy>
+auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
+    return std::forward<T>(value);
+}
+
+/// Convert an object to a string (streaming must be supported for that type)
+template <typename T,
+          enable_if_t<!std::is_constructible<std::string, T>::value && is_streamable<std::stringstream, T>::value,
+                      detail::enabler> = detail::dummy>
+std::string to_string(T &&value) {
+    std::stringstream stream;
+    stream << value;
+    return stream.str();
+}
+
+/// If conversion is not supported, return an empty string (streaming is not supported for that type)
+template <typename T,
+          enable_if_t<!std::is_constructible<std::string, T>::value && !is_streamable<std::stringstream, T>::value,
+                      detail::enabler> = detail::dummy>
+std::string to_string(T &&) {
+    return std::string{};
+}
+
 // Type name print
 
 /// Was going to be based on

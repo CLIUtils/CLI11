@@ -437,17 +437,33 @@ class App {
     Option *add_option(std::string option_name,
                        callback_t option_callback,
                        std::string option_description = "",
-                       bool defaulted = false) {
-        Option myopt{option_name, option_description, option_callback, defaulted, this};
+                       bool defaulted = false,
+                       std::function<std::string()> func = {}) {
+        Option myopt{option_name, option_description, option_callback, this};
 
         if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) {
                return *v == myopt;
            }) == std::end(options_)) {
             options_.emplace_back();
             Option_p &option = options_.back();
-            option.reset(new Option(option_name, option_description, option_callback, defaulted, this));
+            option.reset(new Option(option_name, option_description, option_callback, this));
+
+            // Set the default string capture function
+            option->default_function(func);
+
+            // For compatibility with CLI11 1.7 and before, capture the default string here
+            if(defaulted)
+                option->capture_default_str();
+
+            // Transfer defaults to the new option
             option_defaults_.copy_to(option.get());
+
+            // Don't bother to capture if we already did
+            if(!defaulted && option->get_always_capture_default())
+                option->capture_default_str();
+
             return option.get();
+
         } else
             throw OptionAlreadyAdded(myopt.get_name());
     }
@@ -456,12 +472,16 @@ class App {
     template <typename T, enable_if_t<!is_vector<T>::value & !std::is_const<T>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
-                       std::string option_description = "") {
+                       std::string option_description = "",
+                       bool defaulted = false) {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
+        auto fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
 
-        Option *opt = add_option(option_name, fun, option_description, false);
+        Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
+            return std::string(CLI::detail::to_string(variable));
+        });
         opt->type_name(detail::type_name<T>());
+
         return opt;
     }
 
@@ -471,7 +491,7 @@ class App {
                                 const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
-        CLI::callback_t fun = [func](CLI::results_t res) {
+        auto fun = [func](CLI::results_t res) {
             T variable;
             bool result = detail::lexical_cast(res[0], variable);
             if(result) {
@@ -484,6 +504,7 @@ class App {
         opt->type_name(detail::type_name<T>());
         return opt;
     }
+
     /// Add option with no description or variable assignment
     Option *add_option(std::string option_name) {
         return add_option(option_name, CLI::callback_t(), std::string{}, false);
@@ -497,34 +518,14 @@ class App {
         return add_option(option_name, CLI::callback_t(), option_description, false);
     }
 
-    /// Add option for non-vectors with a default print, allow template to specify conversion type
-    template <typename T,
-              typename XC = T,
-              enable_if_t<!is_vector<XC>::value && !std::is_const<XC>::value, detail::enabler> = detail::dummy>
-    Option *add_option(std::string option_name,
-                       T &variable, ///< The variable to set
-                       std::string option_description,
-                       bool defaulted) {
-        static_assert(std::is_constructible<T, XC>::value, "assign type must be assignable from conversion type");
-        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast<XC>(res[0], variable); };
-
-        Option *opt = add_option(option_name, fun, option_description, defaulted);
-        opt->type_name(detail::type_name<XC>());
-        if(defaulted) {
-            std::stringstream out;
-            out << variable;
-            opt->default_str(out.str());
-        }
-        return opt;
-    }
-
     /// Add option for vectors
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description = "") {
+                       std::string option_description = "",
+                       bool defaulted = false) {
 
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
+        auto fun = [&variable](CLI::results_t res) {
             bool retval = true;
             variable.clear();
             variable.reserve(res.size());
@@ -536,35 +537,18 @@ class App {
             return (!variable.empty()) && retval;
         };
 
-        Option *opt = add_option(option_name, fun, option_description, false);
-        opt->type_name(detail::type_name<T>())->type_size(-1);
-        return opt;
-    }
-
-    /// Add option for vectors with defaulted argument
-    template <typename T>
-    Option *add_option(std::string option_name,
-                       std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description,
-                       bool defaulted) {
-
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
-            bool retval = true;
-            variable.clear();
-            variable.reserve(res.size());
-            for(const auto &elem : res) {
-
-                variable.emplace_back();
-                retval &= detail::lexical_cast(elem, variable.back());
-            }
-            return (!variable.empty()) && retval;
+        auto default_function = [&variable]() {
+            std::vector<std::string> defaults;
+            defaults.resize(variable.size());
+            std::transform(variable.begin(), variable.end(), defaults.begin(), [](T &val) {
+                return std::string(CLI::detail::to_string(val));
+            });
+            return std::string("[" + detail::join(defaults) + "]");
         };
 
-        Option *opt = add_option(option_name, fun, option_description, defaulted);
+        Option *opt = add_option(option_name, fun, option_description, defaulted, default_function);
         opt->type_name(detail::type_name<T>())->type_size(-1);
 
-        if(defaulted)
-            opt->default_str("[" + detail::join(variable) + "]");
         return opt;
     }
 
@@ -995,13 +979,16 @@ class App {
             return worked;
         };
 
-        CLI::Option *opt = add_option(option_name, std::move(fun), std::move(option_description), defaulted);
-        opt->type_name(label)->type_size(2);
-        if(defaulted) {
+        auto default_function = [&variable]() {
             std::stringstream out;
             out << variable;
-            opt->default_str(out.str());
-        }
+            return out.str();
+        };
+
+        CLI::Option *opt =
+            add_option(option_name, std::move(fun), std::move(option_description), defaulted, default_function);
+
+        opt->type_name(label)->type_size(2);
         return opt;
     }
 

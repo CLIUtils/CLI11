@@ -232,8 +232,8 @@ inline std::string Formatter::make_option_opts(const Option *opt) const {
     if(opt->get_type_size() != 0) {
         if(!opt->get_type_name().empty())
             out << " " << get_label(opt->get_type_name());
-        if(!opt->get_defaultval().empty())
-            out << "=" << opt->get_defaultval();
+        if(!opt->get_default_str().empty())
+            out << "=" << opt->get_default_str();
         if(opt->get_expected() > 1)
             out << " x " << opt->get_expected();
         if(opt->get_expected() == -1)
