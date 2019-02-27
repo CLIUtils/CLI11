@@ -1956,7 +1956,7 @@ TEST_F(TApp, CustomUserSepParse) {
 
     std::vector<int> vals = {1, 2, 3};
     args = {"--idx", "1,2,3"};
-    auto opt = app.add_option("--idx", vals, "", ',');
+    auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
     std::vector<int> vals2;
@@ -1966,29 +1966,7 @@ TEST_F(TApp, CustomUserSepParse) {
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true, ',');
-    run();
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
-}
-
-// #209
-TEST_F(TApp, CustomUserSepParseLaterDelimiter) {
-
-    std::vector<int> vals = {1, 2, 3};
-    args = {"--idx", "1,2,3"};
-    auto opt = app.add_option("--idx", vals);
-    opt->delimiter(',');
-    run();
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
-    std::vector<int> vals2;
-    // check that the results vector gets the results in the same way
-    opt->results(vals2);
-    EXPECT_EQ(vals2, vals);
-
-    app.remove_option(opt);
-
-    opt = app.add_option("--idx", vals, "", true);
-    opt->delimiter(',');
+    app.add_option("--idx", vals, "", true)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
 }
@@ -2001,8 +1979,7 @@ TEST_F(TApp, DefaultUserSepParse) {
     auto opt = app.add_option("--idx", vals, "");
     run();
     EXPECT_EQ(vals, std::vector<std::string>({"1 2 3", "4 5 6"}));
-    app.remove_option(opt);
-    app.add_option("--idx", vals, "", true);
+    opt->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<std::string>({"1 2 3", "4 5 6"}));
 }
@@ -2011,7 +1988,7 @@ TEST_F(TApp, DefaultUserSepParse) {
 TEST_F(TApp, BadUserSepParse) {
 
     std::vector<int> vals;
-    app.add_option("--idx", vals, "");
+    app.add_option("--idx", vals);
 
     args = {"--idx", "1,2,3"};
 
@@ -2023,13 +2000,13 @@ TEST_F(TApp, CustomUserSepParse2) {
 
     std::vector<int> vals = {1, 2, 3};
     args = {"--idx", "1,2,"};
-    auto opt = app.add_option("--idx", vals, "", ',');
+    auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true, ',');
+    app.add_option("--idx", vals, "", true)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }
@@ -2042,11 +2019,26 @@ TEST_F(TApp, CustomUserSepParseFunction) {
                                               [&vals](std::vector<int> v) {
                                                   vals = std::move(v);
                                                   return true;
-                                              },
-                                              "",
-                                              ',');
+                                              })
+        ->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+}
+
+// delimiter removal
+TEST_F(TApp, CustomUserSepParseToggle) {
+
+    std::vector<std::string> vals;
+    args = {"--idx", "1,2,3"};
+    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    run();
+    EXPECT_EQ(vals, std::vector<std::string>({"1", "2", "3"}));
+    opt->delimiter('\0');
+    run();
+    EXPECT_EQ(vals, std::vector<std::string>({"1,2,3"}));
+    opt->delimiter(',');
+    run();
+    EXPECT_EQ(vals, std::vector<std::string>({"1", "2", "3"}));
 }
 
 // #209
@@ -2057,12 +2049,12 @@ TEST_F(TApp, CustomUserSepParse3) {
             "1",
             ","
             "2"};
-    auto opt = app.add_option("--idx", vals, "", ',');
+    auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", false, ',');
+    app.add_option("--idx", vals, "", false)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }
@@ -2072,13 +2064,13 @@ TEST_F(TApp, CustomUserSepParse4) {
 
     std::vector<int> vals;
     args = {"--idx", "1,    2"};
-    auto opt = app.add_option("--idx", vals, "", ',');
+    auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true, ',');
+    app.add_option("--idx", vals, "", true)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }

@@ -435,42 +435,17 @@ class App {
         return opt;
     }
 
-    /// Add option for vectors (no default)
-    template <typename T>
-    Option *add_option(std::string option_name,
-                       std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description = "",
-                       char delimiter = '\0') {
-
-        CLI::callback_t fun = [&variable](CLI::results_t res) {
-            bool retval = true;
-            variable.clear();
-            for(const auto &elem : res) {
-                variable.emplace_back();
-                retval &= detail::lexical_cast(elem, variable.back());
-            }
-            return (!variable.empty()) && retval;
-        };
-
-        Option *opt = add_option(option_name, fun, option_description, false);
-        if(delimiter != '\0') {
-            opt->delimiter(delimiter);
-        }
-        opt->type_name(detail::type_name<T>())->type_size(-1);
-        return opt;
-    }
-
     /// Add option for vectors
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description,
-                       bool defaulted,
-                       char delimiter = '\0') {
+                       std::string option_description = "",
+                       bool defaulted = false) {
 
-        CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
             variable.clear();
+            variable.reserve(res.size());
             for(const auto &elem : res) {
 
                 variable.emplace_back();
@@ -481,9 +456,7 @@ class App {
 
         Option *opt = add_option(option_name, fun, option_description, defaulted);
         opt->type_name(detail::type_name<T>())->type_size(-1);
-        if(delimiter != '\0') {
-            opt->delimiter(delimiter);
-        }
+
         if(defaulted)
             opt->default_str("[" + detail::join(variable) + "]");
         return opt;
@@ -493,8 +466,7 @@ class App {
     template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     Option *add_option_function(std::string option_name,
                                 const std::function<bool(const T &)> &func, ///< the callback to execute
-                                std::string option_description = "",
-                                char delimiter = '\0') {
+                                std::string option_description = "") {
 
         CLI::callback_t fun = [func](CLI::results_t res) {
             T values;
@@ -511,9 +483,6 @@ class App {
         };
 
         Option *opt = add_option(option_name, std::move(fun), std::move(option_description), false);
-        if(delimiter != '\0') {
-            opt->delimiter(delimiter);
-        }
         opt->type_name(detail::type_name<T>())->type_size(-1);
         return opt;
     }
