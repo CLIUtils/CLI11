@@ -435,28 +435,20 @@ class App {
         return opt;
     }
 
-    /// Add option for vectors (no default)
+    /// Add option for vectors
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description = "",
-                       char delimiter = '\0') {
+                       std::string option_description = "") {
 
-        CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
             variable.clear();
+            variable.reserve(res.size());
             for(const auto &elem : res) {
-                if((delimiter != '\0') && (elem.find_first_of(delimiter) != std::string::npos)) {
-                    for(const auto &var : CLI::detail::split(elem, delimiter)) {
-                        if(!var.empty()) {
-                            variable.emplace_back();
-                            retval &= detail::lexical_cast(var, variable.back());
-                        }
-                    }
-                } else {
-                    variable.emplace_back();
-                    retval &= detail::lexical_cast(elem, variable.back());
-                }
+
+                variable.emplace_back();
+                retval &= detail::lexical_cast(elem, variable.back());
             }
             return (!variable.empty()) && retval;
         };
@@ -466,35 +458,28 @@ class App {
         return opt;
     }
 
-    /// Add option for vectors
+    /// Add option for vectors with defaulted argument
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
                        std::string option_description,
-                       bool defaulted,
-                       char delimiter = '\0') {
+                       bool defaulted) {
 
-        CLI::callback_t fun = [&variable, delimiter](CLI::results_t res) {
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
             variable.clear();
+            variable.reserve(res.size());
             for(const auto &elem : res) {
-                if((delimiter != '\0') && (elem.find_first_of(delimiter) != std::string::npos)) {
-                    for(const auto &var : CLI::detail::split(elem, delimiter)) {
-                        if(!var.empty()) {
-                            variable.emplace_back();
-                            retval &= detail::lexical_cast(var, variable.back());
-                        }
-                    }
-                } else {
-                    variable.emplace_back();
-                    retval &= detail::lexical_cast(elem, variable.back());
-                }
+
+                variable.emplace_back();
+                retval &= detail::lexical_cast(elem, variable.back());
             }
             return (!variable.empty()) && retval;
         };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted);
         opt->type_name(detail::type_name<T>())->type_size(-1);
+
         if(defaulted)
             opt->default_str("[" + detail::join(variable) + "]");
         return opt;
@@ -504,25 +489,15 @@ class App {
     template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     Option *add_option_function(std::string option_name,
                                 const std::function<bool(const T &)> &func, ///< the callback to execute
-                                std::string option_description = "",
-                                char delimiter = '\0') {
+                                std::string option_description = "") {
 
-        CLI::callback_t fun = [func, delimiter](CLI::results_t res) {
+        CLI::callback_t fun = [func](CLI::results_t res) {
             T values;
             bool retval = true;
             values.reserve(res.size());
             for(const auto &elem : res) {
-                if((delimiter != '\0') && (elem.find_first_of(delimiter) != std::string::npos)) {
-                    for(const auto &var : CLI::detail::split(elem, delimiter)) {
-                        if(!var.empty()) {
-                            values.emplace_back();
-                            retval &= detail::lexical_cast(var, values.back());
-                        }
-                    }
-                } else {
-                    values.emplace_back();
-                    retval &= detail::lexical_cast(elem, values.back());
-                }
+                values.emplace_back();
+                retval &= detail::lexical_cast(elem, values.back());
             }
             if(retval) {
                 return func(values);
@@ -2032,6 +2007,7 @@ class App {
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;
         // deal with flag like things
+        int count = 0;
         if(num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
@@ -2039,20 +2015,22 @@ class App {
         }
         // --this=value
         else if(!value.empty()) {
+            op->add_result(value, count);
+            parse_order_.push_back(op.get());
+            collected += count;
             // If exact number expected
             if(num > 0)
-                num--;
-            op->add_result(value);
-            parse_order_.push_back(op.get());
-            collected += 1;
+                num = (num >= count) ? num - count : 0;
+
             // -Trest
         } else if(!rest.empty()) {
-            if(num > 0)
-                num--;
-            op->add_result(rest);
+            op->add_result(rest, count);
             parse_order_.push_back(op.get());
             rest = "";
-            collected += 1;
+            collected += count;
+            // If exact number expected
+            if(num > 0)
+                num = (num >= count) ? num - count : 0;
         }
 
         // Unlimited vector parser
@@ -2065,10 +2043,10 @@ class App {
                     if(_count_remaining_positionals() > 0)
                         break;
                 }
-                op->add_result(args.back());
+                op->add_result(args.back(), count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
-                collected++;
+                collected += count;
             }
 
             // Allow -- to end an unlimited list and "eat" it
@@ -2077,11 +2055,11 @@ class App {
 
         } else {
             while(num > 0 && !args.empty()) {
-                num--;
                 std::string current_ = args.back();
                 args.pop_back();
-                op->add_result(current_);
+                op->add_result(current_, count);
                 parse_order_.push_back(op.get());
+                num -= count;
             }
 
             if(num > 0) {

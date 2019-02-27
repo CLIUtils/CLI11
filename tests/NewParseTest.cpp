@@ -77,6 +77,38 @@ TEST_F(TApp, BuiltinComplex) {
     EXPECT_DOUBLE_EQ(3, comp.imag());
 }
 
+TEST_F(TApp, BuiltinComplexWithDelimiter) {
+    cx comp{1, 2};
+    app.add_complex("-c,--complex", comp, "", true)->delimiter('+');
+
+    args = {"-c", "4+3i"};
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, HasSubstr("2"));
+    EXPECT_THAT(help, HasSubstr("COMPLEX"));
+
+    EXPECT_DOUBLE_EQ(1, comp.real());
+    EXPECT_DOUBLE_EQ(2, comp.imag());
+
+    run();
+
+    EXPECT_DOUBLE_EQ(4, comp.real());
+    EXPECT_DOUBLE_EQ(3, comp.imag());
+
+    args = {"-c", "5+-3i"};
+    run();
+
+    EXPECT_DOUBLE_EQ(5, comp.real());
+    EXPECT_DOUBLE_EQ(-3, comp.imag());
+
+    args = {"-c", "6", "-4i"};
+    run();
+
+    EXPECT_DOUBLE_EQ(6, comp.real());
+    EXPECT_DOUBLE_EQ(-4, comp.imag());
+}
+
 TEST_F(TApp, BuiltinComplexIgnoreI) {
     cx comp{1, 2};
     app.add_complex("-c,--complex", comp);

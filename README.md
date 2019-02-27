@@ -273,6 +273,7 @@ Before parsing, you can set the following options:
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->disable_flag_override()`:  from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
+-    `->delimiter(char)`: allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(CLI::IsMember(...))`: Require an option be a member of a given set. See below for options.
@@ -338,9 +339,7 @@ In most cases the fastest and easiest way is to return the results through a cal
 
 - `results()`: retrieves a vector of strings with all the results in the order they were given.
 - `results(variable_to_bind_to)`: gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-- `results(vector_type_variable,delimiter)`: gets the results to a vector type and uses a delimiter to further split the values
-- `Value=as<type>()`: returns the result or default value directly as the specified type if possible.
-- `Vector_value=as<type>(delimiter): same the results function with the delimiter but returns the value directly.  
+- `Value=as<type>()`: returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -434,7 +433,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `disable_flag_override`,`multi_option_policy`, `ignore_underscore`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `disable_flag_override`,`multi_option_policy`, `ignore_underscore`,`delimiter`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();
