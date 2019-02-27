@@ -439,8 +439,31 @@ class App {
     template <typename T>
     Option *add_option(std::string option_name,
                        std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description = "",
-                       bool defaulted = false) {
+                       std::string option_description = "") {
+
+        CLI::callback_t fun = [&variable](CLI::results_t res) {
+            bool retval = true;
+            variable.clear();
+            variable.reserve(res.size());
+            for(const auto &elem : res) {
+
+                variable.emplace_back();
+                retval &= detail::lexical_cast(elem, variable.back());
+            }
+            return (!variable.empty()) && retval;
+        };
+
+        Option *opt = add_option(option_name, fun, option_description, false);
+        opt->type_name(detail::type_name<T>())->type_size(-1);
+        return opt;
+    }
+
+    /// Add option for vectors with defaulted argument
+    template <typename T>
+    Option *add_option(std::string option_name,
+                       std::vector<T> &variable, ///< The variable vector to set
+                       std::string option_description,
+                       bool defaulted) {
 
         CLI::callback_t fun = [&variable](CLI::results_t res) {
             bool retval = true;
