@@ -43,24 +43,38 @@ class Validator {
     std::string name_;
     /// Enable for Validator to allow it to be disabled if need be
     bool active_{true};
+    /// specify that a validator should not modify the input
+    bool non_modifying_{false};
 
   public:
     Validator() = default;
     /// Construct a Validator with just the description string
     explicit Validator(std::string validator_desc) : desc_function_([validator_desc]() { return validator_desc; }) {}
     // Construct Validator from basic information
-    explicit Validator(std::function<std::string(std::string &)> op,
-                       std::string validator_name = "",
-                       std::string validator_desc = "")
+    Validator(std::function<std::string(std::string &)> op, std::string validator_desc, std::string validator_name = "")
         : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(op)),
           name_(std::move(validator_name)) {}
     /// Set the Validator operation function
-    void operation(std::function<std::string(std::string &)> op) { func_ = std::move(op); }
-    /// This is the required operator for a validator - provided to help
+    Validator &operation(std::function<std::string(std::string &)> op) {
+        func_ = std::move(op);
+        return *this;
+    }
+    /// This is the required operator for a Validator - provided to help
     /// users (CLI11 uses the member `func` directly)
-    std::string operator()(std::string &str) const { return (active_) ? func_(str) : std::string(); };
+    std::string operator()(std::string &str) const {
+        std::string retstring;
+        if(active_) {
+            if(non_modifying_) {
+                std::string value = str;
+                retstring = func_(value);
+            } else {
+                retstring = func_(str);
+            }
+        }
+        return retstring;
+    };
 
-    /// This is the required operator for a validator - provided to help
+    /// This is the required operator for a Validator - provided to help
     /// users (CLI11 uses the member `func` directly)
     std::string operator()(const std::string &str) const {
         std::string value = str;
@@ -72,7 +86,7 @@ class Validator {
         desc_function_ = [validator_desc]() { return validator_desc; };
         return *this;
     }
-    /// Generate type description information for the validator
+    /// Generate type description information for the Validator
     std::string get_description() const {
         if(active_) {
             return desc_function_();
@@ -91,8 +105,18 @@ class Validator {
         active_ = active_val;
         return *this;
     }
+
+    /// Specify whether the Validator can be modifying or not
+    Validator &non_modifying(bool no_modify = true) {
+        non_modifying_ = no_modify;
+        return *this;
+    }
+
     /// Get a boolean if the validator is active
     bool get_active() const { return active_; }
+
+    /// Get a boolean if the validator is allowed to modify the input returns true if it can modify the input
+    bool get_modifying() const { return !non_modifying_; }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
@@ -333,8 +357,8 @@ class Range : public Validator {
 
         func_ = [min, max](std::string &input) {
             T val;
-            detail::lexical_cast(input, val);
-            if(val < min || val > max)
+            bool converted = detail::lexical_cast(input, val);
+            if((!converted) || (val < min || val > max))
                 return "Value " + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
 
             return std::string();
@@ -343,6 +367,37 @@ class Range : public Validator {
 
     /// Range of one value is 0 to value
     template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
+};
+
+/// Produce a bounded range (factory). Min and max are inclusive.
+class Bound : public Validator {
+  public:
+    /// This bounds a value with min and max inclusive.
+    ///
+    /// Note that the constructor is templated, but the struct is not, so C++17 is not
+    /// needed to provide nice syntax for Range(a,b).
+    template <typename T> Bound(T min, T max) {
+        std::stringstream out;
+        out << detail::type_name<T>() << " bounded to [" << min << " - " << max << "]";
+        description(out.str());
+
+        func_ = [min, max](std::string &input) {
+            T val;
+            bool converted = detail::lexical_cast(input, val);
+            if(!converted) {
+                return "Value " + input + " could not be converted";
+            }
+            if(val < min)
+                input = detail::as_string(min);
+            else if(val > max)
+                input = detail::as_string(max);
+
+            return std::string();
+        };
+    }
+
+    /// Range of one value is 0 to value
+    template <typename T> explicit Bound(T max) : Bound(static_cast<T>(0), max) {}
 };
 
 namespace detail {

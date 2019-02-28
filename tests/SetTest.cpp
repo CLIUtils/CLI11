@@ -140,6 +140,38 @@ TEST_F(TApp, structMapChange) {
     args = {"-s", "S_t_w_o"};
     run();
     EXPECT_EQ(struct_name, "stwo");
+    args = {"-s", "S two"};
+    run();
+    EXPECT_EQ(struct_name, "stwo");
+}
+
+TEST_F(TApp, structMapNoChange) {
+    struct tstruct {
+        int val2;
+        double val3;
+        std::string v4;
+    };
+    std::string struct_name;
+    std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
+    auto opt = app.add_option("-s,--set", struct_name)
+                   ->check(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
+    args = {"-s", "SONE"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--set"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(struct_name, "SONE");
+
+    args = {"-s", "sthree"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-s", "S_t_w_o"};
+    run();
+    EXPECT_EQ(struct_name, "S_t_w_o");
+
+    args = {"-s", "S two"};
+    run();
+    EXPECT_EQ(struct_name, "S two");
 }
 
 TEST_F(TApp, NonCopyableMap) {

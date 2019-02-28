@@ -331,7 +331,8 @@ TEST_F(TApp, IntTransformNonMerge) {
     std::string value;
     app.add_option("-s", value)
         ->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) &
-                    CLI::Transformer(std::map<int, int>{{25, 5}, {28, 6}, {31, 7}}));
+                        CLI::Transformer(std::map<int, int>{{25, 5}, {28, 6}, {31, 7}}),
+                    "merge");
     args = {"-s", "15"};
     run();
     EXPECT_EQ(value, "5");
@@ -356,18 +357,29 @@ TEST_F(TApp, IntTransformNonMerge) {
     auto help = app.help();
     EXPECT_TRUE(help.find("15->5") != std::string::npos);
     EXPECT_TRUE(help.find("25->5") != std::string::npos);
+
+    auto validator = app.get_option("-s")->get_validator();
+    help = validator->get_description();
+    EXPECT_TRUE(help.find("15->5") != std::string::npos);
+    EXPECT_TRUE(help.find("25->5") != std::string::npos);
+
+    auto validator2 = app.get_option("-s")->get_validator("merge");
+    EXPECT_EQ(validator2, validator);
 }
 
 TEST_F(TApp, IntTransformMergeWithCustomValidator) {
     std::string value;
-    app.add_option("-s", value)
-        ->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) |
-                    CLI::Validator([](std::string &element) {
-                        if(element == "frog") {
-                            element = "hops";
-                        }
-                        return std::string{};
-                    }));
+    auto opt = app.add_option("-s", value)
+                   ->transform(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) |
+                                   CLI::Validator(
+                                       [](std::string &element) {
+                                           if(element == "frog") {
+                                               element = "hops";
+                                           }
+                                           return std::string{};
+                                       },
+                                       std::string{}),
+                               "check");
     args = {"-s", "15"};
     run();
     EXPECT_EQ(value, "5");
@@ -388,4 +400,34 @@ TEST_F(TApp, IntTransformMergeWithCustomValidator) {
     auto help = app.help();
     EXPECT_TRUE(help.find("15->5") != std::string::npos);
     EXPECT_TRUE(help.find("OR") == std::string::npos);
+
+    auto validator = opt->get_validator("check");
+    EXPECT_EQ(validator->get_name(), "check");
+    validator->active(false);
+    help = app.help();
+    EXPECT_TRUE(help.find("15->5") == std::string::npos);
+}
+
+TEST_F(TApp, BoundTests) {
+    double value;
+    app.add_option("-s", value)->transform(CLI::Bound(3.4, 5.9));
+    args = {"-s", "15"};
+    run();
+    EXPECT_EQ(value, 5.9);
+
+    args = {"-s", "3.689"};
+    run();
+    EXPECT_EQ(value, std::stod("3.689"));
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "abcd"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-s", "2.5"};
+    run();
+    EXPECT_EQ(value, 3.4);
+
+    auto help = app.help();
+    EXPECT_TRUE(help.find("bounded to") != std::string::npos);
+    EXPECT_TRUE(help.find("[3.4 - 5.9]") != std::string::npos);
 }

@@ -566,7 +566,7 @@ TEST(ValidatorTests, TestValidatorCreation) {
     std::function<std::string(std::string &)> op1 = [](std::string &val) {
         return (val.size() >= 5) ? std::string{} : val;
     };
-    CLI::Validator V(op1, "size");
+    CLI::Validator V(op1, "", "size");
 
     EXPECT_EQ(V.get_name(), "size");
     V.name("harry");
@@ -594,11 +594,11 @@ TEST(ValidatorTests, TestValidatorOps) {
     std::function<std::string(std::string &)> op4 = [](std::string &val) {
         return (val.size() <= 9) ? std::string{} : val;
     };
-    CLI::Validator V1(op1, "size", "SIZE >= 5");
+    CLI::Validator V1(op1, "SIZE >= 5");
 
-    CLI::Validator V2(op2, "size2", "SIZE >= 9");
-    CLI::Validator V3(op3, "size3", "SIZE < 3");
-    CLI::Validator V4(op4, "size4", "SIZE <= 9");
+    CLI::Validator V2(op2, "SIZE >= 9");
+    CLI::Validator V3(op3, "SIZE < 3");
+    CLI::Validator V4(op4, "SIZE <= 9");
 
     std::string two(2, 'a');
     std::string four(4, 'a');
@@ -677,7 +677,7 @@ TEST(ValidatorTests, TestValidatorNegation) {
         return (val.size() >= 5) ? std::string{} : val;
     };
 
-    CLI::Validator V1(op1, "size", "SIZE >= 5");
+    CLI::Validator V1(op1, "SIZE >= 5", "size");
 
     std::string four(4, 'a');
     std::string five(5, 'a');
@@ -694,4 +694,31 @@ TEST(ValidatorTests, TestValidatorNegation) {
     EXPECT_TRUE(V2(five).empty());
     EXPECT_TRUE(V2(four).empty());
     EXPECT_TRUE(V2.get_description().empty());
+}
+
+TEST(ValidatorTests, ValidatorDefaults) {
+
+    CLI::Validator V1{};
+
+    std::string four(4, 'a');
+    std::string five(5, 'a');
+
+    // make sure this doesn't generate a seg fault or something
+    EXPECT_TRUE(V1(five).empty());
+    EXPECT_TRUE(V1(four).empty());
+
+    EXPECT_TRUE(V1.get_name().empty());
+    EXPECT_TRUE(V1.get_description().empty());
+    EXPECT_TRUE(V1.get_active());
+    EXPECT_TRUE(V1.get_modifying());
+
+    CLI::Validator V2{"check"};
+    // make sure this doesn't generate a seg fault or something
+    EXPECT_TRUE(V2(five).empty());
+    EXPECT_TRUE(V2(four).empty());
+
+    EXPECT_TRUE(V2.get_name().empty());
+    EXPECT_EQ(V2.get_description(), "check");
+    EXPECT_TRUE(V2.get_active());
+    EXPECT_TRUE(V2.get_modifying());
 }
