@@ -210,7 +210,7 @@ app.add_flag_callback(option_name,function<void(void)>,help_string="") // 🚧
 // Add subcommands
 App* subcom = app.add_subcommand(name, description);
 
-Option_group *app.add_option_group(name,description);
+Option_group *app.add_option_group(name,description); //🚧
 
 // 🚧 All add_*set* methods deprecated in CLI11 1.8 - use ->transform(CLI::IsMember) instead
 -app.add_set(option_name,
@@ -250,7 +250,7 @@ app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag") // 🚧
 using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
 
 
-On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
+On a `C++14` compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
 On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL 1` before including CLI11 to manually add support (or 0 to remove) for `boost::optional`. See [CLI11 Internals][] for information on how this was done and how you can add your own converters.
 
@@ -372,11 +372,11 @@ There are several options that are supported on the main app and subcommands and
 -   `.ignore_underscore()`: 🆕 Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
--   `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
--   `.exludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
--   `.require_option()`: Require 1 or more options or option groups be used.
--   `.require_option(N)`: Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
--   `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 is unlimited.
+-   `.disable()`: 🚧 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
+-   `.exludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
+-   `.require_option()`: 🚧 Require 1 or more options or option groups be used.
+-   `.require_option(N)`:  🚧 Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
+-   `.require_option(min, max)`: 🚧 Explicitly set min and max allowed options or option groups. Setting `max` to 0 is unlimited.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
@@ -384,7 +384,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.add_subcommand(shared_ptr<App>)` 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
--   `.add_option_group(name="", description="")`: Add an option group to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
+-   `.add_option_group(name="", description="")`: 🚧 Add an option group to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.
 -   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
 -   `.get_option_no_throw(name)`: 🚧 Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
@@ -394,9 +394,9 @@ There are several options that are supported on the main app and subcommands and
 -   `.description(str)`: 🆕 Set/change the description.
 -   `.get_description()`: Access the description.
 -   `.parsed()`: True if this subcommand was given on the command line.
--   `.count()`: returns the number of times the subcommand was called
--   `.count(option_name)`: returns the number of times a particular option was called
--   `.count_all()`: returns the total number of arguments a particular subcommand had, on the master App it returns the total number of processed commands
+-   `.count()`: Returns the number of times the subcommand was called
+-   `.count(option_name)`: Returns the number of times a particular option was called
+-   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand had, on the master App it returns the total number of processed commands
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
@@ -411,8 +411,8 @@ There are several options that are supported on the main app and subcommands and
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
-#### Option Groups
-The function
+#### Option Groups 
+ 🚧 The method 
 ```cpp
 .add_option_group(name,description)
 ```

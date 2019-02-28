@@ -18,7 +18,7 @@ TEST_F(TApp, BasicOptionGroup) {
     args = {"--test1", "5"};
     run();
     EXPECT_EQ(res, 5);
-    EXPECT_EQ(app.count_all(), 1);
+    EXPECT_EQ(app.count_all(), 1u);
 }
 
 TEST_F(TApp, BasicOptionGroupExact) {
