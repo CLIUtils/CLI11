@@ -4,7 +4,7 @@
 
 [![Build Status Linux and macOS][travis-badge]][travis]
 [![Build Status Windows][appveyor-badge]][appveyor]
-[![Build Status Azure][azure-badge]][azure-link]
+[![Build Status Azure][azure-badge]][azure]
 [![Code Coverage][codecov-badge]][codecov]
 [![Codacy Badge][codacy-badge]][codacy-link]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
@@ -572,7 +572,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [doi-badge]: https://zenodo.org/badge/80064252.svg
 [doi-link]: https://zenodo.org/badge/latestdoi/80064252
 [azure-badge]: https://dev.azure.com/CLIUtils/CLI11/_apis/build/status/CLIUtils.CLI11?branchName=master
-[azure-link]: https://dev.azure.com/CLIUtils/CLI11/_build/|latest?definitionId=1&branchName=master
+[azure]: https://dev.azure.com/CLIUtils/CLI11/_build/|latest?definitionId=1&branchName=master
 [travis-badge]: https://img.shields.io/travis/CLIUtils/CLI11/master.svg?label=Linux/macOS
 [travis]: https://travis-ci.org/CLIUtils/CLI11
 [appveyor-badge]: https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows
