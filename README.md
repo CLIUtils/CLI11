@@ -213,13 +213,13 @@ App* subcom = app.add_subcommand(name, description);
 -            set_of_possible_options, // Set will be copied, ignores changes
 -            help_string="",
 -            default=false)
--app.add_mutable_set(... // Set can change later, keeps reference
+-app.add_mutable_set(... // 🆕 Set can change later, keeps reference
 -app.add_set_ignore_case(...                    // String only
--app.add_mutable_set_ignore_case(...            // String only
--app.add_set_ignore_underscore(...              // String only
--app.add_mutable_set_ignore_underscore(...      // String only
--app.add_set_ignore_case_underscore(...         // String only
--app.add_mutable_set_ignore_case_underscore(... // String only
+-app.add_mutable_set_ignore_case(...            // 🆕 String only
+-app.add_set_ignore_underscore(...              // 🆕 String only
+-app.add_mutable_set_ignore_underscore(...      // 🆕 String only
+-app.add_set_ignore_case_underscore(...         // 🆕 String only
+-app.add_mutable_set_ignore_case_underscore(... // 🆕 String only
 ```
 
 An option name must start with a alphabetic character, underscore, or a number. For long options, anything but an equals sign or a comma is valid after that, though for the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
@@ -273,7 +273,7 @@ Before parsing, you can set the following options:
 -   `->ignore_underscore()`: 🚧 Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->disable_flag_override()`: 🚧 from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
 -    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
--   `->description(str)`: Set/change the description.
+-   `->description(str)`: 🆕 Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set. See below for options.
 -   `->transform(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set or map. Can change the parse. See below for options.
@@ -291,9 +291,7 @@ Before parsing, you can set the following options:
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).  Validators can also be inverted with `!` such as `->check(!CLI::ExistingFile)` which would check that a file doesn't exist.
 
-> 🚧 IsMember is new in CLI11 1.8
-
-The `IsMember` validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertible from a string. You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
+🚧 The `IsMember` validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertible from a string. You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`.
 Here are some examples
 of `IsMember`:
@@ -317,7 +315,7 @@ On the command line, options can be given as:
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
-If `allow_windows_style_options()` is specified in the application or subcommand options can also be given as:
+🆕 If `allow_windows_style_options()` is specified in the application or subcommand options can also be given as:
 -   `/a` (flag)
 -   `/f filename` (option)
 -   `/long` (long flag)
@@ -344,7 +342,7 @@ In most cases the fastest and easiest way is to return the results through a cal
 
 ### Subcommands
 
-Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. `->ignore_underscore()` is similar, but for underscores. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including `ignore_case` and `ignore_underscore`).
+Subcommands are supported, and can be nested infinitely. To add a subcommand, call the `add_subcommand` method with a name and an optional description. This gives a pointer to an `App` that behaves just like the main app, and can take options or further subcommands. Add `->ignore_case()` to a subcommand to allow any variation of caps to also be accepted. 🆕 `->ignore_underscore()` is similar, but for underscores. Children inherit the current setting from the parent. You cannot add multiple matching subcommand names at the same level (including `ignore_case` and 🆕 `ignore_underscore`).
 
 If you want to require that at least one subcommand is given, use `.require_subcommand()` on the parent app. You can optionally give an exact number of subcommands to require, as well. If you give two arguments, that sets the min and max number allowed.
 0 for the max number allowed will allow an unlimited number of subcommands. As a handy shortcut, a single negative value N will set "up to N" values. Limiting the maximum number allows you to keep arguments that match a previous
@@ -366,8 +364,8 @@ Nameless subcommands function a similarly to groups in the main `App`.  If an op
 There are several options that are supported on the main app and subcommands. These are:
 
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
--   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
--   `.allow_windows_style_options()`:  Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
+-   `.ignore_underscore()`: 🆕 Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
+-   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
@@ -382,7 +380,7 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 -   `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
 -   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
--   `.description(str)`: Set/change the description.
+-   `.description(str)`: 🆕 Set/change the description.
 -   `.get_description()`: Access the description.
 -   `.parsed()`: True if this subcommand was given on the command line.
 -   `.name(name)`: Add or change the name.
@@ -425,16 +423,16 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`,`enable 🚧`; or `false`, `off`, `0`, `no`,`disable 🚧` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, 🚧 `enable`; or `false`, `off`, `0`, `no`, 🚧 `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
 
 To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
 
 ### Inheriting defaults
 
-Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
+Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, 🆕 `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_case`, `ignore_underscore`, `delimiter 🚧`, and `disable_flag_override 🚧`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_case`, 🆕 `ignore_underscore`, 🚧 `delimiter`, and 🚧 `disable_flag_override`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();
@@ -458,7 +456,7 @@ The App class was designed allow toolkits to subclass it, to provide preset defa
 but before run behavior, while
 still giving the user freedom to `callback` on the main app.
 
-The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
+The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. 🆕 You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
 including the program name in the string, and false otherwise.
 
 Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
