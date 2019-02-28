@@ -6,23 +6,21 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'Ubuntu-16.04'
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: .ci/azure-steps.yml
 
-steps:
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+    - template: .ci/azure-steps.yml
 
-- checkout: self
-  submodules: true
-
-- task: CMake@1
-  inputs:
-    cmakeArgs: .. -DCLI11_SINGLE_FILE=ON -DCLI11_CXX_STD=14 -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-  displayName: 'Configure'
-
-- script: cmake --build . -j
-  displayName: 'Build'
-  workingDirectory: build
-
-- script: ctest --output-on-failure
-  displayName: 'Test'
-  workingDirectory: build
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+    - template: .ci/azure-steps.yml
