@@ -32,10 +32,10 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
     -   [Adding options](#adding-options)
         -   [Option types](#option-types)
         -   [Option options](#option-options)
-        -   [Getting Results](#getting-results)
+        -   [Getting Results](#getting-results) 🚧
     -   [Subcommands](#subcommands)
         -   [Subcommand options](#subcommand-options)
-    -   [Option Groups](#option-groups)
+    -   [Option Groups](#option-groups) 🚧
     -   [Configuration file](#configuration-file)
     -   [Inheriting defaults](#inheriting-defaults)
     -   [Formatting](#formatting)
@@ -46,6 +46,8 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 -   [API](#api)
 -   [Contribute](#contribute)
 -   [License](#license)
+
+Features that were added in the last released major version are marked with "🆕". Features only available in master are marked with "🚧".
 
 ## Background
 
@@ -63,7 +65,7 @@ An acceptable CLI parser library should be all of the following:
 
 -   Easy to include (i.e., header only, one file if possible, **no external requirements**).
 -   Short, simple syntax: This is one of the main reasons to use a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
--   C++11 or better: Should work with GCC 4.7+ (such as GCC 4.8 on CentOS 7), Clang 3.5+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
+-   C++11 or better: Should work with GCC 4.8+ (default on CentOS/RHEL 7), Clang 3.5+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
 -   Work on Linux, macOS, and Windows.
 -   Well tested using [Travis][] (Linux and macOS) and [AppVeyor][] (Windows) or [Azure][] (all three). "Well" is defined as having good coverage measured by [CodeCov][].
 -   Clear help printing.
@@ -210,7 +212,7 @@ app.add_flag_callback(option_name,function<void(void)>,help_string="") // 🚧
 // Add subcommands
 App* subcom = app.add_subcommand(name, description);
 
-Option_group *app.add_option_group(name,description); //🚧
+Option_group *app.add_option_group(name,description); // 🚧
 
 // 🚧 All add_*set* methods deprecated in CLI11 1.8 - use ->transform(CLI::IsMember) instead
 -app.add_set(option_name,
@@ -338,12 +340,13 @@ You can access a vector of pointers to the parsed options in the original order 
 If `--` is present in the command line that does not end an unlimited option, then
 everything after that is positional only.
 
-#### Getting results 🚧
+#### Getting results {#getting-results} 🚧
+
 In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
-- `results()`: retrieves a vector of strings with all the results in the order they were given.
-- `results(variable_to_bind_to)`: 🚧 gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-- `Value=as<type>()`: 🚧 returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+- `results()`: Retrieves a vector of strings with all the results in the order they were given.
+- `results(variable_to_bind_to)`: 🚧 Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+- `Value=as<type>()`: 🚧 Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -380,8 +383,8 @@ There are several options that are supported on the main app and subcommands and
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
--   `.add_subcommand(name="", description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
--   `.add_subcommand(shared_ptr<App>)` 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
+-   `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
+-   `.add_subcommand(shared_ptr<App>)`: 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
 -   `.add_option_group(name="", description="")`: 🚧 Add an option group to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
@@ -411,8 +414,9 @@ There are several options that are supported on the main app and subcommands and
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
-#### Option Groups 
- 🚧 The method 
+#### Option Groups 🚧 {#option-groups}
+
+The method 
 ```cpp
 .add_option_group(name,description)
 ```
