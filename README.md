@@ -32,6 +32,7 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
     -   [Adding options](#adding-options)
         -   [Option types](#option-types)
         -   [Option options](#option-options)
+        -   [Getting Results](#getting-results)
     -   [Subcommands](#subcommands)
         -   [Subcommand options](#subcommand-options)
     -   [Option Groups](#option-groups)
@@ -365,19 +366,25 @@ Nameless subcommands function a similarly to groups in the main `App`.  If an op
 
 #### Subcommand options
 
-There are several options that are supported on the main app and subcommands. These are:
+There are several options that are supported on the main app and subcommands and option_groups. These are:
 
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.ignore_underscore()`: 🆕 Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
+-   `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
+-   `.exludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
+-   `.require_option()`: Require 1 or more options or option groups be used.
+-   `.require_option(N)`: Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
+-   `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 is unlimited.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 -   `.add_subcommand(name="", description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
 -   `.add_subcommand(shared_ptr<App>)` 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
--   `.get_subcommands(filter)`: The list of subcommands given on the command line.
+-   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
+-   `.add_option_group(name="", description="")`: Add an option group to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.
 -   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
 -   `.get_option_no_throw(name)`: 🚧 Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
@@ -387,6 +394,9 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.description(str)`: 🆕 Set/change the description.
 -   `.get_description()`: Access the description.
 -   `.parsed()`: True if this subcommand was given on the command line.
+-   `.count()`: returns the number of times the subcommand was called
+-   `.count(option_name)`: returns the number of times a particular option was called
+-   `.count_all()`: returns the total number of arguments a particular subcommand had, on the master App it returns the total number of processed commands
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
@@ -400,6 +410,26 @@ There are several options that are supported on the main app and subcommands. Th
 - `[option_name]`: 🚧 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
+
+#### Option Groups
+The function
+```cpp
+.add_option_group(name,description)
+```
+Will create an option Group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
+```cpp
+ogroup->add_option(option_pointer)
+```
+```cpp
+ogroup->add_options(option_pointer)
+```
+```cpp
+ogroup->add_options(option1,option2,option3,...)
+```
+The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  
+Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
+Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.  
+
 
 ### Configuration file
 
