@@ -958,7 +958,7 @@ class App {
     Option *set_config(std::string option_name = "",
                        std::string default_filename = "",
                        std::string help_message = "Read an ini file",
-                       bool required = false) {
+                       bool config_required = false) {
 
         // Remove existing config if present
         if(config_ptr_ != nullptr)
@@ -967,7 +967,7 @@ class App {
         // Only add config if option passed
         if(!option_name.empty()) {
             config_name_ = default_filename;
-            config_required_ = required;
+            config_required_ = config_required;
             config_ptr_ = add_option(option_name, config_name_, help_message, !default_filename.empty());
             config_ptr_->configurable(false);
         }
@@ -998,8 +998,9 @@ class App {
     }
 
     /// creates an option group as part of the given app
-    template <typename T = Option_group> T *add_option_group(std::string group_name, std::string description = "") {
-        auto option_group = std::make_shared<T>(std::move(description), group_name, nullptr);
+    template <typename T = Option_group>
+    T *add_option_group(std::string group_name, std::string group_description = "") {
+        auto option_group = std::make_shared<T>(std::move(group_description), group_name, nullptr);
         auto ptr = option_group.get();
         // move to App_p for overload resolution on older gcc versions
         App_p app_ptr = std::dynamic_pointer_cast<App>(option_group);
@@ -1371,7 +1372,9 @@ class App {
         }
         auto res = exclude_subcommands_.insert(app);
         // subcommand exclusion should be symmetric
-        app->exclude_subcommands_.insert(this);
+        if(res.second) {
+            app->exclude_subcommands_.insert(this);
+        }
         return this;
     }
 
@@ -2092,10 +2095,10 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    size_t _count_remaining_positionals(bool required = false) const {
+    size_t _count_remaining_positionals(bool required_only = false) const {
         size_t retval = 0;
         for(const Option_p &opt : options_)
-            if(opt->get_positional() && (!required || opt->get_required()) && opt->get_items_expected() > 0 &&
+            if(opt->get_positional() && (!required_only || opt->get_required()) && opt->get_items_expected() > 0 &&
                static_cast<int>(opt->count()) < opt->get_items_expected())
                 retval = static_cast<size_t>(opt->get_items_expected()) - opt->count();
 
@@ -2242,8 +2245,8 @@ class App {
 
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;
+        int result_count = 0;
         // deal with flag like things
-        int count = 0;
         if(num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
@@ -2251,22 +2254,22 @@ class App {
         }
         // --this=value
         else if(!value.empty()) {
-            op->add_result(value, count);
+            op->add_result(value, result_count);
             parse_order_.push_back(op.get());
-            collected += count;
+            collected += result_count;
             // If exact number expected
             if(num > 0)
-                num = (num >= count) ? num - count : 0;
+                num = (num >= result_count) ? num - result_count : 0;
 
             // -Trest
         } else if(!rest.empty()) {
-            op->add_result(rest, count);
+            op->add_result(rest, result_count);
             parse_order_.push_back(op.get());
             rest = "";
-            collected += count;
+            collected += result_count;
             // If exact number expected
             if(num > 0)
-                num = (num >= count) ? num - count : 0;
+                num = (num >= result_count) ? num - result_count : 0;
         }
 
         // Unlimited vector parser
@@ -2279,10 +2282,10 @@ class App {
                     if(_count_remaining_positionals() > 0)
                         break;
                 }
-                op->add_result(args.back(), count);
+                op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
-                collected += count;
+                collected += result_count;
             }
 
             // Allow -- to end an unlimited list and "eat" it
@@ -2293,9 +2296,9 @@ class App {
             while(num > 0 && !args.empty()) {
                 std::string current_ = args.back();
                 args.pop_back();
-                op->add_result(current_, count);
+                op->add_result(current_, result_count);
                 parse_order_.push_back(op.get());
-                num -= count;
+                num -= result_count;
             }
 
             if(num > 0) {
@@ -2354,8 +2357,9 @@ class App {
 /// Extension of App to better manage groups of options
 class Option_group : public App {
   public:
-    Option_group(std::string description, std::string name, App *parent) : App(std::move(description), "", parent) {
-        group(name);
+    Option_group(std::string group_description, std::string group_name, App *parent)
+        : App(std::move(group_description), "", parent) {
+        group(group_name);
     }
     using App::add_option;
     /// add an existing option to the Option_group
