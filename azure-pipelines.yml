@@ -1,0 +1,26 @@
+# C/C++ with GCC
+# Build your C/C++ project with GCC using make.
+# Add steps that publish test results, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+
+trigger:
+- master
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: .ci/azure-steps.yml
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+    - template: .ci/azure-steps.yml
+
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+    - template: .ci/azure-steps.yml
