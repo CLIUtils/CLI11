@@ -113,7 +113,6 @@ There are some other possible "features" that are intentionally not supported by
 
 -   Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
 -   Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
--   In C++14, you could have a set of `callback` methods with differing signatures (tested in a branch). Not deemed worth having a C++14 variation on API and removed.
 -   Autocomplete: This might eventually be added to both Plumbum and CLI11, but it is not supported yet.
 -   Wide strings / unicode: Since this uses the standard library only, it might be hard to properly implement, but I would be open to suggestions in how to do this.
 
@@ -177,61 +176,61 @@ The initialization is just one line, adding options is just two each. The parse 
 While all options internally are the same type, there are several ways to add an option depending on what you need. The supported values are:
 
 ```cpp
-app.add_option(option_name, help_str="")
+// Add options
+app.add_option(option_name, help_str="") // 🚧
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string
+               variable_to_bind_to, // bool, int, float, vector, 🚧 enum, or string-like, or anything with a defined conversion from a string
                help_string="",
                default=false)
 
 app.add_option_function<type>(option_name,
-               function <void(const type &value)>, // int, bool, float, enum, vector, or string-like, or anything with a defined conversion from a string
+               function <void(const type &value)>, // 🚧 int, bool, float, enum, vector, or string-like, or anything with a defined conversion from a string
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
 
+// Add flags
 app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string
+             variable_to_bind_to, // bool, int, 🚧 float, 🚧 vector, 🚧 enum, or 🚧 string-like, or 🚧 anything with a defined conversion from a string
              help_string="")
 
-app.add_flag_function(option_name,
+app.add_flag_function(option_name, // 🚧
              function <void(int64_t count)>,
              help_string="")
 
-app.add_flag_callback(option_name,function<void(void)>,help_string="")
+app.add_flag_callback(option_name,function<void(void)>,help_string="") // 🚧
 
+// Add subcommands
 App* subcom = app.add_subcommand(name, description);
+
+// 🚧 All add_*set* methods deprecated in CLI11 1.8 - use ->transform(CLI::IsMember) instead
+-app.add_set(option_name,
+-            variable_to_bind_to,     // Same type as stored by set
+-            set_of_possible_options, // Set will be copied, ignores changes
+-            help_string="",
+-            default=false)
+-app.add_mutable_set(... // Set can change later, keeps reference
+-app.add_set_ignore_case(...                    // String only
+-app.add_mutable_set_ignore_case(...            // String only
+-app.add_set_ignore_underscore(...              // String only
+-app.add_mutable_set_ignore_underscore(...      // String only
+-app.add_set_ignore_case_underscore(...         // String only
+-app.add_mutable_set_ignore_case_underscore(... // String only
 ```
 
 An option name must start with a alphabetic character, underscore, or a number. For long options, anything but an equals sign or a comma is valid after that, though for the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
 
-Flag options specified through the functions
+🚧 Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
 
 ```cpp
-app.add_flag(option_name,
-             help_string="")
-
-app.add_flag(option_name,
-             variable_to_bind_to,
-             help_string="")
-
-app.add_flag_function(option_name,
-             function <void(int64_t count)>,
-             help_string="")
-
-app.add_flag_callback(option_name,function<void(void)>,help_string="")
+app.add_flag("--flag,!--no-flag,result,"help for flag"); // 🚧
 ```
-
-which allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
-
-```cpp
-app.add_flag("--flag,!--no-flag,result,"help for flag");`
-``````
 
 specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
 passed `result` will contain false or -1 if `result` is a signed integer type, or 0 if it is an unsigned type.  An
@@ -241,9 +240,9 @@ default behavior is to take the last value given, while if `variable_to_bind_to`
 all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
 The default value can be any value For example if you wished to define a numerical flag
 ```cpp
-app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag")
+app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag") // 🚧
 ```
-using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.  
+using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
 
 
 On a C++14 compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
@@ -271,26 +270,28 @@ Before parsing, you can set the following options:
 -   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
--   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
--   `->disable_flag_override()`:  from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
--    `->delimiter(char)`: allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
+-   `->ignore_underscore()`: 🚧 Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
+-   `->disable_flag_override()`: 🚧 from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
+-    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
--   `->check(CLI::IsMember(...))`: Require an option be a member of a given set. See below for options.
--   `->transform(CLI::IsMember(...))`: Require an option be a member of a given set or map. Can change the parse. See below for options.
+-   `->check(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set. See below for options.
+-   `->transform(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set or map. Can change the parse. See below for options.
 -   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
 -   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
 -   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
 -   `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
 -   `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
--   `->check(CLI::PositiveNumber)`: Requires the number be greater or equal to 0
--   `->check(CLI::ValidIPV4)`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`
+-   `->check(CLI::PositiveNumber)`: 🚧 Requires the number be greater or equal to 0
+-   `->check(CLI::ValidIPV4)`: 🚧 Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`
 -   `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
 -   `->each(void(std::string)>`: Run this function on each value received, as it is received.
 -   `->configurable(false)`: Disable this option from being in a configuration file.
 
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).  Validators can also be inverted with `!` such as `->check(!CLI::ExistingFile)` which would check that a file doesn't exist.  
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).  Validators can also be inverted with `!` such as `->check(!CLI::ExistingFile)` which would check that a file doesn't exist.
+
+> 🚧 IsMember is new in CLI11 1.8
 
 The `IsMember` validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertible from a string. You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`.
@@ -312,7 +313,7 @@ On the command line, options can be given as:
 -   `-ffilename` (no space required)
 -   `-abcf filename` (flags and option can be combined)
 -   `--long` (long flag)
--   `--long_flag=true` (long flag with equals to override default value)
+-   `--long_flag=true` (long flag with equals to override default value) 🚧
 -   `--file filename` (space)
 -   `--file=filename` (equals)
 
@@ -322,10 +323,10 @@ If `allow_windows_style_options()` is specified in the application or subcommand
 -   `/long` (long flag)
 -   `/file filename` (space)
 -   `/file:filename` (colon)
--   `/long_flag:false (long flag with : to override the default value)
+-   `/long_flag:false (long flag with : to override the default value) 🚧
 =  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
 
-Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
+🚧 Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
 If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
@@ -334,12 +335,12 @@ You can access a vector of pointers to the parsed options in the original order 
 If `--` is present in the command line that does not end an unlimited option, then
 everything after that is positional only.
 
-#### Getting results
+#### Getting results 🚧
 In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
 - `results()`: retrieves a vector of strings with all the results in the order they were given.
-- `results(variable_to_bind_to)`: gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-- `Value=as<type>()`: returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+- `results(variable_to_bind_to)`: 🚧 gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+- `Value=as<type>()`: 🚧 returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -357,7 +358,7 @@ even exit the program through the callback. The main `App` has a callback slot, 
 You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).
 
-Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
+🚧 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
 Nameless subcommands function a similarly to groups in the main `App`.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
 
 #### Subcommand options
@@ -372,12 +373,12 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 -   `.add_subcommand(name="", description="")` Add a subcommand, returns a pointer to the internally stored subcommand.
--   `.add_subcommand(shared_ptr<App>)` Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
+-   `.add_subcommand(shared_ptr<App>)` 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands given on the command line.
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.
 -   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
--   `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
+-   `.get_option_no_throw(name)`: 🚧 Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
 -   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
 -   `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
 -   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
@@ -387,14 +388,14 @@ There are several options that are supported on the main app and subcommands. Th
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
--   `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
+-   `.positionals_at_end()`: 🚧 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
 -   `.footer(message)`: Set text to appear at the bottom of the help string.
 -   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
-- `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
+- `[option_name]`: 🚧 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
@@ -424,7 +425,7 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`,`enable`; or `false`, `off`, `0`, `no`,`disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`,`enable 🚧`; or `false`, `off`, `0`, `no`,`disable 🚧` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
 
 To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
@@ -433,7 +434,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
-Options have defaults for `group`, `required`, `disable_flag_override`,`multi_option_policy`, `ignore_underscore`,`delimiter`, and `ignore_case`. To set these defaults, you should set the `option_defaults()` object, for example:
+Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_case`, `ignore_underscore`, `delimiter 🚧`, and `disable_flag_override 🚧`. To set these defaults, you should set the `option_defaults()` object, for example:
 
 ```cpp
 app.option_defaults()->required();
