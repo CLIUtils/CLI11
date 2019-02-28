@@ -1,0 +1,28 @@
+# C/C++ with GCC
+# Build your C/C++ project with GCC using make.
+# Add steps that publish test results, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+
+- checkout: self
+  submodules: true
+
+- task: CMake@1
+  inputs:
+    cmakeArgs: .. -DCLI11_SINGLE_FILE=ON -DCLI11_CXX_STD=14 -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+  displayName: 'Configure'
+
+- script: cmake --build . -j
+  displayName: 'Build'
+  workingDirectory: build
+
+- script: ctest --output-on-failure
+  displayName: 'Test'
+  workingDirectory: build
