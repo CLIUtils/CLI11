@@ -76,7 +76,6 @@ template <typename CRTP> class OptionBase {
     CRTP *group(std::string name) {
         group_ = name;
         return static_cast<CRTP *>(this);
-        ;
     }
 
     /// Set the option as required

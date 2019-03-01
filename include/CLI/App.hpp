@@ -38,7 +38,7 @@ namespace CLI {
 #endif
 
 namespace detail {
-enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS, SUBCOMMAND };
+enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS, SUBCOMMAND, SUBCOMMAND_TERMINATOR };
 struct AppFriend;
 } // namespace detail
 
@@ -89,6 +89,16 @@ class App {
 
     /// If set to true the subcommand is disabled and cannot be used, ignored for main app
     bool disabled_{false};
+
+    /// Flag indicating that the pre_parse_callback has been triggered
+    bool pre_parse_called_{false};
+
+    /// Flag indicating that the callback for the subcommand should be executed immediately on parse completion which is
+    /// before help or ini files are processed.
+    bool immediate_callback_{false};
+
+    /// This is a function that runs prior to the start of parsing
+    std::function<void(size_t)> pre_parse_callback_;
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
@@ -172,6 +182,11 @@ class App {
     };
     /// specify that positional arguments come at the end of the argument sequence not inheritable
     bool positionals_at_end_{false};
+
+    /// If set to true the subcommand will start each parse disabled
+    bool disabled_by_default_{false};
+    /// If set to true the subcommand will be reenabled at the start of each parse
+    bool enabled_by_default_{false};
 
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
@@ -267,6 +282,13 @@ class App {
         return this;
     }
 
+    /// Set a callback to execute prior to parsing.
+    ///
+    App *preparse_callback(std::function<void(size_t)> pp_callback) {
+        pre_parse_callback_ = std::move(pp_callback);
+        return this;
+    }
+
     /// Set a name for the app (empty will use parser to set the name)
     App *name(std::string app_name = "") {
         name_ = app_name;
@@ -289,6 +311,25 @@ class App {
     /// Disable the subcommand or option group
     App *disabled(bool disable = true) {
         disabled_ = disable;
+        return this;
+    }
+
+    /// Set the subcommand to be disabled by default, so on clear(), at the start of each parse it is disabled
+    App *disabled_by_default(bool disable = true) {
+        disabled_by_default_ = disable;
+        return this;
+    }
+
+    /// Set the subcommand to be enabled by default, so on clear(), at the start of each parse it is enabled(not
+    /// disabled)
+    App *enabled_by_default(bool enable = true) {
+        enabled_by_default_ = enable;
+        return this;
+    }
+
+    /// Set the subcommand callback to be executed immediately on subcommand completion
+    App *immediate_callback(bool immediate = true) {
+        immediate_callback_ = immediate;
         return this;
     }
 
@@ -403,7 +444,7 @@ class App {
     }
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
-    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
+    template <typename T, enable_if_t<!is_vector<T>::value & !std::is_const<T>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string option_description = "") {
@@ -711,7 +752,7 @@ class App {
 #ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
     Option *add_flag(std::string flag_name,
-                     std::function<void(int64_t)> function, ///< A function to call, void(int)
+                     std::function<void(int64_t)> function, ///< A function to call, void(int64_t)
                      std::string flag_description = "") {
         return add_flag_function(std::move(flag_name), std::move(function), std::move(flag_description));
     }
@@ -1195,13 +1236,15 @@ class App {
     void clear() {
 
         parsed_ = 0;
+        pre_parse_called_ = false;
+
         missing_.clear();
         parsed_subcommands_.clear();
         for(const Option_p &opt : options_) {
             opt->clear();
         }
-        for(const App_p &app : subcommands_) {
-            app->clear();
+        for(const App_p &subc : subcommands_) {
+            subc->clear();
         }
     }
 
@@ -1575,6 +1618,15 @@ class App {
     /// Get the status of disabled
     bool get_disabled() const { return disabled_; }
 
+    /// Get the status of disabled
+    bool get_immediate_callback() const { return immediate_callback_; }
+
+    /// Get the status of disabled by default
+    bool get_disabled_by_default() const { return disabled_by_default_; }
+
+    /// Get the status of disabled by default
+    bool get_enabled_by_default() const { return enabled_by_default_; }
+
     /// Get the status of allow extras
     bool get_allow_config_extras() const { return allow_config_extras_; }
 
@@ -1704,9 +1756,15 @@ class App {
     }
 
     /// configure subcommands to enable parsing through the current object
-    /// set the correct fallthrough and prefix for nameless subcommands and
+    /// set the correct fallthrough and prefix for nameless subcommands and manage the automatic enable or disable
     /// makes sure parent is set correctly
     void _configure() {
+        if(disabled_by_default_) {
+            disabled_ = true;
+        }
+        if(enabled_by_default_) {
+            disabled_ = false;
+        }
         for(const App_p &app : subcommands_) {
             if(app->has_automatic_name_) {
                 app->name_.clear();
@@ -1723,34 +1781,35 @@ class App {
     /// Internal function to run (App) callback, top down
     void run_callback() {
         pre_callback();
-        if(callback_)
+        if(callback_ && (parsed_ > 0))
             callback_();
         for(App *subc : get_subcommands()) {
-            subc->run_callback();
+            if((subc->get_name().empty()) || (!subc->immediate_callback_))
+                subc->run_callback();
         }
     }
 
     /// Check to see if a subcommand is valid. Give up immediately if subcommand max has been reached.
-    bool _valid_subcommand(const std::string &current) const {
+    bool _valid_subcommand(const std::string &current, bool ignore_used = true) const {
         // Don't match if max has been reached - but still check parents
         if(require_subcommand_max_ != 0 && parsed_subcommands_.size() >= require_subcommand_max_) {
-            return parent_ != nullptr && parent_->_valid_subcommand(current);
+            return parent_ != nullptr && parent_->_valid_subcommand(current, ignore_used);
         }
-        auto com = _find_subcommand(current, true, true);
+        auto com = _find_subcommand(current, true, ignore_used);
         if(com != nullptr) {
             return true;
         }
         // Check parent if exists, else return false
-        return parent_ != nullptr && parent_->_valid_subcommand(current);
+        return parent_ != nullptr && parent_->_valid_subcommand(current, ignore_used);
     }
 
     /// Selects a Classifier enum based on the type of the current argument
-    detail::Classifier _recognize(const std::string &current) const {
+    detail::Classifier _recognize(const std::string &current, bool ignore_used_subcommands = true) const {
         std::string dummy1, dummy2;
 
         if(current == "--")
             return detail::Classifier::POSITIONAL_MARK;
-        if(_valid_subcommand(current))
+        if(_valid_subcommand(current, ignore_used_subcommands))
             return detail::Classifier::SUBCOMMAND;
         if(detail::split_long(current, dummy1, dummy2))
             return detail::Classifier::LONG;
@@ -1758,6 +1817,8 @@ class App {
             return detail::Classifier::SHORT;
         if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
             return detail::Classifier::WINDOWS;
+        if((current == "++") && (!name_.empty()))
+            return detail::Classifier::SUBCOMMAND_TERMINATOR;
         return detail::Classifier::NONE;
     }
 
@@ -1811,7 +1872,8 @@ class App {
         }
 
         for(App_p &sub : subcommands_) {
-            sub->_process_env();
+            if((sub->get_name().empty()) || (!sub->immediate_callback_))
+                sub->_process_env();
         }
     }
 
@@ -1824,7 +1886,8 @@ class App {
         }
 
         for(App_p &sub : subcommands_) {
-            sub->_process_callbacks();
+            if((sub->get_name().empty()) || (!sub->immediate_callback_))
+                sub->_process_callbacks();
         }
     }
 
@@ -1952,7 +2015,10 @@ class App {
                     }
                 }
             }
-            sub->_process_requirements();
+            if((sub->count() > 0) || (sub->name_.empty())) {
+                sub->_process_requirements();
+            }
+
             if((sub->required_) && (sub->count_all() == 0)) {
                 throw(CLI::RequiredError(sub->get_display_name()));
             }
@@ -1996,10 +2062,13 @@ class App {
     /// Internal parse function
     void _parse(std::vector<std::string> &args) {
         increment_parsed();
+        _trigger_pre_parse(args.size());
         bool positional_only = false;
 
         while(!args.empty()) {
-            _parse_single(args, positional_only);
+            if(!_parse_single(args, positional_only)) {
+                break;
+            }
         }
 
         if(parent_ == nullptr) {
@@ -2010,6 +2079,12 @@ class App {
 
             // Convert missing (pairs) to extras (string only)
             args = remaining(false);
+        } else if(immediate_callback_) {
+            _process_env();
+            _process_callbacks();
+            _process_help_flags();
+            _process_requirements();
+            run_callback();
         }
     }
 
@@ -2065,18 +2140,26 @@ class App {
     }
 
     /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing
-    /// from master
-    void _parse_single(std::vector<std::string> &args, bool &positional_only) {
-
+    /// from master return false if the parse has failed and needs to return to parent
+    bool _parse_single(std::vector<std::string> &args, bool &positional_only) {
+        bool retval = true;
         detail::Classifier classifier = positional_only ? detail::Classifier::NONE : _recognize(args.back());
         switch(classifier) {
         case detail::Classifier::POSITIONAL_MARK:
-            missing_.emplace_back(classifier, args.back());
             args.pop_back();
             positional_only = true;
+            if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
+                retval = false;
+            } else {
+                missing_.emplace_back(classifier, "--");
+            }
+            break;
+        case detail::Classifier::SUBCOMMAND_TERMINATOR:
+            args.pop_back();
+            retval = false;
             break;
         case detail::Classifier::SUBCOMMAND:
-            _parse_subcommand(args);
+            retval = _parse_subcommand(args);
             break;
         case detail::Classifier::LONG:
         case detail::Classifier::SHORT:
@@ -2086,11 +2169,12 @@ class App {
             break;
         case detail::Classifier::NONE:
             // Probably a positional or something for a parent (sub)command
-            _parse_positional(args);
-            if(positionals_at_end_) {
+            retval = _parse_positional(args);
+            if(retval && positionals_at_end_) {
                 positional_only = true;
             }
         }
+        return retval;
     }
 
     /// Count the required remaining positional arguments
@@ -2104,10 +2188,21 @@ class App {
         return retval;
     }
 
-    /// Parse a positional, go up the tree to check
-    void _parse_positional(std::vector<std::string> &args) {
+    /// Count the required remaining positional arguments
+    bool _has_remaining_positionals() const {
+        for(const Option_p &opt : options_)
+            if(opt->get_positional() &&
+               ((opt->get_items_expected() < 0) || ((static_cast<int>(opt->count()) < opt->get_items_expected()))))
+                return true;
 
-        std::string positional = args.back();
+        return false;
+    }
+
+    /// Parse a positional, go up the tree to check
+    /// Return true if the positional was used false otherwise
+    bool _parse_positional(std::vector<std::string> &args) {
+
+        const std::string &positional = args.back();
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
@@ -2116,52 +2211,59 @@ class App {
                 opt->add_result(positional);
                 parse_order_.push_back(opt.get());
                 args.pop_back();
-                return;
+                return true;
             }
         }
 
         for(auto &subc : subcommands_) {
             if((subc->name_.empty()) && (!subc->disabled_)) {
-                subc->_parse_positional(args);
-                if(subc->missing_.empty()) { // check if it was used and is not in the missing category
-                    return;
-                } else {
-                    args.push_back(std::move(subc->missing_.front().second));
-                    subc->missing_.clear();
-                }
-            }
-        }
-
-        if(parent_ != nullptr && fallthrough_)
-            return parent_->_parse_positional(args);
-        else {
-            /// now try one last gasp at subcommands that have been executed before, go to root app and try to find a
-            /// subcommand in a broader way
-            auto parent_app = this;
-            while(parent_app->parent_ != nullptr) {
-                parent_app = parent_app->parent_;
-            }
-            auto com = parent_app->_find_subcommand(args.back(), true, false);
-            if((com != nullptr) &&
-               ((com->parent_->require_subcommand_max_ == 0) ||
-                (com->parent_->require_subcommand_max_ > com->parent_->parsed_subcommands_.size()))) {
-                args.pop_back();
-                com->_parse(args);
-            } else {
-                if(positionals_at_end_) {
-                    throw CLI::ExtrasError(args);
-                }
-                args.pop_back();
-                missing_.emplace_back(detail::Classifier::NONE, positional);
-
-                if(prefix_command_) {
-                    while(!args.empty()) {
-                        missing_.emplace_back(detail::Classifier::NONE, args.back());
-                        args.pop_back();
+                if(subc->_parse_positional(args)) {
+                    if(!subc->pre_parse_called_) {
+                        subc->_trigger_pre_parse(args.size());
                     }
+                    return true;
                 }
             }
         }
+        /// let the parent deal with it if possible
+        if(parent_ != nullptr && fallthrough_)
+            return _get_fallthrough_parent()->_parse_positional(args);
+
+        /// Try to find a local subcommand that is repeated
+        auto com = _find_subcommand(args.back(), true, false);
+        if((com != nullptr) &&
+           ((require_subcommand_max_ == 0) || (require_subcommand_max_ > parsed_subcommands_.size()))) {
+            args.pop_back();
+            com->_parse(args);
+            return true;
+        }
+        /// now try one last gasp at subcommands that have been executed before, go to root app and try to find a
+        /// subcommand in a broader way, if one exists let the parent deal with it
+        auto parent_app = (parent_ != nullptr) ? _get_fallthrough_parent() : this;
+        com = parent_app->_find_subcommand(args.back(), true, false);
+        if((com != nullptr) && ((com->parent_->require_subcommand_max_ == 0) ||
+                                (com->parent_->require_subcommand_max_ > com->parent_->parsed_subcommands_.size()))) {
+            return false;
+        }
+
+        if(positionals_at_end_) {
+            throw CLI::ExtrasError(args);
+        }
+        /// If this is an option group don't deal with it
+        if((parent_ != nullptr) && (name_.empty())) {
+            return false;
+        }
+        /// We are out of other options this goes to missing
+        missing_.emplace_back(detail::Classifier::NONE, positional);
+        args.pop_back();
+        if(prefix_command_) {
+            while(!args.empty()) {
+                missing_.emplace_back(detail::Classifier::NONE, args.back());
+                args.pop_back();
+            }
+        }
+
+        return true;
     }
 
     /// Locate a subcommand by name with two conditions, should disabled subcommands be ignored, and should used
@@ -2186,27 +2288,34 @@ class App {
     /// Parse a subcommand, modify args and continue
     ///
     /// Unlike the others, this one will always allow fallthrough
-    void _parse_subcommand(std::vector<std::string> &args) {
-        if(_count_remaining_positionals(/* required */ true) > 0)
-            return _parse_positional(args);
+    /// return true if the subcommand was processed false otherwise
+    bool _parse_subcommand(std::vector<std::string> &args) {
+        if(_count_remaining_positionals(/* required */ true) > 0) {
+            _parse_positional(args);
+            return true;
+        }
         auto com = _find_subcommand(args.back(), true, true);
         if(com != nullptr) {
             args.pop_back();
-            if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com) ==
-               std::end(parsed_subcommands_))
-                parsed_subcommands_.push_back(com);
+            parsed_subcommands_.push_back(com);
             com->_parse(args);
-            return;
+            auto parent_app = com->parent_;
+            while(parent_app != this) {
+                parent_app->_trigger_pre_parse(args.size());
+                parent_app->parsed_subcommands_.push_back(com);
+                parent_app = parent_app->parent_;
+            }
+            return true;
         }
 
         if(parent_ == nullptr)
             throw HorribleError("Subcommand " + args.back() + " missing");
-
-        return parent_->_parse_subcommand(args);
+        return false;
     }
 
     /// Parse a short (false) or long (true) argument, must be at the top of the list
-    void _parse_arg(std::vector<std::string> &args, detail::Classifier current_type) {
+    /// return true if the argument was processed or false if nothing was done
+    bool _parse_arg(std::vector<std::string> &args, detail::Classifier current_type) {
 
         std::string current = args.back();
 
@@ -2245,25 +2354,25 @@ class App {
         if(op_ptr == std::end(options_)) {
             for(auto &subc : subcommands_) {
                 if((subc->name_.empty()) && (!(subc->disabled_))) {
-                    subc->_parse_arg(args, current_type);
-                    if(subc->missing_.empty()) { // check if it was used and is not in the missing category
-                        return;
-                    } else {
-                        // for unnamed subs they shouldn't trigger a missing argument
-                        args.push_back(std::move(subc->missing_.front().second));
-                        subc->missing_.clear();
+                    if(subc->_parse_arg(args, current_type)) {
+                        if(!subc->pre_parse_called_) {
+                            subc->_trigger_pre_parse(args.size());
+                        }
+                        return true;
                     }
                 }
             }
             // If a subcommand, try the master command
             if(parent_ != nullptr && fallthrough_)
-                return parent_->_parse_arg(args, current_type);
-            // Otherwise, add to missing
-            else {
-                args.pop_back();
-                missing_.emplace_back(current_type, current);
-                return;
+                return _get_fallthrough_parent()->_parse_arg(args, current_type);
+            // don't capture missing if this is a nameless subcommand
+            if((parent_ != nullptr) && (name_.empty())) {
+                return false;
             }
+            // Otherwise, add to missing
+            args.pop_back();
+            missing_.emplace_back(current_type, current);
+            return true;
         }
 
         args.pop_back();
@@ -2304,7 +2413,7 @@ class App {
 
         // Unlimited vector parser
         if(num < 0) {
-            while(!args.empty() && _recognize(args.back()) == detail::Classifier::NONE) {
+            while(!args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE) {
                 if(collected >= -num) {
                     // We could break here for allow extras, but we don't
 
@@ -2340,6 +2449,38 @@ class App {
             rest = "-" + rest;
             args.push_back(rest);
         }
+        return true;
+    }
+
+    /// Trigger the pre_parse callback if needed
+    void _trigger_pre_parse(size_t remaining_args) {
+        if(!pre_parse_called_) {
+            pre_parse_called_ = true;
+            if(pre_parse_callback_) {
+                pre_parse_callback_(remaining_args);
+            }
+        } else if(immediate_callback_) {
+            if(!name_.empty()) {
+                auto pcnt = parsed_;
+                auto extras = std::move(missing_);
+                clear();
+                parsed_ = pcnt;
+                pre_parse_called_ = true;
+                missing_ = std::move(extras);
+            }
+        }
+    }
+
+    /// Get the appropriate parent to fallthrough to which is the first one that has a name or the main app
+    App *_get_fallthrough_parent() {
+        if(parent_ == nullptr) {
+            throw(HorribleError("No Valid parent"));
+        }
+        auto fallthrough_parent = parent_;
+        while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
+            fallthrough_parent = fallthrough_parent->parent_;
+        }
+        return fallthrough_parent;
     }
 
   public:
@@ -2390,6 +2531,7 @@ class Option_group : public App {
     Option_group(std::string group_description, std::string group_name, App *parent)
         : App(std::move(group_description), "", parent) {
         group(group_name);
+        // option groups should have automatic fallthrough
     }
     using App::add_option;
     /// add an existing option to the Option_group
@@ -2408,6 +2550,47 @@ class Option_group : public App {
         add_options(args...);
     }
 };
+/// Helper function to enable one option group/subcommand when another is used
+inline void TriggerOn(App *trigger_app, App *app_to_enable) {
+    app_to_enable->enabled_by_default(false);
+    app_to_enable->disabled_by_default();
+    trigger_app->preparse_callback([app_to_enable](size_t) { app_to_enable->disabled(false); });
+}
+
+/// Helper function to enable one option group/subcommand when another is used
+inline void TriggerOn(App *trigger_app, std::vector<App *> apps_to_enable) {
+    for(auto &app : apps_to_enable) {
+        app->enabled_by_default(false);
+        app->disabled_by_default();
+    }
+
+    trigger_app->preparse_callback([apps_to_enable](size_t) {
+        for(auto &app : apps_to_enable) {
+            app->disabled(false);
+        }
+    });
+}
+
+/// Helper function to disable one option group/subcommand when another is used
+inline void TriggerOff(App *trigger_app, App *app_to_enable) {
+    app_to_enable->disabled_by_default(false);
+    app_to_enable->enabled_by_default();
+    trigger_app->preparse_callback([app_to_enable](size_t) { app_to_enable->disabled(); });
+}
+
+/// Helper function to disable one option group/subcommand when another is used
+inline void TriggerOff(App *trigger_app, std::vector<App *> apps_to_enable) {
+    for(auto &app : apps_to_enable) {
+        app->disabled_by_default(false);
+        app->enabled_by_default();
+    }
+
+    trigger_app->preparse_callback([apps_to_enable](size_t) {
+        for(auto &app : apps_to_enable) {
+            app->disabled();
+        }
+    });
+}
 
 namespace FailureMessage {
 
@@ -2456,6 +2639,8 @@ struct AppFriend {
         typename std::result_of<decltype (&App::_parse_subcommand)(App, Args...)>::type {
         return app->_parse_subcommand(std::forward<Args>(args)...);
     }
+    /// Wrap the fallthrough parent function to make sure that is working correctly
+    static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
 };
 } // namespace detail
 

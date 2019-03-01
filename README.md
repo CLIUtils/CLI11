@@ -42,6 +42,7 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
     -   [Subcommands](#subcommands)
         -   [Subcommand options](#subcommand-options)
         -   [Option groups](#option-groups) 🚧
+        -   [Callbacks](#callbacks)
     -   [Configuration file](#configuration-file)
     -   [Inheriting defaults](#inheriting-defaults)
     -   [Formatting](#formatting)
@@ -235,7 +236,7 @@ Option_group *app.add_option_group(name,description); // 🚧
 -app.add_mutable_set_ignore_case_underscore(... // 🆕 String only
 ```
 
-An option name must start with a alphabetic character, underscore, or a number. For long options, after the first character '.', and '-' are also valid. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
+An option name must start with a alphabetic character, underscore, or a number🚧. For long options, after the first character '.', and '-' are also valid. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
 
@@ -275,7 +276,7 @@ The add commands return a pointer to an internally stored `Option`. If you set t
 Before parsing, you can set the following options:
 
 -   `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
--   `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option.
+-   `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option or subcommand.
 -   `->type_name(typename)`: Set the name of an Option's type (`type_name_fn` allows a function instead)
 -   `->type_size(N)`: Set the intrinsic size of an option. The parser will require multiples of this number if negative.
 -   `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
@@ -353,7 +354,7 @@ These Validators can be used by simply passing the name into the `check` or `tra
 ->check(CLI::Range(0,10));
 ```
 
-Validators can be merged using `&` and `|` and inverted using `!`
+Validators can be merged using `&` and `|` and inverted using `!`🚧
 such as
 ```cpp
 ->check(CLI::Range(0,10)|CLI::Range(20,30));
@@ -492,7 +493,9 @@ There are several options that are supported on the main app and subcommands and
 -   `.count(option_name)`: Returns the number of times a particular option was called
 -   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands
 -   `.name(name)`: Add or change the name.
--   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
+-   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point. See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.immediate_callback()`: 🚧 Specify that the callback for a subcommand should run immediately on completion of a subcommand vs at the completion of all parsing if this option is not used.
+-    `.pre_parse_callback(void(size_t) function)`: 🚧 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
 -   `.positionals_at_end()`: 🚧 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
@@ -505,9 +508,48 @@ There are several options that are supported on the main app and subcommands and
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
+
+#### Callbacks 
+A subcommand has two optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🚧 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
+The second callback is executed after parsing.  Depending on the status of the `immediate_callback` flag 🚧.  This is either immediately after the parsing of the subcommand.  Or if the flag is false, once after parsing of all arguments.  If the immediate_callback is set then the callback can be executed multiple times.   If the main app or subcommand has a config file, no data from the config file will be reflected in immediate_callback.
+
+For example say an application was set up like
+```cpp
+app.callback(ac);
+sub1=app.add_subcommand("sub1")->callback(c1)->preparse_callback(pc1)->immediate_callback();
+sub2=app.add_subcommand("sub2")->callback(c2)->preparse_callback(pc2);
+app.preparse_callback( pa1);
+
+... A bunch of other options
+
+```
+Then the command line is given as
+
+```
+program --opt1 opt1_val  sub1 --sub1opt --sub1optb val sub2 --sub2opt sub1 --sub1opt2 sub2 --sub2opt2 val
+```
+
+* pa will be called prior to parsing any values with an argument of 14.
+* pc1 will be called immediately after processing the sub1 command with a value of 10.
+* c1 will be called when the `sub2` command is encountered
+* pc2 will be called with value of 6 after the sub2 command is encountered.
+* c1 will be called again after the second sub2 command is encountered
+* ac will be called after completing the parse
+* c2 will be called once after processing all arguments 
+
+A subcommand is considered terminated when one of the following conditions are met.
+1. There are no more arguments to process
+2. Another subcommand is encountered that would not fit in an optional slot of the subcommand
+3. The positional_mark(`--`) is encountered and there are no available positional slots in the subcommand.
+4. The subcommand_terminator mark(`++`) is encountered
+
+If the `immediate_callback` flag is set then all contained options are processed and the callback is triggered.  If a subcommand with an immediate_callback flag is called again, then the contained options are reset, and can be triggered again.  
+
+
+
 #### Option groups 🚧
 
-The method 
+The subcommand method 
 ```cpp
 .add_option_group(name,description)
 ```

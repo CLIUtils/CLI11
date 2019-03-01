@@ -1169,9 +1169,9 @@ TEST_F(TApp, RequiredFlags) {
 
 TEST_F(TApp, CallbackFlags) {
 
-    size_t value = 0;
+    int64_t value = 0;
 
-    auto func = [&value](size_t x) { value = x; };
+    auto func = [&value](int64_t x) { value = x; };
 
     app.add_flag_function("-v", func);
 
@@ -1271,9 +1271,9 @@ TEST_F(TApp, CallbackFlagsFalseShortcut) {
 #if __cplusplus >= 201402L || _MSC_VER >= 1900
 TEST_F(TApp, CallbackFlagsAuto) {
 
-    size_t value = 0;
+    int64_t value = 0;
 
-    auto func = [&value](size_t x) { value = x; };
+    auto func = [&value](int64_t x) { value = x; };
 
     app.add_flag("-v", func);
 
@@ -1843,6 +1843,31 @@ TEST_F(TApp, CheckSubcomFail) {
     EXPECT_THROW(CLI::detail::AppFriend::parse_subcommand(&app, args), CLI::HorribleError);
 }
 
+TEST_F(TApp, FallthroughParentFail) {
+    EXPECT_THROW(CLI::detail::AppFriend::get_fallthrough_parent(&app), CLI::HorribleError);
+}
+
+TEST_F(TApp, FallthroughParents) {
+    auto sub = app.add_subcommand("test");
+    EXPECT_EQ(CLI::detail::AppFriend::get_fallthrough_parent(sub), &app);
+
+    auto ssub = sub->add_subcommand("sub2");
+    EXPECT_EQ(CLI::detail::AppFriend::get_fallthrough_parent(ssub), sub);
+
+    auto og1 = app.add_option_group("g1");
+    auto og2 = og1->add_option_group("g2");
+    auto og3 = og2->add_option_group("g3");
+    EXPECT_EQ(CLI::detail::AppFriend::get_fallthrough_parent(og3), &app);
+
+    auto ogb1 = sub->add_option_group("g1");
+    auto ogb2 = ogb1->add_option_group("g2");
+    auto ogb3 = ogb2->add_option_group("g3");
+    EXPECT_EQ(CLI::detail::AppFriend::get_fallthrough_parent(ogb3), sub);
+
+    ogb2->name("groupb");
+    EXPECT_EQ(CLI::detail::AppFriend::get_fallthrough_parent(ogb3), ogb2);
+}
+
 TEST_F(TApp, OptionWithDefaults) {
     int someint = 2;
     app.add_option("-a", someint, "", true);
@@ -1953,8 +1978,8 @@ TEST_F(TApp, EmptyOptionFail) {
 }
 
 TEST_F(TApp, BeforeRequirements) {
-    app.add_flag_function("-a", [](size_t) { throw CLI::Success(); });
-    app.add_flag_function("-b", [](size_t) { throw CLI::CallForHelp(); });
+    app.add_flag_function("-a", [](int64_t) { throw CLI::Success(); });
+    app.add_flag_function("-b", [](int64_t) { throw CLI::CallForHelp(); });
 
     args = {"extra"};
     EXPECT_THROW(run(), CLI::ExtrasError);

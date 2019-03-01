@@ -517,12 +517,12 @@ TEST_F(ManyGroups, SameSubcommand) {
     EXPECT_TRUE(*sub2);
     EXPECT_TRUE(*sub3);
     /// This should be made to work at some point
-    /*auto subs = app.get_subcommands();
+    auto subs = app.get_subcommands();
     EXPECT_EQ(subs.size(), 3u);
     EXPECT_EQ(subs[0], sub1);
     EXPECT_EQ(subs[1], sub2);
     EXPECT_EQ(subs[2], sub3);
-    */
+
     args = {"sub1", "sub1", "sub1", "sub1"};
     // for the 4th and future ones they will route to the first one
     run();
@@ -531,9 +531,107 @@ TEST_F(ManyGroups, SameSubcommand) {
     EXPECT_EQ(sub3->count(), 1u);
 
     // subs should remain the same since the duplicate would not be registered there
-    /*subs = app.get_subcommands();
+    subs = app.get_subcommands();
     EXPECT_EQ(subs.size(), 3u);
     EXPECT_EQ(subs[0], sub1);
     EXPECT_EQ(subs[1], sub2);
-    EXPECT_EQ(subs[2], sub3);*/
+    EXPECT_EQ(subs[2], sub3);
+}
+
+struct ManyGroupsPreTrigger : public ManyGroups {
+    size_t triggerMain, trigger1{87u}, trigger2{34u}, trigger3{27u};
+    ManyGroupsPreTrigger() {
+        remove_required();
+        app.preparse_callback([this](size_t count) { triggerMain = count; });
+
+        g1->preparse_callback([this](size_t count) { trigger1 = count; });
+        g2->preparse_callback([this](size_t count) { trigger2 = count; });
+        g3->preparse_callback([this](size_t count) { trigger3 = count; });
+    }
+};
+
+TEST_F(ManyGroupsPreTrigger, PreTriggerTestsOptions) {
+
+    args = {"--name1", "test", "--name2", "test3"};
+    run();
+    EXPECT_EQ(triggerMain, 4u);
+    EXPECT_EQ(trigger1, 2u);
+    EXPECT_EQ(trigger2, 0u);
+    EXPECT_EQ(trigger3, 27u);
+
+    args = {"--name1", "test"};
+    trigger2 = 34u;
+    run();
+    EXPECT_EQ(triggerMain, 2u);
+    EXPECT_EQ(trigger1, 0u);
+    EXPECT_EQ(trigger2, 34u);
+
+    args = {};
+    run();
+    EXPECT_EQ(triggerMain, 0u);
+
+    args = {"--name1", "test", "--val1", "45", "--name2", "test3", "--name3=test3", "--val2=37"};
+    run();
+    EXPECT_EQ(triggerMain, 8u);
+    EXPECT_EQ(trigger1, 6u);
+    EXPECT_EQ(trigger2, 2u);
+    EXPECT_EQ(trigger3, 1u);
+}
+
+TEST_F(ManyGroupsPreTrigger, PreTriggerTestsPositionals) {
+    // only 1 group can be used
+    g1->add_option("pos1");
+    g2->add_option("pos2");
+    g3->add_option("pos3");
+
+    args = {"pos1"};
+    run();
+    EXPECT_EQ(triggerMain, 1u);
+    EXPECT_EQ(trigger1, 0u);
+    EXPECT_EQ(trigger2, 34u);
+    EXPECT_EQ(trigger3, 27u);
+
+    args = {"pos1", "pos2"};
+    run();
+    EXPECT_EQ(triggerMain, 2u);
+    EXPECT_EQ(trigger1, 1u);
+    EXPECT_EQ(trigger2, 0u);
+
+    args = {"pos1", "pos2", "pos3"};
+    run();
+    EXPECT_EQ(triggerMain, 3u);
+    EXPECT_EQ(trigger1, 2u);
+    EXPECT_EQ(trigger2, 1u);
+    EXPECT_EQ(trigger3, 0u);
+}
+
+TEST_F(ManyGroupsPreTrigger, PreTriggerTestsSubcommand) {
+
+    auto sub1 = g1->add_subcommand("sub1")->fallthrough();
+    g2->add_subcommand("sub2")->fallthrough();
+    g3->add_subcommand("sub3")->fallthrough();
+
+    size_t subtrigger;
+    sub1->preparse_callback([&subtrigger](size_t count) { subtrigger = count; });
+    args = {"sub1"};
+    run();
+    EXPECT_EQ(triggerMain, 1u);
+    EXPECT_EQ(trigger1, 0u);
+    EXPECT_EQ(trigger2, 34u);
+    EXPECT_EQ(trigger3, 27u);
+
+    args = {"sub1", "sub2"};
+    run();
+    EXPECT_EQ(triggerMain, 2u);
+    EXPECT_EQ(subtrigger, 1u);
+    EXPECT_EQ(trigger1, 1u);
+    EXPECT_EQ(trigger2, 0u);
+
+    args = {"sub2", "sub3", "--name1=test", "sub1"};
+    run();
+    EXPECT_EQ(triggerMain, 4u);
+    EXPECT_EQ(trigger1, 1u);
+    EXPECT_EQ(trigger2, 3u);
+    EXPECT_EQ(trigger3, 1u); // processes the first argument in group3 which includes the entire subcommand, which will
+                             // go until the sub1 command is given
 }

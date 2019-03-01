@@ -170,12 +170,50 @@ TEST_F(TApp, DuplicateSubcommands) {
     args = {"foo", "foo"};
     run();
     EXPECT_TRUE(*foo);
-    EXPECT_EQ(foo->count(), 2);
+    EXPECT_EQ(foo->count(), 2u);
 
     args = {"foo", "foo", "foo"};
     run();
     EXPECT_TRUE(*foo);
-    EXPECT_EQ(foo->count(), 3);
+    EXPECT_EQ(foo->count(), 3u);
+}
+
+TEST_F(TApp, DuplicateSubcommandCallbacks) {
+
+    auto foo = app.add_subcommand("foo");
+    int count = 0;
+    foo->callback([&count]() { ++count; });
+    foo->immediate_callback();
+    EXPECT_TRUE(foo->get_immediate_callback());
+    args = {"foo", "foo"};
+    run();
+    EXPECT_EQ(count, 2);
+    count = 0;
+    args = {"foo", "foo", "foo"};
+    run();
+    EXPECT_EQ(count, 3);
+}
+
+TEST_F(TApp, DuplicateSubcommandCallbacksValues) {
+
+    auto foo = app.add_subcommand("foo");
+    int val;
+    foo->add_option("--val", val);
+    std::vector<int> vals;
+    foo->callback([&vals, &val]() { vals.push_back(val); });
+    foo->immediate_callback();
+    args = {"foo", "--val=45", "foo", "--val=27"};
+    run();
+    EXPECT_EQ(vals.size(), 2u);
+    EXPECT_EQ(vals[0], 45);
+    EXPECT_EQ(vals[1], 27);
+    vals.clear();
+    args = {"foo", "--val=45", "foo", "--val=27", "foo", "--val=36"};
+    run();
+    EXPECT_EQ(vals.size(), 3u);
+    EXPECT_EQ(vals[0], 45);
+    EXPECT_EQ(vals[1], 27);
+    EXPECT_EQ(vals[2], 36);
 }
 
 TEST_F(TApp, Callbacks) {
@@ -236,6 +274,33 @@ TEST_F(TApp, NoFallThroughPositionals) {
 
     args = {"sub", "2"};
     EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(TApp, NoFallThroughOptsWithTerminator) {
+    int val = 1;
+    app.add_option("--val", val);
+
+    app.add_subcommand("sub");
+
+    args = {"sub", "++", "--val", "2"};
+    run();
+    EXPECT_EQ(val, 2);
+}
+
+TEST_F(TApp, NoFallThroughPositionalsWithTerminator) {
+    int val = 1;
+    app.add_option("val", val);
+
+    app.add_subcommand("sub");
+
+    args = {"sub", "++", "2"};
+    run();
+    EXPECT_EQ(val, 2);
+
+    // try with positional only mark
+    args = {"sub", "--", "3"};
+    run();
+    EXPECT_EQ(val, 3);
 }
 
 TEST_F(TApp, NamelessSubComPositionals) {
@@ -428,6 +493,25 @@ TEST_F(TApp, CallbackOrdering) {
     run();
     EXPECT_EQ(2, val);
     EXPECT_EQ(2, sub_val);
+
+    args = {"--val=2", "sub"};
+    run();
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(2, sub_val);
+}
+
+TEST_F(TApp, CallbackOrderingImmediate) {
+    app.fallthrough();
+    int val = 1, sub_val = 0;
+    app.add_option("--val", val);
+
+    auto sub = app.add_subcommand("sub")->immediate_callback();
+    sub->callback([&val, &sub_val]() { sub_val = val; });
+
+    args = {"sub", "--val=2"};
+    run();
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(1, sub_val);
 
     args = {"--val=2", "sub"};
     run();
@@ -780,9 +864,9 @@ TEST_F(SubcommandProgram, OrderedExtras) {
 
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
-    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "--", "four"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "--", "four"}));
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two", "four"}));
+    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three"}));
+    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "four", "three"}));
 }
 
 TEST_F(SubcommandProgram, MixedOrderExtras) {
@@ -1044,6 +1128,43 @@ TEST_F(ManySubcommands, SubcommandDisabled) {
     args = {"sub3", "sub4"};
     EXPECT_NO_THROW(run());
 }
+
+TEST_F(ManySubcommands, SubcommandTriggeredOff) {
+
+    app.allow_extras(false);
+    sub1->allow_extras(false);
+    sub2->allow_extras(false);
+    CLI::TriggerOff(sub1, sub2);
+    args = {"sub1", "sub2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+    args = {"sub2", "sub1", "sub3"};
+    EXPECT_NO_THROW(run());
+    CLI::TriggerOff(sub1, {sub3, sub4});
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    args = {"sub1", "sub2", "sub4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
+TEST_F(ManySubcommands, SubcommandTriggeredOn) {
+
+    app.allow_extras(false);
+    sub1->allow_extras(false);
+    sub2->allow_extras(false);
+    CLI::TriggerOn(sub1, sub2);
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub2", "sub1", "sub4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    CLI::TriggerOn(sub1, {sub3, sub4});
+    sub2->disabled_by_default(false);
+    sub2->disabled(false);
+    EXPECT_NO_THROW(run());
+    args = {"sub3", "sub1", "sub2"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
 TEST_F(TApp, UnnamedSub) {
     double val;
     auto sub = app.add_subcommand("", "empty name");
@@ -1204,4 +1325,41 @@ TEST_F(ManySubcommands, getSubtests) {
     EXPECT_THROW(app.get_subcommand(nullptr), CLI::OptionNotFound);
     CLI::App_p sub3p = app.get_subcommand_ptr(2);
     EXPECT_EQ(sub3p.get(), sub3);
+}
+
+TEST_F(ManySubcommands, defaultDisabledSubcommand) {
+
+    sub1->fallthrough();
+    sub2->disabled_by_default();
+    run();
+    auto rem = app.remaining();
+    EXPECT_EQ(rem.size(), 1u);
+    EXPECT_EQ(rem[0], "sub2");
+    EXPECT_TRUE(sub2->get_disabled_by_default());
+    sub2->disabled(false);
+    EXPECT_FALSE(sub2->get_disabled());
+    run();
+    // this should disable it again even though it was disabled
+    rem = app.remaining();
+    EXPECT_EQ(rem.size(), 1u);
+    EXPECT_EQ(rem[0], "sub2");
+    EXPECT_TRUE(sub2->get_disabled_by_default());
+    EXPECT_TRUE(sub2->get_disabled());
+}
+
+TEST_F(ManySubcommands, defaultEnabledSubcommand) {
+
+    sub2->enabled_by_default();
+    run();
+    auto rem = app.remaining();
+    EXPECT_EQ(rem.size(), 0u);
+    EXPECT_TRUE(sub2->get_enabled_by_default());
+    sub2->disabled();
+    EXPECT_TRUE(sub2->get_disabled());
+    run();
+    // this should disable it again even though it was disabled
+    rem = app.remaining();
+    EXPECT_EQ(rem.size(), 0u);
+    EXPECT_TRUE(sub2->get_enabled_by_default());
+    EXPECT_FALSE(sub2->get_disabled());
 }
