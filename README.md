@@ -31,12 +31,17 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 -   [Usage](#usage)
     -   [Adding options](#adding-options)
         -   [Option types](#option-types)
+        -   [Example](#example)
         -   [Option options](#option-options)
         -   [Validators](#validators)  🚧
+            -   [Transforming Validators](#transforming-validators)🚧
+            -   [Validator operations](#validator-operations)🚧
+            -   [Custom Validators](#custom-validators)🚧
+            -   [Querying Validators](#querying-validators)🚧
         -   [Getting Results](#getting-results) 🚧
     -   [Subcommands](#subcommands)
         -   [Subcommand options](#subcommand-options)
-        -   [Option Groups](#option-groups) 🚧
+        -   [Option groups](#option-groups) 🚧
     -   [Configuration file](#configuration-file)
     -   [Inheriting defaults](#inheriting-defaults)
     -   [Formatting](#formatting)
@@ -385,7 +390,7 @@ of `Transformer`:
 
 NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a specialized search function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a find function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
 
-##### Validator Operations🚧
+##### Validator operations🚧
 Validators are copyable and have a few operations that can be performed on them to alter settings.  Most of the built in Validators have a default description that is displayed in the help.  This can be altered via `.description(validator_description)`.
 the name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
@@ -500,7 +505,7 @@ There are several options that are supported on the main app and subcommands and
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
-#### Option Groups 🚧
+#### Option groups 🚧
 
 The method 
 ```cpp
