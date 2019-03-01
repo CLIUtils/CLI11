@@ -94,6 +94,28 @@ add_test(NAME option_groups_extra2 COMMAND option_groups --csv --address "192.16
 set_property(TEST option_groups_extra2 PROPERTY PASS_REGULAR_EXPRESSION
     "at most 1")
 	
+add_cli_exe(positional_arity positional_arity.cpp)
+add_test(NAME positional_arity1 COMMAND positional_arity one )
+set_property(TEST positional_arity1 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one")
+add_test(NAME positional_arity2 COMMAND positional_arity one two )
+set_property(TEST positional_arity2 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one"
+    "File 2 = two")
+add_test(NAME positional_arity3 COMMAND positional_arity 1 2 one)
+set_property(TEST positional_arity3 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one")
+add_test(NAME positional_arity_fail COMMAND positional_arity 1 one two)
+set_property(TEST positional_arity_fail PROPERTY PASS_REGULAR_EXPRESSION
+    "Could not convert")
+
+add_cli_exe(shapes shapes.cpp)
+add_test(NAME shapes_all COMMAND shapes circle 4.4 circle 10.7 rectangle 4 4 circle 2.3 triangle 4.5 ++ rectangle 2.1 ++ circle 234.675)
+set_property(TEST shapes_all PROPERTY PASS_REGULAR_EXPRESSION
+    "circle2"
+    "circle4"
+    "rectangle2 with edges [2.1,2.1]"
+    "triangel1 with sides [4.5]")
 	
 add_cli_exe(ranges ranges.cpp)
 add_test(NAME ranges_range COMMAND ranges --range 1 2 3)
