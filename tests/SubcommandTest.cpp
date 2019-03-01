@@ -837,6 +837,7 @@ TEST_F(ManySubcommands, MaxCommands) {
     args = {"sub1", "sub2", "sub3"};
     EXPECT_NO_THROW(run());
     EXPECT_EQ(sub2->remaining().size(), 1u);
+    EXPECT_EQ(app.count_all(), 2u);
 
     // Currently, setting sub2 to throw causes an extras error
     // In the future, would passing on up to app's extras be better?
@@ -853,6 +854,78 @@ TEST_F(ManySubcommands, MaxCommands) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(ManySubcommands, SubcommandExclusion) {
+
+    sub1->excludes(sub3);
+    sub2->excludes(sub3);
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"sub1", "sub2", "sub4"};
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(app.count_all(), 3u);
+
+    args = {"sub3", "sub4"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManySubcommands, SubcommandOptionExclusion) {
+
+    auto excluder_flag = app.add_flag("--exclude");
+    sub1->excludes(excluder_flag)->fallthrough();
+    sub2->excludes(excluder_flag)->fallthrough();
+    sub3->fallthrough();
+    sub4->fallthrough();
+    args = {"sub3", "sub4", "--exclude"};
+    EXPECT_NO_THROW(run());
+
+    // the option comes later so doesn't exclude
+    args = {"sub1", "sub3", "--exclude"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"--exclude", "sub2", "sub4"};
+    EXPECT_THROW(run(), CLI::ExcludesError);
+
+    args = {"sub1", "--exclude", "sub2", "sub4"};
+    try {
+        run();
+    } catch(const CLI::ExcludesError &ee) {
+        EXPECT_NE(std::string(ee.what()).find("sub1"), std::string::npos);
+    }
+}
+
+TEST_F(ManySubcommands, SubcommandRequired) {
+
+    sub1->required();
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub3", "sub4"};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
+TEST_F(ManySubcommands, SubcommandDisabled) {
+
+    sub3->disabled();
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub3"};
+    app.allow_extras(false);
+    sub2->allow_extras(false);
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    args = {"sub3", "sub4"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    sub3->disabled(false);
+    args = {"sub3", "sub4"};
+    EXPECT_NO_THROW(run());
+}
 TEST_F(TApp, UnnamedSub) {
     double val;
     auto sub = app.add_subcommand("", "empty name");
@@ -886,6 +959,7 @@ TEST_F(TApp, UnnamedSubMix) {
     EXPECT_EQ(val, -3.0);
     EXPECT_EQ(val2, 5.93);
     EXPECT_EQ(val3, 4.56);
+    EXPECT_EQ(app.count_all(), 3u);
 }
 
 TEST_F(TApp, UnnamedSubMixExtras) {

@@ -58,7 +58,27 @@ inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) co
 
 inline std::string Formatter::make_description(const App *app) const {
     std::string desc = app->get_description();
-
+    auto min_options = app->get_require_option_min();
+    auto max_options = app->get_require_option_max();
+    if(app->get_required()) {
+        desc += " REQUIRED ";
+    }
+    if((max_options == min_options) && (min_options > 0)) {
+        if(min_options == 1) {
+            desc += " \n[Exactly 1 of the following options is required]";
+        } else {
+            desc += " \n[Exactly " + std::to_string(min_options) + "options from the following list are required]";
+        }
+    } else if(max_options > 0) {
+        if(min_options > 0) {
+            desc += " \n[Between " + std::to_string(min_options) + " and " + std::to_string(max_options) +
+                    " of the follow options are required]";
+        } else {
+            desc += " \n[At most " + std::to_string(max_options) + " of the following options are allowed]";
+        }
+    } else if(min_options > 0) {
+        desc += " \n[At least " + std::to_string(min_options) + " of the following options are required]";
+    }
     return (!desc.empty()) ? desc + "\n" : std::string{};
 }
 
@@ -90,7 +110,9 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
     }
 
     // Add a marker if subcommands are expected or optional
-    if(!app->get_subcommands({}).empty()) {
+    if(!app->get_subcommands(
+               [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
+            .empty()) {
         out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
                                                                                                         : "SUBCOMMANDS")
@@ -118,6 +140,11 @@ inline std::string Formatter::make_help(const App *app, std::string name, AppFor
         return make_expanded(app);
 
     std::stringstream out;
+    if((app->get_name().empty()) && (app->get_parent() != nullptr)) {
+        if(app->get_group() != "Subcommands") {
+            out << app->get_group() << ':';
+        }
+    }
 
     out << make_description(app);
     out << make_usage(app, name);
@@ -177,7 +204,7 @@ inline std::string Formatter::make_subcommand(const App *sub) const {
 
 inline std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    out << sub->get_name() << "\n";
+    out << sub->get_display_name() << "\n";
 
     out << make_description(sub);
     out << make_positionals(sub);

@@ -51,6 +51,7 @@ class App;
 
 using App_p = std::shared_ptr<App>;
 
+class Option_group;
 /// Creates a command line program, with very few defaults.
 /** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
  *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
@@ -80,8 +81,14 @@ class App {
     ///  If true, return immediately on an unrecognized option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
 
-    /// if set to true the name was automatically generated from the command line vs a user set name
+    /// If set to true the name was automatically generated from the command line vs a user set name
     bool has_automatic_name_{false};
+
+    /// If set to true the subcommand is required to be processed and used, ignored for main app
+    bool required_{false};
+
+    /// If set to true the subcommand is disabled and cannot be used, ignored for main app
+    bool disabled_{false};
 
     /// This is a function that runs when complete. Great for subcommands. Can throw.
     std::function<void()> callback_;
@@ -132,6 +139,13 @@ class App {
     /// This is a list of the subcommands collected, in order
     std::vector<App *> parsed_subcommands_;
 
+    /// this is a list of subcommands that are exclusionary to this one
+    std::set<App *> exclude_subcommands_;
+
+    /// This is a list of options which are exclusionary to this App, if the options were used this subcommand should
+    /// not be
+    std::set<Option *> exclude_options_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -170,6 +184,12 @@ class App {
 
     /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited INHERITABLE
     size_t require_subcommand_max_ = 0;
+
+    /// Minimum required options (not inheritable!)
+    size_t require_option_min_ = 0;
+
+    /// Max number of options allowed. 0 is unlimited (not inheritable)
+    size_t require_option_max_ = 0;
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
@@ -257,6 +277,18 @@ class App {
     /// Remove the error when extras are left over on the command line.
     App *allow_extras(bool allow = true) {
         allow_extras_ = allow;
+        return this;
+    }
+
+    /// Remove the error when extras are left over on the command line.
+    App *required(bool require = true) {
+        required_ = require;
+        return this;
+    }
+
+    /// Disable the subcommand or option group
+    App *disabled(bool disable = true) {
+        disabled_ = disable;
         return this;
     }
 
@@ -926,7 +958,7 @@ class App {
     Option *set_config(std::string option_name = "",
                        std::string default_filename = "",
                        std::string help_message = "Read an ini file",
-                       bool required = false) {
+                       bool config_required = false) {
 
         // Remove existing config if present
         if(config_ptr_ != nullptr)
@@ -935,7 +967,7 @@ class App {
         // Only add config if option passed
         if(!option_name.empty()) {
             config_name_ = default_filename;
-            config_required_ = required;
+            config_required_ = config_required;
             config_ptr_ = add_option(option_name, config_name_, help_message, !default_filename.empty());
             config_ptr_->configurable(false);
         }
@@ -965,6 +997,17 @@ class App {
         return false;
     }
 
+    /// creates an option group as part of the given app
+    template <typename T = Option_group>
+    T *add_option_group(std::string group_name, std::string group_description = "") {
+        auto option_group = std::make_shared<T>(std::move(group_description), group_name, nullptr);
+        auto ptr = option_group.get();
+        // move to App_p for overload resolution on older gcc versions
+        App_p app_ptr = std::dynamic_pointer_cast<App>(option_group);
+        add_subcommand(std::move(app_ptr));
+        return ptr;
+    }
+
     ///@}
     /// @name Subcommmands
     ///@{
@@ -988,6 +1031,7 @@ class App {
         subcommands_.push_back(std::move(subcom));
         return subcommands_.back().get();
     }
+
     /// Check to see if a subcommand is part of this command (doesn't have to be in command line)
     /// returns the first subcommand if passed a nullptr
     App *get_subcommand(App *subcom) const {
@@ -1043,6 +1087,22 @@ class App {
     /// otherwise modified in a callback
     size_t count() const { return parsed_; }
 
+    /// Get a count of all the arguments processed in options and subcommands, this excludes arguments which were
+    /// treated as extras.
+    size_t count_all() const {
+        size_t cnt{0};
+        for(auto &opt : options_) {
+            cnt += opt->count();
+        }
+        for(auto &sub : subcommands_) {
+            cnt += sub->count_all();
+        }
+        if(!get_name().empty()) { // for named subcommands add the number of times the subcommand was called
+            cnt += parsed_;
+        }
+        return cnt;
+    }
+
     /// Changes the group membership
     App *group(std::string group_name) {
         group_ = group_name;
@@ -1075,6 +1135,35 @@ class App {
     App *require_subcommand(size_t min, size_t max) {
         require_subcommand_min_ = min;
         require_subcommand_max_ = max;
+        return this;
+    }
+
+    /// The argumentless form of require option requires 1 or more options be used
+    App *require_option() {
+        require_option_min_ = 1;
+        require_option_max_ = 0;
+        return this;
+    }
+
+    /// Require an option to be given (does not affect help call)
+    /// The number required can be given. Negative values indicate maximum
+    /// number allowed (0 for any number).
+    App *require_option(int value) {
+        if(value < 0) {
+            require_option_min_ = 0;
+            require_option_max_ = static_cast<size_t>(-value);
+        } else {
+            require_option_min_ = static_cast<size_t>(value);
+            require_option_max_ = static_cast<size_t>(value);
+        }
+        return this;
+    }
+
+    /// Explicitly control the number of options required. Setting 0
+    /// for the max means unlimited number allowed. Max number inheritable.
+    App *require_option(size_t min, size_t max) {
+        require_option_min_ = min;
+        require_option_max_ = max;
         return this;
     }
 
@@ -1219,7 +1308,7 @@ class App {
     /// Counts the number of times the given option was passed.
     size_t count(std::string option_name) const { return get_option(option_name)->count(); }
 
-    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by by default, in command
+    /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command
     /// line order; use parsed = false to get the original definition list.)
     std::vector<App *> get_subcommands() const { return parsed_subcommands_; }
 
@@ -1266,6 +1355,50 @@ class App {
 
     /// Check with name instead of pointer to see if subcommand was selected
     bool got_subcommand(std::string subcommand_name) const { return get_subcommand(subcommand_name)->parsed_ > 0; }
+
+    /// Sets excluded options for the subcommand
+    App *excludes(Option *opt) {
+        if(opt == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
+        exclude_options_.insert(opt);
+        return this;
+    }
+
+    /// Sets excluded subcommands for the subcommand
+    App *excludes(App *app) {
+        if((app == this) || (app == nullptr)) {
+            throw OptionNotFound("nullptr passed");
+        }
+        auto res = exclude_subcommands_.insert(app);
+        // subcommand exclusion should be symmetric
+        if(res.second) {
+            app->exclude_subcommands_.insert(this);
+        }
+        return this;
+    }
+
+    /// Removes an option from the excludes list of this subcommand
+    bool remove_excludes(Option *opt) {
+        auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
+        if(iterator != std::end(exclude_options_)) {
+            exclude_options_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /// Removes a subcommand from this excludes list of this subcommand
+    bool remove_excludes(App *app) {
+        auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
+        if(iterator != std::end(exclude_subcommands_)) {
+            exclude_subcommands_.erase(iterator);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     ///@}
     /// @name Help
@@ -1424,11 +1557,23 @@ class App {
     /// Get the required max subcommand value
     size_t get_require_subcommand_max() const { return require_subcommand_max_; }
 
+    /// Get the required min option value
+    size_t get_require_option_min() const { return require_option_min_; }
+
+    /// Get the required max option value
+    size_t get_require_option_max() const { return require_option_max_; }
+
     /// Get the prefix command status
     bool get_prefix_command() const { return prefix_command_; }
 
     /// Get the status of allow extras
     bool get_allow_extras() const { return allow_extras_; }
+
+    /// Get the status of required
+    bool get_required() const { return required_; }
+
+    /// Get the status of required
+    bool get_disabled() const { return disabled_; }
 
     /// Get the status of allow extras
     bool get_allow_config_extras() const { return allow_config_extras_; }
@@ -1456,6 +1601,9 @@ class App {
 
     /// Get the name of the current app
     std::string get_name() const { return name_; }
+
+    /// Get a display name for an app
+    std::string get_display_name() const { return (!name_.empty()) ? name_ : "[Option Group: " + get_group() + "]"; }
 
     /// Check the name, case insensitive and underscore insensitive if set
     bool check_name(std::string name_to_check) const {
@@ -1525,15 +1673,33 @@ class App {
   protected:
     /// Check the options to make sure there are no conflicts.
     ///
-    /// Currently checks to see if multiple positionals exist with -1 args
+    /// Currently checks to see if multiple positionals exist with -1 args and checks if the min and max options are
+    /// feasible
     void _validate() const {
         auto pcount = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
             return opt->get_items_expected() < 0 && opt->get_positional();
         });
         if(pcount > 1)
             throw InvalidError(name_);
+
+        size_t nameless_subs{0};
         for(const App_p &app : subcommands_) {
             app->_validate();
+            if(app->get_name().empty())
+                ++nameless_subs;
+        }
+
+        if(require_option_min_ > 0) {
+            if(require_option_max_ > 0) {
+                if(require_option_max_ < require_option_min_) {
+                    throw(InvalidError("Required min options greater than required max options",
+                                       ExitCodes::InvalidError));
+                }
+            }
+            if(require_option_min_ > (options_.size() + nameless_subs)) {
+                throw(InvalidError("Required min options greater than number of available options",
+                                   ExitCodes::InvalidError));
+            }
         }
     }
 
@@ -1572,7 +1738,7 @@ class App {
         }
 
         for(const App_p &com : subcommands_)
-            if(com->check_name(current) && !*com)
+            if(!com->disabled_ && com->check_name(current) && !*com)
                 return true;
 
         // Check parent if exists, else return false
@@ -1690,8 +1856,34 @@ class App {
 
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements() {
+        // check excludes
+        bool excluded{false};
+        std::string excluder;
+        for(auto &opt : exclude_options_) {
+            if(opt->count() > 0) {
+                excluded = true;
+                excluder = opt->get_name();
+            }
+        }
+        for(auto &subc : exclude_subcommands_) {
+            if(subc->count_all() > 0) {
+                excluded = true;
+                excluder = subc->get_display_name();
+            }
+        }
+        if(excluded) {
+            if(count_all() > 0) {
+                throw ExcludesError(get_display_name(), excluder);
+            }
+            // if we are excluded but didn't receive anything, just return
+            return;
+        }
+        size_t used_options = 0;
         for(const Option_p &opt : options_) {
 
+            if(opt->count() != 0) {
+                ++used_options;
+            }
             // Required or partially filled
             if(opt->get_required() || opt->count() != 0) {
                 // Make sure enough -N arguments parsed (+N is already handled in parsing function)
@@ -1711,16 +1903,60 @@ class App {
                 if(opt->count() > 0 && opt_ex->count() != 0)
                     throw ExcludesError(opt->get_name(), opt_ex->get_name());
         }
-
-        auto selected_subcommands = get_subcommands();
-        if(require_subcommand_min_ > selected_subcommands.size())
-            throw RequiredError::Subcommand(require_subcommand_min_);
+        // check for the required number of subcommands
+        if(require_subcommand_min_ > 0) {
+            auto selected_subcommands = get_subcommands();
+            if(require_subcommand_min_ > selected_subcommands.size())
+                throw RequiredError::Subcommand(require_subcommand_min_);
+        }
 
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
+        // run this loop to check how many unnamed subcommands were actually used since they are considered options from
+        // the perspective of an App
         for(App_p &sub : subcommands_) {
-            if((sub->count() > 0) || (sub->name_.empty()))
-                sub->_process_requirements();
+            if(sub->disabled_)
+                continue;
+            if((sub->name_.empty()) && (sub->count_all() > 0)) {
+                ++used_options;
+            }
+        }
+
+        if((require_option_min_ > used_options) ||
+           ((require_option_max_ > 0) && (require_option_max_ < used_options))) {
+            auto option_list = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
+            if(option_list.compare(0, 10, "-h,--help,") == 0) {
+                option_list.erase(0, 10);
+            }
+            auto subc_list = get_subcommands([](App *app) { return ((app->get_name().empty()) && (!app->disabled_)); });
+            if(!subc_list.empty()) {
+                option_list += "," + detail::join(subc_list, [](const App *app) { return app->get_display_name(); });
+            }
+            throw RequiredError::Option(require_option_min_, require_option_max_, used_options, option_list);
+        }
+
+        // now process the requirements for subcommands if needed
+        for(App_p &sub : subcommands_) {
+            if(sub->disabled_)
+                continue;
+            if((sub->name_.empty()) && (sub->required_ == false)) {
+                if(sub->count_all() == 0) {
+                    if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
+                    if((require_option_max_ > 0) && (used_options >= require_option_min_)) {
+                        continue;
+                        // if we have met the requirement and there is nothing in this option group skip checking
+                        // requirements
+                    }
+                }
+            }
+            sub->_process_requirements();
+            if((sub->required_) && (sub->count_all() == 0)) {
+                throw(CLI::RequiredError(sub->get_display_name()));
+            }
         }
     }
 
@@ -1859,10 +2095,10 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    size_t _count_remaining_positionals(bool required = false) const {
+    size_t _count_remaining_positionals(bool required_only = false) const {
         size_t retval = 0;
         for(const Option_p &opt : options_)
-            if(opt->get_positional() && (!required || opt->get_required()) && opt->get_items_expected() > 0 &&
+            if(opt->get_positional() && (!required_only || opt->get_required()) && opt->get_items_expected() > 0 &&
                static_cast<int>(opt->count()) < opt->get_items_expected())
                 retval = static_cast<size_t>(opt->get_items_expected()) - opt->count();
 
@@ -1886,7 +2122,7 @@ class App {
         }
 
         for(auto &subc : subcommands_) {
-            if(subc->name_.empty()) {
+            if((subc->name_.empty()) && (!subc->disabled_)) {
                 subc->_parse_positional(args);
                 if(subc->missing_.empty()) { // check if it was used and is not in the missing category
                     return;
@@ -1922,6 +2158,8 @@ class App {
         if(_count_remaining_positionals(/* required */ true) > 0)
             return _parse_positional(args);
         for(const App_p &com : subcommands_) {
+            if(com->disabled_)
+                continue;
             if(com->check_name(args.back())) {
                 args.pop_back();
                 if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com.get()) ==
@@ -1976,11 +2214,12 @@ class App {
         // Option not found
         if(op_ptr == std::end(options_)) {
             for(auto &subc : subcommands_) {
-                if(subc->name_.empty()) {
+                if((subc->name_.empty()) && (!(subc->disabled_))) {
                     subc->_parse_arg(args, current_type);
                     if(subc->missing_.empty()) { // check if it was used and is not in the missing category
                         return;
                     } else {
+                        // for unnamed subs they shouldn't trigger a missing argument
                         args.push_back(std::move(subc->missing_.front().second));
                         subc->missing_.clear();
                     }
@@ -2006,8 +2245,8 @@ class App {
 
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;
+        int result_count = 0;
         // deal with flag like things
-        int count = 0;
         if(num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
@@ -2015,22 +2254,22 @@ class App {
         }
         // --this=value
         else if(!value.empty()) {
-            op->add_result(value, count);
+            op->add_result(value, result_count);
             parse_order_.push_back(op.get());
-            collected += count;
+            collected += result_count;
             // If exact number expected
             if(num > 0)
-                num = (num >= count) ? num - count : 0;
+                num = (num >= result_count) ? num - result_count : 0;
 
             // -Trest
         } else if(!rest.empty()) {
-            op->add_result(rest, count);
+            op->add_result(rest, result_count);
             parse_order_.push_back(op.get());
             rest = "";
-            collected += count;
+            collected += result_count;
             // If exact number expected
             if(num > 0)
-                num = (num >= count) ? num - count : 0;
+                num = (num >= result_count) ? num - result_count : 0;
         }
 
         // Unlimited vector parser
@@ -2043,10 +2282,10 @@ class App {
                     if(_count_remaining_positionals() > 0)
                         break;
                 }
-                op->add_result(args.back(), count);
+                op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
-                collected += count;
+                collected += result_count;
             }
 
             // Allow -- to end an unlimited list and "eat" it
@@ -2057,9 +2296,9 @@ class App {
             while(num > 0 && !args.empty()) {
                 std::string current_ = args.back();
                 args.pop_back();
-                op->add_result(current_, count);
+                op->add_result(current_, result_count);
                 parse_order_.push_back(op.get());
-                num -= count;
+                num -= result_count;
             }
 
             if(num > 0) {
@@ -2071,6 +2310,72 @@ class App {
             rest = "-" + rest;
             args.push_back(rest);
         }
+    }
+
+  public:
+    /// function that could be used by subclasses of App to shift options around into subcommands
+    void _move_option(Option *opt, App *app) {
+        if(opt == nullptr) {
+            throw OptionNotFound("the option is NULL");
+        }
+        // verify that the give app is actually a subcommand
+        bool found = false;
+        for(auto &subc : subcommands_) {
+            if(app == subc.get()) {
+                found = true;
+            }
+        }
+        if(!found) {
+            throw OptionNotFound("The Given app is not a subcommand");
+        }
+
+        if((help_ptr_ == opt) || (help_all_ptr_ == opt))
+            throw OptionAlreadyAdded("cannot move help options");
+
+        if((config_ptr_ == opt))
+            throw OptionAlreadyAdded("cannot move config file options");
+
+        auto iterator =
+            std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });
+        if(iterator != std::end(options_)) {
+            const auto &opt_p = *iterator;
+            if(std::find_if(std::begin(app->options_), std::end(app->options_), [&opt_p](const Option_p &v) {
+                   return (*v == *opt_p);
+               }) == std::end(app->options_)) {
+                // only erase after the insertion was successful
+                app->options_.push_back(std::move(*iterator));
+                options_.erase(iterator);
+            } else {
+                throw OptionAlreadyAdded(opt->get_name());
+            }
+        } else {
+            throw OptionNotFound("could not locate the given App");
+        }
+    }
+};
+
+/// Extension of App to better manage groups of options
+class Option_group : public App {
+  public:
+    Option_group(std::string group_description, std::string group_name, App *parent)
+        : App(std::move(group_description), "", parent) {
+        group(group_name);
+    }
+    using App::add_option;
+    /// add an existing option to the Option_group
+    Option *add_option(Option *opt) {
+        if(get_parent() == nullptr) {
+            throw OptionNotFound("Unable to locate the specified option");
+        }
+        get_parent()->_move_option(opt, this);
+        return opt;
+    }
+    /// add an existing option to the Option_group
+    void add_options(Option *opt) { add_option(opt); }
+    /// add a bunch of options to the group
+    template <typename... Args> void add_options(Option *opt, Args... args) {
+        add_option(opt);
+        add_options(args...);
     }
 };
 

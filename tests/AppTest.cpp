@@ -2,6 +2,8 @@
 #include <complex>
 #include <cstdlib>
 
+#include "gmock/gmock.h"
+
 TEST_F(TApp, OneFlagShort) {
     app.add_flag("-c,--count");
     args = {"-c"};
@@ -116,6 +118,23 @@ TEST_F(TApp, DashedOptionsSingleString) {
     EXPECT_EQ(1u, app.count("--q"));
     EXPECT_EQ(2u, app.count("--this"));
     EXPECT_EQ(2u, app.count("--that"));
+}
+
+TEST_F(TApp, RequireOptionsError) {
+    using ::testing::HasSubstr;
+    using ::testing::Not;
+    app.add_flag("-c");
+    app.add_flag("--q");
+    app.add_flag("--this,--that");
+    app.require_option(1, 2);
+    try {
+        app.parse("-c --q --this --that");
+    } catch(const CLI::RequiredError &re) {
+        EXPECT_THAT(re.what(), Not(HasSubstr("-h,--help")));
+    }
+
+    EXPECT_NO_THROW(app.parse("-c --q"));
+    EXPECT_NO_THROW(app.parse("-c --this --that"));
 }
 
 TEST_F(TApp, BoolFlagOverride) {
@@ -527,6 +546,7 @@ TEST_F(TApp, LotsOfFlags) {
     EXPECT_EQ(2u, app.count("-a"));
     EXPECT_EQ(1u, app.count("-b"));
     EXPECT_EQ(1u, app.count("-A"));
+    EXPECT_EQ(app.count_all(), 4u);
 }
 
 TEST_F(TApp, NumberFlags) {
@@ -657,6 +677,7 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ(1u, app.count("-y"));
     EXPECT_EQ((unsigned long long)2, funnyint);
     EXPECT_EQ("zyz", someopt);
+    EXPECT_EQ(app.count_all(), 3u);
 }
 
 TEST_F(TApp, DefaultOpts) {
