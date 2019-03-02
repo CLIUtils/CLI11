@@ -97,7 +97,7 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
 
     args = {"--test1", "5", "--test2", "4"};
     EXPECT_NO_THROW(run());
-    EXPECT_EQ(app.count_all(), 2);
+    EXPECT_EQ(app.count_all(), 2u);
 
     args = {"--option", "9"};
     EXPECT_THROW(run(), CLI::RequiredError);
@@ -119,15 +119,15 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferentReversed) {
     int val2;
     app.add_option("--option", val2);
     ogroup->require_option(2, 1);
-    EXPECT_EQ(ogroup->get_require_option_min(), 2);
-    EXPECT_EQ(ogroup->get_require_option_max(), 1);
+    EXPECT_EQ(ogroup->get_require_option_min(), 2u);
+    EXPECT_EQ(ogroup->get_require_option_max(), 1u);
     args = {"--test1", "5"};
     EXPECT_THROW(run(), CLI::InvalidError);
     ogroup->require_option(1, 2);
     EXPECT_NO_THROW(run());
     EXPECT_EQ(res, 5);
-    EXPECT_EQ(ogroup->get_require_option_min(), 1);
-    EXPECT_EQ(ogroup->get_require_option_max(), 2);
+    EXPECT_EQ(ogroup->get_require_option_min(), 1u);
+    EXPECT_EQ(ogroup->get_require_option_max(), 2u);
     args = {"--test1", "5", "--test2", "4"};
     EXPECT_NO_THROW(run());
 
