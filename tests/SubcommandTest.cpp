@@ -234,6 +234,109 @@ TEST_F(TApp, NamelessSubComPositionals) {
     EXPECT_EQ(val, 2);
 }
 
+TEST_F(TApp, NamelessSubWithSub) {
+
+    auto sub = app.add_subcommand();
+    auto subsub = sub->add_subcommand("val");
+
+    args = {"val"};
+    run();
+    EXPECT_TRUE(subsub->parsed());
+    EXPECT_TRUE(app.got_subcommand("val"));
+}
+
+TEST_F(TApp, NamelessSubWithMultipleSub) {
+
+    auto sub1 = app.add_subcommand();
+    auto sub2 = app.add_subcommand();
+    auto sub1sub1 = sub1->add_subcommand("val1");
+    auto sub1sub2 = sub1->add_subcommand("val2");
+    auto sub2sub1 = sub2->add_subcommand("val3");
+    auto sub2sub2 = sub2->add_subcommand("val4");
+    args = {"val1"};
+    run();
+    EXPECT_TRUE(sub1sub1->parsed());
+    EXPECT_TRUE(app.got_subcommand("val1"));
+
+    args = {"val2"};
+    run();
+    EXPECT_TRUE(sub1sub2->parsed());
+    EXPECT_TRUE(app.got_subcommand("val2"));
+
+    args = {"val3"};
+    run();
+    EXPECT_TRUE(sub2sub1->parsed());
+    EXPECT_TRUE(app.got_subcommand("val3"));
+
+    args = {"val4"};
+    run();
+    EXPECT_TRUE(sub2sub2->parsed());
+    EXPECT_TRUE(app.got_subcommand("val4"));
+
+    args = {"val4", "val1"};
+    run();
+    EXPECT_TRUE(sub2sub2->parsed());
+    EXPECT_TRUE(app.got_subcommand("val4"));
+    EXPECT_TRUE(sub1sub1->parsed());
+    EXPECT_TRUE(app.got_subcommand("val1"));
+}
+
+TEST_F(TApp, Nameless4LayerDeep) {
+
+    auto sub = app.add_subcommand();
+    auto ssub = sub->add_subcommand();
+    auto sssub = ssub->add_subcommand();
+
+    auto ssssub = sssub->add_subcommand();
+    auto sssssub = ssssub->add_subcommand("val");
+
+    args = {"val"};
+    run();
+    EXPECT_TRUE(sssssub->parsed());
+    EXPECT_TRUE(app.got_subcommand("val"));
+}
+
+/// Put subcommands in some crazy pattern and make everything still works
+TEST_F(TApp, Nameless4LayerDeepMulit) {
+
+    auto sub1 = app.add_subcommand();
+    auto sub2 = app.add_subcommand();
+    auto ssub1 = sub1->add_subcommand();
+    auto ssub2 = sub2->add_subcommand();
+
+    auto sssub1 = ssub1->add_subcommand();
+    auto sssub2 = ssub2->add_subcommand();
+    sssub1->add_subcommand("val1");
+    ssub2->add_subcommand("val2");
+    sub2->add_subcommand("val3");
+    ssub1->add_subcommand("val4");
+    sssub2->add_subcommand("val5");
+    args = {"val1"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val1"));
+
+    args = {"val2"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val2"));
+
+    args = {"val3"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val3"));
+
+    args = {"val4"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val4"));
+    args = {"val5"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val5"));
+
+    args = {"val4", "val1", "val5"};
+    run();
+    EXPECT_TRUE(app.got_subcommand("val4"));
+    EXPECT_TRUE(app.got_subcommand("val1"));
+    EXPECT_TRUE(app.got_subcommand("val5"));
+}
+
 TEST_F(TApp, FallThroughRegular) {
     app.fallthrough();
     int val = 1;

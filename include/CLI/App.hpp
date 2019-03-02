@@ -1045,10 +1045,10 @@ class App {
 
     /// Check to see if a subcommand is part of this command (text version)
     App *get_subcommand(std::string subcom) const {
-        for(const App_p &subcomptr : subcommands_)
-            if(subcomptr->check_name(subcom))
-                return subcomptr.get();
-        throw OptionNotFound(subcom);
+        auto subc = _find_subcommand(subcom, false);
+        if(subc == nullptr)
+            throw OptionNotFound(subcom);
+        return subc;
     }
     /// Get a pointer to subcommand by index
     App *get_subcommand(int index = 0) const {
@@ -1736,11 +1736,10 @@ class App {
         if(require_subcommand_max_ != 0 && parsed_subcommands_.size() >= require_subcommand_max_) {
             return parent_ != nullptr && parent_->_valid_subcommand(current);
         }
-
-        for(const App_p &com : subcommands_)
-            if(!com->disabled_ && com->check_name(current) && !*com)
-                return true;
-
+        auto com = _find_subcommand(current, true);
+        if((com != nullptr) && !*com) {
+            return true;
+        }
         // Check parent if exists, else return false
         return parent_ != nullptr && parent_->_valid_subcommand(current);
     }
@@ -2151,28 +2150,43 @@ class App {
         }
     }
 
+    /// Locate a subcommand by name
+    App *_find_subcommand(const std::string &subc_name, bool ignore_disabled) const noexcept {
+        for(const App_p &com : subcommands_) {
+            if((com->disabled_) && (ignore_disabled))
+                continue;
+            if(com->get_name().empty()) {
+                auto subc = com->_find_subcommand(subc_name, ignore_disabled);
+                if(subc != nullptr) {
+                    return subc;
+                }
+            } else if(com->check_name(subc_name)) {
+                return com.get();
+            }
+        }
+        return nullptr;
+    }
+
     /// Parse a subcommand, modify args and continue
     ///
     /// Unlike the others, this one will always allow fallthrough
     void _parse_subcommand(std::vector<std::string> &args) {
         if(_count_remaining_positionals(/* required */ true) > 0)
             return _parse_positional(args);
-        for(const App_p &com : subcommands_) {
-            if(com->disabled_)
-                continue;
-            if(com->check_name(args.back())) {
-                args.pop_back();
-                if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com.get()) ==
-                   std::end(parsed_subcommands_))
-                    parsed_subcommands_.push_back(com.get());
-                com->_parse(args);
-                return;
-            }
+        auto com = _find_subcommand(args.back(), true);
+        if(com != nullptr) {
+            args.pop_back();
+            if(std::find(std::begin(parsed_subcommands_), std::end(parsed_subcommands_), com) ==
+               std::end(parsed_subcommands_))
+                parsed_subcommands_.push_back(com);
+            com->_parse(args);
+            return;
         }
-        if(parent_ != nullptr)
-            return parent_->_parse_subcommand(args);
-        else
+
+        if(parent_ == nullptr)
             throw HorribleError("Subcommand " + args.back() + " missing");
+
+        return parent_->_parse_subcommand(args);
     }
 
     /// Parse a short (false) or long (true) argument, must be at the top of the list
