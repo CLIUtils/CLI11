@@ -251,11 +251,10 @@ TEST(THelp, ManualSetterOverFunction) {
     EXPECT_EQ(x, 1);
 
     std::string help = app.help();
-
     EXPECT_THAT(help, HasSubstr("=12"));
     EXPECT_THAT(help, HasSubstr("BIGGLES"));
     EXPECT_THAT(help, HasSubstr("QUIGGLES"));
-    EXPECT_THAT(help, Not(HasSubstr("1,2")));
+    EXPECT_THAT(help, HasSubstr("{1,2}"));
 }
 
 TEST(THelp, Subcom) {
@@ -743,10 +742,9 @@ TEST(THelp, ValidatorsText) {
     app.add_option("--f4", y)->check(CLI::Range(12));
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("FILE"));
+    EXPECT_THAT(help, HasSubstr("TEXT:FILE"));
     EXPECT_THAT(help, HasSubstr("INT in [1 - 4]"));
-    EXPECT_THAT(help, HasSubstr("INT in [0 - 12]")); // Loses UINT
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("UINT:INT in [0 - 12]")); // Loses UINT
 }
 
 TEST(THelp, ValidatorsNonPathText) {
@@ -756,8 +754,7 @@ TEST(THelp, ValidatorsNonPathText) {
     app.add_option("--f2", filename)->check(CLI::NonexistentPath);
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("PATH"));
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("TEXT:PATH"));
 }
 
 TEST(THelp, ValidatorsDirText) {
@@ -767,8 +764,7 @@ TEST(THelp, ValidatorsDirText) {
     app.add_option("--f2", filename)->check(CLI::ExistingDirectory);
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("DIR"));
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("TEXT:DIR"));
 }
 
 TEST(THelp, ValidatorsPathText) {
@@ -778,8 +774,7 @@ TEST(THelp, ValidatorsPathText) {
     app.add_option("--f2", filename)->check(CLI::ExistingPath);
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("PATH"));
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("TEXT:PATH"));
 }
 
 TEST(THelp, CombinedValidatorsText) {
@@ -792,9 +787,8 @@ TEST(THelp, CombinedValidatorsText) {
     // Can't programatically tell!
     // (Users can use ExistingPath, by the way)
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("TEXT"));
+    EXPECT_THAT(help, HasSubstr("TEXT:(FILE) OR (DIR)"));
     EXPECT_THAT(help, Not(HasSubstr("PATH")));
-    EXPECT_THAT(help, Not(HasSubstr("FILE")));
 }
 
 // Don't do this in real life, please
@@ -806,7 +800,7 @@ TEST(THelp, CombinedValidatorsPathyText) {
 
     // Combining validators with the same type string is OK
     std::string help = app.help();
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
+    EXPECT_THAT(help, HasSubstr("TEXT:"));
     EXPECT_THAT(help, HasSubstr("PATH"));
 }
 
@@ -819,8 +813,7 @@ TEST(THelp, CombinedValidatorsPathyTextAsTransform) {
 
     // Combining validators with the same type string is OK
     std::string help = app.help();
-    EXPECT_THAT(help, Not(HasSubstr("TEXT")));
-    EXPECT_THAT(help, HasSubstr("PATH"));
+    EXPECT_THAT(help, HasSubstr("TEXT:(PATH(existing)) OR (PATH"));
 }
 
 // #113 Part 2

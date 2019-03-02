@@ -1431,7 +1431,7 @@ TEST_F(TApp, FileNotExists) {
     ASSERT_NO_THROW(CLI::NonexistentPath(myfile));
 
     std::string filename;
-    app.add_option("--file", filename)->check(CLI::NonexistentPath);
+    auto opt = app.add_option("--file", filename)->check(CLI::NonexistentPath, "path_check");
     args = {"--file", myfile};
 
     run();
@@ -1440,7 +1440,9 @@ TEST_F(TApp, FileNotExists) {
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
     EXPECT_TRUE(ok);
     EXPECT_THROW(run(), CLI::ValidationError);
-
+    // deactivate the check, so it should run now
+    opt->get_validator("path_check")->active(false);
+    EXPECT_NO_THROW(run());
     std::remove(myfile.c_str());
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
@@ -1861,7 +1863,7 @@ TEST_F(TApp, OrderedModifingTransforms) {
 
     run();
 
-    EXPECT_EQ(val, std::vector<std::string>({"one12", "two12"}));
+    EXPECT_EQ(val, std::vector<std::string>({"one21", "two21"}));
 }
 
 TEST_F(TApp, ThrowingTransform) {

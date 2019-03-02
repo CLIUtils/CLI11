@@ -31,11 +31,17 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 -   [Usage](#usage)
     -   [Adding options](#adding-options)
         -   [Option types](#option-types)
+        -   [Example](#example)
         -   [Option options](#option-options)
+        -   [Validators](#validators)  🚧
+            -   [Transforming Validators](#transforming-validators)🚧
+            -   [Validator operations](#validator-operations)🚧
+            -   [Custom Validators](#custom-validators)🚧
+            -   [Querying Validators](#querying-validators)🚧
         -   [Getting Results](#getting-results) 🚧
     -   [Subcommands](#subcommands)
         -   [Subcommand options](#subcommand-options)
-    -   [Option Groups](#option-groups) 🚧
+        -   [Option groups](#option-groups) 🚧
     -   [Configuration file](#configuration-file)
     -   [Inheriting defaults](#inheriting-defaults)
     -   [Formatting](#formatting)
@@ -245,7 +251,7 @@ alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; th
 example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `variable_to_bind_to` is anything but an integer value the
 default behavior is to take the last value given, while if `variable_to_bind_to` is an integer type the behavior will be to sum
 all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
-The default value can be any value For example if you wished to define a numerical flag
+The default value can be any value. For example if you wished to define a numerical flag
 ```cpp
 app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag") // 🚧
 ```
@@ -282,33 +288,15 @@ Before parsing, you can set the following options:
 -    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
 -   `->description(str)`: 🆕 Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
--   `->check(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set. See below for options.
--   `->transform(CLI::IsMember(...))`: 🚧 Require an option be a member of a given set or map. Can change the parse. See below for options.
--   `->check(CLI::ExistingFile)`: Requires that the file exists if given.
--   `->check(CLI::ExistingDirectory)`: Requires that the directory exists.
--   `->check(CLI::ExistingPath)`: Requires that the path (file or directory) exists.
--   `->check(CLI::NonexistentPath)`: Requires that the path does not exist.
--   `->check(CLI::Range(min,max))`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
--   `->check(CLI::PositiveNumber)`: 🚧 Requires the number be greater or equal to 0
--   `->check(CLI::ValidIPV4)`: 🚧 Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`
--   `->transform(std::string(std::string))`: Converts the input string into the output string, in-place in the parsed options.
--   `->each(void(std::string)>`: Run this function on each value received, as it is received.
+-   `->check(std::string(const std::string &), validator_name="",validator_description="")`: 🚧 define a check function.  The function should return a non empty string with the error message if the check fails
+-   `->check(Validator)`:🚧 Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
+-   `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
+-   `->transform(Validator)`: uses a Validator object to do the transformation see [Validators](#validators) for a description of available Validators and how to create new ones.
+-   `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered
 -   `->configurable(false)`: Disable this option from being in a configuration file.
 
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Check takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results. Validate can also be a subclass of `CLI::Validator`, in which case it can also set the type name and can be combined with `&` and `|` (all built-in validators are this sort).  Validators can also be inverted with `!` such as `->check(!CLI::ExistingFile)` which would check that a file doesn't exist.
-
-🚧 The `IsMember` validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The type should be convertible from a string. You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.
-After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`.
-Here are some examples
-of `IsMember`:
-
--   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
--   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
--   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
--   `CLI::IsMember(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the key.
--   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
--   Note that you can combine validators with `|`, and only the matched validation will modify the output in transform. The first `IsMember` is the only one that will print in help, though the error message will include all Validators.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Each takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 On the command line, options can be given as:
 
@@ -340,8 +328,111 @@ You can access a vector of pointers to the parsed options in the original order 
 If `--` is present in the command line that does not end an unlimited option, then
 everything after that is positional only.
 
-#### Getting results {#getting-results} 🚧
+#### Validators
+Validators are structures to check or modify inputs, they can be used to verify that an input meets certain criteria or transform it into another value.  They are added through an options `check` or `transform` functions.  They differences between those two function are that checks do not modify the input whereas transforms can and are executed before any Validators added through `check`.
 
+CLI11 has several Validators built in that perform some common checks
+
+-   `CLI::IsMember(...)`: 🚧 Require an option be a member of a given set.  See [Transforming Validators](#transforming-validators) for more details.
+-   `CLI::Transformer(...)`: 🚧 Modify the input using a map.  See [Transforming Validators](#transforming-validators) for more details.
+-   `CLI::CheckedTransformer(...)`: 🚧 Modify the input using a map, and Require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
+-   `CLI::ExistingFile`: Requires that the file exists if given.
+-   `CLI::ExistingDirectory`: Requires that the directory exists.
+-   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
+-   `CLI::NonexistentPath`: Requires that the path does not exist.
+-   `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
+-   `CLI::Bounded(min,max)`: 🚧 Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an Error if conversion is not possible.
+-   `CLI::PositiveNumber`: 🚧 Requires the number be greater or equal to 0.
+-   `CLI::ValidIPV4`: 🚧 Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
+
+These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
+```cpp
+->check(CLI::ExistingFile);
+```
+```cpp
+->check(CLI::Range(0,10));
+```
+
+Validators can be merged using `&` and `|` and inverted using `!`
+such as
+```cpp
+->check(CLI::Range(0,10)|CLI::Range(20,30));
+```
+will produce a check if a value is between 0 and 10 or 20 and 30.
+```cpp
+->check(!CLI::PositiveNumber);
+```
+will produce a check for a number less than 0;
+
+##### Transforming Validators
+There are a few built in Validators that let you transform values if used with the `transform` function.  If they also do some checks then they can be used `check` but some may do nothing in that case.
+ * 🚧 `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
+ * 🚧 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
+After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and CLI::ignore_space.  These all work on strings but it is possible to define functions that work on other types.
+Here are some examples
+of `IsMember`:
+
+     *   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
+     *   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
+     *  `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
+     *   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`.
+     *   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
+* 🚧 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, or one of the expected output values, and if not will generate a ValidationError.  A Transformer placed using `check` will not do anything.  
+After specifying a map of options, you can also specify "filter" just like in CLI::IsMember.
+Here are some examples (`Transfomer` and `CheckedTransformer` are interchangeable in the examples)
+of `Transformer`:
+
+     *   `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
+
+     *  `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`: most maplike containers work,  the `::value_type` needs to produce a pair of some kind.
+     *   `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.  
+     *   `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
+
+NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a specialized search function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a find function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
+
+##### Validator operations🚧
+Validators are copyable and have a few operations that can be performed on them to alter settings.  Most of the built in Validators have a default description that is displayed in the help.  This can be altered via `.description(validator_description)`.
+the name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
+The operation function of a Validator can be set via
+`.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.
+All the functions return a Validator reference allowing them to be chained.  For example
+
+```cpp
+opt->check(CLI::Range(10,20).description("range is limited to sensible values").active(false).name("range"));
+```
+will specify a check on an option with a name "range", but deactivate it for the time being.
+The check can later be activated through
+```cpp
+opt->get_validator("range")->active();
+```
+
+##### Custom Validators🚧
+
+A validator object with a custom function can be created via
+```cpp
+CLI::Validator(std::function<std::string(std::string &>,validator_description,validator_name="");
+```
+or if the operation function is set later they can be created with
+```cpp
+CLI::Validator(validator_description);
+```
+
+ It is also possible to create a subclass of `CLI::Validator`, in which case it can also set a custom description function, and operation function.
+
+##### Querying Validators 🚧
+Once loaded into an Option, a pointer to a named Validator can be retrieved via
+```cpp
+opt->get_validator(name);
+```
+This will retrieve a Validator with the given name or throw a CLI::OptionNotFound error.  If no name is given or name is empty the first unnamed Validator will be returned or the first Validator if there is only one.
+
+Validators have a few functions to query the current values
+ * `get_description()`:🚧 Will return a description string
+ * `get_name()`:🚧 Will return the Validator name
+ * `get_active()`:🚧 Will return the current active state, true if the Validator is active.
+ * `get_modifying()` 🚧 Will return true if the Validator is allowed to modify the input, this can be controlled via `non_modifying()`🚧 method, though it is recommended to let check and transform function manipulate it if needed. 
+
+#### Getting results
 In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
 - `results()`: Retrieves a vector of strings with all the results in the order they were given.
@@ -365,7 +456,7 @@ You are allowed to throw `CLI::Success` in the callbacks.
 Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).
 
 🚧 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
-Nameless subcommands function a similarly to groups in the main `App`.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
+Nameless subcommands function a similarly to groups in the main `App`. See [Option groups](#option-groups) to see how this might work.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
 
 #### Subcommand options
 
@@ -378,16 +469,16 @@ There are several options that are supported on the main app and subcommands and
 -   `.disable()`: 🚧 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 -   `.exludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
 -   `.require_option()`: 🚧 Require 1 or more options or option groups be used.
--   `.require_option(N)`:  🚧 Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
+-   `.require_option(N)`:  🚧 Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
 -   `.require_option(min, max)`: 🚧 Explicitly set min and max allowed options or option groups. Setting `max` to 0 is unlimited.
 -   `.require_subcommand()`: Require 1 or more subcommands.
--   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default 0 or more.
+-   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 -   `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
 -   `.add_subcommand(shared_ptr<App>)`: 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
--   `.add_option_group(name="", description="")`: 🚧 Add an option group to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
+-   `.add_option_group(name="", description="")`: 🚧 Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
 -   `.get_parent()`: Get the parent App or nullptr if called on master App.
 -   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
 -   `.get_option_no_throw(name)`: 🚧 Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
@@ -399,7 +490,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.parsed()`: True if this subcommand was given on the command line.
 -   `.count()`: Returns the number of times the subcommand was called
 -   `.count(option_name)`: Returns the number of times a particular option was called
--   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand had, on the master App it returns the total number of processed commands
+-   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
@@ -414,7 +505,7 @@ There are several options that are supported on the main app and subcommands and
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
 
-#### Option Groups 🚧 {#option-groups}
+#### Option groups 🚧
 
 The method 
 ```cpp

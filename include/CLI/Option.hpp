@@ -244,7 +244,7 @@ class Option : public OptionBase<Option> {
     int expected_{1};
 
     /// A list of validators to run on each value parsed
-    std::vector<std::function<std::string(std::string &)>> validators_;
+    std::vector<Validator> validators_;
 
     /// A list of options that are required with this option
     std::set<Option *> needs_;
@@ -331,59 +331,70 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Adds a validator with a built in type name
-    Option *check(const Validator &validator) {
-        std::function<std::string(std::string &)> func = validator.func;
-        validators_.emplace_back([func](const std::string &value) {
-            /// Throw away changes to the string value
-            std::string ignore_changes_value = value;
-            return func(ignore_changes_value);
-        });
-        if(validator.tname_function)
-            type_name_fn(validator.tname_function);
-        else if(!validator.tname.empty())
-            type_name(validator.tname);
+    /// Adds a Validator with a built in type name
+    Option *check(Validator validator, std::string validator_name = "") {
+        validator.non_modifying();
+        validators_.push_back(std::move(validator));
+        if(!validator_name.empty())
+            validators_.front().name(validator_name);
         return this;
     }
 
-    /// Adds a validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
-    Option *check(std::function<std::string(const std::string &)> validator) {
-        validators_.emplace_back(validator);
+    /// Adds a Validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
+    Option *check(std::function<std::string(const std::string &)> validator,
+                  std::string validator_description = "",
+                  std::string validator_name = "") {
+        validators_.emplace_back(validator, std::move(validator_description), std::move(validator_name));
+        validators_.back().non_modifying();
         return this;
     }
 
     /// Adds a transforming validator with a built in type name
-    Option *transform(const Validator &validator) {
-        validators_.emplace_back(validator.func);
-        if(validator.tname_function)
-            type_name_fn(validator.tname_function);
-        else if(!validator.tname.empty())
-            type_name(validator.tname);
+    Option *transform(Validator validator, std::string validator_name = "") {
+        validators_.insert(validators_.begin(), std::move(validator));
+        if(!validator_name.empty())
+            validators_.front().name(validator_name);
         return this;
     }
 
     /// Adds a validator-like function that can change result
-    Option *transform(std::function<std::string(std::string)> func) {
-        validators_.emplace_back([func](std::string &inout) {
-            try {
-                inout = func(inout);
-            } catch(const ValidationError &e) {
-                return std::string(e.what());
-            }
-            return std::string();
-        });
+    Option *transform(std::function<std::string(std::string)> func,
+                      std::string transform_description = "",
+                      std::string transform_name = "") {
+        validators_.insert(validators_.begin(),
+                           Validator(
+                               [func](std::string &val) {
+                                   val = func(val);
+                                   return std::string{};
+                               },
+                               std::move(transform_description),
+                               std::move(transform_name)));
+
         return this;
     }
 
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
-        validators_.emplace_back([func](std::string &inout) {
-            func(inout);
-            return std::string();
-        });
+        validators_.emplace_back(
+            [func](std::string &inout) {
+                func(inout);
+                return std::string{};
+            },
+            std::string{});
         return this;
     }
-
+    /// Get a named Validator
+    Validator *get_validator(const std::string &validator_name = "") {
+        for(auto &validator : validators_) {
+            if(validator_name == validator.get_name()) {
+                return &validator;
+            }
+        }
+        if((validator_name.empty()) && (!validators_.empty())) {
+            return &(validators_.front());
+        }
+        throw OptionNotFound(std::string("Validator ") + validator_name + " Not Found");
+    }
     /// Sets required options
     Option *needs(Option *opt) {
         auto tup = needs_.insert(opt);
@@ -663,7 +674,7 @@ class Option : public OptionBase<Option> {
                     try {
                         err_msg = vali(result);
                     } catch(const ValidationError &err) {
-                        throw ValidationError(err.what(), get_name());
+                        throw ValidationError(get_name(), err.what());
                     }
 
                     if(!err_msg.empty())
@@ -938,8 +949,19 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Get the typename for this option
-    std::string get_type_name() const { return type_name_(); }
+    /// Get the full typename for this option
+    std::string get_type_name() const {
+        std::string full_type_name = type_name_();
+        if(!validators_.empty()) {
+            for(auto &validator : validators_) {
+                std::string vtype = validator.get_description();
+                if(!vtype.empty()) {
+                    full_type_name += ":" + vtype;
+                }
+            }
+        }
+        return full_type_name;
+    }
 
   private:
     int _add_result(std::string &&result) {
