@@ -2346,7 +2346,7 @@ class App {
         if((help_ptr_ == opt) || (help_all_ptr_ == opt))
             throw OptionAlreadyAdded("cannot move help options");
 
-        if((config_ptr_ == opt))
+        if(config_ptr_ == opt)
             throw OptionAlreadyAdded("cannot move config file options");
 
         auto iterator =
