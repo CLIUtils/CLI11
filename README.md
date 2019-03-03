@@ -283,7 +283,7 @@ Before parsing, you can set the following options:
 -   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
--   `->ignore_underscore()`: 🚧 Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
+-   `->ignore_underscore()`: 🆕 Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->disable_flag_override()`: 🚧 from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
 -    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
 -   `->description(str)`: 🆕 Set/change the description.
@@ -379,7 +379,7 @@ of `IsMember`:
      *   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
 * 🚧 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, or one of the expected output values, and if not will generate a ValidationError.  A Transformer placed using `check` will not do anything.  
 After specifying a map of options, you can also specify "filter" just like in CLI::IsMember.
-Here are some examples (`Transfomer` and `CheckedTransformer` are interchangeable in the examples)
+Here are some examples (`Transformer` and `CheckedTransformer` are interchangeable in the examples)
 of `Transformer`:
 
      *   `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
@@ -453,7 +453,7 @@ All `App`s have a `get_subcommands()` method, which returns a list of pointers t
 For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 You are allowed to throw `CLI::Success` in the callbacks.
-Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).
+Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once.  
 
 🚧 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
 Nameless subcommands function a similarly to groups in the main `App`. See [Option groups](#option-groups) to see how this might work.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.

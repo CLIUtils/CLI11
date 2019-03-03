@@ -501,3 +501,39 @@ TEST_F(ManyGroups, DisableFirst) {
     args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
     EXPECT_NO_THROW(run());
 }
+
+TEST_F(ManyGroups, SameSubcommand) {
+    // only 1 group can be used
+    remove_required();
+    auto sub1 = g1->add_subcommand("sub1");
+    auto sub2 = g2->add_subcommand("sub1");
+    auto sub3 = g3->add_subcommand("sub1");
+
+    args = {"sub1", "sub1", "sub1"};
+
+    run();
+
+    EXPECT_TRUE(*sub1);
+    EXPECT_TRUE(*sub2);
+    EXPECT_TRUE(*sub3);
+    /// This should be made to work at some point
+    /*auto subs = app.get_subcommands();
+    EXPECT_EQ(subs.size(), 3u);
+    EXPECT_EQ(subs[0], sub1);
+    EXPECT_EQ(subs[1], sub2);
+    EXPECT_EQ(subs[2], sub3);
+    */
+    args = {"sub1", "sub1", "sub1", "sub1"};
+    // for the 4th and future ones they will route to the first one
+    run();
+    EXPECT_EQ(sub1->count(), 2u);
+    EXPECT_EQ(sub2->count(), 1u);
+    EXPECT_EQ(sub3->count(), 1u);
+
+    // subs should remain the same since the duplicate would not be registered there
+    /*subs = app.get_subcommands();
+    EXPECT_EQ(subs.size(), 3u);
+    EXPECT_EQ(subs[0], sub1);
+    EXPECT_EQ(subs[1], sub2);
+    EXPECT_EQ(subs[2], sub3);*/
+}
