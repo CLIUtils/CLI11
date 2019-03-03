@@ -163,6 +163,21 @@ TEST_F(TApp, FooFooProblem) {
     EXPECT_EQ(other_str, "");
 }
 
+TEST_F(TApp, DuplicateSubcommands) {
+
+    auto foo = app.add_subcommand("foo");
+
+    args = {"foo", "foo"};
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_EQ(foo->count(), 2);
+
+    args = {"foo", "foo", "foo"};
+    run();
+    EXPECT_TRUE(*foo);
+    EXPECT_EQ(foo->count(), 3);
+}
+
 TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::Success(); });
