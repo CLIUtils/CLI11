@@ -1,6 +1,7 @@
 #include "app_helper.hpp"
 #include <complex>
 #include <cstdlib>
+#include <sys/stat.h>
 
 #include "gmock/gmock.h"
 
@@ -1694,6 +1695,50 @@ TEST_F(TApp, FileExists) {
     EXPECT_EQ(myfile, filename);
 
     std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+}
+
+TEST_F(TApp, FileExistsForRead) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::ExistingReadableFile(myfile).empty());
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::ExistingReadableFile);
+    args = {"--file", myfile};
+
+    run();
+
+    EXPECT_EQ(myfile, filename);
+#ifdef __linux__
+    my_chmod(myfile.c_str(), 0);
+    EXPECT_THROW(run(), CLI::ValidationError);
+#endif
+    std::remove(myfile.c_str());
+    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+}
+
+TEST_F(TApp, FileExistsForWrite) {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    EXPECT_FALSE(CLI::ExistingWritableFile(myfile).empty());
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::ExistingWritableFile);
+    args = {"--file", myfile};
+
+    run();
+    EXPECT_EQ(myfile, filename);
+
+    my_chmod(myfile.c_str(), S_IREAD);
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    int ret = std::remove(myfile.c_str());
+    EXPECT_EQ(ret, 0);
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 

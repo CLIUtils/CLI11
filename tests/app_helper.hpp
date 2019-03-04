@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include <iostream>
+#include <sys/stat.h>
 
 using input_t = std::vector<std::string>;
 
@@ -53,5 +54,13 @@ inline void unset_env(std::string name) {
     _putenv_s(name.c_str(), "");
 #else
     unsetenv(name.c_str());
+#endif
+}
+
+inline int my_chmod(const char *path, int mode) {
+#ifdef _WIN32
+    return _chmod(path, mode);
+#else
+    return chmod(path, mode);
 #endif
 }

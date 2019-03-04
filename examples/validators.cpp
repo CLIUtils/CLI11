@@ -5,7 +5,7 @@ int main(int argc, char **argv) {
     CLI::App app("Validator checker");
 
     std::string file;
-    app.add_option("-f,--file,file", file, "File name")->check(CLI::ExistingFile);
+    app.add_option("-f,--file,file", file, "File name")->check(CLI::ExistingReadableFile);
 
     int count;
     app.add_option("-v,--value", count, "Value in range")->check(CLI::Range(3, 6));

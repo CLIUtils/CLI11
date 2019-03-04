@@ -377,6 +377,8 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::AsNumberWithUnit(...)`:🆕 Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
 -   `CLI::AsSizeValue(...)`: 🆕 Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
 -   `CLI::ExistingFile`: Requires that the file exists if given.
+-   `CLI::ExistingReadFile`: Requires that the file given exists and have permission to read it.
+-   `CLI::ExistingWriteFile`: Requires that the file given exists and have permission to write to it.
 -   `CLI::ExistingDirectory`: Requires that the directory exists.
 -   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
 -   `CLI::NonexistentPath`: Requires that the path does not exist.

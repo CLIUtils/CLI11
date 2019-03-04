@@ -8,6 +8,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <map>
 #include <memory>
@@ -267,7 +268,7 @@ class CustomValidator : public Validator {
 namespace detail {
 
 /// CLI enumeration of different file types
-enum class path_type { nonexistant, file, directory };
+enum class path_type { nonexistant, file, directory, bad_permission };
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 /// get the type of the path from a file name
@@ -307,14 +308,24 @@ inline path_type check_path(const char *file) {
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
   public:
-    ExistingFileValidator() : Validator("FILE") {
-        func_ = [](std::string &filename) {
+    ExistingFileValidator(std::ios_base::openmode mode = std::ios::in) : Validator("FILE") {
+        func_ = [mode](std::string &filename) {
             auto path_result = check_path(filename.c_str());
             if(path_result == path_type::nonexistant) {
                 return "File does not exist: " + filename;
             }
             if(path_result == path_type::directory) {
                 return "File is actually a directory: " + filename;
+            }
+            if(mode){
+                std::fstream myfile;
+                try {
+                    myfile.open(filename, mode);
+                } catch(const std::exception &err) {
+                }
+                if(myfile.bad()){
+                    return "File doesn't have the wanted permission: " + filename;
+                }
             }
             return std::string();
         };
@@ -443,6 +454,12 @@ class Number : public Validator {
 
 /// Check for existing file (returns error message if check fails)
 const detail::ExistingFileValidator ExistingFile;
+
+/// Check that the file exist and available for read
+const detail::ExistingFileValidator ExistingReadableFile(std::ios::in);
+
+/// Check that the file exist and available for write
+const detail::ExistingFileValidator ExistingWritableFile(std::ios::out);
 
 /// Check for an existing directory (returns error message if check fails)
 const detail::ExistingDirectoryValidator ExistingDirectory;
