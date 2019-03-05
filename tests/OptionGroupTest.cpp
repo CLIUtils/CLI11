@@ -420,6 +420,19 @@ TEST_F(ManyGroups, SingleGroup) {
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 
+TEST_F(ManyGroups, ExcludesGroup) {
+    // only 1 group can be used
+    g1->excludes(g2);
+    g1->excludes(g3);
+    args = {"--name1", "test"};
+    run();
+    EXPECT_EQ(name1, "test");
+
+    args = {"--name1", "test", "--name2", "test2"};
+
+    EXPECT_THROW(run(), CLI::ExcludesError);
+}
+
 TEST_F(ManyGroups, SingleGroupError) {
     // only 1 group can be used
     main->require_option(1);
