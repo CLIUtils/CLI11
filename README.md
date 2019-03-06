@@ -236,7 +236,7 @@ Option_group *app.add_option_group(name,description); // 🚧
 -app.add_mutable_set_ignore_case_underscore(... // 🆕 String only
 ```
 
-An option name must start with a alphabetic character, underscore, or a number🚧. For long options, after the first character '.', and '-' are also valid. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
+An option name must start with a alphabetic character, underscore, a number 🚧,  '?'🚧, or '@'🚧. For long options, after the first character '.', and '-' are also valid characters. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
 
@@ -511,9 +511,10 @@ There are several options that are supported on the main app and subcommands and
 
 #### Callbacks 
 A subcommand has two optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🚧 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
-The second callback is executed after parsing.  Depending on the status of the `immediate_callback` flag 🚧.  This is either immediately after the parsing of the subcommand.  Or if the flag is false, once after parsing of all arguments.  If the immediate_callback is set then the callback can be executed multiple times.   If the main app or subcommand has a config file, no data from the config file will be reflected in immediate_callback.
+The second callback is executed after parsing.  The behavior depends on the status of the `immediate_callback` flag 🚧. If true, this runs immediately after the parsing of the subcommand.  Or if the flag is false, once after parsing of all arguments.  If the `immediate_callback` is set then the callback can be executed multiple times if the subcommand list given multiple times.  If the main app or subcommand has a config file, no data from the config file will be reflected in immediate_callback. `immediate_callback()` has no effect on the main app, though it can be inherited.  For option_groups `immediate_callback` causes the callback to be run prior to other option groups and options in the main app, effectively giving the options in the group priority.  
 
 For example say an application was set up like
+
 ```cpp
 app.callback(ac);
 sub1=app.add_subcommand("sub1")->callback(c1)->preparse_callback(pc1)->immediate_callback();
@@ -523,6 +524,7 @@ app.preparse_callback( pa1);
 ... A bunch of other options
 
 ```
+
 Then the command line is given as
 
 ```
@@ -534,8 +536,8 @@ program --opt1 opt1_val  sub1 --sub1opt --sub1optb val sub2 --sub2opt sub1 --sub
 * c1 will be called when the `sub2` command is encountered
 * pc2 will be called with value of 6 after the sub2 command is encountered.
 * c1 will be called again after the second sub2 command is encountered
-* ac will be called after completing the parse
 * c2 will be called once after processing all arguments 
+* ac will be called after completing the parse and all lower level callbacks have been executed
 
 A subcommand is considered terminated when one of the following conditions are met.
 1. There are no more arguments to process
@@ -549,20 +551,26 @@ If the `immediate_callback` flag is set then all contained options are processed
 
 #### Option groups 🚧
 
-The subcommand method 
+The subcommand method
+
 ```cpp
 .add_option_group(name,description)
 ```
+
 Will create an option Group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
+
 ```cpp
 ogroup->add_option(option_pointer)
 ```
+
 ```cpp
 ogroup->add_options(option_pointer)
 ```
+
 ```cpp
 ogroup->add_options(option1,option2,option3,...)
 ```
+
 The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
 Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.  
@@ -601,7 +609,7 @@ arguments, use `.config_to_str(default_also=false, prefix="", write_description=
 
 ### Inheriting defaults
 
-Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, 🆕 `ignore_underscore`, `fallthrough`, `group`, `footer`, and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
+Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, 🆕 `ignore_underscore`, `fallthrough`, `group`, `footer`,`immediate_callback` and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
 
 Options have defaults for `group`, `required`, `multi_option_policy`, `ignore_case`, 🆕 `ignore_underscore`, 🚧 `delimiter`, and 🚧 `disable_flag_override`. To set these defaults, you should set the `option_defaults()` object, for example:
 

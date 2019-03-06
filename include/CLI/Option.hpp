@@ -667,7 +667,7 @@ class Option : public OptionBase<Option> {
         // Run the validators (can change the string)
         if(!validators_.empty()) {
             for(std::string &result : results_)
-                for(const std::function<std::string(std::string &)> &vali : validators_) {
+                for(const auto &vali : validators_) {
                     std::string err_msg;
 
                     try {

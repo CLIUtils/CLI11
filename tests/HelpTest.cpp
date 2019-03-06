@@ -337,6 +337,17 @@ TEST(THelp, OnlyOneHelp) {
     EXPECT_THROW(app.parse(input), CLI::ExtrasError);
 }
 
+TEST(THelp, MultiHelp) {
+    CLI::App app{"My prog"};
+
+    // It is not supported to have more than one help flag, last one wins
+    app.set_help_flag("--help,-h,-?", "No short name allowed");
+    app.allow_windows_style_options();
+
+    std::vector<std::string> input{"/?"};
+    EXPECT_THROW(app.parse(input), CLI::CallForHelp);
+}
+
 TEST(THelp, OnlyOneAllHelp) {
     CLI::App app{"My prog"};
 

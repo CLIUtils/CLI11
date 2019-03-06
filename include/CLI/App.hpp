@@ -94,7 +94,7 @@ class App {
     bool pre_parse_called_{false};
 
     /// Flag indicating that the callback for the subcommand should be executed immediately on parse completion which is
-    /// before help or ini files are processed.
+    /// before help or ini files are processed. INHERITABLE
     bool immediate_callback_{false};
 
     /// This is a function that runs prior to the start of parsing
@@ -246,6 +246,7 @@ class App {
             allow_extras_ = parent_->allow_extras_;
             allow_config_extras_ = parent_->allow_config_extras_;
             prefix_command_ = parent_->prefix_command_;
+            immediate_callback_ = parent_->immediate_callback_;
             ignore_case_ = parent_->ignore_case_;
             ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
@@ -320,7 +321,7 @@ class App {
         return this;
     }
 
-    /// Set the subcommand to be enabled by default, so on clear(), at the start of each parse it is enabled(not
+    /// Set the subcommand to be enabled by default, so on clear(), at the start of each parse it is enabled (not
     /// disabled)
     App *enabled_by_default(bool enable = true) {
         enabled_by_default_ = enable;
@@ -1778,14 +1779,25 @@ class App {
             app->_configure();
         }
     }
-    /// Internal function to run (App) callback, top down
+    /// Internal function to run (App) callback, bottom up
     void run_callback() {
         pre_callback();
-        if(callback_ && (parsed_ > 0))
-            callback_();
+        // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
-            if((subc->get_name().empty()) || (!subc->immediate_callback_))
+            if(!subc->immediate_callback_)
                 subc->run_callback();
+        }
+        // now run callbacks for option_groups
+        for(auto &subc : subcommands_) {
+            if(!subc->immediate_callback_ && subc->name_.empty() && subc->count_all() > 0) {
+                subc->run_callback();
+            }
+        }
+        // finally run the main callback
+        if(callback_ && (parsed_ > 0)) {
+            if(!name_.empty() || count_all() > 0) {
+                callback_();
+            }
         }
     }
 
@@ -1817,7 +1829,7 @@ class App {
             return detail::Classifier::SHORT;
         if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
             return detail::Classifier::WINDOWS;
-        if((current == "++") && (!name_.empty()))
+        if((current == "++") && !name_.empty())
             return detail::Classifier::SUBCOMMAND_TERMINATOR;
         return detail::Classifier::NONE;
     }
@@ -1872,13 +1884,24 @@ class App {
         }
 
         for(App_p &sub : subcommands_) {
-            if((sub->get_name().empty()) || (!sub->immediate_callback_))
+            if(sub->get_name().empty() || !sub->immediate_callback_)
                 sub->_process_env();
         }
     }
 
     /// Process callbacks. Runs on *all* subcommands.
     void _process_callbacks() {
+
+        for(App_p &sub : subcommands_) {
+            // process the priority option_groups first
+            if(sub->get_name().empty() && sub->immediate_callback_) {
+                if(sub->count_all() > 0) {
+                    sub->_process_callbacks();
+                    sub->run_callback();
+                }
+            }
+        }
+
         for(const Option_p &opt : options_) {
             if(opt->count() > 0 && !opt->get_callback_run()) {
                 opt->run_callback();
@@ -1886,8 +1909,9 @@ class App {
         }
 
         for(App_p &sub : subcommands_) {
-            if((sub->get_name().empty()) || (!sub->immediate_callback_))
+            if(!sub->immediate_callback_) {
                 sub->_process_callbacks();
+            }
         }
     }
 
@@ -1979,13 +2003,12 @@ class App {
         for(App_p &sub : subcommands_) {
             if(sub->disabled_)
                 continue;
-            if((sub->name_.empty()) && (sub->count_all() > 0)) {
+            if(sub->name_.empty() && sub->count_all() > 0) {
                 ++used_options;
             }
         }
 
-        if((require_option_min_ > used_options) ||
-           ((require_option_max_ > 0) && (require_option_max_ < used_options))) {
+        if(require_option_min_ > used_options || (require_option_max_ > 0 && require_option_max_ < used_options)) {
             auto option_list = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
             if(option_list.compare(0, 10, "-h,--help,") == 0) {
                 option_list.erase(0, 10);
@@ -2001,25 +2024,25 @@ class App {
         for(App_p &sub : subcommands_) {
             if(sub->disabled_)
                 continue;
-            if((sub->name_.empty()) && (sub->required_ == false)) {
+            if(sub->name_.empty() && sub->required_ == false) {
                 if(sub->count_all() == 0) {
-                    if((require_option_min_ > 0) && (require_option_min_ <= used_options)) {
+                    if(require_option_min_ > 0 && require_option_min_ <= used_options) {
                         continue;
                         // if we have met the requirement and there is nothing in this option group skip checking
                         // requirements
                     }
-                    if((require_option_max_ > 0) && (used_options >= require_option_min_)) {
+                    if(require_option_max_ > 0 && used_options >= require_option_min_) {
                         continue;
                         // if we have met the requirement and there is nothing in this option group skip checking
                         // requirements
                     }
                 }
             }
-            if((sub->count() > 0) || (sub->name_.empty())) {
+            if(sub->count() > 0 || sub->name_.empty()) {
                 sub->_process_requirements();
             }
 
-            if((sub->required_) && (sub->count_all() == 0)) {
+            if(sub->required_ && sub->count_all() == 0) {
                 throw(CLI::RequiredError(sub->get_display_name()));
             }
         }
@@ -2225,14 +2248,13 @@ class App {
                 }
             }
         }
-        /// let the parent deal with it if possible
+        // let the parent deal with it if possible
         if(parent_ != nullptr && fallthrough_)
             return _get_fallthrough_parent()->_parse_positional(args);
 
         /// Try to find a local subcommand that is repeated
         auto com = _find_subcommand(args.back(), true, false);
-        if((com != nullptr) &&
-           ((require_subcommand_max_ == 0) || (require_subcommand_max_ > parsed_subcommands_.size()))) {
+        if(com != nullptr && (require_subcommand_max_ == 0 || require_subcommand_max_ > parsed_subcommands_.size())) {
             args.pop_back();
             com->_parse(args);
             return true;
@@ -2241,8 +2263,8 @@ class App {
         /// subcommand in a broader way, if one exists let the parent deal with it
         auto parent_app = (parent_ != nullptr) ? _get_fallthrough_parent() : this;
         com = parent_app->_find_subcommand(args.back(), true, false);
-        if((com != nullptr) && ((com->parent_->require_subcommand_max_ == 0) ||
-                                (com->parent_->require_subcommand_max_ > com->parent_->parsed_subcommands_.size()))) {
+        if(com != nullptr && (com->parent_->require_subcommand_max_ == 0 ||
+                              com->parent_->require_subcommand_max_ > com->parent_->parsed_subcommands_.size())) {
             return false;
         }
 
@@ -2250,7 +2272,7 @@ class App {
             throw CLI::ExtrasError(args);
         }
         /// If this is an option group don't deal with it
-        if((parent_ != nullptr) && (name_.empty())) {
+        if(parent_ != nullptr && name_.empty()) {
             return false;
         }
         /// We are out of other options this goes to missing
@@ -2270,7 +2292,7 @@ class App {
     /// subcommands be ignored
     App *_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool ignore_used) const noexcept {
         for(const App_p &com : subcommands_) {
-            if((com->disabled_) && (ignore_disabled))
+            if(com->disabled_ && ignore_disabled)
                 continue;
             if(com->get_name().empty()) {
                 auto subc = com->_find_subcommand(subc_name, ignore_disabled, ignore_used);
@@ -2278,7 +2300,7 @@ class App {
                     return subc;
                 }
             } else if(com->check_name(subc_name)) {
-                if((!*com) || (!ignore_used))
+                if((!*com) || !ignore_used)
                     return com.get();
             }
         }
@@ -2353,7 +2375,7 @@ class App {
         // Option not found
         if(op_ptr == std::end(options_)) {
             for(auto &subc : subcommands_) {
-                if((subc->name_.empty()) && (!(subc->disabled_))) {
+                if(subc->name_.empty() && !subc->disabled_) {
                     if(subc->_parse_arg(args, current_type)) {
                         if(!subc->pre_parse_called_) {
                             subc->_trigger_pre_parse(args.size());
@@ -2366,7 +2388,7 @@ class App {
             if(parent_ != nullptr && fallthrough_)
                 return _get_fallthrough_parent()->_parse_arg(args, current_type);
             // don't capture missing if this is a nameless subcommand
-            if((parent_ != nullptr) && (name_.empty())) {
+            if(parent_ != nullptr && name_.empty()) {
                 return false;
             }
             // Otherwise, add to missing

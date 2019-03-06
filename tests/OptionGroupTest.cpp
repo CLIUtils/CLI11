@@ -550,6 +550,30 @@ TEST_F(ManyGroups, SameSubcommand) {
     EXPECT_EQ(subs[1], sub2);
     EXPECT_EQ(subs[2], sub3);
 }
+TEST_F(ManyGroups, CallbackOrder) {
+    // only 1 group can be used
+    remove_required();
+    std::vector<int> callback_order;
+    g1->callback([&callback_order]() { callback_order.push_back(1); });
+    g2->callback([&callback_order]() { callback_order.push_back(2); });
+    main->callback([&callback_order]() { callback_order.push_back(3); });
+
+    args = {"--name2", "test"};
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({2, 3}));
+
+    callback_order.clear();
+    args = {"--name1", "t2", "--name2", "test"};
+    g2->immediate_callback();
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({2, 1, 3}));
+    callback_order.clear();
+
+    args = {"--name2", "test", "--name1", "t2"};
+    g2->immediate_callback(false);
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({1, 2, 3}));
+}
 
 struct ManyGroupsPreTrigger : public ManyGroups {
     size_t triggerMain, trigger1{87u}, trigger2{34u}, trigger3{27u};

@@ -908,6 +908,22 @@ TEST_F(SubcommandProgram, CallbackOrder) {
     EXPECT_EQ(callback_order, std::vector<int>({2, 1}));
 }
 
+TEST_F(SubcommandProgram, CallbackOrderImmediate) {
+    std::vector<int> callback_order;
+    start->callback([&callback_order]() { callback_order.push_back(1); })->immediate_callback();
+    stop->callback([&callback_order]() { callback_order.push_back(2); });
+
+    args = {"start", "stop", "start"};
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({1, 1, 2}));
+
+    callback_order.clear();
+
+    args = {"stop", "start", "stop", "start"};
+    run();
+    EXPECT_EQ(callback_order, std::vector<int>({1, 1, 2}));
+}
+
 struct ManySubcommands : public TApp {
 
     CLI::App *sub1;

@@ -472,6 +472,7 @@ TEST_F(TApp, SubcommandDefaults) {
     // Initial defaults
     EXPECT_FALSE(app.get_allow_extras());
     EXPECT_FALSE(app.get_prefix_command());
+    EXPECT_FALSE(app.get_immediate_callback());
     EXPECT_FALSE(app.get_ignore_case());
     EXPECT_FALSE(app.get_ignore_underscore());
 #ifdef _WIN32
@@ -487,6 +488,7 @@ TEST_F(TApp, SubcommandDefaults) {
 
     app.allow_extras();
     app.prefix_command();
+    app.immediate_callback();
     app.ignore_case();
     app.ignore_underscore();
 #ifdef _WIN32
@@ -505,6 +507,7 @@ TEST_F(TApp, SubcommandDefaults) {
     // Initial defaults
     EXPECT_TRUE(app2->get_allow_extras());
     EXPECT_TRUE(app2->get_prefix_command());
+    EXPECT_TRUE(app2->get_immediate_callback());
     EXPECT_TRUE(app2->get_ignore_case());
     EXPECT_TRUE(app2->get_ignore_underscore());
 #ifdef _WIN32
