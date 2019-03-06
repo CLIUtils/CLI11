@@ -33,6 +33,10 @@ TEST(String, InvalidName) {
     EXPECT_FALSE(CLI::detail::valid_name_string("vali&d"));
     EXPECT_TRUE(CLI::detail::valid_name_string("_valid"));
     EXPECT_FALSE(CLI::detail::valid_name_string("/valid"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("vali?d"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("@@@@"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("b@d2?"));
+    EXPECT_TRUE(CLI::detail::valid_name_string("2vali?d"));
 }
 
 TEST(StringTools, Modify) {

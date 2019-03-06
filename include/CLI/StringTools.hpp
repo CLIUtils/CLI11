@@ -171,12 +171,12 @@ inline std::ostream &format_help(std::ostream &out, std::string name, std::strin
 }
 
 /// Verify the first character of an option
-template <typename T> bool valid_first_char(T c) { return std::isalnum(c, std::locale()) || c == '_'; }
+template <typename T> bool valid_first_char(T c) {
+    return std::isalnum(c, std::locale()) || c == '_' || c == '?' || c == '@';
+}
 
 /// Verify following characters of an option
-template <typename T> bool valid_later_char(T c) {
-    return std::isalnum(c, std::locale()) || c == '_' || c == '.' || c == '-';
-}
+template <typename T> bool valid_later_char(T c) { return valid_first_char(c) || c == '.' || c == '-'; }
 
 /// Verify an option name
 inline bool valid_name_string(const std::string &str) {
