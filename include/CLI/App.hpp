@@ -351,7 +351,7 @@ class App {
     /// Ignore case. Subcommands inherit value.
     App *ignore_case(bool value = true) {
         ignore_case_ = value;
-        if(parent_ != nullptr) {
+        if(parent_ != nullptr && !name_.empty()) {
             for(const auto &subc : parent_->subcommands_) {
                 if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
                     throw OptionAlreadyAdded(subc->name_);
@@ -375,7 +375,7 @@ class App {
     /// Ignore underscore. Subcommands inherit value.
     App *ignore_underscore(bool value = true) {
         ignore_underscore_ = value;
-        if(parent_ != nullptr) {
+        if(parent_ != nullptr && !name_.empty()) {
             for(const auto &subc : parent_->subcommands_) {
                 if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
                     throw OptionAlreadyAdded(subc->name_);
@@ -460,14 +460,14 @@ class App {
     /// Add option for a callback of a specific type
     template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
     Option *add_option_function(std::string option_name,
-                                const std::function<bool(const T &)> &func, ///< the callback to execute
+                                const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
         CLI::callback_t fun = [func](CLI::results_t res) {
             T variable;
             bool result = detail::lexical_cast(res[0], variable);
             if(result) {
-                return func(variable);
+                func(variable);
             }
             return result;
         };
@@ -562,7 +562,7 @@ class App {
     /// Add option for a vector callback of a specific type
     template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
     Option *add_option_function(std::string option_name,
-                                const std::function<bool(const T &)> &func, ///< the callback to execute
+                                const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
         CLI::callback_t fun = [func](CLI::results_t res) {
@@ -574,7 +574,7 @@ class App {
                 retval &= detail::lexical_cast(elem, values.back());
             }
             if(retval) {
-                return func(values);
+                func(values);
             }
             return retval;
         };
@@ -1696,9 +1696,19 @@ class App {
         for(const std::pair<detail::Classifier, std::string> &miss : missing_) {
             miss_list.push_back(std::get<1>(miss));
         }
-
-        // Recurse into subcommands
+        // Get from a subcommand that may allow extras
         if(recurse) {
+            if(!allow_extras_) {
+                for(const auto &sub : subcommands_) {
+                    if(sub->name_.empty() && !sub->missing_.empty()) {
+                        for(const std::pair<detail::Classifier, std::string> &miss : sub->missing_) {
+                            miss_list.push_back(std::get<1>(miss));
+                        }
+                    }
+                }
+            }
+            // Recurse into subcommands
+
             for(const App *sub : parsed_subcommands_) {
                 std::vector<std::string> output = sub->remaining(recurse);
                 std::copy(std::begin(output), std::end(output), std::back_inserter(miss_list));
@@ -1713,6 +1723,7 @@ class App {
             std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifier, std::string> &val) {
                 return val.first != detail::Classifier::POSITIONAL_MARK;
             }));
+
         if(recurse) {
             for(const App_p &sub : subcommands_) {
                 remaining_options += sub->remaining_size(recurse);
@@ -2174,7 +2185,7 @@ class App {
             if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
                 retval = false;
             } else {
-                missing_.emplace_back(classifier, "--");
+                _move_to_missing(classifier, "--");
             }
             break;
         case detail::Classifier::SUBCOMMAND_TERMINATOR:
@@ -2276,11 +2287,11 @@ class App {
             return false;
         }
         /// We are out of other options this goes to missing
-        missing_.emplace_back(detail::Classifier::NONE, positional);
+        _move_to_missing(detail::Classifier::NONE, positional);
         args.pop_back();
         if(prefix_command_) {
             while(!args.empty()) {
-                missing_.emplace_back(detail::Classifier::NONE, args.back());
+                _move_to_missing(detail::Classifier::NONE, args.back());
                 args.pop_back();
             }
         }
@@ -2393,7 +2404,7 @@ class App {
             }
             // Otherwise, add to missing
             args.pop_back();
-            missing_.emplace_back(current_type, current);
+            _move_to_missing(current_type, current);
             return true;
         }
 
@@ -2503,6 +2514,23 @@ class App {
             fallthrough_parent = fallthrough_parent->parent_;
         }
         return fallthrough_parent;
+    }
+
+    /// Helper function to place extra values in the most appropriate position
+    void _move_to_missing(detail::Classifier val_type, const std::string &val) {
+        if(allow_extras_ || subcommands_.empty()) {
+            missing_.emplace_back(val_type, val);
+            return;
+        }
+        // allow extra arguments to be places in an option group if it is allowed there
+        for(auto &subc : subcommands_) {
+            if(subc->name_.empty() && subc->allow_extras_) {
+                subc->missing_.emplace_back(val_type, val);
+                return;
+            }
+        }
+        // if we haven't found any place to put them yet put them in missing
+        missing_.emplace_back(val_type, val);
     }
 
   public:

@@ -238,7 +238,7 @@ Option_group *app.add_option_group(name,description); // 🚧
 
 An option name must start with a alphabetic character, underscore, a number 🚧,  '?'🚧, or '@'🚧. For long options, after the first character '.', and '-' are also valid characters. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
-The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function.
+The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.  
 
 🚧 Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
 
@@ -431,7 +431,7 @@ Validators have a few functions to query the current values
  * `get_description()`:🚧 Will return a description string
  * `get_name()`:🚧 Will return the Validator name
  * `get_active()`:🚧 Will return the current active state, true if the Validator is active.
- * `get_modifying()` 🚧 Will return true if the Validator is allowed to modify the input, this can be controlled via `non_modifying()`🚧 method, though it is recommended to let check and transform function manipulate it if needed. 
+ * `get_modifying()`: 🚧 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()`🚧 method, though it is recommended to let check and transform function manipulate it if needed. 
 
 #### Getting results
 In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
@@ -468,6 +468,8 @@ There are several options that are supported on the main app and subcommands and
 -   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 -   `.disable()`: 🚧 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
+-   `.disabled_by_default()`:🚧 Specify that at the start of parsing the subcommand should be disabled. This is useful for allowing some Subcommands to trigger others.
+-   `.enabled_by_default()`: 🚧 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
 -   `.exludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
 -   `.require_option()`: 🚧 Require 1 or more options or option groups be used.
 -   `.require_option(N)`:  🚧 Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
@@ -506,7 +508,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
 - `[option_name]`: 🚧 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
 
-> Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function.
+> Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
 
 #### Callbacks 
@@ -573,7 +575,16 @@ ogroup->add_options(option1,option2,option3,...)
 
 The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
-Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.  
+Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
+
+The `CLI::TriggerOn`🚧 and `CLI::TriggerOff`🚧 methods are helper methods to allow the use of options/subcommands from one group to trigger another group on or off.
+
+```cpp
+CLI::TriggerOn(group1_pointer, triggered_group);
+CLI::TriggerOff(group2_pointer, disabled_group);
+```
+
+These functions make use of the `preparse_callback`, `enabled_by_default()` and `disabled_by_default`.  The triggered group may be a vector of group pointers.  These methods should only used once per group and will override any previous use of the underlying functions.  More complex arrangements can be accomplished using similar methodology with a different preparse_callback function that does more.
 
 
 ### Configuration file
