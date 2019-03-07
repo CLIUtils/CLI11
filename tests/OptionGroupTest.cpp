@@ -575,6 +575,36 @@ TEST_F(ManyGroups, CallbackOrder) {
     EXPECT_EQ(callback_order, std::vector<int>({1, 2, 3}));
 }
 
+// Test the fallthrough for extra arguments
+TEST_F(ManyGroups, ExtrasFallDown) {
+    remove_required();
+
+    args = {"--test1", "--flag", "extra"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+    main->allow_extras();
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(app.remaining_size(true), 3u);
+    EXPECT_EQ(main->remaining_size(), 3u);
+
+    std::vector<std::string> extras{"--test1", "--flag", "extra"};
+    EXPECT_EQ(app.remaining(true), extras);
+    EXPECT_EQ(main->remaining(), extras);
+}
+
+// Test the option Inheritance
+TEST_F(ManyGroups, Inheritance) {
+    remove_required();
+    g1->ignore_case();
+    g1->ignore_underscore();
+    auto t2 = g1->add_subcommand("t2");
+    args = {"T2", "t_2"};
+    EXPECT_TRUE(t2->get_ignore_underscore());
+    EXPECT_TRUE(t2->get_ignore_case());
+    run();
+    EXPECT_EQ(t2->count(), 2u);
+}
+
 struct ManyGroupsPreTrigger : public ManyGroups {
     size_t triggerMain, trigger1{87u}, trigger2{34u}, trigger3{27u};
     ManyGroupsPreTrigger() {

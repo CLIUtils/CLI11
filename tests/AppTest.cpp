@@ -437,10 +437,7 @@ TEST_F(TApp, OneStringAgain) {
 
 TEST_F(TApp, OneStringFunction) {
     std::string str;
-    app.add_option_function<std::string>("-s,--string", [&str](const std::string &val) {
-        str = val;
-        return true;
-    });
+    app.add_option_function<std::string>("-s,--string", [&str](const std::string &val) { str = val; });
     args = {"--string", "mystring"};
     run();
     EXPECT_EQ(1u, app.count("-s"));
@@ -450,10 +447,7 @@ TEST_F(TApp, OneStringFunction) {
 
 TEST_F(TApp, doubleFunction) {
     double res;
-    app.add_option_function<double>("--val", [&res](double val) {
-        res = std::abs(val + 54);
-        return true;
-    });
+    app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
     EXPECT_EQ(res, 300.356);
@@ -463,10 +457,7 @@ TEST_F(TApp, doubleFunction) {
 
 TEST_F(TApp, doubleFunctionFail) {
     double res;
-    app.add_option_function<double>("--val", [&res](double val) {
-        res = std::abs(val + 54);
-        return true;
-    });
+    app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "not_double"};
     EXPECT_THROW(run(), CLI::ConversionError);
 }
@@ -476,7 +467,6 @@ TEST_F(TApp, doubleVectorFunction) {
     app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
         res = val;
         std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
-        return true;
     });
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
@@ -491,7 +481,6 @@ TEST_F(TApp, doubleVectorFunctionFail) {
     app.add_option_function<std::vector<double>>(vstring, [&res](const std::vector<double> &val) {
         res = val;
         std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
-        return true;
     });
     args = {"--val", "five", "--val", "nine", "--val", "7"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -2063,11 +2052,7 @@ TEST_F(TApp, CustomUserSepParseFunction) {
 
     std::vector<int> vals = {1, 2, 3};
     args = {"--idx", "1,2,3"};
-    app.add_option_function<std::vector<int>>("--idx",
-                                              [&vals](std::vector<int> v) {
-                                                  vals = std::move(v);
-                                                  return true;
-                                              })
+    app.add_option_function<std::vector<int>>("--idx", [&vals](std::vector<int> v) { vals = std::move(v); })
         ->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
