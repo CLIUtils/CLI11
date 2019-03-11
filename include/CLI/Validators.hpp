@@ -514,20 +514,20 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
 template <typename T> bool checked_multiply(T &a, T b) {
     static_assert(std::is_arithmetic<T>::value, "Only number types allowed");
     // No need for SFINAE since both branches are syntactically valid
-    if (std::is_integral<T>::value) {
-        if (a == 0 || b == 0) {
+    if(std::is_integral<T>::value) {
+        if(a == 0 || b == 0) {
             a *= b;
             return true;
         }
         T c = a * b;
-        if (c / a != b) {
+        if(c / a != b) {
             return false;
         }
         a = c;
         return true;
     } else {
         T c = a * b;
-        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
+        if(std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
             return false;
         }
         a = c;
@@ -739,6 +739,19 @@ class CheckedTransformer : public Validator {
                              other...) {}
 };
 
+/// Helper function to allow ignore_case to be passed to IsMember or Transform
+inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
+
+/// Helper function to allow ignore_underscore to be passed to IsMember or Transform
+inline std::string ignore_underscore(std::string item) { return detail::remove_underscore(item); }
+
+/// Helper function to allow checks to ignore spaces to be passed to IsMember or Transform
+inline std::string ignore_space(std::string item) {
+    item.erase(std::remove(std::begin(item), std::end(item), ' '), std::end(item));
+    item.erase(std::remove(std::begin(item), std::end(item), '\t'), std::end(item));
+    return item;
+}
+
 /// Multiply a number by a factor using given mapping.
 /// Can be used to write transforms for SIZE or DURATION inputs.
 ///
@@ -765,40 +778,9 @@ class SuffixedNumber : public Validator {
     };
 
     template <typename Number>
-    SuffixedNumber(std::map<std::string, Number> mapping, Options opts = DEFAULT, const std::string& name = "SUFFIX") {
-        // generate description
-        std::stringstream out;
-        out << detail::type_name<Number>() << ' ';
-        if(opts & MANDATORY_SUFFIX) {
-            out << name;
-        } else {
-            out << '[' << name << ']';
-        }
-
-        description(out.str());
-
-        // validate mapping
-        for(auto &kv : mapping) {
-            if (kv.first.empty()) {
-                throw ValidationError("Suffix must not be empty.");
-            }
-            if(!detail::isalpha(kv.first)) {
-                throw ValidationError("Suffix must contain only letters.");
-            }
-        }
-
-        // make all suffixes lowercase if CASE_INSENSITIVE
-        if (opts & CASE_INSENSITIVE) {
-            std::map<std::string, Number> lower_mapping;
-            for (auto& kv : mapping) {
-                auto s = detail::to_lower(kv.first);
-                if (lower_mapping.count(s)) {
-                    throw ValidationError("Several matching lowercase suffix representations are found.");
-                }
-                lower_mapping[detail::to_lower(kv.first)] = kv.second;
-            }
-            mapping = std::move(lower_mapping);
-        }
+    SuffixedNumber(std::map<std::string, Number> mapping, Options opts = DEFAULT, const std::string &name = "SUFFIX") {
+        description(generate_description<Number>(name, opts));
+        validate_mapping(mapping, opts);
 
         // transform function
         func_ = [mapping, opts](std::string &input) -> std::string {
@@ -815,7 +797,9 @@ class SuffixedNumber : public Validator {
             auto it = mapping.find(suffix);
             if(it == mapping.end()) {
                 throw ValidationError(suffix +
-                                      " suffix not recognized. Allowed values: " + detail::generate_map(mapping, true));
+                                      " suffix not recognized. "
+                                      "Allowed values: " +
+                                      detail::generate_map(mapping, true));
             }
 
             // perform safe multiplication
@@ -825,6 +809,7 @@ class SuffixedNumber : public Validator {
                                       " factor would cause integer overflow. Use smaller value.");
             }
             input = detail::as_string(num);
+
             return {};
         };
     }
@@ -863,20 +848,45 @@ class SuffixedNumber : public Validator {
 
         return {val, std::move(suffix)};
     }
+
+    /// Check that mapping contains valid suffixes.
+    /// Update mapping for CASE_INSENSITIVE mode.
+    template <typename Number> static void validate_mapping(std::map<std::string, Number> &mapping, Options opts) {
+        for(auto &kv : mapping) {
+            if(kv.first.empty()) {
+                throw ValidationError("Suffix must not be empty.");
+            }
+            if(!detail::isalpha(kv.first)) {
+                throw ValidationError("Suffix must contain only letters.");
+            }
+        }
+
+        // make all suffixes lowercase if CASE_INSENSITIVE
+        if(opts & CASE_INSENSITIVE) {
+            std::map<std::string, Number> lower_mapping;
+            for(auto &kv : mapping) {
+                auto s = detail::to_lower(kv.first);
+                if(lower_mapping.count(s)) {
+                    throw ValidationError("Several matching lowercase suffix representations are found.");
+                }
+                lower_mapping[detail::to_lower(kv.first)] = kv.second;
+            }
+            mapping = std::move(lower_mapping);
+        }
+    }
+
+    /// Generate description like this: NUMBER [SUFFIX]
+    template <typename Number> static std::string generate_description(const std::string &name, Options opts) {
+        std::stringstream out;
+        out << detail::type_name<Number>() << ' ';
+        if(opts & MANDATORY_SUFFIX) {
+            out << name;
+        } else {
+            out << '[' << name << ']';
+        }
+        return out.str();
+    }
 };
-
-/// Helper function to allow ignore_case to be passed to IsMember or Transform
-inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
-
-/// Helper function to allow ignore_underscore to be passed to IsMember or Transform
-inline std::string ignore_underscore(std::string item) { return detail::remove_underscore(item); }
-
-/// Helper function to allow checks to ignore spaces to be passed to IsMember or Transform
-inline std::string ignore_space(std::string item) {
-    item.erase(std::remove(std::begin(item), std::end(item), ' '), std::end(item));
-    item.erase(std::remove(std::begin(item), std::end(item), '\t'), std::end(item));
-    return item;
-}
 
 namespace detail {
 /// Split a string into a program name and command line arguments
