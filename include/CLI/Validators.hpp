@@ -737,9 +737,12 @@ class CheckedTransformer : public Validator {
     /// Number is interpreted as a type the same as in the provided mapping.
     /// Therefore, if it is required to interpret inputs like "0.42 s",
     /// the mapping should be of a type <string, float> or <string, double>.
-    /// 
     class SuffixedNumber : public Validator {
       public:
+        /// Adjust SuffixedNumber behavior.
+        /// CASE_SENSITIVE/CASE_INSENSITIVE controls how suffixes are be matched.
+        /// OPTIONAL_SUFFIX/MANDATORY_SUFFIX throws ValidationError
+        ///   if mandatory is set and suffix is not found.
         enum Options {
             CASE_SENSITIVE = 0,
             CASE_INSENSITIVE = 1,
