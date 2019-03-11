@@ -737,121 +737,130 @@ class CheckedTransformer : public Validator {
         : CheckedTransformer(std::forward<T>(mapping),
                              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                              other...) {}
+};
 
-    /// Multiply a number by a factor using given mapping.
-    /// Can be used to write transforms for SIZE or DURATION inputs.
-    ///
-    /// Example:
-    ///   With mapping = `{"b"->1, "kb"->1024, "mb"->1024*1024}`
-    ///   one can recognize inputs like "100", "12kb", "100 MB",
-    ///    that will be automatically transformed to 100, 14448, 104857600.
-    ///
-    /// Number is interpreted as a type the same as in the provided mapping.
-    /// Therefore, if it is required to interpret inputs like "0.42 s",
-    /// the mapping should be of a type <string, float> or <string, double>.
-    class SuffixedNumber : public Validator {
-      public:
-        /// Adjust SuffixedNumber behavior.
-        /// CASE_SENSITIVE/CASE_INSENSITIVE controls how suffixes are be matched.
-        /// OPTIONAL_SUFFIX/MANDATORY_SUFFIX throws ValidationError
-        ///   if mandatory is set and suffix is not found.
-        enum Options {
-            CASE_SENSITIVE = 0,
-            CASE_INSENSITIVE = 1,
-            OPTIONAL_SUFFIX = 0,
-            MANDATORY_SUFFIX = 2,
-            DEFAULT = CASE_INSENSITIVE | OPTIONAL_SUFFIX
-        };
-
-        template <typename Number>
-        SuffixedNumber(std::map<std::string, Number> mapping,
-                       const std::string &name = "SUFFIX",
-                       Options opts = DEFAULT) {
-            // generate description
-            std::stringstream out;
-            out << detail::type_name<Number>() << ' ';
-            if(opts & MANDATORY_SUFFIX) {
-                out << name;
-            } else {
-                out << '[' << name << ']';
-            }
-
-            description(out.str());
-
-            // validate mapping
-            for (auto& kv : mapping) {
-                if (!detail::isalpha(kv.first)) {
-                    throw ValidationError("Suffix must contain only letters.");
-                }
-                if (opts & CASE_INSENSITIVE) {
-                    kv.second = detail::to_lower(kv.second);
-                }
-            }
-
-            // transform function
-            func_ = [mapping, opts](std::string &input) -> std::string {
-                Number num;
-                std::string suffix;
-                std::tie(num, suffix) = split<Number>(input, opts);
-
-                if(suffix.empty()) {
-                    return input;
-                }
-
-                // find corresponding factor
-                auto it = mapping.find(suffix);
-                if(it == mapping.end()) {
-                    throw ValidationError(
-                        suffix + " suffix not recognized. Allowed values: " + detail::generate_map(mapping, true));
-                }
-
-                // perform sefa multiplication
-                bool ok = detail::checked_multiply(num, it->second);
-                if(!ok) {
-                    throw ValidationError(detail::as_string(num) + " multiplied by " + suffix +
-                                          " factor would cause integer overflow. Use smaller value.");
-                }
-                input = detail::as_string(num);
-                return {};
-            };
-        }
-
-      private:
-        /// Split input string to <Number, Suffix> pair
-        /// CASE_INSENSITIVE and MANDATORY_SUFFIX options are considered
-        template <typename Number> static std::pair<Number, std::string> split(std::string input, Options opts) {
-            detail::rtrim(input);
-            if(input.empty()) {
-                throw ValidationError("Input is empty");
-            }
-
-            // Find split position between number and prefix
-            auto suffix_start = input.end() - 1;
-            while(suffix_start > input.begin() && std::isalpha(*suffix_start, std::locale())) {
-                --suffix_start;
-            }
-
-            std::string suffix{suffix_start, input.end()};
-            input.resize(std::distance(input.begin(), suffix_start));
-
-            if(opts & MANDATORY_SUFFIX && suffix.empty()) {
-                throw ValidationError("Missing mandatory suffix");
-            }
-            if(opts & CASE_INSENSITIVE) {
-                suffix = detail::to_lower(suffix);
-            }
-
-            Number val;
-            bool converted = detail::lexical_cast(input, val);
-            if(!converted) {
-                throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
-            }
-
-            return {val, std::move(suffix)};
-        }
+/// Multiply a number by a factor using given mapping.
+/// Can be used to write transforms for SIZE or DURATION inputs.
+///
+/// Example:
+///   With mapping = `{"b"->1, "kb"->1024, "mb"->1024*1024}`
+///   one can recognize inputs like "100", "12kb", "100 MB",
+///   that will be automatically transformed to 100, 14448, 104857600.
+///
+/// Number is interpreted as a type the same as in the provided mapping.
+/// Therefore, if it is required to interpret inputs like "0.42 s",
+/// the mapping should be of a type <string, float> or <string, double>.
+class SuffixedNumber : public Validator {
+  public:
+    /// Adjust SuffixedNumber behavior.
+    /// CASE_SENSITIVE/CASE_INSENSITIVE controls how suffixes are be matched.
+    /// OPTIONAL_SUFFIX/MANDATORY_SUFFIX throws ValidationError
+    ///   if mandatory is set and suffix is not found.
+    enum Options {
+        CASE_SENSITIVE = 0,
+        CASE_INSENSITIVE = 1,
+        OPTIONAL_SUFFIX = 0,
+        MANDATORY_SUFFIX = 2,
+        DEFAULT = CASE_INSENSITIVE | OPTIONAL_SUFFIX
     };
 
-}; // namespace CLI
+    template <typename Number>
+    SuffixedNumber(std::map<std::string, Number> mapping, const std::string &name = "SUFFIX", Options opts = DEFAULT) {
+        // generate description
+        std::stringstream out;
+        out << detail::type_name<Number>() << ' ';
+        if(opts & MANDATORY_SUFFIX) {
+            out << name;
+        } else {
+            out << '[' << name << ']';
+        }
+
+        description(out.str());
+
+        // validate mapping
+        for(auto &kv : mapping) {
+            if(!detail::isalpha(kv.first)) {
+                throw ValidationError("Suffix must contain only letters.");
+            }
+        }
+
+        // make all suffixes lowercase if CASE_INSENSITIVE
+        if (opts & CASE_INSENSITIVE) {
+            std::map<std::string, Number> lower_mapping;
+            for (auto& kv : mapping) {
+                auto s = detail::to_lower(kv.first);
+                if (lower_mapping.count(s)) {
+                    throw ValidationError("Several matching lowercase suffix representations are found.");
+                }
+                lower_mapping[detail::to_lower(kv.first)] = kv.second;
+            }
+            mapping = std::move(lower_mapping);
+        }
+
+        // transform function
+        func_ = [mapping, opts](std::string &input) -> std::string {
+            Number num;
+            std::string suffix;
+            std::tie(num, suffix) = split<Number>(input, opts);
+
+            if(suffix.empty()) {
+                // No need to modify input if no suffix
+                return {};
+            }
+
+            // find corresponding factor
+            auto it = mapping.find(suffix);
+            if(it == mapping.end()) {
+                throw ValidationError(suffix +
+                                      " suffix not recognized. Allowed values: " + detail::generate_map(mapping, true));
+            }
+
+            // perform sefa multiplication
+            bool ok = detail::checked_multiply(num, it->second);
+            if(!ok) {
+                throw ValidationError(detail::as_string(num) + " multiplied by " + suffix +
+                                      " factor would cause integer overflow. Use smaller value.");
+            }
+            input = detail::as_string(num);
+            return {};
+        };
+    }
+
+  private:
+    /// Split input string to <Number, Suffix> pair
+    /// CASE_INSENSITIVE and MANDATORY_SUFFIX options are considered
+    template <typename Number> static std::pair<Number, std::string> split(std::string input, Options opts) {
+        detail::rtrim(input);
+        if(input.empty()) {
+            throw ValidationError("Input is empty");
+        }
+
+        // Find split position between number and prefix
+        auto suffix_start = input.end();
+        while(suffix_start > input.begin() && std::isalpha(*(suffix_start - 1), std::locale())) {
+            --suffix_start;
+        }
+
+        std::string suffix{suffix_start, input.end()};
+        input.resize(std::distance(input.begin(), suffix_start));
+        detail::trim(input);
+
+        if(opts & MANDATORY_SUFFIX && suffix.empty()) {
+            throw ValidationError("Missing mandatory suffix");
+        }
+        if(opts & CASE_INSENSITIVE) {
+            suffix = detail::to_lower(suffix);
+        }
+
+        Number val;
+        bool converted = detail::lexical_cast(input, val);
+        if(!converted) {
+            throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
+        }
+
+        return {val, std::move(suffix)};
+    }
+};
 
 /// Helper function to allow ignore_case to be passed to IsMember or Transform
 inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
