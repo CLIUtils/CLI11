@@ -6,6 +6,7 @@
 #include "CLI/StringTools.hpp"
 #include "CLI/TypeTools.hpp"
 
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -511,16 +512,27 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
 
 /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
 template <typename T> bool checked_multiply(T &a, T b) {
-    if(a == 0 || b == 0) {
-        a *= b;
+    static_assert(std::is_arithmetic<T>::value, "Only number types allowed");
+    // No need for SFINAE since both branches are syntactically valid
+    if (std::is_integral<T>::value) {
+        if (a == 0 || b == 0) {
+            a *= b;
+            return true;
+        }
+        T c = a * b;
+        if (c / a != b) {
+            return false;
+        }
+        a = c;
+        return true;
+    } else {
+        T c = a * b;
+        if (std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
+            return false;
+        }
+        a = c;
         return true;
     }
-    T c = a * b;
-    if(c / a != b) {
-        return false;
-    }
-    a = c;
-    return true;
 }
 
 } // namespace detail
