@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -443,14 +444,17 @@ template <typename T> std::string generate_set(const T &set) {
 }
 
 /// Generate a string representation of a map
-template <typename T> std::string generate_map(const T &map) {
+template <typename T> std::string generate_map(const T &map, bool key_only = false) {
     using element_t = typename detail::element_type<T>::type;
     using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
     std::string out(1, '{');
     out.append(detail::join(detail::smart_deref(map),
-                            [](const iteration_type_t &v) {
-                                return detail::as_string(detail::pair_adaptor<element_t>::first(v)) + "->" +
-                                       detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                            [key_only](const iteration_type_t &v) {
+                                auto res = detail::as_string(detail::pair_adaptor<element_t>::first(v));
+                                if(!key_only) {
+                                    res += "->" + detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                                }
+                                return res;
                             },
                             ","));
     out.push_back('}');
@@ -503,6 +507,20 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
         return (a == val);
     });
     return {(it != std::end(setref)), it};
+}
+
+/// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
+template <typename T> bool checked_multiply(T &a, T b) {
+    if(a == 0 || b == 0) {
+        a *= b;
+        return true;
+    }
+    T c = a * b;
+    if(c / a != b) {
+        return false;
+    }
+    a = c;
+    return true;
 }
 
 } // namespace detail
@@ -707,6 +725,107 @@ class CheckedTransformer : public Validator {
         : CheckedTransformer(std::forward<T>(mapping),
                              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
                              other...) {}
+
+    /// Multiply a number by a factor using given mapping.
+    /// Can be used to write transforms for SIZE or DURATION inputs.
+    ///
+    /// Example:
+    ///   With mapping = `{"b"->1, "kb"->1024, "mb"->1024*1024}`
+    ///   one can recognize inputs like "100", "12kb", "100 MB",
+    ///    that will be automatically transformed to 100, 14448, 104857600.
+    ///
+    /// Number is interpreted as a type the same as in the provided mapping.
+    /// Therefore, if it is required to interpret inputs like "0.42 s",
+    /// the mapping should be of a type <string, float> or <string, double>.
+    /// 
+    class SuffixedNumber : public Validator {
+      public:
+        enum Options {
+            CASE_SENSITIVE = 0,
+            CASE_INSENSITIVE = 1,
+            OPTIONAL_SUFFIX = 0,
+            MANDATORY_SUFFIX = 2,
+            DEFAULT = CASE_INSENSITIVE | OPTIONAL_SUFFIX
+        };
+
+        template <typename Number>
+        SuffixedNumber(const std::map<std::string, Number> &mapping,
+                       const std::string &name = "SUFFIX",
+                       Options opts = DEFAULT) {
+            // generate description
+            std::stringstream out;
+            out << detail::type_name<Number>() << ' ';
+            if(opts & MANDATORY_SUFFIX) {
+                out << name;
+            } else {
+                out << '[' << name << ']';
+            }
+
+            description(out.str());
+
+            // transform function
+            func_ = [mapping, opts](std::string &input) -> std::string {
+                Number num;
+                std::string suffix;
+                std::tie(num, suffix) = split<Number>(input, opts);
+
+                if(suffix.empty()) {
+                    return input;
+                }
+
+                // find corresponding factor
+                auto it = mapping.find(suffix);
+                if(it == mapping.end()) {
+                    throw ValidationError(
+                        suffix + " suffix not recognized. Allowed values: " + detail::generate_map(mapping, true));
+                }
+
+                // perform sefa multiplication
+                bool ok = detail::checked_multiply(num, it->second);
+                if(!ok) {
+                    throw ValidationError(detail::as_string(num) + " multiplied by " + suffix +
+                                          " factor would cause integer overflow. Use smaller value.");
+                }
+                input = detail::as_string(num);
+                return {};
+            };
+        }
+
+      private:
+        /// Split input string to <Number, Suffix> pair
+        /// CASE_INSENSITIVE and MANDATORY_SUFFIX options are considered
+        template <typename Number> static std::pair<Number, std::string> split(std::string input, Options opts) {
+            detail::rtrim(input);
+            if(input.empty()) {
+                throw ValidationError("Input is empty");
+            }
+
+            // Find split position between number and prefix
+            auto suffix_start = input.end() - 1;
+            while(suffix_start > input.begin() && std::isalpha(*suffix_start, std::locale())) {
+                --suffix_start;
+            }
+
+            std::string suffix{suffix_start, input.end()};
+            input.resize(std::distance(input.begin(), suffix_start));
+
+            if(opts & MANDATORY_SUFFIX && suffix.empty()) {
+                throw ValidationError("Missing mandatory suffix");
+            }
+            if(opts & CASE_INSENSITIVE) {
+                suffix = detail::to_lower(suffix);
+            }
+
+            Number val;
+            bool converted = detail::lexical_cast(input, val);
+            if(!converted) {
+                throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
+            }
+
+            return {val, std::move(suffix)};
+        }
+    };
+
 }; // namespace CLI
 
 /// Helper function to allow ignore_case to be passed to IsMember or Transform
