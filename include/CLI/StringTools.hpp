@@ -193,6 +193,11 @@ inline bool valid_name_string(const std::string &str) {
     return true;
 }
 
+/// Verify that str consists of letters only
+inline bool isalpha(const std::string &str) {
+    return std::all_of(str.begin(), str.end(), [](char c){return std::isalpha(c, std::locale()); });
+}
+
 /// Return a lower case version of a string
 inline std::string to_lower(std::string str) {
     std::transform(std::begin(str), std::end(str), std::begin(str), [](const std::string::value_type &x) {

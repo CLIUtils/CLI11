@@ -749,7 +749,7 @@ class CheckedTransformer : public Validator {
         };
 
         template <typename Number>
-        SuffixedNumber(const std::map<std::string, Number> &mapping,
+        SuffixedNumber(std::map<std::string, Number> mapping,
                        const std::string &name = "SUFFIX",
                        Options opts = DEFAULT) {
             // generate description
@@ -762,6 +762,16 @@ class CheckedTransformer : public Validator {
             }
 
             description(out.str());
+
+            // validate mapping
+            for (auto& kv : mapping) {
+                if (!detail::isalpha(kv.first)) {
+                    throw ValidationError("Suffix must contain only letters.");
+                }
+                if (opts & CASE_INSENSITIVE) {
+                    kv.second = detail::to_lower(kv.second);
+                }
+            }
 
             // transform function
             func_ = [mapping, opts](std::string &input) -> std::string {
