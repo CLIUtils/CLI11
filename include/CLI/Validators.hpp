@@ -888,6 +888,68 @@ class SuffixedNumber : public Validator {
     }
 };
 
+/// Converts a human-readable size string (with unit suffix) to uin64_t size.
+/// Example:
+///   "100" => 100
+///   "1 b" => 100
+///   "10Kb" => 10240 // you can configuire this to be interpreted as kilobyte (*1000) or kibibyte (*1024)
+///   "10 KB" => 10240
+///   "10 kb" => 10240
+///   "10 kib" => 10240 // *i, *ib are always interpreted as *bibyte (*1024)
+///   "10kb" => 10240
+///   "2 MB" => 2097152
+///   "2 EiB" => 2^61 // Units up to exibyte are supported
+class AsSizeValue : public SuffixedNumber {
+  public:
+    using result_t = uint64_t;
+
+    /// If allow_1000_factor is true,
+    /// interpret 'kb', 'k' as 1000 and 'kib', 'ki' as 1024
+    /// (same applies to higher units as well).
+    /// Otherwise, interpret all suffixes as 1024.
+    /// The first option is formally correct, but
+    /// the second interpretation is more wide-spread
+    /// (see https://en.wikipedia.org/wiki/Binary_prefix).
+    AsSizeValue(bool allow_1000_factor) : SuffixedNumber(get_mapping(allow_1000_factor)) {
+        if(allow_1000_factor) {
+            description("SIZE [b, kb(=1000b), kib(=1024b), ...]");
+        } else {
+            description("SIZE [b, kb(=1024b), ...]");
+        }
+    }
+
+  private:
+    /// Get <size unit, factor> mapping
+    static std::map<std::string, result_t> init_mapping(bool allow_1000_factor) {
+        std::map<std::string, result_t> m;
+        result_t k_factor = allow_1000_factor ? 1000 : 1024;
+        result_t ki_factor = 1024;
+        result_t k = 1;
+        result_t ki = 1;
+        m["b"] = 1;
+        for(std::string p : {"k", "m", "g", "t", "p", "e"}) {
+            k *= k_factor;
+            ki *= ki_factor;
+            m[p] = k;
+            m[p + "b"] = k;
+            m[p + "i"] = ki;
+            m[p + "ib"] = ki;
+        }
+        return m;
+    }
+
+    /// Cache calculated mapping
+    static std::map<std::string, result_t> get_mapping(bool allow_1000_factor) {
+        if(allow_1000_factor) {
+            static auto m = init_mapping(true);
+            return m;
+        } else {
+            static auto m = init_mapping(false);
+            return m;
+        }
+    }
+};
+
 namespace detail {
 /// Split a string into a program name and command line arguments
 /// the string is assumed to contain a file name followed by other arguments

@@ -628,3 +628,209 @@ TEST_F(TApp, SuffixedNumberFloatOverlow) {
     run();
     EXPECT_FLOAT_EQ(value, 0);
 }
+
+TEST_F(TApp, AsSizeValue1000_1024) {
+    uint64_t value;
+    app.add_option("-s", value)->transform(CLI::AsSizeValue(true));
+
+    args = {"-s", "10240"};
+    run();
+    EXPECT_EQ(value, 10240);
+
+    args = {"-s", "1b"};
+    run();
+    EXPECT_FLOAT_EQ(value, 1);
+
+    uint64_t k_value = 1000;
+    uint64_t ki_value = 1024;
+    args = {"-s", "1k"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1kb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1 Kb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ki"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000;
+    ki_value = 1024ull * 1024;
+    args = {"-s", "1m"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1mb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1mi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000 * 1000;
+    ki_value = 1024ull * 1024 * 1024;
+    args = {"-s", "1g"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1gb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1gi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000 * 1000 * 1000;
+    ki_value = 1024ull * 1024 * 1024 * 1024;
+    args = {"-s", "1t"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1tb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ti"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000 * 1000 * 1000 * 1000;
+    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024;
+    args = {"-s", "1p"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1pb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1pi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000 * 1000 * 1000 * 1000 * 1000;
+    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024 * 1024;
+    args = {"-s", "1e"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1eb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ei"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+}
+
+TEST_F(TApp, AsSizeValue1024) {
+    uint64_t value;
+    app.add_option("-s", value)->transform(CLI::AsSizeValue(false));
+
+    args = {"-s", "10240"};
+    run();
+    EXPECT_EQ(value, 10240);
+
+    args = {"-s", "1b"};
+    run();
+    EXPECT_FLOAT_EQ(value, 1);
+
+    uint64_t ki_value = 1024;
+    args = {"-s", "1k"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1 Kb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ki"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024;
+    args = {"-s", "1m"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024 * 1024;
+    args = {"-s", "1g"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024 * 1024 * 1024;
+    args = {"-s", "1t"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ti"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024;
+    args = {"-s", "1p"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024 * 1024;
+    args = {"-s", "1e"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ei"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+}
