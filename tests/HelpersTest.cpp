@@ -413,7 +413,6 @@ TEST(CheckedMultiply, Int) {
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<int>::min());
 
-
     a = std::numeric_limits<int>::min();
     b = 1;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
@@ -430,7 +429,7 @@ TEST(CheckedMultiply, Int) {
     ASSERT_EQ(a, std::numeric_limits<int>::min() / 100 * 99);
 }
 
-TEST(SafeMultiply, SizeT) {
+TEST(CheckedMultiply, SizeT) {
     size_t a = 10;
     size_t b = 20;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
@@ -461,14 +460,13 @@ TEST(SafeMultiply, SizeT) {
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<size_t>::max());
 
-
     a = std::numeric_limits<size_t>::max() / 100;
     b = 99;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<size_t>::max() / 100 * 99);
 }
 
-TEST(SafeMultiply, Float) {
+TEST(CheckedMultiply, Float) {
     float a = 10;
     float b = 20;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
@@ -515,7 +513,7 @@ TEST(SafeMultiply, Float) {
     ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100);
 }
 
-TEST(SafeMultiply, Double) {
+TEST(CheckedMultiply, Double) {
     double a = 10;
     double b = 20;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
