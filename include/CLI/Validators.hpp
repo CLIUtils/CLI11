@@ -778,7 +778,7 @@ class SuffixedNumber : public Validator {
     };
 
     template <typename Number>
-    SuffixedNumber(std::map<std::string, Number> mapping, Options opts = DEFAULT, const std::string &name = "SUFFIX") {
+    explicit SuffixedNumber(std::map<std::string, Number> mapping, Options opts = DEFAULT, const std::string &name = "SUFFIX") {
         description(generate_description<Number>(name, opts));
         validate_mapping(mapping, opts);
 
@@ -910,7 +910,7 @@ class AsSizeValue : public SuffixedNumber {
     /// The first option is formally correct, but
     /// the second interpretation is more wide-spread
     /// (see https://en.wikipedia.org/wiki/Binary_prefix).
-    AsSizeValue(bool allow_1000_factor) : SuffixedNumber(get_mapping(allow_1000_factor)) {
+    explicit AsSizeValue(bool allow_1000_factor) : SuffixedNumber(get_mapping(allow_1000_factor)) {
         if(allow_1000_factor) {
             description("SIZE [b, kb(=1000b), kib(=1024b), ...]");
         } else {
