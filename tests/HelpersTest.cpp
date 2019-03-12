@@ -404,12 +404,12 @@ TEST(CheckedMultiply, Int) {
     ASSERT_EQ(a, -std::numeric_limits<int>::max());
 
     a = std::numeric_limits<int>::max();
-    b = std::numeric_limits<int>::max();;
+    b = std::numeric_limits<int>::max();
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<int>::max());
 
     a = std::numeric_limits<int>::min();
-    b = std::numeric_limits<int>::max();;
+    b = std::numeric_limits<int>::max();
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<int>::min());
 
@@ -457,7 +457,7 @@ TEST(SafeMultiply, SizeT) {
     ASSERT_EQ(a, std::numeric_limits<size_t>::max());
 
     a = std::numeric_limits<size_t>::max();
-    b = std::numeric_limits<size_t>::max();;
+    b = std::numeric_limits<size_t>::max();
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, std::numeric_limits<size_t>::max());
 
