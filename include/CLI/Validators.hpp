@@ -778,7 +778,9 @@ class SuffixedNumber : public Validator {
     };
 
     template <typename Number>
-    explicit SuffixedNumber(std::map<std::string, Number> mapping, Options opts = DEFAULT, const std::string &suff_name = "SUFFIX") {
+    explicit SuffixedNumber(std::map<std::string, Number> mapping,
+                            Options opts = DEFAULT,
+                            const std::string &suff_name = "SUFFIX") {
         description(generate_description<Number>(suff_name, opts));
         validate_mapping(mapping, opts);
 
