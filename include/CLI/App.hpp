@@ -2230,6 +2230,9 @@ class App {
             if(!detail::split_windows_style(current, arg_name, value))
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
+        case detail::Classifier::SUBCOMMAND:
+        case detail::Classifier::POSITIONAL_MARK:
+        case detail::Classifier::NONE:
         default:
             throw HorribleError("parsing got called with invalid option! You should not see this");
         }
