@@ -479,6 +479,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
 -   `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
 -   `.add_subcommand(shared_ptr<App>)`: 🚧 Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
+-   `.remove_subcommand(App)`:🚧 Remove a subcommand from the app or subcommand.
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
 -   `.add_option_group(name="", description="")`: 🚧 Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
@@ -562,18 +563,23 @@ The subcommand method
 Will create an option Group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
 
 ```cpp
-ogroup->add_option(option_pointer)
+ogroup->add_option(option_pointer);
 ```
 
 ```cpp
-ogroup->add_options(option_pointer)
+ogroup->add_options(option_pointer);
 ```
 
 ```cpp
-ogroup->add_options(option1,option2,option3,...)
+ogroup->add_options(option1,option2,option3,...);
 ```
 
-The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  
+The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  Subcommands can also be added via
+```cpp
+ogroup->add_subcommand(subcom_pointer);
+```
+This results in the subcommand being moved from its parent into the option group.
+
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
 Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
 

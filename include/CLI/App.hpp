@@ -1074,6 +1074,21 @@ class App {
         return subcommands_.back().get();
     }
 
+    /// Removes a subcommand from the App. Takes a subcommand pointer. Returns true if found and removed.
+    bool remove_subcommand(App *subcom) {
+        // Make sure no links exist
+        for(App_p &sub : subcommands_) {
+            sub->remove_excludes(subcom);
+        }
+
+        auto iterator = std::find_if(
+            std::begin(subcommands_), std::end(subcommands_), [subcom](const App_p &v) { return v.get() == subcom; });
+        if(iterator != std::end(subcommands_)) {
+            subcommands_.erase(iterator);
+            return true;
+        }
+        return false;
+    }
     /// Check to see if a subcommand is part of this command (doesn't have to be in command line)
     /// returns the first subcommand if passed a nullptr
     App *get_subcommand(App *subcom) const {
@@ -1122,6 +1137,16 @@ class App {
         if((index >= 0) && (index < static_cast<int>(subcommands_.size())))
             return subcommands_[index];
         throw OptionNotFound(std::to_string(index));
+    }
+
+    /// Check to see if an option group is part of this App
+    App *get_option_group(std::string group_name) const {
+        for(const App_p &app : subcommands_) {
+            if(app->name_.empty() && app->group_ == group_name) {
+                return app.get();
+            }
+        }
+        throw OptionNotFound(group_name);
     }
 
     /// No argument version of count counts the number of times this subcommand was
@@ -1437,7 +1462,9 @@ class App {
     bool remove_excludes(App *app) {
         auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
         if(iterator != std::end(exclude_subcommands_)) {
+            auto other_app = *iterator;
             exclude_subcommands_.erase(iterator);
+            other_app->remove_excludes(this);
             return true;
         } else {
             return false;
@@ -2584,7 +2611,7 @@ class Option_group : public App {
         // option groups should have automatic fallthrough
     }
     using App::add_option;
-    /// add an existing option to the Option_group
+    /// Add an existing option to the Option_group
     Option *add_option(Option *opt) {
         if(get_parent() == nullptr) {
             throw OptionNotFound("Unable to locate the specified option");
@@ -2592,12 +2619,20 @@ class Option_group : public App {
         get_parent()->_move_option(opt, this);
         return opt;
     }
-    /// add an existing option to the Option_group
+    /// Add an existing option to the Option_group
     void add_options(Option *opt) { add_option(opt); }
-    /// add a bunch of options to the group
+    /// Add a bunch of options to the group
     template <typename... Args> void add_options(Option *opt, Args... args) {
         add_option(opt);
         add_options(args...);
+    }
+    using App::add_subcommand;
+    /// Add an existing subcommand to be a member of an option_group
+    App *add_subcommand(App *subcom) {
+        App_p subc = subcom->get_parent()->get_subcommand_ptr(subcom);
+        subc->get_parent()->remove_subcommand(subcom);
+        add_subcommand(std::move(subc));
+        return subcom;
     }
 };
 /// Helper function to enable one option group/subcommand when another is used

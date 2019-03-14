@@ -641,6 +641,27 @@ TEST_F(TApp, InheritHelpAllFlag) {
     EXPECT_EQ(help_opt_list.size(), 1u);
 }
 
+TEST_F(TApp, RequiredPosInSubcommand) {
+    app.require_subcommand();
+    std::string bar;
+
+    CLI::App *fooApp = app.add_subcommand("foo", "Foo a bar");
+    fooApp->add_option("bar", bar, "A bar to foo")->required();
+
+    CLI::App *bazApp = app.add_subcommand("baz", "Baz a bar");
+    bazApp->add_option("bar", bar, "A bar a baz")->required();
+
+    args = {"foo", "abc"};
+    run();
+    EXPECT_EQ(bar, "abc");
+    args = {"baz", "cba"};
+    run();
+    EXPECT_EQ(bar, "cba");
+
+    args = {};
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App *start;
@@ -962,6 +983,22 @@ TEST_F(ManySubcommands, Required4Failure) {
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 
+TEST_F(ManySubcommands, RemoveSub) {
+    run();
+    EXPECT_EQ(app.remaining_size(true), 0u);
+    app.remove_subcommand(sub1);
+    app.allow_extras();
+    run();
+    EXPECT_EQ(app.remaining_size(true), 1u);
+}
+
+TEST_F(ManySubcommands, RemoveSubFail) {
+    auto sub_sub = sub1->add_subcommand("subsub");
+    EXPECT_FALSE(app.remove_subcommand(sub_sub));
+    EXPECT_TRUE(sub1->remove_subcommand(sub_sub));
+    EXPECT_FALSE(app.remove_subcommand(nullptr));
+}
+
 TEST_F(ManySubcommands, manyIndexQuery) {
     auto s1 = app.get_subcommand(0);
     auto s2 = app.get_subcommand(1);
@@ -1100,13 +1137,15 @@ TEST_F(ManySubcommands, SubcommandOptionExclusion) {
     args = {"sub3", "sub4", "--exclude"};
     EXPECT_NO_THROW(run());
 
-    // the option comes later so doesn't exclude
     args = {"sub1", "sub3", "--exclude"};
     EXPECT_THROW(run(), CLI::ExcludesError);
+    EXPECT_TRUE(sub1->remove_excludes(excluder_flag));
+    EXPECT_NO_THROW(run());
+    EXPECT_FALSE(sub1->remove_excludes(excluder_flag));
 
     args = {"--exclude", "sub2", "sub4"};
     EXPECT_THROW(run(), CLI::ExcludesError);
-
+    EXPECT_EQ(sub1->excludes(excluder_flag), sub1);
     args = {"sub1", "--exclude", "sub2", "sub4"};
     try {
         run();
