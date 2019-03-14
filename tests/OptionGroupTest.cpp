@@ -431,6 +431,11 @@ TEST_F(ManyGroups, ExcludesGroup) {
     args = {"--name1", "test", "--name2", "test2"};
 
     EXPECT_THROW(run(), CLI::ExcludesError);
+
+    EXPECT_TRUE(g1->remove_excludes(g2));
+    EXPECT_NO_THROW(run());
+    EXPECT_FALSE(g1->remove_excludes(g1));
+    EXPECT_FALSE(g1->remove_excludes(g2));
 }
 
 TEST_F(ManyGroups, SingleGroupError) {
@@ -603,6 +608,17 @@ TEST_F(ManyGroups, Inheritance) {
     EXPECT_TRUE(t2->get_ignore_case());
     run();
     EXPECT_EQ(t2->count(), 2u);
+}
+
+TEST_F(ManyGroups, Moving) {
+    remove_required();
+    auto mg = app.add_option_group("maing");
+    mg->add_subcommand(g1);
+    mg->add_subcommand(g2);
+
+    EXPECT_EQ(g1->get_parent(), mg);
+    EXPECT_EQ(g2->get_parent(), mg);
+    EXPECT_EQ(g3->get_parent(), main);
 }
 
 struct ManyGroupsPreTrigger : public ManyGroups {

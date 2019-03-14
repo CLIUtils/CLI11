@@ -6,7 +6,10 @@
 #
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF)
-
+# older version of google tests doesn't support MSYS so needs this flag to compile
+if (MSYS)
+	set(gtest_disable_pthreads ON CACHE BOOL "" FORCE)
+endif()
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "")
 add_subdirectory("${CLI11_SOURCE_DIR}/extern/googletest" "${CLI11_BINARY_DIR}/extern/googletest" EXCLUDE_FROM_ALL)
 
