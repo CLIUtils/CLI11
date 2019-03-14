@@ -2090,6 +2090,9 @@ class App {
             if(positionals_at_end_) {
                 positional_only = true;
             }
+            break;
+        default:
+            HorribleError("unrecognized classifier (you should not see this!)");
         }
     }
 
