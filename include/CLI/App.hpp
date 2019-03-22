@@ -2234,6 +2234,12 @@ class App {
             if(retval && positionals_at_end_) {
                 positional_only = true;
             }
+            break;
+
+            // LCOV_EXCL_START
+        default:
+            HorribleError("unrecognized classifier (you should not see this!)");
+            // LCOV_EXCL_END
         }
         return retval;
     }
@@ -2396,6 +2402,9 @@ class App {
             if(!detail::split_windows_style(current, arg_name, value))
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
+        case detail::Classifier::SUBCOMMAND:
+        case detail::Classifier::POSITIONAL_MARK:
+        case detail::Classifier::NONE:
         default:
             throw HorribleError("parsing got called with invalid option! You should not see this");
         }
