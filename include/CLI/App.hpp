@@ -2091,8 +2091,11 @@ class App {
                 positional_only = true;
             }
             break;
+
+            // LCOV_EXCL_START
         default:
             HorribleError("unrecognized classifier (you should not see this!)");
+            // LCOV_EXCL_END
         }
     }
 
