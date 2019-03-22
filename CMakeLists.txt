@@ -96,12 +96,8 @@ endif()
 # import Targets.cmake
 
 # Add the version in a CMake readable way
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    CLI11ConfigVersion.cmake
-    VERSION ${CLI11_VERSION}
-    COMPATIBILITY AnyNewerVersion
-    )
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CLI11ConfigVersion.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake" @ONLY)
 
 # These installs only make sense for a local project
 if(CUR_PROJ)
