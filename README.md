@@ -236,7 +236,7 @@ Option_group *app.add_option_group(name,description); // 🚧
 -app.add_mutable_set_ignore_case_underscore(... // 🆕 String only
 ```
 
-An option name must start with a alphabetic character, underscore, a number 🚧,  '?'🚧, or '@'🚧. For long options, after the first character '.', and '-' are also valid characters. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
+An option name must start with a alphabetic character, underscore, a number 🚧, '?'🚧, or '@'🚧. For long options, after the first character '.', and '-' are also valid characters. For the `add_flag*` functions '{' has special meaning. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on the help line for its positional form. If you want the default value to print in the help description, pass in `true` for the final parameter for `add_option`.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.  
 
@@ -249,7 +249,7 @@ app.add_flag("--flag,!--no-flag,result,"help for flag"); // 🚧
 specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
 passed `result` will contain false or -1 if `result` is a signed integer type, or 0 if it is an unsigned type.  An
 alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; this is equivalent to the previous
-example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"` If `variable_to_bind_to` is anything but an integer value the
+example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"`. If `variable_to_bind_to` is anything but an integer value the
 default behavior is to take the last value given, while if `variable_to_bind_to` is an integer type the behavior will be to sum
 all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
 The default value can be any value. For example if you wished to define a numerical flag
@@ -261,7 +261,7 @@ using any of those flags on the command line will result in the specified number
 
 On a `C++14` compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
-On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL 1` before including CLI11 to manually add support (or 0 to remove) for `boost::optional`. See [CLI11 Internals][] for information on how this was done and how you can add your own converters.
+On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL 1` before including CLI11 to manually add support (or 0 to remove) for `boost::optional`. See [CLI11 Internals][] for information on how this was done and how you can add your own converters.  Optional values are only supported for types that support the `>>` operator.
 
 #### Example
 
@@ -285,19 +285,19 @@ Before parsing, you can set the following options:
 -   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: 🆕 Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
--   `->disable_flag_override()`: 🚧 from the command line long form flag option can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
--    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value
+-   `->disable_flag_override()`: 🚧 from the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
+-    `->delimiter(char)`: 🚧 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 -   `->description(str)`: 🆕 Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(std::string(const std::string &), validator_name="",validator_description="")`: 🚧 define a check function.  The function should return a non empty string with the error message if the check fails
 -   `->check(Validator)`:🚧 Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
 -   `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
 -   `->transform(Validator)`: uses a Validator object to do the transformation see [Validators](#validators) for a description of available Validators and how to create new ones.
--   `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered
+-   `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered.
 -   `->configurable(false)`: Disable this option from being in a configuration file.
 
 
-These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. Each takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
+These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 On the command line, options can be given as:
 
@@ -317,7 +317,7 @@ On the command line, options can be given as:
 -   `/long` (long flag)
 -   `/file filename` (space)
 -   `/file:filename` (colon)
--   `/long_flag:false (long flag with : to override the default value) 🚧
+-   `/long_flag:false` (long flag with : to override the default value) 🚧
 =  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
 
 🚧 Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
@@ -330,13 +330,13 @@ If `--` is present in the command line that does not end an unlimited option, th
 everything after that is positional only.
 
 #### Validators
-Validators are structures to check or modify inputs, they can be used to verify that an input meets certain criteria or transform it into another value.  They are added through an options `check` or `transform` functions.  They differences between those two function are that checks do not modify the input whereas transforms can and are executed before any Validators added through `check`.
+Validators are structures to check or modify inputs, they can be used to verify that an input meets certain criteria or transform it into another value.  They are added through the `check` or `transform` functions.  The differences between the two function are that checks do not modify the input whereas transforms can and are executed before any Validators added through `check`.
 
-CLI11 has several Validators built in that perform some common checks
+CLI11 has several Validators built-in that perform some common checks
 
 -   `CLI::IsMember(...)`: 🚧 Require an option be a member of a given set.  See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::Transformer(...)`: 🚧 Modify the input using a map.  See [Transforming Validators](#transforming-validators) for more details.
--   `CLI::CheckedTransformer(...)`: 🚧 Modify the input using a map, and Require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
+-   `CLI::CheckedTransformer(...)`: 🚧 Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::ExistingFile`: Requires that the file exists if given.
 -   `CLI::ExistingDirectory`: Requires that the directory exists.
 -   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
@@ -349,17 +349,14 @@ CLI11 has several Validators built in that perform some common checks
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
 ```cpp
 ->check(CLI::ExistingFile);
-```
-```cpp
 ->check(CLI::Range(0,10));
 ```
 
-Validators can be merged using `&` and `|` and inverted using `!`🚧
-such as
+Validators can be merged using `&` and `|` and inverted using `!`🚧.  For example
 ```cpp
 ->check(CLI::Range(0,10)|CLI::Range(20,30));
 ```
-will produce a check if a value is between 0 and 10 or 20 and 30.
+will produce a check to ensure a value is between 0 and 10 or 20 and 30.
 ```cpp
 ->check(!CLI::PositiveNumber);
 ```
@@ -369,17 +366,17 @@ will produce a check for a number less than 0;
 There are a few built in Validators that let you transform values if used with the `transform` function.  If they also do some checks then they can be used `check` but some may do nothing in that case.
  * 🚧 `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
  * 🚧 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
-After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and CLI::ignore_space.  These all work on strings but it is possible to define functions that work on other types.
+After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and `CLI::ignore_space`.  These all work on strings but it is possible to define functions that work on other types.
 Here are some examples
 of `IsMember`:
 
      *   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
      *   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
      *  `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
-     *   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`.
+     *   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`, so it can be any type.
      *   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
-* 🚧 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, or one of the expected output values, and if not will generate a ValidationError.  A Transformer placed using `check` will not do anything.  
-After specifying a map of options, you can also specify "filter" just like in CLI::IsMember.
+* 🚧 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, in which case it is transformed, or one of the expected output values, and if not will generate a `ValidationError`.  A Transformer placed using `check` will not do anything.  
+After specifying a map of options, you can also specify "filter" just like in `CLI::IsMember`.
 Here are some examples (`Transformer` and `CheckedTransformer` are interchangeable in the examples)
 of `Transformer`:
 
@@ -389,11 +386,11 @@ of `Transformer`:
      *   `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.  
      *   `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
 
-NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a specialized search function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a find function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
+NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a `find` function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a `find` function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
 
 ##### Validator operations🚧
 Validators are copyable and have a few operations that can be performed on them to alter settings.  Most of the built in Validators have a default description that is displayed in the help.  This can be altered via `.description(validator_description)`.
-the name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
+The name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
 `.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.
 All the functions return a Validator reference allowing them to be chained.  For example
@@ -411,7 +408,7 @@ opt->get_validator("range")->active();
 
 A validator object with a custom function can be created via
 ```cpp
-CLI::Validator(std::function<std::string(std::string &>,validator_description,validator_name="");
+CLI::Validator(std::function<std::string(std::string &)>,validator_description,validator_name="");
 ```
 or if the operation function is set later they can be created with
 ```cpp
@@ -425,16 +422,16 @@ Once loaded into an Option, a pointer to a named Validator can be retrieved via
 ```cpp
 opt->get_validator(name);
 ```
-This will retrieve a Validator with the given name or throw a CLI::OptionNotFound error.  If no name is given or name is empty the first unnamed Validator will be returned or the first Validator if there is only one.
+This will retrieve a Validator with the given name or throw a `CLI::OptionNotFound` error.  If no name is given or name is empty the first unnamed Validator will be returned or the first Validator if there is only one.
 
 Validators have a few functions to query the current values
  * `get_description()`:🚧 Will return a description string
  * `get_name()`:🚧 Will return the Validator name
  * `get_active()`:🚧 Will return the current active state, true if the Validator is active.
- * `get_modifying()`: 🚧 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()`🚧 method, though it is recommended to let check and transform function manipulate it if needed. 
+ * `get_modifying()`: 🚧 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()`🚧 method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
 
 #### Getting results
-In most cases the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
+In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
 - `results()`: Retrieves a vector of strings with all the results in the order they were given.
 - `results(variable_to_bind_to)`: 🚧 Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
@@ -454,10 +451,10 @@ All `App`s have a `get_subcommands()` method, which returns a list of pointers t
 For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 You are allowed to throw `CLI::Success` in the callbacks.
-Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once.  
+Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once unless the `.immediate_callback()` flag is set.  In which case the callback executes on completion of the subcommand arguments but after the arguments for that subcommand have been parsed, and can be triggered multiple times.
 
 🚧 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
-Nameless subcommands function a similarly to groups in the main `App`. See [Option groups](#option-groups) to see how this might work.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.
+Nameless subcommands function a similarly to groups in the main `App`. See [Option groups](#option-groups) to see how this might work.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.  Callbacks for nameless subcommands are only triggered if any options from the subcommand were parsed.  
 
 #### Subcommand options
 
@@ -465,15 +462,15 @@ There are several options that are supported on the main app and subcommands and
 
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.ignore_underscore()`: 🆕 Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
--   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`
+-   `.allow_windows_style_options()`: 🆕 Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
 -   `.disable()`: 🚧 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
--   `.disabled_by_default()`:🚧 Specify that at the start of parsing the subcommand should be disabled. This is useful for allowing some Subcommands to trigger others.
+-   `.disabled_by_default()`:🚧 Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 -   `.enabled_by_default()`: 🚧 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
--   `.exludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
+-   `.excludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
 -   `.require_option()`: 🚧 Require 1 or more options or option groups be used.
--   `.require_option(N)`:  🚧 Require `N` options or option groups if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
--   `.require_option(min, max)`: 🚧 Explicitly set min and max allowed options or option groups. Setting `max` to 0 is unlimited.
+-   `.require_option(N)`:  🚧 Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
+-   `.require_option(min, max)`: 🚧 Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
 -   `.require_subcommand()`: Require 1 or more subcommands.
 -   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
 -   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
@@ -483,7 +480,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
 -   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
 -   `.add_option_group(name="", description="")`: 🚧 Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.  
--   `.get_parent()`: Get the parent App or nullptr if called on master App.
+-   `.get_parent()`: Get the parent App or `nullptr` if called on master App.
 -   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
 -   `.get_option_no_throw(name)`: 🚧 Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
 -   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
@@ -492,9 +489,9 @@ There are several options that are supported on the main app and subcommands and
 -   `.description(str)`: 🆕 Set/change the description.
 -   `.get_description()`: Access the description.
 -   `.parsed()`: True if this subcommand was given on the command line.
--   `.count()`: Returns the number of times the subcommand was called
--   `.count(option_name)`: Returns the number of times a particular option was called
--   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands
+-   `.count()`: Returns the number of times the subcommand was called.
+-   `.count(option_name)`: Returns the number of times a particular option was called.
+-   `.count_all()`: 🚧 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point. See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.immediate_callback()`: 🚧 Specify that the callback for a subcommand should run immediately on completion of a subcommand vs at the completion of all parsing if this option is not used.
@@ -507,12 +504,12 @@ There are several options that are supported on the main app and subcommands and
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
-- `[option_name]`: 🚧 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>() will get the results of the command line for a flag
+- `[option_name]`: 🚧 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
 
-#### Callbacks 
+#### Callbacks
 A subcommand has two optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🚧 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
 The second callback is executed after parsing.  The behavior depends on the status of the `immediate_callback` flag 🚧. If true, this runs immediately after the parsing of the subcommand.  Or if the flag is false, once after parsing of all arguments.  If the `immediate_callback` is set then the callback can be executed multiple times if the subcommand list given multiple times.  If the main app or subcommand has a config file, no data from the config file will be reflected in immediate_callback. `immediate_callback()` has no effect on the main app, though it can be inherited.  For option_groups `immediate_callback` causes the callback to be run prior to other option groups and options in the main app, effectively giving the options in the group priority.  
 
@@ -522,7 +519,7 @@ For example say an application was set up like
 app.callback(ac);
 sub1=app.add_subcommand("sub1")->callback(c1)->preparse_callback(pc1)->immediate_callback();
 sub2=app.add_subcommand("sub2")->callback(c2)->preparse_callback(pc2);
-app.preparse_callback( pa1);
+app.preparse_callback( pa);
 
 ... A bunch of other options
 
@@ -534,13 +531,13 @@ Then the command line is given as
 program --opt1 opt1_val  sub1 --sub1opt --sub1optb val sub2 --sub2opt sub1 --sub1opt2 sub2 --sub2opt2 val
 ```
 
-* pa will be called prior to parsing any values with an argument of 14.
+* pa will be called prior to parsing any values with an argument of 13.
 * pc1 will be called immediately after processing the sub1 command with a value of 10.
-* c1 will be called when the `sub2` command is encountered
+* c1 will be called when the `sub2` command is encountered.
 * pc2 will be called with value of 6 after the sub2 command is encountered.
-* c1 will be called again after the second sub2 command is encountered
-* c2 will be called once after processing all arguments 
-* ac will be called after completing the parse and all lower level callbacks have been executed
+* c1 will be called again after the second sub2 command is encountered.
+* c2 will be called once after processing all arguments.
+* ac will be called after completing the parse and all lower level callbacks have been executed.
 
 A subcommand is considered terminated when one of the following conditions are met.
 1. There are no more arguments to process
@@ -548,7 +545,7 @@ A subcommand is considered terminated when one of the following conditions are m
 3. The positional_mark(`--`) is encountered and there are no available positional slots in the subcommand.
 4. The subcommand_terminator mark(`++`) is encountered
 
-If the `immediate_callback` flag is set then all contained options are processed and the callback is triggered.  If a subcommand with an immediate_callback flag is called again, then the contained options are reset, and can be triggered again.  
+If the `immediate_callback` flag is set then all contained options are processed and the callback is triggered.  If a subcommand with an `immediate_callback` flag is called again, then the contained options are reset, and can be triggered again.  
 
 
 
@@ -560,28 +557,24 @@ The subcommand method
 .add_option_group(name,description)
 ```
 
-Will create an option Group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
+Will create an option group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
 
 ```cpp
 ogroup->add_option(option_pointer);
-```
-
-```cpp
 ogroup->add_options(option_pointer);
-```
-
-```cpp
 ogroup->add_options(option1,option2,option3,...);
 ```
 
 The option pointers used in this function must be options defined in the parent application of the option group otherwise an error will be generated.  Subcommands can also be added via
+
 ```cpp
 ogroup->add_subcommand(subcom_pointer);
 ```
+
 This results in the subcommand being moved from its parent into the option group.
 
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
-Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
+Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements, and an option group will be considered used if any of the options or subcommands contained in it are used.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
 
 The `CLI::TriggerOn`🚧 and `CLI::TriggerOff`🚧 methods are helper methods to allow the use of options/subcommands from one group to trigger another group on or off.
 
@@ -590,7 +583,7 @@ CLI::TriggerOn(group1_pointer, triggered_group);
 CLI::TriggerOff(group2_pointer, disabled_group);
 ```
 
-These functions make use of the `preparse_callback`, `enabled_by_default()` and `disabled_by_default`.  The triggered group may be a vector of group pointers.  These methods should only used once per group and will override any previous use of the underlying functions.  More complex arrangements can be accomplished using similar methodology with a different preparse_callback function that does more.
+These functions make use of `preparse_callback`, `enabled_by_default()` and `disabled_by_default`.  The triggered group may be a vector of group pointers.  These methods should only be used once per group and will override any previous use of the underlying functions.  More complex arrangements can be accomplished using similar methodology with a custom preparse_callback function that does more.
 
 
 ### Configuration file
@@ -659,12 +652,12 @@ Also, in a related note, the `App` you get a pointer to is stored in the parent 
 
 ### How it works
 
-Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of strings, so it knows how many times an option was passed or how many arguments it received (flags add empty strings to keep the counts correct). The lambda returns `true` if it could validate the option strings, and
+Every `add_` option you have seen so far depends on one method that takes a lambda function. Each of these methods is just making a different lambda function with capture to populate the option. The function has full access to the vector of strings, so it knows how many times an option was passed or how many arguments it received. The lambda returns `true` if it could validate the option strings, and
 `false` if it failed.
 
-Other values can be added as long as they support `operator>>` (and defaults can be printed if they support `operator<<`). To add an enum, for example, provide a custom `operator>>` with an `istream` (inside the CLI namespace is fine if you don't want to interfere with an existing `operator>>`).
+Other values can be added as long as they support `operator>>` (and defaults can be printed if they support `operator<<`). To add a new type, for example, provide a custom `operator>>` with an `istream` (inside the CLI namespace is fine if you don't want to interfere with an existing `operator>>`).
 
-If you wanted to extend this to support a completely new type, use a lambda or add a specialization of the lexical_cast function template in the namespace `CLI::detail` with the type you need to convert to. Some examples of some new parsers for `complex<double>` that support all of the features of a standard `add_options` call are in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
+If you wanted to extend this to support a completely new type, use a lambda or add a specialization of the `lexical_cast` function template in the namespace `CLI::detail` with the type you need to convert to. Some examples of some new parsers for `complex<double>` that support all of the features of a standard `add_options` call are in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
 #### Example
 
