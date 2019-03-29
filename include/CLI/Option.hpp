@@ -666,19 +666,11 @@ class Option : public OptionBase<Option> {
 
         // Run the validators (can change the string)
         if(!validators_.empty()) {
-            for(std::string &result : results_)
-                for(const auto &vali : validators_) {
-                    std::string err_msg;
-
-                    try {
-                        err_msg = vali(result);
-                    } catch(const ValidationError &err) {
-                        throw ValidationError(get_name(), err.what());
-                    }
-
-                    if(!err_msg.empty())
-                        throw ValidationError(get_name(), err_msg);
-                }
+            for(std::string &result : results_) {
+                auto err_msg = _validate(result);
+                if(!err_msg.empty())
+                    throw ValidationError(get_name(), err_msg);
+            }
         }
         if(!(callback_)) {
             return;
@@ -956,6 +948,21 @@ class Option : public OptionBase<Option> {
     }
 
   private:
+    // run through the validators
+    std::string _validate(std::string &result) {
+        std::string err_msg;
+        for(const auto &vali : validators_) {
+            try {
+                err_msg = vali(result);
+            } catch(const ValidationError &err) {
+                err_msg = err.what();
+            }
+            if(!err_msg.empty())
+                break;
+        }
+        return err_msg;
+    }
+
     int _add_result(std::string &&result) {
         int result_count = 0;
         if(delimiter_ == '\0') {
