@@ -489,7 +489,7 @@ class App {
         return add_option(option_name, CLI::callback_t(), option_description, false);
     }
 
-    /// Add option for non-vectors with a default print
+    /// Add option for non-vectors with a default print, allow template to specify conversion type
     template <typename T,
               typename XC = T,
               enable_if_t<!is_vector<XC>::value && !std::is_const<XC>::value, detail::enabler> = detail::dummy>
@@ -497,7 +497,7 @@ class App {
                        T &variable, ///< The variable to set
                        std::string option_description,
                        bool defaulted) {
-
+        static_assert(std::is_constructible<T, XC>::value, "assign type must be assignable from conversion type");
         CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast<XC>(res[0], variable); };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted);
@@ -2193,7 +2193,7 @@ class App {
                 op->add_result(res);
 
             } else {
-                op->set_results(item.inputs);
+                op->add_result(item.inputs);
                 op->run_callback();
             }
         }

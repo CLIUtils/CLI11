@@ -842,13 +842,6 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Set the results vector all at once
-    Option *set_results(std::vector<std::string> result_vector) {
-        results_ = std::move(result_vector);
-        callback_run_ = false;
-        return this;
-    }
-
     /// Get a copy of the results
     std::vector<std::string> results() const { return results_; }
 
