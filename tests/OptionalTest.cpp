@@ -64,8 +64,7 @@ TEST_F(TApp, BoostOptionalTest) {
 
 TEST_F(TApp, BoostOptionalVector) {
     boost::optional<std::vector<int>> opt;
-    app.add_option_function<std::vector<int>>(
-           "-v,--vec", [&opt](auto &v) { opt = v; }, "some vector")
+    app.add_option_function<std::vector<int>>("-v,--vec", [&opt](const std::vector<int> &v) { opt = v; }, "some vector")
         ->expected(3);
     run();
     EXPECT_FALSE(opt);
