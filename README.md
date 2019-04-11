@@ -342,8 +342,9 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
 -   `CLI::NonexistentPath`: Requires that the path does not exist.
 -   `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
--   `CLI::Bounded(min,max)`: 🚧 Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an Error if conversion is not possible.
--   `CLI::PositiveNumber`: 🚧 Requires the number be greater or equal to 0.
+-   `CLI::Bounded(min,max)`: 🚧 Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
+-   `CLI::PositiveNumber`: 🚧 Requires the number be greater or equal to 0
+-   `CLI::Number`: 🚧 Requires the input be a number.
 -   `CLI::ValidIPV4`: 🚧 Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
 
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
@@ -467,6 +468,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.disable()`: 🚧 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 -   `.disabled_by_default()`:🚧 Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 -   `.enabled_by_default()`: 🚧 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
+-   `.validate_positionals()`:🚧 Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.  
 -   `.excludes(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.  
 -   `.require_option()`: 🚧 Require 1 or more options or option groups be used.
 -   `.require_option(N)`:  🚧 Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.

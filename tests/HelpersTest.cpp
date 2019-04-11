@@ -239,6 +239,21 @@ TEST(Validators, PositiveValidator) {
     EXPECT_FALSE(CLI::PositiveNumber(num).empty());
 }
 
+TEST(Validators, NumberValidator) {
+    std::string num = "1.1.1.1";
+    EXPECT_FALSE(CLI::Number(num).empty());
+    num = "1.7";
+    EXPECT_TRUE(CLI::Number(num).empty());
+    num = "10000";
+    EXPECT_TRUE(CLI::Number(num).empty());
+    num = "-0.000";
+    EXPECT_TRUE(CLI::Number(num).empty());
+    num = "+1.55";
+    EXPECT_TRUE(CLI::Number(num).empty());
+    num = "a";
+    EXPECT_FALSE(CLI::Number(num).empty());
+}
+
 TEST(Validators, CombinedAndRange) {
     auto crange = CLI::Range(0, 12) & CLI::Range(4, 16);
     EXPECT_TRUE(crange("4").empty());

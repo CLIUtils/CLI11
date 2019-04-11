@@ -321,6 +321,20 @@ class PositiveNumber : public Validator {
     }
 };
 
+/// Validate the argument is a number and greater than or equal to 0
+class Number : public Validator {
+  public:
+    Number() : Validator("NUMBER") {
+        func_ = [](std::string &number_str) {
+            double number;
+            if(!detail::lexical_cast(number_str, number)) {
+                return "Failed parsing as a number " + number_str;
+            }
+            return std::string();
+        };
+    }
+};
+
 } // namespace detail
 
 // Static is not needed here, because global const implies static.
@@ -342,6 +356,9 @@ const detail::IPV4Validator ValidIPV4;
 
 /// Check for a positive number
 const detail::PositiveNumber PositiveNumber;
+
+/// Check for a number
+const detail::Number Number;
 
 /// Produce a range (factory). Min and max are inclusive.
 class Range : public Validator {

@@ -109,6 +109,22 @@ add_test(NAME positional_arity_fail COMMAND positional_arity 1 one two)
 set_property(TEST positional_arity_fail PROPERTY PASS_REGULAR_EXPRESSION
     "Could not convert")
 
+    add_cli_exe(positional_validation positional_validation.cpp)
+add_test(NAME positional_validation1 COMMAND positional_validation one )
+set_property(TEST positional_validation1 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one")
+add_test(NAME positional_validation2 COMMAND positional_validation one 1 2 two )
+set_property(TEST positional_validation2 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one"
+    "File 2 = two")
+add_test(NAME positional_validation3 COMMAND positional_validation 1 2 one)
+set_property(TEST positional_validation3 PROPERTY PASS_REGULAR_EXPRESSION
+    "File 1 = one")
+add_test(NAME positional_validation4 COMMAND positional_validation 1 one two 2)
+set_property(TEST positional_validation4 PROPERTY PASS_REGULAR_EXPRESSION
+     "File 1 = one"
+    "File 2 = two")
+
 add_cli_exe(shapes shapes.cpp)
 add_test(NAME shapes_all COMMAND shapes circle 4.4 circle 10.7 rectangle 4 4 circle 2.3 triangle 4.5 ++ rectangle 2.1 ++ circle 234.675)
 set_property(TEST shapes_all PROPERTY PASS_REGULAR_EXPRESSION

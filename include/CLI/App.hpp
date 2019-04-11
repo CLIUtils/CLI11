@@ -187,7 +187,8 @@ class App {
     bool disabled_by_default_{false};
     /// If set to true the subcommand will be reenabled at the start of each parse
     bool enabled_by_default_{false};
-
+    /// If set to true positional options are validated before assigning INHERITABLE
+    bool validate_positionals_{false};
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
 
@@ -250,6 +251,7 @@ class App {
             ignore_case_ = parent_->ignore_case_;
             ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
+            validate_positionals_ = parent_->validate_positionals_;
             allow_windows_style_options_ = parent_->allow_windows_style_options_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
@@ -331,6 +333,12 @@ class App {
     /// Set the subcommand callback to be executed immediately on subcommand completion
     App *immediate_callback(bool immediate = true) {
         immediate_callback_ = immediate;
+        return this;
+    }
+
+    /// Set the subcommand to validate positional arguments before assigning
+    App *validate_positionals(bool validate = true) {
+        validate_positionals_ = validate;
         return this;
     }
 
@@ -489,18 +497,19 @@ class App {
         return add_option(option_name, CLI::callback_t(), option_description, false);
     }
 
-    /// Add option for non-vectors with a default print
+    /// Add option for non-vectors with a default print, allow template to specify conversion type
     template <typename T,
-              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value, detail::enabler> = detail::dummy>
+              typename XC = T,
+              enable_if_t<!is_vector<XC>::value && !std::is_const<XC>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string option_description,
                        bool defaulted) {
-
-        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast(res[0], variable); };
+        static_assert(std::is_constructible<T, XC>::value, "assign type must be assignable from conversion type");
+        CLI::callback_t fun = [&variable](CLI::results_t res) { return detail::lexical_cast<XC>(res[0], variable); };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted);
-        opt->type_name(detail::type_name<T>());
+        opt->type_name(detail::type_name<XC>());
         if(defaulted) {
             std::stringstream out;
             out << variable;
@@ -1654,6 +1663,8 @@ class App {
 
     /// Get the status of disabled by default
     bool get_enabled_by_default() const { return enabled_by_default_; }
+    /// Get the status of validating positionals
+    bool get_validate_positionals() const { return validate_positionals_; }
 
     /// Get the status of allow extras
     bool get_allow_config_extras() const { return allow_config_extras_; }
@@ -2192,7 +2203,7 @@ class App {
                 op->add_result(res);
 
             } else {
-                op->set_results(item.inputs);
+                op->add_result(item.inputs);
                 op->run_callback();
             }
         }
@@ -2274,7 +2285,13 @@ class App {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
                (static_cast<int>(opt->count()) < opt->get_items_expected() || opt->get_items_expected() < 0)) {
-
+                if(validate_positionals_) {
+                    std::string pos = positional;
+                    pos = opt->_validate(pos);
+                    if(!pos.empty()) {
+                        continue;
+                    }
+                }
                 opt->add_result(positional);
                 parse_order_.push_back(opt.get());
                 args.pop_back();

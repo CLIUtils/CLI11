@@ -467,7 +467,7 @@ TEST_F(TApp, GetNameCheck) {
 }
 
 TEST_F(TApp, SubcommandDefaults) {
-    // allow_extras, prefix_command, ignore_case, fallthrough, group, min/max subcommand
+    // allow_extras, prefix_command, ignore_case, fallthrough, group, min/max subcommand, validate_positionals
 
     // Initial defaults
     EXPECT_FALSE(app.get_allow_extras());
@@ -481,6 +481,8 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_FALSE(app.get_allow_windows_style_options());
 #endif
     EXPECT_FALSE(app.get_fallthrough());
+    EXPECT_FALSE(app.get_validate_positionals());
+
     EXPECT_EQ(app.get_footer(), "");
     EXPECT_EQ(app.get_group(), "Subcommands");
     EXPECT_EQ(app.get_require_subcommand_min(), 0u);
@@ -498,6 +500,7 @@ TEST_F(TApp, SubcommandDefaults) {
 #endif
 
     app.fallthrough();
+    app.validate_positionals();
     app.footer("footy");
     app.group("Stuff");
     app.require_subcommand(2, 3);
@@ -516,6 +519,7 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_TRUE(app2->get_allow_windows_style_options());
 #endif
     EXPECT_TRUE(app2->get_fallthrough());
+    EXPECT_TRUE(app2->get_validate_positionals());
     EXPECT_EQ(app2->get_footer(), "footy");
     EXPECT_EQ(app2->get_group(), "Stuff");
     EXPECT_EQ(app2->get_require_subcommand_min(), 0u);

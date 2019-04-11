@@ -962,6 +962,27 @@ TEST_F(TApp, PositionalAtEnd) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+// Tests positionals at end
+TEST_F(TApp, PositionalValidation) {
+    std::string options;
+    std::string foo;
+
+    app.add_option("bar", options)->check(CLI::Number);
+    app.add_option("foo", foo);
+    app.validate_positionals();
+    args = {"1", "param1"};
+    run();
+
+    EXPECT_EQ(options, "1");
+    EXPECT_EQ(foo, "param1");
+
+    args = {"param1", "1"};
+    run();
+
+    EXPECT_EQ(options, "1");
+    EXPECT_EQ(foo, "param1");
+}
+
 TEST_F(TApp, PositionalNoSpaceLong) {
     std::vector<std::string> options;
     std::string foo, bar;
