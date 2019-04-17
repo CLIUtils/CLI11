@@ -1818,6 +1818,46 @@ TEST_F(TApp, AllowExtrasOrder) {
     EXPECT_EQ(app.remaining(), left_over);
 }
 
+TEST_F(TApp, AllowExtrasCascade) {
+
+    app.allow_extras();
+
+    args = {"-x", "45", "-f", "27"};
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "45", "-f", "27"}));
+
+    std::vector<std::string> left_over = app.remaining_for_passthrough();
+
+    CLI::App capp{"cascade_program"};
+    int v1 = 0;
+    int v2 = 0;
+    capp.add_option("-x", v1);
+    capp.add_option("-f", v2);
+
+    capp.parse(left_over);
+    EXPECT_EQ(v1, 45);
+    EXPECT_EQ(v2, 27);
+}
+
+TEST_F(TApp, AllowExtrasCascadeDirect) {
+
+    app.allow_extras();
+
+    args = {"-x", "45", "-f", "27"};
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "45", "-f", "27"}));
+
+    CLI::App capp{"cascade_program"};
+    int v1 = 0;
+    int v2 = 0;
+    capp.add_option("-x", v1);
+    capp.add_option("-f", v2);
+
+    capp.parse(app.remaining_for_passthrough());
+    EXPECT_EQ(v1, 45);
+    EXPECT_EQ(v2, 27);
+}
+
 // Test horrible error
 TEST_F(TApp, CheckShortFail) {
     args = {"--two"};
