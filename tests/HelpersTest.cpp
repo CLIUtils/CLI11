@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <climits>
 
 TEST(Split, SimpleByToken) {
     auto out = CLI::detail::split("one.two.three", '.');
@@ -553,8 +554,8 @@ TEST(Types, TypeName) {
 }
 
 TEST(Types, OverflowSmall) {
-    char x;
-    auto strmax = std::to_string(INT8_MAX + 1);
+    signed char x;
+    auto strmax = std::to_string(SCHAR_MAX + 1);
     EXPECT_FALSE(CLI::detail::lexical_cast(strmax, x));
 
     unsigned char y;
@@ -641,7 +642,7 @@ TEST(Types, LexicalCastParsable) {
 }
 
 TEST(Types, LexicalCastEnum) {
-    enum t1 : char { v1 = 5, v3 = 7, v5 = -9 };
+    enum t1 : signed char { v1 = 5, v3 = 7, v5 = -9 };
 
     t1 output;
     EXPECT_TRUE(CLI::detail::lexical_cast("-9", output));
