@@ -324,6 +324,7 @@ On the command line, options can be given as:
 
 Extra positional arguments will cause the program to exit, so at least one positional option with a vector is recommended if you want to allow extraneous arguments.
 If you set `.allow_extras()` on the main `App`, you will not get an error. You can access the missing options using `remaining` (if you have subcommands, `app.remaining(true)` will get all remaining options, subcommands included).
+If the remaining arguments are to processed by another `App` then the function `remaining_for_passthrough()`🚧 can be used to get the remaining arguments in reverse order such that `app.parse(vector)` works directly and could even be used inside a subcommand callback.  
 
 You can access a vector of pointers to the parsed options in the original order using `parse_order()`.
 If `--` is present in the command line that does not end an unlimited option, then

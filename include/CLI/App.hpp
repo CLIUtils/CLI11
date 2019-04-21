@@ -2191,8 +2191,8 @@ class App {
             // Throw error if any items are left over (depending on settings)
             _process_extras(args);
 
-            // Convert missing (pairs) to extras (string only)
-            args = remaining(false);
+            // Convert missing (pairs) to extras (string only) ready for processing in another app
+            args = remaining_for_passthrough(false);
         } else if(immediate_callback_) {
             _process_env();
             _process_callbacks();
@@ -2204,28 +2204,19 @@ class App {
 
     /// Internal parse function
     void _parse(std::vector<std::string> &&args) {
+        // this can only be called by the top level in which case parent == nullptr by definition
+        // operation is simplified
         increment_parsed();
         _trigger_pre_parse(args.size());
         bool positional_only = false;
 
         while(!args.empty()) {
-            if(!_parse_single(args, positional_only)) {
-                break;
-            }
+            _parse_single(args, positional_only);
         }
+        _process();
 
-        if(parent_ == nullptr) {
-            _process();
-
-            // Throw error if any items are left over (depending on settings)
-            _process_extras();
-        } else if(immediate_callback_) {
-            _process_env();
-            _process_callbacks();
-            _process_help_flags();
-            _process_requirements();
-            run_callback();
-        }
+        // Throw error if any items are left over (depending on settings)
+        _process_extras();
     }
 
     /// Parse one config param, return false if not found in any subcommand, remove if it is
@@ -2295,8 +2286,16 @@ class App {
             }
             break;
         case detail::Classifier::SUBCOMMAND_TERMINATOR:
+            // treat this like a positional mark if in the parent app
             args.pop_back();
-            retval = false;
+            if(parent_ != nullptr) {
+                retval = false;
+            } else {
+                positional_only = true;
+                if(_has_remaining_positionals()) {
+                    _move_to_missing(classifier, "--");
+                }
+            }
             break;
         case detail::Classifier::SUBCOMMAND:
             retval = _parse_subcommand(args);
