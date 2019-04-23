@@ -1905,7 +1905,7 @@ class App {
             return detail::Classifier::SHORT;
         if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
             return detail::Classifier::WINDOWS;
-        if((current == "++") && !name_.empty())
+        if((current == "++") && !name_.empty() && parent_ != nullptr)
             return detail::Classifier::SUBCOMMAND_TERMINATOR;
         return detail::Classifier::NONE;
     }
@@ -2288,14 +2288,7 @@ class App {
         case detail::Classifier::SUBCOMMAND_TERMINATOR:
             // treat this like a positional mark if in the parent app
             args.pop_back();
-            if(parent_ != nullptr) {
-                retval = false;
-            } else {
-                positional_only = true;
-                if(_has_remaining_positionals()) {
-                    _move_to_missing(classifier, "--");
-                }
-            }
+            retval = false;
             break;
         case detail::Classifier::SUBCOMMAND:
             retval = _parse_subcommand(args);
