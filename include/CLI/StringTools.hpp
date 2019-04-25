@@ -164,7 +164,12 @@ inline std::ostream &format_help(std::ostream &out, std::string name, std::strin
     if(!description.empty()) {
         if(name.length() >= wid)
             out << "\n" << std::setw(static_cast<int>(wid)) << "";
-        out << description;
+        for(const char c : description) {
+            out.put(c);
+            if(c == '\n') {
+                out << std::setw(static_cast<int>(wid)) << "";
+            }
+        }
     }
     out << "\n";
     return out;

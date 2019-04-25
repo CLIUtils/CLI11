@@ -470,6 +470,18 @@ TEST(THelp, CustomHelp) {
     }
 }
 
+TEST(THelp, NextLineShouldBeAlignmentInMultilineDescription) {
+    CLI::App app;
+    int i;
+    const std::string first{"first line"};
+    const std::string second{"second line"};
+    app.add_option("-i,--int", i, first + "\n" + second);
+
+    const std::string help = app.help();
+    const auto width = app.get_formatter()->get_column_width();
+    EXPECT_THAT(help, HasSubstr(first + "\n" + std::string(width, ' ') + second));
+}
+
 TEST(THelp, NiceName) {
     CLI::App app;
 
