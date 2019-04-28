@@ -1,22 +1,30 @@
 ## Version 1.8: Sets and Flags (IN PROGRESS)
 
-Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support.
+Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support. The final bool "defaults" flag when creating options has been replaced by `->capture_default_str()` (ending an old limitation in construction made this possible); the old method is still available but may be removed in future versions.
 
+* Replaced default help capture: `.add_option("name", value, "", True)` becomes `.add_option("name", value)->capture_default_str()` [#242]
+* Added `.always_capture_default()` [#242]
 * New `CLI::IsMember` validator replaces set validation [#222]
 * IsMember also supports container of pairs, transform allows modification of result [#228]
 * Much more powerful flags with different values [#211], general types [#235]
 * `add_option` now supports bool due to unified bool handling [#211]
 * Support for composable unnamed subcommands [#216]
+* Reparsing is better supported with `.remaining_for_passthrough()` [#265]
 * Custom vector separator using `->delimiter(char)` [#209], [#221], [#240]
-* Validators added for IP4 addresses and positive numbers [#210]
+* Validators added for IP4 addresses and positive numbers [#210] and numbers [#262]
 * Minimum required Boost for optional Optionals has been corrected to 1.61 [#226]
 * Positionals can stop options from being parsed with `app.positionals_at_end()` [#223]
+* Added `validate_positionals` [#262]
+* Positional parsing is much more powerful [#251], duplicates supported []#247]
 * Validators can be negated with `!` [#230], and now handle tname functions [#228]
 * Better enum support and streaming helper [#233] and [#228]
 * Cleanup for shadow warnings [#232]
+* Better alignment on multiline descriptions [#269]
+* Better support for aarch64 [#266]
 
 > ### Converting from CLI11 1.7:
 >
+> * `.add_option(..., true)` should be replaced by `.add_option(...)->capture_default_str()` or `app.option_defaults()->always_capture_default()` can be used
 > * `app.add_set("--name", value, {"choice1", "choice2"})` should become `app.add_option("--name", value)->check(CLI::IsMember({"choice1", "choice2"}))`
 > * The `_ignore_case` version of this can be replaced by adding `CLI::ignore_case` to the argument list in `IsMember`
 > * The `_ignore_underscore` version of this can be replaced by adding `CLI::ignore_underscore` to the argument list in `IsMember`
@@ -39,6 +47,13 @@ Set handling has been completely replaced by a new backend that works as a Valid
 [#233]: https://github.com/CLIUtils/CLI11/pull/233
 [#235]: https://github.com/CLIUtils/CLI11/pull/235
 [#240]: https://github.com/CLIUtils/CLI11/pull/240
+[#242]: https://github.com/CLIUtils/CLI11/pull/242
+[#247]: https://github.com/CLIUtils/CLI11/pull/247
+[#251]: https://github.com/CLIUtils/CLI11/pull/251
+[#262]: https://github.com/CLIUtils/CLI11/pull/262
+[#265]: https://github.com/CLIUtils/CLI11/pull/265
+[#266]: https://github.com/CLIUtils/CLI11/pull/266
+[#269]: https://github.com/CLIUtils/CLI11/pull/269
 
 
 ## Version 1.7.1: Quick patch

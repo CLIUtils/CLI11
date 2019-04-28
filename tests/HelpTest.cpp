@@ -119,7 +119,7 @@ TEST(THelp, MultiOpts) {
 TEST(THelp, VectorOpts) {
     CLI::App app{"My prog"};
     std::vector<int> x = {1, 2};
-    app.add_option("-q,--quick", x, "", true);
+    app.add_option("-q,--quick", x)->capture_default_str();
 
     std::string help = app.help();
 
@@ -299,8 +299,8 @@ TEST(THelp, IntDefaults) {
     CLI::App app{"My prog"};
 
     int one{1}, two{2};
-    app.add_option("--one", one, "Help for one", true);
-    app.add_option("--set", two, "Help for set", true)->check(CLI::IsMember({2, 3, 4}));
+    app.add_option("--one", one, "Help for one")->capture_default_str();
+    app.add_option("--set", two, "Help for set")->capture_default_str()->check(CLI::IsMember({2, 3, 4}));
 
     std::string help = app.help();
 
@@ -313,9 +313,10 @@ TEST(THelp, IntDefaults) {
 
 TEST(THelp, SetLower) {
     CLI::App app{"My prog"};
+    app.option_defaults()->always_capture_default();
 
     std::string def{"One"};
-    app.add_option("--set", def, "Help for set", true)->check(CLI::IsMember({"oNe", "twO", "THREE"}));
+    app.add_option("--set", def, "Help for set")->check(CLI::IsMember({"oNe", "twO", "THREE"}));
 
     std::string help = app.help();
 
@@ -866,7 +867,7 @@ TEST(THelp, ChangingSetDefaulted) {
 
     std::set<int> vals{1, 2, 3};
     int val = 2;
-    app.add_option("--val", val, "", true)->check(CLI::IsMember(&vals));
+    app.add_option("--val", val, "")->check(CLI::IsMember(&vals))->capture_default_str();
 
     std::string help = app.help();
 
@@ -881,6 +882,7 @@ TEST(THelp, ChangingSetDefaulted) {
     EXPECT_THAT(help, Not(HasSubstr("1")));
     EXPECT_THAT(help, HasSubstr("4"));
 }
+
 TEST(THelp, ChangingCaselessSet) {
     CLI::App app;
 
@@ -904,10 +906,11 @@ TEST(THelp, ChangingCaselessSet) {
 
 TEST(THelp, ChangingCaselessSetDefaulted) {
     CLI::App app;
+    app.option_defaults()->always_capture_default();
 
     std::set<std::string> vals{"1", "2", "3"};
     std::string val = "2";
-    app.add_option("--val", val, "", true)->check(CLI::IsMember(&vals, CLI::ignore_case));
+    app.add_option("--val", val)->check(CLI::IsMember(&vals, CLI::ignore_case));
 
     std::string help = app.help();
 
@@ -921,4 +924,51 @@ TEST(THelp, ChangingCaselessSetDefaulted) {
 
     EXPECT_THAT(help, Not(HasSubstr("1")));
     EXPECT_THAT(help, HasSubstr("4"));
+}
+
+// New defaults tests (1.8)
+
+TEST(THelp, ChangingDefaults) {
+
+    CLI::App app;
+
+    std::vector<int> x = {1, 2};
+    CLI::Option *opt = app.add_option("-q,--quick", x);
+    x = {3, 4};
+
+    opt->capture_default_str();
+
+    x = {5, 6};
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("INT=[3,4] ..."));
+}
+
+TEST(THelp, ChangingDefaultsWithAutoCapture) {
+
+    CLI::App app;
+    app.option_defaults()->always_capture_default();
+
+    std::vector<int> x = {1, 2};
+    app.add_option("-q,--quick", x);
+    x = {3, 4};
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("INT=[1,2] ..."));
+}
+
+TEST(THelp, FunctionDefaultString) {
+
+    CLI::App app;
+
+    std::vector<int> x = {1, 2};
+    CLI::Option *opt = app.add_option("-q,--quick", x);
+
+    opt->default_function([]() { return std::string("Powerful"); });
+    opt->capture_default_str();
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("INT=Powerful"));
 }

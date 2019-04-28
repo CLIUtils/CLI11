@@ -72,6 +72,7 @@ template <typename CRTP> class OptionBase {
         other->configurable(configurable_);
         other->disable_flag_override(disable_flag_override_);
         other->delimiter(delimiter_);
+        other->always_capture_default(always_capture_default_);
         other->multi_option_policy(multi_option_policy_);
     }
 
@@ -92,6 +93,11 @@ template <typename CRTP> class OptionBase {
 
     /// Support Plumbum term
     CRTP *mandatory(bool value = true) { return required(value); }
+
+    CRTP *always_capture_default(bool value = true) {
+        always_capture_default_ = value;
+        return static_cast<CRTP *>(this);
+    }
 
     // Getters
 
