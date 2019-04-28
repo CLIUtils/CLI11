@@ -189,6 +189,14 @@ set_property(TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION
     "Prefix: 3 : 2 : 1"
     "Remaining commands: other one two 3")
 
+add_cli_exe(callback_passthrough callback_passthrough.cpp)
+add_test(NAME callback_passthrough1 COMMAND callback_passthrough --argname t2 --t2 test)
+set_property(TEST callback_passthrough1 PROPERTY PASS_REGULAR_EXPRESSION
+    "the value is now test")
+add_test(NAME callback_passthrough2 COMMAND callback_passthrough --arg EEEK --argname arg)
+set_property(TEST callback_passthrough2 PROPERTY PASS_REGULAR_EXPRESSION
+    "the value is now EEEK")
+
 add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)

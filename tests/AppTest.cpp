@@ -1815,7 +1815,74 @@ TEST_F(TApp, AllowExtrasOrder) {
 
     std::vector<std::string> left_over = app.remaining();
     app.parse(left_over);
-    EXPECT_EQ(app.remaining(), left_over);
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-f", "-x"}));
+    EXPECT_EQ(app.remaining_for_passthrough(), left_over);
+}
+
+TEST_F(TApp, AllowExtrasCascade) {
+
+    app.allow_extras();
+
+    args = {"-x", "45", "-f", "27"};
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "45", "-f", "27"}));
+
+    std::vector<std::string> left_over = app.remaining_for_passthrough();
+
+    CLI::App capp{"cascade_program"};
+    int v1 = 0;
+    int v2 = 0;
+    capp.add_option("-x", v1);
+    capp.add_option("-f", v2);
+
+    capp.parse(left_over);
+    EXPECT_EQ(v1, 45);
+    EXPECT_EQ(v2, 27);
+}
+// makes sure the error throws on the rValue version of the parse
+TEST_F(TApp, ExtrasErrorRvalueParse) {
+
+    args = {"-x", "45", "-f", "27"};
+    EXPECT_THROW(app.parse(std::vector<std::string>({"-x", "45", "-f", "27"})), CLI::ExtrasError);
+}
+
+TEST_F(TApp, AllowExtrasCascadeDirect) {
+
+    app.allow_extras();
+
+    args = {"-x", "45", "-f", "27"};
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "45", "-f", "27"}));
+
+    CLI::App capp{"cascade_program"};
+    int v1 = 0;
+    int v2 = 0;
+    capp.add_option("-x", v1);
+    capp.add_option("-f", v2);
+
+    capp.parse(app.remaining_for_passthrough());
+    EXPECT_EQ(v1, 45);
+    EXPECT_EQ(v2, 27);
+}
+
+TEST_F(TApp, AllowExtrasArgModify) {
+
+    int v1 = 0;
+    int v2 = 0;
+    app.allow_extras();
+    app.add_option("-f", v2);
+    args = {"27", "-f", "45", "-x"};
+    auto cargs = args;
+    app.parse(args);
+    EXPECT_EQ(args, std::vector<std::string>({"45", "-x"}));
+
+    CLI::App capp{"cascade_program"};
+
+    capp.add_option("-x", v1);
+
+    capp.parse(args);
+    EXPECT_EQ(v1, 45);
+    EXPECT_EQ(v2, 27);
 }
 
 // Test horrible error
