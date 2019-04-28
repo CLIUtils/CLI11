@@ -674,8 +674,8 @@ TEST_F(TApp, DefaultOpts) {
     int i = 3;
     std::string s = "HI";
 
-    app.add_option("-i,i", i, "", false);
-    app.add_option("-s,s", s, "", true);
+    app.add_option("-i,i", i);
+    app.add_option("-s,s", s)->capture_default_str(); //  Used to be different
 
     args = {"-i2", "9"};
 
@@ -1511,7 +1511,7 @@ TEST_F(TApp, VectorDefaultedFixedString) {
     std::vector<std::string> strvec{"one"};
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
-    CLI::Option *opt = app.add_option("-s,--string", strvec, "", true)->expected(3);
+    CLI::Option *opt = app.add_option("-s,--string", strvec, "")->expected(3)->capture_default_str();
     EXPECT_EQ(3, opt->get_expected());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
@@ -1523,7 +1523,7 @@ TEST_F(TApp, VectorDefaultedFixedString) {
 TEST_F(TApp, DefaultedResult) {
     std::string sval = "NA";
     int ival;
-    auto opts = app.add_option("--string", sval, "", true);
+    auto opts = app.add_option("--string", sval)->capture_default_str();
     auto optv = app.add_option("--val", ival);
     args = {};
     run();
@@ -1947,7 +1947,7 @@ TEST_F(TApp, FallthroughParents) {
 
 TEST_F(TApp, OptionWithDefaults) {
     int someint = 2;
-    app.add_option("-a", someint, "", true);
+    app.add_option("-a", someint)->capture_default_str();
 
     args = {"-a1", "-a2"};
 
@@ -2091,7 +2091,7 @@ TEST_F(TApp, CustomUserSepParse) {
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true)->delimiter(',');
+    app.add_option("--idx", vals)->delimiter(',')->capture_default_str();
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
 }
@@ -2131,7 +2131,7 @@ TEST_F(TApp, CustomUserSepParse2) {
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true)->delimiter(',');
+    app.add_option("--idx", vals, "")->delimiter(',')->capture_default_str();
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }
@@ -2185,13 +2185,13 @@ TEST_F(TApp, CustomUserSepParse4) {
 
     std::vector<int> vals;
     args = {"--idx", "1,    2"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    auto opt = app.add_option("--idx", vals)->delimiter(',')->capture_default_str();
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", true)->delimiter(',');
+    app.add_option("--idx", vals)->delimiter(',');
     run();
     EXPECT_EQ(vals, std::vector<int>({1, 2}));
 }
@@ -2207,7 +2207,7 @@ TEST_F(TApp, CustomUserSepParse5) {
 
     app.remove_option(opt);
     args = {"this", "is", "a", "test"};
-    app.add_option("bar", bar, "bar", true);
+    app.add_option("bar", bar, "bar")->capture_default_str();
     run();
     EXPECT_EQ(bar, std::vector<std::string>({"this", "is", "a", "test"}));
 }

@@ -118,16 +118,6 @@ matrix:
     script:
     - .ci/make_and_test.sh 11
 
-    # macOS and clang
-  - os: osx
-    compiler: clang
-    install:
-    - brew update
-    - echo 'brew "python"' > Brewfile
-    - echo 'brew "ccache"' >> Brewfile
-    - brew bundle
-    - python -m ensurepip --user
-
 install: skip
 
 script:

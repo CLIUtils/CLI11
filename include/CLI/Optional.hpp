@@ -46,6 +46,7 @@
 #endif
 #if CLI11_BOOST_OPTIONAL
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #endif
 // [CLI11:verbatim]
 

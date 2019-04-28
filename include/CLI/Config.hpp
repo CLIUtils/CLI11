@@ -32,8 +32,8 @@ ConfigINI::to_config(const App *app, bool default_also, bool write_description, 
                     value = detail::ini_join(opt->results());
 
                 // If the option has a default and is requested by optional argument
-                else if(default_also && !opt->get_defaultval().empty())
-                    value = opt->get_defaultval();
+                else if(default_also && !opt->get_default_str().empty())
+                    value = opt->get_default_str();
                 // Flag, one passed
             } else if(opt->count() == 1) {
                 value = "true";
