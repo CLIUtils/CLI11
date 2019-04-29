@@ -55,7 +55,7 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 -   [Contribute](#contribute)
 -   [License](#license)
 
-Features that were added in the last released major version are marked with "🆕". Features only available in master are marked with "🆕".
+Features that were added in the last released major version are marked with "🆕". Features only available in master are marked with "🚧".
 
 ## Background
 
@@ -194,21 +194,25 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="") // 🆕
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string
+               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor.
                help_string="")
 
 app.add_option_function<type>(option_name,
-               function <void(const type &value)>, // 🆕 int, bool, float, enum, vector, or string-like, or anything with a defined conversion from a string
+               function <void(const type &value)>, // 🆕 int, bool, float, enum, or string-like, or anything with a defined conversion from a string, or a vector of any of the previous objects.  
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
+//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string.  
+app.add_option<typename T, typename XC>(option_name,
+               T &output, // output must be assignable or constructible from a value of type XC
+               help_string="")
 
 // Add flags
 app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, 🆕 float, 🆕 vector, 🆕 enum, or 🆕 string-like, or 🆕 anything with a defined conversion from a string
+             variable_to_bind_to, // bool, int, 🆕 float, 🆕 vector, 🆕 enum, or 🆕 string-like, or 🆕 anything with a defined conversion from a string like add_option
              help_string="")
 
 app.add_flag_function(option_name, // 🆕
@@ -240,6 +244,25 @@ An option name must start with a alphabetic character, underscore, a number 🆕
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.
 
+🚧 The two parameter template overload can be used in cases where you want to restrict the input such as
+```
+double val
+app.add_option<double,unsigned int>("-v",val);
+```
+which would first verify the input is convertible to an int before assigning it.  Or using some variant type
+```
+using vtype=std::variant<int, double, std::string>;
+ vtype v1;
+app.add_option<vtype,std:string>("--vs",v1);
+app.add_option<vtype,int>("--vi",v1);
+app.add_option<vtype,double>("--vf",v1);
+```
+otherwise the output would default to a string.  The add_option can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std::string in an assignment operator or constructor.  If an object can take multiple varieties of those,  std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
+
+Type such as optional<int>, optional<double>, and optional<string> are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Internals][] for information on how this could done and how you can add your own converters for additional  types.
+
+Automatic direct capture of the default string is disabled when using the two parameter template.  Use `set_default_str(...)` or `->default_function(std::string())` to set the default string or capture function directly for these cases.
+
 🆕 Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
 
 ```cpp
@@ -262,8 +285,6 @@ using any of those flags on the command line will result in the specified number
 
 
 On a `C++14` compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
-
-On a compiler that supports C++17's `__has_include`, you can also use `std::optional`, `std::experimental::optional`, and `boost::optional` directly in an `add_option` call. If you don't have `__has_include`, you can define `CLI11_BOOST_OPTIONAL 1` before including CLI11 to manually add support (or 0 to remove) for `boost::optional`. See [CLI11 Internals][] for information on how this was done and how you can add your own converters.  Optional values are only supported for types that support the `>>` operator.
 
 #### Example
 
@@ -300,8 +321,8 @@ Before parsing, you can set the following options:
 -   `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered.
 -   `->configurable(false)`: Disable this option from being in a configuration file.
     `->capture_default_str()`: 🆕 Store the current value attached and display it in the help string.
-    `->default_function(std::string())`: 🆕 Advanced: Change the function that `capture_default_str()` uses.
-    `->always_capture_default()`: 🆕 Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
+-   `->default_function(std::string())`: 🆕 Advanced: Change the function that `capture_default_str()` uses.
+-   `->always_capture_default()`: 🆕 Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
 
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.

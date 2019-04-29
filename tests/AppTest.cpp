@@ -669,6 +669,27 @@ TEST_F(TApp, ShortOpts) {
     EXPECT_EQ(app.count_all(), 3u);
 }
 
+TEST_F(TApp, TwoParamTemplateOpts) {
+
+    double funnyint;
+    auto opt = app.add_option<double, unsigned int>("-y", funnyint);
+
+    args = {"-y", "32"};
+
+    run();
+
+    EXPECT_EQ(32.0, funnyint);
+
+    args = {"-y", "32.3"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    args = {"-y", "-19"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    opt->capture_default_str();
+    EXPECT_TRUE(opt->get_default_str().empty());
+}
+
 TEST_F(TApp, DefaultOpts) {
 
     int i = 3;
