@@ -25,14 +25,6 @@ std::ostream &operator<<(std::ostream &in, const T &item) {
     return in << static_cast<typename std::underlying_type<T>::type>(item);
 }
 
-/// input streaming for enumerations
-template <typename T, typename = typename std::enable_if<std::is_enum<T>::value>::type>
-std::istream &operator>>(std::istream &in, T &item) {
-    typename std::underlying_type<T>::type i;
-    in >> i;
-    item = static_cast<T>(i);
-    return in;
-}
 } // namespace enums
 
 /// Export to CLI namespace
@@ -56,17 +48,6 @@ inline std::vector<std::string> split(const std::string &s, char delim) {
         }
     }
     return elems;
-}
-/// simple utility to convert various types to a string
-template <typename T> inline std::string as_string(const T &v) {
-    std::ostringstream s;
-    s << v;
-    return s.str();
-}
-// if the data type is already a string just forward it
-template <typename T, typename = typename std::enable_if<std::is_constructible<std::string, T>::value>::type>
-inline auto as_string(T &&v) -> decltype(std::forward<T>(v)) {
-    return std::forward<T>(v);
 }
 
 /// Simple function to join a string
