@@ -736,29 +736,29 @@ The API is [documented here][api-docs]. Also see the [CLI11 tutorial GitBook][gi
 
 ## Examples
 
-Several short examples of different features are included in the repository a brief description of each is included here
+Several short examples of different features are included in the repository. A brief description of each is included here
 
- - callback_passthrough: Example of directly passing remaining arguments through to a callback function which itself is a generate app
-- digit_args:  Based on issue #123, uses digit flags to pass a value
-- enum:  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
-- formatter: Illustrating usage of a custom formatter
-- groups:  Example using groups of options
-- inter_argument_order: Example An app to practice mixing unlimited arguments, but still recover the original order.
-- json:  Using json as an ini file parser
-- modhelp:  How to modify the help flag
-- nested:  Nested subcommands
-- option_groups:  illustrating the use of option groups and a required number of options.
- based on Issue [#88](https://github.com/CLIUtils/CLI11/issues/88) to set interacting groups of options
-- positional_arity: Illustrating use of `preparse_callback` to handle situations where the number of arguments can determine which should get parsed.
-- positional_validation: Illustration of how positional arguments are validated
-- prefix_command: illustrating use of the prefix_command.
-- ranges:  illustrating use of the ranges validator
-- shapes: illustrating how to set up repeated subcommands
-- simple: a simple example of how to set up a CLI11 Application
-- subcom_help: configuring help for subcommands
-- subcom_partitioned: Example with a timer and subcommands
-- subcommands: Short example of subcommands
-- validators: Example illustrating use of validators 
+ - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
+ - [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
+ - [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
+ - [formatter](https://github.com/CLIUtils/CLI11/blob/master/examples/formatter.cpp): Illustrating usage of a custom formatter
+ - [groups](https://github.com/CLIUtils/CLI11/blob/master/examples/groups.cpp):  Example using groups of options for help grouping and a the timer helper class
+ - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/master/examples/inter_argument_order.cpp): An app to practice mixing unlimited arguments, but still recover the original order.
+ - [json](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp):  Using JSON as a config file parser
+ - [modhelp](https://github.com/CLIUtils/CLI11/blob/master/examples/modhelp.cpp):  How to modify the help flag to do something other than default
+ - [nested](https://github.com/CLIUtils/CLI11/blob/master/examples/nested.cpp):  Nested subcommands
+ - [option_groups](https://github.com/CLIUtils/CLI11/blob/master/examples/option_groups.cpp):  illustrating the use of option groups and a required number of options.
+ based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88) to set interacting groups of options
+ - [positional_arity](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_arity.cpp): Illustrating use of `preparse_callback` to handle situations where the number of arguments can determine which should get parsed,  Based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [positional_validation](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_validation.cpp): Example of how positional arguments are validated using the `validate_positional` flag, also based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [prefix_command](https://github.com/CLIUtils/CLI11/blob/master/examples/prefix_command.cpp): illustrating use of the `prefix_command` flag.
+ - [ranges](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp):  App to demonstrate exclusionary option groups based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88)
+ - [shapes](https://github.com/CLIUtils/CLI11/blob/master/examples/shapes.cpp): illustrating how to set up repeated subcommands Based on [gitter discussion](https://gitter.im/CLI11gitter/Lobby?at=5c7af6b965ffa019ea788cd5)
+ - [simple](https://github.com/CLIUtils/CLI11/blob/master/examples/simple.cpp): a simple example of how to set up a CLI11 Application with different flags and options
+ - [subcom_help](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_help.cpp): configuring help for subcommands
+ - [subcom_partitioned](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_partitioned.cpp): Example with a timer and subcommands generated separately and added to the main app later.
+ - [subcommands](https://github.com/CLIUtils/CLI11/blob/master/examples/subcommands.cpp): Short example of subcommands
+ - [validators](https://github.com/CLIUtils/CLI11/blob/master/examples/validators.cpp): Example illustrating use of validators
 
 ## Contribute
 
