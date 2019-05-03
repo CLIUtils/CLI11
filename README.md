@@ -51,6 +51,7 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
     -   [Utilities](#utilities)
     -   [Other libraries](#other-libraries)
 -   [API](#api)
+-   [Examples](#Examples)
 -   [Contribute](#contribute)
 -   [License](#license)
 
@@ -583,7 +584,7 @@ ogroup->add_subcommand(subcom_pointer);
 This results in the subcommand being moved from its parent into the option group.
 
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
-Option groups work well with `excludes` and `require_options` methods, as an Application will treat an option group as a single option for the purpose of counting and requirements, and an option group will be considered used if any of the options or subcommands contained in it are used.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
+Option groups work well with `excludes` and `require_options` methods, as an application will treat an option group as a single option for the purpose of counting and requirements, and an option group will be considered used if any of the options or subcommands contained in it are used.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
 
 The `CLI::TriggerOn` 🚧 and `CLI::TriggerOff` 🚧 methods are helper methods to allow the use of options/subcommands from one group to trigger another group on or off.
 
@@ -732,6 +733,32 @@ And, in your main function:
 ## API
 
 The API is [documented here][api-docs]. Also see the [CLI11 tutorial GitBook][gitbook].
+
+## Examples
+
+Several short examples of different features are included in the repository. A brief description of each is included here
+
+ - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
+ - [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
+ - [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
+ - [formatter](https://github.com/CLIUtils/CLI11/blob/master/examples/formatter.cpp): Illustrating usage of a custom formatter
+ - [groups](https://github.com/CLIUtils/CLI11/blob/master/examples/groups.cpp):  Example using groups of options for help grouping and a the timer helper class
+ - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/master/examples/inter_argument_order.cpp): An app to practice mixing unlimited arguments, but still recover the original order.
+ - [json](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp):  Using JSON as a config file parser
+ - [modhelp](https://github.com/CLIUtils/CLI11/blob/master/examples/modhelp.cpp):  How to modify the help flag to do something other than default
+ - [nested](https://github.com/CLIUtils/CLI11/blob/master/examples/nested.cpp):  Nested subcommands
+ - [option_groups](https://github.com/CLIUtils/CLI11/blob/master/examples/option_groups.cpp):  illustrating the use of option groups and a required number of options.
+ based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88) to set interacting groups of options
+ - [positional_arity](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_arity.cpp): Illustrating use of `preparse_callback` to handle situations where the number of arguments can determine which should get parsed,  Based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [positional_validation](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_validation.cpp): Example of how positional arguments are validated using the `validate_positional` flag, also based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [prefix_command](https://github.com/CLIUtils/CLI11/blob/master/examples/prefix_command.cpp): illustrating use of the `prefix_command` flag.
+ - [ranges](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp):  App to demonstrate exclusionary option groups based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88)
+ - [shapes](https://github.com/CLIUtils/CLI11/blob/master/examples/shapes.cpp): illustrating how to set up repeated subcommands Based on [gitter discussion](https://gitter.im/CLI11gitter/Lobby?at=5c7af6b965ffa019ea788cd5)
+ - [simple](https://github.com/CLIUtils/CLI11/blob/master/examples/simple.cpp): a simple example of how to set up a CLI11 Application with different flags and options
+ - [subcom_help](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_help.cpp): configuring help for subcommands
+ - [subcom_partitioned](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_partitioned.cpp): Example with a timer and subcommands generated separately and added to the main app later.
+ - [subcommands](https://github.com/CLIUtils/CLI11/blob/master/examples/subcommands.cpp): Short example of subcommands
+ - [validators](https://github.com/CLIUtils/CLI11/blob/master/examples/validators.cpp): Example illustrating use of validators
 
 ## Contribute
 
