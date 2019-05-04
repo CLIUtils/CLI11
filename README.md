@@ -110,7 +110,8 @@ After I wrote this, I also found the following libraries:
 | [Argument Aggregator][] | I'm a big fan of the [fmt][] library, and the try-catch statement looks familiar.  :thumbsup: Doesn't seem to support subcommands.                                                   |
 | [Clara][]               | Simple library built for the excellent [Catch][] testing framework. Unique syntax, limited scope.                                                                                    |
 | [Argh!][]               | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.                                                        |
-| [CLI][]                 | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active.                                                 |
+| [CLI][]                 | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active.  |
+|[argparse][] | C++17 single file argument parser. Design seems similar to CLI11 in some ways. |
 
 See [Awesome C++][] for a less-biased list of parsers. You can also find other single file libraries at [Single file libs][].
 
@@ -850,3 +851,4 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [codacy-link]: https://www.codacy.com/app/henryiii/CLI11?utm_source=github.com&utm_medium=referral&utm_content=CLIUtils/CLI11&utm_campaign=Badge_Grade
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
+[argparse]: https://github.com/p-ranav/argparse
