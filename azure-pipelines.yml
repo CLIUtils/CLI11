@@ -6,7 +6,13 @@
 trigger:
 - master
 
+variables:
+  cli11.single: ON
+  cli11.std: 14
+  cli11.build_type: Debug
+
 jobs:
+
 - job: ClangFormat
   pool:
     vmImage: 'ubuntu-16.04'
@@ -14,44 +20,52 @@ jobs:
     - script: scripts/check_style_docker.sh
       displayName: Check format
 
-- job: Linux
+- job: Native
+  strategy:
+    matrix:
+      Linux:
+        vmImage: 'ubuntu-16.04'
+      macOS:
+        vmImage: 'macOS-10.14'
+      Windows:
+        vmImage: 'vs2017-win2016'
   pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - template: .ci/azure-steps.yml
-
-- job: macOS
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-    - template: .ci/azure-steps.yml
-
-- job: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: $(vmImage)
   steps:
     - template: .ci/azure-steps.yml
 
 - job: Docker
+  variables:
+    cli11.single: OFF
   pool:
     vmImage: 'ubuntu-16.04'
   strategy:
     matrix:
       gcc9:
         containerImage: gcc:9
+        cli11.std: 17
       gcc4.7:
         containerImage: gcc:4.7
-      clang3.5:
-        containerImage: silkeh/clang:3.5
+        cli11.std: 11
+      clang3.4:
+        containerImage: silkeh/clang:3.4
+        cli11.std: 11
       clang8:
         containerImage: silkeh/clang:8
+        cli11.std: 14
   container: $[ variables['containerImage'] ]
   steps:
+    # Note that silkeh/clang does not include ca-certificates, so check the shasum for verification
     - script: |
-        mkdir $HOME/cmake
-        wget -qO- "https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C $HOME/cmake
-      displayName: Install CMake
-    - bash: echo "##vso[task.prependpath]$HOME/cmake/bin"
+        wget --no-check-certificate "https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.tar.gz"
+        echo "29faa62fb3a0b6323caa3d9557e1a5f1205614c0d4c5c2a9917f16a74f7eff68  cmake-3.14.3-Linux-x86_64.tar.gz" | shasum -sca 256
+      displayName: Download CMake
+    - task: ExtractFiles@1
+      inputs:
+        archiveFilePatterns: 'cmake*.tar.gz'
+        destinationFolder: 'cmake_program'
+      displayName: Extract CMake
+    - bash: echo "##vso[task.prependpath]$(Build.SourcesDirectory)/cmake_program/cmake-3.14.3-Linux-x86_64/bin"
       displayName: Add CMake to PATH
     - template: .ci/azure-steps.yml
 

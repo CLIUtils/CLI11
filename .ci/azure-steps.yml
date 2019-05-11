@@ -1,18 +1,14 @@
 steps:
 
-- checkout: self
-  fetchDepth: 50
-  submodules: true
-
 - task: CMake@1
   inputs:
-    cmakeArgs: .. -DCLI12_SINGLE_FILE=ON -DCLI11_CXX_STD=14 -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+    cmakeArgs: .. -DCLI11_SINGLE_FILE=$(cli11.single) -DCLI11_CXX_STD=$(cli11.std) -DCLI11_SINGLE_FILE_TESTS=$(cli11.single) -DCMAKE_BUILD_TYPE=$(cli11.build_type)
   displayName: 'Configure'
 
 - script: cmake --build . -j
   displayName: 'Build'
   workingDirectory: build
 
-- script: ctest --output-on-failure -C Debug
+- script: ctest --output-on-failure -C $(cli11.build_type)
   displayName: 'Test'
   workingDirectory: build
