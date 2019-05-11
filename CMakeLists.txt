@@ -149,14 +149,25 @@ if(CLI11_SINGLE_FILE)
     target_include_directories(CLI11_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
 endif()
 
-cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF "CLI11_SINGLE_FILE" OFF)
+cmake_dependent_option(CLI11_SINGLE_FILE_TESTS
+    "Duplicate all the tests for a single file build"
+    OFF
+    "CLI11_SINGLE_FILE"
+    OFF)
 
-cmake_dependent_option(CLI11_TESTING "Build the tests and add them" ON "CUR_PROJ" OFF)
-if(DEFINED BUILD_TESTING)
-    cmake_dependent_option(CLI11_TESTING "" ON "BUILD_TESTING" OFF)
-    message(STATUS "BUILD_TESTING is defined and it supersedes CLI11_TESTING. Has forced to ${CLI11_TESTING}")
+cmake_dependent_option(CLI11_TESTING
+    "Build the tests and add them (BUILD_TESTING also works if this is the main project)"
+    ON
+    "CUR_PROJ"
+    OFF)
+
+if(DEFINED BUILD_TESTING AND CUR_PROJ)
+    set(CLI11_TESTING_INTERNAL ON)
+else()
+    set(CLI11_TESTING_INTERNAL "${CLI11_TESTING}")
 endif()
-if(CLI11_TESTING)
+
+if(CLI11_TESTING_INTERNAL)
     enable_testing()
     add_subdirectory(tests)
 endif()
