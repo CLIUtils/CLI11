@@ -32,4 +32,26 @@ jobs:
   steps:
     - template: .ci/azure-steps.yml
 
+- job: Docker
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      gcc9:
+        containerImage: gcc:9
+      gcc4.7:
+        containerImage: gcc:4.7
+      clang3.5:
+        containerImage: silkeh/clang:3.5
+      clang8:
+        containerImage: silkeh/clang:8
+  container: $[ variables['containerImage'] ]
+  steps:
+    - script: |
+        mkdir $HOME/cmake
+        wget -qO- "https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C $HOME/cmake
+      displayName: Install CMake
+    - bash: echo "##vso[task.prependpath]$HOME/cmake/bin"
+      displayName: Add CMake to PATH
+    - template: .ci/azure-steps.yml
 
