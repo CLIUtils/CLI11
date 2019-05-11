@@ -7,6 +7,13 @@ trigger:
 - master
 
 jobs:
+- job: ClangFormat
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - script: scripts/check_style_docker.sh
+      displayName: Check format
+
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
@@ -24,3 +31,5 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
     - template: .ci/azure-steps.yml
+
+
