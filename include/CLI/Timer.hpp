@@ -9,8 +9,8 @@
 #define _GLIBCXX_USE_NANOSLEEP
 #endif
 
-#include <chrono>
 #include <array>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <string>
