@@ -27,6 +27,15 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # User settable
     set(CLI11_CXX_STD "11"  CACHE STRING "The CMake standard to require")
 
+    # Special override for Clang on Linux (useful with an old stdlibc++ and a newer clang)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        option(CLI11_FORCE_LIBCXX "Force Clang to use libc++ instead of libstdc++ (Linux only)" OFF)
+        if(CLI11_FORCE_LIBCXX)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++abi")
+        endif()
+    endif()
+
     set(CUR_PROJ ON)
     set(CMAKE_CXX_STANDARD ${CLI11_CXX_STD})
     set(CMAKE_CXX_EXTENSIONS OFF)

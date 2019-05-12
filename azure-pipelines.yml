@@ -50,9 +50,11 @@ jobs:
       clang3.4:
         containerImage: silkeh/clang:3.4
         cli11.std: 11
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON
       clang8:
         containerImage: silkeh/clang:8
         cli11.std: 14
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON
   container: $[ variables['containerImage'] ]
   steps:
     # Note that silkeh/clang does not include ca-certificates, so check the shasum for verification
