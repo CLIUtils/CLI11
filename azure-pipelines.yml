@@ -10,6 +10,7 @@ variables:
   cli11.single: ON
   cli11.std: 14
   cli11.build_type: Debug
+  cli11.options:
 
 jobs:
 
