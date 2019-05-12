@@ -51,7 +51,6 @@ jobs:
       clang3.4:
         containerImage: silkeh/clang:3.4
         cli11.std: 11
-        cli11.options: -DCLI11_FORCE_LIBCXX=ON
       clang8:
         containerImage: silkeh/clang:8
         cli11.std: 14
