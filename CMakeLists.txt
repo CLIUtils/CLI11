@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.4)
 # Note: this is a header only library. If you have an older CMake than 3.4,
 # just add the CLI11/include directory and that's all you need to do.
 
-# Make sure users don't get warnings on a tested (3.4 to 3.13) version
+# Make sure users don't get warnings on a tested (3.4 to 3.14) version
 # of CMake. For most of the policies, the new version is better (hence the change).
-if(${CMAKE_VERSION} VERSION_LESS 3.13)
+# We don't use the 3.4...3.14 syntax because of a bug in a version of MSVC
+if(${CMAKE_VERSION} VERSION_LESS 3.14)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-    cmake_policy(VERSION 3.13)
+    cmake_policy(VERSION 3.14)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -164,16 +165,14 @@ cmake_dependent_option(CLI11_SINGLE_FILE_TESTS
     "CLI11_SINGLE_FILE"
     OFF)
 
-cmake_dependent_option(CLI11_TESTING
-    "Build the tests and add them (BUILD_TESTING also works if this is the main project)"
-    ON
-    "CUR_PROJ"
-    OFF)
 
-if(DEFINED BUILD_TESTING AND CUR_PROJ)
-    set(CLI11_TESTING_INTERNAL ON)
-else()
+if(DEFINED CLI11_TESTING)
     set(CLI11_TESTING_INTERNAL "${CLI11_TESTING}")
+elseif(CUR_PROJ)
+    option(BUILD_TESTING "Build the tests" ON)
+    set(CLI11_TESTING_INTERNAL "${BUILD_TESTING}")
+else()
+    set(CLI11_TESTING_INTERNAL OFF)
 endif()
 
 if(CLI11_TESTING_INTERNAL)
