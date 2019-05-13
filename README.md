@@ -73,7 +73,7 @@ An acceptable CLI parser library should be all of the following:
 
 -   Easy to include (i.e., header only, one file if possible, **no external requirements**).
 -   Short, simple syntax: This is one of the main reasons to use a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
--   C++11 or better: Should work with GCC 4.8+ (default on CentOS/RHEL 7), Clang 3.5+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
+-   C++11 or better: Should work with GCC 4.8+ (default on CentOS/RHEL 7), Clang 3.4+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
 -   Work on Linux, macOS, and Windows.
 -   Well tested using [Travis][] (Linux) and [AppVeyor][] (Windows) or [Azure][] (all three). "Well" is defined as having good coverage measured by [CodeCov][].
 -   Clear help printing.
