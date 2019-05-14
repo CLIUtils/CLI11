@@ -14,12 +14,22 @@ variables:
 
 jobs:
 
-- job: ClangFormat
+- job: ClangFormatTidy
+  variables:
+    CXX_FLAGS: "-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11"
+    cli11.options: -DCLANG_TIDY_FIX=ON
+    cli11.std: 11
+    cli11.single: OFF
   pool:
     vmImage: 'ubuntu-16.04'
+  container: silkeh/clang:5
   steps:
-    - script: scripts/check_style_docker.sh
+    - script: scripts/check_style.sh
       displayName: Check format
+    - template: .ci/azure-cmake.yml
+    - template: .ci/azure-build.yml
+    - script: git diff --exit-code --color
+      displayName: Check tidy
 
 - job: Native
   strategy:
@@ -33,7 +43,8 @@ jobs:
   pool:
     vmImage: $(vmImage)
   steps:
-    - template: .ci/azure-steps.yml
+    - template: .ci/azure-build.yml
+    - template: .ci/azure-test.yml
 
 - job: Docker
   variables:
@@ -57,17 +68,7 @@ jobs:
         cli11.options: -DCLI11_FORCE_LIBCXX=ON
   container: $[ variables['containerImage'] ]
   steps:
-    # Note that silkeh/clang does not include ca-certificates, so check the shasum for verification
-    - script: |
-        wget --no-check-certificate "https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.tar.gz"
-        echo "29faa62fb3a0b6323caa3d9557e1a5f1205614c0d4c5c2a9917f16a74f7eff68  cmake-3.14.3-Linux-x86_64.tar.gz" | shasum -sca 256
-      displayName: Download CMake
-    - task: ExtractFiles@1
-      inputs:
-        archiveFilePatterns: 'cmake*.tar.gz'
-        destinationFolder: 'cmake_program'
-      displayName: Extract CMake
-    - bash: echo "##vso[task.prependpath]$(Build.SourcesDirectory)/cmake_program/cmake-3.14.3-Linux-x86_64/bin"
-      displayName: Add CMake to PATH
-    - template: .ci/azure-steps.yml
+    - template: .ci/azure-cmake.yml
+    - template: .ci/azure-build.yml
+    - template: .ci/azure-test.yml
 

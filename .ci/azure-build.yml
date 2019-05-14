@@ -9,6 +9,3 @@ steps:
   displayName: 'Build'
   workingDirectory: build
 
-- script: ctest --output-on-failure -C $(cli11.build_type)
-  displayName: 'Test'
-  workingDirectory: build
