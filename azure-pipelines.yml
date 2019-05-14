@@ -6,21 +6,71 @@
 trigger:
 - master
 
+variables:
+  cli11.single: ON
+  cli11.std: 14
+  cli11.build_type: Debug
+  cli11.options:
+  cli11.threadopt: -j
+
 jobs:
-- job: Linux
+
+- job: ClangFormatTidy
+  variables:
+    CXX_FLAGS: "-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11"
+    cli11.options: -DCLANG_TIDY_FIX=ON
+    cli11.std: 11
+    cli11.single: OFF
+    cli11.threadopt:
   pool:
     vmImage: 'ubuntu-16.04'
+  container: silkeh/clang:5
   steps:
-    - template: .ci/azure-steps.yml
+    - script: scripts/check_style.sh
+      displayName: Check format
+    - template: .ci/azure-cmake.yml
+    - template: .ci/azure-build.yml
+    - script: git diff --exit-code --color
+      displayName: Check tidy
 
-- job: macOS
+- job: Native
+  strategy:
+    matrix:
+      Linux:
+        vmImage: 'ubuntu-16.04'
+      macOS:
+        vmImage: 'macOS-10.14'
+      Windows:
+        vmImage: 'vs2017-win2016'
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: $(vmImage)
   steps:
-    - template: .ci/azure-steps.yml
+    - template: .ci/azure-build.yml
+    - template: .ci/azure-test.yml
 
-- job: Windows
+- job: Docker
+  variables:
+    cli11.single: OFF
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      gcc9:
+        containerImage: gcc:9
+        cli11.std: 17
+      gcc4.7:
+        containerImage: gcc:4.7
+        cli11.std: 11
+      clang3.4:
+        containerImage: silkeh/clang:3.4
+        cli11.std: 11
+      clang8:
+        containerImage: silkeh/clang:8
+        cli11.std: 14
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON
+  container: $[ variables['containerImage'] ]
   steps:
-    - template: .ci/azure-steps.yml
+    - template: .ci/azure-cmake.yml
+    - template: .ci/azure-build.yml
+    - template: .ci/azure-test.yml
+

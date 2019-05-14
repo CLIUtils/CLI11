@@ -19,11 +19,7 @@
 #define CLI11_STD_OPTIONAL 0
 #endif
 
-#if defined(CLI11_CPP14) && __has_include(<experimental/optional>) && \
-    !defined(CLI11_EXPERIMENTAL_OPTIONAL) \
-    && (!defined(CLI11_STD_OPTIONAL) || CLI11_STD_OPTIONAL == 0)
-#define CLI11_EXPERIMENTAL_OPTIONAL 1
-#elif !defined(CLI11_EXPERIMENTAL_OPTIONAL)
+#if !defined(CLI11_EXPERIMENTAL_OPTIONAL)
 #define CLI11_EXPERIMENTAL_OPTIONAL 0
 #endif
 

@@ -9,6 +9,7 @@
 #define _GLIBCXX_USE_NANOSLEEP
 #endif
 
+#include <array>
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -86,9 +87,9 @@ class Timer {
     /// This prints out a time string from a time
     std::string make_time_str(double time) const {
         auto print_it = [](double x, std::string unit) {
-            char buffer[50];
-            std::snprintf(buffer, 50, "%.5g", x);
-            return buffer + std::string(" ") + unit;
+            std::array<char, 50> buffer;
+            std::snprintf(buffer.data(), 50, "%.5g", x);
+            return buffer.data() + std::string(" ") + unit;
         };
 
         if(time < .000001)

@@ -21,6 +21,8 @@ Set handling has been completely replaced by a new backend that works as a Valid
 * Cleanup for shadow warnings [#232]
 * Better alignment on multiline descriptions [#269]
 * Better support for aarch64 [#266]
+* Respect `BUILD_TESTING` only if CLI11 is the main project; otherwise, `CLI11_TESTING` must be used [#277]
+* Drop auto-detection of experimental optional; must be enabled explicitly (too fragile) [#277]
 
 > ### Converting from CLI11 1.7:
 >
@@ -54,6 +56,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 [#265]: https://github.com/CLIUtils/CLI11/pull/265
 [#266]: https://github.com/CLIUtils/CLI11/pull/266
 [#269]: https://github.com/CLIUtils/CLI11/pull/269
+[#277]: https://github.com/CLIUtils/CLI11/pull/277
 
 
 ## Version 1.7.1: Quick patch
@@ -85,7 +88,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179]
 * Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
 * Dropped the mostly undocumented `short_circuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
-* Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined (`CLI11_TESTING` may eventually be removed) [#183]
+* Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined [#183]
 * Cleanup warnings [#191]
 * Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192]
 

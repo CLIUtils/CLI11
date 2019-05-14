@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.4)
 # Note: this is a header only library. If you have an older CMake than 3.4,
 # just add the CLI11/include directory and that's all you need to do.
 
-# Make sure users don't get warnings on a tested (3.4 to 3.13) version
+# Make sure users don't get warnings on a tested (3.4 to 3.14) version
 # of CMake. For most of the policies, the new version is better (hence the change).
-if(${CMAKE_VERSION} VERSION_LESS 3.13)
+# We don't use the 3.4...3.14 syntax because of a bug in a version of MSVC
+if(${CMAKE_VERSION} VERSION_LESS 3.14)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-    cmake_policy(VERSION 3.13)
+    cmake_policy(VERSION 3.14)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -26,6 +27,15 @@ project(CLI11 LANGUAGES CXX VERSION ${VERSION_STRING})
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # User settable
     set(CLI11_CXX_STD "11"  CACHE STRING "The CMake standard to require")
+
+    # Special override for Clang on Linux (useful with an old stdlibc++ and a newer clang)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        option(CLI11_FORCE_LIBCXX "Force Clang to use libc++ instead of libstdc++ (Linux only)" OFF)
+        if(CLI11_FORCE_LIBCXX)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+        endif()
+    endif()
 
     set(CUR_PROJ ON)
     set(CMAKE_CXX_STANDARD ${CLI11_CXX_STD})
@@ -149,14 +159,23 @@ if(CLI11_SINGLE_FILE)
     target_include_directories(CLI11_SINGLE INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include/")
 endif()
 
-cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build" OFF "CLI11_SINGLE_FILE" OFF)
+cmake_dependent_option(CLI11_SINGLE_FILE_TESTS
+    "Duplicate all the tests for a single file build"
+    OFF
+    "CLI11_SINGLE_FILE"
+    OFF)
 
-cmake_dependent_option(CLI11_TESTING "Build the tests and add them" ON "CUR_PROJ" OFF)
-if(DEFINED BUILD_TESTING)
-    cmake_dependent_option(CLI11_TESTING "" ON "BUILD_TESTING" OFF)
-    message(STATUS "BUILD_TESTING is defined and it supersedes CLI11_TESTING. Has forced to ${CLI11_TESTING}")
+
+if(DEFINED CLI11_TESTING)
+    set(CLI11_TESTING_INTERNAL "${CLI11_TESTING}")
+elseif(CUR_PROJ)
+    option(BUILD_TESTING "Build the tests" ON)
+    set(CLI11_TESTING_INTERNAL "${BUILD_TESTING}")
+else()
+    set(CLI11_TESTING_INTERNAL OFF)
 endif()
-if(CLI11_TESTING)
+
+if(CLI11_TESTING_INTERNAL)
     enable_testing()
     add_subdirectory(tests)
 endif()
