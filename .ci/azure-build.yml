@@ -5,7 +5,7 @@ steps:
     cmakeArgs: .. -DCLI11_SINGLE_FILE=$(cli11.single) -DCLI11_CXX_STD=$(cli11.std) -DCLI11_SINGLE_FILE_TESTS=$(cli11.single) -DCMAKE_BUILD_TYPE=$(cli11.build_type) $(cli11.options)
   displayName: 'Configure'
 
-- script: cmake --build . $(cli11.threadopt)
+- script: cmake --build .
   displayName: 'Build'
   workingDirectory: build
 

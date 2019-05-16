@@ -11,9 +11,14 @@
 
 // You can explicitly enable or disable support
 // by defining to 1 or 0. Extra check here to ensure it's in the stdlib too.
+// We nest the check for __has_include and it's usage
 #ifndef CLI11_STD_OPTIONAL
-#if defined(__has_include) && defined(CLI11_CPP17) && __has_include(<optional>)
+#ifdef __has_include
+#if defined(CLI11_CPP17) && __has_include(<optional>)
 #define CLI11_STD_OPTIONAL 1
+#else
+#define CLI11_STD_OPTIONAL 0
+#endif
 #else
 #define CLI11_STD_OPTIONAL 0
 #endif

@@ -11,7 +11,7 @@ variables:
   cli11.std: 14
   cli11.build_type: Debug
   cli11.options:
-  cli11.threadopt: -j
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 jobs:
 
@@ -21,7 +21,7 @@ jobs:
     cli11.options: -DCLANG_TIDY_FIX=ON
     cli11.std: 11
     cli11.single: OFF
-    cli11.threadopt:
+    CMAKE_BUILD_PARALLEL_LEVEL: 1
   pool:
     vmImage: 'ubuntu-16.04'
   container: silkeh/clang:5
