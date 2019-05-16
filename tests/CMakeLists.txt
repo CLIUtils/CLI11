@@ -115,15 +115,15 @@ file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
 find_package(Boost 1.61)
 if(Boost_FOUND)
     if(TARGET Boost::boost)
-        target_link_libraries(informational PUBLIC Boost::boost)
-        target_link_libraries(OptionalTest PUBLIC Boost::boost)
+        target_link_libraries(informational PRIVATE Boost::boost)
+        target_link_libraries(OptionalTest PRIVATE Boost::boost)
     else()
-        target_include_directories(informational PUBLIC ${Boost_INCLUDE_DIRS})
-        target_include_directories(OptionalTest PUBLIC ${Boost_INCLUDE_DIRS})
+        target_include_directories(informational PRIVATE ${Boost_INCLUDE_DIRS})
+        target_include_directories(OptionalTest PRIVATE ${Boost_INCLUDE_DIRS})
     endif()
-    # Enforce Boost::Optional even if __has_include is missing on your compiler
-    target_compile_definitions(informational PUBLIC CLI11_BOOST_OPTIONAL)
-    target_compile_definitions(OptionalTest PUBLIC CLI11_BOOST_OPTIONAL)
+
+    target_compile_definitions(informational PRIVATE CLI11_BOOST_OPTIONAL)
+    target_compile_definitions(OptionalTest PRIVATE CLI11_BOOST_OPTIONAL)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)

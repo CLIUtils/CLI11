@@ -8,30 +8,35 @@
 #include "CLI/Macros.hpp"
 
 // [CLI11:verbatim]
-#ifdef __has_include
 
 // You can explicitly enable or disable support
-// by defining these to 1 or 0.
-#if defined(CLI11_CPP17) && __has_include(<optional>) && \
-     !defined(CLI11_STD_OPTIONAL)
+// by defining to 1 or 0. Extra check here to ensure it's in the stdlib too.
+// We nest the check for __has_include and it's usage
+#ifndef CLI11_STD_OPTIONAL
+#ifdef __has_include
+#if defined(CLI11_CPP17) && __has_include(<optional>)
 #define CLI11_STD_OPTIONAL 1
-#elif !defined(CLI11_STD_OPTIONAL)
+#else
 #define CLI11_STD_OPTIONAL 0
 #endif
+#else
+#define CLI11_STD_OPTIONAL 0
+#endif
+#endif
 
-#if !defined(CLI11_EXPERIMENTAL_OPTIONAL)
+#ifndef CLI11_EXPERIMENTAL_OPTIONAL
 #define CLI11_EXPERIMENTAL_OPTIONAL 0
 #endif
 
-#if __has_include(<boost/optional.hpp>) && !defined(CLI11_BOOST_OPTIONAL)
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 106100
-#define CLI11_BOOST_OPTIONAL 1
-#endif
-#elif !defined(CLI11_BOOST_OPTIONAL)
+#ifndef CLI11_BOOST_OPTIONAL
 #define CLI11_BOOST_OPTIONAL 0
 #endif
 
+#if CLI11_BOOST_OPTIONAL
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106100
+#error "This boost::optional version is not supported, use 1.61 or better"
+#endif
 #endif
 
 #if CLI11_STD_OPTIONAL

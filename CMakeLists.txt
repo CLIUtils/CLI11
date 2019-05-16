@@ -11,6 +11,9 @@ else()
     cmake_policy(VERSION 3.14)
 endif()
 
+# TESTING: remove this later
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
 
 # Read in the line containing the version
