@@ -18,20 +18,21 @@
 #elif !defined(CLI11_STD_OPTIONAL)
 #define CLI11_STD_OPTIONAL 0
 #endif
+#endif
 
 #if !defined(CLI11_EXPERIMENTAL_OPTIONAL)
 #define CLI11_EXPERIMENTAL_OPTIONAL 0
 #endif
 
-#if __has_include(<boost/optional.hpp>) && !defined(CLI11_BOOST_OPTIONAL)
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 106100
-#define CLI11_BOOST_OPTIONAL 1
-#endif
-#elif !defined(CLI11_BOOST_OPTIONAL)
+#if !defined(CLI11_BOOST_OPTIONAL)
 #define CLI11_BOOST_OPTIONAL 0
 #endif
 
+#if CLI11_BOOST_OPTIONAL
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106100
+#error "This boost::optional version is not supported, use 1.61 or better"
+#endif
 #endif
 
 #if CLI11_STD_OPTIONAL
