@@ -8,23 +8,22 @@
 #include "CLI/Macros.hpp"
 
 // [CLI11:verbatim]
-#ifdef __has_include
 
 // You can explicitly enable or disable support
-// by defining these to 1 or 0.
-#if defined(CLI11_CPP17) && __has_include(<optional>) && \
-     !defined(CLI11_STD_OPTIONAL)
+// by defining to 1 or 0. Extra check here to ensure it's in the stdlib too.
+#ifndef CLI11_STD_OPTIONAL
+#if defined(__has_include) && defined(CLI11_CPP17) && __has_include(<optional>)
 #define CLI11_STD_OPTIONAL 1
-#elif !defined(CLI11_STD_OPTIONAL)
+#else
 #define CLI11_STD_OPTIONAL 0
 #endif
 #endif
 
-#if !defined(CLI11_EXPERIMENTAL_OPTIONAL)
+#ifndef CLI11_EXPERIMENTAL_OPTIONAL
 #define CLI11_EXPERIMENTAL_OPTIONAL 0
 #endif
 
-#if !defined(CLI11_BOOST_OPTIONAL)
+#ifndef CLI11_BOOST_OPTIONAL
 #define CLI11_BOOST_OPTIONAL 0
 #endif
 
