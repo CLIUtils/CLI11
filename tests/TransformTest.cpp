@@ -635,14 +635,14 @@ TEST_F(TApp, AsSizeValue1000_1024) {
 
     args = {"-s", "10240"};
     run();
-    EXPECT_EQ(value, 10240);
+    EXPECT_EQ(value, 10240u);
 
     args = {"-s", "1b"};
     run();
     EXPECT_FLOAT_EQ(value, 1);
 
-    uint64_t k_value = 1000;
-    uint64_t ki_value = 1024;
+    uint64_t k_value = 1000u;
+    uint64_t ki_value = 1024u;
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, k_value);
@@ -659,8 +659,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    k_value = 1000ull * 1000;
-    ki_value = 1024ull * 1024;
+    k_value = 1000ull * 1000u;
+    ki_value = 1024ull * 1024u;
     args = {"-s", "1m"};
     run();
     EXPECT_EQ(value, k_value);
@@ -674,8 +674,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    k_value = 1000ull * 1000 * 1000;
-    ki_value = 1024ull * 1024 * 1024;
+    k_value = 1000ull * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u;
     args = {"-s", "1g"};
     run();
     EXPECT_EQ(value, k_value);
@@ -689,8 +689,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    k_value = 1000ull * 1000 * 1000 * 1000;
-    ki_value = 1024ull * 1024 * 1024 * 1024;
+    k_value = 1000ull * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u;
     args = {"-s", "1t"};
     run();
     EXPECT_EQ(value, k_value);
@@ -704,8 +704,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    k_value = 1000ull * 1000 * 1000 * 1000 * 1000;
-    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024;
+    k_value = 1000ull * 1000u * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u;
     args = {"-s", "1p"};
     run();
     EXPECT_EQ(value, k_value);
@@ -719,8 +719,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    k_value = 1000ull * 1000 * 1000 * 1000 * 1000 * 1000;
-    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024 * 1024;
+    k_value = 1000ull * 1000u * 1000u * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u * 1024u;
     args = {"-s", "1e"};
     run();
     EXPECT_EQ(value, k_value);
@@ -741,13 +741,13 @@ TEST_F(TApp, AsSizeValue1024) {
 
     args = {"-s", "10240"};
     run();
-    EXPECT_EQ(value, 10240);
+    EXPECT_EQ(value, 10240u);
 
     args = {"-s", "1b"};
     run();
     EXPECT_FLOAT_EQ(value, 1);
 
-    uint64_t ki_value = 1024;
+    uint64_t ki_value = 1024u;
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, ki_value);
@@ -764,7 +764,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    ki_value = 1024ull * 1024;
+    ki_value = 1024ull * 1024u;
     args = {"-s", "1m"};
     run();
     EXPECT_EQ(value, ki_value);
@@ -778,7 +778,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    ki_value = 1024ull * 1024 * 1024;
+    ki_value = 1024ull * 1024u * 1024u;
     args = {"-s", "1g"};
     run();
     EXPECT_EQ(value, ki_value);
@@ -792,7 +792,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    ki_value = 1024ull * 1024 * 1024 * 1024;
+    ki_value = 1024ull * 1024u * 1024u * 1024u;
     args = {"-s", "1t"};
     run();
     EXPECT_EQ(value, ki_value);
@@ -806,7 +806,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u;
     args = {"-s", "1p"};
     run();
     EXPECT_EQ(value, ki_value);
@@ -820,7 +820,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, ki_value);
 
-    ki_value = 1024ull * 1024 * 1024 * 1024 * 1024 * 1024;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u * 1024u;
     args = {"-s", "1e"};
     run();
     EXPECT_EQ(value, ki_value);

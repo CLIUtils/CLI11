@@ -787,8 +787,33 @@ class SuffixedNumber : public Validator {
         // transform function
         func_ = [mapping, opts](std::string &input) -> std::string {
             Number num;
-            std::string suffix;
-            std::tie(num, suffix) = split<Number>(input, opts);
+
+            detail::rtrim(input);
+            if(input.empty()) {
+                throw ValidationError("Input is empty");
+            }
+
+            // Find split position between number and prefix
+            auto suffix_start = input.end();
+            while(suffix_start > input.begin() && std::isalpha(*(suffix_start - 1), std::locale())) {
+                --suffix_start;
+            }
+
+            std::string suffix{suffix_start, input.end()};
+            input.resize(std::distance(input.begin(), suffix_start));
+            detail::trim(input);
+
+            if(opts & MANDATORY_SUFFIX && suffix.empty()) {
+                throw ValidationError("Missing mandatory suffix");
+            }
+            if(opts & CASE_INSENSITIVE) {
+                suffix = detail::to_lower(suffix);
+            }
+
+            bool converted = detail::lexical_cast(input, num);
+            if(!converted) {
+                throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
+            }
 
             if(suffix.empty()) {
                 // No need to modify input if no suffix
@@ -817,40 +842,6 @@ class SuffixedNumber : public Validator {
     }
 
   private:
-    /// Split input string to <Number, Suffix> pair
-    /// CASE_INSENSITIVE and MANDATORY_SUFFIX options are considered
-    template <typename Number> static std::pair<Number, std::string> split(std::string input, Options opts) {
-        detail::rtrim(input);
-        if(input.empty()) {
-            throw ValidationError("Input is empty");
-        }
-
-        // Find split position between number and prefix
-        auto suffix_start = input.end();
-        while(suffix_start > input.begin() && std::isalpha(*(suffix_start - 1), std::locale())) {
-            --suffix_start;
-        }
-
-        std::string suffix{suffix_start, input.end()};
-        input.resize(std::distance(input.begin(), suffix_start));
-        detail::trim(input);
-
-        if(opts & MANDATORY_SUFFIX && suffix.empty()) {
-            throw ValidationError("Missing mandatory suffix");
-        }
-        if(opts & CASE_INSENSITIVE) {
-            suffix = detail::to_lower(suffix);
-        }
-
-        Number val;
-        bool converted = detail::lexical_cast(input, val);
-        if(!converted) {
-            throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
-        }
-
-        return {val, std::move(suffix)};
-    }
-
     /// Check that mapping contains valid suffixes.
     /// Update mapping for CASE_INSENSITIVE mode.
     template <typename Number> static void validate_mapping(std::map<std::string, Number> &mapping, Options opts) {
