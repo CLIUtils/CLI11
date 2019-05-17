@@ -432,11 +432,11 @@ TEST_F(TApp, BoundTests) {
     EXPECT_TRUE(help.find("[3.4 - 5.9]") != std::string::npos);
 }
 
-TEST_F(TApp, SuffixedNumberCorrecltySplitSuffix) {
+TEST_F(TApp, NumberWithUnitCorrecltySplitNumber) {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
 
-    int value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping));
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "42"};
     run();
@@ -454,10 +454,10 @@ TEST_F(TApp, SuffixedNumberCorrecltySplitSuffix) {
     EXPECT_EQ(value, -42000);
 }
 
-TEST_F(TApp, SuffixedNumberFloatTest) {
+TEST_F(TApp, NumberWithUnitFloatTest) {
     std::map<std::string, double> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
-    double value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping));
+    double value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "42"};
     run();
@@ -476,11 +476,11 @@ TEST_F(TApp, SuffixedNumberFloatTest) {
     EXPECT_DOUBLE_EQ(value, 42000);
 }
 
-TEST_F(TApp, SuffixedNumberCaseSensetive) {
+TEST_F(TApp, NumberWithUnitCaseSensitive) {
     std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
 
-    int value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping, CLI::SuffixedNumber::CASE_SENSITIVE));
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_SENSITIVE));
 
     args = {"-n", "42a"};
     run();
@@ -491,11 +491,11 @@ TEST_F(TApp, SuffixedNumberCaseSensetive) {
     EXPECT_EQ(value, 4200);
 }
 
-TEST_F(TApp, SuffixedNumberCaseInsensitive) {
+TEST_F(TApp, NumberWithUnitCaseInsensitive) {
     std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
 
-    int value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping, CLI::SuffixedNumber::CASE_INSENSITIVE));
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_INSENSITIVE));
 
     args = {"-n", "42a"};
     run();
@@ -514,14 +514,14 @@ TEST_F(TApp, SuffixedNumberCaseInsensitive) {
     EXPECT_EQ(value, 4200);
 }
 
-TEST_F(TApp, SuffixedNumberMandatorySuffix) {
+TEST_F(TApp, NumberWithUnitMandatoryUnit) {
     std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
 
     int value;
     app.add_option("-n", value)
-        ->transform(CLI::SuffixedNumber(
-            mapping,
-            CLI::SuffixedNumber::Options(CLI::SuffixedNumber::MANDATORY_SUFFIX | CLI::SuffixedNumber::CASE_SENSITIVE)));
+        ->transform(CLI::AsNumberWithUnit(mapping,
+                                          CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
+                                                                         CLI::AsNumberWithUnit::CASE_SENSITIVE)));
 
     args = {"-n", "42a"};
     run();
@@ -535,14 +535,14 @@ TEST_F(TApp, SuffixedNumberMandatorySuffix) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SuffixedNumberMandatorySuffix2) {
+TEST_F(TApp, NumberWithUnitMandatoryUnit2) {
     std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
 
     int value;
     app.add_option("-n", value)
-        ->transform(CLI::SuffixedNumber(mapping,
-                                        CLI::SuffixedNumber::Options(CLI::SuffixedNumber::MANDATORY_SUFFIX |
-                                                                     CLI::SuffixedNumber::CASE_INSENSITIVE)));
+        ->transform(CLI::AsNumberWithUnit(mapping,
+                                          CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
+                                                                         CLI::AsNumberWithUnit::CASE_INSENSITIVE)));
 
     args = {"-n", "42A"};
     run();
@@ -556,20 +556,20 @@ TEST_F(TApp, SuffixedNumberMandatorySuffix2) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SuffixedNumberBadMapping) {
-    EXPECT_THROW(
-        CLI::SuffixedNumber(std::map<std::string, int>{{"a", 10}, {"A", 100}}, CLI::SuffixedNumber::CASE_INSENSITIVE),
-        CLI::ValidationError);
-    EXPECT_THROW(CLI::SuffixedNumber(std::map<std::string, int>{{"a", 10}, {"9", 100}}), CLI::ValidationError);
-    EXPECT_THROW(CLI::SuffixedNumber(std::map<std::string, int>{{"a", 10}, {"AA A", 100}}), CLI::ValidationError);
-    EXPECT_THROW(CLI::SuffixedNumber(std::map<std::string, int>{{"a", 10}, {"", 100}}), CLI::ValidationError);
+TEST_F(TApp, NumberWithUnitBadMapping) {
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"A", 100}},
+                                       CLI::AsNumberWithUnit::CASE_INSENSITIVE),
+                 CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"9", 100}}), CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"AA A", 100}}), CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"", 100}}), CLI::ValidationError);
 }
 
-TEST_F(TApp, SuffixedNumberBadInput) {
+TEST_F(TApp, NumberWithUnitBadInput) {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}};
 
     int value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping));
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "13 a b"};
     EXPECT_THROW(run(), CLI::ValidationError);
@@ -587,11 +587,11 @@ TEST_F(TApp, SuffixedNumberBadInput) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SuffixedNumberIntOverlow) {
+TEST_F(TApp, NumberWithUnitIntOverflow) {
     std::map<std::string, int> mapping{{"a", 1000000}, {"b", 100}, {"c", 101}};
 
     int32_t value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping));
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "1000 a"};
     run();
@@ -611,11 +611,11 @@ TEST_F(TApp, SuffixedNumberIntOverlow) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SuffixedNumberFloatOverlow) {
+TEST_F(TApp, NumberWithUnitFloatOverflow) {
     std::map<std::string, float> mapping{{"a", 2}, {"b", 1}, {"c", 0}};
 
     float value;
-    app.add_option("-n", value)->transform(CLI::SuffixedNumber(mapping));
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "3e+38 a"};
     EXPECT_THROW(run(), CLI::ValidationError);

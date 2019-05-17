@@ -760,28 +760,28 @@ inline std::string ignore_space(std::string item) {
 ///   one can recognize inputs like "100", "12kb", "100 MB",
 ///   that will be automatically transformed to 100, 14448, 104857600.
 ///
-/// Number is interpreted as a type the same as in the provided mapping.
-/// Therefore, if it is required to interpret inputs like "0.42 s",
+/// Output number type matches the type in the provided mapping.
+/// Therefore, if it is required to interpret real inputs like "0.42 s",
 /// the mapping should be of a type <string, float> or <string, double>.
-class SuffixedNumber : public Validator {
+class AsNumberWithUnit : public Validator {
   public:
-    /// Adjust SuffixedNumber behavior.
-    /// CASE_SENSITIVE/CASE_INSENSITIVE controls how suffixes are be matched.
-    /// OPTIONAL_SUFFIX/MANDATORY_SUFFIX throws ValidationError
-    ///   if mandatory is set and suffix is not found.
+    /// Adjust AsNumberWithUnit behavior.
+    /// CASE_SENSITIVE/CASE_INSENSITIVE controls how units are matched.
+    /// UNIT_OPTIONAL/UNIT_REQUIRED throws ValidationError
+    ///   if UNIT_REQUIRED is set and unit literal is not found.
     enum Options {
         CASE_SENSITIVE = 0,
         CASE_INSENSITIVE = 1,
-        OPTIONAL_SUFFIX = 0,
-        MANDATORY_SUFFIX = 2,
-        DEFAULT = CASE_INSENSITIVE | OPTIONAL_SUFFIX
+        UNIT_OPTIONAL = 0,
+        UNIT_REQUIRED = 2,
+        DEFAULT = CASE_INSENSITIVE | UNIT_OPTIONAL
     };
 
     template <typename Number>
-    explicit SuffixedNumber(std::map<std::string, Number> mapping,
-                            Options opts = DEFAULT,
-                            const std::string &suff_name = "SUFFIX") {
-        description(generate_description<Number>(suff_name, opts));
+    explicit AsNumberWithUnit(std::map<std::string, Number> mapping,
+                              Options opts = DEFAULT,
+                              const std::string &unit_name = "UNIT") {
+        description(generate_description<Number>(unit_name, opts));
         validate_mapping(mapping, opts);
 
         // transform function
@@ -794,20 +794,20 @@ class SuffixedNumber : public Validator {
             }
 
             // Find split position between number and prefix
-            auto suffix_start = input.end();
-            while(suffix_start > input.begin() && std::isalpha(*(suffix_start - 1), std::locale())) {
-                --suffix_start;
+            auto unit_begin = input.end();
+            while(unit_begin > input.begin() && std::isalpha(*(unit_begin - 1), std::locale())) {
+                --unit_begin;
             }
 
-            std::string suffix{suffix_start, input.end()};
-            input.resize(std::distance(input.begin(), suffix_start));
+            std::string unit{unit_begin, input.end()};
+            input.resize(std::distance(input.begin(), unit_begin));
             detail::trim(input);
 
-            if(opts & MANDATORY_SUFFIX && suffix.empty()) {
-                throw ValidationError("Missing mandatory suffix");
+            if(opts & UNIT_REQUIRED && unit.empty()) {
+                throw ValidationError("Missing mandatory unit");
             }
             if(opts & CASE_INSENSITIVE) {
-                suffix = detail::to_lower(suffix);
+                unit = detail::to_lower(unit);
             }
 
             bool converted = detail::lexical_cast(input, num);
@@ -815,16 +815,16 @@ class SuffixedNumber : public Validator {
                 throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
             }
 
-            if(suffix.empty()) {
-                // No need to modify input if no suffix
+            if(unit.empty()) {
+                // No need to modify input if no unit passed
                 return {};
             }
 
             // find corresponding factor
-            auto it = mapping.find(suffix);
+            auto it = mapping.find(unit);
             if(it == mapping.end()) {
-                throw ValidationError(suffix +
-                                      " suffix not recognized. "
+                throw ValidationError(unit +
+                                      " unit not recognized. "
                                       "Allowed values: " +
                                       detail::generate_map(mapping, true));
             }
@@ -832,8 +832,8 @@ class SuffixedNumber : public Validator {
             // perform safe multiplication
             bool ok = detail::checked_multiply(num, it->second);
             if(!ok) {
-                throw ValidationError(detail::as_string(num) + " multiplied by " + suffix +
-                                      " factor would cause integer overflow. Use smaller value.");
+                throw ValidationError(detail::as_string(num) + " multiplied by " + unit +
+                                      " factor would cause number overflow. Use smaller value.");
             }
             input = detail::as_string(num);
 
@@ -842,25 +842,25 @@ class SuffixedNumber : public Validator {
     }
 
   private:
-    /// Check that mapping contains valid suffixes.
+    /// Check that mapping contains valid units.
     /// Update mapping for CASE_INSENSITIVE mode.
     template <typename Number> static void validate_mapping(std::map<std::string, Number> &mapping, Options opts) {
         for(auto &kv : mapping) {
             if(kv.first.empty()) {
-                throw ValidationError("Suffix must not be empty.");
+                throw ValidationError("Unit must not be empty.");
             }
             if(!detail::isalpha(kv.first)) {
-                throw ValidationError("Suffix must contain only letters.");
+                throw ValidationError("Unit must contain only letters.");
             }
         }
 
-        // make all suffixes lowercase if CASE_INSENSITIVE
+        // make all units lowercase if CASE_INSENSITIVE
         if(opts & CASE_INSENSITIVE) {
             std::map<std::string, Number> lower_mapping;
             for(auto &kv : mapping) {
                 auto s = detail::to_lower(kv.first);
                 if(lower_mapping.count(s)) {
-                    throw ValidationError("Several matching lowercase suffix representations are found.");
+                    throw ValidationError("Several matching lowercase unit representations are found: " + s);
                 }
                 lower_mapping[detail::to_lower(kv.first)] = kv.second;
             }
@@ -868,11 +868,11 @@ class SuffixedNumber : public Validator {
         }
     }
 
-    /// Generate description like this: NUMBER [SUFFIX]
+    /// Generate description like this: NUMBER [UNIT]
     template <typename Number> static std::string generate_description(const std::string &name, Options opts) {
         std::stringstream out;
         out << detail::type_name<Number>() << ' ';
-        if(opts & MANDATORY_SUFFIX) {
+        if(opts & UNIT_REQUIRED) {
             out << name;
         } else {
             out << '[' << name << ']';
@@ -881,30 +881,30 @@ class SuffixedNumber : public Validator {
     }
 };
 
-/// Converts a human-readable size string (with unit suffix) to uin64_t size.
+/// Converts a human-readable size string (with unit literal) to uin64_t size.
 /// Example:
 ///   "100" => 100
 ///   "1 b" => 100
-///   "10Kb" => 10240 // you can configuire this to be interpreted as kilobyte (*1000) or kibibyte (*1024)
+///   "10Kb" => 10240 // you can configure this to be interpreted as kilobyte (*1000) or kibibyte (*1024)
 ///   "10 KB" => 10240
 ///   "10 kb" => 10240
 ///   "10 kib" => 10240 // *i, *ib are always interpreted as *bibyte (*1024)
 ///   "10kb" => 10240
 ///   "2 MB" => 2097152
 ///   "2 EiB" => 2^61 // Units up to exibyte are supported
-class AsSizeValue : public SuffixedNumber {
+class AsSizeValue : public AsNumberWithUnit {
   public:
     using result_t = uint64_t;
 
-    /// If allow_1000_factor is true,
+    /// If kb_is_1000 is true,
     /// interpret 'kb', 'k' as 1000 and 'kib', 'ki' as 1024
-    /// (same applies to higher units as well).
-    /// Otherwise, interpret all suffixes as 1024.
+    /// (same applies to higher order units as well).
+    /// Otherwise, interpret all literals as factors of 1024.
     /// The first option is formally correct, but
     /// the second interpretation is more wide-spread
     /// (see https://en.wikipedia.org/wiki/Binary_prefix).
-    explicit AsSizeValue(bool allow_1000_factor) : SuffixedNumber(get_mapping(allow_1000_factor)) {
-        if(allow_1000_factor) {
+    explicit AsSizeValue(bool kb_is_1000) : AsNumberWithUnit(get_mapping(kb_is_1000)) {
+        if(kb_is_1000) {
             description("SIZE [b, kb(=1000b), kib(=1024b), ...]");
         } else {
             description("SIZE [b, kb(=1024b), ...]");
@@ -913,9 +913,9 @@ class AsSizeValue : public SuffixedNumber {
 
   private:
     /// Get <size unit, factor> mapping
-    static std::map<std::string, result_t> init_mapping(bool allow_1000_factor) {
+    static std::map<std::string, result_t> init_mapping(bool kb_is_1000) {
         std::map<std::string, result_t> m;
-        result_t k_factor = allow_1000_factor ? 1000 : 1024;
+        result_t k_factor = kb_is_1000 ? 1000 : 1024;
         result_t ki_factor = 1024;
         result_t k = 1;
         result_t ki = 1;
@@ -932,8 +932,8 @@ class AsSizeValue : public SuffixedNumber {
     }
 
     /// Cache calculated mapping
-    static std::map<std::string, result_t> get_mapping(bool allow_1000_factor) {
-        if(allow_1000_factor) {
+    static std::map<std::string, result_t> get_mapping(bool kb_is_1000) {
+        if(kb_is_1000) {
             static auto m = init_mapping(true);
             return m;
         } else {
