@@ -68,9 +68,9 @@ class Timer {
             f();
             std::chrono::duration<double> elapsed = clock::now() - start_;
             total_time = elapsed.count();
-        } while(n++ < 100 && total_time < target_time);
+        } while(n++ < 100u && total_time < target_time);
 
-        std::string out = make_time_str(total_time / n) + " for " + std::to_string(n) + " tries";
+        std::string out = make_time_str(total_time / static_cast<double>(n)) + " for " + std::to_string(n) + " tries";
         start_ = start;
         return out;
     }
@@ -79,7 +79,7 @@ class Timer {
     std::string make_time_str() const {
         time_point stop = clock::now();
         std::chrono::duration<double> elapsed = stop - start_;
-        double time = elapsed.count() / cycles;
+        double time = elapsed.count() / static_cast<double>(cycles);
         return make_time_str(time);
     }
 

@@ -612,7 +612,7 @@ TEST_F(TApp, NumberWithUnitIntOverflow) {
 }
 
 TEST_F(TApp, NumberWithUnitFloatOverflow) {
-    std::map<std::string, float> mapping{{"a", 2}, {"b", 1}, {"c", 0}};
+    std::map<std::string, float> mapping{{"a", 2.f}, {"b", 1.f}, {"c", 0.f}};
 
     float value;
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
@@ -622,11 +622,11 @@ TEST_F(TApp, NumberWithUnitFloatOverflow) {
 
     args = {"-n", "3e+38 b"};
     run();
-    EXPECT_FLOAT_EQ(value, 3e+38);
+    EXPECT_FLOAT_EQ(value, 3e+38f);
 
     args = {"-n", "3e+38 c"};
     run();
-    EXPECT_FLOAT_EQ(value, 0);
+    EXPECT_FLOAT_EQ(value, 0.f);
 }
 
 TEST_F(TApp, AsSizeValue1000_1024) {
@@ -639,7 +639,7 @@ TEST_F(TApp, AsSizeValue1000_1024) {
 
     args = {"-s", "1b"};
     run();
-    EXPECT_FLOAT_EQ(value, 1);
+    EXPECT_EQ(value, 1u);
 
     uint64_t k_value = 1000u;
     uint64_t ki_value = 1024u;
@@ -745,7 +745,7 @@ TEST_F(TApp, AsSizeValue1024) {
 
     args = {"-s", "1b"};
     run();
-    EXPECT_FLOAT_EQ(value, 1);
+    EXPECT_EQ(value, 1u);
 
     uint64_t ki_value = 1024u;
     args = {"-s", "1k"};

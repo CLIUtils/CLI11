@@ -800,7 +800,7 @@ class AsNumberWithUnit : public Validator {
             }
 
             std::string unit{unit_begin, input.end()};
-            input.resize(std::distance(input.begin(), unit_begin));
+            input.resize(static_cast<size_t>(std::distance(input.begin(), unit_begin)));
             detail::trim(input);
 
             if(opts & UNIT_REQUIRED && unit.empty()) {

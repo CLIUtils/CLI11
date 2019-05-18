@@ -722,7 +722,7 @@ class Option : public OptionBase<Option> {
             } else if(get_items_expected() < 0) {
                 // Require that this be a multiple of expected size and at least as many as expected
                 if(results_.size() < static_cast<size_t>(-get_items_expected()) ||
-                   results_.size() % static_cast<size_t>(std::abs(get_type_size())) != 0)
+                   results_.size() % static_cast<size_t>(std::abs(get_type_size())) != 0u)
                     throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
             }
             local_result = !callback_(results_);
@@ -799,7 +799,8 @@ class Option : public OptionBase<Option> {
             if(!((input_value.empty()) || (input_value == emptyString))) {
                 auto default_ind = detail::find_member(name, fnames_, ignore_case_, ignore_underscore_);
                 if(default_ind >= 0) {
-                    if(default_flag_values_[default_ind].second != input_value) {
+                    // We can static cast this to size_t because it is more than 0 in this block
+                    if(default_flag_values_[static_cast<size_t>(default_ind)].second != input_value) {
                         throw(ArgumentMismatch::FlagOverride(name));
                     }
                 } else {
@@ -811,12 +812,12 @@ class Option : public OptionBase<Option> {
         }
         auto ind = detail::find_member(name, fnames_, ignore_case_, ignore_underscore_);
         if((input_value.empty()) || (input_value == emptyString)) {
-            return (ind < 0) ? trueString : default_flag_values_[ind].second;
+            return (ind < 0) ? trueString : default_flag_values_[static_cast<size_t>(ind)].second;
         }
         if(ind < 0) {
             return input_value;
         }
-        if(default_flag_values_[ind].second == falseString) {
+        if(default_flag_values_[static_cast<size_t>(ind)].second == falseString) {
             try {
                 auto val = detail::to_flag_value(input_value);
                 return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
