@@ -34,8 +34,6 @@ jobs:
       displayName: Check tidy
 
 - job: Native
-  variables:
-    cli11.options: "-DCLI11_WARNINGS_AS_ERRORS=ON"
   strategy:
     matrix:
       Linux:
