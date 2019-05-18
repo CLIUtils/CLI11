@@ -243,7 +243,7 @@ The `add_option_function<type>(...` function will typically require the template
 🚧 Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
 
 ```cpp
-app.add_flag("--flag,!--no-flag,result,"help for flag"); // 🚧
+app.add_flag("--flag,!--no-flag",result,"help for flag"); // 🚧
 ```
 
 specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
@@ -341,6 +341,8 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::IsMember(...)`: 🚧 Require an option be a member of a given set.  See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::Transformer(...)`: 🚧 Modify the input using a map.  See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::CheckedTransformer(...)`: 🚧 Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
+-   `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
+-   `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
 -   `CLI::ExistingFile`: Requires that the file exists if given.
 -   `CLI::ExistingDirectory`: Requires that the directory exists.
 -   `CLI::ExistingPath`: Requires that the path (file or directory) exists.

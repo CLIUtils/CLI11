@@ -431,3 +431,406 @@ TEST_F(TApp, BoundTests) {
     EXPECT_TRUE(help.find("bounded to") != std::string::npos);
     EXPECT_TRUE(help.find("[3.4 - 5.9]") != std::string::npos);
 }
+
+TEST_F(TApp, NumberWithUnitCorrecltySplitNumber) {
+    std::map<std::string, int> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
+
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
+
+    args = {"-n", "42"};
+    run();
+    EXPECT_EQ(value, 42);
+
+    args = {"-n", "42a"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "  42  cc  "};
+    run();
+    EXPECT_EQ(value, 42000);
+    args = {"-n", "  -42  cc  "};
+    run();
+    EXPECT_EQ(value, -42000);
+}
+
+TEST_F(TApp, NumberWithUnitFloatTest) {
+    std::map<std::string, double> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
+    double value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
+
+    args = {"-n", "42"};
+    run();
+    EXPECT_DOUBLE_EQ(value, 42);
+
+    args = {"-n", ".5"};
+    run();
+    EXPECT_DOUBLE_EQ(value, .5);
+
+    args = {"-n", "42.5 a"};
+    run();
+    EXPECT_DOUBLE_EQ(value, 425);
+
+    args = {"-n", "42.cc"};
+    run();
+    EXPECT_DOUBLE_EQ(value, 42000);
+}
+
+TEST_F(TApp, NumberWithUnitCaseSensitive) {
+    std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
+
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_SENSITIVE));
+
+    args = {"-n", "42a"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "42A"};
+    run();
+    EXPECT_EQ(value, 4200);
+}
+
+TEST_F(TApp, NumberWithUnitCaseInsensitive) {
+    std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
+
+    int value = 0;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_INSENSITIVE));
+
+    args = {"-n", "42a"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "42A"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "42b"};
+    run();
+    EXPECT_EQ(value, 4200);
+
+    args = {"-n", "42B"};
+    run();
+    EXPECT_EQ(value, 4200);
+}
+
+TEST_F(TApp, NumberWithUnitMandatoryUnit) {
+    std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
+
+    int value;
+    app.add_option("-n", value)
+        ->transform(CLI::AsNumberWithUnit(mapping,
+                                          CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
+                                                                         CLI::AsNumberWithUnit::CASE_SENSITIVE)));
+
+    args = {"-n", "42a"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "42A"};
+    run();
+    EXPECT_EQ(value, 4200);
+
+    args = {"-n", "42"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NumberWithUnitMandatoryUnit2) {
+    std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
+
+    int value;
+    app.add_option("-n", value)
+        ->transform(CLI::AsNumberWithUnit(mapping,
+                                          CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
+                                                                         CLI::AsNumberWithUnit::CASE_INSENSITIVE)));
+
+    args = {"-n", "42A"};
+    run();
+    EXPECT_EQ(value, 420);
+
+    args = {"-n", "42b"};
+    run();
+    EXPECT_EQ(value, 4200);
+
+    args = {"-n", "42"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NumberWithUnitBadMapping) {
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"A", 100}},
+                                       CLI::AsNumberWithUnit::CASE_INSENSITIVE),
+                 CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"9", 100}}), CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"AA A", 100}}), CLI::ValidationError);
+    EXPECT_THROW(CLI::AsNumberWithUnit(std::map<std::string, int>{{"a", 10}, {"", 100}}), CLI::ValidationError);
+}
+
+TEST_F(TApp, NumberWithUnitBadInput) {
+    std::map<std::string, int> mapping{{"a", 10}, {"b", 100}};
+
+    int value;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
+
+    args = {"-n", "13 a b"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", "13 c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", "a"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", "12.0a"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", "a5"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", ""};
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args = {"-n", "13 a-"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NumberWithUnitIntOverflow) {
+    std::map<std::string, int> mapping{{"a", 1000000}, {"b", 100}, {"c", 101}};
+
+    int32_t value;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
+
+    args = {"-n", "1000 a"};
+    run();
+    EXPECT_EQ(value, 1000000000);
+
+    args = {"-n", "1000000 a"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-n", "-1000000 a"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-n", "21474836 b"};
+    run();
+    EXPECT_EQ(value, 2147483600);
+
+    args = {"-n", "21474836 c"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, NumberWithUnitFloatOverflow) {
+    std::map<std::string, float> mapping{{"a", 2}, {"b", 1}, {"c", 0}};
+
+    float value;
+    app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
+
+    args = {"-n", "3e+38 a"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"-n", "3e+38 b"};
+    run();
+    EXPECT_FLOAT_EQ(value, 3e+38);
+
+    args = {"-n", "3e+38 c"};
+    run();
+    EXPECT_FLOAT_EQ(value, 0);
+}
+
+TEST_F(TApp, AsSizeValue1000_1024) {
+    uint64_t value;
+    app.add_option("-s", value)->transform(CLI::AsSizeValue(true));
+
+    args = {"-s", "10240"};
+    run();
+    EXPECT_EQ(value, 10240u);
+
+    args = {"-s", "1b"};
+    run();
+    EXPECT_FLOAT_EQ(value, 1);
+
+    uint64_t k_value = 1000u;
+    uint64_t ki_value = 1024u;
+    args = {"-s", "1k"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1kb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1 Kb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ki"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000u;
+    ki_value = 1024ull * 1024u;
+    args = {"-s", "1m"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1mb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1mi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u;
+    args = {"-s", "1g"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1gb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1gi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u;
+    args = {"-s", "1t"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1tb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ti"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000u * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u;
+    args = {"-s", "1p"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1pb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1pi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    k_value = 1000ull * 1000u * 1000u * 1000u * 1000u * 1000u;
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u * 1024u;
+    args = {"-s", "1e"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1eb"};
+    run();
+    EXPECT_EQ(value, k_value);
+    args = {"-s", "1ei"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+}
+
+TEST_F(TApp, AsSizeValue1024) {
+    uint64_t value;
+    app.add_option("-s", value)->transform(CLI::AsSizeValue(false));
+
+    args = {"-s", "10240"};
+    run();
+    EXPECT_EQ(value, 10240u);
+
+    args = {"-s", "1b"};
+    run();
+    EXPECT_FLOAT_EQ(value, 1);
+
+    uint64_t ki_value = 1024u;
+    args = {"-s", "1k"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1 Kb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ki"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1kib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024u;
+    args = {"-s", "1m"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1mib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024u * 1024u;
+    args = {"-s", "1g"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1gib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024u * 1024u * 1024u;
+    args = {"-s", "1t"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ti"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1tib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u;
+    args = {"-s", "1p"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pi"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1pib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+
+    ki_value = 1024ull * 1024u * 1024u * 1024u * 1024u * 1024u;
+    args = {"-s", "1e"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eb"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1ei"};
+    run();
+    EXPECT_EQ(value, ki_value);
+    args = {"-s", "1eib"};
+    run();
+    EXPECT_EQ(value, ki_value);
+}

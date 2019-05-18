@@ -105,6 +105,18 @@ TEST(StringTools, flagValues) {
     EXPECT_EQ(CLI::detail::to_flag_value("475555233"), 475555233);
 }
 
+TEST(StringTools, Validation) {
+    EXPECT_TRUE(CLI::detail::isalpha(""));
+    EXPECT_TRUE(CLI::detail::isalpha("a"));
+    EXPECT_TRUE(CLI::detail::isalpha("abcd"));
+    EXPECT_FALSE(CLI::detail::isalpha("_"));
+    EXPECT_FALSE(CLI::detail::isalpha("2"));
+    EXPECT_FALSE(CLI::detail::isalpha("test test"));
+    EXPECT_FALSE(CLI::detail::isalpha("test "));
+    EXPECT_FALSE(CLI::detail::isalpha(" test"));
+    EXPECT_FALSE(CLI::detail::isalpha("test2"));
+}
+
 TEST(Trim, Various) {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -358,6 +370,194 @@ TEST(Validators, ProgramNameSplit) {
     res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
     EXPECT_EQ(res.first, std::string("./") + std::string(myfile));
     EXPECT_TRUE(res.second.empty());
+}
+
+TEST(CheckedMultiply, Int) {
+    int a = 10;
+    int b = -20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, -200);
+
+    a = 0;
+    b = -20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, 0);
+
+    a = 20;
+    b = 0;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, 0);
+
+    a = std::numeric_limits<int>::max();
+    b = 1;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::max());
+
+    a = std::numeric_limits<int>::max();
+    b = 2;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::max());
+
+    a = std::numeric_limits<int>::max();
+    b = -1;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, -std::numeric_limits<int>::max());
+
+    a = std::numeric_limits<int>::max();
+    b = std::numeric_limits<int>::max();
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::max());
+
+    a = std::numeric_limits<int>::min();
+    b = std::numeric_limits<int>::max();
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::min());
+
+    a = std::numeric_limits<int>::min();
+    b = 1;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::min());
+
+    a = std::numeric_limits<int>::min();
+    b = -1;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::min());
+
+    a = std::numeric_limits<int>::min() / 100;
+    b = 99;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<int>::min() / 100 * 99);
+}
+
+TEST(CheckedMultiply, SizeT) {
+    size_t a = 10;
+    size_t b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, 200u);
+
+    a = 0u;
+    b = 20u;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, 0u);
+
+    a = 20u;
+    b = 0u;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, 0u);
+
+    a = std::numeric_limits<size_t>::max();
+    b = 1u;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+
+    a = std::numeric_limits<size_t>::max();
+    b = 2u;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+
+    a = std::numeric_limits<size_t>::max();
+    b = std::numeric_limits<size_t>::max();
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+
+    a = std::numeric_limits<size_t>::max() / 100;
+    b = 99u;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_EQ(a, std::numeric_limits<size_t>::max() / 100u * 99u);
+}
+
+TEST(CheckedMultiply, Float) {
+    float a = 10;
+    float b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, 200);
+
+    a = 0;
+    b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, 0);
+
+    a = INFINITY;
+    b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, INFINITY);
+
+    a = 2;
+    b = -INFINITY;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, -INFINITY);
+
+    a = std::numeric_limits<float>::max() / 100;
+    b = 1;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100);
+
+    a = std::numeric_limits<float>::max() / 100;
+    b = 99;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100 * 99);
+
+    a = std::numeric_limits<float>::max() / 100;
+    b = 101;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100);
+
+    a = std::numeric_limits<float>::max() / 100;
+    b = -99;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100 * -99);
+
+    a = std::numeric_limits<float>::max() / 100;
+    b = -101;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100);
+}
+
+TEST(CheckedMultiply, Double) {
+    double a = 10;
+    double b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, 200);
+
+    a = 0;
+    b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, 0);
+
+    a = INFINITY;
+    b = 20;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, INFINITY);
+
+    a = 2;
+    b = -INFINITY;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, -INFINITY);
+
+    a = std::numeric_limits<double>::max() / 100;
+    b = 1;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
+
+    a = std::numeric_limits<double>::max() / 100;
+    b = 99;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100 * 99);
+
+    a = std::numeric_limits<double>::max() / 100;
+    b = 101;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
+
+    a = std::numeric_limits<double>::max() / 100;
+    b = -99;
+    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100 * -99);
+
+    a = std::numeric_limits<double>::max() / 100;
+    b = -101;
+    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
+    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
 }
 
 // Yes, this is testing an app_helper :)
