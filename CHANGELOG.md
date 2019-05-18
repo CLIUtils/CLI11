@@ -1,11 +1,12 @@
-## Version 1.8: Sets and Flags (IN PROGRESS)
+## Version 1.8: Transformers, default strings, and flags
 
-Set handling has been completely replaced by a new backend that works as a Validator. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support. The final bool "defaults" flag when creating options has been replaced by `->capture_default_str()` (ending an old limitation in construction made this possible); the old method is still available but may be removed in future versions.
+Set handling has been completely replaced by a new backend that works as a Validator or Transformer. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support. The final bool "defaults" flag when creating options has been replaced by `->capture_default_str()` (ending an old limitation in construction made this possible); the old method is still available but may be removed in future versions.
 
 * Replaced default help capture: `.add_option("name", value, "", True)` becomes `.add_option("name", value)->capture_default_str()` [#242]
 * Added `.always_capture_default()` [#242]
 * New `CLI::IsMember` validator replaces set validation [#222]
 * IsMember also supports container of pairs, transform allows modification of result [#228]
+* Added new Transformers, `CLI::AsNumberWithUnit` and `CLI::AsSizeValue` [#253]
 * Much more powerful flags with different values [#211], general types [#235]
 * `add_option` now supports bool due to unified bool handling [#211]
 * Support for composable unnamed subcommands [#216]
@@ -22,7 +23,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 * Better alignment on multiline descriptions [#269]
 * Better support for aarch64 [#266]
 * Respect `BUILD_TESTING` only if CLI11 is the main project; otherwise, `CLI11_TESTING` must be used [#277]
-* Drop auto-detection of experimental optional; must be enabled explicitly (too fragile) [#277]
+* Drop auto-detection of experimental optional and boost::optional; must be enabled explicitly (too fragile) [#277] [#279]
 
 > ### Converting from CLI11 1.7:
 >
@@ -52,11 +53,13 @@ Set handling has been completely replaced by a new backend that works as a Valid
 [#242]: https://github.com/CLIUtils/CLI11/pull/242
 [#247]: https://github.com/CLIUtils/CLI11/pull/247
 [#251]: https://github.com/CLIUtils/CLI11/pull/251
+[#253]: https://github.com/CLIUtils/CLI11/pull/253
 [#262]: https://github.com/CLIUtils/CLI11/pull/262
 [#265]: https://github.com/CLIUtils/CLI11/pull/265
 [#266]: https://github.com/CLIUtils/CLI11/pull/266
 [#269]: https://github.com/CLIUtils/CLI11/pull/269
 [#277]: https://github.com/CLIUtils/CLI11/pull/277
+[#279]: https://github.com/CLIUtils/CLI11/pull/279
 
 
 ## Version 1.7.1: Quick patch

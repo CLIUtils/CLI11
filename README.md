@@ -341,8 +341,8 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::IsMember(...)`: 🚧 Require an option be a member of a given set.  See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::Transformer(...)`: 🚧 Modify the input using a map.  See [Transforming Validators](#transforming-validators) for more details.
 -   `CLI::CheckedTransformer(...)`: 🚧 Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
--   `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
--   `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
+-   `CLI::AsNumberWithUnit(...)`:🚧 Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
+-   `CLI::AsSizeValue(...)`: 🚧 Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
 -   `CLI::ExistingFile`: Requires that the file exists if given.
 -   `CLI::ExistingDirectory`: Requires that the directory exists.
 -   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
@@ -788,6 +788,11 @@ Significant features and/or improvements to the code were contributed by:
 -   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
 -   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
 -   [Rafi Wiener](https://github.com/rafiw) <!-- INI, +ive validators and vector separators -->
+    [elszon](https://github.com/elszon) <!-- Formatting in multiline string -->
+    [ryan4729](https://github.com/ryan4729) <!-- AArch64 support -->
+    [Andrew Hardin](https://github.com/andrew-hardin) <!-- Fixing two warnings -->
+    [Paul le Roux](https://github.com/pleroux0) <!-- Arch independent CMake Config -->
+-   [Viacheslav Kroilov](https://github.com/metopa) <!-- AsNumberWithUnit and AsSizeValue -->
 
 
 ## License
