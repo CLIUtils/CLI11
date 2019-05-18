@@ -231,11 +231,12 @@ inline bool has_default_flag_values(const std::string &flags) {
 }
 
 inline void remove_default_flag_values(std::string &flags) {
-    size_t loc = flags.find_first_of('{');
+    auto loc = flags.find_first_of('{');
     while(loc != std::string::npos) {
         auto finish = flags.find_first_of("},", loc + 1);
         if((finish != std::string::npos) && (flags[finish] == '}')) {
-            flags.erase(flags.begin() + loc, flags.begin() + finish + 1);
+            flags.erase(flags.begin() + static_cast<std::ptrdiff_t>(loc),
+                        flags.begin() + static_cast<std::ptrdiff_t>(finish) + 1);
         }
         loc = flags.find_first_of('{', loc + 1);
     }

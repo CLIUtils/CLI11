@@ -1105,8 +1105,11 @@ class App {
     }
     /// Get a pointer to subcommand by index
     App *get_subcommand(int index = 0) const {
-        if((index >= 0) && (index < static_cast<int>(subcommands_.size())))
-            return subcommands_[index].get();
+        if(index >= 0) {
+            auto uindex = static_cast<unsigned>(index);
+            if(uindex < subcommands_.size())
+                return subcommands_[uindex].get();
+        }
         throw OptionNotFound(std::to_string(index));
     }
 
@@ -1130,8 +1133,11 @@ class App {
 
     /// Get an owning pointer to subcommand by index
     CLI::App_p get_subcommand_ptr(int index = 0) const {
-        if((index >= 0) && (index < static_cast<int>(subcommands_.size())))
-            return subcommands_[index];
+        if(index >= 0) {
+            auto uindex = static_cast<unsigned>(index);
+            if(uindex < subcommands_.size())
+                return subcommands_[uindex];
+        }
         throw OptionNotFound(std::to_string(index));
     }
 
@@ -1274,13 +1280,13 @@ class App {
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv) {
         // If the name is not set, read from command line
-        if((name_.empty()) || (has_automatic_name_)) {
+        if(name_.empty() || has_automatic_name_) {
             has_automatic_name_ = true;
             name_ = argv[0];
         }
 
         std::vector<std::string> args;
-        args.reserve(argc - 1);
+        args.reserve(static_cast<size_t>(argc - 1));
         for(int i = argc - 1; i > 0; i--)
             args.emplace_back(argv[i]);
         parse(std::move(args));

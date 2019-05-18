@@ -86,7 +86,7 @@ TEST(StringTools, Modify3) {
     std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [](std::string &str, size_t index) {
         str.erase(index, 3);
         str.insert(str.begin(), 'a');
-        return 0;
+        return 0u;
     });
     EXPECT_EQ(newString, "aba");
 }

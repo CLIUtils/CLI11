@@ -11,9 +11,6 @@ else()
     cmake_policy(VERSION 3.14)
 endif()
 
-# TESTING: remove this later
-set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
-
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
 
 # Read in the line containing the version
@@ -25,6 +22,9 @@ string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
 
 # Add the project
 project(CLI11 LANGUAGES CXX VERSION ${VERSION_STRING})
+
+# Special target that adds warnings. Is not exported.
+add_library(CLI11_warnings INTERFACE)
 
 # Only if built as the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -45,11 +45,19 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+    option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
+
     # Be moderately paranoid with flags
     if(MSVC)
-        add_definitions("/W4")
+        target_compile_options(CLI11_warnings INTERFACE "/W4")
+        if(CLI11_WARNINGS_AS_ERRORS)
+            target_compile_options(CLI11_warnings INTERFACE "/WX")
+        endif()
     else()
-        add_definitions(-Wall -Wextra -pedantic -Wshadow)
+        target_compile_options(CLI11_warnings INTERFACE -Wall -Wextra -pedantic -Wshadow)
+        if(CLI11_WARNINGS_AS_ERRORS)
+            target_compile_options(CLI11_warnings INTERFACE -Werror)
+        endif()
     endif()
 
     if(CMAKE_VERSION VERSION_GREATER 3.6)

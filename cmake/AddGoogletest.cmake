@@ -1,4 +1,4 @@
-# 
+#
 #
 # Downloads GTest and provides a helper macro to add tests. Add make check, as well, which
 # gives output on failed tests without having to set an environment variable.
@@ -25,7 +25,7 @@ endif()
 # Target must already exist
 macro(add_gtest TESTNAME)
     target_link_libraries(${TESTNAME} PUBLIC gtest gmock gtest_main)
-    
+
     if(GOOGLE_TEST_INDIVIDUAL)
         if(CMAKE_VERSION VERSION_LESS 3.10)
             gtest_add_tests(TARGET ${TESTNAME}
@@ -36,7 +36,7 @@ macro(add_gtest TESTNAME)
             gtest_discover_tests(${TESTNAME}
                 TEST_PREFIX "${TESTNAME}."
                 PROPERTIES FOLDER "Tests")
-            
+
         endif()
     else()
         add_test(${TESTNAME} ${TESTNAME})
@@ -58,6 +58,13 @@ BUILD_GTEST
 
 set_target_properties(gtest gtest_main gmock gmock_main
     PROPERTIES FOLDER "Extern")
+
+foreach(TGT IN ITEMS gtest gtest_main gmock gmock_main)
+    get_property(DIR_LIST TARGET ${TGT} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    foreach(ITEM IN LISTS DIR_LIST)
+        set_property(TARGET ${TGT} APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${ITEM}")
+    endforeach()
+endforeach()
 
 if(MSVC)
     if (MSVC_VERSION GREATER_EQUAL 1900)
