@@ -463,7 +463,7 @@ All `App`s have a `get_subcommands()` method, which returns a list of pointers t
 For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
 even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
 You are allowed to throw `CLI::Success` in the callbacks.
-Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once unless the `.immediate_callback()` flag is set.  In which case the callback executes on completion of the subcommand arguments but after the arguments for that subcommand have been parsed, and can be triggered multiple times.
+Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  🆕 The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once unless the `.immediate_callback()`  🆕 flag is set.  In which case the callback executes on completion of the subcommand arguments but after the arguments for that subcommand have been parsed, and can be triggered multiple times.
 
 🆕 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
 Nameless subcommands function a similarly to groups in the main `App`. See [Option groups](#option-groups) to see how this might work.  If an option is not defined in the main App, all nameless subcommands are checked as well.  This allows for the options to be defined in a composable group.  The `add_subcommand` function has an overload for adding a `shared_ptr<App>` so the subcommand(s) could be defined in different components and merged into a main `App`, or possibly multiple `Apps`.  Multiple nameless subcommands are allowed.  Callbacks for nameless subcommands are only triggered if any options from the subcommand were parsed.
@@ -517,7 +517,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
-- `[option_name]`: 🆕 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag.
+- `[option_name]`: 🆕 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
@@ -661,7 +661,7 @@ still giving the user freedom to `callback` on the main app.
 The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
 including the program name in the string, and false otherwise.
 
-Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `unique_ptr`s (like `Option`s) and are deleted when the main `App` goes out of scope.
+Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `shared_ptr`s (similar to `Option`s) and are deleted when the main `App` goes out of scope unless the object has another owner.
 
 ### How it works
 
