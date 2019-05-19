@@ -222,7 +222,7 @@ App* subcom = app.add_subcommand(name, description);
 
 Option_group *app.add_option_group(name,description); // 🆕
 
-// 🆕 All add_*set* methods deprecated in CLI11 1.8 - use ->transform(CLI::IsMember) instead
+// ⚠️  All add_*set* methods deprecated in CLI11 1.8 - use ->transform(CLI::IsMember) instead
 -app.add_set(option_name,
 -            variable_to_bind_to,     // Same type as stored by set
 -            set_of_possible_options, // Set will be copied, ignores changes
@@ -252,10 +252,12 @@ alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; th
 example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"`. If `variable_to_bind_to` is anything but an integer value the
 default behavior is to take the last value given, while if `variable_to_bind_to` is an integer type the behavior will be to sum
 all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
-The default value can be any value. For example if you wished to define a numerical flag
+The default value can be any value. For example if you wished to define a numerical flag:
+
 ```cpp
 app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag") // 🆕
 ```
+
 using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
 
 
@@ -269,7 +271,9 @@ On a compiler that supports C++17's `__has_include`, you can also use `std::opti
 -   `"this"` Can only be passed positionally
 -   `"-a,-b,-c"` No limit to the number of non-positional option names
 
-The add commands return a pointer to an internally stored `Option`. If you set the final argument to true, the default value is captured and printed on the command line with the help flag. This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup.
+The add commands return a pointer to an internally stored `Option`.
+This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup.
+⚠️  Deprecated: The `add_*` commands have a final argument than can be set to true, which causes the default value to be captured and printed on the command line with the help flag. Since CLI11 1.8, you can simply add `->capture_default_str()`.
 
 #### Option options
 
@@ -410,8 +414,10 @@ All the functions return a Validator reference allowing them to be chained.  For
 ```cpp
 opt->check(CLI::Range(10,20).description("range is limited to sensible values").active(false).name("range"));
 ```
+
 will specify a check on an option with a name "range", but deactivate it for the time being.
 The check can later be activated through
+
 ```cpp
 opt->get_validator("range")->active();
 ```
@@ -419,10 +425,13 @@ opt->get_validator("range")->active();
 ##### Custom Validators 🆕
 
 A validator object with a custom function can be created via
+
 ```cpp
 CLI::Validator(std::function<std::string(std::string &)>,validator_description,validator_name="");
 ```
+
 or if the operation function is set later they can be created with
+
 ```cpp
 CLI::Validator(validator_description);
 ```
@@ -430,10 +439,13 @@ CLI::Validator(validator_description);
  It is also possible to create a subclass of `CLI::Validator`, in which case it can also set a custom description function, and operation function.
 
 ##### Querying Validators 🆕
+
 Once loaded into an Option, a pointer to a named Validator can be retrieved via
+
 ```cpp
 opt->get_validator(name);
 ```
+
 This will retrieve a Validator with the given name or throw a `CLI::OptionNotFound` error.  If no name is given or name is empty the first unnamed Validator will be returned or the first Validator if there is only one.
 
 Validators have a few functions to query the current values
@@ -443,6 +455,7 @@ Validators have a few functions to query the current values
  * `get_modifying()`: 🆕 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()` 🆕 method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
 
 #### Getting results
+
 In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
 - `results()`: Retrieves a vector of strings with all the results in the order they were given.
