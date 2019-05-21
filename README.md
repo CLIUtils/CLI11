@@ -12,7 +12,7 @@
 [![Latest release][releases-badge]][github releases]
 [![DOI][doi-badge]][doi-link]
 [![Conan.io][conan-badge]][conan-link]
-[![Try CLI11 1.7 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
@@ -859,8 +859,8 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [version 1.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [version 1.3 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
-[wandbox-badge]: https://img.shields.io/badge/try_1.7-online-blue.svg
-[wandbox-link]: https://wandbox.org/permlink/k1BzlRwOZ07ieEuD
+[wandbox-badge]: https://img.shields.io/badge/try_1.8-online-blue.svg
+[wandbox-link]: https://wandbox.org/permlink/rVIAbbIyBZeS1dLn
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]: https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
 [diana slides]: https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
