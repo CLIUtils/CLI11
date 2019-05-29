@@ -124,6 +124,12 @@ struct pair_adaptor<
     }
 };
 
+// Warning is suppressed due to "bug" in gcc<5.0 and gcc 7.0 with c++17 enabled that generates a Wnarrowing warning
+// in the unevaluated context even if the function that was using this wasn't used.  The standard says narrowing in
+// brace initialization shouldn't be allowed but for backwards compatibility gcc allows it in some contexts.  It is a
+// little fuzzy what happens in template constructs and I think that was something GCC took a little while to work out.
+// But regardless some versions of gcc generate a warning when they shouldn't from the following code so that should be
+// suppressed
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnarrowing"
@@ -142,10 +148,10 @@ template <typename T, typename C> class is_direct_constructible {
 #pragma GCC diagnostic pop
 #endif
 
-// Check for streamability
+// Check for output streamability
 // Based on https://stackoverflow.com/questions/22758291/how-can-i-detect-if-a-type-can-be-streamed-to-an-stdostream
 
-template <typename T, typename S = std::ostringstream> class is_streamable {
+template <typename T, typename S = std::ostringstream> class is_ostreamable {
     template <typename TT, typename SS>
     static auto test(int) -> decltype(std::declval<SS &>() << std::declval<TT>(), std::true_type());
 
@@ -155,7 +161,7 @@ template <typename T, typename S = std::ostringstream> class is_streamable {
     static const bool value = decltype(test<T, S>(0))::value;
 };
 
-// check for input streamability
+/// Check for input streamability
 template <typename T, typename S = std::istringstream> class is_istreamable {
     template <typename TT, typename SS>
     static auto test(int) -> decltype(std::declval<SS &>() >> std::declval<TT &>(), std::true_type());
@@ -166,7 +172,7 @@ template <typename T, typename S = std::istringstream> class is_istreamable {
     static const bool value = decltype(test<T, S>(0))::value;
 };
 
-// templated operation to get a value from a stream
+/// Templated operation to get a value from a stream
 template <typename T, enable_if_t<is_istreamable<T>::value, detail::enabler> = detail::dummy>
 bool from_stream(const std::string &istring, T &obj) {
     std::istringstream is;
@@ -188,7 +194,7 @@ auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
 
 /// Convert an object to a string (streaming must be supported for that type)
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && is_streamable<T>::value, detail::enabler> =
+          enable_if_t<!std::is_constructible<std::string, T>::value && is_ostreamable<T>::value, detail::enabler> =
               detail::dummy>
 std::string to_string(T &&value) {
     std::stringstream stream;
@@ -198,7 +204,7 @@ std::string to_string(T &&value) {
 
 /// If conversion is not supported, return an empty string (streaming is not supported for that type)
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && !is_streamable<T>::value, detail::enabler> =
+          enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value, detail::enabler> =
               detail::dummy>
 std::string to_string(T &&) {
     return std::string{};
@@ -382,7 +388,7 @@ bool lexical_cast(std::string input, T &output) {
     }
 }
 
-/// String and similar
+/// String and similar direct assignment
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           std::is_assignable<T &, std::string>::value,
@@ -392,7 +398,7 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
-/// String and similar
+/// String and similar constructible and copy assignment
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value && std::is_constructible<T, std::string>::value,
@@ -414,7 +420,7 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
-/// assignable from double or int
+/// Assignable from double or int
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value &&
@@ -436,7 +442,7 @@ bool lexical_cast(std::string input, T &output) {
     return from_stream(input, output);
 }
 
-/// assignable from int64
+/// Assignable from int64
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value &&
@@ -452,7 +458,7 @@ bool lexical_cast(std::string input, T &output) {
     return from_stream(input, output);
 }
 
-/// assignable from double
+/// Assignable from double
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value &&
@@ -482,13 +488,13 @@ bool lexical_cast(std::string input, T &output) {
     return from_stream(input, output);
 }
 
-/// if they are the same just do the regular lexical cast
+/// Assign a value through lexical cast operations
 template <class T, class XC, enable_if_t<std::is_same<T, XC>::value, detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
     return lexical_cast(input, output);
 }
 
-/// if there is a way to directly assign a specific type
+/// Assign a value converted from a string in lexical cast to the output value directly
 template <
     class T,
     class XC,
@@ -502,7 +508,7 @@ bool lexical_assign(const std::string &input, T &output) {
     return parse_result;
 }
 
-/// if there is a way to construct the value and do copy assignment
+/// Assign a value from a lexical cast through constructing a value and move assigning it
 template <class T,
           class XC,
           enable_if_t<!std::is_same<T, XC>::value && !std::is_assignable<T &, XC &>::value &&
@@ -512,7 +518,7 @@ bool lexical_assign(const std::string &input, T &output) {
     XC val;
     bool parse_result = lexical_cast<XC>(input, val);
     if(parse_result) {
-        output = T{val};
+        output = T(val); // use () form of constructor to allow some implicit conversions
     }
     return parse_result;
 }
