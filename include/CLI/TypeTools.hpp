@@ -229,102 +229,115 @@ std::string checked_to_string(T &&) {
 }
 
 // Enumeration of the different supported categorizations of objects
-enum objCategory {
-    integral_value,
-    unsigned_integral,
-    enumeration,
-    boolean_value,
-    floating_point,
-    number_constructible,
-    double_constructible,
-    integer_constructible,
-    string_assignable,
-    string_constructible,
-    other,
+enum objCategory : int {
+    integral_value = 2,
+    unsigned_integral = 4,
+    enumeration = 6,
+    boolean_value = 8,
+    floating_point = 10,
+    number_constructible = 12,
+    double_constructible = 14,
+    integer_constructible = 16,
+    vector_value = 30,
+    // string assignable or greater used in a condition so anything string like must come last
+    string_assignable = 50,
+    string_constructible = 60,
+    other = 200,
+
 };
 
 /// some type that is not otherwise recognized
-template <typename T, typename Enable = void> class classify_object { static constexpr objCategory value = other; };
+template <typename T, typename Enable = void> struct classify_object { static constexpr objCategory value{other}; };
 
 /// Set of overloads to classify an object according to type
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value &&
-                                              !is_bool<T>::value && !std::is_enum<T>::value>::type> {
+struct classify_object<T,
+                       typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value &&
+                                               !is_bool<T>::value && !std::is_enum<T>::value>::type> {
     static constexpr objCategory value{integral_value};
 };
 
 /// Unsigned integers
 template <typename T>
-class classify_object<
+struct classify_object<
     T,
     typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value>::type> {
     static constexpr objCategory value{unsigned_integral};
 };
 
 /// Boolean values
-template <typename T> class classify_object<T, typename std::enable_if<is_bool<T>::value>::type> {
-    static constexpr objCategory value = boolean_value;
+template <typename T> struct classify_object<T, typename std::enable_if<is_bool<T>::value>::type> {
+    static constexpr objCategory value{boolean_value};
 };
 
 /// Floats
-template <typename T> class classify_object<T, typename std::enable_if<std::is_floating_point<T>::value>::type> {
-    static constexpr objCategory value = floating_point;
+template <typename T> struct classify_object<T, typename std::enable_if<std::is_floating_point<T>::value>::type> {
+    static constexpr objCategory value{floating_point};
 };
 
 /// String and similar direct assignment
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                              std::is_assignable<T &, std::string>::value>::type> {
-    static constexpr objCategory value = string_assignable;
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            std::is_assignable<T &, std::string>::value && !is_vector<T>::value>::type> {
+    static constexpr objCategory value{string_assignable};
 };
 
 /// String and similar constructible and copy assignment
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                              !std::is_assignable<T &, std::string>::value &&
-                                              std::is_constructible<T, std::string>::value>::type> {
-    static constexpr objCategory value = string_constructible;
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            !std::is_assignable<T &, std::string>::value &&
+                            std::is_constructible<T, std::string>::value && !is_vector<T>::value>::type> {
+    static constexpr objCategory value{string_constructible};
 };
 
 /// Enumerations
-template <typename T> class classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
-    static constexpr objCategory value = enumeration;
+template <typename T> struct classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
+    static constexpr objCategory value{enumeration};
+};
+
+/// Handy helper to contain a bunch of checks that rule out many common types (integers, string like, floating point,
+/// vectors, and enumerations
+template <typename T> struct uncommon_type {
+    using type = typename std::conditional<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                                               !std::is_assignable<T &, std::string>::value &&
+                                               !std::is_constructible<T, std::string>::value && !is_vector<T>::value &&
+                                               !std::is_enum<T>::value,
+                                           std::true_type,
+                                           std::false_type>::type;
+    static const bool value = type::value;
 };
 
 /// Assignable from double or int
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                              !std::is_assignable<T &, std::string>::value &&
-                                              !std::is_constructible<T, std::string>::value &&
-                                              !std::is_enum<T>::value && is_direct_constructible<T, double>::value &&
-                                              is_direct_constructible<T, int>::value>::type> {
-    static constexpr objCategory value = number_constructible;
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
+    static constexpr objCategory value{number_constructible};
 };
 
 /// Assignable from int
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                              !std::is_assignable<T &, std::string>::value &&
-                                              !std::is_constructible<T, std::string>::value &&
-                                              !std::is_enum<T>::value && !is_direct_constructible<T, double>::value &&
-                                              is_direct_constructible<T, int>::value>::type> {
-    static const objCategory value = integer_constructible;
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
+    static const objCategory value{integer_constructible};
 };
 
 /// Assignable from double
 template <typename T>
-class classify_object<T,
-                      typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                              !std::is_assignable<T &, std::string>::value &&
-                                              !std::is_constructible<T, std::string>::value &&
-                                              !std::is_enum<T>::value && is_direct_constructible<T, double>::value &&
-                                              !is_direct_constructible<T, int>::value>::type> {
-    static const objCategory value = double_constructible;
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                                               !is_direct_constructible<T, int>::value>::type> {
+    static const objCategory value{double_constructible};
+};
+
+/// vector type
+template <typename T> struct classify_object<T, typename std::enable_if<is_vector<T>::value>::type> {
+    static const objCategory value{vector_value};
 };
 
 // Type name print
@@ -355,7 +368,7 @@ constexpr const char *type_name() {
 }
 
 /// This one should not be used, since vector types print the internal type
-template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "VECTOR";
 }
