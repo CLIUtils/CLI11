@@ -604,7 +604,7 @@ The subcommand method
 .add_option_group(name,description)
 ```
 
-Will create an option group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range test](./tests/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
+Will create an option group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
 
 ```cpp
 ogroup->add_option(option_pointer);
