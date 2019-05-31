@@ -477,6 +477,11 @@ bool lexical_cast(std::string input, T &output) {
         return true;
     } catch(const std::invalid_argument &) {
         return false;
+    } catch(const std::out_of_range &) {
+        // if the number is out of the range of a 64 bit value then it is still a number and for this purpose is still
+        // valid all we care about the sign
+        output = (input[0] != '-');
+        return true;
     }
 }
 
