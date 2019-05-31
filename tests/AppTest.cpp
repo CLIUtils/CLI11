@@ -647,6 +647,15 @@ TEST_F(TApp, BoolOption) {
     args = {"-b", "-7"};
     run();
     EXPECT_FALSE(bflag);
+
+    // cause an out of bounds error internally
+    args = {"-b", "751615654161688126132138844896646748852"};
+    run();
+    EXPECT_TRUE(bflag);
+
+    args = {"-b", "-751615654161688126132138844896646748852"};
+    run();
+    EXPECT_FALSE(bflag);
 }
 
 TEST_F(TApp, ShortOpts) {
