@@ -527,7 +527,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// disable flag overrides
+    /// Disable flag overrides values, e.g. --flag=<value> is not allowed
     Option *disable_flag_override(bool value = true) {
         disable_flag_override_ = value;
         return this;
@@ -564,7 +564,7 @@ class Option : public OptionBase<Option> {
     /// Get the short names
     const std::vector<std::string> get_snames() const { return snames_; }
 
-    /// get the flag names with specified default values
+    /// Get the flag names with specified default values
     const std::vector<std::string> get_fnames() const { return fnames_; }
 
     /// The number of times the option expects to be included
@@ -790,6 +790,7 @@ class Option : public OptionBase<Option> {
         return (detail::find_member(name, fnames_, ignore_case_, ignore_underscore_) >= 0);
     }
 
+    /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not disabled
     std::string get_flag_value(std::string name, std::string input_value) const {
         static const std::string trueString{"true"};
         static const std::string falseString{"false"};
@@ -855,7 +856,7 @@ class Option : public OptionBase<Option> {
     /// Get a copy of the results
     std::vector<std::string> results() const { return results_; }
 
-    /// get the results as a particular type
+    /// Get the results as a specified type
     template <typename T,
               enable_if_t<!is_vector<T>::value && !std::is_const<T>::value, detail::enabler> = detail::dummy>
     void results(T &output) const {
@@ -884,7 +885,7 @@ class Option : public OptionBase<Option> {
             throw ConversionError(get_name(), results_);
         }
     }
-    /// get the results as a vector of a particular type
+    /// Get the results as a vector of the specified type
     template <typename T> void results(std::vector<T> &output) const {
         output.clear();
         bool retval = true;
@@ -899,7 +900,7 @@ class Option : public OptionBase<Option> {
         }
     }
 
-    /// return the results as a particular type
+    /// Return the results as the specified type
     template <typename T> T as() const {
         T output;
         results(output);
@@ -980,7 +981,7 @@ class Option : public OptionBase<Option> {
     }
 
   private:
-    // run through the validators
+    // Run a result through the validators
     std::string _validate(std::string &result) {
         std::string err_msg;
         for(const auto &vali : validators_) {
@@ -995,6 +996,7 @@ class Option : public OptionBase<Option> {
         return err_msg;
     }
 
+    /// Add a single result to the result set, taking into account delimiters
     int _add_result(std::string &&result) {
         int result_count = 0;
         if(delimiter_ == '\0') {
