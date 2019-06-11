@@ -1,5 +1,4 @@
 #pragma once
-
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
@@ -9,6 +8,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -509,18 +509,26 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
     });
     return {(it != std::end(setref)), it};
 }
+/// Generate the absolute value of a number
+template <typename T> inline typename std::enable_if<std::is_signed<T>::value, T>::type absval(T a) {
+    return static_cast<T>((std::abs)(a));
+}
+/// unsigned values just return the value
+template <typename T> inline typename std::enable_if<!std::is_signed<T>::value, T>::type absval(T a) { return a; }
 
 /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
 template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
-    if(a == 0 || b == 0) {
+    if(a == 0 || b == 0 || a == 1 || b == 1) {
         a *= b;
         return true;
     }
-    T c = a * b;
-    if(c / a != b) {
+    if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
         return false;
     }
-    a = c;
+    if((std::numeric_limits<T>::max)() / absval(a) < absval(b)) {
+        return false;
+    }
+    a *= b;
     return true;
 }
 
