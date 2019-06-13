@@ -1855,6 +1855,12 @@ class App {
     /// Internal function to run (App) callback, bottom up
     void run_callback() {
         pre_callback();
+        // in the main app if immediate_callback_ is set it runs the main callback before the used subcommands
+        if(immediate_callback_ && parent_ == nullptr) {
+            if(callback_) {
+                callback_();
+            }
+        }
         // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
             if(!subc->immediate_callback_)
@@ -1866,7 +1872,10 @@ class App {
                 subc->run_callback();
             }
         }
-        // finally run the main callback
+        if(immediate_callback_ && parent_ == nullptr) {
+            return;
+        }
+        // finally run the main callback if not run already
         if(callback_ && (parsed_ > 0)) {
             if(!name_.empty() || count_all() > 0) {
                 callback_();
@@ -1980,7 +1989,6 @@ class App {
                 opt->run_callback();
             }
         }
-
         for(App_p &sub : subcommands_) {
             if(!sub->immediate_callback_) {
                 sub->_process_callbacks();
