@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <tuple>
 
 class NotStreamable {};
 
@@ -23,6 +24,25 @@ TEST(TypeTools, Streaming) {
 
     EXPECT_EQ(CLI::detail::to_string("string"), std::string("string"));
     EXPECT_EQ(CLI::detail::to_string(std::string("string")), std::string("string"));
+}
+
+TEST(TypeTools, tuple) {
+    EXPECT_FALSE(CLI::detail::is_tuple_like<int>::value);
+    EXPECT_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
+    auto v = CLI::detail::is_tuple_like<std::tuple<double, int>>::value;
+    EXPECT_TRUE(v);
+    v = CLI::detail::is_tuple_like<std::tuple<double, double, double>>::value;
+    EXPECT_TRUE(v);
+}
+
+TEST(TypeTools, type_size) {
+    EXPECT_EQ(CLI::detail::type_count<int>(), 1);
+    EXPECT_EQ(CLI::detail::type_count<std::vector<double>>(), -1);
+
+    auto V = CLI::detail::type_count<std::tuple<double, int>>();
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count<std::tuple<std::string, double, int>>();
+    EXPECT_EQ(V, 3);
 }
 
 TEST(Split, SimpleByToken) {

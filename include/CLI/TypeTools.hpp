@@ -186,6 +186,16 @@ bool from_stream(const std::string & /*istring*/, T & /*obj*/) {
     return false;
 }
 
+// Check for tuple like types, as in classes with a tuple_size type trait
+template <typename S> class is_tuple_like {
+    template <typename SS> static auto test(int) -> decltype(std::tuple_size<SS>::value, std::true_type());
+
+    template <typename> static auto test(...) -> std::false_type;
+
+  public:
+    static const bool value = decltype(test<S>(0))::value;
+};
+
 /// Convert an object to a string (directly forward if this can become a string)
 template <typename T, enable_if_t<std::is_constructible<std::string, T>::value, detail::enabler> = detail::dummy>
 auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
@@ -388,6 +398,23 @@ constexpr const char *type_name() {
 template <typename T, enable_if_t<classify_object<T>::value >= string_assignable, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
+}
+
+/// return -1 for vector types to indicate unlimited size
+template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy> constexpr int type_count() {
+    return -1;
+}
+
+/// return the tuple size for types that look like a tuple
+template <typename T, enable_if_t<is_tuple_like<T>::value, detail::enabler> = detail::dummy>
+constexpr int type_count() {
+    return static_cast<int>(std::tuple_size<T>::value);
+}
+
+/// Get the size of a type in terms of string elements is accepts
+template <typename T, enable_if_t<!is_vector<T>::value && !is_tuple_like<T>::value, detail::enabler> = detail::dummy>
+constexpr inline int type_count() {
+    return 1;
 }
 
 // Lexical cast
