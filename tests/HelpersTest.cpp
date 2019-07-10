@@ -36,13 +36,15 @@ TEST(TypeTools, tuple) {
 }
 
 TEST(TypeTools, type_size) {
-    EXPECT_EQ(CLI::detail::type_count<int>(), 1);
-    EXPECT_EQ(CLI::detail::type_count<std::vector<double>>(), -1);
-
-    auto V = CLI::detail::type_count<std::tuple<double, int>>();
+    EXPECT_EQ(CLI::detail::type_count<int>::value, 1);
+    EXPECT_EQ(CLI::detail::type_count<void>::value, 0);
+    EXPECT_EQ(CLI::detail::type_count<std::vector<double>>::value, -1);
+    auto V = CLI::detail::type_count<std::tuple<double, int>>::value;
     EXPECT_EQ(V, 2);
-    V = CLI::detail::type_count<std::tuple<std::string, double, int>>();
+    V = CLI::detail::type_count<std::tuple<std::string, double, int>>::value;
     EXPECT_EQ(V, 3);
+    V = CLI::detail::type_count<std::array<std::string, 5>>::value;
+    EXPECT_EQ(V, 5);
 }
 
 TEST(Split, SimpleByToken) {
