@@ -780,7 +780,13 @@ TEST(Types, TypeName) {
     EXPECT_EQ("FLOAT", float_name);
 
     std::string vector_name = CLI::detail::type_name<std::vector<int>>();
-    EXPECT_EQ("VECTOR", vector_name);
+    EXPECT_EQ("INT", vector_name);
+
+    vector_name = CLI::detail::type_name<std::vector<double>>();
+    EXPECT_EQ("FLOAT", vector_name);
+
+    vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
+    EXPECT_EQ("UINT", vector_name);
 
     std::string text_name = CLI::detail::type_name<std::string>();
     EXPECT_EQ("TEXT", text_name);
