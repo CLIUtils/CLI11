@@ -788,6 +788,23 @@ TEST(Types, TypeName) {
     vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
     EXPECT_EQ("UINT", vector_name);
 
+    EXPECT_EQ(CLI::detail::classify_object<std::tuple<double>>::value, CLI::detail::objCategory::number_constructible);
+
+    std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
+    EXPECT_EQ("FLOAT", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
+    EXPECT_EQ("[INT,TEXT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT,UINT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int, std::string>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT,UINT,TEXT]", tuple_name);
+
     std::string text_name = CLI::detail::type_name<std::string>();
     EXPECT_EQ("TEXT", text_name);
 
@@ -797,6 +814,10 @@ TEST(Types, TypeName) {
     enum class test { test1, test2, test3 };
     std::string enum_name = CLI::detail::type_name<test>();
     EXPECT_EQ("ENUM", enum_name);
+
+    EXPECT_EQ(CLI::detail::classify_object<std::tuple<test>>::value, CLI::detail::objCategory::tuple_value);
+    std::string enum_name2 = CLI::detail::type_name<std::tuple<test>>();
+    EXPECT_EQ("ENUM", enum_name2);
 }
 
 TEST(Types, OverflowSmall) {

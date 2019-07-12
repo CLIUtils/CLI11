@@ -367,7 +367,11 @@ struct classify_object<T,
 };
 
 /// vector type
-template <typename T> struct classify_object<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<is_tuple_like<T>::value && uncommon_type<T>::value &&
+                                               !is_direct_constructible<T, double>::value &&
+                                               !is_direct_constructible<T, int>::value>::type> {
     static const objCategory value{tuple_value};
 };
 
@@ -449,7 +453,7 @@ template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>:
 template <
     typename T,
     enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 1, detail::enabler> = detail::dummy>
-constexpr const char *type_name() {
+std::string type_name() {
     return type_name<std::tuple_element<0, T>::type>();
 }
 /// Print type name for 2 element tuples
@@ -487,7 +491,7 @@ template <
 std::string type_name() {
     return std::string("[") + type_name<std::tuple_element<0, T>::type>() + "," +
            type_name<std::tuple_element<1, T>::type>() + "," + type_name<std::tuple_element<2, T>::type>() + "," +
-           type_name<std::tuple_element<3, T>::type>() + "," + type_name<std::tuple_element<4, T>::type>() "]";
+           type_name<std::tuple_element<3, T>::type>() + "," + type_name<std::tuple_element<4, T>::type>() + "]";
 }
 // Lexical cast
 
