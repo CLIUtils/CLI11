@@ -759,7 +759,7 @@ template <class T,
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
     output.clear();
-    output.reserve(res.size());
+    output.reserve(strings.size());
     for(const auto &elem : strings) {
 
         output.emplace_back();
@@ -768,17 +768,34 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return (!output.empty()) && retval;
 }
 
+/// Conversion for single element tuple and single element tuple conversion type
 template <class T,
           class XC,
-          enable_if_t<type_count<T>::value == 1 && is_tuple_like<T>::value, detail::enabler> = detail::dummy>
+          enable_if_t<type_count<T>::value == 1 && is_tuple_like<T>::value && is_tuple_like<XC>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     static_assert(type_count<T>::value == type_count<XC>::value,
                   "when using converting to tuples different cross conversion are not possible");
 
-    bool retval = lexical_cast<std::tuple_element<0, T>::type, XC>(strings[0], std::get<0>(output));
+    bool retval = lexical_assign<std::tuple_element<0, T>::type, std::tuple_element<0, XC>::type>(strings[0],
+                                                                                                  std::get<0>(output));
     return retval;
 }
 
+/// Conversion for single element tuple and single defined type
+template <class T,
+          class XC,
+          enable_if_t<type_count<T>::value == 1 && is_tuple_like<T>::value && !is_tuple_like<XC>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+    static_assert(type_count<T>::value == type_count<XC>::value,
+                  "when using converting to tuples different cross conversion are not possible");
+
+    bool retval = lexical_assign<std::tuple_element<0, T>::type, XC>(strings[0], std::get<0>(output));
+    return retval;
+}
+
+/// conversion for two element tuple
 template <class T, class XC, enable_if_t<type_count<T>::value == 2, detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     static_assert(type_count<T>::value == type_count<XC>::value,
@@ -791,6 +808,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return retval;
 }
 
+/// conversion for three element tuple
 template <class T, class XC, enable_if_t<type_count<T>::value == 3, detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     static_assert(type_count<T>::value == type_count<XC>::value,
@@ -806,6 +824,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return retval;
 }
 
+/// conversion for four element tuple
 template <class T, class XC, enable_if_t<type_count<T>::value == 4, detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     static_assert(type_count<T>::value == type_count<XC>::value,
@@ -824,6 +843,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return retval;
 }
 
+/// conversion for five element tuple
 template <class T, class XC, enable_if_t<type_count<T>::value == 5, detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     static_assert(type_count<T>::value == type_count<XC>::value,

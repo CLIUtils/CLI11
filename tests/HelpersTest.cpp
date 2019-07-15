@@ -931,6 +931,44 @@ TEST(Types, LexicalCastEnum) {
     EXPECT_EQ(output2, t2::enum3);
 }
 
+TEST(Types, LexicalConversionDouble) {
+    CLI::results_t input = {"9.12"};
+    long double x;
+    bool res = CLI::detail::lexical_conversion<long double, double>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_FLOAT_EQ((float)9.12, (float)x);
+
+    CLI::results_t bad_input = {"hello"};
+    res = CLI::detail::lexical_conversion<long double, double>(input, x);
+    EXPECT_TRUE(res);
+}
+
+TEST(Types, LexicalConversionDoubleTuple) {
+    CLI::results_t input = {"9.12"};
+    std::tuple<double> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_DOUBLE_EQ(9.12, std::get<0>(x));
+
+    CLI::results_t bad_input = {"hello"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+}
+
+TEST(Types, LexicalConversionVectorDouble) {
+    CLI::results_t input = {"9.12", "10.79", "-3.54"};
+    std::vector<double> x;
+    bool res = CLI::detail::lexical_conversion<std::vector<double>, double>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.size(), 3u);
+    EXPECT_DOUBLE_EQ(x[2], -3.54);
+
+    res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.size(), 3u);
+    EXPECT_DOUBLE_EQ(x[2], -3.54);
+}
+
 TEST(FixNewLines, BasicCheck) {
     std::string input = "one\ntwo";
     std::string output = "one\n; two";
