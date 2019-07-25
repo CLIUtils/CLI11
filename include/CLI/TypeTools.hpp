@@ -9,9 +9,12 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+
+// [CLI11:verbatim]
 #if defined(CLI11_CPP17)
 #include <string_view>
 #endif
+// [CLI11:verbatim]
 
 namespace CLI {
 
