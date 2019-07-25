@@ -9,6 +9,9 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#if defined(CLI11_CPP17)
+#include <string_view>
+#endif
 
 namespace CLI {
 
@@ -71,6 +74,10 @@ template <typename T> struct IsMemberType { using type = T; };
 
 /// The main custom type needed here is const char * should be a string.
 template <> struct IsMemberType<const char *> { using type = std::string; };
+
+#if defined(CLI11_CPP17)
+template <> struct IsMemberType<std::string_view> { using type = std::string; };
+#endif
 
 namespace detail {
 

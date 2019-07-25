@@ -102,6 +102,21 @@ TEST_F(TApp, SimpleTransformFn) {
     EXPECT_EQ(value, 1);
 }
 
+#if defined(CLI11_CPP17)
+TEST_F(TApp, StringViewTransformFn) {
+    std::string value;
+    std::map<std::string_view, std::string_view> map =
+    {
+      // key length > std::string().capacity() [SSO length]
+      {"a-rather-long-argument", "mapped"}
+    };
+    app.add_option("-s", value)->transform(CLI::CheckedTransformer(map));
+    args = {"-s", "a-rather-long-argument"};
+    run();
+    EXPECT_EQ(value, "mapped");
+}
+#endif
+
 TEST_F(TApp, SimpleNumericalTransformFn) {
     int value;
     auto opt =
