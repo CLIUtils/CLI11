@@ -5,3 +5,5 @@ a.out*
 /Makefile
 /CMakeFiles/*
 /cmake_install.cmake
+/*.kdev4
+!/meson.build
