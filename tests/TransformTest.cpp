@@ -105,11 +105,8 @@ TEST_F(TApp, SimpleTransformFn) {
 #if defined(CLI11_CPP17)
 TEST_F(TApp, StringViewTransformFn) {
     std::string value;
-    std::map<std::string_view, std::string_view> map =
-    {
-      // key length > std::string().capacity() [SSO length]
-      {"a-rather-long-argument", "mapped"}
-    };
+    std::map<std::string_view, std::string_view> map = {// key length > std::string().capacity() [SSO length]
+                                                        {"a-rather-long-argument", "mapped"}};
     app.add_option("-s", value)->transform(CLI::CheckedTransformer(map));
     args = {"-s", "a-rather-long-argument"};
     run();
