@@ -48,6 +48,22 @@ jobs:
     - template: .ci/azure-build.yml
     - template: .ci/azure-test.yml
 
+- job: Meson
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+    - script: python3 -m pip install meson ninja
+    - script: meson build
+      displayName: Run meson to generate build
+      workingDirectory: tests/mesonTest
+    - script: ninja -C tests/mesonTest/build
+      displayName: Build with Ninja
+    - script: ./tests/mesonTest/build/main --help
+      displayName: Run help
+
 - job: Docker
   variables:
     cli11.single: OFF
