@@ -102,7 +102,7 @@ TEST_F(TApp, SimpleTransformFn) {
     EXPECT_EQ(value, 1);
 }
 
-#if defined(CLI11_CPP17)
+#if defined(CLI11_HAS_STRING_VIEW)
 TEST_F(TApp, StringViewTransformFn) {
     std::string value;
     std::map<std::string_view, std::string_view> map = {// key length > std::string().capacity() [SSO length]
