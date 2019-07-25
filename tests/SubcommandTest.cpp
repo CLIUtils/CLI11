@@ -519,6 +519,34 @@ TEST_F(TApp, CallbackOrderingImmediate) {
     EXPECT_EQ(2, sub_val);
 }
 
+TEST_F(TApp, CallbackOrderingImmediateMain) {
+    app.fallthrough();
+    int val = 0, sub_val = 0;
+
+    auto sub = app.add_subcommand("sub");
+    sub->callback([&val, &sub_val]() {
+        sub_val = val;
+        val = 2;
+    });
+    app.callback([&val]() { val = 1; });
+    args = {"sub"};
+    run();
+    EXPECT_EQ(1, val);
+    EXPECT_EQ(0, sub_val);
+    // the main app callback should run before the subcommand callbacks
+    app.immediate_callback();
+    val = 0; // reset value
+    run();
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(1, sub_val);
+    // the subcommand callback now runs immediately after processing and before the main app callback again
+    sub->immediate_callback();
+    val = 0; // reset value
+    run();
+    EXPECT_EQ(1, val);
+    EXPECT_EQ(0, sub_val);
+}
+
 TEST_F(TApp, RequiredSubCom) {
     app.add_subcommand("sub1");
     app.add_subcommand("sub2");
