@@ -999,8 +999,11 @@ class App {
                        bool config_required = false) {
 
         // Remove existing config if present
-        if(config_ptr_ != nullptr)
+        if(config_ptr_ != nullptr) {
             remove_option(config_ptr_);
+            config_name_ = "";
+            config_required_ = false; // Not really needed, but complete
+        }
 
         // Only add config if option passed
         if(!option_name.empty()) {

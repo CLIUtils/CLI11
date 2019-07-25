@@ -889,3 +889,24 @@ TEST_F(TApp, DefaultsIniQuotedOutput) {
     EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
     EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
 }
+
+// #298
+TEST_F(TApp, StopReadingConfigOnClear) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    app.set_config(); // Should *not* read config file
+
+    {
+        std::ofstream out{tmpini};
+        out << "volume=1" << std::endl;
+    }
+
+    int volume = 0;
+    app.add_option("--volume", volume, "volume1");
+
+    run();
+
+    EXPECT_EQ(volume, 0);
+}
