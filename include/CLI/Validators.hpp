@@ -503,7 +503,7 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
     // if we haven't found it do the longer linear search with all the element translations
     auto &setref = detail::smart_deref(set);
     auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
-        V a = detail::pair_adaptor<element_t>::first(v);
+        V a{detail::pair_adaptor<element_t>::first(v)};
         a = filter_function(a);
         return (a == val);
     });
