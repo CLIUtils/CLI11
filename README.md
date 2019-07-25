@@ -157,7 +157,7 @@ GTEST_COLOR=1 CTEST_OUTPUT_ON_FAILURE=1 make test
 To set up, add options, and run, your main function will look something like this:
 
 ```cpp
-int main(int charc, char** argv) {
+int main(int argc, char** argv) {
     CLI::App app{"App description"};
 
     std::string filename = "default";
