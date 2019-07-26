@@ -728,7 +728,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     std::tuple_element<1, XC>::type v2;
     bool retval = lexical_cast(strings[0], v1);
     if(strings.size() > 1) {
-        retval &= lexical_cast(string[1], v2);
+        retval &= lexical_cast(strings[1], v2);
     }
     if(retval) {
         output = T{v1, v2};

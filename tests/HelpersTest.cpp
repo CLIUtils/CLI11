@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <tuple>
+#include <array>
 
 class NotStreamable {};
 
@@ -967,6 +968,73 @@ TEST(Types, LexicalConversionVectorDouble) {
     EXPECT_TRUE(res);
     EXPECT_EQ(x.size(), 3u);
     EXPECT_DOUBLE_EQ(x[2], -3.54);
+}
+
+TEST(Types, LexicalConversionTuple2) {
+    CLI::results_t input = {"9.12", "19"};
+    std::tuple<double, int> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
+
+    input = {"19", "9.12"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple3) {
+    CLI::results_t input = {"9.12", "19", "hippo"};
+    std::tuple<double, int, std::string> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
+    EXPECT_EQ(std::get<2>(x), "hippo");
+
+    input = {"19", "9.12"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple4) {
+    CLI::results_t input = {"9.12", "19", "18.6", "5.87"};
+    std::array<double, 4> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_DOUBLE_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(x[0], 9.12);
+    EXPECT_DOUBLE_EQ(x[2], 18.6);
+    EXPECT_DOUBLE_EQ(x[3], 5.87);
+
+    input = {"19", "9.12", "hippo"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple5) {
+    CLI::results_t input = {"9", "19", "18", "5", "235235"};
+    std::array<unsigned int, 5> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19);
+    EXPECT_EQ(x[0], 9);
+    EXPECT_EQ(x[2], 18);
+    EXPECT_EQ(x[3], 5);
+    EXPECT_EQ(x[4], 235235);
+
+    input = {"19", "9.12", "hippo"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionXomplwz) {
+    CLI::results_t input = {"5.1", "3.5"};
+    std::complex<double> x;
+    bool res = CLI::detail::lexical_conversion<std::complex<double>, std::array<double, 2>>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.real(), 5.1);
+    EXPECT_EQ(x.imag(), 3.5);
 }
 
 TEST(FixNewLines, BasicCheck) {
