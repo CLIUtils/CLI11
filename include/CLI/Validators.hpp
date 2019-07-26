@@ -509,12 +509,24 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
     });
     return {(it != std::end(setref)), it};
 }
-/// Generate the absolute value of a number
-template <typename T> inline typename std::enable_if<std::is_signed<T>::value, T>::type absval(T a) {
-    return static_cast<T>((std::abs)(a));
+
+// the following suggestion was made by Nikita Ofitserov(@himikof)
+// done in templates to prevent compiler warnings on negation of unsigned numbers
+
+/// Do a check for overflow on signed numbers
+template <typename T>
+inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    if((a > 0) == (b > 0)) {
+        return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
+    } else {
+        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
+    }
 }
-/// unsigned values just return the value
-template <typename T> inline typename std::enable_if<!std::is_signed<T>::value, T>::type absval(T a) { return a; }
+/// Do a check for overflow on unsigned numbers
+template <typename T>
+inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    return ((std::numeric_limits<T>::max)() / a < b);
+}
 
 /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
 template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
@@ -525,7 +537,7 @@ template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>:
     if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
         return false;
     }
-    if((std::numeric_limits<T>::max)() / absval(a) < absval(b)) {
+    if(overflowCheck(a, b)) {
         return false;
     }
     a *= b;
