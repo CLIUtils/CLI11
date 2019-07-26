@@ -451,9 +451,11 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     std::string out(1, '{');
     out.append(detail::join(detail::smart_deref(map),
                             [key_only](const iteration_type_t &v) {
-                                auto res = detail::to_string(detail::pair_adaptor<element_t>::first(v));
+                                std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+
                                 if(!key_only) {
-                                    res += "->" + detail::to_string(detail::pair_adaptor<element_t>::second(v));
+                                    res.append("->");
+                                    res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
                                 }
                                 return res;
                             },
