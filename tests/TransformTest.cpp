@@ -121,6 +121,7 @@ TEST_F(TApp, StringViewTransformFn) {
     run();
     EXPECT_EQ(value, "mapped");
 }
+
 #endif
 
 TEST_F(TApp, SimpleNumericalTransformFn) {

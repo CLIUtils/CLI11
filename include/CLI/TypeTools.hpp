@@ -329,7 +329,7 @@ template <
     typename T,
     enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value && !std::is_enum<T>::value,
                 detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         long long output_ll = std::stoll(input, &n, 0);
@@ -346,7 +346,7 @@ bool lexical_cast(std::string input, T &output) {
 template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value, detail::enabler> =
               detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
 
@@ -364,7 +364,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Boolean values
 template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         auto out = to_flag_value(input);
         output = (out > 0);
@@ -376,7 +376,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Floats
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         output = static_cast<T>(std::stold(input, &n));
@@ -393,7 +393,7 @@ template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
@@ -403,14 +403,14 @@ template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           !std::is_assignable<T &, std::string>::value && std::is_constructible<T, std::string>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;
 }
 
 /// Enumerations
 template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
     bool retval = detail::lexical_cast(input, val);
     if(!retval) {
@@ -427,7 +427,7 @@ template <typename T,
                           !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
                           is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
         output = T(val);
@@ -449,7 +449,7 @@ template <typename T,
                           !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
                           !is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
         output = T(val);
@@ -465,7 +465,7 @@ template <typename T,
                           !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
                           is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     double val;
     if(lexical_cast(input, val)) {
         output = T{val};
@@ -481,7 +481,7 @@ template <typename T,
                           !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
                           !is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     static_assert(is_istreamable<T>::value,
                   "option object type must have a lexical cast overload or streaming input operator(>>) defined if it "
                   "is convertible from another type use the add_option<T, XC>(...) with XC being the known type");
