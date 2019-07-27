@@ -2,6 +2,15 @@
 
 #include <unordered_map>
 
+#if defined(CLI11_CPP17)
+#if defined(__has_include)
+#if __has_include(<string_view>)
+#include <string_view>
+#define CLI11_HAS_STRING_VIEW
+#endif
+#endif
+#endif
+
 TEST_F(TApp, SimpleTransform) {
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", std::string("1")}}));

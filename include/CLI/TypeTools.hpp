@@ -10,17 +10,6 @@
 #include <type_traits>
 #include <vector>
 
-// [CLI11:verbatim]
-#if defined(CLI11_CPP17)
-#if defined(__has_include)
-#if __has_include(<string_view>)
-#include <string_view>
-#define CLI11_HAS_STRING_VIEW
-#endif
-#endif
-#endif
-// [CLI11:verbatim]
-
 namespace CLI {
 
 // Type tools
@@ -82,10 +71,6 @@ template <typename T> struct IsMemberType { using type = T; };
 
 /// The main custom type needed here is const char * should be a string.
 template <> struct IsMemberType<const char *> { using type = std::string; };
-
-#ifdef CLI11_HAS_STRING_VIEW
-template <> struct IsMemberType<std::string_view> { using type = std::string; };
-#endif
 
 namespace detail {
 
