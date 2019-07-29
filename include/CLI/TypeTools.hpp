@@ -406,7 +406,7 @@ inline int64_t to_flag_value(std::string val) {
     int64_t ret;
     if(val.size() == 1) {
         if(val[0] >= '1' && val[0] <= '9') {
-            return (val[0] - '0');
+            return (static_cast<int64_t>(val[0]) - '0');
         }
         switch(val[0]) {
         case '0':

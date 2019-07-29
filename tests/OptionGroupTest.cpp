@@ -622,7 +622,7 @@ TEST_F(ManyGroups, Moving) {
 }
 
 struct ManyGroupsPreTrigger : public ManyGroups {
-    size_t triggerMain, trigger1{87u}, trigger2{34u}, trigger3{27u};
+    size_t triggerMain{0u}, trigger1{87u}, trigger2{34u}, trigger3{27u};
     ManyGroupsPreTrigger() {
         remove_required();
         app.preparse_callback([this](size_t count) { triggerMain = count; });
