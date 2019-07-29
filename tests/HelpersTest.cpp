@@ -855,6 +855,10 @@ TEST(Types, LexicalCastParsable) {
     EXPECT_DOUBLE_EQ(output.real(), 4.2); // Doing this in one go sometimes has trouble
     EXPECT_DOUBLE_EQ(output.imag(), 7.3); // on clang + c++4.8 due to missing const
 
+    EXPECT_TRUE(CLI::detail::lexical_cast("2.456", output));
+    EXPECT_DOUBLE_EQ(output.real(), 2.456); // Doing this in one go sometimes has trouble
+    EXPECT_DOUBLE_EQ(output.imag(), 0.0);   // on clang + c++4.8 due to missing const
+
     EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
 }

@@ -407,11 +407,11 @@ class Bound : public Validator {
                 return "Value " + input + " could not be converted";
             }
             if(val < min)
-                input = detail::as_string(min);
+                input = detail::to_string(min);
             else if(val > max)
-                input = detail::as_string(max);
+                input = detail::to_string(max);
 
-            return std::string();
+            return std::string{};
         };
     }
 
@@ -451,9 +451,11 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     std::string out(1, '{');
     out.append(detail::join(detail::smart_deref(map),
                             [key_only](const iteration_type_t &v) {
-                                auto res = detail::as_string(detail::pair_adaptor<element_t>::first(v));
+                                std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+
                                 if(!key_only) {
-                                    res += "->" + detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                                    res.append("->");
+                                    res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
                                 }
                                 return res;
                             },
@@ -581,7 +583,7 @@ class IsMember : public Validator {
             if(res.first) {
                 // Make sure the version in the input string is identical to the one in the set
                 if(filter_fn) {
-                    input = detail::as_string(detail::pair_adaptor<element_t>::first(*(res.second)));
+                    input = detail::to_string(detail::pair_adaptor<element_t>::first(*(res.second)));
                 }
 
                 // Return empty error string (success)
@@ -649,7 +651,7 @@ class Transformer : public Validator {
             }
             auto res = detail::search(mapping, b, filter_fn);
             if(res.first) {
-                input = detail::as_string(detail::pair_adaptor<element_t>::second(*res.second));
+                input = detail::to_string(detail::pair_adaptor<element_t>::second(*res.second));
             }
             return std::string{};
         };
@@ -699,7 +701,7 @@ class CheckedTransformer : public Validator {
             out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
             out += detail::join(
                 detail::smart_deref(mapping),
-                [](const iteration_type_t &v) { return detail::as_string(detail::pair_adaptor<element_t>::second(v)); },
+                [](const iteration_type_t &v) { return detail::to_string(detail::pair_adaptor<element_t>::second(v)); },
                 ",");
             out.push_back('}');
             return out;
@@ -716,12 +718,12 @@ class CheckedTransformer : public Validator {
                 }
                 auto res = detail::search(mapping, b, filter_fn);
                 if(res.first) {
-                    input = detail::as_string(detail::pair_adaptor<element_t>::second(*res.second));
+                    input = detail::to_string(detail::pair_adaptor<element_t>::second(*res.second));
                     return std::string{};
                 }
             }
             for(const auto &v : detail::smart_deref(mapping)) {
-                auto output_string = detail::as_string(detail::pair_adaptor<element_t>::second(v));
+                auto output_string = detail::to_string(detail::pair_adaptor<element_t>::second(v));
                 if(output_string == input) {
                     return std::string();
                 }
@@ -832,10 +834,10 @@ class AsNumberWithUnit : public Validator {
             // perform safe multiplication
             bool ok = detail::checked_multiply(num, it->second);
             if(!ok) {
-                throw ValidationError(detail::as_string(num) + " multiplied by " + unit +
+                throw ValidationError(detail::to_string(num) + " multiplied by " + unit +
                                       " factor would cause number overflow. Use smaller value.");
             }
-            input = detail::as_string(num);
+            input = detail::to_string(num);
 
             return {};
         };

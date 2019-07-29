@@ -741,14 +741,19 @@ class Unstreamable {
     void set_x(int x) { x_ = x; }
 };
 
+// this needs to be a different check then the one after the function definition otherwise they conflict
+static_assert(!CLI::detail::is_istreamable<Unstreamable, std::istream>::value, "Unstreamable type is streamable");
+
 std::istream &operator>>(std::istream &in, Unstreamable &value) {
     int x;
     in >> x;
     value.set_x(x);
     return in;
 }
+// these need to be different classes otherwise the definitions conflict
+static_assert(CLI::detail::is_istreamable<Unstreamable>::value, "Unstreamable type is still unstreamable");
 
-TEST_F(TApp, MakeUnstreamableOptiions) {
+TEST_F(TApp, MakeUnstreamableOptions) {
     Unstreamable value;
     app.add_option("--value", value);
 
@@ -760,4 +765,13 @@ TEST_F(TApp, MakeUnstreamableOptiions) {
 
     // This used to fail to build, since it tries to stream from Unstreamable
     app.add_option("--values2", values, "", false);
+
+    args = {"--value", "45"};
+    run();
+    EXPECT_EQ(value.get_x(), 45);
+
+    args = {"--values", "45", "27", "34"};
+    run();
+    EXPECT_EQ(values.size(), 3u);
+    EXPECT_EQ(values[2].get_x(), 34);
 }

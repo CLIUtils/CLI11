@@ -137,7 +137,8 @@ namespace CLI {
 namespace detail {
 
 template <>
-bool lexical_cast<std::pair<std::string, std::string>>(std::string input, std::pair<std::string, std::string> &output) {
+bool lexical_cast<std::pair<std::string, std::string>>(const std::string &input,
+                                                       std::pair<std::string, std::string> &output) {
 
     auto sep = input.find_first_of(':');
     if((sep == std::string::npos) && (sep > 0)) {
@@ -187,7 +188,7 @@ namespace detail {
 
 // On MSVC and possibly some other new compilers this can be a free standing function without the template
 // specialization but this is compiler dependent
-template <> bool lexical_cast<std::complex<double>>(std::string input, std::complex<double> &output) {
+template <> bool lexical_cast<std::complex<double>>(const std::string &input, std::complex<double> &output) {
     // regular expression to handle complex numbers of various formats
     static const std::regex creg(
         R"(([+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)\s*([+-]\s*(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)[ji]*)");
@@ -209,8 +210,9 @@ template <> bool lexical_cast<std::complex<double>>(std::string input, std::comp
             CLI::detail::trim(strval);
             worked = CLI::detail::lexical_cast(strval, y);
         } else {
-            CLI::detail::trim(input);
-            worked = CLI::detail::lexical_cast(input, x);
+            std::string ival = input;
+            CLI::detail::trim(ival);
+            worked = CLI::detail::lexical_cast(ival, x);
         }
     }
     if(worked) {
@@ -259,3 +261,187 @@ TEST_F(TApp, AddingComplexParserDetail) {
     }
 }
 #endif
+
+/// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
+/// option assignments
+template <class X> class objWrapper {
+  public:
+    objWrapper() = default;
+    explicit objWrapper(X obj) : val_{obj} {};
+    objWrapper(const objWrapper &ow) = default;
+    template <class TT> objWrapper(const TT &obj) = delete;
+    objWrapper &operator=(const objWrapper &) = default;
+    objWrapper &operator=(objWrapper &&) = default;
+    // delete all other assignment operators
+    template <typename TT> void operator=(TT &&obj) = delete;
+
+    const X &value() const { return val_; }
+
+  private:
+    X val_;
+};
+
+// I think there is a bug with the is_assignable in visual studio 2015 it is fixed in later versions
+// so this test will not compile in that compiler
+#if !defined(_MSC_VER) || _MSC_VER >= 1910
+
+static_assert(CLI::detail::is_direct_constructible<objWrapper<std::string>, std::string>::value,
+              "string wrapper isn't properly constructible");
+
+static_assert(!std::is_assignable<objWrapper<std::string>, std::string>::value,
+              "string wrapper is improperly assignable");
+TEST_F(TApp, stringWrapper) {
+    objWrapper<std::string> sWrapper;
+    app.add_option("-v", sWrapper);
+    args = {"-v", "string test"};
+
+    run();
+
+    EXPECT_EQ(sWrapper.value(), "string test");
+}
+
+static_assert(CLI::detail::is_direct_constructible<objWrapper<double>, double>::value,
+              "double wrapper isn't properly assignable");
+
+static_assert(!CLI::detail::is_direct_constructible<objWrapper<double>, int>::value,
+              "double wrapper can be assigned from int");
+
+static_assert(!CLI::detail::is_istreamable<objWrapper<double>>::value,
+              "double wrapper is input streamable and it shouldn't be");
+
+TEST_F(TApp, doubleWrapper) {
+    objWrapper<double> dWrapper;
+    app.add_option("-v", dWrapper);
+    args = {"-v", "2.36"};
+
+    run();
+
+    EXPECT_EQ(dWrapper.value(), 2.36);
+
+    args = {"-v", "thing"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+static_assert(CLI::detail::is_direct_constructible<objWrapper<int>, int>::value,
+              "int wrapper is not constructible from int64");
+
+static_assert(!CLI::detail::is_direct_constructible<objWrapper<int>, double>::value,
+              "int wrapper is constructible from double");
+
+static_assert(!CLI::detail::is_istreamable<objWrapper<int>>::value,
+              "int wrapper is input streamable and it shouldn't be");
+
+TEST_F(TApp, intWrapper) {
+    objWrapper<int> iWrapper;
+    app.add_option("-v", iWrapper);
+    args = {"-v", "45"};
+
+    run();
+
+    EXPECT_EQ(iWrapper.value(), 45);
+    args = {"-v", "thing"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+static_assert(!CLI::detail::is_direct_constructible<objWrapper<float>, int>::value,
+              "float wrapper is constructible from int");
+static_assert(!CLI::detail::is_direct_constructible<objWrapper<float>, double>::value,
+              "float wrapper is constructible from double");
+
+static_assert(!CLI::detail::is_istreamable<objWrapper<float>>::value,
+              "float wrapper is input streamable and it shouldn't be");
+
+TEST_F(TApp, floatWrapper) {
+    objWrapper<float> iWrapper;
+    app.add_option<objWrapper<float>, float>("-v", iWrapper);
+    args = {"-v", "45.3"};
+
+    run();
+
+    EXPECT_EQ(iWrapper.value(), 45.3f);
+    args = {"-v", "thing"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+#endif
+/// simple class to wrap another  with a very specific type constructor to test out some of the option assignments
+class dobjWrapper {
+  public:
+    dobjWrapper() = default;
+    explicit dobjWrapper(double obj) : dval_{obj} {};
+    explicit dobjWrapper(int obj) : ival_{obj} {};
+
+    double dvalue() const { return dval_; }
+    int ivalue() const { return ival_; }
+
+  private:
+    double dval_{0.0};
+    int ival_{0};
+};
+
+TEST_F(TApp, dobjWrapper) {
+    dobjWrapper iWrapper;
+    app.add_option("-v", iWrapper);
+    args = {"-v", "45"};
+
+    run();
+
+    EXPECT_EQ(iWrapper.ivalue(), 45);
+    EXPECT_EQ(iWrapper.dvalue(), 0.0);
+
+    args = {"-v", "thing"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+    iWrapper = dobjWrapper{};
+
+    args = {"-v", "45.1"};
+
+    run();
+    EXPECT_EQ(iWrapper.ivalue(), 0);
+    EXPECT_EQ(iWrapper.dvalue(), 45.1);
+}
+
+/// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
+/// option assignments
+template <class X> class AobjWrapper {
+  public:
+    AobjWrapper() = default;
+    // delete all other constructors
+    template <class TT> AobjWrapper(TT &&obj) = delete;
+    // single assignment operator
+    void operator=(X val) { val_ = val; }
+    // delete all other assignment operators
+    template <typename TT> void operator=(TT &&obj) = delete;
+
+    const X &value() const { return val_; }
+
+  private:
+    X val_;
+};
+
+static_assert(std::is_assignable<AobjWrapper<uint16_t> &, uint16_t>::value,
+              "AobjWrapper not assignable like it should be ");
+
+TEST_F(TApp, uint16Wrapper) {
+    AobjWrapper<uint16_t> sWrapper;
+    app.add_option<AobjWrapper<uint16_t>, uint16_t>("-v", sWrapper);
+    args = {"-v", "9"};
+
+    run();
+
+    EXPECT_EQ(sWrapper.value(), 9u);
+    args = {"-v", "thing"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    args = {"-v", "72456245754"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    args = {"-v", "-3"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}

@@ -10,17 +10,6 @@
 #include <type_traits>
 #include <vector>
 
-// [CLI11:verbatim]
-#if defined(CLI11_CPP17)
-#if defined(__has_include)
-#if __has_include(<string_view>)
-#include <string_view>
-#define CLI11_HAS_STRING_VIEW
-#endif
-#endif
-#endif
-// [CLI11:verbatim]
-
 namespace CLI {
 
 // Type tools
@@ -83,10 +72,6 @@ template <typename T> struct IsMemberType { using type = T; };
 /// The main custom type needed here is const char * should be a string.
 template <> struct IsMemberType<const char *> { using type = std::string; };
 
-#ifdef CLI11_HAS_STRING_VIEW
-template <> struct IsMemberType<std::string_view> { using type = std::string; };
-#endif
-
 namespace detail {
 
 // These are utilities for IsMember
@@ -139,18 +124,67 @@ struct pair_adaptor<
     }
 };
 
-// Check for streamability
+// Warning is suppressed due to "bug" in gcc<5.0 and gcc 7.0 with c++17 enabled that generates a Wnarrowing warning
+// in the unevaluated context even if the function that was using this wasn't used.  The standard says narrowing in
+// brace initialization shouldn't be allowed but for backwards compatibility gcc allows it in some contexts.  It is a
+// little fuzzy what happens in template constructs and I think that was something GCC took a little while to work out.
+// But regardless some versions of gcc generate a warning when they shouldn't from the following code so that should be
+// suppressed
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnarrowing"
+#endif
+// check for constructibility from a specific type and copy assignable used in the parse detection
+template <typename T, typename C> class is_direct_constructible {
+    template <typename TT, typename CC>
+    static auto test(int) -> decltype(TT{std::declval<CC>()}, std::is_move_assignable<TT>());
+
+    template <typename, typename> static auto test(...) -> std::false_type;
+
+  public:
+    static const bool value = decltype(test<T, C>(0))::value;
+};
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
+// Check for output streamability
 // Based on https://stackoverflow.com/questions/22758291/how-can-i-detect-if-a-type-can-be-streamed-to-an-stdostream
 
-template <typename S, typename T> class is_streamable {
-    template <typename SS, typename TT>
+template <typename T, typename S = std::ostringstream> class is_ostreamable {
+    template <typename TT, typename SS>
     static auto test(int) -> decltype(std::declval<SS &>() << std::declval<TT>(), std::true_type());
 
     template <typename, typename> static auto test(...) -> std::false_type;
 
   public:
-    static const bool value = decltype(test<S, T>(0))::value;
+    static const bool value = decltype(test<T, S>(0))::value;
 };
+
+/// Check for input streamability
+template <typename T, typename S = std::istringstream> class is_istreamable {
+    template <typename TT, typename SS>
+    static auto test(int) -> decltype(std::declval<SS &>() >> std::declval<TT &>(), std::true_type());
+
+    template <typename, typename> static auto test(...) -> std::false_type;
+
+  public:
+    static const bool value = decltype(test<T, S>(0))::value;
+};
+
+/// Templated operation to get a value from a stream
+template <typename T, enable_if_t<is_istreamable<T>::value, detail::enabler> = detail::dummy>
+bool from_stream(const std::string &istring, T &obj) {
+    std::istringstream is;
+    is.str(istring);
+    is >> obj;
+    return !is.fail() && !is.rdbuf()->in_avail();
+}
+
+template <typename T, enable_if_t<!is_istreamable<T>::value, detail::enabler> = detail::dummy>
+bool from_stream(const std::string & /*istring*/, T & /*obj*/) {
+    return false;
+}
 
 /// Convert an object to a string (directly forward if this can become a string)
 template <typename T, enable_if_t<std::is_constructible<std::string, T>::value, detail::enabler> = detail::dummy>
@@ -160,8 +194,8 @@ auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
 
 /// Convert an object to a string (streaming must be supported for that type)
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && is_streamable<std::stringstream, T>::value,
-                      detail::enabler> = detail::dummy>
+          enable_if_t<!std::is_constructible<std::string, T>::value && is_ostreamable<T>::value, detail::enabler> =
+              detail::dummy>
 std::string to_string(T &&value) {
     std::stringstream stream;
     stream << value;
@@ -170,9 +204,27 @@ std::string to_string(T &&value) {
 
 /// If conversion is not supported, return an empty string (streaming is not supported for that type)
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && !is_streamable<std::stringstream, T>::value,
-                      detail::enabler> = detail::dummy>
+          enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value, detail::enabler> =
+              detail::dummy>
 std::string to_string(T &&) {
+    return std::string{};
+}
+
+/// special template overload
+template <typename T1,
+          typename T2,
+          typename T,
+          enable_if_t<std::is_same<T1, T2>::value, detail::enabler> = detail::dummy>
+auto checked_to_string(T &&value) -> decltype(to_string(std::forward<T>(value))) {
+    return to_string(std::forward<T>(value));
+}
+
+/// special template overload
+template <typename T1,
+          typename T2,
+          typename T,
+          enable_if_t<!std::is_same<T1, T2>::value, detail::enabler> = detail::dummy>
+std::string checked_to_string(T &&) {
     return std::string{};
 }
 
@@ -277,7 +329,7 @@ template <
     typename T,
     enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value && !std::is_enum<T>::value,
                 detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         long long output_ll = std::stoll(input, &n, 0);
@@ -294,7 +346,7 @@ bool lexical_cast(std::string input, T &output) {
 template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value, detail::enabler> =
               detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
 
@@ -312,7 +364,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Boolean values
 template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         auto out = to_flag_value(input);
         output = (out > 0);
@@ -324,7 +376,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Floats
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         output = static_cast<T>(std::stold(input, &n));
@@ -336,19 +388,29 @@ bool lexical_cast(std::string input, T &output) {
     }
 }
 
-/// String and similar
+/// String and similar direct assignment
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                           std::is_assignable<T &, std::string>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     output = input;
+    return true;
+}
+
+/// String and similar constructible and copy assignment
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                          !std::is_assignable<T &, std::string>::value && std::is_constructible<T, std::string>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    output = T(input);
     return true;
 }
 
 /// Enumerations
 template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
     bool retval = detail::lexical_cast(input, val);
     if(!retval) {
@@ -358,21 +420,112 @@ bool lexical_cast(std::string input, T &output) {
     return true;
 }
 
-/// Non-string parsable
+/// Assignable from double or int
 template <typename T,
           enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value && !std::is_enum<T>::value,
+                          !std::is_assignable<T &, std::string>::value &&
+                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
+                          is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
                       detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
-    std::istringstream is;
+bool lexical_cast(const std::string &input, T &output) {
+    int val;
+    if(lexical_cast(input, val)) {
+        output = T(val);
+        return true;
+    } else {
+        double dval;
+        if(lexical_cast(input, dval)) {
+            output = T{dval};
+            return true;
+        }
+    }
+    return from_stream(input, output);
+}
 
-    is.str(input);
-    is >> output;
-    return !is.fail() && !is.rdbuf()->in_avail();
+/// Assignable from int64
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                          !std::is_assignable<T &, std::string>::value &&
+                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
+                          !is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    int val;
+    if(lexical_cast(input, val)) {
+        output = T(val);
+        return true;
+    }
+    return from_stream(input, output);
+}
+
+/// Assignable from double
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                          !std::is_assignable<T &, std::string>::value &&
+                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
+                          is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    double val;
+    if(lexical_cast(input, val)) {
+        output = T{val};
+        return true;
+    }
+    return from_stream(input, output);
+}
+
+/// Non-string parsable by a stream
+template <typename T,
+          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                          !std::is_assignable<T &, std::string>::value &&
+                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
+                          !is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    static_assert(is_istreamable<T>::value,
+                  "option object type must have a lexical cast overload or streaming input operator(>>) defined if it "
+                  "is convertible from another type use the add_option<T, XC>(...) with XC being the known type");
+    return from_stream(input, output);
+}
+
+/// Assign a value through lexical cast operations
+template <class T, class XC, enable_if_t<std::is_same<T, XC>::value, detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, T &output) {
+    return lexical_cast(input, output);
+}
+
+/// Assign a value converted from a string in lexical cast to the output value directly
+template <
+    class T,
+    class XC,
+    enable_if_t<!std::is_same<T, XC>::value && std::is_assignable<T &, XC &>::value, detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, T &output) {
+    XC val;
+    auto parse_result = lexical_cast<XC>(input, val);
+    if(parse_result) {
+        output = val;
+    }
+    return parse_result;
+}
+
+/// Assign a value from a lexical cast through constructing a value and move assigning it
+template <class T,
+          class XC,
+          enable_if_t<!std::is_same<T, XC>::value && !std::is_assignable<T &, XC &>::value &&
+                          std::is_move_assignable<T>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, T &output) {
+    XC val;
+    bool parse_result = lexical_cast<XC>(input, val);
+    if(parse_result) {
+        output = T(val); // use () form of constructor to allow some implicit conversions
+    }
+    return parse_result;
 }
 
 /// Sum a vector of flag representations
-/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
+/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
+/// by
 /// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
 /// common true and false strings then uses stoll to convert the rest for summing
 template <typename T,
@@ -386,7 +539,8 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
 }
 
 /// Sum a vector of flag representations
-/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is by
+/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
+/// by
 /// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
 /// common true and false strings then uses stoll to convert the rest for summing
 template <typename T,
