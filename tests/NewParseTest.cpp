@@ -143,9 +143,7 @@ class spair {
 namespace CLI {
 namespace detail {
 
-template <>
-bool lexical_cast<std::pair<std::string, std::string>>(const std::string &input,
-                                                       std::pair<std::string, std::string> &output) {
+template <> bool lexical_cast<spair>(const std::string &input, spair &output) {
 
     auto sep = input.find_first_of(':');
     if((sep == std::string::npos) && (sep > 0)) {

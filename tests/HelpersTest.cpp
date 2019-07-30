@@ -1041,11 +1041,11 @@ TEST(Types, LexicalConversionTuple5) {
     std::array<unsigned int, 5> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
     EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19);
-    EXPECT_EQ(x[0], 9);
-    EXPECT_EQ(x[2], 18);
-    EXPECT_EQ(x[3], 5);
-    EXPECT_EQ(x[4], 235235);
+    EXPECT_EQ(std::get<1>(x), 19u);
+    EXPECT_EQ(x[0], 9u);
+    EXPECT_EQ(x[2], 18u);
+    EXPECT_EQ(x[3], 5u);
+    EXPECT_EQ(x[4], 235235u);
 
     input = {"19", "9.12", "hippo"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);

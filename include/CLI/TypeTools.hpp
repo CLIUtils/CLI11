@@ -630,7 +630,7 @@ bool lexical_cast(const std::string &input, T &output) {
 
 /// Assignable from double or int
 template <typename T, enable_if_t<classify_object<T>::value == number_constructible, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
         output = T(val);
@@ -647,7 +647,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Assignable from int
 template <typename T, enable_if_t<classify_object<T>::value == integer_constructible, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
         output = T(val);
@@ -658,7 +658,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Assignable from double
 template <typename T, enable_if_t<classify_object<T>::value == double_constructible, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     double val;
     if(lexical_cast(input, val)) {
         output = T{val};
@@ -669,7 +669,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Non-string parsable by a stream
 template <typename T, enable_if_t<classify_object<T>::value == other, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     static_assert(is_istreamable<T>::value,
                   "option object type must have a lexical cast overload or streaming input operator(>>) defined, if it "
                   "is convertible from another type use the add_option<T, XC>(...) with XC being the known type");
