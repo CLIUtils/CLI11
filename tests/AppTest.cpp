@@ -984,6 +984,46 @@ TEST_F(TApp, PositionalAtEnd) {
 }
 
 // Tests positionals at end
+TEST_F(TApp, RequiredPositionals) {
+    std::vector<std::string> sources;
+    std::string dest;
+    app.add_option("src", sources);
+    app.add_option("dest", dest)->required();
+    app.positionals_at_end();
+
+    args = {"1", "2", "3"};
+    run();
+
+    EXPECT_EQ(sources.size(), 2);
+    EXPECT_EQ(dest, "3");
+
+    args = {"a"};
+    sources.clear();
+    run();
+
+    EXPECT_EQ(sources.size(), 0);
+    EXPECT_EQ(dest, "a");
+}
+
+// Tests positionals at end
+TEST_F(TApp, RequiredPositionalValidation) {
+    std::vector<std::string> sources;
+    int dest;
+    std::string d2;
+    app.add_option("src", sources);
+    app.add_option("dest", dest)->required()->check(CLI::PositiveNumber);
+    app.add_option("dest2", d2)->required();
+    app.positionals_at_end()->validate_positionals();
+
+    args = {"1", "2", "string", "3"};
+    run();
+
+    EXPECT_EQ(sources.size(), 2);
+    EXPECT_EQ(dest, 3);
+    EXPECT_EQ(d2, "string");
+}
+
+// Tests positionals at end
 TEST_F(TApp, PositionalValidation) {
     std::string options;
     std::string foo;
