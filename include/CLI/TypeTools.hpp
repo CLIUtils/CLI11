@@ -228,6 +228,118 @@ std::string checked_to_string(T &&) {
     return std::string{};
 }
 
+// Enumeration of the different supported categorizations of objects
+enum objCategory : int {
+    integral_value = 2,
+    unsigned_integral = 4,
+    enumeration = 6,
+    boolean_value = 8,
+    floating_point = 10,
+    number_constructible = 12,
+    double_constructible = 14,
+    integer_constructible = 16,
+    vector_value = 30,
+    // string assignable or greater used in a condition so anything string like must come last
+    string_assignable = 50,
+    string_constructible = 60,
+    other = 200,
+
+};
+
+/// some type that is not otherwise recognized
+template <typename T, typename Enable = void> struct classify_object { static constexpr objCategory value{other}; };
+
+/// Set of overloads to classify an object according to type
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value &&
+                                               !is_bool<T>::value && !std::is_enum<T>::value>::type> {
+    static constexpr objCategory value{integral_value};
+};
+
+/// Unsigned integers
+template <typename T>
+struct classify_object<
+    T,
+    typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value>::type> {
+    static constexpr objCategory value{unsigned_integral};
+};
+
+/// Boolean values
+template <typename T> struct classify_object<T, typename std::enable_if<is_bool<T>::value>::type> {
+    static constexpr objCategory value{boolean_value};
+};
+
+/// Floats
+template <typename T> struct classify_object<T, typename std::enable_if<std::is_floating_point<T>::value>::type> {
+    static constexpr objCategory value{floating_point};
+};
+
+/// String and similar direct assignment
+template <typename T>
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            std::is_assignable<T &, std::string>::value && !is_vector<T>::value>::type> {
+    static constexpr objCategory value{string_assignable};
+};
+
+/// String and similar constructible and copy assignment
+template <typename T>
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            !std::is_assignable<T &, std::string>::value &&
+                            std::is_constructible<T, std::string>::value && !is_vector<T>::value>::type> {
+    static constexpr objCategory value{string_constructible};
+};
+
+/// Enumerations
+template <typename T> struct classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
+    static constexpr objCategory value{enumeration};
+};
+
+/// Handy helper to contain a bunch of checks that rule out many common types (integers, string like, floating point,
+/// vectors, and enumerations
+template <typename T> struct uncommon_type {
+    using type = typename std::conditional<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                                               !std::is_assignable<T &, std::string>::value &&
+                                               !std::is_constructible<T, std::string>::value && !is_vector<T>::value &&
+                                               !std::is_enum<T>::value,
+                                           std::true_type,
+                                           std::false_type>::type;
+    static const bool value = type::value;
+};
+
+/// Assignable from double or int
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
+    static constexpr objCategory value{number_constructible};
+};
+
+/// Assignable from int
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
+    static const objCategory value{integer_constructible};
+};
+
+/// Assignable from double
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                                               !is_direct_constructible<T, int>::value>::type> {
+    static const objCategory value{double_constructible};
+};
+
+/// vector type
+template <typename T> struct classify_object<T, typename std::enable_if<is_vector<T>::value>::type> {
+    static const objCategory value{vector_value};
+};
+
 // Type name print
 
 /// Was going to be based on
@@ -235,38 +347,45 @@ std::string checked_to_string(T &&) {
 /// But this is cleaner and works better in this case
 
 template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == integral_value || classify_object<T>::value == integer_constructible,
+                      detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "INT";
 }
 
-template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == unsigned_integral, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "UINT";
 }
 
-template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == floating_point || classify_object<T>::value == number_constructible ||
+                    classify_object<T>::value == double_constructible,
+                detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "FLOAT";
 }
 
 /// This one should not be used, since vector types print the internal type
-template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "VECTOR";
 }
 /// Print name for enumeration types
-template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == enumeration, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "ENUM";
 }
 
+/// Print name for enumeration types
+template <typename T, enable_if_t<classify_object<T>::value == boolean_value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "BOOLEAN";
+}
+
 /// Print for all other types
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value && !is_vector<T>::value &&
-                          !std::is_enum<T>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value >= string_assignable, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
 }
@@ -286,6 +405,9 @@ inline int64_t to_flag_value(std::string val) {
     val = detail::to_lower(val);
     int64_t ret;
     if(val.size() == 1) {
+        if(val[0] >= '1' && val[0] <= '9') {
+            return (static_cast<int64_t>(val[0]) - '0');
+        }
         switch(val[0]) {
         case '0':
         case 'f':
@@ -293,21 +415,10 @@ inline int64_t to_flag_value(std::string val) {
         case '-':
             ret = -1;
             break;
-        case '1':
         case 't':
         case 'y':
         case '+':
             ret = 1;
-            break;
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            ret = val[0] - '0';
             break;
         default:
             throw std::invalid_argument("unrecognized character");
@@ -325,10 +436,7 @@ inline int64_t to_flag_value(std::string val) {
 }
 
 /// Signed integers
-template <
-    typename T,
-    enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value && !is_bool<T>::value && !std::is_enum<T>::value,
-                detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == integral_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
@@ -343,9 +451,7 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Unsigned integers
-template <typename T,
-          enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value, detail::enabler> =
-              detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == unsigned_integral, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
@@ -363,7 +469,7 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Boolean values
-template <typename T, enable_if_t<is_bool<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == boolean_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         auto out = to_flag_value(input);
@@ -371,11 +477,16 @@ bool lexical_cast(const std::string &input, T &output) {
         return true;
     } catch(const std::invalid_argument &) {
         return false;
+    } catch(const std::out_of_range &) {
+        // if the number is out of the range of a 64 bit value then it is still a number and for this purpose is still
+        // valid all we care about the sign
+        output = (input[0] != '-');
+        return true;
     }
 }
 
 /// Floats
-template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == floating_point, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
@@ -389,27 +500,21 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// String and similar direct assignment
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          std::is_assignable<T &, std::string>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == string_assignable, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
 
 /// String and similar constructible and copy assignment
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value && std::is_constructible<T, std::string>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == string_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;
 }
 
 /// Enumerations
-template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == enumeration, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
     bool retval = detail::lexical_cast(input, val);
@@ -421,12 +526,7 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assignable from double or int
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value &&
-                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
-                          is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == number_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
@@ -442,13 +542,8 @@ bool lexical_cast(const std::string &input, T &output) {
     return from_stream(input, output);
 }
 
-/// Assignable from int64
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value &&
-                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
-                          !is_direct_constructible<T, double>::value && is_direct_constructible<T, int>::value,
-                      detail::enabler> = detail::dummy>
+/// Assignable from int
+template <typename T, enable_if_t<classify_object<T>::value == integer_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
@@ -459,12 +554,7 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assignable from double
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value &&
-                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
-                          is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == double_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     double val;
     if(lexical_cast(input, val)) {
@@ -475,15 +565,10 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Non-string parsable by a stream
-template <typename T,
-          enable_if_t<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                          !std::is_assignable<T &, std::string>::value &&
-                          !std::is_constructible<T, std::string>::value && !std::is_enum<T>::value &&
-                          !is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value,
-                      detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == other, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     static_assert(is_istreamable<T>::value,
-                  "option object type must have a lexical cast overload or streaming input operator(>>) defined if it "
+                  "option object type must have a lexical cast overload or streaming input operator(>>) defined, if it "
                   "is convertible from another type use the add_option<T, XC>(...) with XC being the known type");
     return from_stream(input, output);
 }
