@@ -1,5 +1,4 @@
 #pragma once
-
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
@@ -9,6 +8,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -451,9 +451,11 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     std::string out(1, '{');
     out.append(detail::join(detail::smart_deref(map),
                             [key_only](const iteration_type_t &v) {
-                                auto res = detail::to_string(detail::pair_adaptor<element_t>::first(v));
+                                std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+
                                 if(!key_only) {
-                                    res += "->" + detail::to_string(detail::pair_adaptor<element_t>::second(v));
+                                    res.append("->");
+                                    res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
                                 }
                                 return res;
                             },
@@ -503,24 +505,44 @@ auto search(const T &set, const V &val, const std::function<V(V)> &filter_functi
     // if we haven't found it do the longer linear search with all the element translations
     auto &setref = detail::smart_deref(set);
     auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
-        V a = detail::pair_adaptor<element_t>::first(v);
+        V a{detail::pair_adaptor<element_t>::first(v)};
         a = filter_function(a);
         return (a == val);
     });
     return {(it != std::end(setref)), it};
 }
 
+// the following suggestion was made by Nikita Ofitserov(@himikof)
+// done in templates to prevent compiler warnings on negation of unsigned numbers
+
+/// Do a check for overflow on signed numbers
+template <typename T>
+inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    if((a > 0) == (b > 0)) {
+        return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
+    } else {
+        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
+    }
+}
+/// Do a check for overflow on unsigned numbers
+template <typename T>
+inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    return ((std::numeric_limits<T>::max)() / a < b);
+}
+
 /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
 template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
-    if(a == 0 || b == 0) {
+    if(a == 0 || b == 0 || a == 1 || b == 1) {
         a *= b;
         return true;
     }
-    T c = a * b;
-    if(c / a != b) {
+    if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
         return false;
     }
-    a = c;
+    if(overflowCheck(a, b)) {
+        return false;
+    }
+    a *= b;
     return true;
 }
 

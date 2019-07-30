@@ -143,7 +143,9 @@ class spair {
 namespace CLI {
 namespace detail {
 
-template <> bool lexical_cast<spair>(std::string input, spair &output) {
+template <>
+bool lexical_cast<std::pair<std::string, std::string>>(const std::string &input,
+                                                       std::pair<std::string, std::string> &output) {
 
     auto sep = input.find_first_of(':');
     if((sep == std::string::npos) && (sep > 0)) {
@@ -193,7 +195,7 @@ namespace detail {
 
 // On MSVC and possibly some other new compilers this can be a free standing function without the template
 // specialization but this is compiler dependent
-template <> bool lexical_cast<std::complex<double>>(std::string input, std::complex<double> &output) {
+template <> bool lexical_cast<std::complex<double>>(const std::string &input, std::complex<double> &output) {
     // regular expression to handle complex numbers of various formats
     static const std::regex creg(
         R"(([+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)\s*([+-]\s*(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)[ji]*)");
@@ -215,8 +217,9 @@ template <> bool lexical_cast<std::complex<double>>(std::string input, std::comp
             CLI::detail::trim(strval);
             worked = CLI::detail::lexical_cast(strval, y);
         } else {
-            CLI::detail::trim(input);
-            worked = CLI::detail::lexical_cast(input, x);
+            std::string ival = input;
+            CLI::detail::trim(ival);
+            worked = CLI::detail::lexical_cast(ival, x);
         }
     }
     if(worked) {

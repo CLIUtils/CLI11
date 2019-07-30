@@ -157,7 +157,7 @@ GTEST_COLOR=1 CTEST_OUTPUT_ON_FAILURE=1 make test
 To set up, add options, and run, your main function will look something like this:
 
 ```cpp
-int main(int charc, char** argv) {
+int main(int argc, char** argv) {
     CLI::App app{"App description"};
 
     std::string filename = "default";
@@ -541,7 +541,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.count_all()`: 🆕 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
 -   `.name(name)`: Add or change the name.
 -   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.immediate_callback()`: 🆕 Specify that the callback for a subcommand should run immediately on completion of a subcommand vs at the completion of all parsing if this option is not used. When used on the main app 🚧 it executed the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set.
+-   `.immediate_callback()`: 🆕 Specify that the callback for a subcommand should run immediately on completion of a subcommand vs at the completion of all parsing if this option is not used. When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set.
 -    `.pre_parse_callback(void(size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
 -   `.positionals_at_end()`: 🆕 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.

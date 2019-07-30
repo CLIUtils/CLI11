@@ -2,6 +2,15 @@
 
 #include <unordered_map>
 
+#if defined(CLI11_CPP17)
+#if defined(__has_include)
+#if __has_include(<string_view>)
+#include <string_view>
+#define CLI11_HAS_STRING_VIEW
+#endif
+#endif
+#endif
+
 TEST_F(TApp, SimpleTransform) {
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", std::string("1")}}));
@@ -101,6 +110,19 @@ TEST_F(TApp, SimpleTransformFn) {
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, 1);
 }
+
+#if defined(CLI11_HAS_STRING_VIEW)
+TEST_F(TApp, StringViewTransformFn) {
+    std::string value;
+    std::map<std::string_view, std::string_view> map = {// key length > std::string().capacity() [SSO length]
+                                                        {"a-rather-long-argument", "mapped"}};
+    app.add_option("-s", value)->transform(CLI::CheckedTransformer(map));
+    args = {"-s", "a-rather-long-argument"};
+    run();
+    EXPECT_EQ(value, "mapped");
+}
+
+#endif
 
 TEST_F(TApp, SimpleNumericalTransformFn) {
     int value;

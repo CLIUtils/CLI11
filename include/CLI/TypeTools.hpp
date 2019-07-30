@@ -509,7 +509,7 @@ inline int64_t to_flag_value(std::string val) {
     int64_t ret;
     if(val.size() == 1) {
         if(val[0] >= '1' && val[0] <= '9') {
-            return (val[0] - '0');
+            return (static_cast<int64_t>(val[0]) - '0');
         }
         switch(val[0]) {
         case '0':
@@ -540,7 +540,7 @@ inline int64_t to_flag_value(std::string val) {
 
 /// Signed integers
 template <typename T, enable_if_t<classify_object<T>::value == integral_value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         long long output_ll = std::stoll(input, &n, 0);
@@ -555,7 +555,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Unsigned integers
 template <typename T, enable_if_t<classify_object<T>::value == unsigned_integral, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
 
@@ -573,7 +573,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Boolean values
 template <typename T, enable_if_t<classify_object<T>::value == boolean_value, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         auto out = to_flag_value(input);
         output = (out > 0);
@@ -590,7 +590,7 @@ bool lexical_cast(std::string input, T &output) {
 
 /// Floats
 template <typename T, enable_if_t<classify_object<T>::value == floating_point, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
         output = static_cast<T>(std::stold(input, &n));
@@ -604,21 +604,21 @@ bool lexical_cast(std::string input, T &output) {
 
 /// String and similar direct assignment
 template <typename T, enable_if_t<classify_object<T>::value == string_assignable, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
 
 /// String and similar constructible and copy assignment
 template <typename T, enable_if_t<classify_object<T>::value == string_constructible, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;
 }
 
 /// Enumerations
 template <typename T, enable_if_t<classify_object<T>::value == enumeration, detail::enabler> = detail::dummy>
-bool lexical_cast(std::string input, T &output) {
+bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
     bool retval = detail::lexical_cast(input, val);
     if(!retval) {

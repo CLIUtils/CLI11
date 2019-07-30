@@ -942,8 +942,11 @@ class App {
                        bool config_required = false) {
 
         // Remove existing config if present
-        if(config_ptr_ != nullptr)
+        if(config_ptr_ != nullptr) {
             remove_option(config_ptr_);
+            config_name_ = "";
+            config_required_ = false; // Not really needed, but complete
+        }
 
         // Only add config if option passed
         if(!option_name.empty()) {
@@ -1229,7 +1232,7 @@ class App {
         }
 
         std::vector<std::string> args;
-        args.reserve(static_cast<size_t>(argc - 1));
+        args.reserve(static_cast<size_t>(argc) - 1);
         for(int i = argc - 1; i > 0; i--)
             args.emplace_back(argv[i]);
         parse(std::move(args));
@@ -2254,7 +2257,7 @@ class App {
 
             // LCOV_EXCL_START
         default:
-            HorribleError("unrecognized classifier (you should not see this!)");
+            throw HorribleError("unrecognized classifier (you should not see this!)");
             // LCOV_EXCL_END
         }
         return retval;
