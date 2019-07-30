@@ -1005,6 +1005,33 @@ TEST_F(TApp, RequiredPositionals) {
     EXPECT_EQ(dest, "a");
 }
 
+TEST_F(TApp, RequiredPositionalVector) {
+    std::string d1;
+    std::string d2;
+    std::string d3;
+    std::vector<std::string> sources;
+
+    app.add_option("dest1", d1);
+    app.add_option("dest2", d2);
+    app.add_option("dest3", d3);
+    app.add_option("src", sources)->required();
+
+    app.positionals_at_end();
+
+    args = {"1", "2", "3"};
+    run();
+
+    EXPECT_EQ(sources.size(), 1u);
+    EXPECT_EQ(d1, "1");
+    EXPECT_EQ(d2, "2");
+    EXPECT_TRUE(d3.empty());
+    args = {"a"};
+    sources.clear();
+    run();
+
+    EXPECT_EQ(sources.size(), 1u);
+}
+
 // Tests positionals at end
 TEST_F(TApp, RequiredPositionalValidation) {
     std::vector<std::string> sources;
