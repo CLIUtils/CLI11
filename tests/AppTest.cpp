@@ -994,14 +994,14 @@ TEST_F(TApp, RequiredPositionals) {
     args = {"1", "2", "3"};
     run();
 
-    EXPECT_EQ(sources.size(), 2);
+    EXPECT_EQ(sources.size(), 2u);
     EXPECT_EQ(dest, "3");
 
     args = {"a"};
     sources.clear();
     run();
 
-    EXPECT_EQ(sources.size(), 0);
+    EXPECT_EQ(sources.size(), 0u);
     EXPECT_EQ(dest, "a");
 }
 
@@ -1018,7 +1018,7 @@ TEST_F(TApp, RequiredPositionalValidation) {
     args = {"1", "2", "string", "3"};
     run();
 
-    EXPECT_EQ(sources.size(), 2);
+    EXPECT_EQ(sources.size(), 2u);
     EXPECT_EQ(dest, 3);
     EXPECT_EQ(d2, "string");
 }
