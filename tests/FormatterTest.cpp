@@ -60,7 +60,7 @@ TEST(Formatter, OptCustomize) {
               "Usage: [OPTIONS]\n\n"
               "Options:\n"
               "  -h,--help              Print this help message and exit\n"
-              "  --opt INT (MUST HAVE)  Something\n");
+              "  --opt INT (MUST HAVE)  Something\n\n");
 }
 
 TEST(Formatter, OptCustomizeSimple) {
@@ -80,7 +80,7 @@ TEST(Formatter, OptCustomizeSimple) {
               "Usage: [OPTIONS]\n\n"
               "Options:\n"
               "  -h,--help              Print this help message and exit\n"
-              "  --opt INT (MUST HAVE)  Something\n");
+              "  --opt INT (MUST HAVE)  Something\n\n");
 }
 
 TEST(Formatter, FalseFlagExample) {
@@ -121,7 +121,7 @@ TEST(Formatter, AppCustomize) {
               "  -h,--help         Print this help message and exit\n\n"
               "Subcommands:\n"
               "  subcom1           This\n"
-              "  subcom2           This\n");
+              "  subcom2           This\n\n");
 }
 
 TEST(Formatter, AppCustomizeSimple) {
@@ -141,7 +141,7 @@ TEST(Formatter, AppCustomizeSimple) {
               "  -h,--help         Print this help message and exit\n\n"
               "Subcommands:\n"
               "  subcom1           This\n"
-              "  subcom2           This\n");
+              "  subcom2           This\n\n");
 }
 
 TEST(Formatter, AllSub) {

@@ -35,6 +35,33 @@ TEST(THelp, Footer) {
     EXPECT_THAT(help, HasSubstr("Report bugs to bugs@example.com"));
 }
 
+TEST(THelp, FooterCallback) {
+    CLI::App app{"My prog"};
+    app.footer([]() { return "Report bugs to bugs@example.com"; });
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("-h,--help"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+    EXPECT_THAT(help, HasSubstr("Report bugs to bugs@example.com"));
+}
+
+TEST(THelp, FooterCallbackBoth) {
+    CLI::App app{"My prog"};
+    app.footer([]() { return "Report bugs to bugs@example.com"; });
+    app.footer(" foot!!!!");
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("-h,--help"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, HasSubstr("Usage:"));
+    EXPECT_THAT(help, HasSubstr("Report bugs to bugs@example.com"));
+    EXPECT_THAT(help, HasSubstr("foot!!!!"));
+}
+
 TEST(THelp, OptionalPositional) {
     CLI::App app{"My prog", "program"};
 
@@ -602,7 +629,7 @@ TEST_F(CapturedHelp, CallForAllHelpOutput) {
               "  One description\n\n"
               "two\n"
               "  Options:\n"
-              "    --three                     \n\n");
+              "    --three                     \n\n\n");
 }
 TEST_F(CapturedHelp, NewFormattedHelp) {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });

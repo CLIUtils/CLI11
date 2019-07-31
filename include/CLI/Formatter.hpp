@@ -28,8 +28,8 @@ inline std::string Formatter::make_positionals(const App *app) const {
 
     if(opts.empty())
         return std::string();
-    else
-        return make_group(get_label("Positionals"), true, opts);
+
+    return make_group(get_label("Positionals"), true, opts);
 }
 
 inline std::string Formatter::make_groups(const App *app, AppFormatMode mode) const {
@@ -126,10 +126,10 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
 
 inline std::string Formatter::make_footer(const App *app) const {
     std::string footer = app->get_footer();
-    if(!footer.empty())
-        return footer + "\n";
-    else
-        return "";
+    if(footer.empty()) {
+        return std::string{};
+    }
+    return footer + "\n";
 }
 
 inline std::string Formatter::make_help(const App *app, std::string name, AppFormatMode mode) const {
@@ -151,7 +151,7 @@ inline std::string Formatter::make_help(const App *app, std::string name, AppFor
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    out << make_footer(app);
+    out << '\n' << make_footer(app);
 
     return out.str();
 }
@@ -222,8 +222,8 @@ inline std::string Formatter::make_expanded(const App *sub) const {
 inline std::string Formatter::make_option_name(const Option *opt, bool is_positional) const {
     if(is_positional)
         return opt->get_name(true, false);
-    else
-        return opt->get_name(false, true);
+
+    return opt->get_name(false, true);
 }
 
 inline std::string Formatter::make_option_opts(const Option *opt) const {

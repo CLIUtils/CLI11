@@ -93,7 +93,8 @@ class Config {
 /// This converter works with INI files
 class ConfigINI : public Config {
   public:
-    std::string to_config(const App *, bool default_also, bool write_description, std::string prefix) const override;
+    std::string
+    to_config(const App * /*app*/, bool default_also, bool write_description, std::string prefix) const override;
 
     std::vector<ConfigItem> from_config(std::istream &input) const override {
         std::string line;

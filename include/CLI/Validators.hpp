@@ -160,8 +160,8 @@ class Validator {
             std::string s2 = f2(input);
             if(s1.empty() || s2.empty())
                 return std::string();
-            else
-                return std::string("(") + s1 + ") OR (" + s2 + ")";
+
+            return std::string("(") + s1 + ") OR (" + s2 + ")";
         };
         newval.active_ = (active_ & other.active_);
         return newval;
@@ -182,8 +182,8 @@ class Validator {
             std::string s1 = f1(test);
             if(s1.empty()) {
                 return std::string("check ") + dfunc1() + " succeeded improperly";
-            } else
-                return std::string{};
+            }
+            return std::string{};
         };
         newval.active_ = active_;
         return newval;
@@ -225,7 +225,8 @@ class ExistingFileValidator : public Validator {
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
             if(!exist) {
                 return "File does not exist: " + filename;
-            } else if(is_dir) {
+            }
+            if(is_dir) {
                 return "File is actually a directory: " + filename;
             }
             return std::string();
@@ -243,7 +244,8 @@ class ExistingDirectoryValidator : public Validator {
             bool is_dir = (buffer.st_mode & S_IFDIR) != 0;
             if(!exist) {
                 return "Directory does not exist: " + filename;
-            } else if(!is_dir) {
+            }
+            if(!is_dir) {
                 return "Directory is actually a file: " + filename;
             }
             return std::string();

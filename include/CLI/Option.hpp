@@ -307,7 +307,7 @@ class Option : public OptionBase<Option> {
     size_t count() const { return results_.size(); }
 
     /// True if the option was not passed
-    size_t empty() const { return results_.empty(); }
+    bool empty() const { return results_.empty(); }
 
     /// This class is true if option is passed.
     operator bool() const { return !empty(); }
@@ -327,19 +327,19 @@ class Option : public OptionBase<Option> {
             throw IncorrectConstruction::SetFlag(get_name(true, true));
 
         // Setting 0 is not allowed
-        else if(value == 0)
+        if(value == 0)
             throw IncorrectConstruction::Set0Opt(get_name());
 
         // No change is okay, quit now
-        else if(expected_ == value)
+        if(expected_ == value)
             return this;
 
         // Type must be a vector
-        else if(type_size_ >= 0)
+        if(type_size_ >= 0)
             throw IncorrectConstruction::ChangeNotVector(get_name());
 
         // TODO: Can support multioption for non-1 values (except for join)
-        else if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
+        if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
             throw IncorrectConstruction::AfterMultiOpt(get_name());
 
         expected_ = value;
@@ -436,12 +436,11 @@ class Option : public OptionBase<Option> {
     bool remove_needs(Option *opt) {
         auto iterator = std::find(std::begin(needs_), std::end(needs_), opt);
 
-        if(iterator != std::end(needs_)) {
-            needs_.erase(iterator);
-            return true;
-        } else {
+        if(iterator == std::end(needs_)) {
             return false;
         }
+        needs_.erase(iterator);
+        return true;
     }
 
     /// Sets excluded options
@@ -475,12 +474,11 @@ class Option : public OptionBase<Option> {
     bool remove_excludes(Option *opt) {
         auto iterator = std::find(std::begin(excludes_), std::end(excludes_), opt);
 
-        if(iterator != std::end(excludes_)) {
-            excludes_.erase(iterator);
-            return true;
-        } else {
+        if(iterator == std::end(excludes_)) {
             return false;
         }
+        excludes_.erase(iterator);
+        return true;
     }
 
     /// Sets environment variable to read if no option given
@@ -626,8 +624,9 @@ class Option : public OptionBase<Option> {
             std::vector<std::string> name_list;
 
             /// The all list will never include a positional unless asked or that's the only name.
-            if((positional && pname_.length()) || (snames_.empty() && lnames_.empty()))
+            if((positional && (!pname_.empty())) || (snames_.empty() && lnames_.empty())) {
                 name_list.push_back(pname_);
+            }
             if((get_items_expected() == 0) && (!fnames_.empty())) {
                 for(const std::string &sname : snames_) {
                     name_list.push_back("-" + sname);
@@ -651,25 +650,22 @@ class Option : public OptionBase<Option> {
             }
 
             return detail::join(name_list);
-
-        } else {
-
-            // This returns the positional name no matter what
-            if(positional)
-                return pname_;
-
-            // Prefer long name
-            else if(!lnames_.empty())
-                return std::string("--") + lnames_[0];
-
-            // Or short name if no long name
-            else if(!snames_.empty())
-                return std::string("-") + snames_[0];
-
-            // If positional is the only name, it's okay to use that
-            else
-                return pname_;
         }
+
+        // This returns the positional name no matter what
+        if(positional)
+            return pname_;
+
+        // Prefer long name
+        if(!lnames_.empty())
+            return std::string("--") + lnames_[0];
+
+        // Or short name if no long name
+        if(!snames_.empty())
+            return std::string("-") + snames_[0];
+
+        // If positional is the only name, it's okay to use that
+        return pname_;
     }
 
     ///@}
@@ -758,20 +754,19 @@ class Option : public OptionBase<Option> {
 
         if(name.length() > 2 && name[0] == '-' && name[1] == '-')
             return check_lname(name.substr(2));
-        else if(name.length() > 1 && name.front() == '-')
+        if(name.length() > 1 && name.front() == '-')
             return check_sname(name.substr(1));
-        else {
-            std::string local_pname = pname_;
-            if(ignore_underscore_) {
-                local_pname = detail::remove_underscore(local_pname);
-                name = detail::remove_underscore(name);
-            }
-            if(ignore_case_) {
-                local_pname = detail::to_lower(local_pname);
-                name = detail::to_lower(name);
-            }
-            return name == local_pname;
+
+        std::string local_pname = pname_;
+        if(ignore_underscore_) {
+            local_pname = detail::remove_underscore(local_pname);
+            name = detail::remove_underscore(name);
         }
+        if(ignore_case_) {
+            local_pname = detail::to_lower(local_pname);
+            name = detail::to_lower(name);
+        }
+        return name == local_pname;
     }
 
     /// Requires "-" to be removed from string
@@ -1017,6 +1012,6 @@ class Option : public OptionBase<Option> {
         }
         return result_count;
     }
-};
+}; // namespace CLI
 
 } // namespace CLI

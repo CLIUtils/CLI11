@@ -118,6 +118,9 @@ class App {
     /// Footer to put after all options in the help output INHERITABLE
     std::string footer_;
 
+    /// This is a function that generates a footer to put after all other options in help output
+    std::function<std::string()> footer_callback_;
+
     /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
 
@@ -461,9 +464,8 @@ class App {
                 option->capture_default_str();
 
             return option.get();
-
-        } else
-            throw OptionAlreadyAdded(myopt.get_name());
+        }
+        throw OptionAlreadyAdded(myopt.get_name());
     }
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
@@ -950,6 +952,7 @@ class App {
             remove_option(config_ptr_);
             config_name_ = "";
             config_required_ = false; // Not really needed, but complete
+            config_ptr_ = nullptr;    // need to remove the config_ptr completely
         }
 
         // Only add config if option passed
@@ -1423,25 +1426,23 @@ class App {
     /// Removes an option from the excludes list of this subcommand
     bool remove_excludes(Option *opt) {
         auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
-        if(iterator != std::end(exclude_options_)) {
-            exclude_options_.erase(iterator);
-            return true;
-        } else {
+        if(iterator == std::end(exclude_options_)) {
             return false;
         }
+        exclude_options_.erase(iterator);
+        return true;
     }
 
     /// Removes a subcommand from this excludes list of this subcommand
     bool remove_excludes(App *app) {
         auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
-        if(iterator != std::end(exclude_subcommands_)) {
-            auto other_app = *iterator;
-            exclude_subcommands_.erase(iterator);
-            other_app->remove_excludes(this);
-            return true;
-        } else {
+        if(iterator == std::end(exclude_subcommands_)) {
             return false;
         }
+        auto other_app = *iterator;
+        exclude_subcommands_.erase(iterator);
+        other_app->remove_excludes(this);
+        return true;
     }
 
     ///@}
@@ -1453,7 +1454,11 @@ class App {
         footer_ = std::move(footer_string);
         return this;
     }
-
+    /// Set footer.
+    App *footer(std::function<std::string()> footer_function) {
+        footer_callback_ = std::move(footer_function);
+        return this;
+    }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
     /// include default arguments. Prefix will add a string to the beginning of each option.
     std::string config_to_str(bool default_also = false, bool write_description = false) const {
@@ -1470,10 +1475,10 @@ class App {
 
         // Delegate to subcommand if needed
         auto selected_subcommands = get_subcommands();
-        if(!selected_subcommands.empty())
+        if(!selected_subcommands.empty()) {
             return selected_subcommands.at(0)->help(prev, mode);
-        else
-            return formatter_->make_help(this, prev, mode);
+        }
+        return formatter_->make_help(this, prev, mode);
     }
 
     ///@}
@@ -1592,8 +1597,8 @@ class App {
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
 
-    /// Get footer.
-    const std::string &get_footer() const { return footer_; }
+    /// Generate and return the footer.
+    std::string get_footer() const { return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_; }
 
     /// Get the required min subcommand value
     size_t get_require_subcommand_min() const { return require_subcommand_min_; }
@@ -2090,7 +2095,7 @@ class App {
         if(!(allow_extras_ || prefix_command_)) {
             size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
-                throw ExtrasError(remaining(false));
+                throw ExtrasError(name_, remaining(false));
             }
         }
 
@@ -2107,7 +2112,7 @@ class App {
             size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
                 args = remaining(false);
-                throw ExtrasError(args);
+                throw ExtrasError(name_, args);
             }
         }
 
@@ -2372,7 +2377,7 @@ class App {
         }
 
         if(positionals_at_end_) {
-            throw CLI::ExtrasError(args);
+            throw CLI::ExtrasError(name_, args);
         }
         /// If this is an option group don't deal with it
         if(parent_ != nullptr && name_.empty()) {
