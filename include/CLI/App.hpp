@@ -482,7 +482,11 @@ class App {
             return CLI::detail::checked_to_string<T, XC>(variable);
         });
         opt->type_name(detail::type_name<XC>());
-        opt->type_size((std::max)(detail::type_count<T>::value, detail::type_count<XC>::value));
+        // these must be actual variable since (std::max) sometimes is defined in terms of references and references to
+        // structs used in the evaluation can be temporary so that would cause issues.
+        auto Tcount = detail::type_count<T>::value;
+        auto XCcount = detail::type_count<XC>::value;
+        opt->type_size((std::max)(Tcount, XCcount));
         return opt;
     }
 

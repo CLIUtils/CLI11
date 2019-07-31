@@ -436,18 +436,18 @@ template <typename T, typename Enable = void> struct type_count { static const i
 
 /// Set of overloads to get the type size of an object
 template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
-    static const int value{std::tuple_size<T>::value};
+    static constexpr int value{std::tuple_size<T>::value};
 };
 /// Type size for regular object types that do not look like a tuple
 template <typename T>
 struct type_count<
     T,
     typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
-    static const int value{1};
+    static constexpr int value{1};
 };
 /// Type size of types that look like a vector
 template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static const int value{-1};
+    static constexpr int value{-1};
 };
 
 /// Print name for tuple types
