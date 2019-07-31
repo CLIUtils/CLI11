@@ -1,5 +1,6 @@
 #include "app_helper.hpp"
 
+#include <array>
 #include <climits>
 #include <complex>
 #include <cstdint>
@@ -7,7 +8,6 @@
 #include <fstream>
 #include <string>
 #include <tuple>
-#include <array>
 
 class NotStreamable {};
 
@@ -821,6 +821,9 @@ TEST(Types, TypeName) {
     std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
     EXPECT_EQ("FLOAT", tuple_name);
 
+    static_assert(CLI::detail::classify_object<std::tuple<int, std::string>>::value ==
+                      CLI::detail::objCategory::tuple_value,
+                  "tuple<int,string> does not read like a tuple");
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
     EXPECT_EQ("[INT,TEXT]", tuple_name);
 

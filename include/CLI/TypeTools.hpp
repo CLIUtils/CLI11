@@ -380,6 +380,25 @@ template <typename T> struct classify_object<T, typename std::enable_if<is_vecto
     static constexpr objCategory value{vector_value};
 };
 
+/// This will only trigger for actual void type
+template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
+
+/// Set of overloads to get the type size of an object
+template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
+    static constexpr int value{std::tuple_size<T>::value};
+};
+/// Type size for regular object types that do not look like a tuple
+template <typename T>
+struct type_count<
+    T,
+    typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
+    static constexpr int value{1};
+};
+/// Type size of types that look like a vector
+template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
+    static constexpr int value{-1};
+};
+
 // Type name print
 
 /// Was going to be based on
@@ -398,11 +417,11 @@ constexpr const char *type_name() {
     return "UINT";
 }
 
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == floating_point || classify_object<T>::value == number_constructible ||
-                    classify_object<T>::value == double_constructible,
-                detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<type_count<T>::value <= 1 && (classify_object<T>::value == floating_point ||
+                                                    classify_object<T>::value == number_constructible ||
+                                                    classify_object<T>::value == double_constructible),
+                      detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "FLOAT";
 }
@@ -430,25 +449,6 @@ template <typename T, enable_if_t<classify_object<T>::value == vector_value, det
 constexpr const char *type_name() {
     return type_name<typename T::value_type>();
 }
-
-/// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
-
-/// Set of overloads to get the type size of an object
-template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
-    static constexpr int value{std::tuple_size<T>::value};
-};
-/// Type size for regular object types that do not look like a tuple
-template <typename T>
-struct type_count<
-    T,
-    typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
-    static constexpr int value{1};
-};
-/// Type size of types that look like a vector
-template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{-1};
-};
 
 /// Print name for tuple types
 template <
