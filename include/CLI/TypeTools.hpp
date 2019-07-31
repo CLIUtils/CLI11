@@ -694,7 +694,7 @@ template <
     enable_if_t<!std::is_same<T, XC>::value && std::is_assignable<T &, XC &>::value, detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
     XC val;
-    auto parse_result = lexical_cast<XC>(input, val);
+    bool parse_result = lexical_cast<XC>(input, val);
     if(parse_result) {
         output = val;
     }

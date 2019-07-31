@@ -996,7 +996,10 @@ TEST(Types, LexicalConversionVectorDouble) {
 
 TEST(Types, LexicalConversionTuple2) {
     CLI::results_t input = {"9.12", "19"};
+
     std::tuple<double, int> x;
+    static_assert(CLI::detail::is_tuple_like<decltype(x)>::value,
+                  "tuple type must have is_tuple_like trait to be true");
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
     EXPECT_TRUE(res);
     EXPECT_EQ(std::get<1>(x), 19);
