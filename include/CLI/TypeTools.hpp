@@ -258,6 +258,25 @@ std::string checked_to_string(T &&) {
     return std::string{};
 }
 
+/// This will only trigger for actual void type
+template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
+
+/// Set of overloads to get the type size of an object
+template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
+    static constexpr int value{std::tuple_size<T>::value};
+};
+/// Type size for regular object types that do not look like a tuple
+template <typename T>
+struct type_count<
+    T,
+    typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
+    static constexpr int value{1};
+};
+/// Type size of types that look like a vector
+template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
+    static constexpr int value{-1};
+};
+
 // Enumeration of the different supported categorizations of objects
 enum objCategory : int {
     integral_value = 2,
@@ -344,59 +363,44 @@ template <typename T> struct uncommon_type {
 
 /// Assignable from double or int
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
-                                               is_direct_constructible<T, int>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                            is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
     static constexpr objCategory value{number_constructible};
 };
 
 /// Assignable from int
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
-                                               is_direct_constructible<T, int>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
+                            is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
     static constexpr objCategory value{integer_constructible};
 };
 
 /// Assignable from double
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
-                                               !is_direct_constructible<T, int>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
+                            !is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
     static constexpr objCategory value{double_constructible};
 };
 
 /// Tuple type
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<is_tuple_like<T>::value && uncommon_type<T>::value &&
-                                               !is_direct_constructible<T, double>::value &&
-                                               !is_direct_constructible<T, int>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<(is_tuple_like<T>::value && uncommon_type<T>::value &&
+                             !is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value) ||
+                            type_count<T>::value >= 2>::type> {
     static constexpr objCategory value{tuple_value};
 };
 
 /// Vector type
 template <typename T> struct classify_object<T, typename std::enable_if<is_vector<T>::value>::type> {
     static constexpr objCategory value{vector_value};
-};
-
-/// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
-
-/// Set of overloads to get the type size of an object
-template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value>::type> {
-    static constexpr int value{std::tuple_size<T>::value};
-};
-/// Type size for regular object types that do not look like a tuple
-template <typename T>
-struct type_count<
-    T,
-    typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
-    static constexpr int value{1};
-};
-/// Type size of types that look like a vector
-template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{-1};
 };
 
 // Type name print
@@ -417,11 +421,11 @@ constexpr const char *type_name() {
     return "UINT";
 }
 
-template <typename T,
-          enable_if_t<type_count<T>::value <= 1 && (classify_object<T>::value == floating_point ||
-                                                    classify_object<T>::value == number_constructible ||
-                                                    classify_object<T>::value == double_constructible),
-                      detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == floating_point || classify_object<T>::value == number_constructible ||
+                    classify_object<T>::value == double_constructible,
+                detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "FLOAT";
 }
