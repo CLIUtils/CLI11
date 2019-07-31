@@ -189,9 +189,9 @@ bool from_stream(const std::string & /*istring*/, T & /*obj*/) {
 // Check for tuple like types, as in classes with a tuple_size type trait
 template <typename S> class is_tuple_like {
     template <typename SS>
-    static auto test(int)
-        -> decltype(std::conditional<(std::tuple_size<SS>::value > 0), std::true_type, std::false_type>::type());
-
+    // static auto test(int)
+    //     -> decltype(std::conditional<(std::tuple_size<SS>::value > 0), std::true_type, std::false_type>::type());
+    static auto test(int) -> decltype(std::tuple_size<SS>::value, std::true_type{});
     template <typename> static auto test(...) -> std::false_type;
 
   public:
