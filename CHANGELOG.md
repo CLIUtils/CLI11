@@ -1,6 +1,21 @@
 ## Version 1.9: IN PROGRESS
 
-* GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required.
+* The meson build system supported [#299][]
+* Added two template parameter form of `add_option`, allowing `std::optional` to be supported without a special import [#285][]
+* `string_view` now supported in reasonable places [#300][], [#285][]
+* `app.immediate_callback()` allows the main app to run before subcommand callbacks. [#292][]
+* GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
+* Backend: Cleaner type traits [#286][]
+* Bugfix: Fixed undefined behavior in `checked_multiply` [#290][]
+* Bugfix: Resetting config option works properly [#301][]
+
+[#160]: https://github.com/CLIUtils/CLI11/pull/160
+[#285]: https://github.com/CLIUtils/CLI11/pull/285
+[#286]: https://github.com/CLIUtils/CLI11/pull/286
+[#290]: https://github.com/CLIUtils/CLI11/pull/290
+[#292]: https://github.com/CLIUtils/CLI11/pull/292
+[#299]: https://github.com/CLIUtils/CLI11/pull/299
+[#300]: https://github.com/CLIUtils/CLI11/pull/300
 
 ## Version 1.8: Transformers, default strings, and flags
 

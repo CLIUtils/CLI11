@@ -2270,11 +2270,15 @@ class App {
     /// Count the required remaining positional arguments
     size_t _count_remaining_positionals(bool required_only = false) const {
         size_t retval = 0;
-        for(const Option_p &opt : options_)
-            if(opt->get_positional() && (!required_only || opt->get_required()) && opt->get_items_expected() > 0 &&
-               static_cast<int>(opt->count()) < opt->get_items_expected())
-                retval = static_cast<size_t>(opt->get_items_expected()) - opt->count();
-
+        for(const Option_p &opt : options_) {
+            if(opt->get_positional() && (!required_only || opt->get_required())) {
+                if(opt->get_items_expected() > 0 && static_cast<int>(opt->count()) < opt->get_items_expected()) {
+                    retval += static_cast<size_t>(opt->get_items_expected()) - opt->count();
+                } else if(opt->get_required() && opt->get_items_expected() < 0 && opt->count() == 0ul) {
+                    retval += 1;
+                }
+            }
+        }
         return retval;
     }
 
@@ -2293,6 +2297,32 @@ class App {
     bool _parse_positional(std::vector<std::string> &args) {
 
         const std::string &positional = args.back();
+
+        if(positionals_at_end_) {
+            // deal with the case of required arguments at the end which should take precedence over other arguments
+            auto arg_rem = args.size();
+            auto remreq = _count_remaining_positionals(true);
+            if(arg_rem <= remreq) {
+                for(const Option_p &opt : options_) {
+                    if(opt->get_positional() && opt->required_) {
+                        if(static_cast<int>(opt->count()) < opt->get_items_expected() ||
+                           (opt->get_items_expected() < 0 && opt->count() == 0lu)) {
+                            if(validate_positionals_) {
+                                std::string pos = positional;
+                                pos = opt->_validate(pos);
+                                if(!pos.empty()) {
+                                    continue;
+                                }
+                            }
+                            opt->add_result(positional);
+                            parse_order_.push_back(opt.get());
+                            args.pop_back();
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
