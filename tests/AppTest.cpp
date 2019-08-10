@@ -800,6 +800,19 @@ TEST_F(TApp, TakeLastOptMulti) {
     EXPECT_EQ(vals, std::vector<int>({2, 3}));
 }
 
+TEST_F(TApp, TakeLastOptMultiCheck) {
+    std::vector<int> vals;
+    auto opt = app.add_option("--long", vals)->expected(2)->take_last();
+
+    opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
+    opt->check((!CLI::PositiveNumber).application_index(1));
+    args = {"--long", "-1", "2", "-3"};
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(vals, std::vector<int>({2, -3}));
+}
+
 TEST_F(TApp, TakeFirstOptMulti) {
     std::vector<int> vals;
     app.add_option("--long", vals)->expected(2)->take_first();
@@ -1591,6 +1604,63 @@ TEST_F(TApp, NotFileExists) {
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
+TEST_F(TApp, pair_check) {
+    std::string myfile{"pair_check_file.txt"};
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+
+    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+    std::pair<std::string, int> findex;
+
+    auto v0 = CLI::ExistingFile;
+    v0.application_index(0);
+    auto v1 = CLI::PositiveNumber;
+    v1.application_index(1);
+    app.add_option("--file", findex)->check(v0)->check(v1);
+
+    args = {"--file", myfile, "2"};
+
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(findex.first, myfile);
+    EXPECT_EQ(findex.second, 2);
+
+    args = {"--file", myfile, "-3"};
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"--file", myfile, "2"};
+    std::remove(myfile.c_str());
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+// this will require that modifying the multi-option policy for tuples be allowed which it isn't at present
+/*
+TEST_F(TApp, pair_check_take_first) {
+    std::string myfile{"pair_check_file2.txt"};
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    EXPECT_TRUE(ok);
+
+    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+    std::pair<std::string, int> findex;
+
+    auto opt = app.add_option("--file", findex)->check(CLI::ExistingFile)->check(CLI::PositiveNumber);
+    EXPECT_THROW(opt->get_validator(3), CLI::OptionNotFound);
+    opt->get_validator(0)->application_index(0);
+    opt->get_validator(1)->application_index(1);
+    opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+    args = {"--file", "not_a_file.txt", "-16", "--file", myfile, "2"};
+    // should only check the last one
+    EXPECT_NO_THROW(run());
+
+    EXPECT_EQ(findex.first, myfile);
+    EXPECT_EQ(findex.second, 2);
+
+    opt->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+*/
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
@@ -1615,6 +1685,24 @@ TEST_F(TApp, VectorDefaultedFixedString) {
     run();
     EXPECT_EQ(3u, app.count("--string"));
     EXPECT_EQ(answer, strvec);
+}
+
+TEST_F(TApp, VectorIndexedValidator) {
+    std::vector<int> vvec;
+
+    CLI::Option *opt = app.add_option("-v", vvec);
+
+    args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
+    run();
+    EXPECT_EQ(4u, app.count("-v"));
+    EXPECT_EQ(4u, vvec.size());
+    opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
+    opt->check((!CLI::PositiveNumber).application_index(1));
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(4u, vvec.size());
+    // v[3] would be negative
+    opt->check(CLI::Validator(CLI::PositiveNumber).application_index(3));
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 TEST_F(TApp, DefaultedResult) {
@@ -2110,6 +2198,20 @@ TEST_F(TApp, CustomDoubleOption) {
         return true;
     });
     opt->type_name("INT FLOAT")->type_size(2);
+
+    args = {"12", "1.5"};
+
+    run();
+    EXPECT_EQ(custom_opt.first, 12);
+    EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+}
+
+// now with tuple support this is possible
+TEST_F(TApp, CustomDoubleOptionAlt) {
+
+    std::pair<int, double> custom_opt;
+
+    app.add_option("posit", custom_opt);
 
     args = {"12", "1.5"};
 
