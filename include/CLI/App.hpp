@@ -1859,8 +1859,14 @@ class App {
             return detail::Classifier::SUBCOMMAND;
         if(detail::split_long(current, dummy1, dummy2))
             return detail::Classifier::LONG;
-        if(detail::split_short(current, dummy1, dummy2))
+        if(detail::split_short(current, dummy1, dummy2)) {
+            if(dummy1[0] >= '0' && dummy1[0] <= '9') {
+                if(get_option_no_throw(std::string{'-', dummy1[0]}) == nullptr) {
+                    return detail::Classifier::NONE;
+                }
+            }
             return detail::Classifier::SHORT;
+        }
         if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
             return detail::Classifier::WINDOWS;
         if((current == "++") && !name_.empty() && parent_ != nullptr)
@@ -2314,7 +2320,7 @@ class App {
                            (opt->get_items_expected() < 0 && opt->count() == 0lu)) {
                             if(validate_positionals_) {
                                 std::string pos = positional;
-                                pos = opt->_validate(pos);
+                                pos = opt->_validate(pos, 0);
                                 if(!pos.empty()) {
                                     continue;
                                 }
@@ -2334,7 +2340,7 @@ class App {
                (static_cast<int>(opt->count()) < opt->get_items_expected() || opt->get_items_expected() < 0)) {
                 if(validate_positionals_) {
                     std::string pos = positional;
-                    pos = opt->_validate(pos);
+                    pos = opt->_validate(pos, 0);
                     if(!pos.empty()) {
                         continue;
                     }

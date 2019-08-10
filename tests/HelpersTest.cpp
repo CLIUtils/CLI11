@@ -836,6 +836,9 @@ TEST(Types, TypeName) {
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int, std::string>>();
     EXPECT_EQ("[INT,TEXT,FLOAT,UINT,TEXT]", tuple_name);
 
+    tuple_name = CLI::detail::type_name<std::array<int, 10>>();
+    EXPECT_EQ("[INT,INT,INT,INT,INT,INT,INT,INT,INT,INT]", tuple_name);
+
     std::string text_name = CLI::detail::type_name<std::string>();
     EXPECT_EQ("TEXT", text_name);
 
@@ -1005,7 +1008,8 @@ TEST(Types, LexicalConversionVectorDouble) {
 
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::pair<double, double>>::value, "pair of double should be like a tuple");
-static_assert(CLI::detail::is_tuple_like<std::array<double, 4>>::value, "std::array should be like a tuple");
+static_assert(CLI::detail::is_tuple_like<std::array<double, 4>>::value, "std::array<double,4> should be like a tuple");
+static_assert(CLI::detail::is_tuple_like<std::array<int, 10>>::value, "std::array<int,10> should be like a tuple");
 static_assert(!CLI::detail::is_tuple_like<std::string>::value, "std::string should not be like a tuple");
 static_assert(!CLI::detail::is_tuple_like<double>::value, "double should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value, "tuple should look like a tuple");
@@ -1071,7 +1075,40 @@ TEST(Types, LexicalConversionTuple5) {
     EXPECT_FALSE(res);
 }
 
-TEST(Types, LexicalConversionXomplwz) {
+TEST(Types, LexicalConversionTuple10) {
+    CLI::results_t input = {"9", "19", "18", "5", "235235", "9", "19", "18", "5", "235235"};
+    std::array<unsigned int, 10> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19u);
+    EXPECT_EQ(x[0], 9u);
+    EXPECT_EQ(x[2], 18u);
+    EXPECT_EQ(x[3], 5u);
+    EXPECT_EQ(x[4], 235235u);
+    EXPECT_EQ(x[9], 235235u);
+    input[3] = "hippo";
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple10XC) {
+    CLI::results_t input = {"9", "19", "18", "5", "235235", "9", "19", "18", "5", "235235"};
+    std::array<double, 10> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), std::array<unsigned int, 10>>(input, x);
+
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19.0);
+    EXPECT_EQ(x[0], 9.0);
+    EXPECT_EQ(x[2], 18.0);
+    EXPECT_EQ(x[3], 5.0);
+    EXPECT_EQ(x[4], 235235.0);
+    EXPECT_EQ(x[9], 235235.0);
+    input[3] = "19.7";
+    res = CLI::detail::lexical_conversion<decltype(x), std::array<unsigned int, 10>>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionComplex) {
     CLI::results_t input = {"5.1", "3.5"};
     std::complex<double> x;
     bool res = CLI::detail::lexical_conversion<std::complex<double>, std::array<double, 2>>(input, x);

@@ -137,12 +137,14 @@ struct pair_adaptor<
 // check for constructibility from a specific type and copy assignable used in the parse detection
 template <typename T, typename C> class is_direct_constructible {
     template <typename TT, typename CC>
-    static auto test(int) -> decltype(TT{std::declval<CC>()}, std::is_move_assignable<TT>());
+    static auto test(int, std::true_type) -> decltype(TT{std::declval<CC>()}, std::is_move_assignable<TT>());
+
+    template <typename TT, typename CC> static auto test(int, std::false_type) -> std::false_type;
 
     template <typename, typename> static auto test(...) -> std::false_type;
 
   public:
-    static constexpr bool value = decltype(test<T, C>(0))::value;
+    static constexpr bool value = decltype(test<T, C>(0, typename std::is_constructible<T, C>::type()))::value;
 };
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -363,28 +365,28 @@ template <typename T> struct uncommon_type {
 
 /// Assignable from double or int
 template <typename T>
-struct classify_object<
-    T,
-    typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
-                            is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
+                                               is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
     static constexpr objCategory value{number_constructible};
 };
 
 /// Assignable from int
 template <typename T>
-struct classify_object<
-    T,
-    typename std::enable_if<uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
-                            is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
+                                               !is_direct_constructible<T, double>::value &&
+                                               is_direct_constructible<T, int>::value>::type> {
     static constexpr objCategory value{integer_constructible};
 };
 
 /// Assignable from double
 template <typename T>
-struct classify_object<
-    T,
-    typename std::enable_if<uncommon_type<T>::value && is_direct_constructible<T, double>::value &&
-                            !is_direct_constructible<T, int>::value && type_count<T>::value == 1>::type> {
+struct classify_object<T,
+                       typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
+                                               is_direct_constructible<T, double>::value &&
+                                               !is_direct_constructible<T, int>::value>::type> {
     static constexpr objCategory value{double_constructible};
 };
 
@@ -392,9 +394,9 @@ struct classify_object<
 template <typename T>
 struct classify_object<
     T,
-    typename std::enable_if<(is_tuple_like<T>::value && uncommon_type<T>::value &&
-                             !is_direct_constructible<T, double>::value && !is_direct_constructible<T, int>::value) ||
-                            type_count<T>::value >= 2>::type> {
+    typename std::enable_if<type_count<T>::value >= 2 || (is_tuple_like<T>::value && uncommon_type<T>::value &&
+                                                          !is_direct_constructible<T, double>::value &&
+                                                          !is_direct_constructible<T, int>::value)>::type> {
     static constexpr objCategory value{tuple_value};
 };
 
@@ -454,54 +456,39 @@ constexpr const char *type_name() {
     return type_name<typename T::value_type>();
 }
 
-/// Print name for tuple types
+/// Print name for single element tuple types
 template <
     typename T,
     enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 1, detail::enabler> = detail::dummy>
 std::string type_name() {
     return type_name<typename std::tuple_element<0, T>::type>();
 }
-/// Print type name for 2 element tuples
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 2, detail::enabler> = detail::dummy>
-std::string type_name() {
-    return std::string("[") + type_name<typename std::tuple_element<0, T>::type>() + "," +
-           type_name<typename std::tuple_element<1, T>::type>() + "]";
+
+/// Empty string if the index > tuple size
+template <typename T, std::size_t I>
+inline typename std::enable_if<I == type_count<T>::value, std::string>::type tuple_name() {
+    return std::string{};
 }
 
-/// Print type name for 3 element tuples
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 3, detail::enabler> = detail::dummy>
-std::string type_name() {
-    return std::string("[") + type_name<typename std::tuple_element<0, T>::type>() + "," +
-           type_name<typename std::tuple_element<1, T>::type>() + "," +
-           type_name<typename std::tuple_element<2, T>::type>() + "]";
+/// Recursively generate the tuple type name
+template <typename T, std::size_t I>
+    inline typename std::enable_if < I<type_count<T>::value, std::string>::type tuple_name() {
+    std::string str = std::string(type_name<typename std::tuple_element<I, T>::type>()) + ',' + tuple_name<T, I + 1>();
+    if(str.back() == ',')
+        str.pop_back();
+    return str;
 }
 
-/// Print type name for 4 element tuples
+/// Print type name for tuples with 2 or more elements
 template <
     typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 4, detail::enabler> = detail::dummy>
+    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value >= 2, detail::enabler> = detail::dummy>
 std::string type_name() {
-    return std::string("[") + type_name<typename std::tuple_element<0, T>::type>() + "," +
-           type_name<typename std::tuple_element<1, T>::type>() + "," +
-           type_name<typename std::tuple_element<2, T>::type>() + "," +
-           type_name<typename std::tuple_element<3, T>::type>() + "]";
+    auto tname = std::string(1, '[') + tuple_name<T, 0>();
+    tname.push_back(']');
+    return tname;
 }
 
-/// Print type name for 5 element tuples
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 5, detail::enabler> = detail::dummy>
-std::string type_name() {
-    return std::string("[") + type_name<typename std::tuple_element<0, T>::type>() + "," +
-           type_name<typename std::tuple_element<1, T>::type>() + "," +
-           type_name<typename std::tuple_element<2, T>::type>() + "," +
-           type_name<typename std::tuple_element<3, T>::type>() + "," +
-           type_name<typename std::tuple_element<4, T>::type>() + "]";
-}
 // Lexical cast
 
 /// Convert a flag into an integer value  typically binary flags
@@ -777,101 +764,34 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return (!output.empty()) && retval;
 }
 
-/// Conversion for single element tuple and single element tuple conversion type
-template <class T,
-          class XC,
-          enable_if_t<type_count<T>::value == 1 && is_tuple_like<T>::value && is_tuple_like<XC>::value,
-                      detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_assign<typename std::tuple_element<0, T>::type, typename std::tuple_element<0, XC>::type>(
-        strings[0], std::get<0>(output));
+/// function template for converting tuples if the static Index is greater than the tuple size
+template <class T, class XC, std::size_t I>
+inline typename std::enable_if<I >= type_count<T>::value, bool>::type tuple_conversion(const std::vector<std::string> &,
+                                                                                       T &) {
+    return true;
+}
+/// Tuple conversion operation
+template <class T, class XC, std::size_t I>
+    inline typename std::enable_if <
+    I<type_count<T>::value, bool>::type tuple_conversion(const std::vector<std::string> &strings, T &output) {
+    bool retval = true;
+    if(strings.size() > I) {
+        retval &= lexical_assign<
+            typename std::tuple_element<I, T>::type,
+            typename std::conditional<is_tuple_like<XC>::value, typename std::tuple_element<I, XC>::type, XC>::type>(
+            strings[I], std::get<I>(output));
+    }
+    retval &= tuple_conversion<T, XC, I + 1>(strings, output);
     return retval;
 }
 
-/// Conversion for single element tuple and single defined type
-template <class T,
-          class XC,
-          enable_if_t<type_count<T>::value == 1 && is_tuple_like<T>::value && !is_tuple_like<XC>::value,
-                      detail::enabler> = detail::dummy>
+/// Conversion for tuples
+template <class T, class XC, enable_if_t<is_tuple_like<T>::value, detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_assign<typename std::tuple_element<0, T>::type, XC>(strings[0], std::get<0>(output));
-    return retval;
-}
-
-/// conversion for two element tuple
-template <class T, class XC, enable_if_t<type_count<T>::value == 2, detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_cast(strings[0], std::get<0>(output));
-    if(strings.size() > 1) {
-        retval &= lexical_cast(strings[1], std::get<1>(output));
-    }
-    return retval;
-}
-
-/// conversion for three element tuple
-template <class T, class XC, enable_if_t<type_count<T>::value == 3, detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_cast(strings[0], std::get<0>(output));
-    if(strings.size() > 1) {
-        retval &= lexical_cast(strings[1], std::get<1>(output));
-    }
-    if(strings.size() > 2) {
-        retval &= lexical_cast(strings[2], std::get<2>(output));
-    }
-    return retval;
-}
-
-/// conversion for four element tuple
-template <class T, class XC, enable_if_t<type_count<T>::value == 4, detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_cast(strings[0], std::get<0>(output));
-    if(strings.size() > 1) {
-        retval &= lexical_cast(strings[1], std::get<1>(output));
-    }
-    if(strings.size() > 2) {
-        retval &= lexical_cast(strings[2], std::get<2>(output));
-    }
-    if(strings.size() > 3) {
-        retval &= lexical_cast(strings[3], std::get<3>(output));
-    }
-    return retval;
-}
-
-/// conversion for five element tuple
-template <class T, class XC, enable_if_t<type_count<T>::value == 5, detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    static_assert(type_count<T>::value == type_count<XC>::value,
-                  "when using converting to tuples different cross conversion are not possible");
-
-    bool retval = lexical_cast(strings[0], std::get<0>(output));
-    if(strings.size() > 1) {
-        retval &= lexical_cast(strings[1], std::get<1>(output));
-    }
-    if(strings.size() > 2) {
-        retval &= lexical_cast(strings[2], std::get<2>(output));
-    }
-    if(strings.size() > 3) {
-        retval &= lexical_cast(strings[3], std::get<3>(output));
-    }
-    if(strings.size() > 4) {
-        retval &= lexical_cast(strings[4], std::get<4>(output));
-    }
-    return retval;
+    static_assert(
+        !is_tuple_like<XC>::value || type_count<T>::value == type_count<XC>::value,
+        "if the conversion type is defined as a tuple it must be the same size as the type you are converting to");
+    return tuple_conversion<T, XC, 0>(strings, output);
 }
 
 /// Sum a vector of flag representations

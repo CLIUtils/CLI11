@@ -408,8 +408,17 @@ class Option : public OptionBase<Option> {
         if((validator_name.empty()) && (!validators_.empty())) {
             return &(validators_.front());
         }
-        throw OptionNotFound(std::string("Validator ") + validator_name + " Not Found");
+        throw OptionNotFound(std::string{"Validator "} + validator_name + " Not Found");
     }
+
+    /// Get a Validator by index NOTE: this may not be the order of definition
+    Validator *get_validator(int index) {
+        if(index >= 0 && index < static_cast<int>(validators_.size())) {
+            return &(validators_[index]);
+        }
+        throw OptionNotFound("Validator index is not valid");
+    }
+
     /// Sets required options
     Option *needs(Option *opt) {
         auto tup = needs_.insert(opt);
@@ -679,8 +688,17 @@ class Option : public OptionBase<Option> {
 
         // Run the validators (can change the string)
         if(!validators_.empty()) {
+            int index = 0;
+            // this is not available until multi_option_policy with type_size_>0 is enabled and functional
+            // if(type_size_ > 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+            //    index = type_size_ - static_cast<int>(results_.size());
+            //}
+            if(type_size_ < 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) { // for vector operations
+                index = expected_ - static_cast<int>(results_.size());
+            }
             for(std::string &result : results_) {
-                auto err_msg = _validate(result);
+                auto err_msg = _validate(result, index);
+                ++index;
                 if(!err_msg.empty())
                     throw ValidationError(get_name(), err_msg);
             }
@@ -977,16 +995,19 @@ class Option : public OptionBase<Option> {
 
   private:
     // Run a result through the validators
-    std::string _validate(std::string &result) {
+    std::string _validate(std::string &result, int index) {
         std::string err_msg;
         for(const auto &vali : validators_) {
-            try {
-                err_msg = vali(result);
-            } catch(const ValidationError &err) {
-                err_msg = err.what();
+            auto v = vali.get_application_index();
+            if(v == -1 || v == index) {
+                try {
+                    err_msg = vali(result);
+                } catch(const ValidationError &err) {
+                    err_msg = err.what();
+                }
+                if(!err_msg.empty())
+                    break;
             }
-            if(!err_msg.empty())
-                break;
         }
         return err_msg;
     }

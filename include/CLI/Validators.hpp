@@ -43,6 +43,8 @@ class Validator {
     std::function<std::string(std::string &)> func_{[](std::string &) { return std::string{}; }};
     /// The name for search purposes of the Validator
     std::string name_;
+    /// A validate will only apply to an indexed value (-1 is all elements)
+    int application_index_ = -1;
     /// Enable for Validator to allow it to be disabled if need be
     bool active_{true};
     /// specify that a validator should not modify the input
@@ -113,7 +115,13 @@ class Validator {
         non_modifying_ = no_modify;
         return *this;
     }
-
+    /// Specify the application index of a validator
+    Validator &application_index(int app_index) {
+        application_index_ = app_index;
+        return *this;
+    };
+    /// Get the current value of the application index
+    int get_application_index() const { return application_index_; }
     /// Get a boolean if the validator is active
     bool get_active() const { return active_; }
 
@@ -141,6 +149,7 @@ class Validator {
         };
 
         newval.active_ = (active_ & other.active_);
+        newval.application_index_ = application_index_;
         return newval;
     }
 
@@ -164,6 +173,7 @@ class Validator {
             return std::string("(") + s1 + ") OR (" + s2 + ")";
         };
         newval.active_ = (active_ & other.active_);
+        newval.application_index_ = application_index_;
         return newval;
     }
 
@@ -186,6 +196,7 @@ class Validator {
             return std::string{};
         };
         newval.active_ = active_;
+        newval.application_index_ = application_index_;
         return newval;
     }
 
@@ -201,10 +212,10 @@ class Validator {
             if((f1.empty()) || (f2.empty())) {
                 return f1 + f2;
             }
-            return std::string("(") + f1 + ")" + merger + "(" + f2 + ")";
+            return std::string(1, '(') + f1 + ')' + merger + '(' + f2 + ')';
         };
     }
-};
+}; // namespace CLI
 
 /// Class wrapping some of the accessors of Validator
 class CustomValidator : public Validator {

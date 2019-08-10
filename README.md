@@ -111,7 +111,7 @@ After I wrote this, I also found the following libraries:
 | [Clara][]               | Simple library built for the excellent [Catch][] testing framework. Unique syntax, limited scope.                                                                                    |
 | [Argh!][]               | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.                                                        |
 | [CLI][]                 | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active.  |
-|[argparse][] | C++17 single file argument parser. Design seems similar to CLI11 in some ways. |
+| [argparse][] | C++17 single file argument parser. Design seems similar to CLI11 in some ways. |
 
 See [Awesome C++][] for a less-biased list of parsers. You can also find other single file libraries at [Single file libs][].
 
@@ -194,7 +194,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="") // 🆕
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor. Also allowed are tuples(up to 5 elements) and tuple like structures such as std::array or std::pair.  
+               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor. Also allowed are tuples🚧,std::array🚧 or std::pair🚧.  
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -202,7 +202,7 @@ app.add_option_function<type>(option_name,
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
-//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.    
+//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.  For tuples or other multi element types, XC must be a single type or a tuple like object of the same size as the assignment type   
 app.add_option<typename T, typename XC>(option_name,
                T &output, // output must be assignable or constructible from a value of type XC
                help_string="")
@@ -261,7 +261,7 @@ otherwise the output would default to a string.  The add_option can be used with
 
 Type such as optional<int>, optional<double>, and optional<string> are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Internals][] for information on how this could done and how you can add your own converters for additional  types.
 
-Vector types can also be used int the two parameter template overload
+Vector types can also be used in the two parameter template overload
 ```
 std::vector<double> v1;
 app.add_option<std::vector<double>,int>("--vs",v1);
