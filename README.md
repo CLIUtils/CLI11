@@ -198,7 +198,7 @@ app.add_option(option_name,
                help_string="")
 
 app.add_option_function<type>(option_name,
-               function <void(const type &value)>, // 🆕 int, bool, float, enum, or string-like, or anything with a defined conversion from a string, or a vector of any of the previous objects.  
+               function <void(const type &value)>, // 🆕 type can be any type supported by add_option
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
@@ -249,7 +249,7 @@ The `add_option_function<type>(...` function will typically require the template
 double val
 app.add_option<double,unsigned int>("-v",val);
 ```
-which would first verify the input is convertible to an unsigned int before assigning it.  Or using some variant type
+which would first verify the input is convertible to an `unsigned int` before assigning it.  Or using some variant type
 ```
 using vtype=std::variant<int, double, std::string>;
  vtype v1;
@@ -318,7 +318,7 @@ Before parsing, you can set the following options:
 -   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 -   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 -   `->disable_flag_override()`: 🆕 From the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
--    `->delimiter(char)`: 🆕 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
+-   `->delimiter(char)`: 🆕 allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 -   `->description(str)`: Set/change the description.
 -   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(std::string(const std::string &), validator_name="",validator_description="")`: 🆕 Define a check function.  The function should return a non empty string with the error message if the check fails
@@ -408,8 +408,8 @@ will produce a check for a number less than 0.
 
 ##### Transforming Validators
 There are a few built in Validators that let you transform values if used with the `transform` function.  If they also do some checks then they can be used `check` but some may do nothing in that case.
- * 🆕 `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
- * 🆕 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
+-   🆕 `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
+-   🆕 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and `CLI::ignore_space`.  These all work on strings but it is possible to define functions that work on other types.
 Here are some examples
 of `IsMember`:
@@ -436,8 +436,13 @@ NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransform
 Validators are copyable and have a few operations that can be performed on them to alter settings.  Most of the built in Validators have a default description that is displayed in the help.  This can be altered via `.description(validator_description)`.
 The name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
-`.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.
-All the functions return a Validator reference allowing them to be chained.  For example
+`.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.  A validator can be set to apply only to a specific element of the output.  For example in a pair option `std::pair<int, std::string>` the first element may need to be a positive integer while the second may need to be a valid file.  The `.application_index(int)` 🚧function can specify this.  It is zero based and negative indices apply to all values.  
+```
+opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
+opt->check(CLI::Validator(CLI::ExistingFile).application_index(1));
+```
+
+All the validator operation functions return a Validator reference allowing them to be chained.  For example
 
 ```cpp
 opt->check(CLI::Range(10,20).description("range is limited to sensible values").active(false).name("range"));
@@ -476,19 +481,27 @@ opt->get_validator(name);
 
 This will retrieve a Validator with the given name or throw a `CLI::OptionNotFound` error.  If no name is given or name is empty the first unnamed Validator will be returned or the first Validator if there is only one.
 
+or 🚧
+
+```cpp
+opt->get_validator(index);
+```
+
+Which will return a validator in the index it is applied which isn't necessarily the order in which was defined.  The pointer can be `nullptr` if an invalid index is given.
 Validators have a few functions to query the current values
- * `get_description()`: 🆕 Will return a description string
- * `get_name()`: 🆕 Will return the Validator name
- * `get_active()`: 🆕 Will return the current active state, true if the Validator is active.
- * `get_modifying()`: 🆕 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()` 🆕 method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
+-   `get_description()`: 🆕 Will return a description string
+-   `get_name()`: 🆕 Will return the Validator name
+-   `get_active()`: 🆕 Will return the current active state, true if the Validator is active.
+-   `get_application_index()`: 🚧 Will return the current application index.
+-   `get_modifying()`: 🆕 Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()` 🆕 method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
 
 #### Getting results
 
 In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
-- `results()`: Retrieves a vector of strings with all the results in the order they were given.
-- `results(variable_to_bind_to)`: 🆕 Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-- `Value=as<type>()`: 🆕 Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+-   `results()`: Retrieves a vector of strings with all the results in the order they were given.
+-   `results(variable_to_bind_to)`: 🆕 Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+-   `Value=as<type>()`: 🆕 Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -501,9 +514,9 @@ subcommand name from matching.
 If an `App` (main or subcommand) has been parsed on the command line, `->parsed` will be true (or convert directly to bool).
 All `App`s have a `get_subcommands()` method, which returns a list of pointers to the subcommands passed on the command line. A `got_subcommand(App_or_name)` method is also provided that will check to see if an `App` pointer or a string name was collected on the command line.
 
-For many cases, however, using an app's callback may be easier. Every app executes a callback function after it parses; just use a lambda function (with capture to get parsed values) to `.callback`. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
-even exit the program through the callback. The main `App` has a callback slot, as well, but it is generally not as useful.
-You are allowed to throw `CLI::Success` in the callbacks.
+For many cases, however, using an app's callback capabilities may be easier. Every app has a set of callbacks that can be executed at various stages of parsing; a `C++` lambda function (with capture to get parsed values) can be used as input to the callback definition function. If you throw `CLI::Success` or `CLI::RuntimeError(return_value)`, you can
+even exit the program through the callback.
+
 Multiple subcommands are allowed, to allow [`Click`][click] like series of commands (order is preserved).  🆕 The same subcommand can be triggered multiple times but all positional arguments will take precedence over the second and future calls of the subcommand.  `->count()` on the subcommand will return the number of times the subcommand was called.  The subcommand callback will only be triggered once unless the `.immediate_callback()`  🆕 flag is set.  In which case the callback executes on completion of the subcommand arguments but after the arguments for that subcommand have been parsed, and can be triggered multiple times.
 
 🆕 Subcommands may also have an empty name either by calling `add_subcommand` with an empty string for the name or with no arguments.
@@ -547,9 +560,11 @@ There are several options that are supported on the main app and subcommands and
 -   `.count(option_name)`: Returns the number of times a particular option was called.
 -   `.count_all()`: 🆕 Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
 -   `.name(name)`: Add or change the name.
--   `.callback(void() function)`: Set the callback that runs at the end of parsing. The options have already run at this point. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.immediate_callback()`: 🆕 Specify that the callback for a subcommand should run immediately on completion of a subcommand vs at the completion of all parsing if this option is not used. When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set.
--    `.pre_parse_callback(void(size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.callback(void() function)`: Set the callback for an app. 🚧 either sets the pre_parse_callback or the final_callback depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.parse_complete_callback(void() function)`: Set the callback that runs at the completion of parsing. for subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.final_callback(void() function)`: Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.immediate_callback()`: 🆕 Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set.
+-   `.pre_parse_callback(void(size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
 -   `.positionals_at_end()`: 🆕 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
@@ -559,21 +574,21 @@ There are several options that are supported on the main app and subcommands and
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
-- `[option_name]`: 🆕 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
+-   `[option_name]`: 🆕 retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
 
 #### Callbacks
-A subcommand has two optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🆕 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
-The second callback is executed after parsing.  The behavior depends on the status of the `immediate_callback` flag 🆕. If true, this runs immediately after the parsing of the subcommand.  Or if the flag is false, once after parsing of all arguments.  If the `immediate_callback` is set then the callback can be executed multiple times if the subcommand list given multiple times.  If the main app or subcommand has a config file, no data from the config file will be reflected in `immediate_callback`. `immediate_callback()` on the main app 🚧 causes the main app callback to execute prior to subcommand callbacks, it is also inherited, option_group callbacks are still executed before the main app callback even if `immediate_callback` is set in the main app.  For option_groups `immediate_callback` causes the callback to be run prior to other option groups and options in the main app, effectively giving the options in the group priority.
-
-For example say an application was set up like
+A subcommand has three optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🆕 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
+The second callback is executed after parsing.  This is known as the `parse_complete_callback`. For subcommands this is executed immediately after parsing and can be executed multiple times if a subcommand is called multiple times.    On the main app this callback is executed after all the `parse_complete_callback`s for the subcommands are executed but prior to any `final_callback` calls in the subcommand or option groups. If the main app or subcommand has a config file, no data from the config file will be reflected in `parse_complete_callback` on named subcommands 🚧.  For option_groups the `parse_complete_callback` is executed prior to the `parse_complete_callback` on the main app but after the config_file is loaded(if specified).  The 🚧 `final_callback` is executed after all processing is complete.  After the `parse_complete_callback` is executed on the main app, the used subcommand `final_callback` are executed followed by the 'final callback' for option groups.  The last thing to execute is the `final_callback` for the main_app.
+For example say an application was set up like  
 
 ```cpp
-app.callback(ac);
-sub1=app.add_subcommand("sub1")->callback(c1)->preparse_callback(pc1)->immediate_callback();
-sub2=app.add_subcommand("sub2")->callback(c2)->preparse_callback(pc2);
+app.parse_complete_callback(ac1);
+app.final_callback(ac2);
+auto sub1=app.add_subcommand("sub1")->parse_complete_callback(c1)->preparse_callback(pc1);
+auto sub2=app.add_subcommand("sub2")->final_callback(c2)->preparse_callback(pc2);
 app.preparse_callback( pa);
 
 ... A bunch of other options
@@ -586,13 +601,14 @@ Then the command line is given as
 program --opt1 opt1_val  sub1 --sub1opt --sub1optb val sub2 --sub2opt sub1 --sub1opt2 sub2 --sub2opt2 val
 ```
 
-* pa will be called prior to parsing any values with an argument of 13.
-* pc1 will be called immediately after processing the sub1 command with a value of 10.
-* c1 will be called when the `sub2` command is encountered.
-* pc2 will be called with value of 6 after the sub2 command is encountered.
-* c1 will be called again after the second sub2 command is encountered.
-* c2 will be called once after processing all arguments.
-* ac will be called after completing the parse and all lower level callbacks have been executed.
+-   pa will be called prior to parsing any values with an argument of 13.
+-   pc1 will be called immediately after processing the sub1 command with a value of 10.
+-   c1 will be called when the `sub2` command is encountered.
+-   pc2 will be called with value of 6 after the sub2 command is encountered.
+-   c1 will be called again after the second sub2 command is encountered.
+-   ac1 will be called after processing of all arguments
+-   c2 will be called once after processing all arguments.
+-   ac2 will be called last after completing  all lower level callbacks have been executed.
 
 A subcommand is considered terminated when one of the following conditions are met.
 1. There are no more arguments to process
@@ -600,7 +616,7 @@ A subcommand is considered terminated when one of the following conditions are m
 3. The positional_mark(`--`) is encountered and there are no available positional slots in the subcommand.
 4. The subcommand_terminator mark(`++`) is encountered
 
-If the `immediate_callback` flag is set then all contained options are processed and the callback is triggered.  If a subcommand with an `immediate_callback` flag is called again, then the contained options are reset, and can be triggered again.
+Prior to executed a `parse_complete_callback` all contained options are processed before the callback is triggered.  If a subcommand with a `parse_complete_callback` is called again, then the contained options are reset, and can be triggered again.
 
 
 

@@ -98,8 +98,10 @@ class App {
     /// This is a function that runs prior to the start of parsing
     std::function<void(size_t)> pre_parse_callback_;
 
-    /// This is a function that runs when complete. Great for subcommands. Can throw.
-    std::function<void()> callback_;
+    /// This is a function that runs when parsing has finished.
+    std::function<void()> parse_complete_callback_;
+    /// This is a function that runs when all processing has completed
+    std::function<void()> final_callback_;
 
     ///@}
     /// @name Options
@@ -275,14 +277,32 @@ class App {
     /// virtual destructor
     virtual ~App() = default;
 
-    /// Set a callback for the end of parsing.
+    /// Set a callback for execution when all parsing and processing has completed
     ///
     /// Due to a bug in c++11,
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
     App *callback(std::function<void()> app_callback) {
-        callback_ = std::move(app_callback);
+        if(immediate_callback_) {
+            parse_complete_callback_ = std::move(app_callback);
+        } else {
+            final_callback_ = std::move(app_callback);
+        }
+        return this;
+    }
+
+    /// Set a callback for execution when all parsing and processing has completed
+    /// aliased as callback
+    App *final_callback(std::function<void()> app_callback) {
+        final_callback_ = std::move(app_callback);
+        return this;
+    }
+
+    /// Set a callback to execute when parsing has completed for the app
+    ///
+    App *parse_complete_callback(std::function<void()> pc_callback) {
+        parse_complete_callback_ = std::move(pc_callback);
         return this;
     }
 
@@ -334,6 +354,13 @@ class App {
     /// Set the subcommand callback to be executed immediately on subcommand completion
     App *immediate_callback(bool immediate = true) {
         immediate_callback_ = immediate;
+        if(immediate_callback_) {
+            if(final_callback_ && !(parse_complete_callback_)) {
+                std::swap(final_callback_, parse_complete_callback_);
+            }
+        } else if(!(final_callback_) && parse_complete_callback_) {
+            std::swap(final_callback_, parse_complete_callback_);
+        }
         return this;
     }
 
@@ -369,7 +396,8 @@ class App {
         return this;
     }
 
-    /// Allow windows style options, such as `/opt`. First matching short or long name used. Subcommands inherit value.
+    /// Allow windows style options, such as `/opt`. First matching short or long name used. Subcommands inherit
+    /// value.
     App *allow_windows_style_options(bool value = true) {
         allow_windows_style_options_ = value;
         return this;
@@ -484,8 +512,8 @@ class App {
             return CLI::detail::checked_to_string<T, XC>(variable);
         });
         opt->type_name(detail::type_name<XC>());
-        // these must be actual variable since (std::max) sometimes is defined in terms of references and references to
-        // structs used in the evaluation can be temporary so that would cause issues.
+        // these must be actual variable since (std::max) sometimes is defined in terms of references and references
+        // to structs used in the evaluation can be temporary so that would cause issues.
         auto Tcount = detail::type_count<T>::value;
         auto XCcount = detail::type_count<XC>::value;
         opt->type_size((std::max)(Tcount, XCcount));
@@ -600,8 +628,8 @@ class App {
         return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
     }
 
-    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one if
-    /// `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
+    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
+    /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T,
               enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
@@ -619,8 +647,8 @@ class App {
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
-    /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes that
-    /// can be converted from a string
+    /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
+    /// that can be converted from a string
     template <typename T,
               enable_if_t<!is_vector<T>::value && !std::is_const<T>::value &&
                               (!std::is_integral<T>::value || is_bool<T>::value) &&
@@ -789,8 +817,8 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore case (default, set can be changed afterwards - do not destroy the set)
-    /// DEPRECATED
+    /// Add set of options, string only, ignore case (default, set can be changed afterwards - do not destroy the
+    /// set) DEPRECATED
     CLI11_DEPRECATED("Use ->transform(CLI::IsMember(...)) with a (shared) pointer instead")
     Option *add_mutable_set_ignore_case(std::string option_name,
                                         std::string &member,                  ///< The selected member of the set
@@ -815,8 +843,8 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (no default, set can be changed afterwards - do not destroy
-    /// the set) DEPRECATED
+    /// Add set of options, string only, ignore underscore (no default, set can be changed afterwards - do not
+    /// destroy the set) DEPRECATED
     CLI11_DEPRECATED("Use ->transform(CLI::IsMember(..., CLI::ignore_underscore)) with a (shared) pointer instead")
     Option *add_mutable_set_ignore_underscore(std::string option_name,
                                               std::string &member,                  ///< The selected member of the set
@@ -841,8 +869,8 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore (default, set can be changed afterwards - do not destroy the
-    /// set) DEPRECATED
+    /// Add set of options, string only, ignore underscore (default, set can be changed afterwards - do not destroy
+    /// the set) DEPRECATED
     CLI11_DEPRECATED("Use ->transform(CLI::IsMember(..., CLI::ignore_underscore)) with a (shared) pointer instead")
     Option *add_mutable_set_ignore_underscore(std::string option_name,
                                               std::string &member,                  ///< The selected member of the set
@@ -867,10 +895,10 @@ class App {
         return opt;
     }
 
-    /// Add set of options, string only, ignore underscore and case (no default, set can be changed afterwards - do not
-    /// destroy the set) DEPRECATED
-    CLI11_DEPRECATED(
-        "Use ->transform(CLI::IsMember(..., CLI::ignore_case, CLI::ignore_underscore)) with a (shared) pointer instead")
+    /// Add set of options, string only, ignore underscore and case (no default, set can be changed afterwards - do
+    /// not destroy the set) DEPRECATED
+    CLI11_DEPRECATED("Use ->transform(CLI::IsMember(..., CLI::ignore_case, CLI::ignore_underscore)) with a "
+                     "(shared) pointer instead")
     Option *add_mutable_set_ignore_case_underscore(std::string option_name,
                                                    std::string &member, ///< The selected member of the set
                                                    const std::set<std::string> &options, ///< The set of possibilities
@@ -896,8 +924,8 @@ class App {
 
     /// Add set of options, string only, ignore underscore and case (default, set can be changed afterwards - do not
     /// destroy the set) DEPRECATED
-    CLI11_DEPRECATED(
-        "Use ->transform(CLI::IsMember(..., CLI::ignore_case, CLI::ignore_underscore)) with a (shared) pointer instead")
+    CLI11_DEPRECATED("Use ->transform(CLI::IsMember(..., CLI::ignore_case, CLI::ignore_underscore)) with a "
+                     "(shared) pointer instead")
     Option *add_mutable_set_ignore_case_underscore(std::string option_name,
                                                    std::string &member, ///< The selected member of the set
                                                    const std::set<std::string> &options, ///< The set of possibilities
@@ -1805,32 +1833,27 @@ class App {
         }
     }
     /// Internal function to run (App) callback, bottom up
-    void run_callback() {
+    void run_callback(bool final_mode = false) {
         pre_callback();
         // in the main app if immediate_callback_ is set it runs the main callback before the used subcommands
-        if(immediate_callback_ && parent_ == nullptr) {
-            if(callback_) {
-                callback_();
-            }
+        if(!final_mode && parse_complete_callback_) {
+            parse_complete_callback_();
         }
         // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
-            if(!subc->immediate_callback_)
-                subc->run_callback();
+            subc->run_callback(true);
         }
         // now run callbacks for option_groups
         for(auto &subc : subcommands_) {
-            if(!subc->immediate_callback_ && subc->name_.empty() && subc->count_all() > 0) {
-                subc->run_callback();
+            if(subc->name_.empty() && subc->count_all() > 0) {
+                subc->run_callback(true);
             }
         }
-        if(immediate_callback_ && parent_ == nullptr) {
-            return;
-        }
-        // finally run the main callback if not run already
-        if(callback_ && (parsed_ > 0)) {
+
+        // finally run the main callback
+        if(final_callback_ && (parsed_ > 0)) {
             if(!name_.empty() || count_all() > 0) {
-                callback_();
+                final_callback_();
             }
         }
     }
@@ -1924,7 +1947,7 @@ class App {
         }
 
         for(App_p &sub : subcommands_) {
-            if(sub->get_name().empty() || !sub->immediate_callback_)
+            if(sub->get_name().empty() || !sub->parse_complete_callback_)
                 sub->_process_env();
         }
     }
@@ -1934,7 +1957,7 @@ class App {
 
         for(App_p &sub : subcommands_) {
             // process the priority option_groups first
-            if(sub->get_name().empty() && sub->immediate_callback_) {
+            if(sub->get_name().empty() && sub->parse_complete_callback_) {
                 if(sub->count_all() > 0) {
                     sub->_process_callbacks();
                     sub->run_callback();
@@ -1948,7 +1971,7 @@ class App {
             }
         }
         for(App_p &sub : subcommands_) {
-            if(!sub->immediate_callback_) {
+            if(!sub->parse_complete_callback_) {
                 sub->_process_callbacks();
             }
         }
@@ -2037,8 +2060,8 @@ class App {
 
         // Max error cannot occur, the extra subcommand will parse as an ExtrasError or a remaining item.
 
-        // run this loop to check how many unnamed subcommands were actually used since they are considered options from
-        // the perspective of an App
+        // run this loop to check how many unnamed subcommands were actually used since they are considered options
+        // from the perspective of an App
         for(App_p &sub : subcommands_) {
             if(sub->disabled_)
                 continue;
@@ -2156,7 +2179,7 @@ class App {
 
             // Convert missing (pairs) to extras (string only) ready for processing in another app
             args = remaining_for_passthrough(false);
-        } else if(immediate_callback_) {
+        } else if(parse_complete_callback_) {
             _process_env();
             _process_callbacks();
             _process_help_flags();
@@ -2679,7 +2702,7 @@ class App {
             throw OptionNotFound("could not locate the given App");
         }
     }
-};
+}; // namespace CLI
 
 /// Extension of App to better manage groups of options
 class Option_group : public App {

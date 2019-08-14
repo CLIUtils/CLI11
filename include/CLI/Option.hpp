@@ -667,11 +667,11 @@ class Option : public OptionBase<Option> {
 
         // Prefer long name
         if(!lnames_.empty())
-            return std::string("--") + lnames_[0];
+            return std::string(2, '-') + lnames_[0];
 
         // Or short name if no long name
         if(!snames_.empty())
-            return std::string("-") + snames_[0];
+            return std::string(1, '-') + snames_[0];
 
         // If positional is the only name, it's okay to use that
         return pname_;
