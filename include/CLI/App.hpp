@@ -468,35 +468,37 @@ class App {
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
 
-    template <typename T,
-              typename XC = T,
-              enable_if_t<!is_vector<XC>::value && !std::is_const<XC>::value, detail::enabler> = detail::dummy>
+    template <typename T, typename XC = T, enable_if_t<!std::is_const<XC>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
                        std::string option_description = "",
                        bool defaulted = false) {
 
         auto fun = [&variable](CLI::results_t res) { // comment for spacing
-            return detail::lexical_assign<T, XC>(res[0], variable);
+            return detail::lexical_conversion<T, XC>(res, variable);
         };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
-            return std::string(CLI::detail::checked_to_string<T, XC>(variable));
+            return CLI::detail::checked_to_string<T, XC>(variable);
         });
         opt->type_name(detail::type_name<XC>());
-
+        // these must be actual variable since (std::max) sometimes is defined in terms of references and references to
+        // structs used in the evaluation can be temporary so that would cause issues.
+        auto Tcount = detail::type_count<T>::value;
+        auto XCcount = detail::type_count<XC>::value;
+        opt->type_size((std::max)(Tcount, XCcount));
         return opt;
     }
 
     /// Add option for a callback of a specific type
-    template <typename T, enable_if_t<!is_vector<T>::value, detail::enabler> = detail::dummy>
+    template <typename T>
     Option *add_option_function(std::string option_name,
                                 const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
         auto fun = [func](CLI::results_t res) {
             T variable;
-            bool result = detail::lexical_cast(res[0], variable);
+            bool result = detail::lexical_conversion<T, T>(res, variable);
             if(result) {
                 func(variable);
             }
@@ -505,6 +507,7 @@ class App {
 
         Option *opt = add_option(option_name, std::move(fun), option_description, false);
         opt->type_name(detail::type_name<T>());
+        opt->type_size(detail::type_count<T>::value);
         return opt;
     }
 
@@ -519,65 +522,6 @@ class App {
                   detail::dummy>
     Option *add_option(std::string option_name, T &option_description) {
         return add_option(option_name, CLI::callback_t(), option_description, false);
-    }
-
-    /// Add option for vectors
-    template <typename T>
-    Option *add_option(std::string option_name,
-                       std::vector<T> &variable, ///< The variable vector to set
-                       std::string option_description = "",
-                       bool defaulted = false) {
-
-        auto fun = [&variable](CLI::results_t res) {
-            bool retval = true;
-            variable.clear();
-            variable.reserve(res.size());
-            for(const auto &elem : res) {
-
-                variable.emplace_back();
-                retval &= detail::lexical_cast(elem, variable.back());
-            }
-            return (!variable.empty()) && retval;
-        };
-
-        auto default_function = [&variable]() {
-            std::vector<std::string> defaults;
-            defaults.resize(variable.size());
-            std::transform(variable.begin(), variable.end(), defaults.begin(), [](T &val) {
-                return std::string(CLI::detail::to_string(val));
-            });
-            return std::string("[" + detail::join(defaults) + "]");
-        };
-
-        Option *opt = add_option(option_name, fun, option_description, defaulted, default_function);
-        opt->type_name(detail::type_name<T>())->type_size(-1);
-
-        return opt;
-    }
-
-    /// Add option for a vector callback of a specific type
-    template <typename T, enable_if_t<is_vector<T>::value, detail::enabler> = detail::dummy>
-    Option *add_option_function(std::string option_name,
-                                const std::function<void(const T &)> &func, ///< the callback to execute
-                                std::string option_description = "") {
-
-        CLI::callback_t fun = [func](CLI::results_t res) {
-            T values;
-            bool retval = true;
-            values.reserve(res.size());
-            for(const auto &elem : res) {
-                values.emplace_back();
-                retval &= detail::lexical_cast(elem, values.back());
-            }
-            if(retval) {
-                func(values);
-            }
-            return retval;
-        };
-
-        Option *opt = add_option(option_name, std::move(fun), std::move(option_description), false);
-        opt->type_name(detail::type_name<T>())->type_size(-1);
-        return opt;
     }
 
     /// Set a help flag, replace the existing one if present

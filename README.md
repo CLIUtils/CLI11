@@ -194,7 +194,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="") // 🆕
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor.
+               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor. Also allowed are tuples(up to 5 elements) and tuple like structures such as std::array or std::pair.  
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -202,7 +202,7 @@ app.add_option_function<type>(option_name,
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
-//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string.  
+//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.    
 app.add_option<typename T, typename XC>(option_name,
                T &output, // output must be assignable or constructible from a value of type XC
                help_string="")
@@ -212,7 +212,7 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, 🆕 float, 🆕 vector, 🆕 enum, or 🆕 string-like, or 🆕 anything with a defined conversion from a string like add_option
+             variable_to_bind_to, // bool, int, 🆕 float, 🆕 vector, 🆕 enum, or 🆕 string-like, or 🆕 any singular object with a defined conversion from a string like add_option
              help_string="")
 
 app.add_flag_function(option_name, // 🆕
@@ -249,7 +249,7 @@ The `add_option_function<type>(...` function will typically require the template
 double val
 app.add_option<double,unsigned int>("-v",val);
 ```
-which would first verify the input is convertible to an int before assigning it.  Or using some variant type
+which would first verify the input is convertible to an unsigned int before assigning it.  Or using some variant type
 ```
 using vtype=std::variant<int, double, std::string>;
  vtype v1;
@@ -260,6 +260,13 @@ app.add_option<vtype,double>("--vf",v1);
 otherwise the output would default to a string.  The add_option can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std::string in an assignment operator or constructor.  If an object can take multiple varieties of those,  std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
 
 Type such as optional<int>, optional<double>, and optional<string> are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Internals][] for information on how this could done and how you can add your own converters for additional  types.
+
+Vector types can also be used int the two parameter template overload
+```
+std::vector<double> v1;
+app.add_option<std::vector<double>,int>("--vs",v1);
+```
+would load a vector of doubles but ensure all values can be represented as integers.
 
 Automatic direct capture of the default string is disabled when using the two parameter template.  Use `set_default_str(...)` or `->default_function(std::string())` to set the default string or capture function directly for these cases.
 

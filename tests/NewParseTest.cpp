@@ -130,15 +130,20 @@ TEST_F(TApp, BuiltinComplexFail) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
+class spair {
+  public:
+    spair() = default;
+    spair(const std::string &s1, const std::string &s2) : first(s1), second(s2) {}
+    std::string first;
+    std::string second;
+};
 // an example of custom converter that can be used to add new parsing options
 // On MSVC and possibly some other new compilers this can be a free standing function without the template
 // specialization but this is compiler dependent
 namespace CLI {
 namespace detail {
 
-template <>
-bool lexical_cast<std::pair<std::string, std::string>>(const std::string &input,
-                                                       std::pair<std::string, std::string> &output) {
+template <> bool lexical_cast<spair>(const std::string &input, spair &output) {
 
     auto sep = input.find_first_of(':');
     if((sep == std::string::npos) && (sep > 0)) {
@@ -151,7 +156,7 @@ bool lexical_cast<std::pair<std::string, std::string>>(const std::string &input,
 } // namespace CLI
 
 TEST_F(TApp, custom_string_converter) {
-    std::pair<std::string, std::string> val;
+    spair val;
     app.add_option("-d,--dual_string", val);
 
     args = {"-d", "string1:string2"};
@@ -162,7 +167,7 @@ TEST_F(TApp, custom_string_converter) {
 }
 
 TEST_F(TApp, custom_string_converterFail) {
-    std::pair<std::string, std::string> val;
+    spair val;
     app.add_option("-d,--dual_string", val);
 
     args = {"-d", "string2"};

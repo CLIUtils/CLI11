@@ -1,11 +1,13 @@
 #include "app_helper.hpp"
 
+#include <array>
 #include <climits>
 #include <complex>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <tuple>
 
 class NotStreamable {};
 
@@ -23,6 +25,30 @@ TEST(TypeTools, Streaming) {
 
     EXPECT_EQ(CLI::detail::to_string("string"), std::string("string"));
     EXPECT_EQ(CLI::detail::to_string(std::string("string")), std::string("string"));
+}
+
+TEST(TypeTools, tuple) {
+    EXPECT_FALSE(CLI::detail::is_tuple_like<int>::value);
+    EXPECT_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
+    auto v = CLI::detail::is_tuple_like<std::tuple<double, int>>::value;
+    EXPECT_TRUE(v);
+    v = CLI::detail::is_tuple_like<std::tuple<double, double, double>>::value;
+    EXPECT_TRUE(v);
+}
+
+TEST(TypeTools, type_size) {
+    auto V = CLI::detail::type_count<int>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::type_count<void>::value;
+    EXPECT_EQ(V, 0);
+    V = CLI::detail::type_count<std::vector<double>>::value;
+    EXPECT_EQ(V, -1);
+    V = CLI::detail::type_count<std::tuple<double, int>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count<std::tuple<std::string, double, int>>::value;
+    EXPECT_EQ(V, 3);
+    V = CLI::detail::type_count<std::array<std::string, 5>>::value;
+    EXPECT_EQ(V, 5);
 }
 
 TEST(Split, SimpleByToken) {
@@ -782,7 +808,33 @@ TEST(Types, TypeName) {
     EXPECT_EQ("FLOAT", float_name);
 
     std::string vector_name = CLI::detail::type_name<std::vector<int>>();
-    EXPECT_EQ("VECTOR", vector_name);
+    EXPECT_EQ("INT", vector_name);
+
+    vector_name = CLI::detail::type_name<std::vector<double>>();
+    EXPECT_EQ("FLOAT", vector_name);
+
+    vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
+    EXPECT_EQ("UINT", vector_name);
+    auto vclass = CLI::detail::classify_object<std::tuple<double>>::value;
+    EXPECT_EQ(vclass, CLI::detail::objCategory::number_constructible);
+
+    std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
+    EXPECT_EQ("FLOAT", tuple_name);
+
+    static_assert(CLI::detail::classify_object<std::tuple<int, std::string>>::value ==
+                      CLI::detail::objCategory::tuple_value,
+                  "tuple<int,string> does not read like a tuple");
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
+    EXPECT_EQ("[INT,TEXT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT,UINT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int, std::string>>();
+    EXPECT_EQ("[INT,TEXT,FLOAT,UINT,TEXT]", tuple_name);
 
     std::string text_name = CLI::detail::type_name<std::string>();
     EXPECT_EQ("TEXT", text_name);
@@ -793,6 +845,13 @@ TEST(Types, TypeName) {
     enum class test { test1, test2, test3 };
     std::string enum_name = CLI::detail::type_name<test>();
     EXPECT_EQ("ENUM", enum_name);
+
+    vclass = CLI::detail::classify_object<std::tuple<test>>::value;
+    EXPECT_EQ(vclass, CLI::detail::objCategory::tuple_value);
+    static_assert(CLI::detail::classify_object<std::tuple<test>>::value == CLI::detail::objCategory::tuple_value,
+                  "tuple<test> does not classify as a tuple");
+    std::string enum_name2 = CLI::detail::type_name<std::tuple<test>>();
+    EXPECT_EQ("ENUM", enum_name2);
 }
 
 TEST(Types, OverflowSmall) {
@@ -904,6 +963,121 @@ TEST(Types, LexicalCastEnum) {
 
     EXPECT_TRUE(CLI::detail::lexical_cast("9999999999999", output2));
     EXPECT_EQ(output2, t2::enum3);
+}
+
+TEST(Types, LexicalConversionDouble) {
+    CLI::results_t input = {"9.12"};
+    long double x;
+    bool res = CLI::detail::lexical_conversion<long double, double>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_FLOAT_EQ((float)9.12, (float)x);
+
+    CLI::results_t bad_input = {"hello"};
+    res = CLI::detail::lexical_conversion<long double, double>(input, x);
+    EXPECT_TRUE(res);
+}
+
+TEST(Types, LexicalConversionDoubleTuple) {
+    CLI::results_t input = {"9.12"};
+    std::tuple<double> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_DOUBLE_EQ(9.12, std::get<0>(x));
+
+    CLI::results_t bad_input = {"hello"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+}
+
+TEST(Types, LexicalConversionVectorDouble) {
+    CLI::results_t input = {"9.12", "10.79", "-3.54"};
+    std::vector<double> x;
+    bool res = CLI::detail::lexical_conversion<std::vector<double>, double>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.size(), 3u);
+    EXPECT_DOUBLE_EQ(x[2], -3.54);
+
+    res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.size(), 3u);
+    EXPECT_DOUBLE_EQ(x[2], -3.54);
+}
+
+static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");
+static_assert(CLI::detail::is_tuple_like<std::pair<double, double>>::value, "pair of double should be like a tuple");
+static_assert(CLI::detail::is_tuple_like<std::array<double, 4>>::value, "std::array should be like a tuple");
+static_assert(!CLI::detail::is_tuple_like<std::string>::value, "std::string should not be like a tuple");
+static_assert(!CLI::detail::is_tuple_like<double>::value, "double should not be like a tuple");
+static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value, "tuple should look like a tuple");
+
+TEST(Types, LexicalConversionTuple2) {
+    CLI::results_t input = {"9.12", "19"};
+
+    std::tuple<double, int> x;
+    static_assert(CLI::detail::is_tuple_like<decltype(x)>::value,
+                  "tuple type must have is_tuple_like trait to be true");
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
+
+    input = {"19", "9.12"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple3) {
+    CLI::results_t input = {"9.12", "19", "hippo"};
+    std::tuple<double, int, std::string> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
+    EXPECT_EQ(std::get<2>(x), "hippo");
+
+    input = {"19", "9.12"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple4) {
+    CLI::results_t input = {"9.12", "19", "18.6", "5.87"};
+    std::array<double, 4> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_DOUBLE_EQ(std::get<1>(x), 19);
+    EXPECT_DOUBLE_EQ(x[0], 9.12);
+    EXPECT_DOUBLE_EQ(x[2], 18.6);
+    EXPECT_DOUBLE_EQ(x[3], 5.87);
+
+    input = {"19", "9.12", "hippo"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionTuple5) {
+    CLI::results_t input = {"9", "19", "18", "5", "235235"};
+    std::array<unsigned int, 5> x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(std::get<1>(x), 19u);
+    EXPECT_EQ(x[0], 9u);
+    EXPECT_EQ(x[2], 18u);
+    EXPECT_EQ(x[3], 5u);
+    EXPECT_EQ(x[4], 235235u);
+
+    input = {"19", "9.12", "hippo"};
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    EXPECT_FALSE(res);
+}
+
+TEST(Types, LexicalConversionXomplwz) {
+    CLI::results_t input = {"5.1", "3.5"};
+    std::complex<double> x;
+    bool res = CLI::detail::lexical_conversion<std::complex<double>, std::array<double, 2>>(input, x);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(x.real(), 5.1);
+    EXPECT_EQ(x.imag(), 3.5);
 }
 
 TEST(FixNewLines, BasicCheck) {
