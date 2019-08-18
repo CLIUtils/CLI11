@@ -896,7 +896,8 @@ TEST_F(TApp, StopReadingConfigOnClear) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    app.set_config(); // Should *not* read config file
+    auto ptr = app.set_config(); // Should *not* read config file
+    EXPECT_EQ(ptr, nullptr);
 
     {
         std::ofstream out{tmpini};

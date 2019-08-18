@@ -206,32 +206,32 @@ class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
     explicit RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
     static RequiredError Subcommand(size_t min_subcom) {
-        if(min_subcom == 1)
+        if(min_subcom == 1) {
             return RequiredError("A subcommand");
-        else
-            return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
-                                 ExitCodes::RequiredError);
+        }
+        return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
+                             ExitCodes::RequiredError);
     }
     static RequiredError Option(size_t min_option, size_t max_option, size_t used, const std::string &option_list) {
         if((min_option == 1) && (max_option == 1) && (used == 0))
             return RequiredError("Exactly 1 option from [" + option_list + "]");
-        else if((min_option == 1) && (max_option == 1) && (used > 1))
+        if((min_option == 1) && (max_option == 1) && (used > 1))
             return RequiredError("Exactly 1 option from [" + option_list + "] is required and " + std::to_string(used) +
                                      " were given",
                                  ExitCodes::RequiredError);
-        else if((min_option == 1) && (used == 0))
+        if((min_option == 1) && (used == 0))
             return RequiredError("At least 1 option from [" + option_list + "]");
-        else if(used < min_option)
+        if(used < min_option)
             return RequiredError("Requires at least " + std::to_string(min_option) + " options used and only " +
                                      std::to_string(used) + "were given from [" + option_list + "]",
                                  ExitCodes::RequiredError);
-        else if(max_option == 1)
+        if(max_option == 1)
             return RequiredError("Requires at most 1 options be given from [" + option_list + "]",
                                  ExitCodes::RequiredError);
-        else
-            return RequiredError("Requires at most " + std::to_string(max_option) + " options be used and " +
-                                     std::to_string(used) + "were given from [" + option_list + "]",
-                                 ExitCodes::RequiredError);
+
+        return RequiredError("Requires at most " + std::to_string(max_option) + " options be used and " +
+                                 std::to_string(used) + "were given from [" + option_list + "]",
+                             ExitCodes::RequiredError);
     }
 };
 
@@ -276,6 +276,12 @@ class ExtrasError : public ParseError {
     CLI11_ERROR_DEF(ParseError, ExtrasError)
     explicit ExtrasError(std::vector<std::string> args)
         : ExtrasError((args.size() > 1 ? "The following arguments were not expected: "
+                                       : "The following argument was not expected: ") +
+                          detail::rjoin(args, " "),
+                      ExitCodes::ExtrasError) {}
+    ExtrasError(const std::string &name, std::vector<std::string> args)
+        : ExtrasError(name,
+                      (args.size() > 1 ? "The following arguments were not expected: "
                                        : "The following argument was not expected: ") +
                           detail::rjoin(args, " "),
                       ExitCodes::ExtrasError) {}

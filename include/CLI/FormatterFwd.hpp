@@ -144,7 +144,7 @@ class Formatter : public FormatterBase {
     virtual std::string make_usage(const App *app, std::string name) const;
 
     /// This puts everything together
-    std::string make_help(const App *, std::string, AppFormatMode) const override;
+    std::string make_help(const App * /*app*/, std::string, AppFormatMode) const override;
 
     ///@}
     /// @name Options
