@@ -798,6 +798,16 @@ TEST(THelp, ValidatorsText) {
     EXPECT_THAT(help, HasSubstr("UINT:INT in [0 - 12]")); // Loses UINT
 }
 
+TEST(THelp, ValidatorsTextCustom) {
+    CLI::App app;
+
+    std::string filename;
+    app.add_option("--f1", filename)->check(CLI::ExistingFile.description("Existing file"));
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("Existing file"));
+}
+
 TEST(THelp, ValidatorsNonPathText) {
     CLI::App app;
 
