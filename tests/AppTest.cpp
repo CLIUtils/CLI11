@@ -1077,8 +1077,9 @@ TEST_F(TApp, PositionalValidation) {
     std::string options;
     std::string foo;
 
-    app.add_option("bar", options)->check(CLI::Number);
-    app.add_option("foo", foo);
+    app.add_option("bar", options)->check(CLI::Number.name("valbar"));
+    // disable the check on foo
+    app.add_option("foo", foo)->check(CLI::Number.active(false));
     app.validate_positionals();
     args = {"1", "param1"};
     run();
@@ -1087,10 +1088,12 @@ TEST_F(TApp, PositionalValidation) {
     EXPECT_EQ(foo, "param1");
 
     args = {"param1", "1"};
-    run();
+    EXPECT_NO_THROW(run());
 
     EXPECT_EQ(options, "1");
     EXPECT_EQ(foo, "param1");
+
+    EXPECT_NE(app.get_option("bar")->get_validator("valbar"), nullptr);
 }
 
 TEST_F(TApp, PositionalNoSpaceLong) {
@@ -1696,12 +1699,12 @@ TEST_F(TApp, VectorIndexedValidator) {
     run();
     EXPECT_EQ(4u, app.count("-v"));
     EXPECT_EQ(4u, vvec.size());
-    opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
+    opt->check(CLI::PositiveNumber.application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
     EXPECT_NO_THROW(run());
     EXPECT_EQ(4u, vvec.size());
     // v[3] would be negative
-    opt->check(CLI::Validator(CLI::PositiveNumber).application_index(3));
+    opt->check(CLI::PositiveNumber.application_index(3));
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 

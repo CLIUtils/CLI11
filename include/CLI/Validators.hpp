@@ -43,7 +43,7 @@ class Validator {
     std::function<std::string(std::string &)> func_{[](std::string &) { return std::string{}; }};
     /// The name for search purposes of the Validator
     std::string name_;
-    /// A validate will only apply to an indexed value (-1 is all elements)
+    /// A Validator will only apply to an indexed value (-1 is all elements)
     int application_index_ = -1;
     /// Enable for Validator to allow it to be disabled if need be
     bool active_{true};
@@ -54,7 +54,7 @@ class Validator {
     Validator() = default;
     /// Construct a Validator with just the description string
     explicit Validator(std::string validator_desc) : desc_function_([validator_desc]() { return validator_desc; }) {}
-    // Construct Validator from basic information
+    /// Construct Validator from basic information
     Validator(std::function<std::string(std::string &)> op, std::string validator_desc, std::string validator_name = "")
         : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(op)),
           name_(std::move(validator_name)) {}
@@ -90,6 +90,12 @@ class Validator {
         desc_function_ = [validator_desc]() { return validator_desc; };
         return *this;
     }
+    /// Specify the type string
+    Validator description(std::string validator_desc) const {
+        Validator newval(*this);
+        newval.desc_function_ = [validator_desc]() { return validator_desc; };
+        return newval;
+    }
     /// Generate type description information for the Validator
     std::string get_description() const {
         if(active_) {
@@ -102,12 +108,24 @@ class Validator {
         name_ = std::move(validator_name);
         return *this;
     }
+    /// Specify the type string
+    Validator name(std::string validator_name) const {
+        Validator newval(*this);
+        newval.name_ = std::move(validator_name);
+        return newval;
+    }
     /// Get the name of the Validator
     const std::string &get_name() const { return name_; }
     /// Specify whether the Validator is active or not
     Validator &active(bool active_val = true) {
         active_ = active_val;
         return *this;
+    }
+    /// Specify whether the Validator is active or not
+    Validator active(bool active_val = true) const {
+        Validator newval(*this);
+        newval.active_ = active_val;
+        return newval;
     }
 
     /// Specify whether the Validator can be modifying or not
@@ -119,6 +137,12 @@ class Validator {
     Validator &application_index(int app_index) {
         application_index_ = app_index;
         return *this;
+    };
+    /// Specify the application index of a validator
+    Validator application_index(int app_index) const {
+        Validator newval(*this);
+        newval.application_index_ = app_index;
+        return newval;
     };
     /// Get the current value of the application index
     int get_application_index() const { return application_index_; }
