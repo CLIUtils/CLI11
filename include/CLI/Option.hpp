@@ -251,13 +251,16 @@ class Option : public OptionBase<Option> {
     /// @name Configuration
     ///@{
 
-    /// The number of arguments that make up one option. -1=unlimited (vector-like), 0=flag, 1=normal option,
-    /// 2=complex/pair, etc. Set only when the option is created; this is intrinsic to the type. Eventually, -2 may mean
-    /// vector of pairs.
-    int type_size_{1};
+    /// The number of arguments that make up one option. max is the nominal type size, min is the minimum number of
+    /// strings
+    int type_size_max_{1};
+    /// The minimum number of arguments an option should be expecting
+    int type_size_min_{1};
 
-    /// The number of expected values, type_size_ must be < 0. Ignored for flag. N < 0 means at least -N values.
-    int expected_{1};
+    /// The minimum number of expected values
+    int expected_min_{1};
+    /// The maximum number of expected values
+    int expected_max_{1};
 
     /// A list of validators to run on each value parsed
     std::vector<Validator> validators_;
@@ -323,26 +326,44 @@ class Option : public OptionBase<Option> {
     Option *expected(int value) {
 
         // Break if this is a flag
-        if(type_size_ == 0)
+        if(type_size_max_ == 0)
             throw IncorrectConstruction::SetFlag(get_name(true, true));
 
         // Setting 0 is not allowed
         if(value == 0)
             throw IncorrectConstruction::Set0Opt(get_name());
 
-        // No change is okay, quit now
-        if(expected_ == value)
-            return this;
+        if(value < 0) {
+            expected_min_ = -value;
+            expected_max_ = (1 << 30);
+        } else {
+            expected_min_ = value;
+            expected_max_ = value;
+        }
+        return this;
+    }
 
-        // Type must be a vector
-        if(type_size_ >= 0)
-            throw IncorrectConstruction::ChangeNotVector(get_name());
+    /// Set the range of expected arguments (Flags don't use this)
+    Option *expected(int value_min, int value_max) {
 
-        // TODO: Can support multioption for non-1 values (except for join)
-        if(value != 1 && multi_option_policy_ != MultiOptionPolicy::Throw)
-            throw IncorrectConstruction::AfterMultiOpt(get_name());
+        // Break if this is a flag
+        if(type_size_max_ == 0)
+            throw IncorrectConstruction::SetFlag(get_name(true, true));
 
-        expected_ = value;
+        if(value_min <= 0)
+            value_min = 1;
+
+        if(value_max <= 0) {
+            value_min = (1 << 30);
+        }
+        if(value_max < value_min) {
+            expected_min_ = value_max;
+            expected_max_ = value_min;
+        } else {
+            expected_max_ = value_max;
+            expected_min_ = value_min;
+        }
+
         return this;
     }
 
@@ -569,7 +590,12 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// The number of arguments the option expects
-    int get_type_size() const { return type_size_; }
+    int get_type_size() const { return type_size_min_; }
+
+    /// The minimum number of arguments the option expects
+    int get_type_size_min() const { return type_size_min_; }
+    /// The maximum number of arguments the option expects
+    int get_type_size_max() const { return type_size_max_; }
 
     /// The environment variable associated to this value
     std::string get_envname() const { return envname_; }
@@ -600,7 +626,12 @@ class Option : public OptionBase<Option> {
     const std::vector<std::string> get_fnames() const { return fnames_; }
 
     /// The number of times the option expects to be included
-    int get_expected() const { return expected_; }
+    int get_expected() const { return expected_min_; }
+
+    /// The number of times the option expects to be included
+    int get_expected_min() const { return expected_min_; }
+    /// The max number of times the option expects to be included
+    int get_expected_max() const { return expected_max_; }
 
     /// \brief The total number of expected values (including the type)
     /// This is positive if exactly this number is expected, and negative for at least N values
@@ -618,10 +649,11 @@ class Option : public OptionBase<Option> {
     /// Size == 0 |       0       |       0       |      0
     /// Size > 0  |       v       |       0       |      v      // Expected must be 1
     ///
-    int get_items_expected() const {
-        return std::abs(type_size_ * expected_) *
-               ((multi_option_policy_ != MultiOptionPolicy::Throw || (expected_ < 0 && type_size_ < 0) ? -1 : 1));
-    }
+    int get_items_expected() const { return type_size_min_ * expected_min_; }
+
+    int get_items_expected_min() const { return type_size_min_ * expected_min_; }
+
+    int get_items_expected_max() const { return type_size_max_ * expected_max_; }
 
     /// True if the argument can be given directly
     bool get_positional() const { return pname_.length() > 0; }
@@ -971,11 +1003,36 @@ class Option : public OptionBase<Option> {
 
     /// Set a custom option size
     Option *type_size(int option_type_size) {
-        type_size_ = option_type_size;
-        if(type_size_ == 0)
+        if(option_type_size < 0) {
+            type_size_max_ = -option_type_size;
+            type_size_min_ = -option_type_size;
+            expected_max_ = (1 << 30);
+        } else {
+            type_size_max_ = option_type_size;
+            type_size_min_ = option_type_size;
+            if(type_size_max_ == 0)
+                required_ = false;
+        }
+        return this;
+    }
+    /// Set a custom option size range
+    Option *type_size(int option_type_size_min, int option_type_size_max) {
+        if(option_type_size_min < 0 || option_type_size_max < 0) {
+            expected_max_ = (1 << 30);
+            option_type_size_min = (std::abs)(option_type_size_min);
+            option_type_size_max = (std::abs)(option_type_size_min);
+        }
+
+        if(option_type_size_min > option_type_size_max) {
+            type_size_max_ = option_type_size_min;
+            type_size_min_ = option_type_size_max;
+        } else {
+            type_size_min_ = option_type_size_min;
+            type_size_max_ = option_type_size_max;
+        }
+        if(type_size_min_ == 0) {
             required_ = false;
-        if(option_type_size < 0)
-            expected_ = -1;
+        }
         return this;
     }
 
