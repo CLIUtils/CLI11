@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+#include "CLI/Error.hpp"
 #include "CLI/StringTools.hpp"
 
 namespace CLI {
