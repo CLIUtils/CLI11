@@ -437,7 +437,7 @@ Validators are copyable and have a few operations that can be performed on them 
 The name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
 `.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.  A validator can be set to apply only to a specific element of the output.  For example in a pair option `std::pair<int, std::string>` the first element may need to be a positive integer while the second may need to be a valid file.  The `.application_index(int)` 🚧function can specify this.  It is zero based and negative indices apply to all values.  
-```
+```cpp
 opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
 opt->check(CLI::Validator(CLI::ExistingFile).application_index(1));
 ```
