@@ -749,11 +749,12 @@ class Option : public OptionBase<Option> {
         if(!validators_.empty()) {
             int index = 0;
             // this is not available until multi_option_policy with type_size_>0 is enabled and functional
-            // if(type_size_ > 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
-            //    index = type_size_ - static_cast<int>(results_.size());
-            //}
-            if(type_size_ < 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) { // for vector operations
-                index = expected_ - static_cast<int>(results_.size());
+            if(type_size_max_ > 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                index = type_size_max_ - static_cast<int>(results_.size());
+            }
+            if(type_size_max_ > 1 &&
+               multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) { // for vector operations
+                index = expected_max_ - static_cast<int>(results_.size());
             }
             for(std::string &result : results_) {
                 auto err_msg = _validate(result, index);
