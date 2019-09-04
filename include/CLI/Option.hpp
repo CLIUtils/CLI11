@@ -429,10 +429,11 @@ class Option : public OptionBase<Option> {
 
     /// Can find a string if needed
     template <typename T = App> Option *needs(std::string opt_name) {
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
-            if(opt.get() != this && opt->check_name(opt_name))
-                return needs(opt.get());
-        throw IncorrectConstruction::MissingOption(opt_name);
+        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        if(opt == nullptr) {
+            throw IncorrectConstruction::MissingOption(opt_name);
+        }
+        return needs(opt);
     }
 
     /// Any number supported, any mix of string and Opt
@@ -467,10 +468,11 @@ class Option : public OptionBase<Option> {
 
     /// Can find a string if needed
     template <typename T = App> Option *excludes(std::string opt_name) {
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
-            if(opt.get() != this && opt->check_name(opt_name))
-                return excludes(opt.get());
-        throw IncorrectConstruction::MissingOption(opt_name);
+        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        if(opt == nullptr) {
+            throw IncorrectConstruction::MissingOption(opt_name);
+        }
+        return excludes(opt);
     }
 
     /// Any number supported, any mix of string and Opt

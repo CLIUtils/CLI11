@@ -159,6 +159,14 @@ class App {
     /// not be
     std::set<Option *> exclude_options_;
 
+    /// this is a list of subcommands or option groups that are required by this one, the list is not mutual,  the
+    /// listed subcommands do not require this one
+    std::set<App *> need_subcommands_;
+
+    /// This is a list of options which are required by this app, the list is not mutual, listed options do not need the
+    /// subcommand not be
+    std::set<Option *> need_options_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -1451,6 +1459,24 @@ class App {
         return this;
     }
 
+    App *needs(Option *opt) {
+        if(opt == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
+        need_options_.insert(opt);
+        return this;
+    }
+
+    App *needs(App *app) {
+        if(app == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
+        if(app == this) {
+            throw OptionNotFound("cannot self reference in needs");
+        }
+        need_subcommands_.insert(app);
+        return this;
+    }
     /// Removes an option from the excludes list of this subcommand
     bool remove_excludes(Option *opt) {
         auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
@@ -1461,7 +1487,7 @@ class App {
         return true;
     }
 
-    /// Removes a subcommand from this excludes list of this subcommand
+    /// Removes a subcommand from the excludes list of this subcommand
     bool remove_excludes(App *app) {
         auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
         if(iterator == std::end(exclude_subcommands_)) {
@@ -1470,6 +1496,26 @@ class App {
         auto other_app = *iterator;
         exclude_subcommands_.erase(iterator);
         other_app->remove_excludes(this);
+        return true;
+    }
+
+    /// Removes an option from the needs list of this subcommand
+    bool remove_needs(Option *opt) {
+        auto iterator = std::find(std::begin(need_options_), std::end(need_options_), opt);
+        if(iterator == std::end(need_options_)) {
+            return false;
+        }
+        need_options_.erase(iterator);
+        return true;
+    }
+
+    /// Removes a subcommand from the needs list of this subcommand
+    bool remove_needs(App *app) {
+        auto iterator = std::find(std::begin(need_subcommands_), std::end(need_subcommands_), app);
+        if(iterator == std::end(need_subcommands_)) {
+            return false;
+        }
+        need_subcommands_.erase(iterator);
         return true;
     }
 
@@ -2026,6 +2072,30 @@ class App {
             // if we are excluded but didn't receive anything, just return
             return;
         }
+
+        // check excludes
+        bool missing_needed{false};
+        std::string missing_need;
+        for(auto &opt : need_options_) {
+            if(opt->count() == 0) {
+                missing_needed = true;
+                missing_need = opt->get_name();
+            }
+        }
+        for(auto &subc : need_subcommands_) {
+            if(subc->count_all() == 0) {
+                missing_needed = true;
+                missing_need = subc->get_display_name();
+            }
+        }
+        if(missing_needed) {
+            if(count_all() > 0) {
+                throw RequiresError(get_display_name(), missing_need);
+            }
+            // if we missing something but didn't have any options, just return
+            return;
+        }
+
         size_t used_options = 0;
         for(const Option_p &opt : options_) {
 
