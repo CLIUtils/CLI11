@@ -229,6 +229,49 @@ TEST_F(TApp, Callbacks) {
     EXPECT_TRUE(val);
 }
 
+TEST_F(TApp, CallbackOrder) {
+
+    std::vector<std::string> cb;
+    app.parse_complete_callback([&cb]() { cb.push_back("ac1"); });
+    app.final_callback([&cb]() { cb.push_back("ac2"); });
+    auto sub1 = app.add_subcommand("sub1")
+                    ->parse_complete_callback([&cb]() { cb.push_back("c1"); })
+                    ->preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pc1-") + std::to_string(v1)); });
+    auto sub2 = app.add_subcommand("sub2")
+                    ->final_callback([&cb]() { cb.push_back("c2"); })
+                    ->preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pc2-") + std::to_string(v1)); });
+    app.preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pa-") + std::to_string(v1)); });
+
+    app.add_option("--opt1");
+    sub1->add_flag("--sub1opt");
+    sub1->add_option("--sub1optb");
+    sub1->add_flag("--sub1opt2");
+    sub2->add_flag("--sub2opt");
+    sub2->add_option("--sub2opt2");
+    args = {"--opt1",
+            "opt1_val",
+            "sub1",
+            "--sub1opt",
+            "--sub1optb",
+            "val",
+            "sub2",
+            "--sub2opt",
+            "sub1",
+            "--sub1opt2",
+            "sub2",
+            "--sub2opt2",
+            "val"};
+    run();
+    EXPECT_EQ(cb.size(), 8u);
+    EXPECT_EQ(cb[0], "pa-13");
+    EXPECT_EQ(cb[1], "pc1-10");
+    EXPECT_EQ(cb[2], "c1");
+    EXPECT_EQ(cb[3], "pc2-6");
+    EXPECT_EQ(cb[4], "c1");
+    EXPECT_EQ(cb[5], "ac1");
+    EXPECT_EQ(cb[6], "c2");
+    EXPECT_EQ(cb[7], "ac2");
+}
 TEST_F(TApp, RuntimeErrorInCallback) {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::RuntimeError(); });
@@ -545,6 +588,29 @@ TEST_F(TApp, CallbackOrderingImmediateMain) {
     run();
     EXPECT_EQ(1, val);
     EXPECT_EQ(0, sub_val);
+}
+
+// Test based on issue #308
+TEST_F(TApp, CallbackOrderingImmediateModeOrder) {
+
+    app.require_subcommand(1, 1);
+    std::vector<int> v;
+    app.callback([&v]() { v.push_back(1); })->immediate_callback(true);
+
+    auto sub = app.add_subcommand("hello")->callback([&v]() { v.push_back(2); })->immediate_callback(false);
+    args = {"hello"};
+    run();
+    // immediate_callback inherited
+    ASSERT_EQ(v.size(), 2u);
+    EXPECT_EQ(v[0], 1);
+    EXPECT_EQ(v[1], 2);
+    v.clear();
+    sub->immediate_callback(true);
+    run();
+    // immediate_callback is now triggered for the main first
+    ASSERT_EQ(v.size(), 2u);
+    EXPECT_EQ(v[0], 2);
+    EXPECT_EQ(v[1], 1);
 }
 
 TEST_F(TApp, RequiredSubCom) {
