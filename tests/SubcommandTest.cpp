@@ -1266,6 +1266,38 @@ TEST_F(ManySubcommands, SubcommandNeeds) {
 
     args = {"sub1", "sub2", "sub4"};
     EXPECT_THROW(run(), CLI::RequiresError);
+
+    args = {"sub1", "sub2", "sub4"};
+    sub1->remove_needs(sub3);
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManySubcommands, SubcommandNeedsOptions) {
+
+    auto opt = app.add_flag("--subactive");
+    sub1->needs(opt);
+    sub1->fallthrough();
+    args = {"sub1", "--subactive"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    args = {"--subactive"};
+    EXPECT_NO_THROW(run());
+
+    auto opt2 = app.add_flag("--subactive2");
+
+    sub1->needs(opt2);
+    args = {"sub1", "--subactive"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    args = {"--subactive", "--subactive2", "sub1"};
+    EXPECT_NO_THROW(run());
+
+    sub1->remove_needs(opt2);
+    args = {"sub1", "--subactive"};
+    EXPECT_NO_THROW(run());
 }
 
 TEST_F(ManySubcommands, SubcommandRequired) {
