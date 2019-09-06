@@ -4,7 +4,7 @@ project(CLI11_Examples LANGUAGES CXX)
 
 # Using CMake 3.11's ability to set imported interface targets
 add_library(CLI11::CLI11 IMPORTED INTERFACE)
-target_include_directories(CLI11::CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(CLI11::CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 target_compile_features(CLI11::CLI11 INTERFACE cxx_std_11)
 
 # Add CTest
