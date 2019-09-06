@@ -25,6 +25,8 @@ matrix:
 
     # Docs and clang 3.5
   - compiler: clang
+    language: node_js
+    node_js: "7.4.0"
     env:
     - DEPLOY_MAT=yes
     addons:
@@ -34,6 +36,9 @@ matrix:
     install:
     - export CC=clang-3.5
     - export CXX=clang++-3.5
+    - npm install gitbook-cli -g
+    - gitbook fetch 3.2.3
+    - (cd book && gitbook install)
     script:
     - .ci/make_and_test.sh 11
     after_success:
@@ -45,6 +50,7 @@ matrix:
         . .ci/build_doxygen.sh
         .ci/build_docs.sh
       fi
+    - (cd book && gitbook build . ../docs/html/book)
 
     # GCC 7 and coverage (8 does not support lcov, wait till 9 and new lcov)
   - compiler: gcc
