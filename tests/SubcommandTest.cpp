@@ -420,7 +420,7 @@ TEST_F(TApp, Nameless4LayerDeep) {
 }
 
 /// Put subcommands in some crazy pattern and make everything still works
-TEST_F(TApp, Nameless4LayerDeepMulit) {
+TEST_F(TApp, Nameless4LayerDeepMulti) {
 
     auto sub1 = app.add_subcommand();
     auto sub2 = app.add_subcommand();
@@ -1248,6 +1248,26 @@ TEST_F(ManySubcommands, SubcommandOptionExclusion) {
     }
 }
 
+TEST_F(ManySubcommands, SubcommandNeeds) {
+
+    sub1->needs(sub2);
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub2"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+
+    sub1->needs(sub3);
+    args = {"sub1", "sub2", "sub3"};
+    EXPECT_NO_THROW(run());
+
+    args = {"sub1", "sub2", "sub4"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+}
+
 TEST_F(ManySubcommands, SubcommandRequired) {
 
     sub1->required();
@@ -1375,6 +1395,56 @@ TEST_F(TApp, UnnamedSubNoExtras) {
     EXPECT_EQ(val2, 5.93);
     EXPECT_EQ(app.remaining_size(), 0u);
     EXPECT_EQ(sub->remaining_size(), 0u);
+}
+
+TEST_F(TApp, SubcommandAlias) {
+    double val;
+    auto sub = app.add_subcommand("sub1");
+    sub->alias("sub2");
+    sub->alias("sub3");
+    sub->add_option("-v,--value", val);
+    args = {"sub1", "-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3.0);
+
+    args = {"sub2", "--value", "-5"};
+    run();
+    EXPECT_EQ(val, -5.0);
+
+    args = {"sub3", "-v", "7"};
+    run();
+    EXPECT_EQ(val, 7);
+
+    auto &al = sub->get_aliases();
+    ASSERT_GE(al.size(), 2);
+
+    EXPECT_EQ(al[0], "sub2");
+    EXPECT_EQ(al[1], "sub3");
+
+    sub->clear_aliases();
+    EXPECT_TRUE(al.empty());
+}
+
+TEST_F(TApp, OptionGroupAlias) {
+    double val;
+    auto sub = app.add_option_group("sub1");
+    sub->alias("sub2");
+    sub->alias("sub3");
+    sub->add_option("-v,--value", val);
+    args = {"sub1", "-v", "-3"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+    args = {"sub2", "--value", "-5"};
+    run();
+    EXPECT_EQ(val, -5.0);
+
+    args = {"sub3", "-v", "7"};
+    run();
+    EXPECT_EQ(val, 7);
+
+    args = {"-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3);
 }
 
 TEST(SharedSubTests, SharedSubcommand) {

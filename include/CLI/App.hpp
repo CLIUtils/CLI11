@@ -221,6 +221,9 @@ class App {
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
 
+    /// Alias names for the subcommand
+    std::vector<std::string> aliases_;
+
     ///@}
     /// @name Config
     ///@{
@@ -325,6 +328,12 @@ class App {
     App *name(std::string app_name = "") {
         name_ = app_name;
         has_automatic_name_ = false;
+        return this;
+    }
+
+    /// Set an alias for the app
+    App *alias(std::string app_name) {
+        aliases_.push_back(app_name);
         return this;
     }
 
@@ -1448,8 +1457,11 @@ class App {
 
     /// Sets excluded subcommands for the subcommand
     App *excludes(App *app) {
-        if((app == this) || (app == nullptr)) {
+        if(app == nullptr) {
             throw OptionNotFound("nullptr passed");
+        }
+        if(app == this) {
+            throw OptionNotFound("cannot self reference in needs");
         }
         auto res = exclude_subcommands_.insert(app);
         // subcommand exclusion should be symmetric
@@ -1477,6 +1489,7 @@ class App {
         need_subcommands_.insert(app);
         return this;
     }
+
     /// Removes an option from the excludes list of this subcommand
     bool remove_excludes(Option *opt) {
         auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
@@ -1736,6 +1749,15 @@ class App {
     /// Get the name of the current app
     std::string get_name() const { return name_; }
 
+    /// Get the aliases of the current app
+    const std::vector<std::string> &get_aliases() const { return aliases_; }
+
+    /// clear all the aliases of the current App
+    App *clear_aliases() {
+        aliases_.clear();
+        return this;
+    }
+
     /// Get a display name for an app
     std::string get_display_name() const { return (!name_.empty()) ? name_ : "[Option Group: " + get_group() + "]"; }
 
@@ -1751,7 +1773,21 @@ class App {
             name_to_check = detail::to_lower(name_to_check);
         }
 
-        return local_name == name_to_check;
+        if(local_name == name_to_check) {
+            return true;
+        }
+        for(auto alias : aliases_) {
+            if(ignore_underscore_) {
+                alias = detail::remove_underscore(alias);
+            }
+            if(ignore_case_) {
+                alias = detail::to_lower(alias);
+            }
+            if(alias == name_to_check) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// Get the groups available directly from this option (in order)
@@ -2506,7 +2542,8 @@ class App {
                 if(subc != nullptr) {
                     return subc;
                 }
-            } else if(com->check_name(subc_name)) {
+            }
+            if(com->check_name(subc_name)) {
                 if((!*com) || !ignore_used)
                     return com.get();
             }
