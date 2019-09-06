@@ -1,6 +1,6 @@
-# Introduction
+# Introduction {#mainpage}
 
-This is the Doxygen API documentation for CLI11 parser. There is a friendly introduction to CLI11 on the [Github page](https://github.com/CLIUtils/CLI11), and [a tutorial series](https://cliutils.github.io/CLI11/book).
+This is the Doxygen API documentation for CLI11 parser. There is a friendly introduction to CLI11 on the [Github page](https://github.com/CLIUtils/CLI11), and [a tutorial series](https://cliutils.github.io/CLI11/book/).
 
 The main classes are:
 
