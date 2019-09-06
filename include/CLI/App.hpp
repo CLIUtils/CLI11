@@ -1776,14 +1776,14 @@ class App {
         if(local_name == name_to_check) {
             return true;
         }
-        for(auto alias : aliases_) {
+        for(auto les : aliases_) {
             if(ignore_underscore_) {
-                alias = detail::remove_underscore(alias);
+                les = detail::remove_underscore(les);
             }
             if(ignore_case_) {
-                alias = detail::to_lower(alias);
+                les = detail::to_lower(les);
             }
-            if(alias == name_to_check) {
+            if(les == name_to_check) {
                 return true;
             }
         }
