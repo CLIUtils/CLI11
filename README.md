@@ -194,7 +194,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="") // 🆕
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor. Also allowed are tuples🚧,std::array🚧 or std::pair🚧.  
+               variable_to_bind_to, // bool, int, float, vector, 🆕 enum, or string-like, or anything with a defined conversion from a string or that takes an int🚧, double🚧, or string in a constructor. Also allowed are tuples🚧,std::array🚧 or std::pair🚧.
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -202,7 +202,7 @@ app.add_option_function<type>(option_name,
                help_string="")
 
 app.add_complex(... // Special case: support for complex numbers
-//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.  For tuples or other multi element types, XC must be a single type or a tuple like object of the same size as the assignment type   
+//🚧There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.  For tuples or other multi element types, XC must be a single type or a tuple like object of the same size as the assignment type
 app.add_option<typename T, typename XC>(option_name,
                T &output, // output must be assignable or constructible from a value of type XC
                help_string="")
@@ -436,7 +436,7 @@ NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransform
 Validators are copyable and have a few operations that can be performed on them to alter settings.  Most of the built in Validators have a default description that is displayed in the help.  This can be altered via `.description(validator_description)`.
 The name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
-`.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.  A validator can be set to apply only to a specific element of the output.  For example in a pair option `std::pair<int, std::string>` the first element may need to be a positive integer while the second may need to be a valid file.  The `.application_index(int)` 🚧function can specify this.  It is zero based and negative indices apply to all values.  
+`.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.  A validator can be set to apply only to a specific element of the output.  For example in a pair option `std::pair<int, std::string>` the first element may need to be a positive integer while the second may need to be a valid file.  The `.application_index(int)` 🚧function can specify this.  It is zero based and negative indices apply to all values.
 ```cpp
 opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
 opt->check(CLI::Validator(CLI::ExistingFile).application_index(1));
@@ -563,7 +563,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.callback(void() function)`: Set the callback for an app. 🚧 either sets the pre_parse_callback or the final_callback depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.parse_complete_callback(void() function)`: 🚧 Set the callback that runs at the completion of parsing. for subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.final_callback(void() function)`: 🚧 Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.immediate_callback()`: 🆕 Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. 🚧 It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.  
+-   `.immediate_callback()`: 🆕 Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. 🚧 It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
 -   `.pre_parse_callback(void(size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
 -   `.positionals_at_end()`: 🆕 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
@@ -582,7 +582,7 @@ There are several options that are supported on the main app and subcommands and
 #### Callbacks
 A subcommand has three optional callbacks that are executed at different stages of processing.  The `preparse_callback` 🆕 is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
 The second callback is executed after parsing.  This is known as the `parse_complete_callback`. For subcommands this is executed immediately after parsing and can be executed multiple times if a subcommand is called multiple times.    On the main app this callback is executed after all the `parse_complete_callback`s for the subcommands are executed but prior to any `final_callback` calls in the subcommand or option groups. If the main app or subcommand has a config file, no data from the config file will be reflected in `parse_complete_callback` on named subcommands 🚧.  For option_groups the `parse_complete_callback` is executed prior to the `parse_complete_callback` on the main app but after the config_file is loaded(if specified).  The 🚧 `final_callback` is executed after all processing is complete.  After the `parse_complete_callback` is executed on the main app, the used subcommand `final_callback` are executed followed by the 'final callback' for option groups.  The last thing to execute is the `final_callback` for the main_app.
-For example say an application was set up like  
+For example say an application was set up like
 
 ```cpp
 app.parse_complete_callback(ac1);
@@ -892,7 +892,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [diana/hep]: http://diana-hep.org
 [nsf award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: http://www.uc.edu
-[gitbook]: https://cliutils.gitlab.io/CLI11Tutorial
+[gitbook]: https://cliutils.github.io/CLI11/book/
 [cli11 internals]: https://cliutils.gitlab.io/CLI11Tutorial/chapters/internals.html
 [programoptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx
 [argument aggregator]: https://github.com/vietjtnguyen/argagg
