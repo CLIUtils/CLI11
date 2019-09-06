@@ -227,14 +227,16 @@ TEST_F(TApp, IncorrectConstructionDuplicateNeeds) {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
     ASSERT_NO_THROW(cat->needs(other));
-    EXPECT_THROW(cat->needs(other), CLI::OptionAlreadyAdded);
+    // duplicated needs is redundant but not an error
+    EXPECT_NO_THROW(cat->needs(other));
 }
 
 TEST_F(TApp, IncorrectConstructionDuplicateNeedsTxt) {
     auto cat = app.add_flag("--cat");
     app.add_flag("--other");
     ASSERT_NO_THROW(cat->needs("--other"));
-    EXPECT_THROW(cat->needs("--other"), CLI::OptionAlreadyAdded);
+    // duplicate needs is redundant but not an error
+    EXPECT_NO_THROW(cat->needs("--other"));
 }
 
 // Now allowed

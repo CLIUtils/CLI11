@@ -421,9 +421,9 @@ class Option : public OptionBase<Option> {
 
     /// Sets required options
     Option *needs(Option *opt) {
-        auto tup = needs_.insert(opt);
-        if(!tup.second)
-            throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
+        if(opt != this) {
+            needs_.insert(opt);
+        }
         return this;
     }
 
@@ -455,6 +455,9 @@ class Option : public OptionBase<Option> {
 
     /// Sets excluded options
     Option *excludes(Option *opt) {
+        if(opt == this) {
+            throw(IncorrectConstruction("and option cannot exclude itself"));
+        }
         excludes_.insert(opt);
 
         // Help text should be symmetric - excluding a should exclude b

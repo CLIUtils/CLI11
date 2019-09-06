@@ -1300,6 +1300,20 @@ TEST_F(ManySubcommands, SubcommandNeedsOptions) {
     EXPECT_NO_THROW(run());
 }
 
+TEST_F(ManySubcommands, SubcommandNeedsFail) {
+
+    auto opt = app.add_flag("--subactive");
+    auto opt2 = app.add_flag("--dummy");
+    sub1->needs(opt);
+    EXPECT_THROW(sub1->needs((CLI::Option *)nullptr), CLI::OptionNotFound);
+    EXPECT_THROW(sub1->needs((CLI::App *)nullptr), CLI::OptionNotFound);
+    EXPECT_THROW(sub1->needs(sub1), CLI::OptionNotFound);
+
+    EXPECT_TRUE(sub1->remove_needs(opt));
+    EXPECT_FALSE(sub1->remove_needs(opt2));
+    EXPECT_FALSE(sub1->remove_needs(sub1));
+}
+
 TEST_F(ManySubcommands, SubcommandRequired) {
 
     sub1->required();
@@ -1448,7 +1462,7 @@ TEST_F(TApp, SubcommandAlias) {
     EXPECT_EQ(val, 7);
 
     auto &al = sub->get_aliases();
-    ASSERT_GE(al.size(), 2);
+    ASSERT_GE(al.size(), 2U);
 
     EXPECT_EQ(al[0], "sub2");
     EXPECT_EQ(al[1], "sub3");
