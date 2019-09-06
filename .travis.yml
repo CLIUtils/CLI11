@@ -107,7 +107,7 @@ script:
 deploy:
 - provider: pages
   skip_cleanup: true
-  github_token: $GITHUB_REPO_TOKEN
+  github_token: ${GH_REPO_TOKEN}
   keep_history: true
   local_dir: ${TRAVIS_BUILD_DIR}/html
   on:
