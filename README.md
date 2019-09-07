@@ -535,6 +535,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.enabled_by_default()`: 🆕 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
 -   `.validate_positionals()`: 🆕 Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
 -   `.excludes(option_or_subcommand)`: 🆕 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
+-   `.needs(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated.
 -   `.require_option()`: 🆕 Require 1 or more options or option groups be used.
 -   `.require_option(N)`: 🆕 Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
 -   `.require_option(min, max)`: 🆕 Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
@@ -555,6 +556,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
 -   `.description(str)`: Set/change the description.
 -   `.get_description()`: Access the description.
+-   `.alias(str)`:🚧 set an alias for the subcommand, this allows subcommands to be called by more than one name.
 -   `.parsed()`: True if this subcommand was given on the command line.
 -   `.count()`: Returns the number of times the subcommand was called.
 -   `.count(option_name)`: Returns the number of times a particular option was called.
