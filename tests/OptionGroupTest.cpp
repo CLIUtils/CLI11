@@ -438,6 +438,23 @@ TEST_F(ManyGroups, ExcludesGroup) {
     EXPECT_FALSE(g1->remove_excludes(g2));
 }
 
+TEST_F(ManyGroups, NeedsGroup) {
+    remove_required();
+    // all groups needed if g1 is used
+    g1->needs(g2);
+    g1->needs(g3);
+    args = {"--name1", "test"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+    // other groups should run fine
+    args = {"--name2", "test2"};
+
+    run();
+    // all three groups should be fine
+    args = {"--name1", "test", "--name2", "test2", "--name3", "test3"};
+
+    EXPECT_NO_THROW(run());
+}
+
 TEST_F(ManyGroups, SingleGroupError) {
     // only 1 group can be used
     main->require_option(1);
