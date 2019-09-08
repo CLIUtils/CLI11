@@ -1471,6 +1471,49 @@ TEST_F(TApp, SubcommandAlias) {
     EXPECT_TRUE(al.empty());
 }
 
+TEST_F(TApp, SubcommandAliasIgnoreCaseUnderscore) {
+    double val;
+    auto sub = app.add_subcommand("sub1");
+    sub->alias("sub2");
+    sub->alias("sub3");
+    sub->ignore_case();
+    sub->add_option("-v,--value", val);
+    args = {"sub1", "-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3.0);
+
+    args = {"SUB2", "--value", "-5"};
+    run();
+    EXPECT_EQ(val, -5.0);
+
+    args = {"sUb3", "-v", "7"};
+    run();
+    EXPECT_EQ(val, 7);
+    sub->ignore_underscore();
+    args = {"sub_1", "-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3.0);
+
+    args = {"SUB_2", "--value", "-5"};
+    run();
+    EXPECT_EQ(val, -5.0);
+
+    args = {"sUb_3", "-v", "7"};
+    run();
+    EXPECT_EQ(val, 7);
+
+    sub->ignore_case(false);
+    args = {"sub_1", "-v", "-3"};
+    run();
+    EXPECT_EQ(val, -3.0);
+
+    args = {"SUB_2", "--value", "-5"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+
+    args = {"sUb_3", "-v", "7"};
+    EXPECT_THROW(run(), CLI::ExtrasError);
+}
+
 TEST_F(TApp, OptionGroupAlias) {
     double val;
     auto sub = app.add_option_group("sub1");
