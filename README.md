@@ -414,21 +414,21 @@ After specifying a set of options, you can also specify "filter" functions of th
 Here are some examples
 of `IsMember`:
 
-     -   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
-     -   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
-     -  `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
-     -   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`, so it can be any type.
-     -   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
-- 🆕 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, in which case it is transformed, or one of the expected output values, and if not will generate a `ValidationError`.  A Transformer placed using `check` will not do anything.
+-   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
+-   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
+-   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
+-   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`, so it can be any type.
+-   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
+-   🆕 The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, in which case it is transformed, or one of the expected output values, and if not will generate a `ValidationError`.  A Transformer placed using `check` will not do anything.
 After specifying a map of options, you can also specify "filter" just like in `CLI::IsMember`.
 Here are some examples (`Transformer` and `CheckedTransformer` are interchangeable in the examples)
 of `Transformer`:
 
-     -   `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
+-   `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
 
-     -  `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`: most maplike containers work,  the `::value_type` needs to produce a pair of some kind.
-     -   `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.
-     -   `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
+-   `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`: most maplike containers work,  the `::value_type` needs to produce a pair of some kind.
+-   `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.
+-   `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
 
 NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a `find` function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a `find` function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
 
@@ -535,7 +535,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.enabled_by_default()`: 🆕 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
 -   `.validate_positionals()`: 🆕 Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
 -   `.excludes(option_or_subcommand)`: 🆕 If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
--   `.needs(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated.
+-   `.needs(option_or_subcommand)`: 🚧 If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
 -   `.require_option()`: 🆕 Require 1 or more options or option groups be used.
 -   `.require_option(N)`: 🆕 Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
 -   `.require_option(min, max)`: 🆕 Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.

@@ -272,6 +272,46 @@ TEST_F(TApp, CallbackOrder) {
     EXPECT_EQ(cb[6], "c2");
     EXPECT_EQ(cb[7], "ac2");
 }
+
+TEST_F(TApp, CallbackOrder2) {
+
+    std::vector<std::string> cb;
+    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.push_back("sub1"); });
+    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.push_back("sub2"); });
+    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.push_back("sub3"); });
+
+    args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
+    run();
+    EXPECT_EQ(cb.size(), 7u);
+    EXPECT_EQ(cb[0], "sub1");
+    EXPECT_EQ(cb[1], "sub2");
+    EXPECT_EQ(cb[2], "sub3");
+    EXPECT_EQ(cb[3], "sub1");
+    EXPECT_EQ(cb[4], "sub1");
+    EXPECT_EQ(cb[5], "sub2");
+    EXPECT_EQ(cb[6], "sub1");
+}
+
+TEST_F(TApp, CallbackOrder2_withFallthrough) {
+
+    std::vector<std::string> cb;
+
+    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.push_back("sub1"); })->fallthrough();
+    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.push_back("sub2"); });
+    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.push_back("sub3"); });
+
+    args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
+    run();
+    EXPECT_EQ(cb.size(), 7u);
+    EXPECT_EQ(cb[0], "sub1");
+    EXPECT_EQ(cb[1], "sub2");
+    EXPECT_EQ(cb[2], "sub3");
+    EXPECT_EQ(cb[3], "sub1");
+    EXPECT_EQ(cb[4], "sub1");
+    EXPECT_EQ(cb[5], "sub2");
+    EXPECT_EQ(cb[6], "sub1");
+}
+
 TEST_F(TApp, RuntimeErrorInCallback) {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::RuntimeError(); });
@@ -1297,6 +1337,27 @@ TEST_F(ManySubcommands, SubcommandNeedsOptions) {
 
     sub1->remove_needs(opt2);
     args = {"sub1", "--subactive"};
+    EXPECT_NO_THROW(run());
+}
+
+TEST_F(ManySubcommands, SubcommandNeedsOptionsCallbackOrdering) {
+    int count = 0;
+    auto opt = app.add_flag("--subactive");
+    app.add_flag("--flag1");
+    sub1->needs(opt);
+    sub1->fallthrough();
+    sub1->parse_complete_callback([&count]() { ++count; });
+    args = {"sub1", "--flag1", "sub1", "--subactive"};
+    EXPECT_THROW(run(), CLI::RequiresError);
+    // the subcommand has to pass validation by the first callback
+    sub1->immediate_callback(false);
+    // now since the callback executes after
+
+    EXPECT_NO_THROW(run());
+    EXPECT_EQ(count, 1);
+    sub1->immediate_callback();
+    args = {"--subactive", "sub1"};
+    // now the required is processed first
     EXPECT_NO_THROW(run());
 }
 

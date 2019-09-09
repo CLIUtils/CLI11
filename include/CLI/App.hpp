@@ -2393,7 +2393,7 @@ class App {
             break;
         case detail::Classifier::NONE:
             // Probably a positional or something for a parent (sub)command
-            retval = _parse_positional(args);
+            retval = _parse_positional(args, false);
             if(retval && positionals_at_end_) {
                 positional_only = true;
             }
@@ -2433,8 +2433,9 @@ class App {
     }
 
     /// Parse a positional, go up the tree to check
+    /// @param haltOnSubcommand if set to true the operation will not process subcommands merely return false
     /// Return true if the positional was used false otherwise
-    bool _parse_positional(std::vector<std::string> &args) {
+    bool _parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
 
         const std::string &positional = args.back();
 
@@ -2483,7 +2484,7 @@ class App {
 
         for(auto &subc : subcommands_) {
             if((subc->name_.empty()) && (!subc->disabled_)) {
-                if(subc->_parse_positional(args)) {
+                if(subc->_parse_positional(args, false)) {
                     if(!subc->pre_parse_called_) {
                         subc->_trigger_pre_parse(args.size());
                     }
@@ -2493,11 +2494,14 @@ class App {
         }
         // let the parent deal with it if possible
         if(parent_ != nullptr && fallthrough_)
-            return _get_fallthrough_parent()->_parse_positional(args);
+            return _get_fallthrough_parent()->_parse_positional(args, static_cast<bool>(parse_complete_callback_));
 
         /// Try to find a local subcommand that is repeated
         auto com = _find_subcommand(args.back(), true, false);
         if(com != nullptr && (require_subcommand_max_ == 0 || require_subcommand_max_ > parsed_subcommands_.size())) {
+            if(haltOnSubcommand) {
+                return false;
+            }
             args.pop_back();
             com->_parse(args);
             return true;
@@ -2557,14 +2561,14 @@ class App {
     /// return true if the subcommand was processed false otherwise
     bool _parse_subcommand(std::vector<std::string> &args) {
         if(_count_remaining_positionals(/* required */ true) > 0) {
-            _parse_positional(args);
+            _parse_positional(args, false);
             return true;
         }
         auto com = _find_subcommand(args.back(), true, true);
         if(com != nullptr) {
             args.pop_back();
             parsed_subcommands_.push_back(com);
-            com->_parse(args);
+              com->_parse(args);
             auto parent_app = com->parent_;
             while(parent_app != this) {
                 parent_app->_trigger_pre_parse(args.size());
