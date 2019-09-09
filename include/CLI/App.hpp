@@ -2568,7 +2568,7 @@ class App {
         if(com != nullptr) {
             args.pop_back();
             parsed_subcommands_.push_back(com);
-              com->_parse(args);
+            com->_parse(args);
             auto parent_app = com->parent_;
             while(parent_app != this) {
                 parent_app->_trigger_pre_parse(args.size());
