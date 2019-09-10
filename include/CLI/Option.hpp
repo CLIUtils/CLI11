@@ -751,26 +751,29 @@ class Option : public OptionBase<Option> {
             throw ConversionError(get_name(), results_);
     }
 
-    /// If options share any of the same names, they are equal (not counting positional)
-    bool operator==(const Option &other) const {
+    /// If options share any of the same names, find it
+    const std::string &matching_name(const Option &other) const {
+        static const std::string estring;
         for(const std::string &sname : snames_)
             if(other.check_sname(sname))
-                return true;
+                return sname;
         for(const std::string &lname : lnames_)
             if(other.check_lname(lname))
-                return true;
+                return lname;
 
         if(ignore_case_ ||
            ignore_underscore_) { // We need to do the inverse, in case we are ignore_case or ignore underscore
             for(const std::string &sname : other.snames_)
                 if(check_sname(sname))
-                    return true;
+                    return sname;
             for(const std::string &lname : other.lnames_)
                 if(check_lname(lname))
-                    return true;
+                    return lname;
         }
-        return false;
+        return estring;
     }
+    /// If options share any of the same names, they are equal (not counting positional)
+    bool operator==(const Option &other) const { return !matching_name(other).empty(); }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
     bool check_name(std::string name) const {
