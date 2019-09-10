@@ -333,6 +333,14 @@ class App {
 
     /// Set an alias for the app
     App *alias(std::string app_name) {
+        if(!detail::valid_name_string(app_name)) {
+            throw(IncorrectConstruction("alias is not a valid name string"));
+        }
+        if(parent_ != nullptr) {
+            if(_find_subcommand(app_name, false, false) != nullptr) {
+                throw(OptionAlreadyAdded("alias already matches an existing subcommand"));
+            }
+        }
         aliases_.push_back(app_name);
         return this;
     }
@@ -1050,6 +1058,9 @@ class App {
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string subcommand_name = "", std::string subcommand_description = "") {
+        if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
+            throw IncorrectConstruction("subcommand name is not valid");
+        }
         CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(subcommand_description), subcommand_name, this));
         return add_subcommand(std::move(subcom));
     }
@@ -1059,9 +1070,14 @@ class App {
         if(!subcom)
             throw IncorrectConstruction("passed App is not valid");
         if(!subcom->name_.empty()) {
-            for(const auto &subc : subcommands_)
-                if(subc->check_name(subcom->name_) || subcom->check_name(subc->name_))
-                    throw OptionAlreadyAdded(subc->name_);
+            if(_find_subcommand(subcom->get_name(), false, false) != nullptr) {
+                throw OptionAlreadyAdded("subcommand with this name already exists: " + subcom->get_name());
+            }
+        }
+        for(auto &les : subcom->aliases_) {
+            if(_find_subcommand(les, false, false) != nullptr) {
+                throw OptionAlreadyAdded("existing subcommand with subcommand alias: " + les);
+            }
         }
         subcom->parent_ = this;
         subcommands_.push_back(std::move(subcom));
@@ -1073,6 +1089,7 @@ class App {
         // Make sure no links exist
         for(App_p &sub : subcommands_) {
             sub->remove_excludes(subcom);
+            sub->remove_needs(subcom);
         }
 
         auto iterator = std::find_if(
