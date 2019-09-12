@@ -2809,28 +2809,7 @@ class App {
     /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
     const std::string &_compare_subcommand_names(const App &subcom, const App &base) const {
         static const std::string estring;
-        if(&subcom != &base) {
-            if(!subcom.get_name().empty()) {
-                if(base.check_name(subcom.get_name())) {
-                    return subcom.get_name();
-                }
-            }
-            if(!base.get_name().empty()) {
-                if(subcom.check_name(base.get_name())) {
-                    return base.get_name();
-                }
-            }
-            for(const auto &les : subcom.aliases_) {
-                if(base.check_name(les)) {
-                    return les;
-                }
-            }
-            for(const auto &les : base.aliases_) {
-                if(subcom.check_name(les)) {
-                    return les;
-                }
-            }
-        }
+
         for(auto &subc : base.subcommands_) {
             if(subc.get() != &subcom) {
                 if(!subcom.get_name().empty()) {
@@ -2848,6 +2827,7 @@ class App {
                         return les;
                     }
                 }
+                // this loop is needed in case of ignore_underscore or ignore_case on one but not the other
                 for(const auto &les : subc->aliases_) {
                     if(subcom.check_name(les)) {
                         return les;

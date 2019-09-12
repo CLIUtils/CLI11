@@ -1626,13 +1626,15 @@ TEST_F(TApp, AliasErrors) {
     // aliasing to an existing name should be allowed
     EXPECT_NO_THROW(sub1->alias(sub1->get_name()));
 
-    sub1->alias("les1")->alias("les2")->alias("les3");
+    sub1->alias("les1")->alias("les2")->alias("les_3");
     sub2->alias("s2les1")->alias("s2les2")->alias("s2les3");
 
     EXPECT_THROW(sub2->alias("les2"), CLI::OptionAlreadyAdded);
     EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
 
     EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
+    sub2->ignore_underscore();
+    EXPECT_THROW(sub2->alias("les3"), CLI::OptionAlreadyAdded);
 }
 // test adding a subcommand via the pointer
 TEST_F(TApp, ExistingSubcommandMatch) {
