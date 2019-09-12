@@ -2917,7 +2917,7 @@ class App {
                 throw OptionAlreadyAdded("option was not located: " + opt->get_name());
             }
         } else {
-            throw OptionNotFound("could not locate the given App");
+            throw OptionNotFound("could not locate the given Option");
         }
     }
 }; // namespace CLI

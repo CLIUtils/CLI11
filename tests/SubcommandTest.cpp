@@ -93,6 +93,17 @@ TEST_F(TApp, MultiSubFallthrough) {
     EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
 
+TEST_F(TApp, CrazyNameSubcommand) {
+    auto sub1 = app.add_subcommand("sub1");
+    // name can be set to whatever
+    EXPECT_NO_THROW(sub1->name("crazy name with spaces"));
+    args = {"crazy name with spaces"};
+    run();
+
+    EXPECT_TRUE(app.got_subcommand("crazy name with spaces"));
+    EXPECT_EQ(sub1->count(), 1u);
+}
+
 TEST_F(TApp, RequiredAndSubcoms) { // #23
 
     std::string baz;
@@ -1595,6 +1606,47 @@ TEST_F(TApp, OptionGroupAlias) {
     args = {"-v", "-3"};
     run();
     EXPECT_EQ(val, -3);
+}
+
+TEST_F(TApp, AliasErrors) {
+    auto sub1 = app.add_subcommand("sub1");
+    auto sub2 = app.add_subcommand("sub2");
+
+    EXPECT_THROW(sub2->alias("this is a not a valid alias"), CLI::IncorrectConstruction);
+    EXPECT_THROW(sub2->alias("-alias"), CLI::IncorrectConstruction);
+    EXPECT_THROW(sub2->alias("alia$"), CLI::IncorrectConstruction);
+
+    // cannot alias to an existing subcommand
+    EXPECT_THROW(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
+    EXPECT_THROW(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
+    // aliasing to an existing name should be allowed
+    EXPECT_NO_THROW(sub1->alias(sub1->get_name()));
+
+    sub1->alias("les1")->alias("les2")->alias("les3");
+    sub2->alias("s2les1")->alias("s2les2")->alias("s2les3");
+
+    EXPECT_THROW(sub2->alias("les2"), CLI::OptionAlreadyAdded);
+    EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
+
+    EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
+}
+
+TEST_F(TApp, AliasErrorsInOptionGroup) {
+    auto sub1 = app.add_subcommand("sub1");
+    auto g2 = app.add_option_group("g1");
+    auto sub2 = g2->add_subcommand("sub2");
+
+    // cannot alias to an existing subcommand even if it is in an option group
+    EXPECT_THROW(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
+    EXPECT_THROW(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
+
+    sub1->alias("les1")->alias("les2")->alias("les3");
+    sub2->alias("s2les1")->alias("s2les2")->alias("s2les3");
+
+    EXPECT_THROW(sub2->alias("les2"), CLI::OptionAlreadyAdded);
+    EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
+
+    EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
 }
 
 TEST(SharedSubTests, SharedSubcommand) {

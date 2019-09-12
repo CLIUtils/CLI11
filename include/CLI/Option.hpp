@@ -506,13 +506,22 @@ class Option : public OptionBase<Option> {
     /// The template hides the fact that we don't have the definition of App yet.
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_case(bool value = true) {
-        ignore_case_ = value;
-        auto *parent = dynamic_cast<T *>(parent_);
-
-        for(const Option_p &opt : parent->options_)
-            if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name(true, true));
-
+        if(!ignore_case_ && value) {
+            ignore_case_ = value;
+            auto *parent = dynamic_cast<T *>(parent_);
+            for(const Option_p &opt : parent->options_) {
+                if(opt.get() == this) {
+                    continue;
+                }
+                auto &omatch = opt->matching_name(*this);
+                if(!omatch.empty()) {
+                    ignore_case_ = false;
+                    throw OptionAlreadyAdded("adding ignore case caused a name conflict with " + omatch);
+                }
+            }
+        } else {
+            ignore_case_ = value;
+        }
         return this;
     }
 
@@ -521,12 +530,23 @@ class Option : public OptionBase<Option> {
     /// The template hides the fact that we don't have the definition of App yet.
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_underscore(bool value = true) {
-        ignore_underscore_ = value;
-        auto *parent = dynamic_cast<T *>(parent_);
-        for(const Option_p &opt : parent->options_)
-            if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name(true, true));
 
+        if(!ignore_underscore_ && value) {
+            ignore_underscore_ = value;
+            auto *parent = dynamic_cast<T *>(parent_);
+            for(const Option_p &opt : parent->options_) {
+                if(opt.get() == this) {
+                    continue;
+                }
+                auto &omatch = opt->matching_name(*this);
+                if(!omatch.empty()) {
+                    ignore_underscore_ = false;
+                    throw OptionAlreadyAdded("adding ignore underscore caused a name conflict with " + omatch);
+                }
+            }
+        } else {
+            ignore_underscore_ = value;
+        }
         return this;
     }
 
