@@ -1616,6 +1616,10 @@ TEST_F(TApp, AliasErrors) {
     EXPECT_THROW(sub2->alias("-alias"), CLI::IncorrectConstruction);
     EXPECT_THROW(sub2->alias("alia$"), CLI::IncorrectConstruction);
 
+    EXPECT_THROW(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
+                 CLI::IncorrectConstruction);
+
+    EXPECT_THROW(app.add_subcommand("documenting a subcommand", "sub3"), CLI::IncorrectConstruction);
     // cannot alias to an existing subcommand
     EXPECT_THROW(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
     EXPECT_THROW(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
@@ -1629,6 +1633,32 @@ TEST_F(TApp, AliasErrors) {
     EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
 
     EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
+}
+// test adding a subcommand via the pointer
+TEST_F(TApp, ExistingSubcommandMatch) {
+    auto sshared = std::make_shared<CLI::App>("documenting the subcommand", "sub1");
+    sshared->alias("sub2")->alias("sub3");
+
+    EXPECT_EQ(sshared->get_name(), "sub1");
+    app.add_subcommand("sub1");
+
+    try {
+        app.add_subcommand(sshared);
+        // this should throw the next line should never be reached
+        EXPECT_FALSE(true);
+    } catch(const CLI::OptionAlreadyAdded &oaa) {
+        EXPECT_THAT(oaa.what(), HasSubstr("sub1"));
+    }
+    sshared->name("osub");
+    app.add_subcommand("sub2");
+    // now check that the aliases don't overlap
+    try {
+        app.add_subcommand(sshared);
+        // this should throw the next line should never be reached
+        EXPECT_FALSE(true);
+    } catch(const CLI::OptionAlreadyAdded &oaa) {
+        EXPECT_THAT(oaa.what(), HasSubstr("sub2"));
+    }
 }
 
 TEST_F(TApp, AliasErrorsInOptionGroup) {
