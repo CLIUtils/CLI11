@@ -1102,15 +1102,10 @@ class App {
     App *add_subcommand(CLI::App_p subcom) {
         if(!subcom)
             throw IncorrectConstruction("passed App is not valid");
-        if(!subcom->name_.empty()) {
-            if(_find_subcommand(subcom->get_name(), false, false) != nullptr) {
-                throw OptionAlreadyAdded("subcommand with this name already exists: " + subcom->get_name());
-            }
-        }
-        for(auto &les : subcom->aliases_) {
-            if(_find_subcommand(les, false, false) != nullptr) {
-                throw OptionAlreadyAdded("existing subcommand with subcommand alias: " + les);
-            }
+        auto ckapp = (name_.empty() && parent_ != nullptr) ? _get_fallthrough_parent() : this;
+        auto &mstrg = _compare_subcommand_names(*subcom, *ckapp);
+        if(!mstrg.empty()) {
+            throw(OptionAlreadyAdded("subcommand name or alias matches existing subcommand: " + mstrg));
         }
         subcom->parent_ = this;
         subcommands_.push_back(std::move(subcom));
@@ -2833,11 +2828,19 @@ class App {
                         return les;
                     }
                 }
-            }
-            if(!subcom.get_name().empty()) {
-                auto &cmpres = _compare_subcommand_names(subcom, *subc);
-                if(!cmpres.empty()) {
-                    return cmpres;
+                // if the subcommand is an option group we need to check deeper
+                if(subc->get_name().empty()) {
+                    auto &cmpres = _compare_subcommand_names(subcom, *subc);
+                    if(!cmpres.empty()) {
+                        return cmpres;
+                    }
+                }
+                // if the test subcommand is an option group we need to check deeper
+                if(subcom.get_name().empty()) {
+                    auto &cmpres = _compare_subcommand_names(*subc, subcom);
+                    if(!cmpres.empty()) {
+                        return cmpres;
+                    }
                 }
             }
         }

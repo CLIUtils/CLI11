@@ -455,6 +455,35 @@ TEST_F(ManyGroups, NeedsGroup) {
     EXPECT_NO_THROW(run());
 }
 
+// test adding an option group with existing subcommands to an app
+TEST_F(TApp, ExistingSubcommandMatch) {
+    auto sshared = std::make_shared<CLI::Option_group>("documenting the subcommand", "sub1g", nullptr);
+    auto s1 = sshared->add_subcommand("sub1");
+    auto o1 = sshared->add_option_group("opt1");
+    o1->add_subcommand("sub3")->alias("sub4");
+
+    app.add_subcommand("sub1");
+
+    try {
+        app.add_subcommand(sshared);
+        // this should throw the next line should never be reached
+        EXPECT_FALSE(true);
+    } catch(const CLI::OptionAlreadyAdded &oaa) {
+        EXPECT_THAT(oaa.what(), HasSubstr("sub1"));
+    }
+    sshared->remove_subcommand(s1);
+
+    auto s3 = app.add_subcommand("sub3");
+    // now check that the subsubcommand overlaps
+    try {
+        app.add_subcommand(sshared);
+        // this should throw the next line should never be reached
+        EXPECT_FALSE(true);
+    } catch(const CLI::OptionAlreadyAdded &oaa) {
+        EXPECT_THAT(oaa.what(), HasSubstr("sub3"));
+    }
+}
+
 TEST_F(ManyGroups, SingleGroupError) {
     // only 1 group can be used
     main->require_option(1);
@@ -520,7 +549,7 @@ TEST_F(ManyGroups, RequiredFirst) {
 }
 
 TEST_F(ManyGroups, DisableFirst) {
-    // only 1 group can be used
+    // only 1 group can be used if remove_required not used
     remove_required();
     g1->disabled();
 
@@ -538,7 +567,7 @@ TEST_F(ManyGroups, DisableFirst) {
 }
 
 TEST_F(ManyGroups, SameSubcommand) {
-    // only 1 group can be used
+    // only 1 group can be used if remove_required not used
     remove_required();
     auto sub1 = g1->add_subcommand("sub1");
     auto sub2 = g2->add_subcommand("sub1");
@@ -573,7 +602,7 @@ TEST_F(ManyGroups, SameSubcommand) {
     EXPECT_EQ(subs[2], sub3);
 }
 TEST_F(ManyGroups, CallbackOrder) {
-    // only 1 group can be used
+    // only 1 group can be used if remove_required not used
     remove_required();
     std::vector<int> callback_order;
     g1->callback([&callback_order]() { callback_order.push_back(1); });
@@ -599,6 +628,7 @@ TEST_F(ManyGroups, CallbackOrder) {
 
 // Test the fallthrough for extra arguments
 TEST_F(ManyGroups, ExtrasFallDown) {
+    // only 1 group can be used if remove_required not used
     remove_required();
 
     args = {"--test1", "--flag", "extra"};
