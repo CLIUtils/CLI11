@@ -668,7 +668,7 @@ class App {
             throw IncorrectConstruction::PositionalFlag(pos_name);
         }
 
-        opt->type_size(0);
+        opt->expected(0, -1);
         return opt;
     }
 
@@ -702,7 +702,8 @@ class App {
             }
             return true;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        opt->expected(0, -1);
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
@@ -2714,13 +2715,14 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
 
-        int num = op->get_items_expected();
+        int min_num = op->get_items_expected_min();
+        int max_num = op->get_items_expected_max();
 
         // Make sure we always eat the minimum for unlimited vectors
-        int collected = 0;
-        int result_count = 0;
+        int collected = 0;    // total number of arguments collected
+        int result_count = 0; // local variable for number of results in a single arg string
         // deal with flag like things
-        if(num == 0) {
+        if(max_num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
             parse_order_.push_back(op.get());
@@ -2730,31 +2732,35 @@ class App {
             op->add_result(value, result_count);
             parse_order_.push_back(op.get());
             collected += result_count;
-            // If exact number expected
-            if(num > 0)
-                num = (num >= result_count) ? num - result_count : 0;
-
             // -Trest
         } else if(!rest.empty()) {
             op->add_result(rest, result_count);
             parse_order_.push_back(op.get());
             rest = "";
             collected += result_count;
-            // If exact number expected
-            if(num > 0)
-                num = (num >= result_count) ? num - result_count : 0;
         }
 
-        // Unlimited vector parser
-        if(num < 0) {
-            while(!args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE) {
-                if(collected >= -num) {
-                    // We could break here for allow extras, but we don't
+        // gather the minimum number of arguments
+        while(min_num > collected && !args.empty()) {
+            std::string current_ = args.back();
+            args.pop_back();
+            op->add_result(current_, result_count);
+            parse_order_.push_back(op.get());
+            collected += result_count;
+        }
 
-                    // If any positionals remain, don't keep eating
-                    if(_count_remaining_positionals() > 0)
-                        break;
-                }
+        if(min_num > collected) {
+            throw ArgumentMismatch::TypedAtLeast(op->get_name(), min_num, op->get_type_name());
+        }
+
+        if(max_num > min_num) { // we allow optional arguments
+
+            // we have met the minimum now optionally check up to the maximum
+            while(collected < max_num && !args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE) {
+                // If any positionals remain, don't keep eating
+                if(_count_remaining_positionals() > 0)
+                    break;
+
                 op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
@@ -2764,18 +2770,11 @@ class App {
             // Allow -- to end an unlimited list and "eat" it
             if(!args.empty() && _recognize(args.back()) == detail::Classifier::POSITIONAL_MARK)
                 args.pop_back();
-
-        } else {
-            while(num > 0 && !args.empty()) {
-                std::string current_ = args.back();
-                args.pop_back();
-                op->add_result(current_, result_count);
+            // optional flag that didn't receive anything now get the default value
+            if(min_num == 0 && max_num > 0 && collected == 0) {
+                auto res = op->get_flag_value(arg_name, std::string{});
+                op->add_result(res);
                 parse_order_.push_back(op.get());
-                num -= result_count;
-            }
-
-            if(num > 0) {
-                throw ArgumentMismatch::TypedAtLeast(op->get_name(), num, op->get_type_name());
             }
         }
 

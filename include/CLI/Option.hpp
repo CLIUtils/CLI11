@@ -766,42 +766,58 @@ class Option : public OptionBase<Option> {
         if(!(callback_)) {
             return;
         }
-        bool local_result;
+        bool local_result{false};
 
-        // Num items expected or length of vector, always at least 1
+        // max num items expected or length of vector, always at least 1
         // Only valid for a trimming policy
-        int trim_size =
-            std::min<int>(std::max<int>(std::abs(get_items_expected()), 1), static_cast<int>(results_.size()));
+        int trim_size = std::min<int>(std::max<int>(get_items_expected_max(), 1), static_cast<int>(results_.size()));
 
         // Operation depends on the policy setting
-        if(multi_option_policy_ == MultiOptionPolicy::TakeLast) {
+        switch(multi_option_policy_) {
+        case MultiOptionPolicy::TakeLast: {
             // Allow multi-option sizes (including 0)
             results_t partial_result{results_.end() - trim_size, results_.end()};
             local_result = !callback_(partial_result);
-
-        } else if(multi_option_policy_ == MultiOptionPolicy::TakeFirst) {
+            break;
+        }
+        case MultiOptionPolicy::TakeFirst: {
             results_t partial_result{results_.begin(), results_.begin() + trim_size};
             local_result = !callback_(partial_result);
-
-        } else if(multi_option_policy_ == MultiOptionPolicy::Join) {
-            results_t partial_result = {detail::join(results_, "\n")};
+            break;
+        }
+        case MultiOptionPolicy::Join: {
+            results_t partial_result = {
+                detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_))};
             local_result = !callback_(partial_result);
-
-        } else {
-            // Exact number required
-            if(get_items_expected() > 0) {
-                if(results_.size() != static_cast<size_t>(get_items_expected()))
-                    throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
-                // Variable length list
-            } else if(get_items_expected() < 0) {
-                // Require that this be a multiple of expected size and at least as many as expected
-                if(results_.size() < static_cast<size_t>(-get_items_expected()) ||
-                   results_.size() % static_cast<size_t>(std::abs(get_type_size())) != 0u)
-                    throw ArgumentMismatch(get_name(), get_items_expected(), results_.size());
+            break;
+        }
+        case MultiOptionPolicy::Throw:
+        default: {
+            size_t num_min = static_cast<size_t>(get_items_expected_min());
+            size_t num_max = static_cast<size_t>(get_items_expected_max());
+            if(num_min == 0) {
+                num_min = 1;
+            }
+            if(num_max == 0) {
+                num_max = 1;
+            }
+            if(results_.size() < num_min) {
+                throw ArgumentMismatch(get_name(), static_cast<int>(num_min), results_.size());
+            }
+            if(results_.size() > num_max) {
+                throw ArgumentMismatch(get_name(), static_cast<int>(num_max), results_.size());
+            }
+            auto tmax = get_type_size_max();
+            if(tmax > 1) {
+                auto mod = results_.size() % static_cast<size_t>(tmax);
+                if(mod != 0 && mod < static_cast<size_t>(get_type_size_min())) {
+                    throw ArgumentMismatch(get_name(), get_type_size_min(), mod);
+                }
             }
             local_result = !callback_(results_);
+            break;
         }
-
+        }
         if(local_result)
             throw ConversionError(get_name(), results_);
     }
@@ -866,7 +882,8 @@ class Option : public OptionBase<Option> {
         return (detail::find_member(name, fnames_, ignore_case_, ignore_underscore_) >= 0);
     }
 
-    /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not disabled
+    /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not
+    /// disabled
     std::string get_flag_value(std::string name, std::string input_value) const {
         static const std::string trueString{"true"};
         static const std::string falseString{"false"};
