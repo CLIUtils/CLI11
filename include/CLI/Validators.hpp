@@ -501,14 +501,16 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     return out;
 }
 
-template <typename> struct sfinae_true : std::true_type {};
-/// Function to check for the existence of a member find function which presumably is more efficient than looping over
-/// everything
-template <typename T, typename V>
-static auto test_find(int) -> sfinae_true<decltype(std::declval<T>().find(std::declval<V>()))>;
-template <typename, typename V> static auto test_find(long) -> std::false_type;
+template<typename C, typename V>
+struct has_find {
+    template<typename CC, typename VV>
+    static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
+    template<typename, typename >
+    static auto test(...) -> decltype(std::false_type());
 
-template <typename T, typename V> struct has_find : decltype(test_find<T, V>(0)) {};
+    static const auto value = decltype( test<C,V>(0) )::value;
+    using type = std::integral_constant<bool, value>;
+};
 
 /// A search function
 template <typename T, typename V, enable_if_t<!has_find<T, V>::value, detail::enabler> = detail::dummy>
