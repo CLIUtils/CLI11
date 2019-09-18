@@ -501,14 +501,12 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     return out;
 }
 
-template<typename C, typename V>
-struct has_find {
-    template<typename CC, typename VV>
+template <typename C, typename V> struct has_find {
+    template <typename CC, typename VV>
     static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
-    template<typename, typename >
-    static auto test(...) -> decltype(std::false_type());
+    template <typename, typename> static auto test(...) -> decltype(std::false_type());
 
-    static const auto value = decltype( test<C,V>(0) )::value;
+    static const auto value = decltype(test<C, V>(0))::value;
     using type = std::integral_constant<bool, value>;
 };
 
