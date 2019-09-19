@@ -351,7 +351,7 @@ class Option : public OptionBase<Option> {
         validator.non_modifying();
         validators_.push_back(std::move(validator));
         if(!validator_name.empty())
-            validators_.front().name(validator_name);
+            validators_.back().name(validator_name);
         return this;
     }
 
