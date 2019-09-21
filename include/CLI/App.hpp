@@ -668,7 +668,7 @@ class App {
             throw IncorrectConstruction::PositionalFlag(pos_name);
         }
 
-        opt->expected(0, -1);
+        opt->type_size(0);
         return opt;
     }
 
@@ -702,8 +702,7 @@ class App {
             }
             return true;
         };
-        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
-        opt->expected(0, -1);
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes

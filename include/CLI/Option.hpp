@@ -27,8 +27,14 @@ class Option;
 class App;
 
 using Option_p = std::unique_ptr<Option>;
-
-enum class MultiOptionPolicy : char { Throw, TakeLast, TakeFirst, Join };
+/// Enumeration of the multiOption Policy selection
+enum class MultiOptionPolicy : char {
+    Throw,     //!< Throw an error if any extra arguments were given
+    TakeLast,  //!< take only the last Expected number of arguments
+    TakeFirst, //!< take only the first Expected number of arguments
+    Join,      //!< merge all the arguments together into a single string via the delimiter character default('\n')
+    TakeAll    //!< just get all the passed argument regardless
+};
 
 /// This is the CRTP base class for Option and OptionDefaults. It was designed this way
 /// to share parts of the class; an OptionDefaults can copy to an Option.
@@ -60,7 +66,7 @@ template <typename CRTP> class OptionBase {
     /// Automatically capture default value
     bool always_capture_default_{false};
 
-    /// Policy for multiple arguments when `expected_ == 1`  (can be set on bool flags, too)
+    /// Policy for handling multiple arguments beyond the expected Max
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
 
     /// Copy the contents to another similar class (one based on OptionBase)
@@ -119,7 +125,7 @@ template <typename CRTP> class OptionBase {
     /// The status of configurable
     bool get_disable_flag_override() const { return disable_flag_override_; }
 
-    /// Get the current delimeter char
+    /// Get the current delimiter char
     char get_delimiter() const { return delimiter_; }
 
     /// Return true if this will automatically capture the default value for help printing
@@ -144,9 +150,24 @@ template <typename CRTP> class OptionBase {
         return self;
     }
 
-    /// Set the multi option policy to take last
+    /// Set the multi option policy to take all arguments
+    CRTP *take_all() {
+        auto self = static_cast<CRTP *>(this);
+        self->multi_option_policy(MultiOptionPolicy::TakeAll);
+        return self;
+    }
+
+    /// Set the multi option policy to join
     CRTP *join() {
         auto self = static_cast<CRTP *>(this);
+        self->multi_option_policy(MultiOptionPolicy::Join);
+        return self;
+    }
+
+    /// Set the multi option policy to join with a specific delimiter
+    CRTP *join(char delim) {
+        auto self = static_cast<CRTP *>(this);
+        self->delimiter_ = delim;
         self->multi_option_policy(MultiOptionPolicy::Join);
         return self;
     }
@@ -262,8 +283,8 @@ class Option : public OptionBase<Option> {
     /// The maximum number of expected values
     int expected_max_{1};
 
-    /// A list of validators to run on each value parsed
-    std::vector<Validator> validators_;
+    /// A list of Validators to run on each value parsed
+    std::vector<Validator> Validators_;
 
     /// A list of options that are required with this option
     std::set<Option *> needs_;
@@ -285,11 +306,19 @@ class Option : public OptionBase<Option> {
     /// @name Parsing results
     ///@{
 
-    /// Results of parsing
+    /// complete Results of parsing
     results_t results_;
-
+    /// results after reduction
+    results_t proc_results_;
+    /// enumeration for the option state machine
+    enum class option_state {
+        parsing = 0,      //!< The option is currently collecting parsed results
+        validated = 2,    //!< the results have been validated
+        reduced = 4,      //!< a subset of results has been generated
+        callback_run = 6, //!< the callback has been executed
+    };
     /// Whether the callback has run (needed for INI parsing)
-    bool callback_run_{false};
+    option_state current_option_state_{option_state::parsing};
 
     ///@}
 
@@ -377,27 +406,27 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a Validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
-    Option *check(std::function<std::string(const std::string &)> validator,
-                  std::string validator_description = "",
-                  std::string validator_name = "") {
-        validators_.emplace_back(validator, std::move(validator_description), std::move(validator_name));
-        validators_.back().non_modifying();
+    Option *check(std::function<std::string(const std::string &)> Validator,
+                  std::string Validator_description = "",
+                  std::string Validator_name = "") {
+        Validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
+        Validators_.back().non_modifying();
         return this;
     }
 
-    /// Adds a transforming validator with a built in type name
-    Option *transform(Validator validator, std::string validator_name = "") {
-        validators_.insert(validators_.begin(), std::move(validator));
-        if(!validator_name.empty())
-            validators_.front().name(validator_name);
+    /// Adds a transforming Validator with a built in type name
+    Option *transform(Validator Validator, std::string Validator_name = "") {
+        Validators_.insert(Validators_.begin(), std::move(Validator));
+        if(!Validator_name.empty())
+            Validators_.front().name(Validator_name);
         return this;
     }
 
-    /// Adds a validator-like function that can change result
+    /// Adds a Validator-like function that can change result
     Option *transform(std::function<std::string(std::string)> func,
                       std::string transform_description = "",
                       std::string transform_name = "") {
-        validators_.insert(validators_.begin(),
+        Validators_.insert(Validators_.begin(),
                            Validator(
                                [func](std::string &val) {
                                    val = func(val);
@@ -411,7 +440,7 @@ class Option : public OptionBase<Option> {
 
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
-        validators_.emplace_back(
+        Validators_.emplace_back(
             [func](std::string &inout) {
                 func(inout);
                 return std::string{};
@@ -420,22 +449,22 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// Get a named Validator
-    Validator *get_validator(const std::string &validator_name = "") {
-        for(auto &validator : validators_) {
-            if(validator_name == validator.get_name()) {
-                return &validator;
+    Validator *get_validator(const std::string &Validator_name = "") {
+        for(auto &Validator : Validators_) {
+            if(Validator_name == Validator.get_name()) {
+                return &Validator;
             }
         }
-        if((validator_name.empty()) && (!validators_.empty())) {
-            return &(validators_.front());
+        if((Validator_name.empty()) && (!Validators_.empty())) {
+            return &(Validators_.front());
         }
-        throw OptionNotFound(std::string{"Validator "} + validator_name + " Not Found");
+        throw OptionNotFound(std::string{"Validator "} + Validator_name + " Not Found");
     }
 
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index) {
-        if(index >= 0 && index < static_cast<int>(validators_.size())) {
-            return &(validators_[index]);
+        if(index >= 0 && index < static_cast<int>(Validators_.size())) {
+            return &(Validators_[index]);
         }
         throw OptionNotFound("Validator index is not valid");
     }
@@ -573,9 +602,6 @@ class Option : public OptionBase<Option> {
 
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
-
-        if(get_items_expected() < 0)
-            throw IncorrectConstruction::MultiOptionPolicy(get_name());
         multi_option_policy_ = value;
         return this;
     }
@@ -743,83 +769,25 @@ class Option : public OptionBase<Option> {
     /// Process the callback
     void run_callback() {
 
-        callback_run_ = true;
+        if(current_option_state_ == option_state::parsing) {
+            _validate_results();
+        }
 
-        // Run the validators (can change the string)
-        if(!validators_.empty()) {
-            int index = 0;
-            // this is not available until multi_option_policy with type_size_>0 is enabled and functional
-            if(type_size_max_ > 0 && multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
-                index = type_size_max_ - static_cast<int>(results_.size());
-            }
-            if(type_size_max_ > 1 &&
-               multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) { // for vector operations
-                index = expected_max_ - static_cast<int>(results_.size());
-            }
-            for(std::string &result : results_) {
-                auto err_msg = _validate(result, index);
-                ++index;
-                if(!err_msg.empty())
-                    throw ValidationError(get_name(), err_msg);
-            }
+        if(current_option_state_ < option_state::reduced) {
+            _reduce_results(proc_results_);
+            current_option_state_ = option_state::reduced;
         }
-        if(!(callback_)) {
-            return;
-        }
-        bool local_result{false};
+        if(current_option_state_ >= option_state::reduced) {
+            current_option_state_ = option_state::callback_run;
+            if(!(callback_)) {
+                return;
+            }
+            const results_t &send_results = proc_results_.empty() ? proc_results_ : results_;
+            bool local_result = callback_(send_results);
 
-        // max num items expected or length of vector, always at least 1
-        // Only valid for a trimming policy
-        int trim_size = std::min<int>(std::max<int>(get_items_expected_max(), 1), static_cast<int>(results_.size()));
-
-        // Operation depends on the policy setting
-        switch(multi_option_policy_) {
-        case MultiOptionPolicy::TakeLast: {
-            // Allow multi-option sizes (including 0)
-            results_t partial_result{results_.end() - trim_size, results_.end()};
-            local_result = !callback_(partial_result);
-            break;
+            if(local_result)
+                throw ConversionError(get_name(), results_);
         }
-        case MultiOptionPolicy::TakeFirst: {
-            results_t partial_result{results_.begin(), results_.begin() + trim_size};
-            local_result = !callback_(partial_result);
-            break;
-        }
-        case MultiOptionPolicy::Join: {
-            results_t partial_result = {
-                detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_))};
-            local_result = !callback_(partial_result);
-            break;
-        }
-        case MultiOptionPolicy::Throw:
-        default: {
-            size_t num_min = static_cast<size_t>(get_items_expected_min());
-            size_t num_max = static_cast<size_t>(get_items_expected_max());
-            if(num_min == 0) {
-                num_min = 1;
-            }
-            if(num_max == 0) {
-                num_max = 1;
-            }
-            if(results_.size() < num_min) {
-                throw ArgumentMismatch(get_name(), static_cast<int>(num_min), results_.size());
-            }
-            if(results_.size() > num_max) {
-                throw ArgumentMismatch(get_name(), static_cast<int>(num_max), results_.size());
-            }
-            auto tmax = get_type_size_max();
-            if(tmax > 1) {
-                auto mod = results_.size() % static_cast<size_t>(tmax);
-                if(mod != 0 && mod < static_cast<size_t>(get_type_size_min())) {
-                    throw ArgumentMismatch(get_name(), get_type_size_min(), mod);
-                }
-            }
-            local_result = !callback_(results_);
-            break;
-        }
-        }
-        if(local_result)
-            throw ConversionError(get_name(), results_);
     }
 
     /// If options share any of the same names, find it
@@ -926,14 +894,14 @@ class Option : public OptionBase<Option> {
     /// Puts a result at the end
     Option *add_result(std::string s) {
         _add_result(std::move(s));
-        callback_run_ = false;
+        current_option_state_ = option_state::parsing;
         return this;
     }
 
     /// Puts a result at the end and get a count of the number of arguments actually added
     Option *add_result(std::string s, int &results_added) {
         results_added = _add_result(std::move(s));
-        callback_run_ = false;
+        current_option_state_ = option_state::parsing;
         return this;
     }
 
@@ -942,12 +910,25 @@ class Option : public OptionBase<Option> {
         for(auto &str : s) {
             _add_result(std::move(str));
         }
-        callback_run_ = false;
+        current_option_state_ = option_state::parsing;
         return this;
     }
 
     /// Get a copy of the results
-    std::vector<std::string> results() const { return results_; }
+    results_t results() const { return results_; }
+
+    /// Get a copy of the results
+    results_t reduced_results() const {
+        results_t res = proc_results_.empty() ? results_ : proc_results_;
+        if(current_option_state_ < option_state::reduced) {
+
+            _reduce_results(res);
+            if(res.empty()) {
+                res = results_;
+            }
+        }
+        return res;
+    }
 
     /// Get the results as a specified type
     template <typename T,
@@ -970,7 +951,8 @@ class Option : public OptionBase<Option> {
             case MultiOptionPolicy::Throw:
                 throw ConversionError(get_name(), results_);
             case MultiOptionPolicy::Join:
-                retval = detail::lexical_cast(detail::join(results_), output);
+                retval = detail::lexical_cast(
+                    detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)), output);
                 break;
             }
         }
@@ -1001,7 +983,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// See if the callback has been run already
-    bool get_callback_run() const { return callback_run_; }
+    bool get_callback_run() const { return (current_option_state_ == option_state::callback_run); }
 
     ///@}
     /// @name Custom options
@@ -1087,9 +1069,9 @@ class Option : public OptionBase<Option> {
     /// Get the full typename for this option
     std::string get_type_name() const {
         std::string full_type_name = type_name_();
-        if(!validators_.empty()) {
-            for(auto &validator : validators_) {
-                std::string vtype = validator.get_description();
+        if(!Validators_.empty()) {
+            for(auto &Validator : Validators_) {
+                std::string vtype = Validator.get_description();
                 if(!vtype.empty()) {
                     full_type_name += ":" + vtype;
                 }
@@ -1099,10 +1081,96 @@ class Option : public OptionBase<Option> {
     }
 
   private:
-    // Run a result through the validators
+    /// Run the results through the Validators
+    void _validate_results() {
+        // Run the Validators (can change the string)
+        if(!Validators_.empty()) {
+            if(type_size_max_ > 1) { // in this context index refers to the index in the type
+                int index = 0;
+                for(std::string &result : results_) {
+                    auto err_msg = _validate(result, index % type_size_max_);
+                    ++index;
+                    if(!err_msg.empty())
+                        throw ValidationError(get_name(), err_msg);
+                }
+            } else {
+                int index = 0;
+                if(expected_max_ > static_cast<int>(results_.size()) &&
+                   multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                    index = expected_max_ - static_cast<int>(results_.size());
+                }
+                for(std::string &result : results_) {
+                    auto err_msg = _validate(result, index);
+                    ++index;
+                    if(!err_msg.empty())
+                        throw ValidationError(get_name(), err_msg);
+                }
+            }
+        }
+        current_option_state_ = option_state::validated;
+    }
+
+    /** reduce the results in accordance with the MultiOptionPolicy
+    @param[out] res results are assigned to res if there if they are different
+    */
+    void _reduce_results(results_t &res) const {
+
+        // max num items expected or length of vector, always at least 1
+        // Only valid for a trimming policy
+        size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
+        res.clear();
+        // Operation depends on the policy setting
+        switch(multi_option_policy_) {
+        case MultiOptionPolicy::TakeAll:
+            break;
+        case MultiOptionPolicy::TakeLast:
+            // Allow multi-option sizes (including 0)
+            if(results_.size() != trim_size) {
+                res.assign(results_.end() - trim_size, results_.end());
+            }
+            break;
+        case MultiOptionPolicy::TakeFirst:
+            if(results_.size() != trim_size) {
+                res.assign(results_.begin(), results_.begin() + trim_size);
+            }
+            break;
+        case MultiOptionPolicy::Join:
+            if(results_.size() > 1) {
+                res.push_back(detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
+            }
+            break;
+        case MultiOptionPolicy::Throw:
+        default: {
+            size_t num_min = static_cast<size_t>(get_items_expected_min());
+            size_t num_max = static_cast<size_t>(get_items_expected_max());
+            if(num_min == 0) {
+                num_min = 1;
+            }
+            if(num_max == 0) {
+                num_max = 1;
+            }
+            if(results_.size() < num_min) {
+                throw ArgumentMismatch(get_name(), static_cast<int>(num_min), results_.size());
+            }
+            if(results_.size() > num_max) {
+                throw ArgumentMismatch(get_name(), static_cast<int>(num_max), results_.size());
+            }
+            auto tmax = get_type_size_max();
+            if(tmax > 1) {
+                auto mod = results_.size() % static_cast<size_t>(tmax);
+                if(mod != 0 && mod < static_cast<size_t>(get_type_size_min())) {
+                    throw ArgumentMismatch(get_name(), get_type_size_min(), mod);
+                }
+            }
+            break;
+        }
+        }
+    }
+
+    // Run a result through the Validators
     std::string _validate(std::string &result, int index) {
         std::string err_msg;
-        for(const auto &vali : validators_) {
+        for(const auto &vali : Validators_) {
             auto v = vali.get_application_index();
             if(v == -1 || v == index) {
                 try {
