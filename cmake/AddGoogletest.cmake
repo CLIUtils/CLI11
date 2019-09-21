@@ -7,7 +7,7 @@
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF)
 
-add_subdirectory("${CLI11_SOURCE_DIR}/extern/googletest" "${CLI11_BINARY_DIR}/extern/googletest" EXCLUDE_FROM_ALL)
+add_subdirectory("${googletest_SOURCE_DIR}" "${googletest_BINARY_DIR}" EXCLUDE_FROM_ALL)
 
 
 if(GOOGLE_TEST_INDIVIDUAL)
@@ -37,6 +37,10 @@ macro(add_gtest TESTNAME)
     else()
         add_test(${TESTNAME} ${TESTNAME})
         set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
+        if (CLI11_FORCE_LIBCXX)
+          set_property(TARGET ${T} APPEND_STRING
+            PROPERTY LINK_FLAGS -stdlib=libc++)
+        endif()
     endif()
 
 endmacro()
