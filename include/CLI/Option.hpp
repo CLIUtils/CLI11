@@ -353,15 +353,6 @@ class Option : public OptionBase<Option> {
 
     /// Set the number of expected arguments (Flags don't use this)
     Option *expected(int value) {
-
-        // Break if this is a flag
-        if(type_size_max_ == 0)
-            throw IncorrectConstruction::SetFlag(get_name(true, true));
-
-        // Setting 0 is not allowed
-        if(value == 0)
-            throw IncorrectConstruction::Set0Opt(get_name());
-
         if(value < 0) {
             expected_min_ = -value;
             expected_max_ = (1 << 30);
@@ -374,11 +365,6 @@ class Option : public OptionBase<Option> {
 
     /// Set the range of expected arguments (Flags don't use this)
     Option *expected(int value_min, int value_max) {
-
-        // Break if this is a flag
-        if(type_size_max_ == 0)
-            throw IncorrectConstruction::SetFlag(get_name(true, true));
-
         if(value_min <= 0)
             value_min = 1;
 
@@ -782,7 +768,7 @@ class Option : public OptionBase<Option> {
             if(!(callback_)) {
                 return;
             }
-            const results_t &send_results = proc_results_.empty() ? proc_results_ : results_;
+            const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
             bool local_result = callback_(send_results);
 
             if(local_result)

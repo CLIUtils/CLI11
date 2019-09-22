@@ -46,6 +46,8 @@ TEST_F(TApp, OneFlagShortValuesAs) {
     EXPECT_EQ(vec[0], 1);
     EXPECT_EQ(vec[1], 2);
     flg->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    EXPECT_EQ(opt->as<std::string>(), "1\n2");
+    flg->delimiter(',');
     EXPECT_EQ(opt->as<std::string>(), "1,2");
 }
 

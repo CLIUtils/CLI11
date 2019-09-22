@@ -667,8 +667,8 @@ class App {
             remove_option(opt);
             throw IncorrectConstruction::PositionalFlag(pos_name);
         }
-
-        opt->type_size(0);
+        opt->multi_option_policy(MultiOptionPolicy::TakeLast);
+        opt->expected(0);
         return opt;
     }
 
@@ -702,7 +702,8 @@ class App {
             }
             return true;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
@@ -722,9 +723,7 @@ class App {
             }
             return CLI::detail::lexical_cast(res[0], flag_result);
         };
-        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
-        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
     /// Vector version to capture multiple flags.
@@ -741,7 +740,8 @@ class App {
             }
             return retval;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
     /// Add option for callback that is triggered with a true flag and takes no arguments
@@ -759,9 +759,7 @@ class App {
                 function();
             return result;
         };
-        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
-        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
     /// Add option for callback with an integer value
@@ -775,7 +773,8 @@ class App {
             function(flag_count);
             return true;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
 #ifdef CLI11_CPP14
