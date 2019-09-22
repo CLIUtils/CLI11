@@ -631,7 +631,7 @@ TEST_F(TApp, BoolOnlyFlag) {
     EXPECT_TRUE(bflag);
 
     args = {"-b", "-b"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, BoolOption) {

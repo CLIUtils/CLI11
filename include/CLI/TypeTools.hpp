@@ -276,7 +276,20 @@ struct type_count<
 };
 /// Type size of types that look like a vector
 template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{-1};
+    static constexpr int value{is_vector<T::value_type>::value ? (1 << 30) : type_count<T::value_type>::value};
+};
+
+/// This will only trigger for actual void type
+template <typename T, typename Enable = void> struct expected_count { static const int value{0}; };
+
+/// For most types the number of expected items is 1
+template <typename T>
+struct expected_count<T, typename std::enable_if<!is_vector<T>::value && !std::is_void<T>::value>::type> {
+    static constexpr int value{1};
+};
+/// number of expected items in a vector
+template <typename T> struct expected_count<T, typename std::enable_if<is_vector<T>::value>::type> {
+    static constexpr int value{1 << 30};
 };
 
 // Enumeration of the different supported categorizations of objects
@@ -751,7 +764,9 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 /// Conversion to a vector type using a particular single type as the conversion type
 template <class T,
           class XC,
-          enable_if_t<(type_count<T>::value == -1) && (type_count<XC>::value == 1), detail::enabler> = detail::dummy>
+          enable_if_t<(expected_count<T>::value == (1 << 30)) && (expected_count<XC>::value == 1) &&
+                          (type_count<XC>::value == 1),
+                      detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
     output.clear();

@@ -771,7 +771,7 @@ class Option : public OptionBase<Option> {
             const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
             bool local_result = callback_(send_results);
 
-            if(local_result)
+            if(!local_result)
                 throw ConversionError(get_name(), results_);
         }
     }
