@@ -274,9 +274,12 @@ struct type_count<
     typename std::enable_if<!is_vector<T>::value && !is_tuple_like<T>::value && !std::is_void<T>::value>::type> {
     static constexpr int value{1};
 };
+
+constexpr int vector_count{1 << 30};
+
 /// Type size of types that look like a vector
 template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{is_vector<T::value_type>::value ? (1 << 30) : type_count<T::value_type>::value};
+    static constexpr int value{is_vector<T::value_type>::value ? vector_count : type_count<T::value_type>::value};
 };
 
 /// This will only trigger for actual void type
@@ -289,7 +292,7 @@ struct expected_count<T, typename std::enable_if<!is_vector<T>::value && !std::i
 };
 /// number of expected items in a vector
 template <typename T> struct expected_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{1 << 30};
+    static constexpr int value{vector_count};
 };
 
 // Enumeration of the different supported categorizations of objects
@@ -748,7 +751,8 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 /// Lexical conversion of a vector types
 template <class T,
           class XC,
-          enable_if_t<type_count<T>::value == -1 && type_count<XC>::value == -1, detail::enabler> = detail::dummy>
+          enable_if_t<expected_count<T>::value == vector_count && expected_count<XC>::value == vector_count,
+                      detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
     output.clear();
@@ -764,7 +768,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 /// Conversion to a vector type using a particular single type as the conversion type
 template <class T,
           class XC,
-          enable_if_t<(expected_count<T>::value == (1 << 30)) && (expected_count<XC>::value == 1) &&
+          enable_if_t<(expected_count<T>::value == vector_count) && (expected_count<XC>::value == 1) &&
                           (type_count<XC>::value == 1),
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {

@@ -554,8 +554,7 @@ class App {
         // LCOV_EXCL_END
     }
 
-    /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
-
+    /// Add option for assigning to a variable
     template <typename T, typename XC = T, enable_if_t<!std::is_const<XC>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        T &variable, ///< The variable to set
@@ -575,6 +574,7 @@ class App {
         auto Tcount = detail::type_count<T>::value;
         auto XCcount = detail::type_count<XC>::value;
         opt->type_size((std::max)(Tcount, XCcount));
+        opt->expected(detail::expected_count<XC>::value);
         return opt;
     }
 
@@ -596,6 +596,7 @@ class App {
         Option *opt = add_option(option_name, std::move(fun), option_description, false);
         opt->type_name(detail::type_name<T>());
         opt->type_size(detail::type_count<T>::value);
+        opt->expected(detail::expected_count<T>::value);
         return opt;
     }
 

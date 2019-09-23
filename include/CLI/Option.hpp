@@ -319,7 +319,8 @@ class Option : public OptionBase<Option> {
     };
     /// Whether the callback has run (needed for INI parsing)
     option_state current_option_state_{option_state::parsing};
-
+    /// Specify that extra args beyond type_size_max should be allowed
+    bool allow_extra_args_{false};
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -357,13 +358,13 @@ class Option : public OptionBase<Option> {
             expected_min_ = -value;
             expected_max_ = (1 << 30);
         } else {
-            expected_min_ = value;
+            expected_min_ = (value < (1 << 30)) ? value : 1;
             expected_max_ = value;
         }
         return this;
     }
 
-    /// Set the range of expected arguments (Flags don't use this)
+    /// Set the range of expected arguments
     Option *expected(int value_min, int value_max) {
         if(value_min <= 0)
             value_min = 1;
@@ -381,6 +382,14 @@ class Option : public OptionBase<Option> {
 
         return this;
     }
+    /// Set the value of allow_extra_args which allows extra value arguments on the flag or option to be included with
+    /// each instance
+    Option *allow_extra_args(bool value) {
+        allow_extra_args_ = value;
+        return this;
+    }
+    /// Get the current value of allow extra args
+    bool get_allow_extra_args() const { return allow_extra_args_; }
 
     /// Adds a Validator with a built in type name
     Option *check(Validator validator, std::string validator_name = "") {
