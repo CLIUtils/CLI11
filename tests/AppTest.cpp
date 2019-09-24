@@ -828,7 +828,7 @@ TEST_F(TApp, TakeFirstOptMulti) {
 
 TEST_F(TApp, ComplexOptMulti) {
     std::complex<double> val;
-    app.add_complex("--long", val)->take_first();
+    app.add_complex("--long", val)->take_first()->allow_extra_args();
 
     args = {"--long", "1", "2", "3", "4"};
 

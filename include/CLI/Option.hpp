@@ -356,14 +356,16 @@ class Option : public OptionBase<Option> {
     Option *expected(int value) {
         if(value < 0) {
             expected_min_ = -value;
-            expected_max_ = (1 << 30);
+            if(expected_max_ < expected_min_) {
+                expected_max_ = expected_min_;
+            }
             allow_extra_args_ = true;
         } else if(value == (1 << 30)) {
             expected_min_ = 1;
             expected_max_ = (1 << 30);
             allow_extra_args_ = true;
         } else {
-            expected_min_ = (value < (1 << 30)) ? value : 1;
+            expected_min_ = value;
             expected_max_ = value;
         }
         return this;
@@ -390,7 +392,7 @@ class Option : public OptionBase<Option> {
     }
     /// Set the value of allow_extra_args which allows extra value arguments on the flag or option to be included
     /// with each instance
-    Option *allow_extra_args(bool value) {
+    Option *allow_extra_args(bool value = true) {
         allow_extra_args_ = value;
         return this;
     }
@@ -603,6 +605,11 @@ class Option : public OptionBase<Option> {
 
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
+        if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == (1 << 30) && expected_min_ > 1 &&
+           value != MultiOptionPolicy::Throw) { // this bizarre condition is to maintain backwards compatibility with
+                                                // the previous behavior of expected_ with vectors
+            expected_max_ = expected_min_;
+        }
         multi_option_policy_ = value;
         return this;
     }
@@ -1096,8 +1103,9 @@ class Option : public OptionBase<Option> {
                 }
             } else {
                 int index = 0;
-                if(expected_max_ > static_cast<int>(results_.size()) &&
+                if(expected_max_ < static_cast<int>(results_.size()) &&
                    multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                    // create a negative index for the earliest ones
                     index = expected_max_ - static_cast<int>(results_.size());
                 }
                 for(std::string &result : results_) {

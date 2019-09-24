@@ -1003,8 +1003,7 @@ class App {
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
+        CLI::callback_t fun = [&variable](results_t res) {
             if(res[1].back() == 'i')
                 res[1].pop_back();
             double x, y;
@@ -2714,13 +2713,13 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
 
-        int min_num = op->get_items_expected_min();
+        int min_num = op->get_type_size_min();
         int max_num = op->get_items_expected_max();
 
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;    // total number of arguments collected
         int result_count = 0; // local variable for number of results in a single arg string
-        // deal with flag like things
+        // deal with purely flag like things
         if(max_num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
@@ -2748,14 +2747,15 @@ class App {
             collected += result_count;
         }
 
-        if(min_num > collected) {
+        if(min_num > collected) { // if we have run out of arguments and the minimum was not met
             throw ArgumentMismatch::TypedAtLeast(op->get_name(), min_num, op->get_type_name());
         }
 
-        if(max_num > min_num) { // we allow optional arguments
+        if(max_num > min_num || op->get_allow_extra_args()) { // we allow optional arguments
 
             // we have met the minimum now optionally check up to the maximum
-            while(collected < max_num && !args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE) {
+            while((collected < max_num || op->get_allow_extra_args()) && !args.empty() &&
+                  _recognize(args.back(), false) == detail::Classifier::NONE) {
                 // If any positionals remain, don't keep eating
                 if(_count_remaining_positionals() > 0)
                     break;

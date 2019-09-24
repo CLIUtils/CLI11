@@ -72,23 +72,26 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 
 | Modifier | Description |
 |----------|-------------|
-| `->required()`| The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works. |
-| `->expected(N)`| Take `N` values instead of as many as possible, only for vector args.|
-| `->needs(opt)`| This option requires another option to also be present, opt is an `Option` pointer.|
-| `->excludes(opt)`| This option cannot be given with `opt` present, opt is an `Option` pointer.|
-| `->envname(name)`| Gets the value from the environment if present and not passed on the command line.|
-| `->group(name)`| The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print.|
-| `->ignore_case()`| Ignore the case on the command line (also works on subcommands, does not affect arguments).|
-| `->ignore_underscore()`| Ignore any underscores on the command line (also works on subcommands, does not affect arguments, new in CLI11 1.7).|
-| `->multi_option_policy(CLI::MultiOptionPolicy::Throw)` | Sets the policy if 1 argument expected but this was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, and `Join` are also available. See the next three lines for shortcuts to set this more easily. |
-| `->take_last()` | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`.|
+| `->required()` | The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works. |
+| `->expected(N)` | Take `N` values instead of as many as possible, mainly for vector args. |
+| `->expected(Nmin,Nmax)` | Take between `Nmin` and `Nmax` values. |
+| `->needs(opt)` | This option requires another option to also be present, opt is an `Option` pointer. |
+| `->excludes(opt)` | This option cannot be given with `opt` present, opt is an `Option` pointer. |
+| `->envname(name)` | Gets the value from the environment if present and not passed on the command line. |
+| `->group(name)` | The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print. |
+| `->ignore_case()` | Ignore the case on the command line (also works on subcommands, does not affect arguments). |
+| `->ignore_underscore()` | Ignore any underscores on the command line (also works on subcommands, does not affect arguments, new in CLI11 1.7). |
+| `->allow_extra_args()` | Allow extra argument values to be included when an option is passed. Enabled by default for vector options. |
+| `->multi_option_policy(CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, and `Join` are also available. See the next three lines for shortcuts to set this more easily. |
+| `->take_last()` | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`. |
 | `->take_first()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst)` |
-| `->join()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::Join)`, which uses newlines to join all arguments into a single string output. |
-| `->check(CLI::ExistingFile)`| Requires that the file exists if given.|
-| `->check(CLI::ExistingDirectory)`| Requires that the directory exists.|
-| `->check(CLI::NonexistentPath)`| Requires that the path does not exist.|
-| `->check(CLI::Range(min,max))`| Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.|
-| `->each(void(std::string))` | Run a function on each parsed value, *in order*.|
+| `->join()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::Join)`, which uses newlines or the specified delimiter to join all arguments into a single string output. |
+| `->join(delim)` | sets `->multi_option_policy(CLI::MultiOptionPolicy::Join)`, which uses `delim` to join all arguments into a single string output. |
+| `->check(CLI::ExistingFile)` | Requires that the file exists if given. |
+| `->check(CLI::ExistingDirectory)` | Requires that the directory exists. |
+| `->check(CLI::NonexistentPath)` | Requires that the path does not exist. |
+| `->check(CLI::Range(min,max))` | Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0. |
+| `->each(void(std::string))` | Run a function on each parsed value, *in order*. |
 
 The `->check(...)` modifiers adds a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
 
@@ -101,7 +104,7 @@ CLI::Option* opt = app.add_flag("--opt");
 
 CLI11_PARSE(app, argv, argc);
 
-if(*opt)
+if(* opt)
     std::cout << "Flag recieved " << opt->count() << " times." << std::endl;
 ```
 
@@ -109,10 +112,10 @@ if(*opt)
 
 One of CLI11's systems to allow customizability without high levels of verbosity is the inheritance system. You can set default values on the parent `App`, and all options and subcommands created from it remember the default values at the point of creation. The default value for Options, specifically, are accessible through the `option_defaults()` method. There are four settings that can be set and inherited:
 
-* `group`: The group name starts as "Options"
-* `required`: If the option must be given. Defaults to `false`. Is ignored for flags.
-* `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` regardless of the default, so that multiple bool flags does not cause an error. But you can override that flag by flag.
-* `ignore_case`: Allow any mixture of cases for the option or flag name
+*   `group`: The group name starts as "Options"
+*   `required`: If the option must be given. Defaults to `false`. Is ignored for flags.
+*   `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` regardless of the default, so that multiple bool flags does not cause an error. But you can override that flag by flag.
+*   `ignore_case`: Allow any mixture of cases for the option or flag name
 
 An example of usage:
 
@@ -148,36 +151,68 @@ std::complex<float> val;
 app.add_complex("--cplx", val);
 ```
 
-### Optionals (New in CLI11 1.5)
-
-If you have a compiler with `__has_include`, you can use `std::optional`, `std::experimental::optional`, and `boost::optional` in `add_option`. You can manually enforce support for one of these by defining the corresponding macro before including CLI11 (or in your build system). For example:
-
-```cpp
-#define CLI11_BOOST_OPTIONAL
-#include <CLI/CLI.hpp>
-
-...
-
-boost::optional<int> x;
-app.add_option("-x", x);
-
-CLI11_PARSE(app, argc, argv);
-
-if(x)
-    std::cout << *x << std::endl;
-```
-
 ### Windows style options (New in CLI11 1.7)
 
 You can also set the app setting `app->allow_windows_style_options()` to allow windows style options to also be recognized on the command line:
 
-* `/a` (flag)
-* `/f filename` (option)
-* `/long` (long flag)
-* `/file filename` (space)
-* `/file:filename` (colon)
+*   `/a` (flag)
+*   `/f filename` (option)
+*   `/long` (long flag)
+*   `/file filename` (space)
+*   `/file:filename` (colon)
 
 Windows style options do not allow combining short options or values not separated from the short option like with `-` options. You still specify option names in the same manor as on Linux with single and double dashes when you use the `add_*` functions, and the Linux style on the command line will still work. If a long and a short option share the same name, the option will match on the first one defined.
+
+## Parse configuration
+
+How an option and its arguments are parsed depends on a set of controls that are part of the option structure.  In most circumstances these controls are set automatically based on the function used to create the option and the type the arguments are parsed into.  The variables define the size of the underlying type (essentially how many strings make up the type), the expected size (how many groups are expected) and a flag indicating if multiple groups are allowed with a single option.  And these interact with the `multi_option_policy` when it comes time to parse.  
+
+### examples
+How options manage this is best illustrated through some examples
+```cpp
+std::string val;
+app.add_option("--opt",val,"description");
+```
+creates an option that assigns a value to a `std::string`  When this option is constructed it sets a type_size of 1.  meaning that the assignment uses a single string.  The Expected size is also set to 1 by default, and `allow_extra_args` is set to false. meaning that each time this option is called 1 argument is expected.  This would also be the case if val were a `double`, `int` or any other single argument types.  
+
+now for example
+```cpp
+std::pair<int, std::string> val;
+app.add_option("--opt",val,"description");
+```
+
+In this case the typesize is automatically detected to be 2 instead of 1, so the parsing would expect 2 arguments associated with the option.
+
+```cpp
+std::vector<int> val;
+app.add_option("--opt",val,"description");
+```
+
+detects a type size of 1, since the underlying element type is a single string, so the minimum number of strings is 1.  But since it is a vector the expected number can be very big.  The default for a vector is (1<<30), and the allow_extra_args is set to true.  This means that at least 1 argument is expected to follow the option, but arbitrary numbers of arguments may follow.  These are checked if they have the form of an option but if not they are added to the argument.   
+
+```cpp
+std::vector<std::tuple<int, double, std::string>> val;
+app.add_option("--opt",val,"description");
+```
+gets into the complicated cases where the type size is now 3.  and the expected max is set to a large number and `allow_extra_args` is set to true.  In this case at least 3 arguments are required to follow the option,  and subsequent groups must come in groups of three, otherwise an error will result.  
+
+```cpp
+bool val;
+app.add_flag("--opt",val,"description");
+```
+
+Using the add_flag methods for creating options creates an option with an expected size of 0, implying no arguments can be passed.  
+
+### Customization
+
+The `type_size(N)`, `type_size(Nmin, Nmax)`, `expected(N)`, `expected(Nmin,Nmax)`, and `allow_extra_args()` can be used to customize an option.  For example
+
+```cpp
+std::string val;
+auto opt=app.add_flag("--opt{vvv}",val,"description");
+opt->expected(0,1);
+```
+will create a hybrid option, that can exist on its own in which case the value "vvv" is used or if a value is given that value will be used.  
 
 [^1]: For example, enums are not printable to `std::cout`.
 [^2]: There is a small difference. An combined unlimited option will not prioritize over a positional that could still accept values.
