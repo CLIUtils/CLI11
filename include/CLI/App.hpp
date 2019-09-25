@@ -33,7 +33,7 @@ namespace CLI {
             (app).parse((argc), (argv));                                                                               \
         } catch(const CLI::ParseError &e) {                                                                            \
             return (app).exit(e);                                                                                      \
-        }
+        }                                                                                                              \
     } while (0)
 #endif
 
