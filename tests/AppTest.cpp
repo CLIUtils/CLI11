@@ -1143,7 +1143,7 @@ TEST_F(TApp, RequiredOptsUnlimited) {
 
     app.allow_extras(false);
     std::vector<std::string> remain;
-    app.add_option("positional", remain);
+    auto popt = app.add_option("positional", remain);
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(remain, std::vector<std::string>());
@@ -1159,6 +1159,12 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"two"}));
     EXPECT_EQ(remain, std::vector<std::string>({"one"}));
+
+    args = {"--str", "one", "two"};
+    popt->required();
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two"}));
 }
 
 TEST_F(TApp, RequiredOptsUnlimitedShort) {
@@ -1219,9 +1225,9 @@ TEST_F(TApp, OptsUnlimitedEnd) {
 TEST_F(TApp, RequireOptPriority) {
 
     std::vector<std::string> strs;
-    app.add_option("--str", strs)->required();
+    app.add_option("--str", strs);
     std::vector<std::string> remain;
-    app.add_option("positional", remain)->expected(2);
+    app.add_option("positional", remain)->expected(2)->required();
 
     args = {"--str", "one", "two", "three"};
     run();
@@ -1241,7 +1247,7 @@ TEST_F(TApp, RequireOptPriorityShort) {
     std::vector<std::string> strs;
     app.add_option("-s", strs)->required();
     std::vector<std::string> remain;
-    app.add_option("positional", remain)->expected(2);
+    app.add_option("positional", remain)->expected(2)->required();
 
     args = {"-s", "one", "two", "three"};
     run();
@@ -1332,7 +1338,7 @@ TEST_F(TApp, CallbackBoolFlags) {
     EXPECT_THROW(app.add_flag_callback("hi", func), CLI::IncorrectConstruction);
     cback->multi_option_policy(CLI::MultiOptionPolicy::Throw);
     args = {"--val", "--val=false"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, CallbackFlagsFalse) {
@@ -1733,7 +1739,8 @@ TEST_F(TApp, VectorUnlimString) {
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec);
-    EXPECT_EQ(-1, opt->get_expected());
+    EXPECT_EQ(1, opt->get_expected());
+    EXPECT_EQ(1 << 30, opt->get_expected_max());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();

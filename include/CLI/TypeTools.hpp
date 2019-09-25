@@ -275,11 +275,10 @@ struct type_count<
     static constexpr int value{1};
 };
 
-constexpr int vector_count{1 << 30};
-
 /// Type size of types that look like a vector
 template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{is_vector<T::value_type>::value ? vector_count : type_count<T::value_type>::value};
+    static constexpr int value{is_vector<T::value_type>::value ? expected_max_vector_size
+                                                               : type_count<T::value_type>::value};
 };
 
 /// This will only trigger for actual void type
@@ -292,7 +291,7 @@ struct expected_count<T, typename std::enable_if<!is_vector<T>::value && !std::i
 };
 /// number of expected items in a vector
 template <typename T> struct expected_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{vector_count};
+    static constexpr int value{expected_max_vector_size};
 };
 
 // Enumeration of the different supported categorizations of objects
@@ -408,11 +407,11 @@ struct classify_object<T,
 
 /// Tuple type
 template <typename T>
-struct classify_object<
-    T,
-    typename std::enable_if<type_count<T>::value >= 2 || (is_tuple_like<T>::value && uncommon_type<T>::value &&
-                                                          !is_direct_constructible<T, double>::value &&
-                                                          !is_direct_constructible<T, int>::value)>::type> {
+struct classify_object<T,
+                       typename std::enable_if<(type_count<T>::value >= 2 && !is_vector<T>::value) ||
+                                               (is_tuple_like<T>::value && uncommon_type<T>::value &&
+                                                !is_direct_constructible<T, double>::value &&
+                                                !is_direct_constructible<T, int>::value)>::type> {
     static constexpr objCategory value{tuple_value};
 };
 
@@ -751,7 +750,8 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 /// Lexical conversion of a vector types
 template <class T,
           class XC,
-          enable_if_t<expected_count<T>::value == vector_count && expected_count<XC>::value == vector_count,
+          enable_if_t<expected_count<T>::value == expected_max_vector_size &&
+                          expected_count<XC>::value == expected_max_vector_size,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
@@ -768,7 +768,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 /// Conversion to a vector type using a particular single type as the conversion type
 template <class T,
           class XC,
-          enable_if_t<(expected_count<T>::value == vector_count) && (expected_count<XC>::value == 1) &&
+          enable_if_t<(expected_count<T>::value == expected_max_vector_size) && (expected_count<XC>::value == 1) &&
                           (type_count<XC>::value == 1),
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {

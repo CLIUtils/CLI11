@@ -360,9 +360,9 @@ class Option : public OptionBase<Option> {
                 expected_max_ = expected_min_;
             }
             allow_extra_args_ = true;
-        } else if(value == (1 << 30)) {
+        } else if(value == detail::expected_max_vector_size) {
             expected_min_ = 1;
-            expected_max_ = (1 << 30);
+            expected_max_ = detail::expected_max_vector_size;
             allow_extra_args_ = true;
         } else {
             expected_min_ = value;
@@ -378,7 +378,7 @@ class Option : public OptionBase<Option> {
         }
 
         if(value_max < 0) {
-            value_min = (1 << 30);
+            value_min = detail::expected_max_vector_size;
         }
         if(value_max < value_min) {
             expected_min_ = value_max;
@@ -605,7 +605,8 @@ class Option : public OptionBase<Option> {
 
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
-        if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == (1 << 30) && expected_min_ > 1 &&
+        if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == detail::expected_max_vector_size &&
+           expected_min_ > 1 &&
            value != MultiOptionPolicy::Throw) { // this bizarre condition is to maintain backwards compatibility with
                                                 // the previous behavior of expected_ with vectors
             expected_max_ = expected_min_;
@@ -687,7 +688,10 @@ class Option : public OptionBase<Option> {
 
     int get_items_expected_min() const { return type_size_min_ * expected_min_; }
 
-    int get_items_expected_max() const { return type_size_max_ * expected_max_; }
+    int get_items_expected_max() const {
+        int t = type_size_max_;
+        return detail::checked_multiply(t, expected_max_) ? t : detail::expected_max_vector_size;
+    }
 
     /// True if the argument can be given directly
     bool get_positional() const { return pname_.length() > 0; }
@@ -1014,7 +1018,7 @@ class Option : public OptionBase<Option> {
         if(option_type_size < 0) {
             type_size_max_ = -option_type_size;
             type_size_min_ = -option_type_size;
-            expected_max_ = (1 << 30);
+            expected_max_ = detail::expected_max_vector_size;
         } else {
             type_size_max_ = option_type_size;
             type_size_min_ = option_type_size;
@@ -1026,7 +1030,7 @@ class Option : public OptionBase<Option> {
     /// Set a custom option size range
     Option *type_size(int option_type_size_min, int option_type_size_max) {
         if(option_type_size_min < 0 || option_type_size_max < 0) {
-            expected_max_ = (1 << 30);
+            expected_max_ = detail::expected_max_vector_size;
             option_type_size_min = (std::abs)(option_type_size_min);
             option_type_size_max = (std::abs)(option_type_size_min);
         }

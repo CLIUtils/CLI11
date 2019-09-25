@@ -42,13 +42,32 @@ TEST(TypeTools, type_size) {
     V = CLI::detail::type_count<void>::value;
     EXPECT_EQ(V, 0);
     V = CLI::detail::type_count<std::vector<double>>::value;
-    EXPECT_EQ(V, -1);
+    EXPECT_EQ(V, 1);
     V = CLI::detail::type_count<std::tuple<double, int>>::value;
     EXPECT_EQ(V, 2);
     V = CLI::detail::type_count<std::tuple<std::string, double, int>>::value;
     EXPECT_EQ(V, 3);
     V = CLI::detail::type_count<std::array<std::string, 5>>::value;
     EXPECT_EQ(V, 5);
+    V = CLI::detail::type_count<std::vector<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 2);
+}
+
+TEST(TypeTools, expected_count) {
+    auto V = CLI::detail::expected_count<int>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::expected_count<void>::value;
+    EXPECT_EQ(V, 0);
+    V = CLI::detail::expected_count<std::vector<double>>::value;
+    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
+    V = CLI::detail::expected_count<std::tuple<double, int>>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::expected_count<std::tuple<std::string, double, int>>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::expected_count<std::array<std::string, 5>>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::expected_count<std::vector<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
 }
 
 TEST(Split, SimpleByToken) {
@@ -815,8 +834,12 @@ TEST(Types, TypeName) {
 
     vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
     EXPECT_EQ("UINT", vector_name);
-    auto vclass = CLI::detail::classify_object<std::tuple<double>>::value;
-    EXPECT_EQ(vclass, CLI::detail::objCategory::number_constructible);
+
+    auto vclass = CLI::detail::classify_object<std::vector<std::vector<unsigned char>>>::value;
+    EXPECT_EQ(vclass, CLI::detail::objCategory::vector_value);
+
+    auto tclass = CLI::detail::classify_object<std::tuple<double>>::value;
+    EXPECT_EQ(tclass, CLI::detail::objCategory::number_constructible);
 
     std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
     EXPECT_EQ("FLOAT", tuple_name);

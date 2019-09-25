@@ -2472,10 +2472,9 @@ class App {
         size_t retval = 0;
         for(const Option_p &opt : options_) {
             if(opt->get_positional() && (!required_only || opt->get_required())) {
-                if(opt->get_items_expected() > 0 && static_cast<int>(opt->count()) < opt->get_items_expected()) {
-                    retval += static_cast<size_t>(opt->get_items_expected()) - opt->count();
-                } else if(opt->get_required() && opt->get_items_expected() < 0 && opt->count() == 0ul) {
-                    retval += 1;
+                if(opt->get_items_expected_min() > 0 &&
+                   static_cast<int>(opt->count()) < opt->get_items_expected_min()) {
+                    retval += static_cast<size_t>(opt->get_items_expected_min()) - opt->count();
                 }
             }
         }
@@ -2485,9 +2484,9 @@ class App {
     /// Count the required remaining positional arguments
     bool _has_remaining_positionals() const {
         for(const Option_p &opt : options_)
-            if(opt->get_positional() &&
-               ((opt->get_items_expected() < 0) || ((static_cast<int>(opt->count()) < opt->get_items_expected()))))
+            if(opt->get_positional() && ((static_cast<int>(opt->count()) < opt->get_items_expected_min()))) {
                 return true;
+            }
 
         return false;
     }
@@ -2506,7 +2505,7 @@ class App {
             if(arg_rem <= remreq) {
                 for(const Option_p &opt : options_) {
                     if(opt->get_positional() && opt->required_) {
-                        if(static_cast<int>(opt->count()) < opt->get_items_expected() ||
+                        if(static_cast<int>(opt->count()) < opt->get_items_expected_min() ||
                            (opt->get_items_expected() < 0 && opt->count() == 0lu)) {
                             if(validate_positionals_) {
                                 std::string pos = positional;
@@ -2527,7 +2526,7 @@ class App {
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
-               (static_cast<int>(opt->count()) < opt->get_items_expected() || opt->get_items_expected() < 0)) {
+               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
                 if(validate_positionals_) {
                     std::string pos = positional;
                     pos = opt->_validate(pos, 0);
@@ -2713,7 +2712,7 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
 
-        int min_num = op->get_type_size_min();
+        int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
         int max_num = op->get_items_expected_max();
 
         // Make sure we always eat the minimum for unlimited vectors
@@ -2751,14 +2750,15 @@ class App {
             throw ArgumentMismatch::TypedAtLeast(op->get_name(), min_num, op->get_type_name());
         }
 
-        if(max_num > min_num || op->get_allow_extra_args()) { // we allow optional arguments
-
+        if(max_num > collected || op->get_allow_extra_args()) { // we allow optional arguments
+            auto remreqpos = _count_remaining_positionals(true);
             // we have met the minimum now optionally check up to the maximum
             while((collected < max_num || op->get_allow_extra_args()) && !args.empty() &&
                   _recognize(args.back(), false) == detail::Classifier::NONE) {
-                // If any positionals remain, don't keep eating
-                if(_count_remaining_positionals() > 0)
+                // If any required positionals remain, don't keep eating
+                if(remreqpos >= static_cast<int>(args.size())) {
                     break;
+                }
 
                 op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
