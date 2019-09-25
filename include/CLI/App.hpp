@@ -28,11 +28,13 @@ namespace CLI {
 
 #ifndef CLI11_PARSE
 #define CLI11_PARSE(app, argc, argv)                                                                                   \
-    try {                                                                                                              \
-        (app).parse((argc), (argv));                                                                                   \
-    } catch(const CLI::ParseError &e) {                                                                                \
-        return (app).exit(e);                                                                                          \
-    }
+    do {                                                                                                               \
+        try {                                                                                                          \
+            (app).parse((argc), (argv));                                                                               \
+        } catch(const CLI::ParseError &e) {                                                                            \
+            return (app).exit(e);                                                                                      \
+        }
+    } while (0)
 #endif
 
 namespace detail {
