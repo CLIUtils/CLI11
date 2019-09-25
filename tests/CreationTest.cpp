@@ -173,46 +173,6 @@ TEST_F(TApp, IncorrectConstructionFlagPositional3) {
     EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionFlagExpected) {
-    auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
-    EXPECT_THROW(cat->expected(1), CLI::IncorrectConstruction);
-}
-
-TEST_F(TApp, IncorrectConstructionOptionAsFlag) {
-    int x;
-    auto cat = app.add_option("--cat", x);
-    EXPECT_NO_THROW(cat->expected(1));
-    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
-    EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
-}
-
-TEST_F(TApp, IncorrectConstructionOptionAsVector) {
-    int x;
-    auto cat = app.add_option("--cat", x);
-    EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
-}
-
-TEST_F(TApp, IncorrectConstructionVectorAsFlag) {
-    std::vector<int> x;
-    auto cat = app.add_option("--cat", x);
-    EXPECT_THROW(cat->expected(0), CLI::IncorrectConstruction);
-}
-
-TEST_F(TApp, IncorrectConstructionVectorTakeLast) {
-    std::vector<int> vec;
-    auto cat = app.add_option("--vec", vec);
-    EXPECT_THROW(cat->multi_option_policy(CLI::MultiOptionPolicy::TakeLast), CLI::IncorrectConstruction);
-}
-
-TEST_F(TApp, IncorrectConstructionTakeLastExpected) {
-    std::vector<int> vec;
-    auto cat = app.add_option("--vec", vec);
-    cat->expected(1);
-    ASSERT_NO_THROW(cat->multi_option_policy(CLI::MultiOptionPolicy::TakeLast));
-    EXPECT_THROW(cat->expected(2), CLI::IncorrectConstruction);
-}
-
 TEST_F(TApp, IncorrectConstructionNeedsCannotFind) {
     auto cat = app.add_flag("--cat");
     EXPECT_THROW(cat->needs("--nothing"), CLI::IncorrectConstruction);

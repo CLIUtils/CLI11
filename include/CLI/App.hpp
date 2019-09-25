@@ -670,6 +670,7 @@ class App {
         }
         opt->multi_option_policy(MultiOptionPolicy::TakeLast);
         opt->expected(0);
+        opt->required(false);
         return opt;
     }
 
@@ -1921,14 +1922,22 @@ class App {
   protected:
     /// Check the options to make sure there are no conflicts.
     ///
-    /// Currently checks to see if multiple positionals exist with -1 args and checks if the min and max options are
-    /// feasible
+    /// Currently checks to see if multiple positionals exist with unlimited args and checks if the min and max options
+    /// are feasible
     void _validate() const {
+        // count the number of positional only args
         auto pcount = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-            return opt->get_items_expected() < 0 && opt->get_positional();
+            return opt->get_items_expected_max() >= detail::expected_max_vector_size && !opt->nonpositional();
         });
-        if(pcount > 1)
-            throw InvalidError(name_);
+        if(pcount > 1) {
+            auto pcount_req = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
+                return opt->get_items_expected_max() >= detail::expected_max_vector_size && !opt->nonpositional() &&
+                       opt->get_required();
+            });
+            if(pcount - pcount_req > 1) {
+                throw InvalidError(name_);
+            }
+        }
 
         size_t nameless_subs{0};
         for(const App_p &app : subcommands_) {

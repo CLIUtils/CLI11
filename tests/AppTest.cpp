@@ -1740,7 +1740,7 @@ TEST_F(TApp, VectorUnlimString) {
 
     CLI::Option *opt = app.add_option("-s,--string", strvec);
     EXPECT_EQ(1, opt->get_expected());
-    EXPECT_EQ(1 << 30, opt->get_expected_max());
+    EXPECT_EQ(CLI::detail::expected_max_vector_size, opt->get_expected_max());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
