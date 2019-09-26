@@ -2206,16 +2206,14 @@ class App {
 
             if(opt->count() != 0) {
                 ++used_options;
-            }
-            // Required or partially filled
-            if(opt->get_required() || opt->count() != 0) {
-                // Make sure enough -N arguments parsed (+N is already handled in parsing function)
-                if(opt->get_items_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_items_expected()))
+                // check to make sure enough argument have been passed  (too many is handled in the parse functions
+                if(static_cast<size_t>(opt->get_items_expected_min()) > opt->count()) {
                     throw ArgumentMismatch::AtLeast(opt->get_name(), -opt->get_items_expected());
-
-                // Required but empty
-                if(opt->get_required() && opt->count() == 0)
-                    throw RequiredError(opt->get_name());
+                }
+            }
+            // Required but empty
+            if(opt->get_required() && opt->count() == 0) {
+                throw RequiredError(opt->get_name());
             }
             // Requires
             for(const Option *opt_req : opt->needs_)
@@ -2416,7 +2414,7 @@ class App {
 
         if(op->empty()) {
             // Flag parsing
-            if(op->get_type_size() == 0) {
+            if(op->get_expected_min() == 0) {
                 auto res = config_formatter_->to_flag(item);
                 res = op->get_flag_value(item.name, res);
 
@@ -2515,7 +2513,7 @@ class App {
                 for(const Option_p &opt : options_) {
                     if(opt->get_positional() && opt->required_) {
                         if(static_cast<int>(opt->count()) < opt->get_items_expected_min() ||
-                           (opt->get_items_expected() < 0 && opt->count() == 0lu)) {
+                           (opt->get_items_expected_max() >= detail::expected_max_vector_size && opt->count() == 0lu)) {
                             if(validate_positionals_) {
                                 std::string pos = positional;
                                 pos = opt->_validate(pos, 0);

@@ -234,10 +234,11 @@ inline std::string Formatter::make_option_opts(const Option *opt) const {
             out << " " << get_label(opt->get_type_name());
         if(!opt->get_default_str().empty())
             out << "=" << opt->get_default_str();
-        if(opt->get_expected() > 1)
-            out << " x " << opt->get_expected();
-        if(opt->get_expected() == -1)
+        if(opt->get_expected_max() == detail::expected_max_vector_size)
             out << " ...";
+        else if(opt->get_expected_min() > 1)
+            out << " x " << opt->get_expected();
+
         if(opt->get_required())
             out << " " << get_label("REQUIRED");
     }
@@ -262,11 +263,11 @@ inline std::string Formatter::make_option_usage(const Option *opt) const {
     // Note that these are positionals usages
     std::stringstream out;
     out << make_option_name(opt, true);
-
-    if(opt->get_expected() > 1)
-        out << "(" << std::to_string(opt->get_expected()) << "x)";
-    else if(opt->get_expected() < 0)
+    if(opt->get_expected_max() >= detail::expected_max_vector_size)
         out << "...";
+    else if(opt->get_expected_max() > 1)
+        out << "(" << opt->get_expected() << "x)";
+
     return opt->get_required() ? out.str() : "[" + out.str() + "]";
 }
 
