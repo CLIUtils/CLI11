@@ -1753,6 +1753,23 @@ TEST_F(TApp, VectorUnlimString) {
     EXPECT_EQ(answer, strvec);
 }
 
+TEST_F(TApp, VectorExpectedRange) {
+    std::vector<std::string> strvec;
+
+    CLI::Option *opt = app.add_option("--string", strvec);
+    opt->expected(2, 4)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
+
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ(3u, app.count("--string"));
+
+    args = {"--string", "mystring"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+
+    args = {"--string", "mystring", "mystring2", "string2", "--string", "string4", "string5"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+}
+
 TEST_F(TApp, VectorFancyOpts) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
@@ -2234,6 +2251,30 @@ TEST_F(TApp, CustomDoubleOptionAlt) {
     run();
     EXPECT_EQ(custom_opt.first, 12);
     EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+}
+
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorPair) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].first, 1);
+    EXPECT_EQ(custom_opt[1].second, "str3");
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3", "--dict", "-1", "str4"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
+    opt->check(CLI::PositiveNumber.application_index(0));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
 }
 
 // #128

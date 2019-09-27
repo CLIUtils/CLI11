@@ -467,7 +467,7 @@ constexpr const char *type_name() {
 
 /// This one should not be used normally, since vector types print the internal type
 template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
-constexpr const char *type_name() {
+constexpr std::string type_name() {
     return type_name<typename T::value_type>();
 }
 
@@ -688,8 +688,26 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assign a value through lexical cast operations
-template <typename T, typename XC, enable_if_t<std::is_same<T, XC>::value, detail::enabler> = detail::dummy>
+template <typename T,
+          typename XC,
+          enable_if_t<std::is_same<T, XC>::value && (classify_object<T>::value == string_assignable ||
+                                                     classify_object<T>::value == string_constructible),
+                      detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
+    return lexical_cast(input, output);
+}
+
+/// Assign a value through lexical cast operations
+template <typename T,
+          typename XC,
+          enable_if_t<std::is_same<T, XC>::value && classify_object<T>::value != string_assignable &&
+                          classify_object<T>::value != string_constructible,
+                      detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, T &output) {
+    if(input.empty()) {
+        output = T{};
+        return true;
+    }
     return lexical_cast(input, output);
 }
 
@@ -699,8 +717,8 @@ template <
     typename XC,
     enable_if_t<!std::is_same<T, XC>::value && std::is_assignable<T &, XC &>::value, detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
-    XC val;
-    bool parse_result = lexical_cast<XC>(input, val);
+    XC val{};
+    bool parse_result = (!input.empty()) ? lexical_cast<XC>(input, val) : true;
     if(parse_result) {
         output = val;
     }
@@ -714,8 +732,8 @@ template <typename T,
                           std::is_move_assignable<T>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
-    XC val;
-    bool parse_result = lexical_cast<XC>(input, val);
+    XC val{};
+    bool parse_result = input.empty() ? true : lexical_cast<XC>(input, val);
     if(parse_result) {
         output = T(val); // use () form of constructor to allow some implicit conversions
     }
@@ -737,9 +755,9 @@ template <typename T,
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     typename std::tuple_element<0, XC>::type v1;
     typename std::tuple_element<1, XC>::type v2;
-    bool retval = lexical_cast(strings[0], v1);
+    bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[0], v1);
     if(strings.size() > 1) {
-        retval &= lexical_cast(strings[1], v2);
+        retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
     }
     if(retval) {
         output = T{v1, v2};
@@ -751,7 +769,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 template <class T,
           class XC,
           enable_if_t<expected_count<T>::value == expected_max_vector_size &&
-                          expected_count<XC>::value == expected_max_vector_size,
+                          expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 1,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
@@ -761,6 +779,32 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 
         output.emplace_back();
         retval &= lexical_assign<typename T::value_type, typename XC::value_type>(elem, output.back());
+    }
+    return (!output.empty()) && retval;
+}
+
+/// Lexical conversion of a vector types with type size of two
+template <class T,
+          class XC,
+          enable_if_t<expected_count<T>::value == expected_max_vector_size &&
+                          expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 2,
+                      detail::enabler> = detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+    bool retval = true;
+    output.clear();
+    for(size_t ii = 0; ii < strings.size(); ii += 2) {
+
+        typename std::tuple_element<0, XC::value_type>::type v1;
+        typename std::tuple_element<1, XC::value_type>::type v2;
+        retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
+        if(strings.size() > ii + 1) {
+            retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
+        }
+        if(retval) {
+            output.emplace_back(v1, v2);
+        } else {
+            return false;
+        }
     }
     return (!output.empty()) && retval;
 }

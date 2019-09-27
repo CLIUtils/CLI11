@@ -104,6 +104,22 @@ TEST_F(TApp, BoostOptionalTest) {
     EXPECT_EQ(*opt, 3);
 }
 
+TEST_F(TApp, BoostOptionalTestZarg) {
+    boost::optional<int> opt;
+    app.add_option("-c,--count", opt)->expected(0, 1);
+    run();
+    EXPECT_FALSE(opt);
+
+    args = {"-c", "1"};
+    run();
+    EXPECT_TRUE(opt);
+    EXPECT_EQ(*opt, 1);
+    opt = {};
+    args = {"--count"};
+    run();
+    EXPECT_FALSE(opt);
+}
+
 TEST_F(TApp, BoostOptionalint64Test) {
     boost::optional<int64_t> opt;
     app.add_option("-c,--count", opt);

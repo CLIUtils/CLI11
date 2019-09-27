@@ -2206,10 +2206,6 @@ class App {
 
             if(opt->count() != 0) {
                 ++used_options;
-                // check to make sure enough argument have been passed  (too many is handled in the parse functions
-                if(static_cast<size_t>(opt->get_items_expected_min()) > opt->count()) {
-                    throw ArgumentMismatch::AtLeast(opt->get_name(), -opt->get_items_expected());
-                }
             }
             // Required but empty
             if(opt->get_required() && opt->count() == 0) {

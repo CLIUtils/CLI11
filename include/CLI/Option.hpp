@@ -234,7 +234,7 @@ class Option : public OptionBase<Option> {
     /// A list of the short names (`-a`) without the leading dashes
     std::vector<std::string> snames_;
 
-    /// A list of the long names (`--a`) without the leading dashes
+    /// A list of the long names (`--long`) without the leading dashes
     std::vector<std::string> lnames_;
 
     /// A list of the flag names with the appropriate default value, the first part of the pair should be duplicates of
@@ -321,6 +321,8 @@ class Option : public OptionBase<Option> {
     option_state current_option_state_{option_state::parsing};
     /// Specify that extra args beyond type_size_max should be allowed
     bool allow_extra_args_{false};
+    /// Specify that the option should act like a flag vs regular option
+    bool flag_like_{false};
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -360,13 +362,16 @@ class Option : public OptionBase<Option> {
                 expected_max_ = expected_min_;
             }
             allow_extra_args_ = true;
+            flag_like_ = false;
         } else if(value == detail::expected_max_vector_size) {
             expected_min_ = 1;
             expected_max_ = detail::expected_max_vector_size;
             allow_extra_args_ = true;
+            flag_like_ = false;
         } else {
             expected_min_ = value;
             expected_max_ = value;
+            flag_like_ = (expected_min_ == 0);
         }
         return this;
     }
@@ -886,7 +891,11 @@ class Option : public OptionBase<Option> {
         }
         auto ind = detail::find_member(name, fnames_, ignore_case_, ignore_underscore_);
         if((input_value.empty()) || (input_value == emptyString)) {
-            return (ind < 0) ? trueString : default_flag_values_[static_cast<size_t>(ind)].second;
+            if(flag_like_) {
+                return (ind < 0) ? trueString : default_flag_values_[static_cast<size_t>(ind)].second;
+            } else {
+                return (ind < 0) ? std::string{} : default_flag_values_[static_cast<size_t>(ind)].second;
+            }
         }
         if(ind < 0) {
             return input_value;
@@ -1163,10 +1172,10 @@ class Option : public OptionBase<Option> {
                 num_max = 1;
             }
             if(results_.size() < num_min) {
-                throw ArgumentMismatch(get_name(), static_cast<int>(num_min), results_.size());
+                throw ArgumentMismatch::AtLeast(get_name(), static_cast<int>(num_min), results_.size());
             }
             if(results_.size() > num_max) {
-                throw ArgumentMismatch(get_name(), static_cast<int>(num_max), results_.size());
+                throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), results_.size());
             }
             auto tmax = get_type_size_max();
             if(tmax > 1) {
@@ -1183,6 +1192,10 @@ class Option : public OptionBase<Option> {
     // Run a result through the Validators
     std::string _validate(std::string &result, int index) {
         std::string err_msg;
+        if(result.empty() && expected_min_ == 0) {
+            // an empty with nothing expected is allowed
+            return err_msg;
+        }
         for(const auto &vali : Validators_) {
             auto v = vali.get_application_index();
             if(v == -1 || v == index) {
@@ -1195,6 +1208,7 @@ class Option : public OptionBase<Option> {
                     break;
             }
         }
+
         return err_msg;
     }
 
