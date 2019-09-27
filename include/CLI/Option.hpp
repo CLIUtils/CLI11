@@ -21,7 +21,8 @@
 namespace CLI {
 
 using results_t = std::vector<std::string>;
-using callback_t = std::function<bool(results_t)>;
+/// callback function definition
+using callback_t = std::function<bool(const results_t &)>;
 
 class Option;
 class App;
@@ -326,10 +327,7 @@ class Option : public OptionBase<Option> {
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
-    Option(std::string option_name,
-           std::string option_description,
-           std::function<bool(results_t)> callback,
-           App *parent)
+    Option(std::string option_name, std::string option_description, callback_t callback, App *parent)
         : description_(std::move(option_description)), parent_(parent), callback_(std::move(callback)) {
         std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name));
     }

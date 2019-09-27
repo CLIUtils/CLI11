@@ -561,7 +561,7 @@ class App {
                        std::string option_description = "",
                        bool defaulted = false) {
 
-        auto fun = [&variable](CLI::results_t res) { // comment for spacing
+        auto fun = [&variable](const CLI::results_t &res) { // comment for spacing
             return detail::lexical_conversion<T, XC>(res, variable);
         };
 
@@ -584,7 +584,7 @@ class App {
                                 const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
-        auto fun = [func](CLI::results_t res) {
+        auto fun = [func](const CLI::results_t &res) {
             T variable;
             bool result = detail::lexical_conversion<T, T>(res, variable);
             if(result) {
@@ -696,7 +696,7 @@ class App {
                      T &flag_count, ///< A variable holding the count
                      std::string flag_description = "") {
         flag_count = 0;
-        CLI::callback_t fun = [&flag_count](CLI::results_t res) {
+        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
             try {
                 detail::sum_flag_vector(res, flag_count);
             } catch(const std::invalid_argument &) {
@@ -719,7 +719,7 @@ class App {
                      T &flag_result, ///< A variable holding true if passed
                      std::string flag_description = "") {
 
-        CLI::callback_t fun = [&flag_result](CLI::results_t res) {
+        CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
             if(res.size() != 1) {
                 return false;
             }
@@ -734,7 +734,7 @@ class App {
     Option *add_flag(std::string flag_name,
                      std::vector<T> &flag_results, ///< A vector of values with the flag results
                      std::string flag_description = "") {
-        CLI::callback_t fun = [&flag_results](CLI::results_t res) {
+        CLI::callback_t fun = [&flag_results](const CLI::results_t &res) {
             bool retval = true;
             for(const auto &elem : res) {
                 flag_results.emplace_back();
@@ -751,7 +751,7 @@ class App {
                               std::function<void(void)> function, ///< A function to call, void(void)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](CLI::results_t res) {
+        CLI::callback_t fun = [function](const CLI::results_t &res) {
             if(res.size() != 1) {
                 return false;
             }
@@ -769,7 +769,7 @@ class App {
                               std::function<void(int64_t)> function, ///< A function to call, void(int)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](CLI::results_t res) {
+        CLI::callback_t fun = [function](const CLI::results_t &res) {
             int64_t flag_count = 0;
             detail::sum_flag_vector(res, flag_count);
             function(flag_count);
