@@ -473,7 +473,7 @@ TEST_F(TApp, ExistingSubcommandMatch) {
     }
     sshared->remove_subcommand(s1);
 
-    auto s3 = app.add_subcommand("sub3");
+    app.add_subcommand("sub3");
     // now check that the subsubcommand overlaps
     try {
         app.add_subcommand(sshared);
@@ -569,10 +569,13 @@ TEST_F(ManyGroups, DisableFirst) {
 TEST_F(ManyGroups, SameSubcommand) {
     // only 1 group can be used if remove_required not used
     remove_required();
-    auto sub1 = g1->add_subcommand("sub1");
-    auto sub2 = g2->add_subcommand("sub1");
+    auto sub1 = g1->add_subcommand("sub1")->disabled();
+    auto sub2 = g2->add_subcommand("sub1")->disabled();
     auto sub3 = g3->add_subcommand("sub1");
-
+    // so when the subcommands are disabled they can have the same name
+    sub1->disabled(false);
+    sub2->disabled(false);
+    // if they are reenabled they are not checked for overlap on enabling so they can have the same name
     args = {"sub1", "sub1", "sub1"};
 
     run();
@@ -580,7 +583,6 @@ TEST_F(ManyGroups, SameSubcommand) {
     EXPECT_TRUE(*sub1);
     EXPECT_TRUE(*sub2);
     EXPECT_TRUE(*sub3);
-    /// This should be made to work at some point
     auto subs = app.get_subcommands();
     EXPECT_EQ(subs.size(), 3u);
     EXPECT_EQ(subs[0], sub1);

@@ -1661,6 +1661,10 @@ TEST_F(TApp, ExistingSubcommandMatch) {
     } catch(const CLI::OptionAlreadyAdded &oaa) {
         EXPECT_THAT(oaa.what(), HasSubstr("sub2"));
     }
+    // now check that disabled subcommands can be added regardless of name
+    sshared->name("sub1");
+    sshared->disabled();
+    EXPECT_NO_THROW(app.add_subcommand(sshared));
 }
 
 TEST_F(TApp, AliasErrorsInOptionGroup) {

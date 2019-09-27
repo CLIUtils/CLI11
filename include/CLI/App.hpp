@@ -2804,9 +2804,14 @@ class App {
     /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
     const std::string &_compare_subcommand_names(const App &subcom, const App &base) const {
         static const std::string estring;
-
+        if(subcom.disabled_) {
+            return estring;
+        }
         for(auto &subc : base.subcommands_) {
             if(subc.get() != &subcom) {
+                if(subc->disabled_) {
+                    continue;
+                }
                 if(!subcom.get_name().empty()) {
                     if(subc->check_name(subcom.get_name())) {
                         return subcom.get_name();
