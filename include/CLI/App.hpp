@@ -997,33 +997,52 @@ class App {
     }
 
     /// Add a complex number
-    template <typename T>
+    template <typename T, typename XC = double>
     Option *add_complex(std::string option_name,
                         T &variable,
                         std::string option_description = "",
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
 
-        CLI::callback_t fun = [&variable](results_t res) {
-            if(res[1].back() == 'i')
-                res[1].pop_back();
-            double x, y;
-            bool worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(res[1], y);
+        CLI::callback_t fun = [&variable](const results_t &res) {
+            XC x, y;
+            bool worked;
+            if(res.size() >= 2 && !res[1].empty()) {
+                auto str1 = res[1];
+                if(str1.back() == 'i' || str1.back() == 'j')
+                    str1.pop_back();
+                worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(str1, y);
+            } else {
+                auto str1 = res.front();
+                auto nloc = str1.find_last_of('-');
+                if(nloc != std::string::npos && nloc > 0) {
+                    worked = detail::lexical_cast(str1.substr(0, nloc), x);
+                    str1 = str1.substr(nloc);
+                    if(str1.back() == 'i' || str1.back() == 'j')
+                        str1.pop_back();
+                    worked = worked && detail::lexical_cast(str1, y);
+                } else {
+                    if(str1.back() == 'i' || str1.back() == 'j') {
+                        str1.pop_back();
+                        worked = detail::lexical_cast(str1, y);
+                        x = XC{0};
+                    } else {
+                        worked = detail::lexical_cast(str1, x);
+                        y = XC{0};
+                    }
+                }
+            }
             if(worked)
-                variable = T(x, y);
+                variable = T{x, y};
             return worked;
         };
 
-        auto default_function = [&variable]() {
-            std::stringstream out;
-            out << variable;
-            return out.str();
-        };
+        auto default_function = [&variable]() { return CLI::detail::checked_to_string<T, T>(variable); };
 
         CLI::Option *opt =
             add_option(option_name, std::move(fun), std::move(option_description), defaulted, default_function);
 
-        opt->type_name(label)->type_size(2);
+        opt->type_name(label)->type_size(1, 2)->delimiter('+');
         return opt;
     }
 
@@ -2778,6 +2797,11 @@ class App {
                 op->add_result(res);
                 parse_order_.push_back(op.get());
             }
+        }
+
+        // if we only partially completed a type then add a Null for later processing
+        if(min_num > 0 && op->get_type_size_max() != min_num && collected % op->get_type_size_max() != 0) {
+            op->add_result(std::string{});
         }
 
         if(!rest.empty()) {

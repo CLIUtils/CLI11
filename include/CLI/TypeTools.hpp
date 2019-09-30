@@ -809,6 +809,39 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return (!output.empty()) && retval;
 }
 
+/// Lexical conversion of a vector types with fixed type sizes >2 but not vector
+template <class T,
+          class XC,
+          enable_if_t<expected_count<T>::value == expected_max_vector_size &&
+                          expected_count<XC>::value == expected_max_vector_size && (type_count<XC>::value > 2),
+                      detail::enabler> = detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+    bool retval = true;
+    output.clear();
+    std::vector<std::string> temp;
+    size_t ii = 0;
+    size_t icount = 0;
+    auto xcm = type_count<XC>::value;
+    while(ii < strings.size()) {
+        temp.push_back(strings[ii]);
+        ++ii;
+        ++icount;
+        if(icount == xcm || temp.back().empty()) {
+            if(xcm == expected_max_vector_size) {
+                temp.pop_back();
+            }
+            output.emplace_back();
+            retval = retval && lexical_conversion<typename T::value_type, typename XC::value_type>(temp, output.back());
+            temp.clear();
+            if(!retval) {
+                return retval;
+            }
+            icount = 0;
+        }
+    }
+    return retval;
+}
+
 /// Conversion to a vector type using a particular single type as the conversion type
 template <class T,
           class XC,

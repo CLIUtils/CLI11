@@ -1028,7 +1028,9 @@ class Option : public OptionBase<Option> {
             expected_max_ = detail::expected_max_vector_size;
         } else {
             type_size_max_ = option_type_size;
-            type_size_min_ = option_type_size;
+            if(type_size_max_ < detail::expected_max_vector_size) {
+                type_size_min_ = option_type_size;
+            }
             if(type_size_max_ == 0)
                 required_ = false;
         }
@@ -1107,10 +1109,14 @@ class Option : public OptionBase<Option> {
             if(type_size_max_ > 1) { // in this context index refers to the index in the type
                 int index = 0;
                 for(std::string &result : results_) {
+                    if(result.empty() && type_size_max_ != type_size_min_) {
+                        index = 0; // reset index for variable size chunks
+                        continue;
+                    }
                     auto err_msg = _validate(result, index % type_size_max_);
-                    ++index;
                     if(!err_msg.empty())
                         throw ValidationError(get_name(), err_msg);
+                    ++index;
                 }
             } else {
                 int index = 0;

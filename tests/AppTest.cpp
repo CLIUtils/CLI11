@@ -2277,6 +2277,68 @@ TEST_F(TApp, vectorPair) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorTuple) {
+
+    std::vector<std::tuple<int, std::string, double>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(std::get<0>(custom_opt[0]), 1);
+    EXPECT_EQ(std::get<1>(custom_opt[1]), "str3");
+    EXPECT_EQ(std::get<2>(custom_opt[1]), 2.7);
+
+    args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_EQ(std::get<0>(custom_opt[2]), -1);
+    EXPECT_EQ(std::get<1>(custom_opt[2]), "str4");
+    EXPECT_EQ(std::get<2>(custom_opt[2]), -1.87);
+    opt->check(CLI::PositiveNumber.application_index(0));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args.back() = "haha";
+    args[9] = "45";
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorVector) {
+
+    std::vector<std::vector<int>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].size(), 3u);
+    EXPECT_EQ(custom_opt[1].size(), 2u);
+
+    args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
+            "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 4u);
+    EXPECT_EQ(custom_opt[0].size(), 3u);
+    EXPECT_EQ(custom_opt[1].size(), 2u);
+    EXPECT_EQ(custom_opt[2].size(), 1u);
+    EXPECT_EQ(custom_opt[3].size(), 10u);
+    opt->check(CLI::PositiveNumber.application_index(9));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args.pop_back();
+    EXPECT_NO_THROW(run());
+
+    args.back() = "haha";
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 // #128
 TEST_F(TApp, RepeatingMultiArgumentOptions) {
     std::vector<std::string> entries;
