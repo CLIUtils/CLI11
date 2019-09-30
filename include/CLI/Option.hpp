@@ -285,7 +285,7 @@ class Option : public OptionBase<Option> {
     int expected_max_{1};
 
     /// A list of Validators to run on each value parsed
-    std::vector<Validator> Validators_;
+    std::vector<Validator> validators_;
 
     /// A list of options that are required with this option
     std::set<Option *> needs_;
@@ -415,16 +415,16 @@ class Option : public OptionBase<Option> {
     Option *check(std::function<std::string(const std::string &)> Validator,
                   std::string Validator_description = "",
                   std::string Validator_name = "") {
-        Validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
-        Validators_.back().non_modifying();
+        validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
+        validators_.back().non_modifying();
         return this;
     }
 
     /// Adds a transforming Validator with a built in type name
     Option *transform(Validator Validator, std::string Validator_name = "") {
-        Validators_.insert(Validators_.begin(), std::move(Validator));
+        validators_.insert(validators_.begin(), std::move(Validator));
         if(!Validator_name.empty())
-            Validators_.front().name(Validator_name);
+            validators_.front().name(Validator_name);
         return this;
     }
 
@@ -432,7 +432,7 @@ class Option : public OptionBase<Option> {
     Option *transform(std::function<std::string(std::string)> func,
                       std::string transform_description = "",
                       std::string transform_name = "") {
-        Validators_.insert(Validators_.begin(),
+        validators_.insert(validators_.begin(),
                            Validator(
                                [func](std::string &val) {
                                    val = func(val);
@@ -446,7 +446,7 @@ class Option : public OptionBase<Option> {
 
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
     Option *each(std::function<void(std::string)> func) {
-        Validators_.emplace_back(
+        validators_.emplace_back(
             [func](std::string &inout) {
                 func(inout);
                 return std::string{};
@@ -456,21 +456,21 @@ class Option : public OptionBase<Option> {
     }
     /// Get a named Validator
     Validator *get_validator(const std::string &Validator_name = "") {
-        for(auto &Validator : Validators_) {
+        for(auto &Validator : validators_) {
             if(Validator_name == Validator.get_name()) {
                 return &Validator;
             }
         }
-        if((Validator_name.empty()) && (!Validators_.empty())) {
-            return &(Validators_.front());
+        if((Validator_name.empty()) && (!validators_.empty())) {
+            return &(validators_.front());
         }
         throw OptionNotFound(std::string{"Validator "} + Validator_name + " Not Found");
     }
 
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index) {
-        if(index >= 0 && index < static_cast<int>(Validators_.size())) {
-            return &(Validators_[index]);
+        if(index >= 0 && index < static_cast<int>(validators_.size())) {
+            return &(validators_[index]);
         }
         throw OptionNotFound("Validator index is not valid");
     }
@@ -1090,8 +1090,8 @@ class Option : public OptionBase<Option> {
     /// Get the full typename for this option
     std::string get_type_name() const {
         std::string full_type_name = type_name_();
-        if(!Validators_.empty()) {
-            for(auto &Validator : Validators_) {
+        if(!validators_.empty()) {
+            for(auto &Validator : validators_) {
                 std::string vtype = Validator.get_description();
                 if(!vtype.empty()) {
                     full_type_name += ":" + vtype;
@@ -1105,7 +1105,7 @@ class Option : public OptionBase<Option> {
     /// Run the results through the Validators
     void _validate_results() {
         // Run the Validators (can change the string)
-        if(!Validators_.empty()) {
+        if(!validators_.empty()) {
             if(type_size_max_ > 1) { // in this context index refers to the index in the type
                 int index = 0;
                 for(std::string &result : results_) {
@@ -1200,7 +1200,7 @@ class Option : public OptionBase<Option> {
             // an empty with nothing expected is allowed
             return err_msg;
         }
-        for(const auto &vali : Validators_) {
+        for(const auto &vali : validators_) {
             auto v = vali.get_application_index();
             if(v == -1 || v == index) {
                 try {
