@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <tuple>
+#include <utility>
 
 class NotStreamable {};
 
@@ -831,6 +832,13 @@ TEST(Types, TypeName) {
 
     vector_name = CLI::detail::type_name<std::vector<double>>();
     EXPECT_EQ("FLOAT", vector_name);
+
+    static_assert(CLI::detail::classify_object<std::pair<int, std::string>>::value ==
+                      CLI::detail::objCategory::tuple_value,
+                  "pair<int,string> does not read like a tuple");
+
+    std::string pair_name = CLI::detail::type_name<std::vector<std::pair<int, std::string>>>();
+    EXPECT_EQ("[INT,TEXT]", pair_name);
 
     vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
     EXPECT_EQ("UINT", vector_name);

@@ -2778,7 +2778,7 @@ class App {
             while((collected < max_num || op->get_allow_extra_args()) && !args.empty() &&
                   _recognize(args.back(), false) == detail::Classifier::NONE) {
                 // If any required positionals remain, don't keep eating
-                if(remreqpos >= static_cast<int>(args.size())) {
+                if(remreqpos >= args.size()) {
                     break;
                 }
 

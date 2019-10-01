@@ -1167,8 +1167,8 @@ class Option : public OptionBase<Option> {
             break;
         case MultiOptionPolicy::Throw:
         default: {
-            size_t num_min = static_cast<size_t>(get_items_expected_min());
-            size_t num_max = static_cast<size_t>(get_items_expected_max());
+            auto num_min = static_cast<size_t>(get_items_expected_min());
+            auto num_max = static_cast<size_t>(get_items_expected_max());
             if(num_min == 0) {
                 num_min = 1;
             }

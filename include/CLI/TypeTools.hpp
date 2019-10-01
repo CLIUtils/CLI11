@@ -277,8 +277,8 @@ struct type_count<
 
 /// Type size of types that look like a vector
 template <typename T> struct type_count<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr int value{is_vector<T::value_type>::value ? expected_max_vector_size
-                                                               : type_count<T::value_type>::value};
+    static constexpr int value{is_vector<typename T::value_type>::value ? expected_max_vector_size
+                                                                        : type_count<typename T::value_type>::value};
 };
 
 /// This will only trigger for actual void type
@@ -465,17 +465,11 @@ constexpr const char *type_name() {
     return "TEXT";
 }
 
-/// This one should not be used normally, since vector types print the internal type
-template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
-constexpr std::string type_name() {
-    return type_name<typename T::value_type>();
-}
-
 /// Print name for single element tuple types
 template <
     typename T,
     enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 1, detail::enabler> = detail::dummy>
-std::string type_name() {
+inline std::string type_name() {
     return type_name<typename std::tuple_element<0, T>::type>();
 }
 
@@ -502,6 +496,12 @@ std::string type_name() {
     auto tname = std::string(1, '[') + tuple_name<T, 0>();
     tname.push_back(']');
     return tname;
+}
+
+/// This one should not be used normally, since vector types print the internal type
+template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
+inline std::string type_name() {
+    return type_name<typename T::value_type>();
 }
 
 // Lexical cast
@@ -794,8 +794,8 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     output.clear();
     for(size_t ii = 0; ii < strings.size(); ii += 2) {
 
-        typename std::tuple_element<0, XC::value_type>::type v1;
-        typename std::tuple_element<1, XC::value_type>::type v2;
+        typename std::tuple_element<0, typename XC::value_type>::type v1;
+        typename std::tuple_element<1, typename XC::value_type>::type v2;
         retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
         if(strings.size() > ii + 1) {
             retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
@@ -807,39 +807,6 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
         }
     }
     return (!output.empty()) && retval;
-}
-
-/// Lexical conversion of a vector types with fixed type sizes >2 but not vector
-template <class T,
-          class XC,
-          enable_if_t<expected_count<T>::value == expected_max_vector_size &&
-                          expected_count<XC>::value == expected_max_vector_size && (type_count<XC>::value > 2),
-                      detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    bool retval = true;
-    output.clear();
-    std::vector<std::string> temp;
-    size_t ii = 0;
-    size_t icount = 0;
-    auto xcm = type_count<XC>::value;
-    while(ii < strings.size()) {
-        temp.push_back(strings[ii]);
-        ++ii;
-        ++icount;
-        if(icount == xcm || temp.back().empty()) {
-            if(xcm == expected_max_vector_size) {
-                temp.pop_back();
-            }
-            output.emplace_back();
-            retval = retval && lexical_conversion<typename T::value_type, typename XC::value_type>(temp, output.back());
-            temp.clear();
-            if(!retval) {
-                return retval;
-            }
-            icount = 0;
-        }
-    }
-    return retval;
 }
 
 /// Conversion to a vector type using a particular single type as the conversion type
@@ -890,6 +857,38 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return tuple_conversion<T, XC, 0>(strings, output);
 }
 
+/// Lexical conversion of a vector types with type_size >2
+template <class T,
+          class XC,
+          enable_if_t<expected_count<T>::value == expected_max_vector_size &&
+                          expected_count<XC>::value == expected_max_vector_size && (type_count<XC>::value > 2),
+                      detail::enabler> = detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+    bool retval = true;
+    output.clear();
+    std::vector<std::string> temp;
+    size_t ii = 0;
+    size_t icount = 0;
+    size_t xcm = type_count<XC>::value;
+    while(ii < strings.size()) {
+        temp.push_back(strings[ii]);
+        ++ii;
+        ++icount;
+        if(icount == xcm || temp.back().empty()) {
+            if(static_cast<int>(xcm) == expected_max_vector_size) {
+                temp.pop_back();
+            }
+            output.emplace_back();
+            retval = retval && lexical_conversion<typename T::value_type, typename XC::value_type>(temp, output.back());
+            temp.clear();
+            if(!retval) {
+                return retval;
+            }
+            icount = 0;
+        }
+    }
+    return retval;
+}
 /// Sum a vector of flag representations
 /// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
 /// by
