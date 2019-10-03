@@ -740,12 +740,30 @@ bool lexical_assign(const std::string &input, T &output) {
     return parse_result;
 }
 /// Lexical conversion if there is only one element
-template <typename T,
-          typename XC,
-          enable_if_t<!is_tuple_like<T>::value && !is_tuple_like<XC>::value && !is_vector<T>::value, detail::enabler> =
-              detail::dummy>
+template <
+    typename T,
+    typename XC,
+    enable_if_t<!is_tuple_like<T>::value && !is_tuple_like<XC>::value && !is_vector<T>::value && !is_vector<XC>::value,
+                detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return lexical_assign<T, XC>(strings[0], output);
+}
+
+/// Lexical conversion if there is only one element but the conversion type is a vector
+template <typename T,
+          typename XC,
+          enable_if_t<!is_tuple_like<T>::value && !is_vector<T>::value && is_vector<XC>::value, detail::enabler> =
+              detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+
+    if(strings.size() > 1 || strings.size() == 1 && !strings[0].empty()) {
+        XC val;
+        auto retval = lexical_conversion<XC, XC>(strings, val);
+        output = T{val};
+        return retval;
+    }
+    output = T{};
+    return true;
 }
 
 /// Lexical conversion if there is only one element but the conversion type is for two call a two element constructor

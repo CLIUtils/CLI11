@@ -1143,7 +1143,7 @@ class Option : public OptionBase<Option> {
 
         // max num items expected or length of vector, always at least 1
         // Only valid for a trimming policy
-        size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
+
         res.clear();
         // Operation depends on the policy setting
         switch(multi_option_policy_) {
@@ -1151,15 +1151,19 @@ class Option : public OptionBase<Option> {
             break;
         case MultiOptionPolicy::TakeLast:
             // Allow multi-option sizes (including 0)
-            if(results_.size() != trim_size) {
-                res.assign(results_.end() - trim_size, results_.end());
+            {
+                size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
+                if(results_.size() != trim_size) {
+                    res.assign(results_.end() - trim_size, results_.end());
+                }
             }
             break;
-        case MultiOptionPolicy::TakeFirst:
+        case MultiOptionPolicy::TakeFirst: {
+            size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
             if(results_.size() != trim_size) {
                 res.assign(results_.begin(), results_.begin() + trim_size);
             }
-            break;
+        } break;
         case MultiOptionPolicy::Join:
             if(results_.size() > 1) {
                 res.push_back(detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
@@ -1180,13 +1184,6 @@ class Option : public OptionBase<Option> {
             }
             if(results_.size() > num_max) {
                 throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), results_.size());
-            }
-            auto tmax = get_type_size_max();
-            if(tmax > 1) {
-                auto mod = results_.size() % static_cast<size_t>(tmax);
-                if(mod != 0 && mod < static_cast<size_t>(get_type_size_min())) {
-                    throw ArgumentMismatch(get_name(), get_type_size_min(), mod);
-                }
             }
             break;
         }

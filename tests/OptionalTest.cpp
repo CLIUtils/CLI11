@@ -191,6 +191,22 @@ TEST_F(TApp, BoostOptionalVector) {
     EXPECT_EQ(*opt, expV);
 }
 
+TEST_F(TApp, BoostOptionalVectorEmpty) {
+    boost::optional<std::vector<int>> opt;
+    app.add_option<decltype(opt), std::vector<int>>("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
+    run();
+    EXPECT_FALSE(opt);
+    args = {"-v"};
+    opt = std::vector<int>{4, 3};
+    run();
+    EXPECT_FALSE(opt);
+    args = {"-v", "1", "4", "5"};
+    run();
+    EXPECT_TRUE(opt);
+    std::vector<int> expV{1, 4, 5};
+    EXPECT_EQ(*opt, expV);
+}
+
 #endif
 
 #if !CLI11_OPTIONAL

@@ -720,9 +720,6 @@ class App {
                      std::string flag_description = "") {
 
         CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
-            if(res.size() != 1) {
-                return false;
-            }
             return CLI::detail::lexical_cast(res[0], flag_result);
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
@@ -752,9 +749,6 @@ class App {
                               std::string flag_description = "") {
 
         CLI::callback_t fun = [function](const CLI::results_t &res) {
-            if(res.size() != 1) {
-                return false;
-            }
             bool trigger;
             auto result = CLI::detail::lexical_cast(res[0], trigger);
             if(trigger)
