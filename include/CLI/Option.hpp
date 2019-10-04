@@ -377,11 +377,11 @@ class Option : public OptionBase<Option> {
     /// Set the range of expected arguments
     Option *expected(int value_min, int value_max) {
         if(value_min < 0) {
-            value_min = 1;
+            value_min = -value_min;
         }
 
         if(value_max < 0) {
-            value_min = detail::expected_max_vector_size;
+            value_max = detail::expected_max_vector_size;
         }
         if(value_max < value_min) {
             expected_min_ = value_max;

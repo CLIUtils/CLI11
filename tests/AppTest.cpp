@@ -802,9 +802,20 @@ TEST_F(TApp, TakeLastOptMulti) {
     EXPECT_EQ(vals, std::vector<int>({2, 3}));
 }
 
+TEST_F(TApp, TakeLastOptMulti_alternative_path) {
+    std::vector<int> vals;
+    app.add_option("--long", vals)->expected(2, -1)->take_last();
+
+    args = {"--long", "1", "2", "3"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({2, 3}));
+}
+
 TEST_F(TApp, TakeLastOptMultiCheck) {
     std::vector<int> vals;
-    auto opt = app.add_option("--long", vals)->expected(2)->take_last();
+    auto opt = app.add_option("--long", vals)->expected(-2)->take_last();
 
     opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
@@ -1768,6 +1779,12 @@ TEST_F(TApp, VectorExpectedRange) {
 
     args = {"--string", "mystring", "mystring2", "string2", "--string", "string4", "string5"};
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
+
+    EXPECT_EQ(opt->get_expected_max(), 4);
+    EXPECT_EQ(opt->get_expected_min(), 2);
+    opt->expected(4, 2); // just test the handling of reversed arguments
+    EXPECT_EQ(opt->get_expected_max(), 4);
+    EXPECT_EQ(opt->get_expected_min(), 2);
 }
 
 TEST_F(TApp, VectorFancyOpts) {
