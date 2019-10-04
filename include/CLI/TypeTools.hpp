@@ -756,7 +756,7 @@ template <typename T,
               detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 
-    if(strings.size() > 1 || strings.size() == 1 && !strings[0].empty()) {
+    if(strings.size() > 1 || (!strings.empty() && !(strings.front().empty()))) {
         XC val;
         auto retval = lexical_conversion<XC, XC>(strings, val);
         output = T{val};
