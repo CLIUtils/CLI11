@@ -1657,7 +1657,7 @@ TEST_F(TApp, pair_check) {
 }
 
 // this will require that modifying the multi-option policy for tuples be allowed which it isn't at present
-/*
+
 TEST_F(TApp, pair_check_take_first) {
     std::string myfile{"pair_check_file2.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
@@ -1682,7 +1682,7 @@ TEST_F(TApp, pair_check_take_first) {
 
     EXPECT_THROW(run(), CLI::ValidationError);
 }
-*/
+
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
@@ -1785,6 +1785,12 @@ TEST_F(TApp, VectorExpectedRange) {
     opt->expected(4, 2); // just test the handling of reversed arguments
     EXPECT_EQ(opt->get_expected_max(), 4);
     EXPECT_EQ(opt->get_expected_min(), 2);
+    opt->expected(-5);
+    EXPECT_EQ(opt->get_expected_max(), 5);
+    EXPECT_EQ(opt->get_expected_min(), 5);
+    opt->expected(-5, 7);
+    EXPECT_EQ(opt->get_expected_max(), 7);
+    EXPECT_EQ(opt->get_expected_min(), 5);
 }
 
 TEST_F(TApp, VectorFancyOpts) {

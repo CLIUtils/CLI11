@@ -297,6 +297,8 @@ TEST(Validators, IPValidate1) {
     EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "aaa";
     EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "1.2.3.abc";
+    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "11.22";
     EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
 }

@@ -1108,12 +1108,18 @@ class Option : public OptionBase<Option> {
         if(!validators_.empty()) {
             if(type_size_max_ > 1) { // in this context index refers to the index in the type
                 int index = 0;
+                if(get_items_expected_max() < static_cast<int>(results_.size()) &&
+                   multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+                    // create a negative index for the earliest ones
+                    index = get_items_expected_max() - static_cast<int>(results_.size());
+                }
+
                 for(std::string &result : results_) {
-                    if(result.empty() && type_size_max_ != type_size_min_) {
+                    if(result.empty() && type_size_max_ != type_size_min_ && index >= 0) {
                         index = 0; // reset index for variable size chunks
                         continue;
                     }
-                    auto err_msg = _validate(result, index % type_size_max_);
+                    auto err_msg = _validate(result, (index >= 0) ? (index % type_size_max_) : index);
                     if(!err_msg.empty())
                         throw ValidationError(get_name(), err_msg);
                     ++index;
