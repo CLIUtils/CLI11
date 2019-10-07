@@ -405,6 +405,16 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqualAndProgram)
     EXPECT_EQ(str4, "Unquoted");
 }
 
+TEST_F(TApp, OneStringFlagLike) {
+    std::string str{"something"};
+    app.add_option("-s,--string", str)->expected(0, 1);
+    args = {"--string"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--string"));
+    EXPECT_TRUE(str.empty());
+}
+
 TEST_F(TApp, TogetherInt) {
     int i;
     app.add_option("-i,--int", i);
