@@ -608,13 +608,15 @@ class Option : public OptionBase<Option> {
 
     /// Take the last argument if given multiple times (or another policy)
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
-        if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == detail::expected_max_vector_size &&
-           expected_min_ > 1 &&
-           value != MultiOptionPolicy::Throw) { // this bizarre condition is to maintain backwards compatibility with
-                                                // the previous behavior of expected_ with vectors
-            expected_max_ = expected_min_;
+        if(value != multi_option_policy_) {
+            if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == detail::expected_max_vector_size &&
+               expected_min_ > 1) { // this bizarre condition is to maintain backwards compatibility
+                                    // with the previous behavior of expected_ with vectors
+                expected_max_ = expected_min_;
+            }
+            multi_option_policy_ = value;
+            current_option_state_ = option_state::parsing;
         }
-        multi_option_policy_ = value;
         return this;
     }
 
@@ -785,11 +787,12 @@ class Option : public OptionBase<Option> {
     void run_callback() {
 
         if(current_option_state_ == option_state::parsing) {
-            _validate_results();
+            _validate_results(results_);
+            current_option_state_ = option_state::validated;
         }
 
         if(current_option_state_ < option_state::reduced) {
-            _reduce_results(proc_results_);
+            _reduce_results(proc_results_, results_);
             current_option_state_ = option_state::reduced;
         }
         if(current_option_state_ >= option_state::reduced) {
@@ -912,14 +915,14 @@ class Option : public OptionBase<Option> {
 
     /// Puts a result at the end
     Option *add_result(std::string s) {
-        _add_result(std::move(s));
+        _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
         return this;
     }
 
     /// Puts a result at the end and get a count of the number of arguments actually added
     Option *add_result(std::string s, int &results_added) {
-        results_added = _add_result(std::move(s));
+        results_added = _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
         return this;
     }
@@ -927,7 +930,7 @@ class Option : public OptionBase<Option> {
     /// Puts a result at the end
     Option *add_result(std::vector<std::string> s) {
         for(auto &str : s) {
-            _add_result(std::move(str));
+            _add_result(std::move(str), results_);
         }
         current_option_state_ = option_state::parsing;
         return this;
@@ -940,55 +943,64 @@ class Option : public OptionBase<Option> {
     results_t reduced_results() const {
         results_t res = proc_results_.empty() ? results_ : proc_results_;
         if(current_option_state_ < option_state::reduced) {
-
-            _reduce_results(res);
-            if(res.empty()) {
+            if(current_option_state_ == option_state::parsing) {
                 res = results_;
+                _validate_results(res);
+            }
+            results_t extra;
+            _reduce_results(extra, res);
+            if(!extra.empty()) {
+                res = std::move(extra);
             }
         }
         return res;
     }
 
     /// Get the results as a specified type
-    template <typename T,
-              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value, detail::enabler> = detail::dummy>
+    template <typename T, enable_if_t<!std::is_const<T>::value, detail::enabler> = detail::dummy>
     void results(T &output) const {
         bool retval;
-        if(results_.empty()) {
-            retval = detail::lexical_cast(default_str_, output);
-        } else if(results_.size() == 1) {
-            retval = detail::lexical_cast(results_[0], output);
-        } else {
-            switch(multi_option_policy_) {
-            case MultiOptionPolicy::TakeFirst:
-                retval = detail::lexical_cast(results_.front(), output);
-                break;
-            case MultiOptionPolicy::TakeLast:
-            default:
-                retval = detail::lexical_cast(results_.back(), output);
-                break;
-            case MultiOptionPolicy::Throw:
-                throw ConversionError(get_name(), results_);
-            case MultiOptionPolicy::Join:
-                retval = detail::lexical_cast(
-                    detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)), output);
-                break;
+        if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
+            const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
+            if(res.empty()) {
+                results_t res2;
+                if(!default_str_.empty()) {
+                    //_add_results takes an rvalue only
+                    _add_result(std::string(default_str_), res2);
+                    _validate_results(res2);
+                    results_t extra;
+                    _reduce_results(extra, res2);
+                    if(!extra.empty()) {
+                        res2 = std::move(extra);
+                    }
+                } else {
+                    res2.push_back(std::string{});
+                }
+                retval = detail::lexical_conversion<T, T>(res2, output);
+            } else {
+                // this is the main path with no allocation
+                retval = detail::lexical_conversion<T, T>(res, output);
             }
+        } else {
+            results_t res;
+            if(results_.empty()) {
+                if(!default_str_.empty()) {
+                    //_add_results takes an rvalue only
+                    _add_result(std::string(default_str_), res);
+                    _validate_results(res);
+                    results_t extra;
+                    _reduce_results(extra, res);
+                    if(!extra.empty()) {
+                        res = std::move(extra);
+                    }
+                } else {
+                    res.push_back(std::string{});
+                }
+            } else {
+                res = reduced_results();
+            }
+            retval = detail::lexical_conversion<T, T>(res, output);
         }
-        if(!retval) {
-            throw ConversionError(get_name(), results_);
-        }
-    }
-    /// Get the results as a vector of the specified type
-    template <typename T> void results(std::vector<T> &output) const {
-        output.clear();
-        bool retval = true;
-
-        for(const auto &elem : results_) {
-            output.emplace_back();
-            retval &= detail::lexical_cast(elem, output.back());
-        }
-
         if(!retval) {
             throw ConversionError(get_name(), results_);
         }
@@ -1103,18 +1115,18 @@ class Option : public OptionBase<Option> {
 
   private:
     /// Run the results through the Validators
-    void _validate_results() {
+    void _validate_results(results_t &res) const {
         // Run the Validators (can change the string)
         if(!validators_.empty()) {
             if(type_size_max_ > 1) { // in this context index refers to the index in the type
                 int index = 0;
-                if(get_items_expected_max() < static_cast<int>(results_.size()) &&
+                if(get_items_expected_max() < static_cast<int>(res.size()) &&
                    multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
                     // create a negative index for the earliest ones
-                    index = get_items_expected_max() - static_cast<int>(results_.size());
+                    index = get_items_expected_max() - static_cast<int>(res.size());
                 }
 
-                for(std::string &result : results_) {
+                for(std::string &result : res) {
                     if(result.empty() && type_size_max_ != type_size_min_ && index >= 0) {
                         index = 0; // reset index for variable size chunks
                         continue;
@@ -1126,12 +1138,12 @@ class Option : public OptionBase<Option> {
                 }
             } else {
                 int index = 0;
-                if(expected_max_ < static_cast<int>(results_.size()) &&
+                if(expected_max_ < static_cast<int>(res.size()) &&
                    multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
                     // create a negative index for the earliest ones
-                    index = expected_max_ - static_cast<int>(results_.size());
+                    index = expected_max_ - static_cast<int>(res.size());
                 }
-                for(std::string &result : results_) {
+                for(std::string &result : res) {
                     auto err_msg = _validate(result, index);
                     ++index;
                     if(!err_msg.empty())
@@ -1139,13 +1151,12 @@ class Option : public OptionBase<Option> {
                 }
             }
         }
-        current_option_state_ = option_state::validated;
     }
 
     /** reduce the results in accordance with the MultiOptionPolicy
     @param[out] res results are assigned to res if there if they are different
     */
-    void _reduce_results(results_t &res) const {
+    void _reduce_results(results_t &res, const results_t &original) const {
 
         // max num items expected or length of vector, always at least 1
         // Only valid for a trimming policy
@@ -1158,21 +1169,21 @@ class Option : public OptionBase<Option> {
         case MultiOptionPolicy::TakeLast:
             // Allow multi-option sizes (including 0)
             {
-                size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
-                if(results_.size() != trim_size) {
-                    res.assign(results_.end() - trim_size, results_.end());
+                size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), original.size());
+                if(original.size() != trim_size) {
+                    res.assign(original.end() - trim_size, original.end());
                 }
             }
             break;
         case MultiOptionPolicy::TakeFirst: {
-            size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), results_.size());
-            if(results_.size() != trim_size) {
-                res.assign(results_.begin(), results_.begin() + trim_size);
+            size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), original.size());
+            if(original.size() != trim_size) {
+                res.assign(original.begin(), original.begin() + trim_size);
             }
         } break;
         case MultiOptionPolicy::Join:
             if(results_.size() > 1) {
-                res.push_back(detail::join(results_, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
+                res.push_back(detail::join(original, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
             }
             break;
         case MultiOptionPolicy::Throw:
@@ -1185,11 +1196,11 @@ class Option : public OptionBase<Option> {
             if(num_max == 0) {
                 num_max = 1;
             }
-            if(results_.size() < num_min) {
-                throw ArgumentMismatch::AtLeast(get_name(), static_cast<int>(num_min), results_.size());
+            if(original.size() < num_min) {
+                throw ArgumentMismatch::AtLeast(get_name(), static_cast<int>(num_min), original.size());
             }
-            if(results_.size() > num_max) {
-                throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), results_.size());
+            if(original.size() > num_max) {
+                throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
             }
             break;
         }
@@ -1197,7 +1208,7 @@ class Option : public OptionBase<Option> {
     }
 
     // Run a result through the Validators
-    std::string _validate(std::string &result, int index) {
+    std::string _validate(std::string &result, int index) const {
         std::string err_msg;
         if(result.empty() && expected_min_ == 0) {
             // an empty with nothing expected is allowed
@@ -1220,21 +1231,21 @@ class Option : public OptionBase<Option> {
     }
 
     /// Add a single result to the result set, taking into account delimiters
-    int _add_result(std::string &&result) {
+    int _add_result(std::string &&result, std::vector<std::string> &res) const {
         int result_count = 0;
         if(delimiter_ == '\0') {
-            results_.push_back(std::move(result));
+            res.push_back(std::move(result));
             ++result_count;
         } else {
             if((result.find_first_of(delimiter_) != std::string::npos)) {
                 for(const auto &var : CLI::detail::split(result, delimiter_)) {
                     if(!var.empty()) {
-                        results_.push_back(var);
+                        res.push_back(var);
                         ++result_count;
                     }
                 }
             } else {
-                results_.push_back(std::move(result));
+                res.push_back(std::move(result));
                 ++result_count;
             }
         }

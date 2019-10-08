@@ -2793,7 +2793,7 @@ class App {
             }
         }
 
-        // if we only partially completed a type then add a Null for later processing
+        // if we only partially completed a type then add an empty string for later processing
         if(min_num > 0 && op->get_type_size_max() != min_num && collected % op->get_type_size_max() != 0) {
             op->add_result(std::string{});
         }

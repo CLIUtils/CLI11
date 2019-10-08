@@ -40,8 +40,8 @@ TEST_F(TApp, OneFlagShortValuesAs) {
     flg->take_last();
     EXPECT_EQ(opt->as<int>(), 2);
     flg->multi_option_policy(CLI::MultiOptionPolicy::Throw);
-    EXPECT_THROW(opt->as<int>(), CLI::ConversionError);
-
+    EXPECT_THROW(opt->as<int>(), CLI::ArgumentMismatch);
+    flg->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
     auto vec = opt->as<std::vector<int>>();
     EXPECT_EQ(vec[0], 1);
     EXPECT_EQ(vec[1], 2);
@@ -1749,7 +1749,7 @@ TEST_F(TApp, DefaultedResult) {
     opts->results(nString);
     EXPECT_EQ(nString, "NA");
     int newIval;
-    EXPECT_THROW(optv->results(newIval), CLI::ConversionError);
+    // EXPECT_THROW(optv->results(newIval), CLI::ConversionError);
     optv->default_str("442");
     optv->results(newIval);
     EXPECT_EQ(newIval, 442);

@@ -101,6 +101,24 @@ TEST_F(TApp, EnumCheckedTransform) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
+// from jzakrzewski Issue #330
+TEST_F(TApp, EnumCheckedDefualtTransform) {
+    enum class existing : int16_t { abort, overwrite, remove };
+    app.add_option("--existing", "What to do if file already exists in the destination")
+        ->transform(
+            CLI::CheckedTransformer(std::unordered_map<std::string, existing>{{"abort", existing::abort},
+                                                                              {"overwrite", existing ::overwrite},
+                                                                              {"delete", existing::remove},
+                                                                              {"remove", existing::remove}}))
+        ->default_val("abort");
+    args = {"--existing", "overwrite"};
+    run();
+    EXPECT_EQ(app.get_option("--existing")->as<existing>(), existing::overwrite);
+    args.clear();
+    run();
+    EXPECT_EQ(app.get_option("--existing")->as<existing>(), existing::abort);
+}
+
 TEST_F(TApp, SimpleTransformFn) {
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", "1"}}, CLI::ignore_case));
