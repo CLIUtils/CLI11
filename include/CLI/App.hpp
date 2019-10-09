@@ -2477,8 +2477,8 @@ class App {
             }
             break;
 
-            // LCOV_EXCL_START
         default:
+            // LCOV_EXCL_START
             throw HorribleError("unrecognized classifier (you should not see this!)");
             // LCOV_EXCL_END
         }

@@ -643,6 +643,42 @@ TEST_F(TApp, BoolAndIntFlags) {
     EXPECT_EQ((unsigned int)2, uflag);
 }
 
+TEST_F(TApp, FlagLikeOption) {
+    bool val = false;
+    auto opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
+    args = {"--flag"};
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_TRUE(val);
+    val = false;
+    opt->type_size(0, 0); // should be the same as above
+    EXPECT_EQ(opt->get_type_size_min(), 0);
+    EXPECT_EQ(opt->get_type_size_max(), 0);
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_TRUE(val);
+}
+
+TEST_F(TApp, FlagLikeIntOption) {
+    int val = -47;
+    auto opt = app.add_option("--flag", val)->expected(0, 1);
+    // normally some default value should be set, but this test is for some paths in the validators checks to skip
+    // validation on empty string if nothing is expected
+    opt->check(CLI::PositiveNumber);
+    args = {"--flag"};
+    EXPECT_TRUE(opt->as<std::string>().empty());
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_NE(val, -47);
+    args = {"--flag", "12"};
+    run();
+
+    EXPECT_EQ(val, 12);
+    args.clear();
+    run();
+    EXPECT_TRUE(opt->as<std::string>().empty());
+}
+
 TEST_F(TApp, BoolOnlyFlag) {
     bool bflag;
     app.add_flag("-b", bflag)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
@@ -846,8 +882,12 @@ TEST_F(TApp, vectorDefaults) {
     res = app["--long"]->as<std::vector<int>>();
     EXPECT_EQ(res, std::vector<int>({4}));
 
+    opt->take_last();
     run();
+
     EXPECT_EQ(res, std::vector<int>({4}));
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({5}));
 }
 
 TEST_F(TApp, TakeLastOptMulti_alternative_path) {
@@ -2357,6 +2397,41 @@ TEST_F(TApp, vectorPairFail) {
     args = {"--dict", "1", "str1", "--dict", "str3", "1"};
 
     EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, vectorPairTypeRange) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    opt->type_size(2, 1); // just test switched arguments
+    EXPECT_EQ(opt->get_type_size_min(), 1);
+    EXPECT_EQ(opt->get_type_size_max(), 2);
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].first, 1);
+    EXPECT_EQ(custom_opt[1].second, "str3");
+
+    args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_TRUE(custom_opt[1].second.empty());
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
+
+    opt->type_size(-2, -1); // test negative arguments
+    EXPECT_EQ(opt->get_type_size_min(), 1);
+    EXPECT_EQ(opt->get_type_size_max(), 2);
+    // this type size spec should run exactly as before
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_TRUE(custom_opt[1].second.empty());
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
 }
 
 // now with independent type sizes and expected this is possible

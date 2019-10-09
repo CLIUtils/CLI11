@@ -1041,7 +1041,7 @@ class Option : public OptionBase<Option> {
             // this section is included for backwards compatibility
             expected_max_ = detail::expected_max_vector_size;
             option_type_size_min = (std::abs)(option_type_size_min);
-            option_type_size_max = (std::abs)(option_type_size_min);
+            option_type_size_max = (std::abs)(option_type_size_max);
         }
 
         if(option_type_size_min > option_type_size_max) {
@@ -1051,7 +1051,7 @@ class Option : public OptionBase<Option> {
             type_size_min_ = option_type_size_min;
             type_size_max_ = option_type_size_max;
         }
-        if(type_size_min_ == 0) {
+        if(type_size_max_ == 0) {
             required_ = false;
         }
         return this;
