@@ -415,6 +415,17 @@ TEST_F(TApp, OneStringFlagLike) {
     EXPECT_TRUE(str.empty());
 }
 
+TEST_F(TApp, OneIntFlagLike) {
+    int val;
+    auto opt = app.add_option("-i", val)->expected(0, 1);
+    args = {"-i"};
+    run();
+    EXPECT_EQ(1u, app.count("-i"));
+    opt->default_str("7");
+    run();
+    EXPECT_EQ(val, 7);
+}
+
 TEST_F(TApp, TogetherInt) {
     int i;
     app.add_option("-i,--int", i);

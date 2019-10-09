@@ -895,7 +895,7 @@ class Option : public OptionBase<Option> {
             if(flag_like_) {
                 return (ind < 0) ? trueString : default_flag_values_[static_cast<size_t>(ind)].second;
             } else {
-                return (ind < 0) ? std::string{} : default_flag_values_[static_cast<size_t>(ind)].second;
+                return (ind < 0) ? default_str_ : default_flag_values_[static_cast<size_t>(ind)].second;
             }
         }
         if(ind < 0) {
