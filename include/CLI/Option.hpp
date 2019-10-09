@@ -346,7 +346,10 @@ class Option : public OptionBase<Option> {
     operator bool() const { return !empty(); }
 
     /// Clear the parsed results (mostly for testing)
-    void clear() { results_.clear(); }
+    void clear() {
+        results_.clear();
+        current_option_state_ = option_state::parsing;
+    }
 
     ///@}
     /// @name Setting options
@@ -948,25 +951,7 @@ class Option : public OptionBase<Option> {
         bool retval;
         if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
             const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
-            if(res.empty()) {
-                results_t res2;
-                if(!default_str_.empty()) {
-                    //_add_results takes an rvalue only
-                    _add_result(std::string(default_str_), res2);
-                    _validate_results(res2);
-                    results_t extra;
-                    _reduce_results(extra, res2);
-                    if(!extra.empty()) {
-                        res2 = std::move(extra);
-                    }
-                } else {
-                    res2.push_back(std::string{});
-                }
-                retval = detail::lexical_conversion<T, T>(res2, output);
-            } else {
-                // this is the main path with no allocation
-                retval = detail::lexical_conversion<T, T>(res, output);
-            }
+            retval = detail::lexical_conversion<T, T>(res, output);
         } else {
             results_t res;
             if(results_.empty()) {

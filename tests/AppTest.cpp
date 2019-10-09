@@ -882,7 +882,7 @@ TEST_F(TApp, vectorDefaults) {
     res = app["--long"]->as<std::vector<int>>();
     EXPECT_EQ(res, std::vector<int>({4}));
 
-    opt->take_last();
+    opt->expected(0, 1)->take_last();
     run();
 
     EXPECT_EQ(res, std::vector<int>({4}));
