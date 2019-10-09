@@ -555,26 +555,28 @@ class App {
     }
 
     /// Add option for assigning to a variable
-    template <typename T, typename XC = T, enable_if_t<!std::is_const<XC>::value, detail::enabler> = detail::dummy>
+    template <typename AssignTo,
+              typename ConvertTo = AssignTo,
+              enable_if_t<!std::is_const<ConvertTo>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
-                       T &variable, ///< The variable to set
+                       AssignTo &variable, ///< The variable to set
                        std::string option_description = "",
                        bool defaulted = false) {
 
         auto fun = [&variable](const CLI::results_t &res) { // comment for spacing
-            return detail::lexical_conversion<T, XC>(res, variable);
+            return detail::lexical_conversion<AssignTo, ConvertTo>(res, variable);
         };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
-            return CLI::detail::checked_to_string<T, XC>(variable);
+            return CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
         });
-        opt->type_name(detail::type_name<XC>());
+        opt->type_name(detail::type_name<ConvertTo>());
         // these must be actual variables since (std::max) sometimes is defined in terms of references and references
         // to structs used in the evaluation can be temporary so that would cause issues.
-        auto Tcount = detail::type_count<T>::value;
-        auto XCcount = detail::type_count<XC>::value;
+        auto Tcount = detail::type_count<AssignTo>::value;
+        auto XCcount = detail::type_count<ConvertTo>::value;
         opt->type_size((std::max)(Tcount, XCcount));
-        opt->expected(detail::expected_count<XC>::value);
+        opt->expected(detail::expected_count<ConvertTo>::value);
         return opt;
     }
 
@@ -2521,8 +2523,7 @@ class App {
             if(arg_rem <= remreq) {
                 for(const Option_p &opt : options_) {
                     if(opt->get_positional() && opt->required_) {
-                        if(static_cast<int>(opt->count()) < opt->get_items_expected_min() ||
-                           (opt->get_items_expected_max() >= detail::expected_max_vector_size && opt->count() == 0lu)) {
+                        if(static_cast<int>(opt->count()) < opt->get_items_expected_min()) {
                             if(validate_positionals_) {
                                 std::string pos = positional;
                                 pos = opt->_validate(pos, 0);

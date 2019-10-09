@@ -2348,6 +2348,17 @@ TEST_F(TApp, vectorPair) {
     EXPECT_THROW(run(), CLI::ValidationError);
 }
 
+TEST_F(TApp, vectorPairFail) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "--dict", "str3", "1"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 // now with independent type sizes and expected this is possible
 TEST_F(TApp, vectorTuple) {
 

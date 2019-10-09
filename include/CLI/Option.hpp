@@ -673,30 +673,16 @@ class Option : public OptionBase<Option> {
     /// The max number of times the option expects to be included
     int get_expected_max() const { return expected_max_; }
 
-    /// \brief The total number of expected values (including the type)
-    /// This is positive if exactly this number is expected, and negative for at least N values
-    ///
-    /// v = fabs(size_type*expected)
-    /// !MultiOptionPolicy::Throw
-    ///           | Expected < 0  | Expected == 0 | Expected > 0
-    /// Size < 0  |      -v       |       0       |     -v
-    /// Size == 0 |       0       |       0       |      0
-    /// Size > 0  |      -v       |       0       |     -v       // Expected must be 1
-    ///
-    /// MultiOptionPolicy::Throw
-    ///           | Expected < 0  | Expected == 0 | Expected > 0
-    /// Size < 0  |      -v       |       0       |      v
-    /// Size == 0 |       0       |       0       |      0
-    /// Size > 0  |       v       |       0       |      v      // Expected must be 1
-    ///
-    int get_items_expected() const { return type_size_min_ * expected_min_; }
-
+    /// The total min number of expected  string values to be used
     int get_items_expected_min() const { return type_size_min_ * expected_min_; }
 
+    /// Get the maximum number of items expected to be returned and used for the callback
     int get_items_expected_max() const {
         int t = type_size_max_;
         return detail::checked_multiply(t, expected_max_) ? t : detail::expected_max_vector_size;
     }
+    /// The total min number of expected  string values to be used
+    int get_items_expected() const { return get_items_expected_min(); }
 
     /// True if the argument can be given directly
     bool get_positional() const { return pname_.length() > 0; }
@@ -1035,6 +1021,7 @@ class Option : public OptionBase<Option> {
     /// Set a custom option size
     Option *type_size(int option_type_size) {
         if(option_type_size < 0) {
+            // this section is included for backwards compatibility
             type_size_max_ = -option_type_size;
             type_size_min_ = -option_type_size;
             expected_max_ = detail::expected_max_vector_size;
@@ -1048,9 +1035,10 @@ class Option : public OptionBase<Option> {
         }
         return this;
     }
-    /// Set a custom option size range
+    /// Set a custom option type size range
     Option *type_size(int option_type_size_min, int option_type_size_max) {
         if(option_type_size_min < 0 || option_type_size_max < 0) {
+            // this section is included for backwards compatibility
             expected_max_ = detail::expected_max_vector_size;
             option_type_size_min = (std::abs)(option_type_size_min);
             option_type_size_max = (std::abs)(option_type_size_min);
