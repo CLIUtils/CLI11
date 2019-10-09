@@ -812,6 +812,33 @@ TEST_F(TApp, TakeLastOptMulti) {
     EXPECT_EQ(vals, std::vector<int>({2, 3}));
 }
 
+TEST_F(TApp, vectorDefaults) {
+    std::vector<int> vals{4, 5};
+    auto opt = app.add_option("--long", vals, "", true);
+
+    args = {"--long", "[1,2,3]"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+
+    args.clear();
+    run();
+    auto res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({4, 5}));
+
+    app.clear();
+    opt->expected(1)->take_last();
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({5}));
+    opt->take_first();
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({4}));
+
+    run();
+    EXPECT_EQ(res, std::vector<int>({4}));
+}
+
 TEST_F(TApp, TakeLastOptMulti_alternative_path) {
     std::vector<int> vals;
     app.add_option("--long", vals)->expected(2, -1)->take_last();

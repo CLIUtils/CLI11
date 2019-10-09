@@ -1093,7 +1093,8 @@ class Option : public OptionBase<Option> {
     Option *default_val(std::string val) {
         default_str(val);
         auto old_results = results_;
-        results_ = {val};
+        results_.clear();
+        add_result(val);
         run_callback();
         results_ = std::move(old_results);
         return this;
@@ -1233,6 +1234,17 @@ class Option : public OptionBase<Option> {
     /// Add a single result to the result set, taking into account delimiters
     int _add_result(std::string &&result, std::vector<std::string> &res) const {
         int result_count = 0;
+        if(allow_extra_args_ && !result.empty() && result.front() == '[' &&
+           result.back() == ']') { // this is now a vector string likely from the default or user entry
+            result.pop_back();
+
+            for(auto &var : CLI::detail::split(result.substr(1), ',')) {
+                if(!var.empty()) {
+                    result_count += _add_result(std::move(var), res);
+                }
+            }
+            return result_count;
+        }
         if(delimiter_ == '\0') {
             res.push_back(std::move(result));
             ++result_count;
