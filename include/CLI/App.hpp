@@ -2476,9 +2476,8 @@ class App {
                 positional_only = true;
             }
             break;
-
-        default:
             // LCOV_EXCL_START
+        default:
             throw HorribleError("unrecognized classifier (you should not see this!)");
             // LCOV_EXCL_END
         }
