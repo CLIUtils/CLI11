@@ -16,16 +16,32 @@ In general, make sure the addition is well thought out and does not increase the
 
 * Once you make the PR, tests will run to make sure your code works on all supported platforms
 * The test coverage is also measured, and that should remain 100%
-* Formatting should be done with clang-format, otherwise the format check will not pass. However, it is trivial to apply this to your PR, so don't worry about this check. If you do have clang-format, just run `scripts/check_style.sh`
+* Formatting should be done with pre-commit, otherwise the format check will not pass. However, it is trivial to apply this to your PR, so don't worry about this check. If you do want to run it, see below.
 * Everything must pass clang-tidy as well, run with `-DCLANG_TIDY_FIX-ON` (make sure you use a single threaded build process!)
 
-Note that the style check is really just:
+
+## Pre-commit
+
+Format is handled by pre-commit. You should install it:
 
 ```bash
-git ls-files -- '.cpp' '.hpp' | xargs clang-format -i -style=file
+python3 -m pip install pre-commit
 ```
 
-And, if you want to always use it, feel free to install the git hook provided in scripts.
+Then, you can run it on the items you've added to your staging area, or all files:
+
+```
+pre-commit run
+# OR
+pre-commit run --all-files
+```
+
+
+And, if you want to always use it, you can install it as a git hook (hence the name, pre-commit):
+
+```bash
+pre-commit install
+```
 
 ## For developers releasing to Conan.io
 
