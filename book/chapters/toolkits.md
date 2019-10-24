@@ -27,4 +27,4 @@ You can call anything you would like to configure in the constructor, like `opti
 
 # Virtual functions provided
 
-You are given a few virtual functions that you can change (only on the main App). `pre_callback` runs right before the callbacks run, letting you print out custom messages at the top of your app. 
+You are given a few virtual functions that you can change (only on the main App). `pre_callback` runs right before the callbacks run, letting you print out custom messages at the top of your app.

@@ -44,10 +44,10 @@ std::vector<CLI::ConfigItem> from_config(std::istream &input) const;
 
 The `CLI::ConfigItem`s that you return are simple structures with a name, a vector of parents, and a vector of results. A optionally customizable `to_flag` method on the formatter lets you change what happens when a ConfigItem turns into a flag.
 
-Finally, set your new class as new config formatter: 
+Finally, set your new class as new config formatter:
 
 ```cpp
 app.config_formatter(std::make_shared<NewConfig>());
 ```
 
-See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp) for a complete JSON config example. 
+See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp) for a complete JSON config example.

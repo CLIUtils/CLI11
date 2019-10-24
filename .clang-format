@@ -19,7 +19,7 @@ BasedOnStyle:  LLVM
 # AlwaysBreakTemplateDeclarations: false
 BinPackArguments: false
 BinPackParameters: false
-# BraceWrapping:   
+# BraceWrapping:
 #   AfterClass:      false
 #   AfterControlStatement: false
 #   AfterEnum:       false
@@ -69,7 +69,7 @@ IndentWidth:     4
 # PenaltyReturnTypeOnItsOwnLine: 60
 # PointerAlignment: Right
 # ReflowComments:  true
-SortIncludes:    false
+SortIncludes:    true
 # SpaceAfterCStyleCast: false
 # SpaceAfterTemplateKeyword: true
 # SpaceBeforeAssignmentOperators: true
