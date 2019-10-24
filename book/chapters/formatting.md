@@ -51,7 +51,7 @@ This is a normal printout, with `<>` indicating the methods used to produce each
   <make_group(app, "Option Group 2"), false, filter>
   ...
 <make_subcommands(app)>
-  <make_subcommand(sub1, Mode::Normal)> 
+  <make_subcommand(sub1, Mode::Normal)>
   <make_subcommand(sub2, Mode::Normal)>
 <make_footer(app)>
 ```
@@ -61,10 +61,10 @@ This is a normal printout, with `<>` indicating the methods used to produce each
 The `make_groups` print the group name then call `make_option(o)` on the options listed in that group. The normal printout for an option looks like this:
 
 ```
-        make_option_opts(o) 
-            ┌───┴────┐  
- -n,--name  (REQUIRED)      This is a description 
-└────┬────┘                └──────────┬──────────┘ 
+        make_option_opts(o)
+            ┌───┴────┐
+ -n,--name  (REQUIRED)      This is a description
+└────┬────┘                └──────────┬──────────┘
 make_option_name(o,p)        make_option_desc(o)
 ```
 

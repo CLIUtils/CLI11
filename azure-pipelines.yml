@@ -15,7 +15,24 @@ variables:
 
 jobs:
 
-- job: ClangFormatTidy
+- job: Formatting
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        architecture: 'x64'
+    - script: python -m pip install pre-commit
+      displayName: Install pre-commit
+    - script: pre-commit run --all
+      displayName: Run pre-commit
+    - script: git diff --exit-code
+      displayName: Display format changes
+      condition: always()
+
+
+- job: ClangTidy
   variables:
     CXX_FLAGS: "-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11"
     cli11.options: -DCLANG_TIDY_FIX=ON
@@ -26,8 +43,6 @@ jobs:
     vmImage: 'ubuntu-16.04'
   container: silkeh/clang:5
   steps:
-    - script: scripts/check_style.sh
-      displayName: Check format
     - template: .ci/azure-cmake.yml
     - template: .ci/azure-build.yml
     - script: git diff --exit-code --color

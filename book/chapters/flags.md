@@ -73,7 +73,7 @@ The values would be used like this:
 
 [include:"usage"](../code/flags.cpp)
 
-[Source code](https://gitlab.com/CLIUtils/CLI11Tutorial/blob/master/code/flags.cpp) 
+[Source code](https://gitlab.com/CLIUtils/CLI11Tutorial/blob/master/code/flags.cpp)
 
 If you compile and run:
 

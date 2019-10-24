@@ -2,6 +2,7 @@ from conans import ConanFile, CMake
 from conans.tools import load
 import re
 
+
 def get_version():
     try:
         content = load("include/CLI/Version.hpp")
@@ -9,6 +10,7 @@ def get_version():
         return version
     except Exception:
         return None
+
 
 class CLI11Conan(ConanFile):
     name = "CLI11"
@@ -21,9 +23,17 @@ class CLI11Conan(ConanFile):
     license = "BSD-3-Clause"
 
     settings = "os", "compiler", "arch", "build_type"
-    exports_sources = "LICENSE", "README.md", "include/*", "extern/*", "cmake/*", "CMakeLists.txt", "tests/*"
+    exports_sources = (
+        "LICENSE",
+        "README.md",
+        "include/*",
+        "extern/*",
+        "cmake/*",
+        "CMakeLists.txt",
+        "tests/*",
+    )
 
-    def build(self): # this is not building a library, just tests
+    def build(self):  # this is not building a library, just tests
         cmake = CMake(self)
         cmake.definitions["CLI11_EXAMPLES"] = "OFF"
         cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"

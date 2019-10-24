@@ -1,4 +1,4 @@
-# Installation 
+# Installation
 
 ## Single file edition
 
@@ -50,7 +50,7 @@ root:build # cmake ..
 root:build # make
 Scanning dependencies ...
 root:build # make test
-[warning]Running tests... 
+[warning]Running tests...
 Test project /CLI11/build
       Start  1: HelpersTest
  1/10 Test  #1: HelpersTest ......................   Passed    0.01 sec

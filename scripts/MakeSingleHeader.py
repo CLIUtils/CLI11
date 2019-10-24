@@ -24,10 +24,12 @@ CLI11:verbatim  # The tag
 [^\n]*          # Up to end of line
 $               # End of a line
 """
-verbatim_all = re.compile(verbatim_tag_str + "(.*)" + verbatim_tag_str,
-                          re.MULTILINE | re.DOTALL | re.VERBOSE)
+verbatim_all = re.compile(
+    verbatim_tag_str + "(.*)" + verbatim_tag_str, re.MULTILINE | re.DOTALL | re.VERBOSE
+)
 
 DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class HeaderFile(object):
     TAG = "Unknown git revision"
@@ -43,7 +45,7 @@ class HeaderFile(object):
             self.__class__.VERSION = version.groups()[0]
 
         # add self.verbatim
-        if 'CLI11:verbatim' in inner:
+        if "CLI11:verbatim" in inner:
             self.verbatim = ["\n\n// Verbatim copy from {0}:".format(inc)]
             self.verbatim += verbatim_all.findall(inner)
             inner = verbatim_all.sub("", inner)
@@ -52,7 +54,7 @@ class HeaderFile(object):
 
         self.headers = set(includes_system.findall(inner))
 
-        self.body = '\n// From {0}:\n\n'.format(inc) + inner[inner.find('namespace'):]
+        self.body = "\n// From {0}:\n\n".format(inc) + inner[inner.find("namespace") :]
 
         self.namespace = None
 
@@ -65,11 +67,11 @@ class HeaderFile(object):
 
     @property
     def header_str(self):
-        return '\n'.join('#include <'+h+'>' for h in sorted(self.headers))
+        return "\n".join("#include <" + h + ">" for h in sorted(self.headers))
 
     @property
     def verbatim_str(self):
-        return '\n'.join(self.verbatim)
+        return "\n".join(self.verbatim)
 
     def insert_namespace(self, namespace):
         self.namespace = namespace
@@ -79,7 +81,7 @@ class HeaderFile(object):
         self.body = self.body.replace(before, after)
 
     def __str__(self):
-        result = '''\
+        result = """\
 #pragma once
 
 // CLI11: Version {self.VERSION}
@@ -96,21 +98,27 @@ class HeaderFile(object):
 // Standard combined includes:
 
 {self.header_str}
-'''.format(self=self)
+""".format(
+            self=self
+        )
 
         if self.namespace:
-             result += '\nnamespace ' + self.namespace + ' {\n\n'
-        result += '{self.verbatim_str}\n{self.body}\n'.format(self=self)
+            result += "\nnamespace " + self.namespace + " {\n\n"
+        result += "{self.verbatim_str}\n{self.body}\n".format(self=self)
         if self.namespace:
-            result += '} // namespace ' + self.namespace + '\n\n'
+            result += "} // namespace " + self.namespace + "\n\n"
 
         return result
 
 
-def MakeHeader(output, main_header, include_dir = '../include', namespace=None, macro=None):
+def MakeHeader(
+    output, main_header, include_dir="../include", namespace=None, macro=None
+):
     # Set tag if possible to class variable
     try:
-        proc = Popen(['git', 'describe', '--tags', '--always'], cwd=str(DIR), stdout=PIPE)
+        proc = Popen(
+            ["git", "describe", "--tags", "--always"], cwd=str(DIR), stdout=PIPE
+        )
         out, _ = proc.communicate()
     except OSError:
         pass
@@ -120,10 +128,10 @@ def MakeHeader(output, main_header, include_dir = '../include', namespace=None, 
 
     base_dir = os.path.abspath(os.path.join(DIR, include_dir))
     main_header = os.path.join(base_dir, main_header)
-    licence_file = os.path.abspath(os.path.join(DIR, '../LICENSE'))
+    licence_file = os.path.abspath(os.path.join(DIR, "../LICENSE"))
 
     with open(licence_file) as f:
-        HeaderFile.LICENSE = ''.join('// ' + line for line in f)
+        HeaderFile.LICENSE = "".join("// " + line for line in f)
 
     with open(main_header) as f:
         header = f.read()
@@ -134,7 +142,7 @@ def MakeHeader(output, main_header, include_dir = '../include', namespace=None, 
     single_header = reduce(add, headers)
 
     if macro is not None:
-        before = 'CLI11_'
+        before = "CLI11_"
         print("Converting macros", before, "->", macro)
         single_header.macro_replacement(before, macro)
 
@@ -142,19 +150,25 @@ def MakeHeader(output, main_header, include_dir = '../include', namespace=None, 
         print("Adding namespace", namespace)
         single_header.insert_namespace(namespace)
 
-    with open(output, 'w') as f:
+    with open(output, "w") as f:
         f.write(str(single_header))
 
     print("Created", output)
 
-if __name__ == '__main__':
-    parser = ArgumentParser(usage='Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros).')
+
+if __name__ == "__main__":
+    parser = ArgumentParser(
+        usage="Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros)."
+    )
     parser.add_argument("output", help="Single header file output")
-    parser.add_argument("--main", default='CLI/CLI.hpp', help="The main include file that defines the other files")
-    parser.add_argument("--include", default='../include', help="The include directory")
+    parser.add_argument(
+        "--main",
+        default="CLI/CLI.hpp",
+        help="The main include file that defines the other files",
+    )
+    parser.add_argument("--include", default="../include", help="The include directory")
     parser.add_argument("--namespace", help="Add an optional namespace")
     parser.add_argument("--macro", help="Replaces CLI11_ with NEW_PREFIX_")
     args = parser.parse_args()
 
     MakeHeader(args.output, args.main, args.include, args.namespace, args.macro)
-

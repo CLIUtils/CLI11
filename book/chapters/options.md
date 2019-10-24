@@ -20,7 +20,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 
 | Type        | CLI11 |
 |-------------|-------|
-| int-like    | Integer conversion up to 64-bit, can be unsigned | 
+| int-like    | Integer conversion up to 64-bit, can be unsigned |
 | float-like  | Floating point conversions |
 | string-like | Anything else that can be shifted into a StringStream |
 | vector-like | A vector of the above three types (see below) |
@@ -54,7 +54,7 @@ If you use a vector instead of a plain option, you can accept more than one valu
 |-------------------|-----------------|
 | `--vec 1 --vec 2` | `--vec 1 2`     |
 
-The original version did allow the option system to access information on the grouping of options received, but was removed for simplicity. 
+The original version did allow the option system to access information on the grouping of options received, but was removed for simplicity.
 
 An example of setting up a vector option:
 
