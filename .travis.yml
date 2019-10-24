@@ -49,19 +49,13 @@ matrix:
 
     # GCC 7 and coverage (8 does not support lcov, wait till 9 and new lcov)
   - compiler: gcc
-    env:
-    - GCC_VER=7
+    dist: bionic
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
-        - g++-7
         - curl
         - lcov
     install:
-    - export CC=gcc-7
-    - export CXX=g++-7
     - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
     - cd $TRAVIS_BUILD_DIR
     - ". .ci/build_lcov.sh"
@@ -73,16 +67,15 @@ matrix:
 
     # GCC 4.8 and Conan
   - compiler: gcc
-    env:
-    - GCC_VER=4.8
+    dist: bionic
     addons:
       apt:
         packages:
-        - g++-4.8
+        - python3-pip
+        - python3-setuptools
     install:
-    - export CC=gcc-4.8
-    - export CXX=g++-4.8
-    - python -m pip install --user conan
+    - python3 -VV
+    - python3 -m pip install --user conan
     - conan user
     script:
     - .ci/make_and_test.sh 11

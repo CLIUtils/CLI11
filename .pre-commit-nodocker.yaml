@@ -1,0 +1,27 @@
+
+repos:
+- repo: https://github.com/psf/black
+  rev: 19.3b0
+  hooks:
+  - id: black
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  - id: check-added-large-files
+  - id: mixed-line-ending
+  - id: trailing-whitespace
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: check-symlinks
+  - id: check-yaml
+- repo: local
+  hooks:
+  - id: clang-format
+    name: Clang Format
+    language: system
+    types:
+    - c++
+    entry: clang-format
+    args:
+    - -style=file
+    - -i
