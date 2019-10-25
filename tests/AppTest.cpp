@@ -1792,6 +1792,8 @@ TEST_F(TApp, NeedsFlags) {
 
     args = {"--both"};
     EXPECT_THROW(run(), CLI::RequiresError);
+
+    EXPECT_NO_THROW(opt->needs(opt));
 }
 
 TEST_F(TApp, ExcludesFlags) {
@@ -1811,6 +1813,8 @@ TEST_F(TApp, ExcludesFlags) {
 
     args = {"--string", "--nostr"};
     EXPECT_THROW(run(), CLI::ExcludesError);
+
+    EXPECT_THROW(opt->excludes(opt), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, ExcludesMixedFlags) {

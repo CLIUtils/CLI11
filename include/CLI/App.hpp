@@ -159,6 +159,14 @@ class App {
     /// not be
     std::set<Option *> exclude_options_;
 
+    /// this is a list of subcommands or option groups that are required by this one, the list is not mutual,  the
+    /// listed subcommands do not require this one
+    std::set<App *> need_subcommands_;
+
+    /// This is a list of options which are required by this app, the list is not mutual, listed options do not need the
+    /// subcommand not be
+    std::set<Option *> need_options_;
+
     ///@}
     /// @name Subcommands
     ///@{
@@ -212,6 +220,9 @@ class App {
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
+
+    /// Alias names for the subcommand
+    std::vector<std::string> aliases_;
 
     ///@}
     /// @name Config
@@ -315,8 +326,39 @@ class App {
 
     /// Set a name for the app (empty will use parser to set the name)
     App *name(std::string app_name = "") {
-        name_ = app_name;
+
+        if(parent_ != nullptr) {
+            auto oname = name_;
+            name_ = app_name;
+            auto &res = _compare_subcommand_names(*this, *_get_fallthrough_parent());
+            if(!res.empty()) {
+                name_ = oname;
+                throw(OptionAlreadyAdded(app_name + " conflicts with existing subcommand names"));
+            }
+        } else {
+            name_ = app_name;
+        }
         has_automatic_name_ = false;
+        return this;
+    }
+
+    /// Set an alias for the app
+    App *alias(std::string app_name) {
+        if(!detail::valid_name_string(app_name)) {
+            throw(IncorrectConstruction("alias is not a valid name string"));
+        }
+
+        if(parent_ != nullptr) {
+            aliases_.push_back(app_name);
+            auto &res = _compare_subcommand_names(*this, *_get_fallthrough_parent());
+            if(!res.empty()) {
+                aliases_.pop_back();
+                throw(OptionAlreadyAdded("alias already matches an existing subcommand: " + app_name));
+            }
+        } else {
+            aliases_.push_back(app_name);
+        }
+
         return this;
     }
 
@@ -386,13 +428,16 @@ class App {
 
     /// Ignore case. Subcommands inherit value.
     App *ignore_case(bool value = true) {
-        ignore_case_ = value;
-        if(parent_ != nullptr && !name_.empty()) {
-            for(const auto &subc : parent_->subcommands_) {
-                if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
-                    throw OptionAlreadyAdded(subc->name_);
+        if(value && !ignore_case_) {
+            ignore_case_ = true;
+            auto *p = (parent_ != nullptr) ? _get_fallthrough_parent() : this;
+            auto &match = _compare_subcommand_names(*this, *p);
+            if(!match.empty()) {
+                ignore_case_ = false; // we are throwing so need to be exception invariant
+                throw OptionAlreadyAdded("ignore case would cause subcommand name conflicts: " + match);
             }
         }
+        ignore_case_ = value;
         return this;
     }
 
@@ -411,13 +456,16 @@ class App {
 
     /// Ignore underscore. Subcommands inherit value.
     App *ignore_underscore(bool value = true) {
-        ignore_underscore_ = value;
-        if(parent_ != nullptr && !name_.empty()) {
-            for(const auto &subc : parent_->subcommands_) {
-                if(subc.get() != this && (this->check_name(subc->name_) || subc->check_name(this->name_)))
-                    throw OptionAlreadyAdded(subc->name_);
+        if(value && !ignore_underscore_) {
+            ignore_underscore_ = true;
+            auto *p = (parent_ != nullptr) ? _get_fallthrough_parent() : this;
+            auto &match = _compare_subcommand_names(*this, *p);
+            if(!match.empty()) {
+                ignore_underscore_ = false;
+                throw OptionAlreadyAdded("ignore underscore would cause subcommand name conflicts: " + match);
             }
         }
+        ignore_underscore_ = value;
         return this;
     }
 
@@ -493,7 +541,17 @@ class App {
 
             return option.get();
         }
-        throw OptionAlreadyAdded(myopt.get_name());
+        // we know something matches now find what it is so we can produce more error information
+        for(auto &opt : options_) {
+            auto &matchname = opt->matching_name(myopt);
+            if(!matchname.empty()) {
+                throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
+            }
+        }
+        // this line should not be reached the above loop should trigger the throw
+        // LCOV_EXCL_START
+        throw(OptionAlreadyAdded("added option matched existing option name"));
+        // LCOV_EXCL_END
     }
 
     /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
@@ -1033,6 +1091,9 @@ class App {
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string subcommand_name = "", std::string subcommand_description = "") {
+        if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
+            throw IncorrectConstruction("subcommand name is not valid");
+        }
         CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(subcommand_description), subcommand_name, this));
         return add_subcommand(std::move(subcom));
     }
@@ -1041,10 +1102,10 @@ class App {
     App *add_subcommand(CLI::App_p subcom) {
         if(!subcom)
             throw IncorrectConstruction("passed App is not valid");
-        if(!subcom->name_.empty()) {
-            for(const auto &subc : subcommands_)
-                if(subc->check_name(subcom->name_) || subcom->check_name(subc->name_))
-                    throw OptionAlreadyAdded(subc->name_);
+        auto ckapp = (name_.empty() && parent_ != nullptr) ? _get_fallthrough_parent() : this;
+        auto &mstrg = _compare_subcommand_names(*subcom, *ckapp);
+        if(!mstrg.empty()) {
+            throw(OptionAlreadyAdded("subcommand name or alias matches existing subcommand: " + mstrg));
         }
         subcom->parent_ = this;
         subcommands_.push_back(std::move(subcom));
@@ -1056,6 +1117,7 @@ class App {
         // Make sure no links exist
         for(App_p &sub : subcommands_) {
             sub->remove_excludes(subcom);
+            sub->remove_needs(subcom);
         }
 
         auto iterator = std::find_if(
@@ -1440,14 +1502,36 @@ class App {
 
     /// Sets excluded subcommands for the subcommand
     App *excludes(App *app) {
-        if((app == this) || (app == nullptr)) {
+        if(app == nullptr) {
             throw OptionNotFound("nullptr passed");
+        }
+        if(app == this) {
+            throw OptionNotFound("cannot self reference in needs");
         }
         auto res = exclude_subcommands_.insert(app);
         // subcommand exclusion should be symmetric
         if(res.second) {
             app->exclude_subcommands_.insert(this);
         }
+        return this;
+    }
+
+    App *needs(Option *opt) {
+        if(opt == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
+        need_options_.insert(opt);
+        return this;
+    }
+
+    App *needs(App *app) {
+        if(app == nullptr) {
+            throw OptionNotFound("nullptr passed");
+        }
+        if(app == this) {
+            throw OptionNotFound("cannot self reference in needs");
+        }
+        need_subcommands_.insert(app);
         return this;
     }
 
@@ -1461,7 +1545,7 @@ class App {
         return true;
     }
 
-    /// Removes a subcommand from this excludes list of this subcommand
+    /// Removes a subcommand from the excludes list of this subcommand
     bool remove_excludes(App *app) {
         auto iterator = std::find(std::begin(exclude_subcommands_), std::end(exclude_subcommands_), app);
         if(iterator == std::end(exclude_subcommands_)) {
@@ -1470,6 +1554,26 @@ class App {
         auto other_app = *iterator;
         exclude_subcommands_.erase(iterator);
         other_app->remove_excludes(this);
+        return true;
+    }
+
+    /// Removes an option from the needs list of this subcommand
+    bool remove_needs(Option *opt) {
+        auto iterator = std::find(std::begin(need_options_), std::end(need_options_), opt);
+        if(iterator == std::end(need_options_)) {
+            return false;
+        }
+        need_options_.erase(iterator);
+        return true;
+    }
+
+    /// Removes a subcommand from the needs list of this subcommand
+    bool remove_needs(App *app) {
+        auto iterator = std::find(std::begin(need_subcommands_), std::end(need_subcommands_), app);
+        if(iterator == std::end(need_subcommands_)) {
+            return false;
+        }
+        need_subcommands_.erase(iterator);
         return true;
     }
 
@@ -1688,7 +1792,16 @@ class App {
     const App *get_parent() const { return parent_; }
 
     /// Get the name of the current app
-    std::string get_name() const { return name_; }
+    const std::string &get_name() const { return name_; }
+
+    /// Get the aliases of the current app
+    const std::vector<std::string> &get_aliases() const { return aliases_; }
+
+    /// clear all the aliases of the current App
+    App *clear_aliases() {
+        aliases_.clear();
+        return this;
+    }
 
     /// Get a display name for an app
     std::string get_display_name() const { return (!name_.empty()) ? name_ : "[Option Group: " + get_group() + "]"; }
@@ -1705,7 +1818,21 @@ class App {
             name_to_check = detail::to_lower(name_to_check);
         }
 
-        return local_name == name_to_check;
+        if(local_name == name_to_check) {
+            return true;
+        }
+        for(auto les : aliases_) {
+            if(ignore_underscore_) {
+                les = detail::remove_underscore(les);
+            }
+            if(ignore_case_) {
+                les = detail::to_lower(les);
+            }
+            if(les == name_to_check) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// Get the groups available directly from this option (in order)
@@ -2026,6 +2153,30 @@ class App {
             // if we are excluded but didn't receive anything, just return
             return;
         }
+
+        // check excludes
+        bool missing_needed{false};
+        std::string missing_need;
+        for(auto &opt : need_options_) {
+            if(opt->count() == 0) {
+                missing_needed = true;
+                missing_need = opt->get_name();
+            }
+        }
+        for(auto &subc : need_subcommands_) {
+            if(subc->count_all() == 0) {
+                missing_needed = true;
+                missing_need = subc->get_display_name();
+            }
+        }
+        if(missing_needed) {
+            if(count_all() > 0) {
+                throw RequiresError(get_display_name(), missing_need);
+            }
+            // if we missing something but didn't have any options, just return
+            return;
+        }
+
         size_t used_options = 0;
         for(const Option_p &opt : options_) {
 
@@ -2287,7 +2438,7 @@ class App {
             break;
         case detail::Classifier::NONE:
             // Probably a positional or something for a parent (sub)command
-            retval = _parse_positional(args);
+            retval = _parse_positional(args, false);
             if(retval && positionals_at_end_) {
                 positional_only = true;
             }
@@ -2327,8 +2478,9 @@ class App {
     }
 
     /// Parse a positional, go up the tree to check
+    /// @param haltOnSubcommand if set to true the operation will not process subcommands merely return false
     /// Return true if the positional was used false otherwise
-    bool _parse_positional(std::vector<std::string> &args) {
+    bool _parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
 
         const std::string &positional = args.back();
 
@@ -2377,7 +2529,7 @@ class App {
 
         for(auto &subc : subcommands_) {
             if((subc->name_.empty()) && (!subc->disabled_)) {
-                if(subc->_parse_positional(args)) {
+                if(subc->_parse_positional(args, false)) {
                     if(!subc->pre_parse_called_) {
                         subc->_trigger_pre_parse(args.size());
                     }
@@ -2387,11 +2539,14 @@ class App {
         }
         // let the parent deal with it if possible
         if(parent_ != nullptr && fallthrough_)
-            return _get_fallthrough_parent()->_parse_positional(args);
+            return _get_fallthrough_parent()->_parse_positional(args, static_cast<bool>(parse_complete_callback_));
 
         /// Try to find a local subcommand that is repeated
         auto com = _find_subcommand(args.back(), true, false);
         if(com != nullptr && (require_subcommand_max_ == 0 || require_subcommand_max_ > parsed_subcommands_.size())) {
+            if(haltOnSubcommand) {
+                return false;
+            }
             args.pop_back();
             com->_parse(args);
             return true;
@@ -2436,7 +2591,8 @@ class App {
                 if(subc != nullptr) {
                     return subc;
                 }
-            } else if(com->check_name(subc_name)) {
+            }
+            if(com->check_name(subc_name)) {
                 if((!*com) || !ignore_used)
                     return com.get();
             }
@@ -2450,7 +2606,7 @@ class App {
     /// return true if the subcommand was processed false otherwise
     bool _parse_subcommand(std::vector<std::string> &args) {
         if(_count_remaining_positionals(/* required */ true) > 0) {
-            _parse_positional(args);
+            _parse_positional(args, false);
             return true;
         }
         auto com = _find_subcommand(args.back(), true, true);
@@ -2645,6 +2801,56 @@ class App {
         return fallthrough_parent;
     }
 
+    /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
+    const std::string &_compare_subcommand_names(const App &subcom, const App &base) const {
+        static const std::string estring;
+        if(subcom.disabled_) {
+            return estring;
+        }
+        for(auto &subc : base.subcommands_) {
+            if(subc.get() != &subcom) {
+                if(subc->disabled_) {
+                    continue;
+                }
+                if(!subcom.get_name().empty()) {
+                    if(subc->check_name(subcom.get_name())) {
+                        return subcom.get_name();
+                    }
+                }
+                if(!subc->get_name().empty()) {
+                    if(subcom.check_name(subc->get_name())) {
+                        return subc->get_name();
+                    }
+                }
+                for(const auto &les : subcom.aliases_) {
+                    if(subc->check_name(les)) {
+                        return les;
+                    }
+                }
+                // this loop is needed in case of ignore_underscore or ignore_case on one but not the other
+                for(const auto &les : subc->aliases_) {
+                    if(subcom.check_name(les)) {
+                        return les;
+                    }
+                }
+                // if the subcommand is an option group we need to check deeper
+                if(subc->get_name().empty()) {
+                    auto &cmpres = _compare_subcommand_names(subcom, *subc);
+                    if(!cmpres.empty()) {
+                        return cmpres;
+                    }
+                }
+                // if the test subcommand is an option group we need to check deeper
+                if(subcom.get_name().empty()) {
+                    auto &cmpres = _compare_subcommand_names(*subc, subcom);
+                    if(!cmpres.empty()) {
+                        return cmpres;
+                    }
+                }
+            }
+        }
+        return estring;
+    }
     /// Helper function to place extra values in the most appropriate position
     void _move_to_missing(detail::Classifier val_type, const std::string &val) {
         if(allow_extras_ || subcommands_.empty()) {
@@ -2696,10 +2902,10 @@ class App {
                 app->options_.push_back(std::move(*iterator));
                 options_.erase(iterator);
             } else {
-                throw OptionAlreadyAdded(opt->get_name());
+                throw OptionAlreadyAdded("option was not located: " + opt->get_name());
             }
         } else {
-            throw OptionNotFound("could not locate the given App");
+            throw OptionNotFound("could not locate the given Option");
         }
     }
 }; // namespace CLI

@@ -421,18 +421,19 @@ class Option : public OptionBase<Option> {
 
     /// Sets required options
     Option *needs(Option *opt) {
-        auto tup = needs_.insert(opt);
-        if(!tup.second)
-            throw OptionAlreadyAdded::Requires(get_name(), opt->get_name());
+        if(opt != this) {
+            needs_.insert(opt);
+        }
         return this;
     }
 
     /// Can find a string if needed
     template <typename T = App> Option *needs(std::string opt_name) {
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
-            if(opt.get() != this && opt->check_name(opt_name))
-                return needs(opt.get());
-        throw IncorrectConstruction::MissingOption(opt_name);
+        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        if(opt == nullptr) {
+            throw IncorrectConstruction::MissingOption(opt_name);
+        }
+        return needs(opt);
     }
 
     /// Any number supported, any mix of string and Opt
@@ -454,6 +455,9 @@ class Option : public OptionBase<Option> {
 
     /// Sets excluded options
     Option *excludes(Option *opt) {
+        if(opt == this) {
+            throw(IncorrectConstruction("and option cannot exclude itself"));
+        }
         excludes_.insert(opt);
 
         // Help text should be symmetric - excluding a should exclude b
@@ -467,10 +471,11 @@ class Option : public OptionBase<Option> {
 
     /// Can find a string if needed
     template <typename T = App> Option *excludes(std::string opt_name) {
-        for(const Option_p &opt : dynamic_cast<T *>(parent_)->options_)
-            if(opt.get() != this && opt->check_name(opt_name))
-                return excludes(opt.get());
-        throw IncorrectConstruction::MissingOption(opt_name);
+        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        if(opt == nullptr) {
+            throw IncorrectConstruction::MissingOption(opt_name);
+        }
+        return excludes(opt);
     }
 
     /// Any number supported, any mix of string and Opt
@@ -501,13 +506,22 @@ class Option : public OptionBase<Option> {
     /// The template hides the fact that we don't have the definition of App yet.
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_case(bool value = true) {
-        ignore_case_ = value;
-        auto *parent = dynamic_cast<T *>(parent_);
-
-        for(const Option_p &opt : parent->options_)
-            if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name(true, true));
-
+        if(!ignore_case_ && value) {
+            ignore_case_ = value;
+            auto *parent = dynamic_cast<T *>(parent_);
+            for(const Option_p &opt : parent->options_) {
+                if(opt.get() == this) {
+                    continue;
+                }
+                auto &omatch = opt->matching_name(*this);
+                if(!omatch.empty()) {
+                    ignore_case_ = false;
+                    throw OptionAlreadyAdded("adding ignore case caused a name conflict with " + omatch);
+                }
+            }
+        } else {
+            ignore_case_ = value;
+        }
         return this;
     }
 
@@ -516,12 +530,23 @@ class Option : public OptionBase<Option> {
     /// The template hides the fact that we don't have the definition of App yet.
     /// You are never expected to add an argument to the template here.
     template <typename T = App> Option *ignore_underscore(bool value = true) {
-        ignore_underscore_ = value;
-        auto *parent = dynamic_cast<T *>(parent_);
-        for(const Option_p &opt : parent->options_)
-            if(opt.get() != this && *opt == *this)
-                throw OptionAlreadyAdded(opt->get_name(true, true));
 
+        if(!ignore_underscore_ && value) {
+            ignore_underscore_ = value;
+            auto *parent = dynamic_cast<T *>(parent_);
+            for(const Option_p &opt : parent->options_) {
+                if(opt.get() == this) {
+                    continue;
+                }
+                auto &omatch = opt->matching_name(*this);
+                if(!omatch.empty()) {
+                    ignore_underscore_ = false;
+                    throw OptionAlreadyAdded("adding ignore underscore caused a name conflict with " + omatch);
+                }
+            }
+        } else {
+            ignore_underscore_ = value;
+        }
         return this;
     }
 
@@ -746,26 +771,29 @@ class Option : public OptionBase<Option> {
             throw ConversionError(get_name(), results_);
     }
 
-    /// If options share any of the same names, they are equal (not counting positional)
-    bool operator==(const Option &other) const {
+    /// If options share any of the same names, find it
+    const std::string &matching_name(const Option &other) const {
+        static const std::string estring;
         for(const std::string &sname : snames_)
             if(other.check_sname(sname))
-                return true;
+                return sname;
         for(const std::string &lname : lnames_)
             if(other.check_lname(lname))
-                return true;
+                return lname;
 
         if(ignore_case_ ||
            ignore_underscore_) { // We need to do the inverse, in case we are ignore_case or ignore underscore
             for(const std::string &sname : other.snames_)
                 if(check_sname(sname))
-                    return true;
+                    return sname;
             for(const std::string &lname : other.lnames_)
                 if(check_lname(lname))
-                    return true;
+                    return lname;
         }
-        return false;
+        return estring;
     }
+    /// If options share any of the same names, they are equal (not counting positional)
+    bool operator==(const Option &other) const { return !matching_name(other).empty(); }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
     bool check_name(std::string name) const {
