@@ -749,23 +749,6 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     return lexical_assign<T, XC>(strings[0], output);
 }
 
-/// Lexical conversion if there is only one element but the conversion type is a vector
-template <typename T,
-          typename XC,
-          enable_if_t<!is_tuple_like<T>::value && !is_vector<T>::value && is_vector<XC>::value, detail::enabler> =
-              detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-
-    if(strings.size() > 1 || (!strings.empty() && !(strings.front().empty()))) {
-        XC val;
-        auto retval = lexical_conversion<XC, XC>(strings, val);
-        output = T{val};
-        return retval;
-    }
-    output = T{};
-    return true;
-}
-
 /// Lexical conversion if there is only one element but the conversion type is for two call a two element constructor
 template <typename T,
           typename XC,
@@ -843,6 +826,23 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
         retval &= lexical_assign<typename T::value_type, XC>(elem, output.back());
     }
     return (!output.empty()) && retval;
+}
+// This one is last since it can call other lexical_conversion functions
+/// Lexical conversion if there is only one element but the conversion type is a vector
+template <typename T,
+          typename XC,
+          enable_if_t<!is_tuple_like<T>::value && !is_vector<T>::value && is_vector<XC>::value, detail::enabler> =
+              detail::dummy>
+bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
+
+    if(strings.size() > 1 || (!strings.empty() && !(strings.front().empty()))) {
+        XC val;
+        auto retval = lexical_conversion<XC, XC>(strings, val);
+        output = T{val};
+        return retval;
+    }
+    output = T{};
+    return true;
 }
 
 /// function template for converting tuples if the static Index is greater than the tuple size
