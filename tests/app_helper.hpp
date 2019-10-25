@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 
-using input_t= std::vector<std::string>;
+using input_t = std::vector<std::string>;
 
 struct TApp : public ::testing::Test {
     CLI::App app{"My Test Program"};
