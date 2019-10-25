@@ -652,7 +652,7 @@ class Option : public OptionBase<Option> {
     std::string get_name(bool positional = false, //<[input] Show the positional name
                          bool all_options = false //<[input] Show every option
                          ) const {
-        if (detail::to_lower(get_group()).empty())
+        if (get_group().empty())
             return {}; // Hidden
 
         if(all_options) {
