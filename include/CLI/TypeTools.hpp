@@ -900,7 +900,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
             retval = retval && lexical_conversion<typename T::value_type, typename XC::value_type>(temp, output.back());
             temp.clear();
             if(!retval) {
-                return retval;
+                return false;
             }
             icount = 0;
         }
