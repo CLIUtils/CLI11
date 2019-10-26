@@ -165,7 +165,7 @@ Windows style options do not allow combining short options or values not separat
 
 ## Parse configuration
 
-How an option and its arguments are parsed depends on a set of controls that are part of the option structure.  In most circumstances these controls are set automatically based on the function used to create the option and the type the arguments are parsed into.  The variables define the size of the underlying type (essentially how many strings make up the type), the expected size (how many groups are expected) and a flag indicating if multiple groups are allowed with a single option.  And these interact with the `multi_option_policy` when it comes time to parse.  
+How an option and its arguments are parsed depends on a set of controls that are part of the option structure.  In most circumstances these controls are set automatically based on the function used to create the option and the type the arguments are parsed into.  The variables define the size of the underlying type (essentially how many strings make up the type), the expected size (how many groups are expected) and a flag indicating if multiple groups are allowed with a single option.  And these interact with the `multi_option_policy` when it comes time to parse.
 
 ### examples
 How options manage this is best illustrated through some examples
@@ -173,7 +173,7 @@ How options manage this is best illustrated through some examples
 std::string val;
 app.add_option("--opt",val,"description");
 ```
-creates an option that assigns a value to a `std::string`  When this option is constructed it sets a type_size of 1.  meaning that the assignment uses a single string.  The Expected size is also set to 1 by default, and `allow_extra_args` is set to false. meaning that each time this option is called 1 argument is expected.  This would also be the case if val were a `double`, `int` or any other single argument types.  
+creates an option that assigns a value to a `std::string`  When this option is constructed it sets a type_size of 1.  meaning that the assignment uses a single string.  The Expected size is also set to 1 by default, and `allow_extra_args` is set to false. meaning that each time this option is called 1 argument is expected.  This would also be the case if val were a `double`, `int` or any other single argument types.
 
 now for example
 ```cpp
@@ -188,20 +188,20 @@ std::vector<int> val;
 app.add_option("--opt",val,"description");
 ```
 
-detects a type size of 1, since the underlying element type is a single string, so the minimum number of strings is 1.  But since it is a vector the expected number can be very big.  The default for a vector is (1<<30), and the allow_extra_args is set to true.  This means that at least 1 argument is expected to follow the option, but arbitrary numbers of arguments may follow.  These are checked if they have the form of an option but if not they are added to the argument.   
+detects a type size of 1, since the underlying element type is a single string, so the minimum number of strings is 1.  But since it is a vector the expected number can be very big.  The default for a vector is (1<<30), and the allow_extra_args is set to true.  This means that at least 1 argument is expected to follow the option, but arbitrary numbers of arguments may follow.  These are checked if they have the form of an option but if not they are added to the argument.
 
 ```cpp
 std::vector<std::tuple<int, double, std::string>> val;
 app.add_option("--opt",val,"description");
 ```
-gets into the complicated cases where the type size is now 3.  and the expected max is set to a large number and `allow_extra_args` is set to true.  In this case at least 3 arguments are required to follow the option,  and subsequent groups must come in groups of three, otherwise an error will result.  
+gets into the complicated cases where the type size is now 3.  and the expected max is set to a large number and `allow_extra_args` is set to true.  In this case at least 3 arguments are required to follow the option,  and subsequent groups must come in groups of three, otherwise an error will result.
 
 ```cpp
 bool val;
 app.add_flag("--opt",val,"description");
 ```
 
-Using the add_flag methods for creating options creates an option with an expected size of 0, implying no arguments can be passed.  
+Using the add_flag methods for creating options creates an option with an expected size of 0, implying no arguments can be passed.
 
 ### Customization
 
@@ -212,7 +212,7 @@ std::string val;
 auto opt=app.add_flag("--opt{vvv}",val,"description");
 opt->expected(0,1);
 ```
-will create a hybrid option, that can exist on its own in which case the value "vvv" is used or if a value is given that value will be used.  
+will create a hybrid option, that can exist on its own in which case the value "vvv" is used or if a value is given that value will be used.
 
 [^1]: For example, enums are not printable to `std::cout`.
 [^2]: There is a small difference. An combined unlimited option will not prioritize over a positional that could still accept values.
