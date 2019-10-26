@@ -1649,6 +1649,22 @@ class App {
         return options;
     }
 
+    /// Non-const version of the above
+    std::vector<Option *> get_options(const std::function<bool(Option *)> filter = {}) {
+        std::vector<Option *> options(options_.size());
+        std::transform(std::begin(options_), std::end(options_), std::begin(options), [](const Option_p &val) {
+            return val.get();
+        });
+
+        if(filter) {
+            options.erase(
+                std::remove_if(std::begin(options), std::end(options), [&filter](Option *opt) { return !filter(opt); }),
+                std::end(options));
+        }
+
+        return options;
+    }
+
     /// Get an option by name (noexcept non-const version)
     Option *get_option_no_throw(std::string option_name) noexcept {
         for(Option_p &opt : options_) {
