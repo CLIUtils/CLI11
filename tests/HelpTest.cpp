@@ -92,7 +92,7 @@ TEST(THelp, Hidden) {
     EXPECT_THAT(help, HasSubstr("My prog"));
     EXPECT_THAT(help, HasSubstr("-h,--help"));
     EXPECT_THAT(help, HasSubstr("Options:"));
-    EXPECT_THAT(help, HasSubstr("[something]"));
+    EXPECT_THAT(help, Not(HasSubstr("[something]")));
     EXPECT_THAT(help, Not(HasSubstr("something ")));
     EXPECT_THAT(help, Not(HasSubstr("another")));
 }
