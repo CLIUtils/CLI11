@@ -564,11 +564,17 @@ TEST_F(TApp, GetOptionList) {
     auto flag = app.add_flag("--one");
     auto opt = app.add_option("--two", two);
 
-    auto opt_list = app.get_options();
+    const CLI::App &const_app = app; // const alias to force use of const-methods
+    std::vector<const CLI::Option *> opt_list = const_app.get_options();
 
     ASSERT_EQ(opt_list.size(), static_cast<size_t>(3));
     EXPECT_EQ(opt_list.at(1), flag);
     EXPECT_EQ(opt_list.at(2), opt);
+
+    std::vector<CLI::Option *> nonconst_opt_list = app.get_options();
+    for(size_t i = 0; i < opt_list.size(); ++i) {
+        EXPECT_EQ(nonconst_opt_list.at(i), opt_list.at(i));
+    }
 }
 
 TEST(ValidatorTests, TestValidatorCreation) {
