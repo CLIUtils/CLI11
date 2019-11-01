@@ -2425,7 +2425,7 @@ class App {
 
     /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing
     /// from master return false if the parse has failed and needs to return to parent
-    bool _parse_single(std::vector<std::string> &args, bool &positional_only) {
+    virtual bool _parse_single(std::vector<std::string> &args, bool &positional_only) {
         bool retval = true;
         detail::Classifier classifier = positional_only ? detail::Classifier::NONE : _recognize(args.back());
         switch(classifier) {
