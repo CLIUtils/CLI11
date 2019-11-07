@@ -2496,7 +2496,7 @@ class App {
     /// Parse a positional, go up the tree to check
     /// @param haltOnSubcommand if set to true the operation will not process subcommands merely return false
     /// Return true if the positional was used false otherwise
-    bool _parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
+    virtual bool _parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
 
         const std::string &positional = args.back();
 
