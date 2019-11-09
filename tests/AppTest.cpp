@@ -40,12 +40,14 @@ TEST_F(TApp, OneFlagShortValuesAs) {
     flg->take_last();
     EXPECT_EQ(opt->as<int>(), 2);
     flg->multi_option_policy(CLI::MultiOptionPolicy::Throw);
-    EXPECT_THROW(opt->as<int>(), CLI::ConversionError);
-
+    EXPECT_THROW(opt->as<int>(), CLI::ArgumentMismatch);
+    flg->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
     auto vec = opt->as<std::vector<int>>();
     EXPECT_EQ(vec[0], 1);
     EXPECT_EQ(vec[1], 2);
     flg->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    EXPECT_EQ(opt->as<std::string>(), "1\n2");
+    flg->delimiter(',');
     EXPECT_EQ(opt->as<std::string>(), "1,2");
 }
 
@@ -403,6 +405,27 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqualAndProgram)
     EXPECT_EQ(str4, "Unquoted");
 }
 
+TEST_F(TApp, OneStringFlagLike) {
+    std::string str{"something"};
+    app.add_option("-s,--string", str)->expected(0, 1);
+    args = {"--string"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, app.count("--string"));
+    EXPECT_TRUE(str.empty());
+}
+
+TEST_F(TApp, OneIntFlagLike) {
+    int val;
+    auto opt = app.add_option("-i", val)->expected(0, 1);
+    args = {"-i"};
+    run();
+    EXPECT_EQ(1u, app.count("-i"));
+    opt->default_str("7");
+    run();
+    EXPECT_EQ(val, 7);
+}
+
 TEST_F(TApp, TogetherInt) {
     int i;
     app.add_option("-i,--int", i);
@@ -620,6 +643,42 @@ TEST_F(TApp, BoolAndIntFlags) {
     EXPECT_EQ((unsigned int)2, uflag);
 }
 
+TEST_F(TApp, FlagLikeOption) {
+    bool val = false;
+    auto opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
+    args = {"--flag"};
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_TRUE(val);
+    val = false;
+    opt->type_size(0, 0); // should be the same as above
+    EXPECT_EQ(opt->get_type_size_min(), 0);
+    EXPECT_EQ(opt->get_type_size_max(), 0);
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_TRUE(val);
+}
+
+TEST_F(TApp, FlagLikeIntOption) {
+    int val = -47;
+    auto opt = app.add_option("--flag", val)->expected(0, 1);
+    // normally some default value should be set, but this test is for some paths in the validators checks to skip
+    // validation on empty string if nothing is expected
+    opt->check(CLI::PositiveNumber);
+    args = {"--flag"};
+    EXPECT_TRUE(opt->as<std::string>().empty());
+    run();
+    EXPECT_EQ(1u, app.count("--flag"));
+    EXPECT_NE(val, -47);
+    args = {"--flag", "12"};
+    run();
+
+    EXPECT_EQ(val, 12);
+    args.clear();
+    run();
+    EXPECT_TRUE(opt->as<std::string>().empty());
+}
+
 TEST_F(TApp, BoolOnlyFlag) {
     bool bflag;
     app.add_flag("-b", bflag)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
@@ -629,7 +688,7 @@ TEST_F(TApp, BoolOnlyFlag) {
     EXPECT_TRUE(bflag);
 
     args = {"-b", "-b"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, BoolOption) {
@@ -800,9 +859,51 @@ TEST_F(TApp, TakeLastOptMulti) {
     EXPECT_EQ(vals, std::vector<int>({2, 3}));
 }
 
+TEST_F(TApp, vectorDefaults) {
+    std::vector<int> vals{4, 5};
+    auto opt = app.add_option("--long", vals, "", true);
+
+    args = {"--long", "[1,2,3]"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+
+    args.clear();
+    run();
+    auto res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({4, 5}));
+
+    app.clear();
+    opt->expected(1)->take_last();
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({5}));
+    opt->take_first();
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({4}));
+
+    opt->expected(0, 1)->take_last();
+    run();
+
+    EXPECT_EQ(res, std::vector<int>({4}));
+    res = app["--long"]->as<std::vector<int>>();
+    EXPECT_EQ(res, std::vector<int>({5}));
+}
+
+TEST_F(TApp, TakeLastOptMulti_alternative_path) {
+    std::vector<int> vals;
+    app.add_option("--long", vals)->expected(2, -1)->take_last();
+
+    args = {"--long", "1", "2", "3"};
+
+    run();
+
+    EXPECT_EQ(vals, std::vector<int>({2, 3}));
+}
+
 TEST_F(TApp, TakeLastOptMultiCheck) {
     std::vector<int> vals;
-    auto opt = app.add_option("--long", vals)->expected(2)->take_last();
+    auto opt = app.add_option("--long", vals)->expected(-2)->take_last();
 
     opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
@@ -826,7 +927,7 @@ TEST_F(TApp, TakeFirstOptMulti) {
 
 TEST_F(TApp, ComplexOptMulti) {
     std::complex<double> val;
-    app.add_complex("--long", val)->take_first();
+    app.add_complex("--long", val)->take_first()->allow_extra_args();
 
     args = {"--long", "1", "2", "3", "4"};
 
@@ -1141,7 +1242,7 @@ TEST_F(TApp, RequiredOptsUnlimited) {
 
     app.allow_extras(false);
     std::vector<std::string> remain;
-    app.add_option("positional", remain);
+    auto popt = app.add_option("positional", remain);
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"one", "two"}));
     EXPECT_EQ(remain, std::vector<std::string>());
@@ -1157,6 +1258,12 @@ TEST_F(TApp, RequiredOptsUnlimited) {
     run();
     EXPECT_EQ(strs, std::vector<std::string>({"two"}));
     EXPECT_EQ(remain, std::vector<std::string>({"one"}));
+
+    args = {"--str", "one", "two"};
+    popt->required();
+    run();
+    EXPECT_EQ(strs, std::vector<std::string>({"one"}));
+    EXPECT_EQ(remain, std::vector<std::string>({"two"}));
 }
 
 TEST_F(TApp, RequiredOptsUnlimitedShort) {
@@ -1217,9 +1324,9 @@ TEST_F(TApp, OptsUnlimitedEnd) {
 TEST_F(TApp, RequireOptPriority) {
 
     std::vector<std::string> strs;
-    app.add_option("--str", strs)->required();
+    app.add_option("--str", strs);
     std::vector<std::string> remain;
-    app.add_option("positional", remain)->expected(2);
+    app.add_option("positional", remain)->expected(2)->required();
 
     args = {"--str", "one", "two", "three"};
     run();
@@ -1239,7 +1346,7 @@ TEST_F(TApp, RequireOptPriorityShort) {
     std::vector<std::string> strs;
     app.add_option("-s", strs)->required();
     std::vector<std::string> remain;
-    app.add_option("positional", remain)->expected(2);
+    app.add_option("positional", remain)->expected(2)->required();
 
     args = {"-s", "one", "two", "three"};
     run();
@@ -1330,7 +1437,7 @@ TEST_F(TApp, CallbackBoolFlags) {
     EXPECT_THROW(app.add_flag_callback("hi", func), CLI::IncorrectConstruction);
     cback->multi_option_policy(CLI::MultiOptionPolicy::Throw);
     args = {"--val", "--val=false"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
 TEST_F(TApp, CallbackFlagsFalse) {
@@ -1638,7 +1745,7 @@ TEST_F(TApp, pair_check) {
 }
 
 // this will require that modifying the multi-option policy for tuples be allowed which it isn't at present
-/*
+
 TEST_F(TApp, pair_check_take_first) {
     std::string myfile{"pair_check_file2.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
@@ -1663,7 +1770,7 @@ TEST_F(TApp, pair_check_take_first) {
 
     EXPECT_THROW(run(), CLI::ValidationError);
 }
-*/
+
 TEST_F(TApp, VectorFixedString) {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
@@ -1720,7 +1827,7 @@ TEST_F(TApp, DefaultedResult) {
     opts->results(nString);
     EXPECT_EQ(nString, "NA");
     int newIval;
-    EXPECT_THROW(optv->results(newIval), CLI::ConversionError);
+    // EXPECT_THROW(optv->results(newIval), CLI::ConversionError);
     optv->default_str("442");
     optv->results(newIval);
     EXPECT_EQ(newIval, 442);
@@ -1731,7 +1838,8 @@ TEST_F(TApp, VectorUnlimString) {
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec);
-    EXPECT_EQ(-1, opt->get_expected());
+    EXPECT_EQ(1, opt->get_expected());
+    EXPECT_EQ(CLI::detail::expected_max_vector_size, opt->get_expected_max());
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
@@ -1742,6 +1850,35 @@ TEST_F(TApp, VectorUnlimString) {
     run();
     EXPECT_EQ(3u, app.count("--string"));
     EXPECT_EQ(answer, strvec);
+}
+
+TEST_F(TApp, VectorExpectedRange) {
+    std::vector<std::string> strvec;
+
+    CLI::Option *opt = app.add_option("--string", strvec);
+    opt->expected(2, 4)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
+
+    args = {"--string", "mystring", "mystring2", "mystring3"};
+    run();
+    EXPECT_EQ(3u, app.count("--string"));
+
+    args = {"--string", "mystring"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+
+    args = {"--string", "mystring", "mystring2", "string2", "--string", "string4", "string5"};
+    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+
+    EXPECT_EQ(opt->get_expected_max(), 4);
+    EXPECT_EQ(opt->get_expected_min(), 2);
+    opt->expected(4, 2); // just test the handling of reversed arguments
+    EXPECT_EQ(opt->get_expected_max(), 4);
+    EXPECT_EQ(opt->get_expected_min(), 2);
+    opt->expected(-5);
+    EXPECT_EQ(opt->get_expected_max(), 5);
+    EXPECT_EQ(opt->get_expected_min(), 5);
+    opt->expected(-5, 7);
+    EXPECT_EQ(opt->get_expected_max(), 7);
+    EXPECT_EQ(opt->get_expected_min(), 5);
 }
 
 TEST_F(TApp, VectorFancyOpts) {
@@ -2225,6 +2362,138 @@ TEST_F(TApp, CustomDoubleOptionAlt) {
     run();
     EXPECT_EQ(custom_opt.first, 12);
     EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+}
+
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorPair) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].first, 1);
+    EXPECT_EQ(custom_opt[1].second, "str3");
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3", "--dict", "-1", "str4"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
+    opt->check(CLI::PositiveNumber.application_index(0));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
+TEST_F(TApp, vectorPairFail) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "--dict", "str3", "1"};
+
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+TEST_F(TApp, vectorPairTypeRange) {
+
+    std::vector<std::pair<int, std::string>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    opt->type_size(2, 1); // just test switched arguments
+    EXPECT_EQ(opt->get_type_size_min(), 1);
+    EXPECT_EQ(opt->get_type_size_max(), 2);
+
+    args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].first, 1);
+    EXPECT_EQ(custom_opt[1].second, "str3");
+
+    args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_TRUE(custom_opt[1].second.empty());
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
+
+    opt->type_size(-2, -1); // test negative arguments
+    EXPECT_EQ(opt->get_type_size_min(), 1);
+    EXPECT_EQ(opt->get_type_size_max(), 2);
+    // this type size spec should run exactly as before
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_TRUE(custom_opt[1].second.empty());
+    EXPECT_EQ(custom_opt[2].first, -1);
+    EXPECT_EQ(custom_opt[2].second, "str4");
+}
+
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorTuple) {
+
+    std::vector<std::tuple<int, std::string, double>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(std::get<0>(custom_opt[0]), 1);
+    EXPECT_EQ(std::get<1>(custom_opt[1]), "str3");
+    EXPECT_EQ(std::get<2>(custom_opt[1]), 2.7);
+
+    args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 3u);
+    EXPECT_EQ(std::get<0>(custom_opt[2]), -1);
+    EXPECT_EQ(std::get<1>(custom_opt[2]), "str4");
+    EXPECT_EQ(std::get<2>(custom_opt[2]), -1.87);
+    opt->check(CLI::PositiveNumber.application_index(0));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args.back() = "haha";
+    args[9] = "45";
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
+// now with independent type sizes and expected this is possible
+TEST_F(TApp, vectorVector) {
+
+    std::vector<std::vector<int>> custom_opt;
+
+    auto opt = app.add_option("--dict", custom_opt);
+
+    args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
+
+    run();
+    EXPECT_EQ(custom_opt.size(), 2u);
+    EXPECT_EQ(custom_opt[0].size(), 3u);
+    EXPECT_EQ(custom_opt[1].size(), 2u);
+
+    args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
+            "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
+    run();
+    EXPECT_EQ(custom_opt.size(), 4u);
+    EXPECT_EQ(custom_opt[0].size(), 3u);
+    EXPECT_EQ(custom_opt[1].size(), 2u);
+    EXPECT_EQ(custom_opt[2].size(), 1u);
+    EXPECT_EQ(custom_opt[3].size(), 10u);
+    opt->check(CLI::PositiveNumber.application_index(9));
+
+    EXPECT_THROW(run(), CLI::ValidationError);
+    args.pop_back();
+    EXPECT_NO_THROW(run());
+
+    args.back() = "haha";
+    EXPECT_THROW(run(), CLI::ConversionError);
 }
 
 // #128

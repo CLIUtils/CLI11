@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 
-typedef std::vector<std::string> input_t;
+using input_t = std::vector<std::string>;
 
 struct TApp : public ::testing::Test {
     CLI::App app{"My Test Program"};
@@ -27,7 +27,7 @@ class TempFile {
     std::string _name;
 
   public:
-    explicit TempFile(std::string name) : _name(name) {
+    explicit TempFile(std::string name) : _name(std::move(name)) {
         if(!CLI::NonexistentPath(_name).empty())
             throw std::runtime_error(_name);
     }

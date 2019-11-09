@@ -25,7 +25,7 @@ ConfigINI::to_config(const App *app, bool default_also, bool write_description, 
             std::string value;
 
             // Non-flags
-            if(opt->get_type_size() != 0) {
+            if(opt->get_expected_min() != 0) {
 
                 // If the option was found on command line
                 if(opt->count() > 0)
@@ -56,7 +56,7 @@ ConfigINI::to_config(const App *app, bool default_also, bool write_description, 
                 }
 
                 // Don't try to quote anything that is not size 1
-                if(opt->get_items_expected() != 1)
+                if(opt->get_items_expected_max() != 1)
                     out << name << "=" << value << std::endl;
                 else
                     out << name << "=" << detail::add_quotes_if_needed(value) << std::endl;

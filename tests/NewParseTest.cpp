@@ -77,6 +77,26 @@ TEST_F(TApp, BuiltinComplex) {
     EXPECT_DOUBLE_EQ(3, comp.imag());
 }
 
+TEST_F(TApp, BuiltinComplexFloat) {
+    std::complex<float> comp{1, 2};
+    app.add_complex<std::complex<float>, float>("-c,--complex", comp, "", true);
+
+    args = {"-c", "4", "3"};
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("1"));
+    EXPECT_THAT(help, HasSubstr("2"));
+    EXPECT_THAT(help, HasSubstr("COMPLEX"));
+
+    EXPECT_FLOAT_EQ(1, comp.real());
+    EXPECT_FLOAT_EQ(2, comp.imag());
+
+    run();
+
+    EXPECT_FLOAT_EQ(4, comp.real());
+    EXPECT_FLOAT_EQ(3, comp.imag());
+}
+
 TEST_F(TApp, BuiltinComplexWithDelimiter) {
     cx comp{1, 2};
     app.add_complex("-c,--complex", comp, "", true)->delimiter('+');
@@ -121,13 +141,61 @@ TEST_F(TApp, BuiltinComplexIgnoreI) {
     EXPECT_DOUBLE_EQ(3, comp.imag());
 }
 
-TEST_F(TApp, BuiltinComplexFail) {
+TEST_F(TApp, BuiltinComplexSingleArg) {
     cx comp{1, 2};
     app.add_complex("-c,--complex", comp);
 
     args = {"-c", "4"};
+    run();
+    EXPECT_DOUBLE_EQ(4, comp.real());
+    EXPECT_DOUBLE_EQ(0, comp.imag());
 
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    args = {"-c", "4-2i"};
+    run();
+    EXPECT_DOUBLE_EQ(4, comp.real());
+    EXPECT_DOUBLE_EQ(-2, comp.imag());
+    args = {"-c", "4+2i"};
+    run();
+    EXPECT_DOUBLE_EQ(4, comp.real());
+    EXPECT_DOUBLE_EQ(2, comp.imag());
+
+    args = {"-c", "-4+2j"};
+    run();
+    EXPECT_DOUBLE_EQ(-4, comp.real());
+    EXPECT_DOUBLE_EQ(2, comp.imag());
+
+    args = {"-c", "-4.2-2j"};
+    run();
+    EXPECT_DOUBLE_EQ(-4.2, comp.real());
+    EXPECT_DOUBLE_EQ(-2, comp.imag());
+
+    args = {"-c", "-4.2-2.7i"};
+    run();
+    EXPECT_DOUBLE_EQ(-4.2, comp.real());
+    EXPECT_DOUBLE_EQ(-2.7, comp.imag());
+}
+
+TEST_F(TApp, BuiltinComplexSingleImag) {
+    cx comp{1, 2};
+    app.add_complex("-c,--complex", comp);
+
+    args = {"-c", "4j"};
+    run();
+    EXPECT_DOUBLE_EQ(0, comp.real());
+    EXPECT_DOUBLE_EQ(4, comp.imag());
+
+    args = {"-c", "-4j"};
+    run();
+    EXPECT_DOUBLE_EQ(0, comp.real());
+    EXPECT_DOUBLE_EQ(-4, comp.imag());
+    args = {"-c", "-4"};
+    run();
+    EXPECT_DOUBLE_EQ(-4, comp.real());
+    EXPECT_DOUBLE_EQ(0, comp.imag());
+    args = {"-c", "+4"};
+    run();
+    EXPECT_DOUBLE_EQ(4, comp.real());
+    EXPECT_DOUBLE_EQ(0, comp.imag());
 }
 
 class spair {

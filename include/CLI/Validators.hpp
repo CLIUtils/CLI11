@@ -325,14 +325,14 @@ class IPV4Validator : public Validator {
         func_ = [](std::string &ip_addr) {
             auto result = CLI::detail::split(ip_addr, '.');
             if(result.size() != 4) {
-                return "Invalid IPV4 address must have four parts " + ip_addr;
+                return "Invalid IPV4 address must have four parts (" + ip_addr + ')';
             }
             int num;
             bool retval = true;
             for(const auto &var : result) {
                 retval &= detail::lexical_cast(var, num);
                 if(!retval) {
-                    return "Failed parsing number " + var;
+                    return "Failed parsing number (" + var + ')';
                 }
                 if(num < 0 || num > 255) {
                     return "Each IP number must be between 0 and 255 " + var;
@@ -350,10 +350,10 @@ class PositiveNumber : public Validator {
         func_ = [](std::string &number_str) {
             int number;
             if(!detail::lexical_cast(number_str, number)) {
-                return "Failed parsing number " + number_str;
+                return "Failed parsing number: (" + number_str + ')';
             }
             if(number < 0) {
-                return "Number less then 0 " + number_str;
+                return "Number less then 0: (" + number_str + ')';
             }
             return std::string();
         };
@@ -367,7 +367,7 @@ class Number : public Validator {
         func_ = [](std::string &number_str) {
             double number;
             if(!detail::lexical_cast(number_str, number)) {
-                return "Failed parsing as a number " + number_str;
+                return "Failed parsing as a number (" + number_str + ')';
             }
             return std::string();
         };

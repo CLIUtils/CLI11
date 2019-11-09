@@ -554,27 +554,29 @@ class App {
         // LCOV_EXCL_END
     }
 
-    /// Add option for non-vectors (duplicate copy needed without defaulted to avoid `iostream << value`)
-
-    template <typename T, typename XC = T, enable_if_t<!std::is_const<XC>::value, detail::enabler> = detail::dummy>
+    /// Add option for assigning to a variable
+    template <typename AssignTo,
+              typename ConvertTo = AssignTo,
+              enable_if_t<!std::is_const<ConvertTo>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
-                       T &variable, ///< The variable to set
+                       AssignTo &variable, ///< The variable to set
                        std::string option_description = "",
                        bool defaulted = false) {
 
-        auto fun = [&variable](CLI::results_t res) { // comment for spacing
-            return detail::lexical_conversion<T, XC>(res, variable);
+        auto fun = [&variable](const CLI::results_t &res) { // comment for spacing
+            return detail::lexical_conversion<AssignTo, ConvertTo>(res, variable);
         };
 
         Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
-            return CLI::detail::checked_to_string<T, XC>(variable);
+            return CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
         });
-        opt->type_name(detail::type_name<XC>());
-        // these must be actual variable since (std::max) sometimes is defined in terms of references and references
+        opt->type_name(detail::type_name<ConvertTo>());
+        // these must be actual variables since (std::max) sometimes is defined in terms of references and references
         // to structs used in the evaluation can be temporary so that would cause issues.
-        auto Tcount = detail::type_count<T>::value;
-        auto XCcount = detail::type_count<XC>::value;
+        auto Tcount = detail::type_count<AssignTo>::value;
+        auto XCcount = detail::type_count<ConvertTo>::value;
         opt->type_size((std::max)(Tcount, XCcount));
+        opt->expected(detail::expected_count<ConvertTo>::value);
         return opt;
     }
 
@@ -584,7 +586,7 @@ class App {
                                 const std::function<void(const T &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
-        auto fun = [func](CLI::results_t res) {
+        auto fun = [func](const CLI::results_t &res) {
             T variable;
             bool result = detail::lexical_conversion<T, T>(res, variable);
             if(result) {
@@ -596,6 +598,7 @@ class App {
         Option *opt = add_option(option_name, std::move(fun), option_description, false);
         opt->type_name(detail::type_name<T>());
         opt->type_size(detail::type_count<T>::value);
+        opt->expected(detail::expected_count<T>::value);
         return opt;
     }
 
@@ -667,8 +670,9 @@ class App {
             remove_option(opt);
             throw IncorrectConstruction::PositionalFlag(pos_name);
         }
-
-        opt->type_size(0);
+        opt->multi_option_policy(MultiOptionPolicy::TakeLast);
+        opt->expected(0);
+        opt->required(false);
         return opt;
     }
 
@@ -694,7 +698,7 @@ class App {
                      T &flag_count, ///< A variable holding the count
                      std::string flag_description = "") {
         flag_count = 0;
-        CLI::callback_t fun = [&flag_count](CLI::results_t res) {
+        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
             try {
                 detail::sum_flag_vector(res, flag_count);
             } catch(const std::invalid_argument &) {
@@ -702,7 +706,8 @@ class App {
             }
             return true;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
@@ -716,15 +721,10 @@ class App {
                      T &flag_result, ///< A variable holding true if passed
                      std::string flag_description = "") {
 
-        CLI::callback_t fun = [&flag_result](CLI::results_t res) {
-            if(res.size() != 1) {
-                return false;
-            }
+        CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
             return CLI::detail::lexical_cast(res[0], flag_result);
         };
-        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
-        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
     /// Vector version to capture multiple flags.
@@ -733,7 +733,7 @@ class App {
     Option *add_flag(std::string flag_name,
                      std::vector<T> &flag_results, ///< A vector of values with the flag results
                      std::string flag_description = "") {
-        CLI::callback_t fun = [&flag_results](CLI::results_t res) {
+        CLI::callback_t fun = [&flag_results](const CLI::results_t &res) {
             bool retval = true;
             for(const auto &elem : res) {
                 flag_results.emplace_back();
@@ -741,7 +741,8 @@ class App {
             }
             return retval;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
     /// Add option for callback that is triggered with a true flag and takes no arguments
@@ -749,19 +750,14 @@ class App {
                               std::function<void(void)> function, ///< A function to call, void(void)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](CLI::results_t res) {
-            if(res.size() != 1) {
-                return false;
-            }
+        CLI::callback_t fun = [function](const CLI::results_t &res) {
             bool trigger;
             auto result = CLI::detail::lexical_cast(res[0], trigger);
             if(trigger)
                 function();
             return result;
         };
-        Option *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
-        opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
-        return opt;
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
     }
 
     /// Add option for callback with an integer value
@@ -769,13 +765,14 @@ class App {
                               std::function<void(int64_t)> function, ///< A function to call, void(int)
                               std::string flag_description = "") {
 
-        CLI::callback_t fun = [function](CLI::results_t res) {
+        CLI::callback_t fun = [function](const CLI::results_t &res) {
             int64_t flag_count = 0;
             detail::sum_flag_vector(res, flag_count);
             function(flag_count);
             return true;
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll);
     }
 
 #ifdef CLI11_CPP14
@@ -996,34 +993,52 @@ class App {
     }
 
     /// Add a complex number
-    template <typename T>
+    template <typename T, typename XC = double>
     Option *add_complex(std::string option_name,
                         T &variable,
                         std::string option_description = "",
                         bool defaulted = false,
                         std::string label = "COMPLEX") {
 
-        std::string simple_name = CLI::detail::split(option_name, ',').at(0);
-        CLI::callback_t fun = [&variable, simple_name, label](results_t res) {
-            if(res[1].back() == 'i')
-                res[1].pop_back();
-            double x, y;
-            bool worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(res[1], y);
+        CLI::callback_t fun = [&variable](const results_t &res) {
+            XC x, y;
+            bool worked;
+            if(res.size() >= 2 && !res[1].empty()) {
+                auto str1 = res[1];
+                if(str1.back() == 'i' || str1.back() == 'j')
+                    str1.pop_back();
+                worked = detail::lexical_cast(res[0], x) && detail::lexical_cast(str1, y);
+            } else {
+                auto str1 = res.front();
+                auto nloc = str1.find_last_of('-');
+                if(nloc != std::string::npos && nloc > 0) {
+                    worked = detail::lexical_cast(str1.substr(0, nloc), x);
+                    str1 = str1.substr(nloc);
+                    if(str1.back() == 'i' || str1.back() == 'j')
+                        str1.pop_back();
+                    worked = worked && detail::lexical_cast(str1, y);
+                } else {
+                    if(str1.back() == 'i' || str1.back() == 'j') {
+                        str1.pop_back();
+                        worked = detail::lexical_cast(str1, y);
+                        x = XC{0};
+                    } else {
+                        worked = detail::lexical_cast(str1, x);
+                        y = XC{0};
+                    }
+                }
+            }
             if(worked)
-                variable = T(x, y);
+                variable = T{x, y};
             return worked;
         };
 
-        auto default_function = [&variable]() {
-            std::stringstream out;
-            out << variable;
-            return out.str();
-        };
+        auto default_function = [&variable]() { return CLI::detail::checked_to_string<T, T>(variable); };
 
         CLI::Option *opt =
             add_option(option_name, std::move(fun), std::move(option_description), defaulted, default_function);
 
-        opt->type_name(label)->type_size(2);
+        opt->type_name(label)->type_size(1, 2)->delimiter('+');
         return opt;
     }
 
@@ -1922,14 +1937,22 @@ class App {
   protected:
     /// Check the options to make sure there are no conflicts.
     ///
-    /// Currently checks to see if multiple positionals exist with -1 args and checks if the min and max options are
-    /// feasible
+    /// Currently checks to see if multiple positionals exist with unlimited args and checks if the min and max options
+    /// are feasible
     void _validate() const {
+        // count the number of positional only args
         auto pcount = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
-            return opt->get_items_expected() < 0 && opt->get_positional();
+            return opt->get_items_expected_max() >= detail::expected_max_vector_size && !opt->nonpositional();
         });
-        if(pcount > 1)
-            throw InvalidError(name_);
+        if(pcount > 1) {
+            auto pcount_req = std::count_if(std::begin(options_), std::end(options_), [](const Option_p &opt) {
+                return opt->get_items_expected_max() >= detail::expected_max_vector_size && !opt->nonpositional() &&
+                       opt->get_required();
+            });
+            if(pcount - pcount_req > 1) {
+                throw InvalidError(name_);
+            }
+        }
 
         size_t nameless_subs{0};
         for(const App_p &app : subcommands_) {
@@ -2199,15 +2222,9 @@ class App {
             if(opt->count() != 0) {
                 ++used_options;
             }
-            // Required or partially filled
-            if(opt->get_required() || opt->count() != 0) {
-                // Make sure enough -N arguments parsed (+N is already handled in parsing function)
-                if(opt->get_items_expected() < 0 && opt->count() < static_cast<size_t>(-opt->get_items_expected()))
-                    throw ArgumentMismatch::AtLeast(opt->get_name(), -opt->get_items_expected());
-
-                // Required but empty
-                if(opt->get_required() && opt->count() == 0)
-                    throw RequiredError(opt->get_name());
+            // Required but empty
+            if(opt->get_required() && opt->count() == 0) {
+                throw RequiredError(opt->get_name());
             }
             // Requires
             for(const Option *opt_req : opt->needs_)
@@ -2408,7 +2425,7 @@ class App {
 
         if(op->empty()) {
             // Flag parsing
-            if(op->get_type_size() == 0) {
+            if(op->get_expected_min() == 0) {
                 auto res = config_formatter_->to_flag(item);
                 res = op->get_flag_value(item.name, res);
 
@@ -2459,7 +2476,6 @@ class App {
                 positional_only = true;
             }
             break;
-
             // LCOV_EXCL_START
         default:
             throw HorribleError("unrecognized classifier (you should not see this!)");
@@ -2473,10 +2489,9 @@ class App {
         size_t retval = 0;
         for(const Option_p &opt : options_) {
             if(opt->get_positional() && (!required_only || opt->get_required())) {
-                if(opt->get_items_expected() > 0 && static_cast<int>(opt->count()) < opt->get_items_expected()) {
-                    retval += static_cast<size_t>(opt->get_items_expected()) - opt->count();
-                } else if(opt->get_required() && opt->get_items_expected() < 0 && opt->count() == 0ul) {
-                    retval += 1;
+                if(opt->get_items_expected_min() > 0 &&
+                   static_cast<int>(opt->count()) < opt->get_items_expected_min()) {
+                    retval += static_cast<size_t>(opt->get_items_expected_min()) - opt->count();
                 }
             }
         }
@@ -2486,9 +2501,9 @@ class App {
     /// Count the required remaining positional arguments
     bool _has_remaining_positionals() const {
         for(const Option_p &opt : options_)
-            if(opt->get_positional() &&
-               ((opt->get_items_expected() < 0) || ((static_cast<int>(opt->count()) < opt->get_items_expected()))))
+            if(opt->get_positional() && ((static_cast<int>(opt->count()) < opt->get_items_expected_min()))) {
                 return true;
+            }
 
         return false;
     }
@@ -2507,8 +2522,7 @@ class App {
             if(arg_rem <= remreq) {
                 for(const Option_p &opt : options_) {
                     if(opt->get_positional() && opt->required_) {
-                        if(static_cast<int>(opt->count()) < opt->get_items_expected() ||
-                           (opt->get_items_expected() < 0 && opt->count() == 0lu)) {
+                        if(static_cast<int>(opt->count()) < opt->get_items_expected_min()) {
                             if(validate_positionals_) {
                                 std::string pos = positional;
                                 pos = opt->_validate(pos, 0);
@@ -2528,7 +2542,7 @@ class App {
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
-               (static_cast<int>(opt->count()) < opt->get_items_expected() || opt->get_items_expected() < 0)) {
+               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
                 if(validate_positionals_) {
                     std::string pos = positional;
                     pos = opt->_validate(pos, 0);
@@ -2714,13 +2728,14 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
 
-        int num = op->get_items_expected();
+        int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
+        int max_num = op->get_items_expected_max();
 
         // Make sure we always eat the minimum for unlimited vectors
-        int collected = 0;
-        int result_count = 0;
-        // deal with flag like things
-        if(num == 0) {
+        int collected = 0;    // total number of arguments collected
+        int result_count = 0; // local variable for number of results in a single arg string
+        // deal with purely flag like things
+        if(max_num == 0) {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
             parse_order_.push_back(op.get());
@@ -2730,31 +2745,37 @@ class App {
             op->add_result(value, result_count);
             parse_order_.push_back(op.get());
             collected += result_count;
-            // If exact number expected
-            if(num > 0)
-                num = (num >= result_count) ? num - result_count : 0;
-
             // -Trest
         } else if(!rest.empty()) {
             op->add_result(rest, result_count);
             parse_order_.push_back(op.get());
             rest = "";
             collected += result_count;
-            // If exact number expected
-            if(num > 0)
-                num = (num >= result_count) ? num - result_count : 0;
         }
 
-        // Unlimited vector parser
-        if(num < 0) {
-            while(!args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE) {
-                if(collected >= -num) {
-                    // We could break here for allow extras, but we don't
+        // gather the minimum number of arguments
+        while(min_num > collected && !args.empty()) {
+            std::string current_ = args.back();
+            args.pop_back();
+            op->add_result(current_, result_count);
+            parse_order_.push_back(op.get());
+            collected += result_count;
+        }
 
-                    // If any positionals remain, don't keep eating
-                    if(_count_remaining_positionals() > 0)
-                        break;
+        if(min_num > collected) { // if we have run out of arguments and the minimum was not met
+            throw ArgumentMismatch::TypedAtLeast(op->get_name(), min_num, op->get_type_name());
+        }
+
+        if(max_num > collected || op->get_allow_extra_args()) { // we allow optional arguments
+            auto remreqpos = _count_remaining_positionals(true);
+            // we have met the minimum now optionally check up to the maximum
+            while((collected < max_num || op->get_allow_extra_args()) && !args.empty() &&
+                  _recognize(args.back(), false) == detail::Classifier::NONE) {
+                // If any required positionals remain, don't keep eating
+                if(remreqpos >= args.size()) {
+                    break;
                 }
+
                 op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
@@ -2764,19 +2785,17 @@ class App {
             // Allow -- to end an unlimited list and "eat" it
             if(!args.empty() && _recognize(args.back()) == detail::Classifier::POSITIONAL_MARK)
                 args.pop_back();
-
-        } else {
-            while(num > 0 && !args.empty()) {
-                std::string current_ = args.back();
-                args.pop_back();
-                op->add_result(current_, result_count);
+            // optional flag that didn't receive anything now get the default value
+            if(min_num == 0 && max_num > 0 && collected == 0) {
+                auto res = op->get_flag_value(arg_name, std::string{});
+                op->add_result(res);
                 parse_order_.push_back(op.get());
-                num -= result_count;
             }
+        }
 
-            if(num > 0) {
-                throw ArgumentMismatch::TypedAtLeast(op->get_name(), num, op->get_type_name());
-            }
+        // if we only partially completed a type then add an empty string for later processing
+        if(min_num > 0 && op->get_type_size_max() != min_num && collected % op->get_type_size_max() != 0) {
+            op->add_result(std::string{});
         }
 
         if(!rest.empty()) {

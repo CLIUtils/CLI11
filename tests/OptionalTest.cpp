@@ -104,6 +104,22 @@ TEST_F(TApp, BoostOptionalTest) {
     EXPECT_EQ(*opt, 3);
 }
 
+TEST_F(TApp, BoostOptionalTestZarg) {
+    boost::optional<int> opt;
+    app.add_option("-c,--count", opt)->expected(0, 1);
+    run();
+    EXPECT_FALSE(opt);
+
+    args = {"-c", "1"};
+    run();
+    EXPECT_TRUE(opt);
+    EXPECT_EQ(*opt, 1);
+    opt = {};
+    args = {"--count"};
+    run();
+    EXPECT_FALSE(opt);
+}
+
 TEST_F(TApp, BoostOptionalint64Test) {
     boost::optional<int64_t> opt;
     app.add_option("-c,--count", opt);
@@ -168,6 +184,22 @@ TEST_F(TApp, BoostOptionalVector) {
     run();
     EXPECT_FALSE(opt);
 
+    args = {"-v", "1", "4", "5"};
+    run();
+    EXPECT_TRUE(opt);
+    std::vector<int> expV{1, 4, 5};
+    EXPECT_EQ(*opt, expV);
+}
+
+TEST_F(TApp, BoostOptionalVectorEmpty) {
+    boost::optional<std::vector<int>> opt;
+    app.add_option<decltype(opt), std::vector<int>>("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
+    run();
+    EXPECT_FALSE(opt);
+    args = {"-v"};
+    opt = std::vector<int>{4, 3};
+    run();
+    EXPECT_FALSE(opt);
     args = {"-v", "1", "4", "5"};
     run();
     EXPECT_TRUE(opt);
