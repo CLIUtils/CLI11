@@ -2075,8 +2075,13 @@ class App {
             }
             if(!config_name_.empty()) {
                 try {
-                    std::vector<ConfigItem> values = config_formatter_->from_file(config_name_);
-                    _parse_config(values);
+                    auto path_result = detail::check_path(config_name_.c_str(), true);
+                    if(path_result == detail::path_exists::file) {
+                        std::vector<ConfigItem> values = config_formatter_->from_file(config_name_);
+                        _parse_config(values);
+                    } else if(config_required_) {
+                        throw FileError("Unable to find required config file");
+                    }
                 } catch(const FileError &) {
                     if(config_required_)
                         throw;
