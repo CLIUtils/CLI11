@@ -13,11 +13,24 @@
 #include <memory>
 #include <string>
 
+#if(defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_HAS_CXX17) && _HAS_CXX17 == 1)
+#define CLI11_CPP17
+#endif
+
 // C standard library
 // Only needed for existence checking
-// Could be swapped for filesystem in C++17
+#if defined CLI11_CPP17 && defined __has_include && !defined CLI11_HAS_FILESYSTEM
+#if __has_include(<filesystem>)
+#define CLI11_HAS_FILESYSTEM 1
+#endif
+#endif
+
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#include <filesystem>
+#else
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
 
 namespace CLI {
 
@@ -257,26 +270,48 @@ enum class path_exists {
     path,
 };
 
-inline path_exists check_path(const char *file, bool checkFile)
-{
-    struct stat buffer;
-    if (stat(file, &buffer) == 0)
-    {
-        if (checkFile)
-        {
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+inline path_exists check_path(const char *file, bool checkFile) {
+    try {
+        if(std::filesystem::exists(file)) {
+            if(checkFile) {
+                return (std::filesystem::is_directory(file)) ? path_exists::directory : path_exists::file;
+            }
+            return path_exists::path;
+        }
+    } catch(const std::filesystem::filesystem_error &) {
+    }
+    return path_exists::nonexistant;
+}
+#else
+inline path_exists check_path(const char *file, bool checkFile) {
+#if defined(_MSC_VER)
+    struct __stat64 buffer;
+    if(_stat64(file, &buffer) == 0) {
+        if(checkFile) {
             return ((buffer.st_mode & S_IFDIR) != 0) ? path_exists::directory : path_exists::file;
         }
         return path_exists::path;
     }
+#else
+    struct stat buffer;
+    if(stat(file, &buffer) == 0) {
+        if(checkFile) {
+            return ((buffer.st_mode & S_IFDIR) != 0) ? path_exists::directory : path_exists::file;
+        }
+        return path_exists::path;
+    }
+#endif
     return path_exists::nonexistant;
 }
-    /// Check for an existing file (returns error message if check fails)
+#endif
+/// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
   public:
     ExistingFileValidator() : Validator("FILE") {
         func_ = [](std::string &filename) {
             auto path_result = check_path(filename.c_str(), true);
-            if(path_result==path_exists::nonexistant) {
+            if(path_result == path_exists::nonexistant) {
                 return "File does not exist: " + filename;
             }
             if(path_result == path_exists::directory) {
@@ -1026,7 +1061,7 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
     std::pair<std::string, std::string> vals;
     trim(commandline);
     auto esp = commandline.find_first_of(' ', 1);
-    while(!ExistingFile(commandline.substr(0, esp)).empty()) {
+    while(detail::check_path(commandline.substr(0, esp).c_str(), true) != path_exists::file) {
         esp = commandline.find_first_of(' ', esp + 1);
         if(esp == std::string::npos) {
             // if we have reached the end and haven't found a valid file just assume the first argument is the
