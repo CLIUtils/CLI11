@@ -263,46 +263,43 @@ class CustomValidator : public Validator {
 // Therefore, this is in detail.
 namespace detail {
 
-enum class path_exists {
-    nonexistant,
-    file,
-    directory,
-    path,
-};
+    /// CLI enumeration of different file types
+enum class path_type { nonexistant, file, directory };
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-inline path_exists check_path(const char *file, bool checkFile) {
+/// get the type of the path from a file name
+inline path_type check_path(const char *file) {
     try {
-        if(std::filesystem::exists(file)) {
-            if(checkFile) {
-                return (std::filesystem::is_directory(file)) ? path_exists::directory : path_exists::file;
-            }
-            return path_exists::path;
+        auto stat = std::filesystem::status(file);
+        switch(stat.type()) {
+        case std::filesystem::file_type::none:
+        case std::filesystem::file_type::not_found:
+            return path_type::nonexistant;
+        case std::filesystem::file_type::directory:
+            return path_type::directory;
+        default:
+            return path_type::file;
         }
     } catch(const std::filesystem::filesystem_error &) {
+        return path_type::nonexistant;
     }
-    return path_exists::nonexistant;
+   
 }
 #else
-inline path_exists check_path(const char *file, bool checkFile) {
+/// get the type of the path from a file name
+inline path_type check_path(const char *file) {
 #if defined(_MSC_VER)
     struct __stat64 buffer;
     if(_stat64(file, &buffer) == 0) {
-        if(checkFile) {
-            return ((buffer.st_mode & S_IFDIR) != 0) ? path_exists::directory : path_exists::file;
-        }
-        return path_exists::path;
+        return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
     }
 #else
     struct stat buffer;
     if(stat(file, &buffer) == 0) {
-        if(checkFile) {
-            return ((buffer.st_mode & S_IFDIR) != 0) ? path_exists::directory : path_exists::file;
-        }
-        return path_exists::path;
+       return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
     }
 #endif
-    return path_exists::nonexistant;
+    return path_type::nonexistant;
 }
 #endif
 /// Check for an existing file (returns error message if check fails)
@@ -310,11 +307,11 @@ class ExistingFileValidator : public Validator {
   public:
     ExistingFileValidator() : Validator("FILE") {
         func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str(), true);
-            if(path_result == path_exists::nonexistant) {
+            auto path_result = check_path(filename.c_str());
+            if(path_result == path_type::nonexistant) {
                 return "File does not exist: " + filename;
             }
-            if(path_result == path_exists::directory) {
+            if(path_result == path_type::directory) {
                 return "File is actually a directory: " + filename;
             }
             return std::string();
@@ -327,11 +324,11 @@ class ExistingDirectoryValidator : public Validator {
   public:
     ExistingDirectoryValidator() : Validator("DIR") {
         func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str(), true);
-            if(path_result == path_exists::nonexistant) {
+            auto path_result = check_path(filename.c_str());
+            if(path_result == path_type::nonexistant) {
                 return "Directory does not exist: " + filename;
             }
-            if(path_result == path_exists::file) {
+            if(path_result == path_type::file) {
                 return "Directory is actually a file: " + filename;
             }
             return std::string();
@@ -344,8 +341,8 @@ class ExistingPathValidator : public Validator {
   public:
     ExistingPathValidator() : Validator("PATH(existing)") {
         func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str(), false);
-            if(path_result == path_exists::nonexistant) {
+            auto path_result = check_path(filename.c_str());
+            if(path_result == path_type::nonexistant) {
                 return "Path does not exist: " + filename;
             }
             return std::string();
@@ -358,8 +355,8 @@ class NonexistentPathValidator : public Validator {
   public:
     NonexistentPathValidator() : Validator("PATH(non-existing)") {
         func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str(), false);
-            if(path_result != path_exists::nonexistant) {
+            auto path_result = check_path(filename.c_str());
+            if(path_result != path_type::nonexistant) {
                 return "Path already exists: " + filename;
             }
             return std::string();
@@ -1061,7 +1058,7 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
     std::pair<std::string, std::string> vals;
     trim(commandline);
     auto esp = commandline.find_first_of(' ', 1);
-    while(detail::check_path(commandline.substr(0, esp).c_str(), true) != path_exists::file) {
+    while(detail::check_path(commandline.substr(0, esp).c_str()) != path_type::file) {
         esp = commandline.find_first_of(' ', esp + 1);
         if(esp == std::string::npos) {
             // if we have reached the end and haven't found a valid file just assume the first argument is the
