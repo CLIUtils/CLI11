@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+// [CLI11:verbatim]
 #if(defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_HAS_CXX17) && _HAS_CXX17 == 1)
 #define CLI11_CPP17
 #endif
@@ -31,6 +32,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
+
+// [CLI11:verbatim]
 
 namespace CLI {
 
