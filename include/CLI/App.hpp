@@ -2080,7 +2080,7 @@ class App {
                         std::vector<ConfigItem> values = config_formatter_->from_file(config_name_);
                         _parse_config(values);
                     } else if(config_required_) {
-                        throw FileError("Unable to find required config file");
+                        throw FileError::Missing(config_name_);
                     }
                 } catch(const FileError &) {
                     if(config_required_)
