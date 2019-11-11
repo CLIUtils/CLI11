@@ -266,7 +266,7 @@ class CustomValidator : public Validator {
 // Therefore, this is in detail.
 namespace detail {
 
-    /// CLI enumeration of different file types
+/// CLI enumeration of different file types
 enum class path_type { nonexistant, file, directory };
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
@@ -286,7 +286,6 @@ inline path_type check_path(const char *file) {
     } catch(const std::filesystem::filesystem_error &) {
         return path_type::nonexistant;
     }
-   
 }
 #else
 /// get the type of the path from a file name
@@ -299,7 +298,7 @@ inline path_type check_path(const char *file) {
 #else
     struct stat buffer;
     if(stat(file, &buffer) == 0) {
-       return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
+        return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
     }
 #endif
     return path_type::nonexistant;
@@ -523,9 +522,10 @@ template <typename T> std::string generate_set(const T &set) {
     using element_t = typename detail::element_type<T>::type;
     using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
     std::string out(1, '{');
-    out.append(detail::join(detail::smart_deref(set),
-                            [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
-                            ","));
+    out.append(detail::join(
+        detail::smart_deref(set),
+        [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
+        ","));
     out.push_back('}');
     return out;
 }
@@ -535,17 +535,18 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     using element_t = typename detail::element_type<T>::type;
     using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
     std::string out(1, '{');
-    out.append(detail::join(detail::smart_deref(map),
-                            [key_only](const iteration_type_t &v) {
-                                std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+    out.append(detail::join(
+        detail::smart_deref(map),
+        [key_only](const iteration_type_t &v) {
+            std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
 
-                                if(!key_only) {
-                                    res.append("->");
-                                    res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
-                                }
-                                return res;
-                            },
-                            ","));
+            if(!key_only) {
+                res.append("->");
+                res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
+            }
+            return res;
+        },
+        ","));
     out.push_back('}');
     return out;
 }
@@ -706,9 +707,10 @@ class IsMember : public Validator {
     /// You can pass in as many filter functions as you like, they nest (string only currently)
     template <typename T, typename... Args>
     IsMember(T &&set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : IsMember(std::forward<T>(set),
-                   [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-                   other...) {}
+        : IsMember(
+              std::forward<T>(set),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// definition of the default transformation object
@@ -766,9 +768,10 @@ class Transformer : public Validator {
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     Transformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : Transformer(std::forward<T>(mapping),
-                      [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-                      other...) {}
+        : Transformer(
+              std::forward<T>(mapping),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// translate named items to other or a value set
@@ -842,9 +845,10 @@ class CheckedTransformer : public Validator {
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     CheckedTransformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&... other)
-        : CheckedTransformer(std::forward<T>(mapping),
-                             [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-                             other...) {}
+        : CheckedTransformer(
+              std::forward<T>(mapping),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// Helper function to allow ignore_case to be passed to IsMember or Transform
