@@ -167,6 +167,10 @@ TEST(StringBased, SpacesSections) {
     EXPECT_EQ("four", output.at(1).inputs.at(0));
 }
 
+TEST(StringBased, file_error) {
+    EXPECT_THROW(std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_file("nonexist_file"), CLI::FileError);
+}
+
 TEST_F(TApp, IniNotRequired) {
 
     TempFile tmpini{"TestIniTmp.ini"};
