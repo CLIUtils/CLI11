@@ -360,7 +360,7 @@ class PositiveNumber : public Validator {
     }
 };
 
-/// Validate the argument is a number and greater than or equal to 0
+/// Validate the argument is a number
 class Number : public Validator {
   public:
     Number() : Validator("NUMBER") {
