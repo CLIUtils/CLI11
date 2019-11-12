@@ -343,10 +343,26 @@ class IPV4Validator : public Validator {
     }
 };
 
-/// Validate the argument is a number and greater than or equal to 0
+/// Validate the argument is a number and greater than 0
 class PositiveNumber : public Validator {
   public:
     PositiveNumber() : Validator("POSITIVE") {
+        func_ = [](std::string &number_str) {
+            double number;
+            if(!detail::lexical_cast(number_str, number)) {
+                return "Failed parsing number: (" + number_str + ')';
+            }
+            if(number <= 0) {
+                return "Number less or equal to 0: (" + number_str + ')';
+            }
+            return std::string();
+        };
+    }
+};
+/// Validate the argument is a number and greater than or equal to 0
+class NonNegativeNumber : public Validator {
+  public:
+    NonNegativeNumber() : Validator("NONNEGATIVE") {
         func_ = [](std::string &number_str) {
             double number;
             if(!detail::lexical_cast(number_str, number)) {
@@ -395,6 +411,9 @@ const detail::IPV4Validator ValidIPV4;
 
 /// Check for a positive number
 const detail::PositiveNumber PositiveNumber;
+
+/// Check for a non-negative number
+const detail::NonNegativeNumber NonNegativeNumber;
 
 /// Check for a number
 const detail::Number Number;
