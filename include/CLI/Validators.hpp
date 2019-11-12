@@ -348,7 +348,7 @@ class PositiveNumber : public Validator {
   public:
     PositiveNumber() : Validator("POSITIVE") {
         func_ = [](std::string &number_str) {
-            int number;
+            double number;
             if(!detail::lexical_cast(number_str, number)) {
                 return "Failed parsing number: (" + number_str + ')';
             }

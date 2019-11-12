@@ -312,7 +312,11 @@ TEST(Validators, PositiveValidator) {
     EXPECT_TRUE(CLI::PositiveNumber(num).empty());
     num = "0";
     EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    num = "+0.5";
+    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
     num = "-1";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    num = "-1.5";
     EXPECT_FALSE(CLI::PositiveNumber(num).empty());
     num = "a";
     EXPECT_FALSE(CLI::PositiveNumber(num).empty());
