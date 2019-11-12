@@ -381,7 +381,7 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::NonexistentPath`: Requires that the path does not exist.
 -   `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 -   `CLI::Bounded(min,max)`: 🆕 Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
--   `CLI::PositiveNumber`: 🆕 Requires the number be greater to 0
+-   `CLI::PositiveNumber`: 🆕 Requires the number be greater than 0
 -   `CLI::NonNegativeNumber`: 🆕 Requires the number be greater or equal to 0
 -   `CLI::Number`: 🆕 Requires the input be a number.
 -   `CLI::ValidIPV4`: 🆕 Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
