@@ -353,7 +353,7 @@ class PositiveNumber : public Validator {
                 return "Failed parsing number: (" + number_str + ')';
             }
             if(number < 0) {
-                return "Number less then 0: (" + number_str + ')';
+                return "Number less than 0: (" + number_str + ')';
             }
             return std::string();
         };
