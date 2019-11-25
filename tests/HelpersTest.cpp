@@ -311,11 +311,34 @@ TEST(Validators, PositiveValidator) {
     num = "10000";
     EXPECT_TRUE(CLI::PositiveNumber(num).empty());
     num = "0";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    num = "+0.5";
     EXPECT_TRUE(CLI::PositiveNumber(num).empty());
     num = "-1";
     EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    num = "-1.5";
+    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
     num = "a";
     EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+}
+
+TEST(Validators, NonNegativeValidator) {
+    std::string num = "1.1.1.1";
+    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    num = "1";
+    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    num = "10000";
+    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    num = "0";
+    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    num = "+0.5";
+    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    num = "-1";
+    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    num = "-1.5";
+    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    num = "a";
+    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
 }
 
 TEST(Validators, NumberValidator) {
