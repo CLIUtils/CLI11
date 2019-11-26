@@ -202,7 +202,7 @@ add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)
 set_property(TEST enum_fail PROPERTY PASS_REGULAR_EXPRESSION
     "--level: Check 4 value in {" "FAILED")
-	
+
 add_cli_exe(enum_ostream enum_ostream.cpp)
 add_test(NAME enum_ostream_pass COMMAND enum_ostream --level medium)
 set_property(TEST enum_ostream_pass PROPERTY PASS_REGULAR_EXPRESSION
