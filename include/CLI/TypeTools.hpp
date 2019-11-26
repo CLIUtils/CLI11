@@ -83,8 +83,7 @@ namespace detail {
 template <typename T, typename Enable = void> struct element_type { using type = T; };
 
 template <typename T> struct element_type<T, typename std::enable_if<is_copyable_ptr<T>::value>::type> {
-    using type =
-         typename std::pointer_traits<T>::element_type;
+    using type = typename std::pointer_traits<T>::element_type;
 };
 
 /// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
