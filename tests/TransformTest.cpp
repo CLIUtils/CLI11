@@ -1,5 +1,6 @@
 #include "app_helper.hpp"
 
+#include <array>
 #include <unordered_map>
 
 #if defined(CLI11_CPP17)
@@ -147,6 +148,31 @@ TEST_F(TApp, SimpleNumericalTransformFn) {
     auto opt =
         app.add_option("-s", value)
             ->transform(CLI::Transformer(std::vector<std::pair<std::string, int>>{{"one", 1}}, CLI::ignore_case));
+    args = {"-s", "ONe"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 1);
+}
+
+TEST_F(TApp, SimpleNumericalTransformFnVector) {
+    std::vector<std::pair<std::string, int>> conversions{std::make_pair(std::string("one"), 1),
+                                                         std::make_pair(std::string("two"), 2)};
+    int value;
+    auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
+    args = {"-s", "ONe"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 1);
+}
+
+TEST_F(TApp, SimpleNumericalTransformFnArray) {
+    std::array<std::pair<std::string, int>, 2> conversions{std::make_pair(std::string("one"), 1),
+                                                           std::make_pair(std::string("two"), 2)};
+
+    int value;
+    auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
     args = {"-s", "ONe"};
     run();
     EXPECT_EQ(1u, app.count("-s"));
