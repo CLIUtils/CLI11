@@ -156,8 +156,7 @@ TEST_F(TApp, SimpleNumericalTransformFn) {
 }
 
 TEST_F(TApp, SimpleNumericalTransformFnVector) {
-    std::vector<std::pair<std::string, int>> conversions{std::make_pair(std::string("one"), 1),
-                                                         std::make_pair(std::string("two"), 2)};
+    std::vector<std::pair<std::string, int>> conversions{{"one", 1}, {"two", 2}};
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
     args = {"-s", "ONe"};
@@ -168,8 +167,9 @@ TEST_F(TApp, SimpleNumericalTransformFnVector) {
 }
 
 TEST_F(TApp, SimpleNumericalTransformFnArray) {
-    std::array<std::pair<std::string, int>, 2> conversions{std::make_pair(std::string("one"), 1),
-                                                           std::make_pair(std::string("two"), 2)};
+    std::array<std::pair<std::string, int>, 2> conversions;
+    conversions[0] = std::make_pair(std::string("one"), 1);
+    conversions[1] = std::make_pair(std::string("two"), 2);
 
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
