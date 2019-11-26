@@ -758,7 +758,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     typename std::tuple_element<1, XC>::type v2;
     bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[0], v1);
     if(strings.size() > 1) {
-        retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
+        retval = retval && lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
     }
     if(retval) {
         output = T{v1, v2};
@@ -773,15 +773,17 @@ template <class T,
                           expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 1,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    bool retval = true;
     output.clear();
     output.reserve(strings.size());
     for(const auto &elem : strings) {
 
         output.emplace_back();
-        retval &= lexical_assign<typename T::value_type, typename XC::value_type>(elem, output.back());
+        bool retval = lexical_assign<typename T::value_type, typename XC::value_type>(elem, output.back());
+        if(!retval) {
+            return false;
+        }
     }
-    return (!output.empty()) && retval;
+    return (!output.empty());
 }
 
 /// Lexical conversion of a vector types with type size of two
@@ -791,15 +793,14 @@ template <class T,
                           expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 2,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    bool retval = true;
     output.clear();
     for(size_t ii = 0; ii < strings.size(); ii += 2) {
 
         typename std::tuple_element<0, typename XC::value_type>::type v1;
         typename std::tuple_element<1, typename XC::value_type>::type v2;
-        retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
+        bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
         if(strings.size() > ii + 1) {
-            retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
+            retval = retval && lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
         }
         if(retval) {
             output.emplace_back(v1, v2);
@@ -807,7 +808,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
             return false;
         }
     }
-    return (!output.empty()) && retval;
+    return (!output.empty());
 }
 
 /// Conversion to a vector type using a particular single type as the conversion type
@@ -823,7 +824,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     for(const auto &elem : strings) {
 
         output.emplace_back();
-        retval &= lexical_assign<typename T::value_type, XC>(elem, output.back());
+        retval = retval && lexical_assign<typename T::value_type, XC>(elem, output.back());
     }
     return (!output.empty()) && retval;
 }
@@ -857,12 +858,12 @@ template <class T, class XC, std::size_t I>
     I<type_count<T>::value, bool>::type tuple_conversion(const std::vector<std::string> &strings, T &output) {
     bool retval = true;
     if(strings.size() > I) {
-        retval &= lexical_assign<
-            typename std::tuple_element<I, T>::type,
-            typename std::conditional<is_tuple_like<XC>::value, typename std::tuple_element<I, XC>::type, XC>::type>(
-            strings[I], std::get<I>(output));
+        retval = retval && lexical_assign<typename std::tuple_element<I, T>::type,
+                                          typename std::conditional<is_tuple_like<XC>::value,
+                                                                    typename std::tuple_element<I, XC>::type,
+                                                                    XC>::type>(strings[I], std::get<I>(output));
     }
-    retval &= tuple_conversion<T, XC, I + 1>(strings, output);
+    retval = retval && tuple_conversion<T, XC, I + 1>(strings, output);
     return retval;
 }
 

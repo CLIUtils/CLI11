@@ -751,10 +751,11 @@ class App {
                               std::string flag_description = "") {
 
         CLI::callback_t fun = [function](const CLI::results_t &res) {
-            bool trigger;
+            bool trigger{false};
             auto result = CLI::detail::lexical_cast(res[0], trigger);
-            if(trigger)
+            if(result && trigger) {
                 function();
+            }
             return result;
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
