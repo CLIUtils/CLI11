@@ -272,7 +272,7 @@ std::string value_string(const T &value) {
 /// for other types just use the regular to_string function
 template <typename T,
           enable_if_t<!std::is_enum<T>::value && !std::is_arithmetic<T>::value, detail::enabler> = detail::dummy>
-std::string value_string(const T &value) {
+auto value_string(const T &value) -> decltype(to_string(value)) {
     return to_string(value);
 }
 
