@@ -379,7 +379,7 @@ class IPV4Validator : public Validator {
             for(const auto &var : result) {
                 bool retval = detail::lexical_cast(var, num);
                 if(!retval) {
-                    return std::string( "Failed parsing number (") + var + ')';
+                    return std::string("Failed parsing number (") + var + ')';
                 }
                 if(num < 0 || num > 255) {
                     return std::string("Each IP number must be between 0 and 255 ") + var;
@@ -481,7 +481,8 @@ class Range : public Validator {
             T val;
             bool converted = detail::lexical_cast(input, val);
             if((!converted) || (val < min || val > max))
-                return std::string("Value ") + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
+                return std::string("Value ") + input + " not in range " + std::to_string(min) + " to " +
+                       std::to_string(max);
 
             return std::string();
         };
@@ -942,7 +943,8 @@ class AsNumberWithUnit : public Validator {
 
             bool converted = detail::lexical_cast(input, num);
             if(!converted) {
-                throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
+                throw ValidationError(std::string("Value ") + input + " could not be converted to " +
+                                      detail::type_name<Number>());
             }
 
             if(unit.empty()) {
@@ -990,7 +992,8 @@ class AsNumberWithUnit : public Validator {
             for(auto &kv : mapping) {
                 auto s = detail::to_lower(kv.first);
                 if(lower_mapping.count(s)) {
-                    throw ValidationError("Several matching lowercase unit representations are found: " + s);
+                    throw ValidationError(std::string("Several matching lowercase unit representations are found: ") +
+                                          s);
                 }
                 lower_mapping[detail::to_lower(kv.first)] = kv.second;
             }
