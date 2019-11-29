@@ -709,7 +709,7 @@ class IsMember : public Validator {
             if(res.first) {
                 // Make sure the version in the input string is identical to the one in the set
                 if(filter_fn) {
-                    input = detail::to_string(detail::pair_adaptor<element_t>::first(*(res.second)));
+                    input = detail::value_string(detail::pair_adaptor<element_t>::first(*(res.second)));
                 }
 
                 // Return empty error string (success)
@@ -778,7 +778,7 @@ class Transformer : public Validator {
             }
             auto res = detail::search(mapping, b, filter_fn);
             if(res.first) {
-                input = detail::to_string(detail::pair_adaptor<element_t>::second(*res.second));
+                input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
             }
             return std::string{};
         };
@@ -846,12 +846,12 @@ class CheckedTransformer : public Validator {
                 }
                 auto res = detail::search(mapping, b, filter_fn);
                 if(res.first) {
-                    input = detail::to_string(detail::pair_adaptor<element_t>::second(*res.second));
+                    input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
                     return std::string{};
                 }
             }
             for(const auto &v : detail::smart_deref(mapping)) {
-                auto output_string = detail::to_string(detail::pair_adaptor<element_t>::second(v));
+                auto output_string = detail::value_string(detail::pair_adaptor<element_t>::second(v));
                 if(output_string == input) {
                     return std::string();
                 }

@@ -259,6 +259,22 @@ template <typename T1,
 std::string checked_to_string(T &&) {
     return std::string{};
 }
+/// get a string as a convertible value for arithmetic types
+template <typename T, enable_if_t<std::is_arithmetic<T>::value, detail::enabler> = detail::dummy>
+std::string value_string(const T &value) {
+    return std::to_string(value);
+}
+/// get a string as a convertible value for enumerations
+template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
+std::string value_string(const T &value) {
+    return std::to_string(static_cast<typename std::underlying_type<T>::type>(value));
+}
+/// for other types just use the regular to_string function
+template <typename T,
+          enable_if_t<!std::is_enum<T>::value && !std::is_arithmetic<T>::value, detail::enabler> = detail::dummy>
+auto value_string(const T &value) -> decltype(to_string(value)) {
+    return to_string(value);
+}
 
 /// This will only trigger for actual void type
 template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
