@@ -58,7 +58,7 @@ class Validator {
     /// Returns a string error message if validation fails.
     std::function<std::string(std::string &)> func_{[](std::string &) { return std::string{}; }};
     /// The name for search purposes of the Validator
-    std::string name_;
+    std::string name_{};
     /// A Validator will only apply to an indexed value (-1 is all elements)
     int application_index_ = -1;
     /// Enable for Validator to allow it to be disabled if need be

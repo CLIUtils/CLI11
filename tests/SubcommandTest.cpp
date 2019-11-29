@@ -809,12 +809,15 @@ TEST_F(TApp, RequiredPosInSubcommand) {
 
 struct SubcommandProgram : public TApp {
 
-    CLI::App *start;
-    CLI::App *stop;
+    CLI::App *start{nullptr};
+    CLI::App *stop{nullptr};
 
-    int dummy;
-    std::string file;
-    int count;
+    int dummy{};
+    std::string file{};
+    int count{};
+
+    SubcommandProgram(const SubcommandProgram &) = delete;
+    SubcommandProgram &operator=(const SubcommandProgram &) = delete;
 
     SubcommandProgram() {
         app.set_help_all_flag("--help-all");
@@ -1092,10 +1095,10 @@ TEST_F(SubcommandProgram, CallbackOrderImmediate) {
 
 struct ManySubcommands : public TApp {
 
-    CLI::App *sub1;
-    CLI::App *sub2;
-    CLI::App *sub3;
-    CLI::App *sub4;
+    CLI::App *sub1{nullptr};
+    CLI::App *sub2{nullptr};
+    CLI::App *sub3{nullptr};
+    CLI::App *sub4{nullptr};
 
     ManySubcommands() {
         app.allow_extras();
@@ -1105,6 +1108,9 @@ struct ManySubcommands : public TApp {
         sub4 = app.add_subcommand("sub4");
         args = {"sub1", "sub2", "sub3"};
     }
+
+    ManySubcommands(const ManySubcommands &) = delete;
+    ManySubcommands &operator=(const ManySubcommands &) = delete;
 };
 
 TEST_F(ManySubcommands, Required1Exact) {

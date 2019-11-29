@@ -42,13 +42,13 @@ inline std::string ini_join(std::vector<std::string> args) {
 /// Holds values to load into Options
 struct ConfigItem {
     /// This is the list of parents
-    std::vector<std::string> parents;
+    std::vector<std::string> parents{};
 
     /// This is the name
-    std::string name;
+    std::string name{};
 
     /// Listing of inputs
-    std::vector<std::string> inputs;
+    std::vector<std::string> inputs{};
 
     /// The list of parents and name joined by "."
     std::string fullname() const {
@@ -61,7 +61,7 @@ struct ConfigItem {
 /// This class provides a converter for configuration files.
 class Config {
   protected:
-    std::vector<ConfigItem> items;
+    std::vector<ConfigItem> items{};
 
   public:
     /// Convert an app into a configuration

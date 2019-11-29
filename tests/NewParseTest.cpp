@@ -203,8 +203,8 @@ class spair {
   public:
     spair() = default;
     spair(const std::string &s1, const std::string &s2) : first(s1), second(s2) {}
-    std::string first;
-    std::string second;
+    std::string first{};
+    std::string second{};
 };
 // an example of custom converter that can be used to add new parsing options
 // On MSVC and possibly some other new compilers this can be a free standing function without the template
@@ -352,7 +352,7 @@ template <class X> class objWrapper {
     const X &value() const { return val_; }
 
   private:
-    X val_;
+    X val_{};
 };
 
 // I think there is a bug with the is_assignable in visual studio 2015 it is fixed in later versions
@@ -486,14 +486,17 @@ template <class X> class AobjWrapper {
     // delete all other constructors
     template <class TT> AobjWrapper(TT &&obj) = delete;
     // single assignment operator
-    void operator=(X val) { val_ = val; }
+    AobjWrapper &operator=(X val) {
+        val_ = val;
+        return *this;
+    }
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
     const X &value() const { return val_; }
 
   private:
-    X val_;
+    X val_{};
 };
 
 static_assert(std::is_assignable<AobjWrapper<uint16_t> &, uint16_t>::value,

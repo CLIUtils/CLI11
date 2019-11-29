@@ -13,7 +13,7 @@ using input_t = std::vector<std::string>;
 
 struct TApp : public ::testing::Test {
     CLI::App app{"My Test Program"};
-    input_t args;
+    input_t args{};
 
     void run() {
         // It is okay to re-parse - clear is called automatically before a parse.
@@ -24,7 +24,7 @@ struct TApp : public ::testing::Test {
 };
 
 class TempFile {
-    std::string _name;
+    std::string _name{};
 
   public:
     explicit TempFile(std::string name) : _name(std::move(name)) {
