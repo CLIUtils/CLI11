@@ -65,10 +65,10 @@ class App {
     ///@{
 
     /// Subcommand name or program name (from parser if name is empty)
-    std::string name_;
+    std::string name_{};
 
     /// Description of the current program/subcommand
-    std::string description_;
+    std::string description_{};
 
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
@@ -96,32 +96,32 @@ class App {
     bool immediate_callback_{false};
 
     /// This is a function that runs prior to the start of parsing
-    std::function<void(size_t)> pre_parse_callback_;
+    std::function<void(size_t)> pre_parse_callback_{};
 
     /// This is a function that runs when parsing has finished.
-    std::function<void()> parse_complete_callback_;
+    std::function<void()> parse_complete_callback_{};
     /// This is a function that runs when all processing has completed
-    std::function<void()> final_callback_;
+    std::function<void()> final_callback_{};
 
     ///@}
     /// @name Options
     ///@{
 
     /// The default values for options, customizable and changeable INHERITABLE
-    OptionDefaults option_defaults_;
+    OptionDefaults option_defaults_{};
 
     /// The list of options, stored locally
-    std::vector<Option_p> options_;
+    std::vector<Option_p> options_{};
 
     ///@}
     /// @name Help
     ///@{
 
     /// Footer to put after all options in the help output INHERITABLE
-    std::string footer_;
+    std::string footer_{};
 
     /// This is a function that generates a footer to put after all other options in help output
-    std::function<std::string()> footer_callback_;
+    std::function<std::string()> footer_callback_{};
 
     /// A pointer to the help flag if there is one INHERITABLE
     Option *help_ptr_{nullptr};
@@ -133,7 +133,7 @@ class App {
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
 
     /// The error message printing function INHERITABLE
-    std::function<std::string(const App *, const Error &e)> failure_message_ = FailureMessage::simple;
+    std::function<std::string(const App *, const Error &e)> failure_message_{FailureMessage::simple};
 
     ///@}
     /// @name Parsing
@@ -144,35 +144,35 @@ class App {
     /// Pair of classifier, string for missing options. (extra detail is removed on returning from parse)
     ///
     /// This is faster and cleaner than storing just a list of strings and reparsing. This may contain the -- separator.
-    missing_t missing_;
+    missing_t missing_{};
 
     /// This is a list of pointers to options with the original parse order
-    std::vector<Option *> parse_order_;
+    std::vector<Option *> parse_order_{};
 
     /// This is a list of the subcommands collected, in order
-    std::vector<App *> parsed_subcommands_;
+    std::vector<App *> parsed_subcommands_{};
 
     /// this is a list of subcommands that are exclusionary to this one
-    std::set<App *> exclude_subcommands_;
+    std::set<App *> exclude_subcommands_{};
 
     /// This is a list of options which are exclusionary to this App, if the options were used this subcommand should
     /// not be
-    std::set<Option *> exclude_options_;
+    std::set<Option *> exclude_options_{};
 
     /// this is a list of subcommands or option groups that are required by this one, the list is not mutual,  the
     /// listed subcommands do not require this one
-    std::set<App *> need_subcommands_;
+    std::set<App *> need_subcommands_{};
 
     /// This is a list of options which are required by this app, the list is not mutual, listed options do not need the
     /// subcommand not be
-    std::set<Option *> need_options_;
+    std::set<Option *> need_options_{};
 
     ///@}
     /// @name Subcommands
     ///@{
 
     /// Storage for subcommand list
-    std::vector<App_p> subcommands_;
+    std::vector<App_p> subcommands_{};
 
     /// If true, the program name is not case sensitive INHERITABLE
     bool ignore_case_{false};
@@ -204,32 +204,32 @@ class App {
     App *parent_{nullptr};
 
     /// Counts the number of times this command/subcommand was parsed
-    size_t parsed_ = 0;
+    size_t parsed_{0};
 
     /// Minimum required subcommands (not inheritable!)
-    size_t require_subcommand_min_ = 0;
+    size_t require_subcommand_min_{0};
 
     /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited INHERITABLE
-    size_t require_subcommand_max_ = 0;
+    size_t require_subcommand_max_{0};
 
     /// Minimum required options (not inheritable!)
-    size_t require_option_min_ = 0;
+    size_t require_option_min_{0};
 
     /// Max number of options allowed. 0 is unlimited (not inheritable)
-    size_t require_option_max_ = 0;
+    size_t require_option_max_{0};
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
 
     /// Alias names for the subcommand
-    std::vector<std::string> aliases_;
+    std::vector<std::string> aliases_{};
 
     ///@}
     /// @name Config
     ///@{
 
     /// The name of the connected config file
-    std::string config_name_;
+    std::string config_name_{};
 
     /// True if ini is required (throws if not present), if false simply keep going.
     bool config_required_{false};
@@ -284,6 +284,9 @@ class App {
         : App(app_description, app_name, nullptr) {
         set_help_flag("-h,--help", "Print this help message and exit");
     }
+
+    App(const App &) = delete;
+    App &operator=(const App &) = delete;
 
     /// virtual destructor
     virtual ~App() = default;

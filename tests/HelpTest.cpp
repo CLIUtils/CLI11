@@ -570,8 +570,8 @@ TEST(Exit, ExitCodes) {
 
 struct CapturedHelp : public ::testing::Test {
     CLI::App app{"My Test Program"};
-    std::stringstream out;
-    std::stringstream err;
+    std::stringstream out{};
+    std::stringstream err{};
 
     int run(const CLI::Error &e) { return app.exit(e, out, err); }
 

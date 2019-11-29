@@ -39,7 +39,7 @@ class FormatterBase {
 
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
-    std::map<std::string, std::string> labels_;
+    std::map<std::string, std::string> labels_{};
 
     ///@}
     /// @name Basic

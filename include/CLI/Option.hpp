@@ -233,33 +233,33 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// A list of the short names (`-a`) without the leading dashes
-    std::vector<std::string> snames_;
+    std::vector<std::string> snames_{};
 
     /// A list of the long names (`--long`) without the leading dashes
-    std::vector<std::string> lnames_;
+    std::vector<std::string> lnames_{};
 
     /// A list of the flag names with the appropriate default value, the first part of the pair should be duplicates of
     /// what is in snames or lnames but will trigger a particular response on a flag
-    std::vector<std::pair<std::string, std::string>> default_flag_values_;
+    std::vector<std::pair<std::string, std::string>> default_flag_values_{};
 
     /// a list of flag names with specified default values;
-    std::vector<std::string> fnames_;
+    std::vector<std::string> fnames_{};
 
     /// A positional name
-    std::string pname_;
+    std::string pname_{};
 
     /// If given, check the environment for this option
-    std::string envname_;
+    std::string envname_{};
 
     ///@}
     /// @name Help
     ///@{
 
     /// The description for help strings
-    std::string description_;
+    std::string description_{};
 
     /// A human readable default value, either manually set, captured, or captured by default
-    std::string default_str_;
+    std::string default_str_{};
 
     /// A human readable type value, set when App creates this
     ///
@@ -267,7 +267,7 @@ class Option : public OptionBase<Option> {
     std::function<std::string()> type_name_{[]() { return std::string(); }};
 
     /// Run this function to capture a default (ignore if empty)
-    std::function<std::string()> default_function_;
+    std::function<std::string()> default_function_{};
 
     ///@}
     /// @name Configuration
@@ -285,32 +285,32 @@ class Option : public OptionBase<Option> {
     int expected_max_{1};
 
     /// A list of Validators to run on each value parsed
-    std::vector<Validator> validators_;
+    std::vector<Validator> validators_{};
 
     /// A list of options that are required with this option
-    std::set<Option *> needs_;
+    std::set<Option *> needs_{};
 
     /// A list of options that are excluded with this option
-    std::set<Option *> excludes_;
+    std::set<Option *> excludes_{};
 
     ///@}
     /// @name Other
     ///@{
 
     /// Remember the parent app
-    App *parent_;
+    App *parent_{nullptr};
 
     /// Options store a callback to do all the work
-    callback_t callback_;
+    callback_t callback_{};
 
     ///@}
     /// @name Parsing results
     ///@{
 
     /// complete Results of parsing
-    results_t results_;
+    results_t results_{};
     /// results after reduction
-    results_t proc_results_;
+    results_t proc_results_{};
     /// enumeration for the option state machine
     enum class option_state {
         parsing = 0,      //!< The option is currently collecting parsed results
@@ -335,6 +335,9 @@ class Option : public OptionBase<Option> {
   public:
     /// @name Basic
     ///@{
+
+    Option(const Option &) = delete;
+    Option &operator=(const Option &) = delete;
 
     /// Count the total number of times an option was passed
     size_t count() const { return results_.size(); }

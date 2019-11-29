@@ -370,16 +370,20 @@ TEST_F(TApp, InvalidOptions) {
 
 struct ManyGroups : public TApp {
 
-    CLI::Option_group *main;
-    CLI::Option_group *g1;
-    CLI::Option_group *g2;
-    CLI::Option_group *g3;
-    std::string name1;
-    std::string name2;
-    std::string name3;
-    std::string val1;
-    std::string val2;
-    std::string val3;
+    CLI::Option_group *main{nullptr};
+    CLI::Option_group *g1{nullptr};
+    CLI::Option_group *g2{nullptr};
+    CLI::Option_group *g3{nullptr};
+    std::string name1{};
+    std::string name2{};
+    std::string name3{};
+    std::string val1{};
+    std::string val2{};
+    std::string val3{};
+
+    ManyGroups(const ManyGroups &) = delete;
+    ManyGroups &operator=(const ManyGroups &) = delete;
+
     ManyGroups() {
         main = app.add_option_group("main", "the main outer group");
         g1 = main->add_option_group("g1", "group1 description");
