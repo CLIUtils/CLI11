@@ -198,6 +198,7 @@ TEST_F(TApp, BuiltinComplexSingleImag) {
     EXPECT_DOUBLE_EQ(0, comp.imag());
 }
 
+/// Simple class containing two strings useful for testing lexical cast and conversions
 class spair {
   public:
     spair() = default;

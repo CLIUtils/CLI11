@@ -294,7 +294,7 @@ TEST_F(TApp, OneStringEqualVersionSingleString) {
 TEST_F(TApp, OneStringEqualVersionSingleStringQuoted) {
     std::string str;
     app.add_option("-s,--string", str);
-    app.parse("--string=\"this is my quoted string\"");
+    app.parse(R"raw(--string="this is my quoted string")raw");
     EXPECT_EQ(1u, app.count("-s"));
     EXPECT_EQ(1u, app.count("--string"));
     EXPECT_EQ(str, "this is my quoted string");
@@ -305,7 +305,7 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultiple) {
     app.add_option("-s,--string", str);
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
-    app.parse("--string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`");
+    app.parse(R"raw(--string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"`)raw");
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -316,12 +316,12 @@ TEST_F(TApp, OneStringEqualVersionSingleStringEmbeddedEqual) {
     app.add_option("-s,--string", str);
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
-    app.parse("--string=\"app=\\\"test1 b\\\" test2=\\\"frogs\\\"\" -t 'qstring 2' -m=`\"quoted string\"`");
+    app.parse(R"raw(--string="app=\"test1 b\" test2=\"frogs\"" -t 'qstring 2' -m=`"quoted string"`)raw");
     EXPECT_EQ(str, "app=\"test1 b\" test2=\"frogs\"");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
 
-    app.parse("--string=\"app='test1 b' test2='frogs'\" -t 'qstring 2' -m=`\"quoted string\"`");
+    app.parse(R"raw(--string="app='test1 b' test2='frogs'" -t 'qstring 2' -m=`"quoted string"`)raw");
     EXPECT_EQ(str, "app='test1 b' test2='frogs'");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -333,12 +333,12 @@ TEST_F(TApp, OneStringEqualVersionSingleStringEmbeddedEqualWindowsStyle) {
     app.add_option("-t,--tstr", str2);
     app.add_option("--mstr", str3);
     app.allow_windows_style_options();
-    app.parse("/string:\"app:\\\"test1 b\\\" test2:\\\"frogs\\\"\" /t 'qstring 2' /mstr:`\"quoted string\"`");
+    app.parse(R"raw(/string:"app:\"test1 b\" test2:\"frogs\"" /t 'qstring 2' /mstr:`"quoted string"`)raw");
     EXPECT_EQ(str, "app:\"test1 b\" test2:\"frogs\"");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
 
-    app.parse("/string:\"app:'test1 b' test2:'frogs'\" /t 'qstring 2' /mstr:`\"quoted string\"`");
+    app.parse(R"raw(/string:"app:'test1 b' test2:'frogs'" /t 'qstring 2' /mstr:`"quoted string"`)raw");
     EXPECT_EQ(str, "app:'test1 b' test2:'frogs'");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -350,7 +350,7 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleMixedStyle) {
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
     app.allow_windows_style_options();
-    app.parse("/string:\"this is my quoted string\" /t 'qstring 2' -m=`\"quoted string\"`");
+    app.parse(R"raw(/string:"this is my quoted string" /t 'qstring 2' -m=`"quoted string"`)raw");
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -361,7 +361,7 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleInMiddle) {
     app.add_option("-s,--string", str);
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
-    app.parse(R"raw(--string="this is my quoted string" -t "qst\"ring 2" -m=`"quoted string"`")raw");
+    app.parse(R"raw(--string="this is my quoted string" -t "qst\"ring 2" -m=`"quoted string"`)raw");
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qst\"ring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -384,7 +384,7 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqual) {
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
     app.add_option("-j,--jstr", str4);
-    app.parse("--string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"` --jstr=Unquoted");
+    app.parse(R"raw(--string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"` --jstr=Unquoted)raw");
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");
@@ -397,8 +397,9 @@ TEST_F(TApp, OneStringEqualVersionSingleStringQuotedMultipleWithEqualAndProgram)
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
     app.add_option("-j,--jstr", str4);
-    app.parse("program --string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"` --jstr=Unquoted",
-              true);
+    app.parse(
+        R"raw(program --string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"` --jstr=Unquoted)raw",
+        true);
     EXPECT_EQ(str, "this is my quoted string");
     EXPECT_EQ(str2, "qstring 2");
     EXPECT_EQ(str3, "\"quoted string\"");

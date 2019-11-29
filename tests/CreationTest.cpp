@@ -704,7 +704,7 @@ class Unstreamable {
     int x_ = -1;
 
   public:
-    Unstreamable() {}
+    Unstreamable() = default;
     int get_x() const { return x_; }
     void set_x(int x) { x_ = x; }
 };
@@ -719,7 +719,8 @@ std::istream &operator>>(std::istream &in, Unstreamable &value) {
     return in;
 }
 // these need to be different classes otherwise the definitions conflict
-static_assert(CLI::detail::is_istreamable<Unstreamable>::value, "Unstreamable type is still unstreamable");
+static_assert(CLI::detail::is_istreamable<Unstreamable>::value,
+              "Unstreamable type is still unstreamable and it should be");
 
 TEST_F(TApp, MakeUnstreamableOptions) {
     Unstreamable value;

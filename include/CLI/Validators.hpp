@@ -373,17 +373,16 @@ class IPV4Validator : public Validator {
         func_ = [](std::string &ip_addr) {
             auto result = CLI::detail::split(ip_addr, '.');
             if(result.size() != 4) {
-                return "Invalid IPV4 address must have four parts (" + ip_addr + ')';
+                return std::string("Invalid IPV4 address must have four parts (") + ip_addr + ')';
             }
             int num;
-            bool retval = true;
             for(const auto &var : result) {
-                retval &= detail::lexical_cast(var, num);
+                bool retval = detail::lexical_cast(var, num);
                 if(!retval) {
-                    return "Failed parsing number (" + var + ')';
+                    return std::string("Failed parsing number (") + var + ')';
                 }
                 if(num < 0 || num > 255) {
-                    return "Each IP number must be between 0 and 255 " + var;
+                    return std::string("Each IP number must be between 0 and 255 ") + var;
                 }
             }
             return std::string();
@@ -398,10 +397,10 @@ class PositiveNumber : public Validator {
         func_ = [](std::string &number_str) {
             double number;
             if(!detail::lexical_cast(number_str, number)) {
-                return "Failed parsing number: (" + number_str + ')';
+                return std::string("Failed parsing number: (") + number_str + ')';
             }
             if(number <= 0) {
-                return "Number less or equal to 0: (" + number_str + ')';
+                return std::string("Number less or equal to 0: (") + number_str + ')';
             }
             return std::string();
         };
@@ -414,10 +413,10 @@ class NonNegativeNumber : public Validator {
         func_ = [](std::string &number_str) {
             double number;
             if(!detail::lexical_cast(number_str, number)) {
-                return "Failed parsing number: (" + number_str + ')';
+                return std::string("Failed parsing number: (") + number_str + ')';
             }
             if(number < 0) {
-                return "Number less than 0: (" + number_str + ')';
+                return std::string("Number less than 0: (") + number_str + ')';
             }
             return std::string();
         };
@@ -431,7 +430,7 @@ class Number : public Validator {
         func_ = [](std::string &number_str) {
             double number;
             if(!detail::lexical_cast(number_str, number)) {
-                return "Failed parsing as a number (" + number_str + ')';
+                return std::string("Failed parsing as a number (") + number_str + ')';
             }
             return std::string();
         };
@@ -482,7 +481,8 @@ class Range : public Validator {
             T val;
             bool converted = detail::lexical_cast(input, val);
             if((!converted) || (val < min || val > max))
-                return "Value " + input + " not in range " + std::to_string(min) + " to " + std::to_string(max);
+                return std::string("Value ") + input + " not in range " + std::to_string(min) + " to " +
+                       std::to_string(max);
 
             return std::string();
         };
@@ -508,7 +508,7 @@ class Bound : public Validator {
             T val;
             bool converted = detail::lexical_cast(input, val);
             if(!converted) {
-                return "Value " + input + " could not be converted";
+                return std::string("Value ") + input + " could not be converted";
             }
             if(val < min)
                 input = detail::to_string(min);
@@ -943,7 +943,8 @@ class AsNumberWithUnit : public Validator {
 
             bool converted = detail::lexical_cast(input, num);
             if(!converted) {
-                throw ValidationError("Value " + input + " could not be converted to " + detail::type_name<Number>());
+                throw ValidationError(std::string("Value ") + input + " could not be converted to " +
+                                      detail::type_name<Number>());
             }
 
             if(unit.empty()) {
@@ -991,7 +992,8 @@ class AsNumberWithUnit : public Validator {
             for(auto &kv : mapping) {
                 auto s = detail::to_lower(kv.first);
                 if(lower_mapping.count(s)) {
-                    throw ValidationError("Several matching lowercase unit representations are found: " + s);
+                    throw ValidationError(std::string("Several matching lowercase unit representations are found: ") +
+                                          s);
                 }
                 lower_mapping[detail::to_lower(kv.first)] = kv.second;
             }

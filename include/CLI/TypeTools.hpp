@@ -311,7 +311,7 @@ template <typename T> struct expected_count<T, typename std::enable_if<is_vector
 };
 
 // Enumeration of the different supported categorizations of objects
-enum objCategory : int {
+enum class object_category : int {
     integral_value = 2,
     unsigned_integral = 4,
     enumeration = 6,
@@ -330,14 +330,16 @@ enum objCategory : int {
 };
 
 /// some type that is not otherwise recognized
-template <typename T, typename Enable = void> struct classify_object { static constexpr objCategory value{other}; };
+template <typename T, typename Enable = void> struct classify_object {
+    static constexpr object_category value{object_category::other};
+};
 
 /// Set of overloads to classify an object according to type
 template <typename T>
 struct classify_object<T,
                        typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value &&
                                                !is_bool<T>::value && !std::is_enum<T>::value>::type> {
-    static constexpr objCategory value{integral_value};
+    static constexpr object_category value{object_category::integral_value};
 };
 
 /// Unsigned integers
@@ -345,17 +347,17 @@ template <typename T>
 struct classify_object<
     T,
     typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value>::type> {
-    static constexpr objCategory value{unsigned_integral};
+    static constexpr object_category value{object_category::unsigned_integral};
 };
 
 /// Boolean values
 template <typename T> struct classify_object<T, typename std::enable_if<is_bool<T>::value>::type> {
-    static constexpr objCategory value{boolean_value};
+    static constexpr object_category value{object_category::boolean_value};
 };
 
 /// Floats
 template <typename T> struct classify_object<T, typename std::enable_if<std::is_floating_point<T>::value>::type> {
-    static constexpr objCategory value{floating_point};
+    static constexpr object_category value{object_category::floating_point};
 };
 
 /// String and similar direct assignment
@@ -364,7 +366,7 @@ struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             std::is_assignable<T &, std::string>::value && !is_vector<T>::value>::type> {
-    static constexpr objCategory value{string_assignable};
+    static constexpr object_category value{object_category::string_assignable};
 };
 
 /// String and similar constructible and copy assignment
@@ -374,12 +376,12 @@ struct classify_object<
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             !std::is_assignable<T &, std::string>::value &&
                             std::is_constructible<T, std::string>::value && !is_vector<T>::value>::type> {
-    static constexpr objCategory value{string_constructible};
+    static constexpr object_category value{object_category::string_constructible};
 };
 
 /// Enumerations
 template <typename T> struct classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
-    static constexpr objCategory value{enumeration};
+    static constexpr object_category value{object_category::enumeration};
 };
 
 /// Handy helper to contain a bunch of checks that rule out many common types (integers, string like, floating point,
@@ -400,7 +402,7 @@ struct classify_object<T,
                        typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
                                                is_direct_constructible<T, double>::value &&
                                                is_direct_constructible<T, int>::value>::type> {
-    static constexpr objCategory value{number_constructible};
+    static constexpr object_category value{object_category::number_constructible};
 };
 
 /// Assignable from int
@@ -409,7 +411,7 @@ struct classify_object<T,
                        typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
                                                !is_direct_constructible<T, double>::value &&
                                                is_direct_constructible<T, int>::value>::type> {
-    static constexpr objCategory value{integer_constructible};
+    static constexpr object_category value{object_category::integer_constructible};
 };
 
 /// Assignable from double
@@ -418,7 +420,7 @@ struct classify_object<T,
                        typename std::enable_if<uncommon_type<T>::value && type_count<T>::value == 1 &&
                                                is_direct_constructible<T, double>::value &&
                                                !is_direct_constructible<T, int>::value>::type> {
-    static constexpr objCategory value{double_constructible};
+    static constexpr object_category value{object_category::double_constructible};
 };
 
 /// Tuple type
@@ -428,12 +430,12 @@ struct classify_object<T,
                                                (is_tuple_like<T>::value && uncommon_type<T>::value &&
                                                 !is_direct_constructible<T, double>::value &&
                                                 !is_direct_constructible<T, int>::value)>::type> {
-    static constexpr objCategory value{tuple_value};
+    static constexpr object_category value{object_category::tuple_value};
 };
 
 /// Vector type
 template <typename T> struct classify_object<T, typename std::enable_if<is_vector<T>::value>::type> {
-    static constexpr objCategory value{vector_value};
+    static constexpr object_category value{object_category::vector_value};
 };
 
 // Type name print
@@ -443,48 +445,53 @@ template <typename T> struct classify_object<T, typename std::enable_if<is_vecto
 /// But this is cleaner and works better in this case
 
 template <typename T,
-          enable_if_t<classify_object<T>::value == integral_value || classify_object<T>::value == integer_constructible,
+          enable_if_t<classify_object<T>::value == object_category::integral_value ||
+                          classify_object<T>::value == object_category::integer_constructible,
                       detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "INT";
 }
 
-template <typename T, enable_if_t<classify_object<T>::value == unsigned_integral, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::unsigned_integral, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "UINT";
 }
 
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == floating_point || classify_object<T>::value == number_constructible ||
-                    classify_object<T>::value == double_constructible,
-                detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::floating_point ||
+                          classify_object<T>::value == object_category::number_constructible ||
+                          classify_object<T>::value == object_category::double_constructible,
+                      detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "FLOAT";
 }
 
 /// Print name for enumeration types
-template <typename T, enable_if_t<classify_object<T>::value == enumeration, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::enumeration, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "ENUM";
 }
 
 /// Print name for enumeration types
-template <typename T, enable_if_t<classify_object<T>::value == boolean_value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::boolean_value, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "BOOLEAN";
 }
 
 /// Print for all other types
-template <typename T, enable_if_t<classify_object<T>::value >= string_assignable, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value >= object_category::string_assignable, detail::enabler> = detail::dummy>
 constexpr const char *type_name() {
     return "TEXT";
 }
 
 /// Print name for single element tuple types
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value == 1, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::tuple_value && type_count<T>::value == 1,
+                      detail::enabler> = detail::dummy>
 inline std::string type_name() {
     return type_name<typename std::tuple_element<0, T>::type>();
 }
@@ -505,9 +512,9 @@ template <typename T, std::size_t I>
 }
 
 /// Print type name for tuples with 2 or more elements
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == tuple_value && type_count<T>::value >= 2, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::tuple_value && type_count<T>::value >= 2,
+                      detail::enabler> = detail::dummy>
 std::string type_name() {
     auto tname = std::string(1, '[') + tuple_name<T, 0>();
     tname.push_back(']');
@@ -515,7 +522,8 @@ std::string type_name() {
 }
 
 /// This one should not be used normally, since vector types print the internal type
-template <typename T, enable_if_t<classify_object<T>::value == vector_value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::vector_value, detail::enabler> = detail::dummy>
 inline std::string type_name() {
     return type_name<typename T::value_type>();
 }
@@ -566,7 +574,8 @@ inline int64_t to_flag_value(std::string val) {
 }
 
 /// Signed integers
-template <typename T, enable_if_t<classify_object<T>::value == integral_value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::integral_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
@@ -581,7 +590,8 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Unsigned integers
-template <typename T, enable_if_t<classify_object<T>::value == unsigned_integral, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::unsigned_integral, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     if(!input.empty() && input.front() == '-')
         return false; // std::stoull happily converts negative values to junk without any errors.
@@ -599,7 +609,8 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Boolean values
-template <typename T, enable_if_t<classify_object<T>::value == boolean_value, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::boolean_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         auto out = to_flag_value(input);
@@ -616,7 +627,8 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Floats
-template <typename T, enable_if_t<classify_object<T>::value == floating_point, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::floating_point, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
         size_t n = 0;
@@ -630,21 +642,25 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// String and similar direct assignment
-template <typename T, enable_if_t<classify_object<T>::value == string_assignable, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::string_assignable, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
 
 /// String and similar constructible and copy assignment
-template <typename T, enable_if_t<classify_object<T>::value == string_constructible, detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::string_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;
 }
 
 /// Enumerations
-template <typename T, enable_if_t<classify_object<T>::value == enumeration, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::enumeration, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
     bool retval = detail::lexical_cast(input, val);
@@ -656,7 +672,9 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assignable from double or int
-template <typename T, enable_if_t<classify_object<T>::value == number_constructible, detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::number_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
@@ -673,7 +691,9 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assignable from int
-template <typename T, enable_if_t<classify_object<T>::value == integer_constructible, detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::integer_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
     if(lexical_cast(input, val)) {
@@ -684,7 +704,9 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assignable from double
-template <typename T, enable_if_t<classify_object<T>::value == double_constructible, detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::double_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     double val;
     if(lexical_cast(input, val)) {
@@ -695,7 +717,7 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Non-string parsable by a stream
-template <typename T, enable_if_t<classify_object<T>::value == other, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<classify_object<T>::value == object_category::other, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     static_assert(is_istreamable<T>::value,
                   "option object type must have a lexical cast overload or streaming input operator(>>) defined, if it "
@@ -704,11 +726,12 @@ bool lexical_cast(const std::string &input, T &output) {
 }
 
 /// Assign a value through lexical cast operations
-template <typename T,
-          typename XC,
-          enable_if_t<std::is_same<T, XC>::value && (classify_object<T>::value == string_assignable ||
-                                                     classify_object<T>::value == string_constructible),
-                      detail::enabler> = detail::dummy>
+template <
+    typename T,
+    typename XC,
+    enable_if_t<std::is_same<T, XC>::value && (classify_object<T>::value == object_category::string_assignable ||
+                                               classify_object<T>::value == object_category::string_constructible),
+                detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
     return lexical_cast(input, output);
 }
@@ -716,8 +739,8 @@ bool lexical_assign(const std::string &input, T &output) {
 /// Assign a value through lexical cast operations
 template <typename T,
           typename XC,
-          enable_if_t<std::is_same<T, XC>::value && classify_object<T>::value != string_assignable &&
-                          classify_object<T>::value != string_constructible,
+          enable_if_t<std::is_same<T, XC>::value && classify_object<T>::value != object_category::string_assignable &&
+                          classify_object<T>::value != object_category::string_constructible,
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, T &output) {
     if(input.empty()) {
@@ -774,7 +797,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     typename std::tuple_element<1, XC>::type v2;
     bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[0], v1);
     if(strings.size() > 1) {
-        retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
+        retval = retval && lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
     }
     if(retval) {
         output = T{v1, v2};
@@ -789,15 +812,17 @@ template <class T,
                           expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 1,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    bool retval = true;
     output.clear();
     output.reserve(strings.size());
     for(const auto &elem : strings) {
 
         output.emplace_back();
-        retval &= lexical_assign<typename T::value_type, typename XC::value_type>(elem, output.back());
+        bool retval = lexical_assign<typename T::value_type, typename XC::value_type>(elem, output.back());
+        if(!retval) {
+            return false;
+        }
     }
-    return (!output.empty()) && retval;
+    return (!output.empty());
 }
 
 /// Lexical conversion of a vector types with type size of two
@@ -807,15 +832,14 @@ template <class T,
                           expected_count<XC>::value == expected_max_vector_size && type_count<XC>::value == 2,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
-    bool retval = true;
     output.clear();
     for(size_t ii = 0; ii < strings.size(); ii += 2) {
 
         typename std::tuple_element<0, typename XC::value_type>::type v1;
         typename std::tuple_element<1, typename XC::value_type>::type v2;
-        retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
+        bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[ii], v1);
         if(strings.size() > ii + 1) {
-            retval &= lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
+            retval = retval && lexical_assign<decltype(v2), decltype(v2)>(strings[ii + 1], v2);
         }
         if(retval) {
             output.emplace_back(v1, v2);
@@ -823,7 +847,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
             return false;
         }
     }
-    return (!output.empty()) && retval;
+    return (!output.empty());
 }
 
 /// Conversion to a vector type using a particular single type as the conversion type
@@ -839,7 +863,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     for(const auto &elem : strings) {
 
         output.emplace_back();
-        retval &= lexical_assign<typename T::value_type, XC>(elem, output.back());
+        retval = retval && lexical_assign<typename T::value_type, XC>(elem, output.back());
     }
     return (!output.empty()) && retval;
 }
@@ -873,12 +897,12 @@ template <class T, class XC, std::size_t I>
     I<type_count<T>::value, bool>::type tuple_conversion(const std::vector<std::string> &strings, T &output) {
     bool retval = true;
     if(strings.size() > I) {
-        retval &= lexical_assign<
-            typename std::tuple_element<I, T>::type,
-            typename std::conditional<is_tuple_like<XC>::value, typename std::tuple_element<I, XC>::type, XC>::type>(
-            strings[I], std::get<I>(output));
+        retval = retval && lexical_assign<typename std::tuple_element<I, T>::type,
+                                          typename std::conditional<is_tuple_like<XC>::value,
+                                                                    typename std::tuple_element<I, XC>::type,
+                                                                    XC>::type>(strings[I], std::get<I>(output));
     }
-    retval &= tuple_conversion<T, XC, I + 1>(strings, output);
+    retval = retval && tuple_conversion<T, XC, I + 1>(strings, output);
     return retval;
 }
 

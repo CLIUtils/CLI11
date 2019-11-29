@@ -859,7 +859,7 @@ TEST(Types, TypeName) {
     EXPECT_EQ("FLOAT", vector_name);
 
     static_assert(CLI::detail::classify_object<std::pair<int, std::string>>::value ==
-                      CLI::detail::objCategory::tuple_value,
+                      CLI::detail::object_category::tuple_value,
                   "pair<int,string> does not read like a tuple");
 
     std::string pair_name = CLI::detail::type_name<std::vector<std::pair<int, std::string>>>();
@@ -869,16 +869,16 @@ TEST(Types, TypeName) {
     EXPECT_EQ("UINT", vector_name);
 
     auto vclass = CLI::detail::classify_object<std::vector<std::vector<unsigned char>>>::value;
-    EXPECT_EQ(vclass, CLI::detail::objCategory::vector_value);
+    EXPECT_EQ(vclass, CLI::detail::object_category::vector_value);
 
     auto tclass = CLI::detail::classify_object<std::tuple<double>>::value;
-    EXPECT_EQ(tclass, CLI::detail::objCategory::number_constructible);
+    EXPECT_EQ(tclass, CLI::detail::object_category::number_constructible);
 
     std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
     EXPECT_EQ("FLOAT", tuple_name);
 
     static_assert(CLI::detail::classify_object<std::tuple<int, std::string>>::value ==
-                      CLI::detail::objCategory::tuple_value,
+                      CLI::detail::object_category::tuple_value,
                   "tuple<int,string> does not read like a tuple");
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
     EXPECT_EQ("[INT,TEXT]", tuple_name);
@@ -906,8 +906,8 @@ TEST(Types, TypeName) {
     EXPECT_EQ("ENUM", enum_name);
 
     vclass = CLI::detail::classify_object<std::tuple<test>>::value;
-    EXPECT_EQ(vclass, CLI::detail::objCategory::tuple_value);
-    static_assert(CLI::detail::classify_object<std::tuple<test>>::value == CLI::detail::objCategory::tuple_value,
+    EXPECT_EQ(vclass, CLI::detail::object_category::tuple_value);
+    static_assert(CLI::detail::classify_object<std::tuple<test>>::value == CLI::detail::object_category::tuple_value,
                   "tuple<test> does not classify as a tuple");
     std::string enum_name2 = CLI::detail::type_name<std::tuple<test>>();
     EXPECT_EQ("ENUM", enum_name2);
