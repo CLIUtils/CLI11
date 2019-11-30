@@ -180,6 +180,21 @@ TEST_F(TApp, SimpleNumericalTransformFnArray) {
     EXPECT_EQ(value, 1);
 }
 
+// zero copy constexpr array operation with transformer example and test
+TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
+    constexpr std::pair<const char *, int> p1{"one", 1};
+    constexpr std::pair<const char *, int> p2{"two", 2};
+    constexpr std::array<std::pair<const char *, int>, 2> conversions_c{p1, p2};
+
+    int value;
+    auto opt = app.add_option("-s", value)->transform(CLI::Transformer(&conversions_c, CLI::ignore_case));
+    args = {"-s", "ONe"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 1);
+}
+
 TEST_F(TApp, EnumTransformFn) {
     enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
     test value;
