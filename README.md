@@ -632,7 +632,7 @@ The subcommand method
 .add_option_group(name,description)
 ```
 
-Will create an option group, and return a pointer to it.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
+Will create an option group, and return a pointer to it. The argument for `description` is optional and can be omitted.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through
 
 ```cpp
 ogroup->add_option(option_pointer);
@@ -660,6 +660,12 @@ CLI::TriggerOff(group2_pointer, disabled_group);
 
 These functions make use of `preparse_callback`, `enabled_by_default()` and `disabled_by_default`.  The triggered group may be a vector of group pointers.  These methods should only be used once per group and will override any previous use of the underlying functions.  More complex arrangements can be accomplished using similar methodology with a custom preparse_callback function that does more.
 
+If an empty string is passed the option group name the entire group will be hidden in the help results.  For example.
+
+```cpp
+auto hidden_group=app.add_option_group("");
+```
+will create a group such that no options in that group are displayed in the help string.
 
 ### Configuration file
 

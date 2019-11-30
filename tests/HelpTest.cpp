@@ -97,6 +97,32 @@ TEST(THelp, Hidden) {
     EXPECT_THAT(help, Not(HasSubstr("another")));
 }
 
+TEST(THelp, HiddenGroup) {
+    CLI::App app{"My prog"};
+    // empty option group name should be hidden
+    auto hgroup = app.add_option_group("");
+    std::string x;
+    hgroup->add_option("something", x, "My option here");
+    std::string y;
+    hgroup->add_option("--another", y);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("My prog"));
+    EXPECT_THAT(help, HasSubstr("-h,--help"));
+    EXPECT_THAT(help, HasSubstr("Options:"));
+    EXPECT_THAT(help, Not(HasSubstr("[something]")));
+    EXPECT_THAT(help, Not(HasSubstr("something ")));
+    EXPECT_THAT(help, Not(HasSubstr("another")));
+
+    hgroup->group("ghidden");
+
+    help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("something "));
+    EXPECT_THAT(help, HasSubstr("another"));
+}
+
 TEST(THelp, OptionalPositionalAndOptions) {
     CLI::App app{"My prog", "AnotherProgram"};
     app.add_flag("-q,--quick");
