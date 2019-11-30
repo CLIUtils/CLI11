@@ -164,7 +164,7 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
     // Make a list in definition order of the groups seen
     std::vector<std::string> subcmd_groups_seen;
     for(const App *com : subcommands) {
-        if(com->get_name().empty()) {
+        if(com->get_name().empty() && !com->get_group().empty()) {
             out << make_expanded(com);
             continue;
         }
