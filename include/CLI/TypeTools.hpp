@@ -74,13 +74,16 @@ template <> struct IsMemberType<const char *> { using type = std::string; };
 
 namespace detail {
 
-// These are utilities for IsMember
+// These are utilities for IsMember and other transforming objects
 
 /// Handy helper to access the element_type generically. This is not part of is_copyable_ptr because it requires that
 /// pointer_traits<T> be valid.
-template <typename T> struct element_type {
-    using type =
-        typename std::conditional<is_copyable_ptr<T>::value, typename std::pointer_traits<T>::element_type, T>::type;
+
+/// not a pointer
+template <typename T, typename Enable = void> struct element_type { using type = T; };
+
+template <typename T> struct element_type<T, typename std::enable_if<is_copyable_ptr<T>::value>::type> {
+    using type = typename std::pointer_traits<T>::element_type;
 };
 
 /// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
