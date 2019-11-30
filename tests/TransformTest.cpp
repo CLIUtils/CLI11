@@ -184,7 +184,7 @@ TEST_F(TApp, SimpleNumericalTransformFnArray) {
 TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
     constexpr std::pair<const char *, int> p1{"one", 1};
     constexpr std::pair<const char *, int> p2{"two", 2};
-    constexpr std::array<std::pair<const char *, int>, 2> conversions_c{p1, p2};
+    constexpr std::array<std::pair<const char *, int>, 2> conversions_c{{p1, p2}};
 
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(&conversions_c, CLI::ignore_case));
@@ -193,6 +193,12 @@ TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
     EXPECT_EQ(1u, app.count("-s"));
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, 1);
+
+    args = {"-s", "twO"};
+    run();
+    EXPECT_EQ(1u, app.count("-s"));
+    EXPECT_EQ(1u, opt->count());
+    EXPECT_EQ(value, 2);
 }
 
 TEST_F(TApp, EnumTransformFn) {
