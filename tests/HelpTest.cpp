@@ -99,8 +99,8 @@ TEST(THelp, Hidden) {
 
 TEST(THelp, HiddenGroup) {
     CLI::App app{"My prog"};
-    //empty option group name should be hidden
-    auto hgroup=app.add_option_group("");
+    // empty option group name should be hidden
+    auto hgroup = app.add_option_group("");
     std::string x;
     hgroup->add_option("something", x, "My option here");
     std::string y;
