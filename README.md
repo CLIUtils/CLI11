@@ -260,7 +260,7 @@ app.add_option<vtype,double>("--vf",v1);
 ```
 otherwise the output would default to a string.  The add_option can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std::string in an assignment operator or constructor.  If an object can take multiple varieties of those,  std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
 
-Type such as optional<int>, optional<double>, and optional<string> are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Internals][] for information on how this could done and how you can add your own converters for additional  types.
+Types such as (std or boost) `optional<int>`, `optional<double>`, and `optional<string>` are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Advanced Topics/Custom Converters][] for information on how this could be done and how you can add your own converters for additional types.
 
 Vector types can also be used in the two parameter template overload
 ```
@@ -899,7 +899,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [nsf award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: http://www.uc.edu
 [gitbook]: https://cliutils.github.io/CLI11/book/
-[cli11 internals]: https://cliutils.gitlab.io/CLI11Tutorial/chapters/internals.html
+[cli11 advanced topics/custom converters]: https://cliutils.gitlab.io/CLI11Tutorial/chapters/advanced-topics.html#custom-converters
 [programoptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx
 [argument aggregator]: https://github.com/vietjtnguyen/argagg
 [args]: https://github.com/Taywee/args
