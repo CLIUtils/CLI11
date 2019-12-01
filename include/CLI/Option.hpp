@@ -996,7 +996,7 @@ class Option : public OptionBase<Option> {
 
     /// Set the type function to run when displayed on this option
     Option *type_name_fn(std::function<std::string()> typefun) {
-        type_name_ = typefun;
+        type_name_ = std::move(typefun);
         return this;
     }
 
