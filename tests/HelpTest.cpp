@@ -140,7 +140,7 @@ TEST(THelp, retiredOptions) {
     std::string y;
     app.add_option("--another", y);
 
-    CLI::retire_option(&app, opt1);
+    CLI::retire_option(app, opt1);
 
     std::string help = app.help();
 

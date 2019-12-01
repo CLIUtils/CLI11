@@ -3046,6 +3046,12 @@ inline void deprecate_option(App *app, const std::string &option_name, const std
     deprecate_option(opt, replacement);
 }
 
+/// Helper function to mark an option as deprecated
+inline void deprecate_option(App &app, const std::string &option_name, const std::string &replacement = "") {
+    auto opt = app.get_option(option_name);
+    deprecate_option(opt, replacement);
+}
+
 /// Helper function to mark an option as retired
 inline void retire_option(App *app, Option *opt) {
     App temp;
@@ -3056,17 +3062,21 @@ inline void retire_option(App *app, Option *opt) {
     app->remove_option(opt);
     auto opt2 = app->add_option(ropt->get_name(false, true), "option has been retired and has no effect")
                     ->type_name("RETIRED")
+                    ->default_str("RETIRED")
                     ->type_size(ropt->get_type_size_min(), ropt->get_type_size_max())
                     ->expected(ropt->get_expected_min(), ropt->get_expected_max());
 
     Validator cv{[opt2](std::string &) {
-                     std::cout << "WARNING" << opt2->get_name() << " is retired\n";
+                     std::cout << "WARNING " << opt2->get_name() << " is retired\n";
                      return std::string();
                  },
                  ""};
     cv.application_index(0);
     opt2->check(cv);
 }
+
+/// Helper function to mark an option as retired
+inline void retire_option(App &app, Option *opt) { retire_option(&app, opt); }
 
 /// Helper function to mark an option as deprecated
 inline void retire_option(App *app, const std::string &option_name) {
@@ -3076,17 +3086,21 @@ inline void retire_option(App *app, const std::string &option_name) {
         retire_option(app, opt);
         return;
     }
-    auto opt2=app->add_option(option_name, "option has been retired and has no effect")
-        ->type_name("RETIRED")
-        ->expected(0, 1);
+    auto opt2 = app->add_option(option_name, "option has been retired and has no effect")
+                    ->type_name("RETIRED")
+                    ->expected(0, 1)
+                    ->default_str("RETIRED");
     Validator cv{[opt2](std::string &) {
-                     std::cout << "WARNING" << opt2->get_name() << " is retired\n";
+                     std::cout << "WARNING " << opt2->get_name() << " is retired\n";
                      return std::string();
                  },
                  ""};
     cv.application_index(0);
     opt2->check(cv);
 }
+
+/// Helper function to mark an option as deprecated
+inline void retire_option(App &app, const std::string &option_name) { retire_option(&app, option_name); }
 
 namespace FailureMessage {
 
