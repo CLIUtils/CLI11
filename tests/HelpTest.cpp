@@ -169,6 +169,25 @@ TEST(THelp, retiredOptions2) {
     EXPECT_NO_THROW(app.parse("--something old"));
 }
 
+TEST(THelp, retiredOptions3) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("--something", x, "My option here");
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::retire_option(app, "--something");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("RETIRED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+
+    EXPECT_NO_THROW(app.parse("--something old"));
+}
+
 TEST(THelp, HiddenGroup) {
     CLI::App app{"My prog"};
     // empty option group name should be hidden
