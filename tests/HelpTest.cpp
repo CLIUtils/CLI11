@@ -112,6 +112,7 @@ TEST(THelp, deprecatedOptions) {
 
     EXPECT_THAT(help, HasSubstr("DEPRECATED"));
     EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something deprecated"));
 }
 
 TEST(THelp, deprecatedOptions2) {
@@ -129,6 +130,7 @@ TEST(THelp, deprecatedOptions2) {
 
     EXPECT_THAT(help, HasSubstr("DEPRECATED"));
     EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something deprecated"));
 }
 
 TEST(THelp, retiredOptions) {
@@ -146,6 +148,8 @@ TEST(THelp, retiredOptions) {
 
     EXPECT_THAT(help, HasSubstr("RETIRED"));
     EXPECT_THAT(help, HasSubstr("something"));
+
+    EXPECT_NO_THROW(app.parse("--something old"));
 }
 
 TEST(THelp, retiredOptions2) {
@@ -162,6 +166,7 @@ TEST(THelp, retiredOptions2) {
 
     EXPECT_THAT(help, HasSubstr("RETIRED"));
     EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something old"));
 }
 
 TEST(THelp, HiddenGroup) {
