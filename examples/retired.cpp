@@ -17,5 +17,5 @@ int main(int argc, char **argv) {
 
     CLI::deprecate_option(opt2, "--not_deprecated");
 
-   CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app, argc, argv);
 }
