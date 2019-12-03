@@ -665,7 +665,7 @@ Additional helper functions `deprecate_option`🚧 and `retire_option`🚧 are a
 CLI::deprecate_option(option *, replacement_name="");
 CLI::deprecate_option(App,option_name,replacement_name="");
 ```
-will specify that the option is deprecated which will display a message in the help and a warning on first usage.  Deprecated options function normally but will add a message in the help and display a warning on first use.  
+will specify that the option is deprecated which will display a message in the help and a warning on first usage.  Deprecated options function normally but will add a message in the help and display a warning on first use.
 
 ```cpp
 CLI::retire_option(App,option *);
