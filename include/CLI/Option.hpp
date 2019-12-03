@@ -418,7 +418,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a Validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
-    Option *check(const std::function<std::string(const std::string &)> &Validator,
+    Option *check(std::function<std::string(const std::string &)> Validator,
                   std::string Validator_description = "",
                   std::string Validator_name = "") {
         validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
@@ -663,10 +663,10 @@ class Option : public OptionBase<Option> {
     callback_t get_callback() const { return callback_; }
 
     /// Get the long names
-    std::vector<std::string> get_lnames() const { return lnames_; }
+    const std::vector<std::string> &get_lnames() const { return lnames_; }
 
     /// Get the short names
-    std::vector<std::string> get_snames() const { return snames_; }
+    const std::vector<std::string> &get_snames() const { return snames_; }
 
     /// Get the flag names with specified default values
     std::vector<std::string> get_fnames() const { return fnames_; }
