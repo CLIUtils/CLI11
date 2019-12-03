@@ -87,7 +87,7 @@ template <typename CRTP> class OptionBase {
     // setters
 
     /// Changes the group membership
-    CRTP *group(const std::string& name) {
+    CRTP *group(const std::string &name) {
         group_ = name;
         return static_cast<CRTP *>(this);
     }
@@ -409,7 +409,7 @@ class Option : public OptionBase<Option> {
     bool get_allow_extra_args() const { return allow_extra_args_; }
 
     /// Adds a Validator with a built in type name
-    Option *check(Validator validator, const std::string& validator_name = "") {
+    Option *check(Validator validator, const std::string &validator_name = "") {
         validator.non_modifying();
         validators_.push_back(std::move(validator));
         if(!validator_name.empty())
@@ -418,7 +418,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a Validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
-    Option *check(const std::function<std::string(const std::string &)>& Validator,
+    Option *check(const std::function<std::string(const std::string &)> &Validator,
                   std::string Validator_description = "",
                   std::string Validator_name = "") {
         validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
@@ -427,7 +427,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a transforming Validator with a built in type name
-    Option *transform(Validator Validator, const std::string& Validator_name = "") {
+    Option *transform(Validator Validator, const std::string &Validator_name = "") {
         validators_.insert(validators_.begin(), std::move(Validator));
         if(!Validator_name.empty())
             validators_.front().name(Validator_name);
@@ -435,7 +435,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a Validator-like function that can change result
-    Option *transform(const std::function<std::string(std::string)>& func,
+    Option *transform(const std::function<std::string(std::string)> &func,
                       std::string transform_description = "",
                       std::string transform_name = "") {
         validators_.insert(validators_.begin(),
@@ -451,7 +451,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Adds a user supplied function to run on each item passed in (communicate though lambda capture)
-    Option *each(const std::function<void(std::string)>& func) {
+    Option *each(const std::function<void(std::string)> &func) {
         validators_.emplace_back(
             [func](std::string &inout) {
                 func(inout);
@@ -718,7 +718,7 @@ class Option : public OptionBase<Option> {
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
     std::string get_name(bool positional = false, //<[input] Show the positional name
                          bool all_options = false //<[input] Show every option
-                         ) const {
+    ) const {
         if(get_group().empty())
             return {}; // Hidden
 
@@ -845,7 +845,9 @@ class Option : public OptionBase<Option> {
     }
 
     /// Requires "-" to be removed from string
-    bool check_sname(std::string name) const { return (detail::find_member(std::move(name), snames_, ignore_case_) >= 0); }
+    bool check_sname(std::string name) const {
+        return (detail::find_member(std::move(name), snames_, ignore_case_) >= 0);
+    }
 
     /// Requires "--" to be removed from string
     bool check_lname(std::string name) const {
@@ -862,7 +864,7 @@ class Option : public OptionBase<Option> {
 
     /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not
     /// disabled
-    std::string get_flag_value(const std::string& name, std::string input_value) const {
+    std::string get_flag_value(const std::string &name, std::string input_value) const {
         static const std::string trueString{"true"};
         static const std::string falseString{"false"};
         static const std::string emptyString{"{}"};
@@ -1066,7 +1068,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Set the default value string representation and evaluate into the bound value
-    Option *default_val(const std::string& val) {
+    Option *default_val(const std::string &val) {
         default_str(val);
         auto old_results = results_;
         results_.clear();
