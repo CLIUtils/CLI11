@@ -3078,7 +3078,7 @@ inline void retire_option(App *app, Option *opt) {
 /// Helper function to mark an option as retired
 inline void retire_option(App &app, Option *opt) { retire_option(&app, opt); }
 
-/// Helper function to mark an option as deprecated
+/// Helper function to mark an option as retired
 inline void retire_option(App *app, const std::string &option_name) {
 
     auto opt = app->get_option_no_throw(option_name);
@@ -3099,7 +3099,7 @@ inline void retire_option(App *app, const std::string &option_name) {
     opt2->check(cv);
 }
 
-/// Helper function to mark an option as deprecated
+/// Helper function to mark an option as retired
 inline void retire_option(App &app, const std::string &option_name) { retire_option(&app, option_name); }
 
 namespace FailureMessage {
