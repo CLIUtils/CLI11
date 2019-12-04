@@ -669,7 +669,7 @@ class Option : public OptionBase<Option> {
     const std::vector<std::string> &get_snames() const { return snames_; }
 
     /// Get the flag names with specified default values
-    std::vector<std::string> get_fnames() const { return fnames_; }
+    const std::vector<std::string> &get_fnames() const { return fnames_; }
 
     /// The number of times the option expects to be included
     int get_expected() const { return expected_min_; }
