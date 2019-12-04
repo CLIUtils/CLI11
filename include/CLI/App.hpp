@@ -3039,11 +3039,9 @@ inline void deprecate_option(Option *opt, const std::string &replacement = "") {
                                 "DEPRECATED"};
     deprecate_warning.application_index(0);
     opt->check(deprecate_warning);
-    if (!replacement.empty())
-    {
+    if(!replacement.empty()) {
         opt->description(opt->get_description() + " DEPRECATED: please use '" + replacement + "' instead");
     }
-        
 }
 
 /// Helper function to mark an option as deprecated
