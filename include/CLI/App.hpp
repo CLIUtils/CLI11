@@ -3031,13 +3031,19 @@ inline void TriggerOff(App *trigger_app, std::vector<App *> apps_to_enable) {
 
 /// Helper function to mark an option as deprecated
 inline void deprecate_option(Option *opt, const std::string &replacement = "") {
-    Validator cv{[opt, replacement](std::string &) {
-                     std::cout << opt->get_name() << " is deprecated please use '" << replacement << "' instead\n";
-                     return std::string();
-                 },
-                 "DEPRECATED"};
-    cv.application_index(0);
-    opt->check(cv);
+    Validator deprecate_warning{[opt, replacement](std::string &) {
+                                    std::cout << opt->get_name() << " is deprecated please use '" << replacement
+                                              << "' instead\n";
+                                    return std::string();
+                                },
+                                "DEPRECATED"};
+    deprecate_warning.application_index(0);
+    opt->check(deprecate_warning);
+    if (!replacement.empty())
+    {
+        opt->description(opt->get_description() + " DEPRECATED: please use '" + replacement + "' instead");
+    }
+        
 }
 
 /// Helper function to mark an option as deprecated
@@ -3055,24 +3061,26 @@ inline void deprecate_option(App &app, const std::string &option_name, const std
 /// Helper function to mark an option as retired
 inline void retire_option(App *app, Option *opt) {
     App temp;
-    auto ropt = temp.add_option(opt->get_name(false, true))
-                    ->type_size(opt->get_type_size_min(), opt->get_type_size_max())
-                    ->expected(opt->get_expected_min(), opt->get_expected_max());
+    auto option_copy = temp.add_option(opt->get_name(false, true))
+                           ->type_size(opt->get_type_size_min(), opt->get_type_size_max())
+                           ->expected(opt->get_expected_min(), opt->get_expected_max())
+                           ->allow_extra_args(opt->get_allow_extra_args());
 
     app->remove_option(opt);
-    auto opt2 = app->add_option(ropt->get_name(false, true), "option has been retired and has no effect")
+    auto opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect")
                     ->type_name("RETIRED")
                     ->default_str("RETIRED")
-                    ->type_size(ropt->get_type_size_min(), ropt->get_type_size_max())
-                    ->expected(ropt->get_expected_min(), ropt->get_expected_max());
+                    ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
+                    ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
+                    ->allow_extra_args(option_copy->get_allow_extra_args());
 
-    Validator cv{[opt2](std::string &) {
-                     std::cout << "WARNING " << opt2->get_name() << " is retired\n";
-                     return std::string();
-                 },
-                 ""};
-    cv.application_index(0);
-    opt2->check(cv);
+    Validator retired_warning{[opt2](std::string &) {
+                                  std::cout << "WARNING " << opt2->get_name() << " is retired and has no effect\n";
+                                  return std::string();
+                              },
+                              ""};
+    retired_warning.application_index(0);
+    opt2->check(retired_warning);
 }
 
 /// Helper function to mark an option as retired
@@ -3090,13 +3098,13 @@ inline void retire_option(App *app, const std::string &option_name) {
                     ->type_name("RETIRED")
                     ->expected(0, 1)
                     ->default_str("RETIRED");
-    Validator cv{[opt2](std::string &) {
-                     std::cout << "WARNING " << opt2->get_name() << " is retired\n";
-                     return std::string();
-                 },
-                 ""};
-    cv.application_index(0);
-    opt2->check(cv);
+    Validator retired_warning{[opt2](std::string &) {
+                                  std::cout << "WARNING " << opt2->get_name() << " is retired and has no effect\n";
+                                  return std::string();
+                              },
+                              ""};
+    retired_warning.application_index(0);
+    opt2->check(retired_warning);
 }
 
 /// Helper function to mark an option as retired

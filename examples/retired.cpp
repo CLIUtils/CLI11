@@ -24,4 +24,15 @@ int main(int argc, char **argv) {
     CLI::deprecate_option(opt2, "--not_deprecated");
 
     CLI11_PARSE(app, argc, argv);
+
+    if(!x.empty()) {
+        std::cout << "Retired option example: got --not_deprecated values:";
+        for(auto &xval : x) {
+            std::cout << xval << " ";
+        }
+        std::cout << '\n';
+    } else if(app.count_all() == 1) {
+        std::cout << "Retired option example: no arguments received\n";
+    }
+    return 0;
 }
