@@ -97,6 +97,115 @@ TEST(THelp, Hidden) {
     EXPECT_THAT(help, Not(HasSubstr("another")));
 }
 
+TEST(THelp, deprecatedOptions) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    auto soption = app.add_option("--something", x, "My option here");
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::deprecate_option(soption, "something_else");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("DEPRECATED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something deprecated"));
+}
+
+TEST(THelp, deprecatedOptions2) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("--something", x, "My option here");
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::deprecate_option(&app, "--something");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("DEPRECATED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something deprecated"));
+}
+
+TEST(THelp, deprecatedOptions3) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("--something", x, "Some Description");
+    app.add_option("--something_else", x, "Some other description");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::deprecate_option(app, "--something", "--something_else");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("DEPRECATED"));
+    EXPECT_THAT(help, HasSubstr("'--something_else' instead"));
+    EXPECT_NO_THROW(app.parse("--something deprecated"));
+}
+
+TEST(THelp, retiredOptions) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    auto opt1 = app.add_option("--something", x, "My option here");
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::retire_option(app, opt1);
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("RETIRED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+
+    EXPECT_NO_THROW(app.parse("--something old"));
+}
+
+TEST(THelp, retiredOptions2) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::retire_option(&app, "--something");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("RETIRED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+    EXPECT_NO_THROW(app.parse("--something old"));
+}
+
+TEST(THelp, retiredOptions3) {
+    CLI::App app{"My prog"};
+
+    std::string x;
+    app.add_option("--something", x, "My option here");
+    app.add_option("--something_else", x, "My option here");
+    std::string y;
+    app.add_option("--another", y);
+
+    CLI::retire_option(app, "--something");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("RETIRED"));
+    EXPECT_THAT(help, HasSubstr("something"));
+
+    EXPECT_NO_THROW(app.parse("--something old"));
+}
+
 TEST(THelp, HiddenGroup) {
     CLI::App app{"My prog"};
     // empty option group name should be hidden

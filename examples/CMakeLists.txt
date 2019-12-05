@@ -231,3 +231,21 @@ add_cli_exe(nested nested.cpp)
 add_cli_exe(subcom_help subcom_help.cpp)
 add_test(NAME subcom_help_normal COMMAND subcom_help sub --help)
 add_test(NAME subcom_help_reversed COMMAND subcom_help --help sub)
+
+add_cli_exe(retired retired.cpp)
+add_test(NAME retired_retired_test COMMAND retired --retired_option)
+add_test(NAME retired_retired_test2 COMMAND retired --retired_option 567)
+add_test(NAME retired_retired_test3 COMMAND retired --retired_option2 567 689 789)
+add_test(NAME retired_deprecated COMMAND retired --deprecate 19 20)
+
+set_property(TEST retired_retired_test PROPERTY PASS_REGULAR_EXPRESSION
+    "WARNING.*retired")
+
+set_property(TEST retired_retired_test2 PROPERTY PASS_REGULAR_EXPRESSION
+    "WARNING.*retired")
+
+set_property(TEST retired_retired_test3 PROPERTY PASS_REGULAR_EXPRESSION
+    "WARNING.*retired")
+
+set_property(TEST retired_deprecated PROPERTY PASS_REGULAR_EXPRESSION
+    "deprecated.*not_deprecated")

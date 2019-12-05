@@ -651,7 +651,7 @@ This results in the subcommand being moved from its parent into the option group
 Options in an option group are searched for a command line match after any options in the main app, so any positionals in the main app would be matched first.  So care must be taken to make sure of the order when using positional arguments and option groups.
 Option groups work well with `excludes` and `require_options` methods, as an application will treat an option group as a single option for the purpose of counting and requirements, and an option group will be considered used if any of the options or subcommands contained in it are used.  Option groups allow specifying requirements such as requiring 1 of 3 options in one group and 1 of 3 options in a different group. Option groups can contain other groups as well.   Disabling an option group will turn off all options within the group.
 
-The `CLI::TriggerOn` 🆕 and `CLI::TriggerOff` 🆕 methods are helper methods to allow the use of options/subcommands from one group to trigger another group on or off.
+The `CLI::TriggerOn` 🆕 and `CLI::TriggerOff` 🆕 methods are helper functions to allow the use of options/subcommands from one group to trigger another group on or off.
 
 ```cpp
 CLI::TriggerOn(group1_pointer, triggered_group);
@@ -659,6 +659,19 @@ CLI::TriggerOff(group2_pointer, disabled_group);
 ```
 
 These functions make use of `preparse_callback`, `enabled_by_default()` and `disabled_by_default`.  The triggered group may be a vector of group pointers.  These methods should only be used once per group and will override any previous use of the underlying functions.  More complex arrangements can be accomplished using similar methodology with a custom preparse_callback function that does more.
+
+Additional helper functions `deprecate_option`🚧 and `retire_option`🚧 are available to deprecate or retire options
+```cpp
+CLI::deprecate_option(option *, replacement_name="");
+CLI::deprecate_option(App,option_name,replacement_name="");
+```
+will specify that the option is deprecated which will display a message in the help and a warning on first usage.  Deprecated options function normally but will add a message in the help and display a warning on first use.
+
+```cpp
+CLI::retire_option(App,option *);
+CLI::retire_option(App,option_name);
+```
+will create an option that does nothing by default and will display a warning on first usage that the option is retired and has no effect.  If the option exists it is replaces with a dummy option that takes the same arguments.
 
 If an empty string is passed the option group name the entire group will be hidden in the help results.  For example.
 
