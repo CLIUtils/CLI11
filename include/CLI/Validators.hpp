@@ -54,7 +54,7 @@ class Validator {
     /// This is the description function, if empty the description_ will be used
     std::function<std::string()> desc_function_{[]() { return std::string{}; }};
 
-    /// This it the base function that is to be called.
+    /// This is the base function that is to be called.
     /// Returns a string error message if validation fails.
     std::function<std::string(std::string &)> func_{[](std::string &) { return std::string{}; }};
     /// The name for search purposes of the Validator
