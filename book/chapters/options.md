@@ -126,7 +126,7 @@ app.add_flag("--CaSeLeSs");
 app.get_group() // is "Required"
 ```
 
-Groups are mostly for visual organisation, but an empty string for a group name will hide the option.
+Groups are mostly for visual organization, but an empty string for a group name will hide the option.
 
 
 ## Listing of specialty options:

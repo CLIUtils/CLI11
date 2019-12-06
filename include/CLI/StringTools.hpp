@@ -135,6 +135,17 @@ inline std::string trim_copy(const std::string &str) {
     return trim(s);
 }
 
+/// remove quotes at the front and back of a string either '"' or '\''
+inline std::string &remove_quotes(std::string &str) {
+    if(str.length() > 1 && (str.front() == '"' || str.front() == '\'')) {
+        if(str.front() == str.back()) {
+            str.pop_back();
+            str.erase(str.begin(), str.begin() + 1);
+        }
+    }
+    return str;
+}
+
 /// Make a copy of the string and then trim it, any filter string can be used (any char in string is filtered)
 inline std::string trim_copy(const std::string &str, const std::string &filter) {
     std::string s = str;
@@ -268,10 +279,12 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be ` ' or "
-inline std::vector<std::string> split_up(std::string str) {
+inline std::vector<std::string> split_up(std::string str, char delimiter = '\0') {
 
     const std::string delims("\'\"`");
-    auto find_ws = [](char ch) { return std::isspace<char>(ch, std::locale()); };
+    auto find_ws = [delimiter](char ch) {
+        return (delimiter == '\0') ? (std::isspace<char>(ch, std::locale()) != 0) : (ch == delimiter);
+    };
     trim(str);
 
     std::vector<std::string> output;
@@ -297,7 +310,7 @@ inline std::vector<std::string> split_up(std::string str) {
             if(it != std::end(str)) {
                 std::string value = std::string(str.begin(), it);
                 output.push_back(value);
-                str = std::string(it, str.end());
+                str = std::string(it + 1, str.end());
             } else {
                 output.push_back(str);
                 str = "";
@@ -317,7 +330,7 @@ inline std::vector<std::string> split_up(std::string str) {
 /// at the start of the first line). `"; "` would be for ini files
 ///
 /// Can't use Regex, or this would be a subs.
-inline std::string fix_newlines(std::string leader, std::string input) {
+inline std::string fix_newlines(const std::string &leader, std::string input) {
     std::string::size_type n = 0;
     while(n != std::string::npos && n < input.size()) {
         n = input.find('\n', n);

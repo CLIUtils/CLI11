@@ -15,30 +15,6 @@ namespace CLI {
 
 class App;
 
-namespace detail {
-
-/// Comma separated join, adds quotes if needed
-inline std::string ini_join(std::vector<std::string> args) {
-    std::ostringstream s;
-    std::size_t start = 0;
-    for(const auto &arg : args) {
-        if(start++ > 0)
-            s << " ";
-
-        auto it = std::find_if(arg.begin(), arg.end(), [](char ch) { return std::isspace<char>(ch, std::locale()); });
-        if(it == arg.end())
-            s << arg;
-        else if(arg.find_first_of('\"') == std::string::npos)
-            s << '\"' << arg << '\"';
-        else
-            s << '\'' << arg << '\'';
-    }
-
-    return s.str();
-}
-
-} // namespace detail
-
 /// Holds values to load into Options
 struct ConfigItem {
     /// This is the list of parents
@@ -91,56 +67,61 @@ class Config {
     virtual ~Config() = default;
 };
 
-/// This converter works with INI files
-class ConfigINI : public Config {
+/// This converter works with INI/TOML files; to write proper TOML files use ConfigTOML
+class ConfigBase : public Config {
+  protected:
+    /// the character used for comments
+    char commentChar = ';';
+    /// the character used to start an array '\0' is a default to not use
+    char arrayStart = '\0';
+    /// the character used to end an array '\0' is a default to not use
+    char arrayEnd = '\0';
+    /// the character used to separate elements in an array
+    char arraySeparator = ' ';
+    /// the character used separate the name from the value
+    char valueDelimiter = '=';
+
   public:
     std::string
     to_config(const App * /*app*/, bool default_also, bool write_description, std::string prefix) const override;
 
-    std::vector<ConfigItem> from_config(std::istream &input) const override {
-        std::string line;
-        std::string section = "default";
-
-        std::vector<ConfigItem> output;
-
-        while(getline(input, line)) {
-            std::vector<std::string> items_buffer;
-
-            detail::trim(line);
-            std::size_t len = line.length();
-            if(len > 1 && line[0] == '[' && line[len - 1] == ']') {
-                section = line.substr(1, len - 2);
-            } else if(len > 0 && line[0] != ';') {
-                output.emplace_back();
-                ConfigItem &out = output.back();
-
-                // Find = in string, split and recombine
-                auto pos = line.find('=');
-                if(pos != std::string::npos) {
-                    out.name = detail::trim_copy(line.substr(0, pos));
-                    std::string item = detail::trim_copy(line.substr(pos + 1));
-                    items_buffer = detail::split_up(item);
-                } else {
-                    out.name = detail::trim_copy(line);
-                    items_buffer = {"ON"};
-                }
-
-                if(detail::to_lower(section) != "default") {
-                    out.parents = {section};
-                }
-
-                if(out.name.find('.') != std::string::npos) {
-                    std::vector<std::string> plist = detail::split(out.name, '.');
-                    out.name = plist.back();
-                    plist.pop_back();
-                    out.parents.insert(out.parents.end(), plist.begin(), plist.end());
-                }
-
-                out.inputs.insert(std::end(out.inputs), std::begin(items_buffer), std::end(items_buffer));
-            }
-        }
-        return output;
+    std::vector<ConfigItem> from_config(std::istream &input) const override;
+    /// Specify the configuration for comment characters
+    ConfigBase *comment(char cchar) {
+        commentChar = cchar;
+        return this;
+    }
+    /// Specify the start and end characters for an array
+    ConfigBase *arrayBounds(char aStart, char aEnd) {
+        arrayStart = aStart;
+        arrayEnd = aEnd;
+        return this;
+    }
+    /// Specify the delimiter character for an array
+    ConfigBase *arrayDelimiter(char aSep) {
+        arraySeparator = aSep;
+        return this;
+    }
+    /// Specify the delimiter between a name and value
+    ConfigBase *valueSeparator(char vSep) {
+        valueDelimiter = vSep;
+        return this;
     }
 };
 
+/// the default Config is the INI file format
+using ConfigINI = ConfigBase;
+
+/// ConfigTOML generates a TOML compliant output
+class ConfigTOML : public ConfigINI {
+
+  public:
+    ConfigTOML() {
+        commentChar = '#';
+        arrayStart = '[';
+        arrayEnd = ']';
+        arraySeparator = ',';
+        valueDelimiter = '=';
+    }
+};
 } // namespace CLI
