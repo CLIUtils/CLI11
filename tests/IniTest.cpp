@@ -915,3 +915,25 @@ TEST_F(TApp, StopReadingConfigOnClear) {
 
     EXPECT_EQ(volume, 0);
 }
+
+TEST_F(TApp, ConfigWriteReadWrite) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.add_flag("--flag");
+    run();
+
+    // Save config, with default values too
+    std::string config1 = app.config_to_str(true, true);
+    {
+        std::ofstream out{tmpini};
+        out << config1 << std::endl;
+    }
+
+    app.set_config("--config", "TestIniTmp.ini", "Read an ini file", true);
+    run();
+
+    std::string config2 = app.config_to_str(true, true);
+
+    EXPECT_EQ(config1, config2);
+}
