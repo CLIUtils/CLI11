@@ -306,7 +306,7 @@ TEST_F(TApp, SimiShortcutSets) {
 }
 
 TEST_F(TApp, SetFromCharStarArrayVector) {
-    constexpr const char *names[] = {"one", "two", "three"};
+    constexpr const char *names[3]{"one", "two", "three"};
     std::string value;
     auto opt = app.add_option("-s,--set", value)
                    ->check(CLI::IsMember{std::vector<std::string>(std::begin(names), std::end(names))});
