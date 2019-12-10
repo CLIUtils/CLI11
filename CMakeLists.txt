@@ -45,6 +45,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+    option(CLI11_CUDA_TESTS "Build the tests with NVCC to check for warnings there - requires CMake 3.9+")
+    if(CLI11_CUDA_TESTS)
+        enable_language(CUDA)
+
+        # Print out warning and error numbers
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
+    endif()
+
     option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 
     # Be moderately paranoid with flags
