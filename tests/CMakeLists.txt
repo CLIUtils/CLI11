@@ -52,10 +52,20 @@ set(CLI11_MULTIONLY_TESTS
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(T ${CLI11_TESTS})
+    if(CLI11_CUDA_TESTS)
+        set_property(
+            SOURCE ${T}.cpp
+            PROPERTY
+            LANGUAGE CUDA
+        )
+    endif()
 
     add_executable(${T} ${T}.cpp ${CLI11_headers})
     add_sanitizers(${T})
-    target_link_libraries(${T} PUBLIC CLI11 CLI11_warnings)
+    target_link_libraries(${T} PUBLIC CLI11)
+    if(NOT CLI11_CUDA_TESTS)
+        target_link_libraries(${T} PUBLIC CLI11_warnings)
+    endif()
     add_gtest(${T})
 
     if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)

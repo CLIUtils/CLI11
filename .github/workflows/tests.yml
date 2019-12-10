@@ -22,3 +22,18 @@ jobs:
         path: ~/.cache/pre-commit
         key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
     - uses: pre-commit/action@v1.0.0
+
+  cuda-build:
+    name: CUDA build only
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:10.2-devel-ubuntu18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Add wget
+        run: apt-get update && apt-get install -y wget
+      - name: Install Modern CMake
+        run: wget -qO- "https://cmake.org/files/v3.16/cmake-3.16.0-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+      - name: Build
+        run: cmake --build build
