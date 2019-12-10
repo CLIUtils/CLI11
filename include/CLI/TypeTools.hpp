@@ -140,7 +140,17 @@ struct pair_adaptor<
 // check for constructibility from a specific type and copy assignable used in the parse detection
 template <typename T, typename C> class is_direct_constructible {
     template <typename TT, typename CC>
-    static auto test(int, std::true_type) -> decltype(TT{std::declval<CC>()}, std::is_move_assignable<TT>());
+    static auto test(int, std::true_type) -> decltype(
+// NVCC warns about narrowing conversions here
+#ifdef __CUDACC__
+#pragma diag_suppress 2361
+#endif
+        TT { std::declval<CC>() }
+#ifdef __CUDACC__
+#pragma diag_default 2361
+#endif
+        ,
+        std::is_move_assignable<TT>());
 
     template <typename TT, typename CC> static auto test(int, std::false_type) -> std::false_type;
 

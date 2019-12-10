@@ -29,6 +29,8 @@ jobs:
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
       - uses: actions/checkout@v1
+        with:
+          submodules: true
       - name: Add wget
         run: apt-get update && apt-get install -y wget
       - name: Install Modern CMake
