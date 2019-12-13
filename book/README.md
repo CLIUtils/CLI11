@@ -28,7 +28,7 @@ Like any good command line application, help is provided. This program can be im
 
 [include](code/intro.cpp)
 
-[Source code](https://gitlab.com/CLIUtils/CLI11Tutorial/blob/master/code/intro.cpp)
+[Source code](https://github.com/CLIUtils/CLI11/blob/master/book/code/intro.cpp)
 
 Unlike some other libraries, this is enough to exit correctly and cleanly if help is requested or if incorrect arguments are passed. You can try this example out for yourself. To compile with GCC:
 
@@ -58,7 +58,7 @@ This guide was based on CLI11 1.7.
 [GooFit]: https://github.com/GooFit/GooFit
 [DIANA/HEP]: http://diana-hep.org
 [CLI11]: https://github.com/CLIUtils/CLI11
-[CLI11Tutorial]: https://gitlab.com/CLIUtils/CLI11Tutorial
+[CLI11Tutorial]: https://cliutils.github.io/CLI11/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
 [API docs]: https://cliutils.github.io/CLI11
 [README]: https://github.com/CLIUtils/CLI11/blob/master/README.md
