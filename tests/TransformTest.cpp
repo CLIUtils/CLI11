@@ -120,6 +120,7 @@ TEST_F(TApp, EnumCheckedDefualtTransform) {
     EXPECT_EQ(app.get_option("--existing")->as<existing>(), existing::abort);
 }
 
+// test from https://github.com/CLIUtils/CLI11/issues/369  [Jakub Zakrzewski](https://github.com/jzakrzewski)
 TEST_F(TApp, EnumCheckedDefaultTransformCallback) {
     enum class existing : int16_t { abort, overwrite, remove };
     auto cmd = std::make_shared<CLI::App>("deploys the repository somewhere", "deploy");
