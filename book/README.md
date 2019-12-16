@@ -6,7 +6,7 @@ The library was inspired the Python libraries [Plumbum] and [Click], and incorpo
 
 > Feel free to contribute to [this documentation here][CLI11Tutorial] if something can be improved!
 
-The syntax is simple and scales from a basic application to a massive physics analysis with multiple models and many parameters and switches. For example, this is a simple program that has an optional parameter that defaults to 1:
+The syntax is simple and scales from a basic application to a massive physics analysis with multiple models and many parameters and switches. For example, this is a simple program that has an optional parameter that defaults to 0:
 
 ```term
 gitbook $ ./a.out
@@ -65,7 +65,7 @@ This guide was based on CLI11 1.7.
 [NSF 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [University of Cincinnati]: http://www.uc.edu
 [Plumbum]: http://plumbum.readthedocs.io/en/latest/
-[Click]: http://click.pocoo.org/5/
+[Click]: https://click.palletsprojects.com/
 
 
 
