@@ -120,6 +120,26 @@ TEST_F(TApp, EnumCheckedDefualtTransform) {
     EXPECT_EQ(app.get_option("--existing")->as<existing>(), existing::abort);
 }
 
+TEST_F(TApp, EnumCheckedDefaultTransformCallback) {
+    enum class existing : int16_t { abort, overwrite, remove };
+    auto cmd = std::make_shared<CLI::App>("deploys the repository somewhere", "deploy");
+    cmd->add_option("--existing", "What to do if file already exists in the destination")
+        ->transform(
+            CLI::CheckedTransformer(std::unordered_map<std::string, existing>{ {"abort", existing::abort},
+                { "overwrite", existing::overwrite },
+                { "delete", existing::remove },
+                { "remove", existing::remove }}))
+        ->default_val("abort");
+
+    cmd->callback([cmd]() {
+        EXPECT_EQ(cmd->get_option("--existing")->as<existing>(), existing::abort);
+        });
+    app.add_subcommand(cmd);
+
+    args = { "deploy" };
+    run();
+}
+
 TEST_F(TApp, SimpleTransformFn) {
     int value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", "1"}}, CLI::ignore_case));
