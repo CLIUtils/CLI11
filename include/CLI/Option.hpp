@@ -1075,6 +1075,7 @@ class Option : public OptionBase<Option> {
         add_result(val);
         run_callback();
         results_ = std::move(old_results);
+        current_option_state_ = option_state::parsing;
         return this;
     }
 
