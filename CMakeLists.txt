@@ -146,17 +146,18 @@ endif()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CLI11ConfigVersion.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake" @ONLY)
 
+include(GNUInstallDirs)
 # These installs only make sense for a local project
 if(CUR_PROJ)
     # Make version available in the install
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-            DESTINATION lib/cmake/CLI11)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
 
     # Install the export target as a file
     install(EXPORT CLI11Targets
             FILE CLI11Config.cmake
             NAMESPACE CLI11::
-            DESTINATION lib/cmake/CLI11)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
 
     # Use find_package on the installed package
     export(TARGETS CLI11
