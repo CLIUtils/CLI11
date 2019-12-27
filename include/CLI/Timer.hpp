@@ -101,7 +101,6 @@ class Timer {
         else
             return print_it(time, "s");
     }
-    // LCOV_EXCL_END
     // LCOV_EXCL_STOP
 
     /// This is the main function, it creates a string
