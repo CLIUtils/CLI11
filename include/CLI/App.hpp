@@ -555,6 +555,7 @@ class App {
         // LCOV_EXCL_START
         throw(OptionAlreadyAdded("added option matched existing option name"));
         // LCOV_EXCL_END
+        // LCOV_EXCL_STOP
     }
 
     /// Add option for assigning to a variable
@@ -2489,6 +2490,7 @@ class App {
         default:
             throw HorribleError("unrecognized classifier (you should not see this!)");
             // LCOV_EXCL_END
+            // LCOV_EXCL_STOP
         }
         return retval;
     }

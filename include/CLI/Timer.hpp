@@ -102,6 +102,7 @@ class Timer {
             return print_it(time, "s");
     }
     // LCOV_EXCL_END
+    // LCOV_EXCL_STOP
 
     /// This is the main function, it creates a string
     std::string to_string() const { return time_print_(title_, make_time_str()); }
