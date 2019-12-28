@@ -3,7 +3,8 @@
 
 set -evx
 
-DOXYGEN_URL="http://doxygen.nl/files/doxygen-1.8.15.src.tar.gz"
+#DOXYGEN_URL="http://doxygen.nl/files/doxygen-1.8.17.src.tar.gz"
+DOXYGEN_URL="https://github.com/doxygen/doxygen/archive/Release_1_8_15.tar.gz"
 cd "${DEPS_DIR}"
 
 if [[ ! -f "${DEPS_DIR}/doxygen/build/bin/doxygen" ]] ; then

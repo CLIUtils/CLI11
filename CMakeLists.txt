@@ -93,6 +93,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         endif()
     endif()
 
+    if (EXISTS book)
+       add_subdirectory(book)
+    endif()
+
     if(NOT CMAKE_VERSION VERSION_LESS 3.9)
         find_package(Doxygen)
         if(Doxygen_FOUND)
