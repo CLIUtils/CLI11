@@ -552,9 +552,7 @@ class App {
             }
         }
         // this line should not be reached the above loop should trigger the throw
-        // LCOV_EXCL_START
-        throw(OptionAlreadyAdded("added option matched existing option name"));
-        // LCOV_EXCL_END
+        throw(OptionAlreadyAdded("added option matched existing option name")); // LCOV_EXCL_LINE
     }
 
     /// Add option for assigning to a variable
@@ -2488,7 +2486,7 @@ class App {
             // LCOV_EXCL_START
         default:
             throw HorribleError("unrecognized classifier (you should not see this!)");
-            // LCOV_EXCL_END
+            // LCOV_EXCL_STOP
         }
         return retval;
     }
