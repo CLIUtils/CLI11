@@ -57,7 +57,7 @@ Here I've assumed that the remote is `cli11`.
 
 ## For maintainers: remember to add contributions
 
-In a commit to a PR, just add "" or similar (see <https://allcontributors.org>). Use `code` for code, `bug` if an issue was submitted, `platform` for packaging stuff, and `doc` for documentation updates.
+In a commit to a PR, just add "`@all-contributors please add <username> for <contributions>`" or similar (see <https://allcontributors.org>). Use `code` for code, `bug` if an issue was submitted, `platform` for packaging stuff, and `doc` for documentation updates.
 
 To run locally, do:
 
