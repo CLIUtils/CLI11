@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -876,6 +876,7 @@ Significant features and/or improvements to the code were contributed by ([emoji
     <td align="center"><a href="https://github.com/jbriales"><img src="https://avatars1.githubusercontent.com/u/6850478?v=4" width="100px;" alt=""/><br /><sub><b>Jesus Briales</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=jbriales" title="Code">💻</a> <a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Ajbriales" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://seanfisk.com/"><img src="https://avatars0.githubusercontent.com/u/410322?v=4" width="100px;" alt=""/><br /><sub><b>Sean Fisk</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Aseanfisk" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=seanfisk" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/fpeng1985"><img src="https://avatars1.githubusercontent.com/u/87981?v=4" width="100px;" alt=""/><br /><sub><b>fpeng1985</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=fpeng1985" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/almikhayl"><img src="https://avatars2.githubusercontent.com/u/6747040?v=4" width="100px;" alt=""/><br /><sub><b>almikhayl</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=almikhayl" title="Code">💻</a></td>
   </tr>
 </table>
 
