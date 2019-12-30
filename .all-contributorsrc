@@ -87,6 +87,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "mensinda",
+      "name": "Daniel Mensinger",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3407462?v=4",
+      "profile": "https://github.com/mensinda",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsPerLine": 7
