@@ -14,6 +14,9 @@
 [![DOI][doi-badge]][doi-link]
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
@@ -850,7 +853,23 @@ To contribute, open an [issue][github issues] or [pull request][github pull requ
 This readme roughly follows the [Standard Readme Style][] and includes a mention of almost every feature of the library. More complex features are documented in more detail in the [CLI11 tutorial GitBook][gitbook].
 
 This project was created by [Henry Schreiner](https://github.com/henryiii).
-Significant features and/or improvements to the code were contributed by:
+
+Significant features and/or improvements to the code were contributed by ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://iscinumpy.gitlab.io"><img src="https://avatars1.githubusercontent.com/u/4616906?v=4" width="100px;" alt=""/><br /><sub><b>Henry Schreiner</b></sub></a><br /><a href="#maintenance-henryiii" title="Maintenance">🚧</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 
 -   [Anton](https://github.com/SX91)
 -   [Doug Johnston](https://github.com/dvj)
@@ -869,12 +888,13 @@ Significant features and/or improvements to the code were contributed by:
 -   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
 -   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
 -   [Rafi Wiener](https://github.com/rafiw) <!-- INI, +ive validators and vector separators -->
-    [elszon](https://github.com/elszon) <!-- Formatting in multiline string -->
-    [ryan4729](https://github.com/ryan4729) <!-- AArch64 support -->
-    [Andrew Hardin](https://github.com/andrew-hardin) <!-- Fixing two warnings -->
-    [Paul le Roux](https://github.com/pleroux0) <!-- Arch independent CMake Config -->
+-   [elszon](https://github.com/elszon) <!-- Formatting in multiline string -->
+-   [ryan4729](https://github.com/ryan4729) <!-- AArch64 support -->
+-   [Andrew Hardin](https://github.com/andrew-hardin) <!-- Fixing two warnings -->
+-   [Paul le Roux](https://github.com/pleroux0) <!-- Arch independent CMake Config -->
 -   [Viacheslav Kroilov](https://github.com/metopa) <!-- AsNumberWithUnit and AsSizeValue -->
 
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## License
 
@@ -942,3 +962,4 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
+
