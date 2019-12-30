@@ -265,6 +265,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "deining",
+      "name": "deining",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/18169566?v=4",
+      "profile": "https://github.com/deining",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
