@@ -96,6 +96,15 @@
       "contributions": [
         "platform"
       ]
+    },
+    {
+      "login": "jbriales",
+      "name": "Jesus Briales",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/6850478?v=4",
+      "profile": "https://github.com/jbriales",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7

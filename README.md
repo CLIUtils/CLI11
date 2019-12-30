@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -873,6 +873,7 @@ Significant features and/or improvements to the code were contributed by ([emoji
   <tr>
     <td align="center"><a href="https://github.com/rafiw"><img src="https://avatars3.githubusercontent.com/u/3034707?v=4" width="100px;" alt=""/><br /><sub><b>Rafi Wiener</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Arafiw" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=rafiw" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/mensinda"><img src="https://avatars3.githubusercontent.com/u/3407462?v=4" width="100px;" alt=""/><br /><sub><b>Daniel Mensinger</b></sub></a><br /><a href="#platform-mensinda" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/jbriales"><img src="https://avatars1.githubusercontent.com/u/6850478?v=4" width="100px;" alt=""/><br /><sub><b>Jesus Briales</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=jbriales" title="Code">💻</a></td>
   </tr>
 </table>
 
