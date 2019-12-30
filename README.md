@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -878,6 +878,9 @@ Significant features and/or improvements to the code were contributed by ([emoji
     <td align="center"><a href="https://github.com/fpeng1985"><img src="https://avatars1.githubusercontent.com/u/87981?v=4" width="100px;" alt=""/><br /><sub><b>fpeng1985</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=fpeng1985" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/almikhayl"><img src="https://avatars2.githubusercontent.com/u/6747040?v=4" width="100px;" alt=""/><br /><sub><b>almikhayl</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=almikhayl" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/andrew-hardin"><img src="https://avatars0.githubusercontent.com/u/16496326?v=4" width="100px;" alt=""/><br /><sub><b>Andrew Hardin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=andrew-hardin" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/SX91"><img src="https://avatars2.githubusercontent.com/u/754754?v=4" width="100px;" alt=""/><br /><sub><b>Anton</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=SX91" title="Code">💻</a></td>
   </tr>
 </table>
 
