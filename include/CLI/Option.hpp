@@ -652,10 +652,6 @@ class Option : public OptionBase<Option> {
     /// The set of options excluded
     std::set<Option *> get_excludes() const { return excludes_; }
 
-    /// The default value (for help printing) DEPRECATED Use get_default_str() instead
-    CLI11_DEPRECATED("Use get_default_str() instead")
-    std::string get_defaultval() const { return default_str_; }
-
     /// The default value (for help printing)
     std::string get_default_str() const { return default_str_; }
 
