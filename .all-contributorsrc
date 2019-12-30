@@ -172,6 +172,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "kraj",
+      "name": "Khem Raj",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/465279?v=4",
+      "profile": "http://himvis.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
