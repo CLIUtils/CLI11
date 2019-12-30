@@ -256,6 +256,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ChristosT",
+      "name": "christos",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6725596?v=4",
+      "profile": "http://cs.odu.edu/~ctsolakis",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
