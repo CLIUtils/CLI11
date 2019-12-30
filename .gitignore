@@ -8,3 +8,7 @@ a.out*
 /*.kdev4
 /html/*
 !/meson.build
+
+/node_modules/*
+/package.json
+/yarn.lock
