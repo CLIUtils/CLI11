@@ -218,6 +218,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "chfast",
+      "name": "Paweł Bylica",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/573380?v=4",
+      "profile": "https://github.com/chfast",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsPerLine": 7
