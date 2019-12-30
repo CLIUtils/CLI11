@@ -37,6 +37,15 @@
         "example",
         "code"
       ]
+    },
+    {
+      "login": "lambdafu",
+      "name": "Marcus Brinkmann",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1138455?v=4",
+      "profile": "https://lambdafu.net/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
