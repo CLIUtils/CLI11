@@ -46,6 +46,15 @@ jobs:
     - template: .ci/azure-build.yml
     - template: .ci/azure-test.yml
 
+- job: Clang11
+  pool:
+    vmImage: 'macOS-latest'
+  variables:
+    cli11.std: 11
+  steps:
+    - template: .ci/azure-build.yml
+    - template: .ci/azure-test.yml
+
 - job: Meson
   pool:
     vmImage: 'ubuntu-latest'
