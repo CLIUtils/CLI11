@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -881,6 +881,7 @@ Significant features and/or improvements to the code were contributed by ([emoji
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/SX91"><img src="https://avatars2.githubusercontent.com/u/754754?v=4" width="100px;" alt=""/><br /><sub><b>Anton</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=SX91" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/helmesjo"><img src="https://avatars0.githubusercontent.com/u/2501070?v=4" width="100px;" alt=""/><br /><sub><b>Fred Helmesjö</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Ahelmesjo" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=helmesjo" title="Code">💻</a></td>
   </tr>
 </table>
 
