@@ -199,6 +199,7 @@ TEST_F(TApp, SimpleNumericalTransformFnArray) {
     EXPECT_EQ(value, 1);
 }
 
+#ifdef CLI11_CPP14
 // zero copy constexpr array operation with transformer example and test
 TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
     constexpr std::pair<const char *, int> p1{"one", 1};
@@ -219,6 +220,7 @@ TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
     EXPECT_EQ(1u, opt->count());
     EXPECT_EQ(value, 2);
 }
+#endif
 
 TEST_F(TApp, EnumTransformFn) {
     enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
