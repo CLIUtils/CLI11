@@ -15,7 +15,7 @@ inline std::ostream &operator<<(std::ostream &os, const Level &level) {
         os << "Low";
         break;
     }
-    os << " (from custom ostream)";
+    os << " (ft rom custom ostream)";
     return os;
 }
 

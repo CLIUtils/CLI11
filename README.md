@@ -812,6 +812,7 @@ Several short examples of different features are included in the repository. A b
  - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
  - [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
  - [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
+ - [enum_ostream](https://github.com/CLIUtils/CLI11/blob/master/examples/enum_ostream.cpp):  In addition to the contents of example enum.cpp, this example shows how a custom ostream operator overrides CLI11's enum streaming.
  - [formatter](https://github.com/CLIUtils/CLI11/blob/master/examples/formatter.cpp): Illustrating usage of a custom formatter
  - [groups](https://github.com/CLIUtils/CLI11/blob/master/examples/groups.cpp):  Example using groups of options for help grouping and a the timer helper class
  - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/master/examples/inter_argument_order.cpp): An app to practice mixing unlimited arguments, but still recover the original order.
@@ -833,7 +834,7 @@ Several short examples of different features are included in the repository. A b
 
 ## Contribute
 
-To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. The is also a short note to contributors [here](./.github/CONTRIBUTING.md).
+To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. There is also a short note to contributors [here](./.github/CONTRIBUTING.md).
 This readme roughly follows the [Standard Readme Style][] and includes a mention of almost every feature of the library. More complex features are documented in more detail in the [CLI11 tutorial GitBook][gitbook].
 
 This project was created by [Henry Schreiner](https://github.com/henryiii).
