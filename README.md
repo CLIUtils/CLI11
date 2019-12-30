@@ -849,7 +849,7 @@ Several short examples of different features are included in the repository. A b
 To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. The is also a short note to contributors [here](./.github/CONTRIBUTING.md).
 This readme roughly follows the [Standard Readme Style][] and includes a mention of almost every feature of the library. More complex features are documented in more detail in the [CLI11 tutorial GitBook][gitbook].
 
-This project was created by [Henry Schreiner](https://github.com/henryiii) and major features were added by  [Philip Top](https://github.com/phlptp). Significant features and/or improvements to the code were contributed by ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+This project was created by [Henry Schreiner](https://github.com/henryiii) and major features were added by  [Philip Top](https://github.com/phlptp). Special thanks to all the contributors ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
