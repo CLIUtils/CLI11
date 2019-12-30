@@ -44,6 +44,7 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/1138455?v=4",
       "profile": "https://lambdafu.net/",
       "contributions": [
+        "bug",
         "code"
       ]
     },
@@ -52,6 +53,16 @@
       "name": "Jonas Nilsson",
       "avatar_url": "https://avatars1.githubusercontent.com/u/58835?v=4",
       "profile": "https://github.com/SkyToGround",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "dvj",
+      "name": "Doug Johnston",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/77217?v=4",
+      "profile": "https://github.com/dvj",
       "contributions": [
         "bug",
         "code"
