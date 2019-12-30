@@ -199,6 +199,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "nathanhourt",
+      "name": "Nathan Hourt",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/271977?v=4",
+      "profile": "https://github.com/nathanhourt",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
