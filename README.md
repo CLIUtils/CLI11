@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-31-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-32-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -901,6 +901,7 @@ Significant features and/or improvements to the code were contributed by ([emoji
     <td align="center"><a href="https://github.com/elszon"><img src="https://avatars0.githubusercontent.com/u/2971495?v=4" width="100px;" alt=""/><br /><sub><b>elszon</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=elszon" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ncihnegn"><img src="https://avatars3.githubusercontent.com/u/12021721?v=4" width="100px;" alt=""/><br /><sub><b>ncihnegn</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ncihnegn" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/nurelin"><img src="https://avatars3.githubusercontent.com/u/5276274?v=4" width="100px;" alt=""/><br /><sub><b>nurelin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=nurelin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ryan4729"><img src="https://avatars3.githubusercontent.com/u/40183301?v=4" width="100px;" alt=""/><br /><sub><b>ryan4729</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ryan4729" title="Tests">⚠️</a></td>
   </tr>
 </table>
 
