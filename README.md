@@ -14,9 +14,6 @@
 [![DOI][doi-badge]][doi-link]
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-32-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
@@ -852,9 +849,7 @@ Several short examples of different features are included in the repository. A b
 To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. The is also a short note to contributors [here](./.github/CONTRIBUTING.md).
 This readme roughly follows the [Standard Readme Style][] and includes a mention of almost every feature of the library. More complex features are documented in more detail in the [CLI11 tutorial GitBook][gitbook].
 
-This project was created by [Henry Schreiner](https://github.com/henryiii).
-
-Significant features and/or improvements to the code were contributed by ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+This project was created by [Henry Schreiner](https://github.com/henryiii) and major features were added by  [Philip Top](https://github.com/phlptp). Significant features and/or improvements to the code were contributed by ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
@@ -909,29 +904,6 @@ Significant features and/or improvements to the code were contributed by ([emoji
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-
--   [Anton](https://github.com/SX91)
--   [Doug Johnston](https://github.com/dvj)
--   [Jonas Nilsson](https://github.com/SkyToGround)
--   [Lucas Czech](https://github.com/lczech)
--   [Marcus Brinkmann](https://github.com/lambdafu)
--   [Mathias Soeken](https://github.com/msoeken)
--   [Nathan Hourt](https://github.com/nathanhourt)
--   [Sean Fisk](https://github.com/seanfisk)
--   [Stéphane Del Pino](https://github.com/delpinux)
--   [Mak Kolybabi](https://github.com/mogigoma)
--   [Paweł Bylica](https://github.com/chfast)
--   [Philip Top](https://github.com/phlptp) <!-- Major features in 1.7 and 1.8 -->
--   [almikhayl](https://github.com/almikhayl)
--   [nurelin](https://github.com/nurelin) <!-- help_all in message -->
--   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
--   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
--   [Rafi Wiener](https://github.com/rafiw) <!-- INI, +ive validators and vector separators -->
--   [elszon](https://github.com/elszon) <!-- Formatting in multiline string -->
--   [ryan4729](https://github.com/ryan4729) <!-- AArch64 support -->
--   [Andrew Hardin](https://github.com/andrew-hardin) <!-- Fixing two warnings -->
--   [Paul le Roux](https://github.com/pleroux0) <!-- Arch independent CMake Config -->
--   [Viacheslav Kroilov](https://github.com/metopa) <!-- AsNumberWithUnit and AsSizeValue -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
