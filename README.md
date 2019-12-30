@@ -15,7 +15,7 @@
 [![Conan.io][conan-badge]][conan-link]
 [![Try CLI11 1.8 online][wandbox-badge]][wandbox-link]
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-24-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-25-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [What's new](./CHANGELOG.md) •
@@ -892,6 +892,7 @@ Significant features and/or improvements to the code were contributed by ([emoji
     <td align="center"><a href="https://github.com/pleroux0"><img src="https://avatars2.githubusercontent.com/u/39619854?v=4" width="100px;" alt=""/><br /><sub><b>Paul le Roux</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=pleroux0" title="Code">💻</a> <a href="#platform-pleroux0" title="Packaging/porting to new platform">📦</a></td>
     <td align="center"><a href="https://github.com/chfast"><img src="https://avatars1.githubusercontent.com/u/573380?v=4" width="100px;" alt=""/><br /><sub><b>Paweł Bylica</b></sub></a><br /><a href="#platform-chfast" title="Packaging/porting to new platform">📦</a></td>
     <td align="center"><a href="https://github.com/peterazmanov"><img src="https://avatars0.githubusercontent.com/u/15322318?v=4" width="100px;" alt=""/><br /><sub><b>Peter Azmanov</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=peterazmanov" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/delpinux"><img src="https://avatars0.githubusercontent.com/u/35096584?v=4" width="100px;" alt=""/><br /><sub><b>Stéphane Del Pino</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=delpinux" title="Code">💻</a></td>
   </tr>
 </table>
 
