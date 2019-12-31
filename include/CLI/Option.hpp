@@ -938,10 +938,12 @@ class Option : public OptionBase<Option> {
                 res = results_;
                 _validate_results(res);
             }
-            results_t extra;
-            _reduce_results(extra, res);
-            if(!extra.empty()) {
-                res = std::move(extra);
+            if(!res.empty()) {
+                results_t extra;
+                _reduce_results(extra, res);
+                if(!extra.empty()) {
+                    res = std::move(extra);
+                }
             }
         }
         return res;

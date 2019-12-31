@@ -45,6 +45,10 @@ std::string simple(const App *app, const Error &e);
 std::string help(const App *app, const Error &e);
 } // namespace FailureMessage
 
+/// enumeration of modes of how to deal with extras in config files
+
+enum class config_extras_mode : char { error = 0, ignore, capture };
+
 class App;
 
 using App_p = std::shared_ptr<App>;
@@ -73,8 +77,9 @@ class App {
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
     bool allow_extras_{false};
 
-    /// If true, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
-    bool allow_config_extras_{false};
+    /// If ignore, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
+    /// if error error on an extra argument, and if capture feed it to the app
+    config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
     ///  If true, return immediately on an unrecognized option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
@@ -194,12 +199,17 @@ class App {
     /// specify that positional arguments come at the end of the argument sequence not inheritable
     bool positionals_at_end_{false};
 
-    /// If set to true the subcommand will start each parse disabled
-    bool disabled_by_default_{false};
-    /// If set to true the subcommand will be reenabled at the start of each parse
-    bool enabled_by_default_{false};
+    enum class startup_mode : char { stable, enabled, disabled };
+    /// specify the startup mode for the app
+    /// stable=no change, enabled= startup enabled, disabled=startup disabled
+    startup_mode default_startup{startup_mode::stable};
+
+    /// if set to true the subcommand can be triggered via configuration files INHERITABLE
+    bool configurable_{false};
+
     /// If set to true positional options are validated before assigning INHERITABLE
     bool validate_positionals_{false};
+
     /// A pointer to the parent if this is a subcommand
     App *parent_{nullptr};
 
@@ -227,12 +237,6 @@ class App {
     ///@}
     /// @name Config
     ///@{
-
-    /// The name of the connected config file
-    std::string config_name_{};
-
-    /// True if ini is required (throws if not present), if false simply keep going.
-    bool config_required_{false};
 
     /// Pointer to the config option
     Option *config_ptr_{nullptr};
@@ -266,6 +270,7 @@ class App {
             ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
             validate_positionals_ = parent_->validate_positionals_;
+            configurable_ = parent_->configurable_;
             allow_windows_style_options_ = parent_->allow_windows_style_options_;
             group_ = parent_->group_;
             footer_ = parent_->footer_;
@@ -385,14 +390,23 @@ class App {
 
     /// Set the subcommand to be disabled by default, so on clear(), at the start of each parse it is disabled
     App *disabled_by_default(bool disable = true) {
-        disabled_by_default_ = disable;
+        if(disable) {
+            default_startup = startup_mode::disabled;
+        } else {
+            default_startup = (default_startup == startup_mode::enabled) ? startup_mode::enabled : startup_mode::stable;
+        }
         return this;
     }
 
     /// Set the subcommand to be enabled by default, so on clear(), at the start of each parse it is enabled (not
     /// disabled)
     App *enabled_by_default(bool enable = true) {
-        enabled_by_default_ = enable;
+        if(enable) {
+            default_startup = startup_mode::enabled;
+        } else {
+            default_startup =
+                (default_startup == startup_mode::disabled) ? startup_mode::disabled : startup_mode::stable;
+        }
         return this;
     }
 
@@ -415,11 +429,20 @@ class App {
         return this;
     }
 
-    /// Remove the error when extras are left over on the command line.
-    /// Will also call App::allow_extras().
+    /// ignore extras in config files
     App *allow_config_extras(bool allow = true) {
-        allow_extras(allow);
-        allow_config_extras_ = allow;
+        if(allow) {
+            allow_config_extras_ = config_extras_mode::capture;
+            allow_extras_ = true;
+        } else {
+            allow_config_extras_ = config_extras_mode::error;
+        }
+        return this;
+    }
+
+    /// ignore extras in config files
+    App *allow_config_extras(config_extras_mode mode) {
+        allow_config_extras_ = mode;
         return this;
     }
 
@@ -454,6 +477,12 @@ class App {
     /// Specify that the positional arguments are only at the end of the sequence
     App *positionals_at_end(bool value = true) {
         positionals_at_end_ = value;
+        return this;
+    }
+
+    /// Specify that the subcommand can be triggered by a config file
+    App *configurable(bool value = true) {
+        configurable_ = value;
         return this;
     }
 
@@ -889,22 +918,24 @@ class App {
     /// Set a configuration ini file option, or clear it if no name passed
     Option *set_config(std::string option_name = "",
                        std::string default_filename = "",
-                       std::string help_message = "Read an ini file",
+                       const std::string &help_message = "Read an ini file",
                        bool config_required = false) {
 
         // Remove existing config if present
         if(config_ptr_ != nullptr) {
             remove_option(config_ptr_);
-            config_name_ = "";
-            config_required_ = false; // Not really needed, but complete
-            config_ptr_ = nullptr;    // need to remove the config_ptr completely
+            config_ptr_ = nullptr; // need to remove the config_ptr completely
         }
 
         // Only add config if option passed
         if(!option_name.empty()) {
-            config_name_ = default_filename;
-            config_required_ = config_required;
-            config_ptr_ = add_option(option_name, config_name_, help_message, !default_filename.empty());
+            config_ptr_ = add_option(option_name, help_message);
+            if(config_required) {
+                config_ptr_->required();
+            }
+            if(!default_filename.empty()) {
+                config_ptr_->default_str(std::move(default_filename));
+            }
             config_ptr_->configurable(false);
         }
 
@@ -989,12 +1020,12 @@ class App {
     }
     /// Check to see if a subcommand is part of this command (doesn't have to be in command line)
     /// returns the first subcommand if passed a nullptr
-    App *get_subcommand(App *subcom) const {
+    App *get_subcommand(const App *subcom) const {
         if(subcom == nullptr)
             throw OptionNotFound("nullptr passed");
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr.get() == subcom)
-                return subcom;
+                return subcomptr.get();
         throw OptionNotFound(subcom->get_name());
     }
 
@@ -1342,7 +1373,7 @@ class App {
     }
 
     /// Check to see if given subcommand was selected
-    bool got_subcommand(App *subcom) const {
+    bool got_subcommand(const App *subcom) const {
         // get subcom needed to verify that this was a real subcommand
         return get_subcommand(subcom)->parsed_ > 0;
     }
@@ -1482,6 +1513,11 @@ class App {
     /// Access the config formatter
     std::shared_ptr<Config> get_config_formatter() const { return config_formatter_; }
 
+    /// Access the config formatter as a configBase pointer
+    std::shared_ptr<ConfigBase> get_config_formatter_base() const {
+        return std::dynamic_pointer_cast<ConfigBase>(config_formatter_);
+    }
+
     /// Get the app or subcommand description
     std::string get_description() const { return description_; }
 
@@ -1601,6 +1637,9 @@ class App {
     /// Check the status of the allow windows style options
     bool get_positionals_at_end() const { return positionals_at_end_; }
 
+    /// Check the status of the allow windows style options
+    bool get_configurable() const { return configurable_; }
+
     /// Get the group of this subcommand
     const std::string &get_group() const { return group_; }
 
@@ -1635,15 +1674,15 @@ class App {
     bool get_immediate_callback() const { return immediate_callback_; }
 
     /// Get the status of disabled by default
-    bool get_disabled_by_default() const { return disabled_by_default_; }
+    bool get_disabled_by_default() const { return (default_startup == startup_mode::disabled); }
 
     /// Get the status of disabled by default
-    bool get_enabled_by_default() const { return enabled_by_default_; }
+    bool get_enabled_by_default() const { return (default_startup == startup_mode::enabled); }
     /// Get the status of validating positionals
     bool get_validate_positionals() const { return validate_positionals_; }
 
     /// Get the status of allow extras
-    bool get_allow_config_extras() const { return allow_config_extras_; }
+    config_extras_mode get_allow_config_extras() const { return allow_config_extras_; }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
@@ -1823,11 +1862,10 @@ class App {
     /// set the correct fallthrough and prefix for nameless subcommands and manage the automatic enable or disable
     /// makes sure parent is set correctly
     void _configure() {
-        if(disabled_by_default_) {
-            disabled_ = true;
-        }
-        if(enabled_by_default_) {
+        if(default_startup == startup_mode::enabled) {
             disabled_ = false;
+        } else if(default_startup == startup_mode::disabled) {
+            disabled_ = true;
         }
         for(const App_p &app : subcommands_) {
             if(app->has_automatic_name_) {
@@ -1909,27 +1947,33 @@ class App {
 
     // The parse function is now broken into several parts, and part of process
 
-    /// Read and process an ini file (main app only)
-    void _process_ini() {
-        // Process an INI file
+    /// Read and process a configuration file (main app only)
+    void _process_config_file() {
         if(config_ptr_ != nullptr) {
-            if(*config_ptr_) {
-                config_ptr_->run_callback();
-                config_required_ = true;
+            bool config_required = config_ptr_->get_required();
+            bool file_given = config_ptr_->count() > 0;
+            auto config_file = config_ptr_->as<std::string>();
+            if(config_file.empty()) {
+                if(config_required) {
+                    throw FileError::Missing("no specified config file");
+                }
+                return;
             }
-            if(!config_name_.empty()) {
+
+            auto path_result = detail::check_path(config_file.c_str());
+            if(path_result == detail::path_type::file) {
                 try {
-                    auto path_result = detail::check_path(config_name_.c_str());
-                    if(path_result == detail::path_type::file) {
-                        std::vector<ConfigItem> values = config_formatter_->from_file(config_name_);
-                        _parse_config(values);
-                    } else if(config_required_) {
-                        throw FileError::Missing(config_name_);
+                    std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
+                    _parse_config(values);
+                    if(!file_given) {
+                        config_ptr_->add_result(config_file);
                     }
                 } catch(const FileError &) {
-                    if(config_required_)
+                    if(config_required || file_given)
                         throw;
                 }
+            } else if(config_required || file_given) {
+                throw FileError::Missing(config_file);
             }
         }
     }
@@ -2145,7 +2189,7 @@ class App {
 
     /// Process callbacks and such.
     void _process() {
-        _process_ini();
+        _process_config_file();
         _process_env();
         _process_callbacks();
         _process_help_flags();
@@ -2244,7 +2288,7 @@ class App {
     /// Returns true if it managed to find the option, if false you'll need to remove the arg manually.
     void _parse_config(std::vector<ConfigItem> &args) {
         for(ConfigItem item : args) {
-            if(!_parse_single_config(item) && !allow_config_extras_)
+            if(!_parse_single_config(item) && allow_config_extras_ == config_extras_mode::error)
                 throw ConfigError::Extras(item.fullname());
         }
     }
@@ -2254,16 +2298,37 @@ class App {
         if(level < item.parents.size()) {
             try {
                 auto subcom = get_subcommand(item.parents.at(level));
-                return subcom->_parse_single_config(item, level + 1);
+                auto result = subcom->_parse_single_config(item, level + 1);
+
+                return result;
             } catch(const OptionNotFound &) {
                 return false;
             }
         }
-
+        // check for section open
+        if(item.name == "++") {
+            if(configurable_) {
+                increment_parsed();
+                _trigger_pre_parse(2);
+                if(parent_ != nullptr) {
+                    parent_->parsed_subcommands_.push_back(this);
+                }
+            }
+            return true;
+        }
+        // check for section close
+        if(item.name == "--") {
+            if(configurable_) {
+                _process_callbacks();
+                _process_requirements();
+                run_callback();
+            }
+            return true;
+        }
         Option *op = get_option_no_throw("--" + item.name);
         if(op == nullptr) {
             // If the option was not present
-            if(get_allow_config_extras())
+            if(get_allow_config_extras() == config_extras_mode::capture)
                 // Should we worry about classifying the extras properly?
                 missing_.emplace_back(detail::Classifier::NONE, item.fullname());
             return false;

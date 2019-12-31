@@ -443,6 +443,7 @@ TEST_F(TApp, SubcommandDefaults) {
     EXPECT_FALSE(app.get_allow_windows_style_options());
 #endif
     EXPECT_FALSE(app.get_fallthrough());
+    EXPECT_FALSE(app.get_configurable());
     EXPECT_FALSE(app.get_validate_positionals());
 
     EXPECT_EQ(app.get_footer(), "");
@@ -455,6 +456,7 @@ TEST_F(TApp, SubcommandDefaults) {
     app.immediate_callback();
     app.ignore_case();
     app.ignore_underscore();
+    app.configurable();
 #ifdef _WIN32
     app.allow_windows_style_options(false);
 #else
@@ -482,6 +484,7 @@ TEST_F(TApp, SubcommandDefaults) {
 #endif
     EXPECT_TRUE(app2->get_fallthrough());
     EXPECT_TRUE(app2->get_validate_positionals());
+    EXPECT_TRUE(app2->get_configurable());
     EXPECT_EQ(app2->get_footer(), "footy");
     EXPECT_EQ(app2->get_group(), "Stuff");
     EXPECT_EQ(app2->get_require_subcommand_min(), 0u);

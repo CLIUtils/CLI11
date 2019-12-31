@@ -271,25 +271,25 @@ enum class path_type { nonexistant, file, directory };
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 /// get the type of the path from a file name
-inline path_type check_path(const char *file) {
-    try {
-        auto stat = std::filesystem::status(file);
-        switch(stat.type()) {
-        case std::filesystem::file_type::none:
-        case std::filesystem::file_type::not_found:
-            return path_type::nonexistant;
-        case std::filesystem::file_type::directory:
-            return path_type::directory;
-        default:
-            return path_type::file;
-        }
-    } catch(const std::filesystem::filesystem_error &) {
+inline path_type check_path(const char *file) noexcept {
+    std::error_code ec;
+    auto stat = std::filesystem::status(file, ec);
+    if(ec) {
         return path_type::nonexistant;
+    }
+    switch(stat.type()) {
+    case std::filesystem::file_type::none:
+    case std::filesystem::file_type::not_found:
+        return path_type::nonexistant;
+    case std::filesystem::file_type::directory:
+        return path_type::directory;
+    default:
+        return path_type::file;
     }
 }
 #else
 /// get the type of the path from a file name
-inline path_type check_path(const char *file) {
+inline path_type check_path(const char *file) noexcept {
 #if defined(_MSC_VER)
     struct __stat64 buffer;
     if(_stat64(file, &buffer) == 0) {

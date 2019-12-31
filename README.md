@@ -83,7 +83,7 @@ An acceptable CLI parser library should be all of the following:
 -   Easy to execute, with help, parse errors, etc. providing correct exit and details.
 -   Easy to extend as part of a framework that provides "applications" to users.
 -   Usable subcommand syntax, with support for multiple subcommands, nested subcommands, option groups, and optional fallthrough (explained later).
--   Ability to add a configuration file (`ini` format), and produce it as well.
+-   Ability to add a configuration file (`ini` or `TOML`🚧 format), and produce it as well.
 -   Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
 -   Work with standard types, simple custom types, and extensible to exotic types.
 -   Permissively licensed.
@@ -411,7 +411,7 @@ will produce a check for a number less than or equal to 0.
 ##### Transforming Validators
 There are a few built in Validators that let you transform values if used with the `transform` function.  If they also do some checks then they can be used `check` but some may do nothing in that case.
 -   🆕 `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
--   🆕 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
+-   🆕 The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this Validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and `CLI::ignore_space`.  These all work on strings but it is possible to define functions that work on other types.
 Here are some examples
 of `IsMember`:
@@ -532,6 +532,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
+-   `.configurable()`: 🚧 Allow the subcommand to be triggered from a configuration file.
 -   `.disable()`: 🆕 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 -   `.disabled_by_default()`: 🆕 Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 -   `.enabled_by_default()`: 🆕 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
@@ -689,7 +690,7 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default (other formats can be added by an adept user). An example of a file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default,  The reader can also accept many files in [TOML] format 🚧.  (other formats can be added by an adept user, some variations are available through customization points in the default formatter). An example of a file:
 
 ```ini
 ; Comments are supported, using a ;
@@ -705,11 +706,26 @@ str_vector = "one" "two" "and three"
 in_subcommand = Wow
 sub.subcommand = true
 ```
+ or equivalently in TOML 🚧
+```toml
+# Comments are supported, using a #
+# The default section is [default], case insensitive
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, 🆕 `enable`; or `false`, `off`, `0`, `no`, 🆕 `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not mean that subcommand was passed, it just sets the "defaults". You cannot set positional-only arguments or force subcommands to be present in the command line.
+value = 1
+str = "A string"
+vector = [1,2,3]
+str_vector = ["one","two","and three"]
+
+# Sections map to subcommands
+[subcommand]
+in_subcommand = Wow
+sub.subcommand = true
+```
+
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, 🆕 `enable`; or `false`, `off`, `0`, `no`, 🆕 `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🚧 Subcommands can be triggered from config files if the `configurable` flag was set on the subcommand.  Then use `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.
 
 To print a configuration file from the passed
-arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
+arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
 
 ### Inheriting defaults
 
@@ -917,7 +933,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [doi-badge]: https://zenodo.org/badge/80064252.svg
 [doi-link]: https://zenodo.org/badge/latestdoi/80064252
 [azure-badge]: https://dev.azure.com/CLIUtils/CLI11/_apis/build/status/CLIUtils.CLI11?branchName=master
-[azure]: https://dev.azure.com/CLIUtils/CLI11/_build/|latest?definitionId=1&branchName=master
+[azure]: https://dev.azure.com/CLIUtils/CLI11/_build/latest?definitionId=1&branchName=master
 [travis-badge]: https://img.shields.io/travis/CLIUtils/CLI11/master.svg?label=Linux/macOS
 [travis]: https://travis-ci.org/CLIUtils/CLI11
 [appveyor-badge]: https://img.shields.io/appveyor/ci/HenrySchreiner/cli11/master.svg?label=Windows

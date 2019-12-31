@@ -23,7 +23,7 @@ include(AddGoogletest)
 
 set(CLI11_TESTS
     HelpersTest
-    IniTest
+    ConfigFileTest
     SimpleTest
     AppTest
     SetTest
