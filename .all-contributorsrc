@@ -16,7 +16,9 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/4616906?v=4",
       "profile": "http://iscinumpy.gitlab.io",
       "contributions": [
-        "maintenance"
+        "bug",
+        "doc",
+        "code"
       ]
     },
     {
@@ -25,7 +27,9 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/20667153?v=4",
       "profile": "https://github.com/phlptp",
       "contributions": [
-        "maintenance"
+        "bug",
+        "doc",
+        "code"
       ]
     },
     {
