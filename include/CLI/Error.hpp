@@ -205,14 +205,15 @@ class ValidationError : public ParseError {
 class RequiredError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RequiredError)
     explicit RequiredError(std::string name) : RequiredError(name + " is required", ExitCodes::RequiredError) {}
-    static RequiredError Subcommand(size_t min_subcom) {
+    static RequiredError Subcommand(std::size_t min_subcom) {
         if(min_subcom == 1) {
             return RequiredError("A subcommand");
         }
         return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
                              ExitCodes::RequiredError);
     }
-    static RequiredError Option(size_t min_option, size_t max_option, size_t used, const std::string &option_list) {
+    static RequiredError
+    Option(std::size_t min_option, std::size_t max_option, std::size_t used, const std::string &option_list) {
         if((min_option == 1) && (max_option == 1) && (used == 0))
             return RequiredError("Exactly 1 option from [" + option_list + "]");
         if((min_option == 1) && (max_option == 1) && (used > 1))
@@ -239,18 +240,18 @@ class RequiredError : public ParseError {
 class ArgumentMismatch : public ParseError {
     CLI11_ERROR_DEF(ParseError, ArgumentMismatch)
     CLI11_ERROR_SIMPLE(ArgumentMismatch)
-    ArgumentMismatch(std::string name, int expected, size_t recieved)
+    ArgumentMismatch(std::string name, int expected, std::size_t recieved)
         : ArgumentMismatch(expected > 0 ? ("Expected exactly " + std::to_string(expected) + " arguments to " + name +
                                            ", got " + std::to_string(recieved))
                                         : ("Expected at least " + std::to_string(-expected) + " arguments to " + name +
                                            ", got " + std::to_string(recieved)),
                            ExitCodes::ArgumentMismatch) {}
 
-    static ArgumentMismatch AtLeast(std::string name, int num, size_t received) {
+    static ArgumentMismatch AtLeast(std::string name, int num, std::size_t received) {
         return ArgumentMismatch(name + ": At least " + std::to_string(num) + " required but received " +
                                 std::to_string(received));
     }
-    static ArgumentMismatch AtMost(std::string name, int num, size_t received) {
+    static ArgumentMismatch AtMost(std::string name, int num, std::size_t received) {
         return ArgumentMismatch(name + ": At Most " + std::to_string(num) + " required but received " +
                                 std::to_string(received));
     }

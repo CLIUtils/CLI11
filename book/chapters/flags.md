@@ -37,7 +37,7 @@ After parsing, you can use `my_flag->count()` to count the number of times this 
 
 ## Callback flags
 
-If you want to define a callback that runs when you make a flag, you can use `add_flag_function` (C++11 or newer) or `add_flag` (C++14 or newer only) to add a callback function. The function should have the signature `void(size_t)`. This could be useful for a version printout, etc.
+If you want to define a callback that runs when you make a flag, you can use `add_flag_function` (C++11 or newer) or `add_flag` (C++14 or newer only) to add a callback function. The function should have the signature `void(std::size_t)`. This could be useful for a version printout, etc.
 
 ```
 auto callback = [](int count){std::cout << "This was called " << count << " times";};

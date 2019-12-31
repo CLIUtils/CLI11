@@ -106,7 +106,7 @@ TEST(String, InvalidName) {
 
 TEST(StringTools, Modify) {
     int cnt = 0;
-    std::string newString = CLI::detail::find_and_modify("======", "=", [&cnt](std::string &str, size_t index) {
+    std::string newString = CLI::detail::find_and_modify("======", "=", [&cnt](std::string &str, std::size_t index) {
         if((++cnt) % 2 == 0) {
             str[index] = ':';
         }
@@ -117,7 +117,7 @@ TEST(StringTools, Modify) {
 
 TEST(StringTools, Modify2) {
     std::string newString =
-        CLI::detail::find_and_modify("this is a string test", "is", [](std::string &str, size_t index) {
+        CLI::detail::find_and_modify("this is a string test", "is", [](std::string &str, std::size_t index) {
             if((index > 1) && (str[index - 1] != ' ')) {
                 str[index] = 'a';
                 str[index + 1] = 't';
@@ -129,7 +129,7 @@ TEST(StringTools, Modify2) {
 
 TEST(StringTools, Modify3) {
     // this picks up 3 sets of 3 after the 'b' then collapses the new first set
-    std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [](std::string &str, size_t index) {
+    std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [](std::string &str, std::size_t index) {
         str.erase(index, 3);
         str.insert(str.begin(), 'a');
         return 0u;
@@ -525,8 +525,8 @@ TEST(CheckedMultiply, Int) {
 }
 
 TEST(CheckedMultiply, SizeT) {
-    size_t a = 10;
-    size_t b = 20;
+    std::size_t a = 10;
+    std::size_t b = 20;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, 200u);
 
@@ -540,25 +540,25 @@ TEST(CheckedMultiply, SizeT) {
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, 0u);
 
-    a = std::numeric_limits<size_t>::max();
+    a = std::numeric_limits<std::size_t>::max();
     b = 1u;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
 
-    a = std::numeric_limits<size_t>::max();
+    a = std::numeric_limits<std::size_t>::max();
     b = 2u;
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
 
-    a = std::numeric_limits<size_t>::max();
-    b = std::numeric_limits<size_t>::max();
+    a = std::numeric_limits<std::size_t>::max();
+    b = std::numeric_limits<std::size_t>::max();
     ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<size_t>::max());
+    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
 
-    a = std::numeric_limits<size_t>::max() / 100;
+    a = std::numeric_limits<std::size_t>::max() / 100;
     b = 99u;
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<size_t>::max() / 100u * 99u);
+    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max() / 100u * 99u);
 }
 
 TEST(CheckedMultiply, Float) {

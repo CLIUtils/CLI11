@@ -58,7 +58,7 @@ inline bool split_windows_style(const std::string &current, std::string &name, s
 // Splits a string into multiple long and short names
 inline std::vector<std::string> split_names(std::string current) {
     std::vector<std::string> output;
-    size_t val;
+    std::size_t val;
     while((val = current.find(",")) != std::string::npos) {
         output.push_back(trim_copy(current.substr(0, val)));
         current = current.substr(val + 1);

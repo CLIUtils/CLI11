@@ -245,13 +245,15 @@ TEST_F(TApp, CallbackOrder) {
     std::vector<std::string> cb;
     app.parse_complete_callback([&cb]() { cb.push_back("ac1"); });
     app.final_callback([&cb]() { cb.push_back("ac2"); });
-    auto sub1 = app.add_subcommand("sub1")
-                    ->parse_complete_callback([&cb]() { cb.push_back("c1"); })
-                    ->preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pc1-") + std::to_string(v1)); });
-    auto sub2 = app.add_subcommand("sub2")
-                    ->final_callback([&cb]() { cb.push_back("c2"); })
-                    ->preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pc2-") + std::to_string(v1)); });
-    app.preparse_callback([&cb](size_t v1) { cb.push_back(std::string("pa-") + std::to_string(v1)); });
+    auto sub1 =
+        app.add_subcommand("sub1")
+            ->parse_complete_callback([&cb]() { cb.push_back("c1"); })
+            ->preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pc1-") + std::to_string(v1)); });
+    auto sub2 =
+        app.add_subcommand("sub2")
+            ->final_callback([&cb]() { cb.push_back("c2"); })
+            ->preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pc2-") + std::to_string(v1)); });
+    app.preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pa-") + std::to_string(v1)); });
 
     app.add_option("--opt1");
     sub1->add_flag("--sub1opt");

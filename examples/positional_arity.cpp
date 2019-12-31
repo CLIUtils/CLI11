@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     files->add_option("file1", file1, "first file")->required();
     files->add_option("file2", file2, "second file");
     // set a pre parse callback that turns the numbers group on or off depending on the number of arguments
-    app.preparse_callback([numbers](size_t arity) {
+    app.preparse_callback([numbers](std::size_t arity) {
         if(arity <= 2) {
             numbers->disabled();
         } else {

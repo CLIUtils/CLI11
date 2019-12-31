@@ -40,7 +40,7 @@ class Timer {
     time_point start_;
 
     /// This is the number of times cycles (print divides by this number)
-    size_t cycles{1};
+    std::size_t cycles{1};
 
   public:
     /// Standard print function, this one is set by default
@@ -63,7 +63,7 @@ class Timer {
         double total_time;
 
         start_ = clock::now();
-        size_t n = 0;
+        std::size_t n = 0;
         do {
             f();
             std::chrono::duration<double> elapsed = clock::now() - start_;
@@ -107,7 +107,7 @@ class Timer {
     std::string to_string() const { return time_print_(title_, make_time_str()); }
 
     /// Division sets the number of cycles to divide by (no graphical change)
-    Timer &operator/(size_t val) {
+    Timer &operator/(std::size_t val) {
         cycles = val;
         return *this;
     }

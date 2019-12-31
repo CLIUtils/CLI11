@@ -675,14 +675,14 @@ TEST_F(ManyGroups, Moving) {
 }
 
 struct ManyGroupsPreTrigger : public ManyGroups {
-    size_t triggerMain{0u}, trigger1{87u}, trigger2{34u}, trigger3{27u};
+    std::size_t triggerMain{0u}, trigger1{87u}, trigger2{34u}, trigger3{27u};
     ManyGroupsPreTrigger() {
         remove_required();
-        app.preparse_callback([this](size_t count) { triggerMain = count; });
+        app.preparse_callback([this](std::size_t count) { triggerMain = count; });
 
-        g1->preparse_callback([this](size_t count) { trigger1 = count; });
-        g2->preparse_callback([this](size_t count) { trigger2 = count; });
-        g3->preparse_callback([this](size_t count) { trigger3 = count; });
+        g1->preparse_callback([this](std::size_t count) { trigger1 = count; });
+        g2->preparse_callback([this](std::size_t count) { trigger2 = count; });
+        g3->preparse_callback([this](std::size_t count) { trigger3 = count; });
     }
 };
 
@@ -747,8 +747,8 @@ TEST_F(ManyGroupsPreTrigger, PreTriggerTestsSubcommand) {
     g2->add_subcommand("sub2")->fallthrough();
     g3->add_subcommand("sub3")->fallthrough();
 
-    size_t subtrigger;
-    sub1->preparse_callback([&subtrigger](size_t count) { subtrigger = count; });
+    std::size_t subtrigger;
+    sub1->preparse_callback([&subtrigger](std::size_t count) { subtrigger = count; });
     args = {"sub1"};
     run();
     EXPECT_EQ(triggerMain, 1u);

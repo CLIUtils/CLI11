@@ -35,7 +35,7 @@ class FormatterBase {
     ///@{
 
     /// The width of the first column
-    size_t column_width_{30};
+    std::size_t column_width_{30};
 
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
@@ -64,7 +64,7 @@ class FormatterBase {
     void label(std::string key, std::string val) { labels_[key] = val; }
 
     /// Set the column width
-    void column_width(size_t val) { column_width_ = val; }
+    void column_width(std::size_t val) { column_width_ = val; }
 
     ///@}
     /// @name Getters
@@ -79,7 +79,7 @@ class FormatterBase {
     }
 
     /// Get the current column width
-    size_t get_column_width() const { return column_width_; }
+    std::size_t get_column_width() const { return column_width_; }
 
     ///@}
 };

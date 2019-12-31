@@ -591,7 +591,7 @@ template <typename T,
           enable_if_t<classify_object<T>::value == object_category::integral_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
-        size_t n = 0;
+        std::size_t n = 0;
         long long output_ll = std::stoll(input, &n, 0);
         output = static_cast<T>(output_ll);
         return n == input.size() && static_cast<long long>(output) == output_ll;
@@ -610,7 +610,7 @@ bool lexical_cast(const std::string &input, T &output) {
         return false; // std::stoull happily converts negative values to junk without any errors.
 
     try {
-        size_t n = 0;
+        std::size_t n = 0;
         unsigned long long output_ll = std::stoull(input, &n, 0);
         output = static_cast<T>(output_ll);
         return n == input.size() && static_cast<unsigned long long>(output) == output_ll;
@@ -644,7 +644,7 @@ template <typename T,
           enable_if_t<classify_object<T>::value == object_category::floating_point, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     try {
-        size_t n = 0;
+        std::size_t n = 0;
         output = static_cast<T>(std::stold(input, &n));
         return n == input.size();
     } catch(const std::invalid_argument &) {
@@ -846,7 +846,7 @@ template <class T,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     output.clear();
-    for(size_t ii = 0; ii < strings.size(); ii += 2) {
+    for(std::size_t ii = 0; ii < strings.size(); ii += 2) {
 
         typename std::tuple_element<0, typename XC::value_type>::type v1;
         typename std::tuple_element<1, typename XC::value_type>::type v2;
@@ -938,9 +938,9 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
     bool retval = true;
     output.clear();
     std::vector<std::string> temp;
-    size_t ii = 0;
-    size_t icount = 0;
-    size_t xcm = type_count<XC>::value;
+    std::size_t ii = 0;
+    std::size_t icount = 0;
+    std::size_t xcm = type_count<XC>::value;
     while(ii < strings.size()) {
         temp.push_back(strings[ii]);
         ++ii;
