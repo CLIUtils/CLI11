@@ -20,7 +20,7 @@ namespace detail {
 /// Comma separated join, adds quotes if needed
 inline std::string ini_join(std::vector<std::string> args) {
     std::ostringstream s;
-    size_t start = 0;
+    std::size_t start = 0;
     for(const auto &arg : args) {
         if(start++ > 0)
             s << " ";
@@ -107,7 +107,7 @@ class ConfigINI : public Config {
             std::vector<std::string> items_buffer;
 
             detail::trim(line);
-            size_t len = line.length();
+            std::size_t len = line.length();
             if(len > 1 && line[0] == '[' && line[len - 1] == ']') {
                 section = line.substr(1, len - 2);
             } else if(len > 0 && line[0] != ';') {

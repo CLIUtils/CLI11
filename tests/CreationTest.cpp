@@ -527,12 +527,12 @@ TEST_F(TApp, GetOptionList) {
     const CLI::App &const_app = app; // const alias to force use of const-methods
     std::vector<const CLI::Option *> opt_list = const_app.get_options();
 
-    ASSERT_EQ(opt_list.size(), static_cast<size_t>(3));
+    ASSERT_EQ(opt_list.size(), static_cast<std::size_t>(3));
     EXPECT_EQ(opt_list.at(1), flag);
     EXPECT_EQ(opt_list.at(2), opt);
 
     std::vector<CLI::Option *> nonconst_opt_list = app.get_options();
-    for(size_t i = 0; i < opt_list.size(); ++i) {
+    for(std::size_t i = 0; i < opt_list.size(); ++i) {
         EXPECT_EQ(nonconst_opt_list.at(i), opt_list.at(i));
     }
 }

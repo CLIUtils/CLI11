@@ -96,7 +96,7 @@ class App {
     bool immediate_callback_{false};
 
     /// This is a function that runs prior to the start of parsing
-    std::function<void(size_t)> pre_parse_callback_{};
+    std::function<void(std::size_t)> pre_parse_callback_{};
 
     /// This is a function that runs when parsing has finished.
     std::function<void()> parse_complete_callback_{};
@@ -204,19 +204,19 @@ class App {
     App *parent_{nullptr};
 
     /// Counts the number of times this command/subcommand was parsed
-    size_t parsed_{0};
+    std::size_t parsed_{0};
 
     /// Minimum required subcommands (not inheritable!)
-    size_t require_subcommand_min_{0};
+    std::size_t require_subcommand_min_{0};
 
     /// Max number of subcommands allowed (parsing stops after this number). 0 is unlimited INHERITABLE
-    size_t require_subcommand_max_{0};
+    std::size_t require_subcommand_max_{0};
 
     /// Minimum required options (not inheritable!)
-    size_t require_option_min_{0};
+    std::size_t require_option_min_{0};
 
     /// Max number of options allowed. 0 is unlimited (not inheritable)
-    size_t require_option_max_{0};
+    std::size_t require_option_max_{0};
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
@@ -322,7 +322,7 @@ class App {
 
     /// Set a callback to execute prior to parsing.
     ///
-    App *preparse_callback(std::function<void(size_t)> pp_callback) {
+    App *preparse_callback(std::function<void(std::size_t)> pp_callback) {
         pre_parse_callback_ = std::move(pp_callback);
         return this;
     }
@@ -1056,12 +1056,12 @@ class App {
     /// No argument version of count counts the number of times this subcommand was
     /// passed in. The main app will return 1. Unnamed subcommands will also return 1 unless
     /// otherwise modified in a callback
-    size_t count() const { return parsed_; }
+    std::size_t count() const { return parsed_; }
 
     /// Get a count of all the arguments processed in options and subcommands, this excludes arguments which were
     /// treated as extras.
-    size_t count_all() const {
-        size_t cnt{0};
+    std::size_t count_all() const {
+        std::size_t cnt{0};
         for(auto &opt : options_) {
             cnt += opt->count();
         }
@@ -1093,17 +1093,17 @@ class App {
     App *require_subcommand(int value) {
         if(value < 0) {
             require_subcommand_min_ = 0;
-            require_subcommand_max_ = static_cast<size_t>(-value);
+            require_subcommand_max_ = static_cast<std::size_t>(-value);
         } else {
-            require_subcommand_min_ = static_cast<size_t>(value);
-            require_subcommand_max_ = static_cast<size_t>(value);
+            require_subcommand_min_ = static_cast<std::size_t>(value);
+            require_subcommand_max_ = static_cast<std::size_t>(value);
         }
         return this;
     }
 
     /// Explicitly control the number of subcommands required. Setting 0
     /// for the max means unlimited number allowed. Max number inheritable.
-    App *require_subcommand(size_t min, size_t max) {
+    App *require_subcommand(std::size_t min, std::size_t max) {
         require_subcommand_min_ = min;
         require_subcommand_max_ = max;
         return this;
@@ -1122,17 +1122,17 @@ class App {
     App *require_option(int value) {
         if(value < 0) {
             require_option_min_ = 0;
-            require_option_max_ = static_cast<size_t>(-value);
+            require_option_max_ = static_cast<std::size_t>(-value);
         } else {
-            require_option_min_ = static_cast<size_t>(value);
-            require_option_max_ = static_cast<size_t>(value);
+            require_option_min_ = static_cast<std::size_t>(value);
+            require_option_max_ = static_cast<std::size_t>(value);
         }
         return this;
     }
 
     /// Explicitly control the number of options required. Setting 0
     /// for the max means unlimited number allowed. Max number inheritable.
-    App *require_option(size_t min, size_t max) {
+    App *require_option(std::size_t min, std::size_t max) {
         require_option_min_ = min;
         require_option_max_ = max;
         return this;
@@ -1188,7 +1188,7 @@ class App {
         }
 
         std::vector<std::string> args;
-        args.reserve(static_cast<size_t>(argc) - 1);
+        args.reserve(static_cast<std::size_t>(argc) - 1);
         for(int i = argc - 1; i > 0; i--)
             args.emplace_back(argv[i]);
         parse(std::move(args));
@@ -1300,7 +1300,7 @@ class App {
     ///@{
 
     /// Counts the number of times the given option was passed.
-    size_t count(std::string option_name) const { return get_option(option_name)->count(); }
+    std::size_t count(std::string option_name) const { return get_option(option_name)->count(); }
 
     /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command
     /// line order; use parsed = false to get the original definition list.)
@@ -1608,16 +1608,16 @@ class App {
     std::string get_footer() const { return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_; }
 
     /// Get the required min subcommand value
-    size_t get_require_subcommand_min() const { return require_subcommand_min_; }
+    std::size_t get_require_subcommand_min() const { return require_subcommand_min_; }
 
     /// Get the required max subcommand value
-    size_t get_require_subcommand_max() const { return require_subcommand_max_; }
+    std::size_t get_require_subcommand_max() const { return require_subcommand_max_; }
 
     /// Get the required min option value
-    size_t get_require_option_min() const { return require_option_min_; }
+    std::size_t get_require_option_min() const { return require_option_min_; }
 
     /// Get the required max option value
-    size_t get_require_option_max() const { return require_option_max_; }
+    std::size_t get_require_option_max() const { return require_option_max_; }
 
     /// Get the prefix command status
     bool get_prefix_command() const { return prefix_command_; }
@@ -1762,8 +1762,8 @@ class App {
     }
 
     /// This returns the number of remaining options, minus the -- separator
-    size_t remaining_size(bool recurse = false) const {
-        auto remaining_options = static_cast<size_t>(std::count_if(
+    std::size_t remaining_size(bool recurse = false) const {
+        auto remaining_options = static_cast<std::size_t>(std::count_if(
             std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifier, std::string> &val) {
                 return val.first != detail::Classifier::POSITIONAL_MARK;
             }));
@@ -1798,7 +1798,7 @@ class App {
             }
         }
 
-        size_t nameless_subs{0};
+        std::size_t nameless_subs{0};
         for(const App_p &app : subcommands_) {
             app->_validate();
             if(app->get_name().empty())
@@ -1943,7 +1943,7 @@ class App {
 
 #ifdef _MSC_VER
                 // Windows version
-                size_t sz = 0;
+                std::size_t sz = 0;
                 if(_dupenv_s(&buffer, &sz, opt->envname_.c_str()) == 0 && buffer != nullptr) {
                     ename_string = std::string(buffer);
                     free(buffer);
@@ -2065,7 +2065,7 @@ class App {
             return;
         }
 
-        size_t used_options = 0;
+        std::size_t used_options = 0;
         for(const Option_p &opt : options_) {
 
             if(opt->count() != 0) {
@@ -2155,7 +2155,7 @@ class App {
     /// Throw an error if anything is left over and should not be.
     void _process_extras() {
         if(!(allow_extras_ || prefix_command_)) {
-            size_t num_left_over = remaining_size();
+            std::size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
                 throw ExtrasError(name_, remaining(false));
             }
@@ -2171,7 +2171,7 @@ class App {
     /// Modifies the args to fill in the missing items before throwing.
     void _process_extras(std::vector<std::string> &args) {
         if(!(allow_extras_ || prefix_command_)) {
-            size_t num_left_over = remaining_size();
+            std::size_t num_left_over = remaining_size();
             if(num_left_over > 0) {
                 args = remaining(false);
                 throw ExtrasError(name_, args);
@@ -2250,7 +2250,7 @@ class App {
     }
 
     /// Fill in a single config option
-    bool _parse_single_config(const ConfigItem &item, size_t level = 0) {
+    bool _parse_single_config(const ConfigItem &item, std::size_t level = 0) {
         if(level < item.parents.size()) {
             try {
                 auto subcom = get_subcommand(item.parents.at(level));
@@ -2334,13 +2334,13 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    size_t _count_remaining_positionals(bool required_only = false) const {
-        size_t retval = 0;
+    std::size_t _count_remaining_positionals(bool required_only = false) const {
+        std::size_t retval = 0;
         for(const Option_p &opt : options_) {
             if(opt->get_positional() && (!required_only || opt->get_required())) {
                 if(opt->get_items_expected_min() > 0 &&
                    static_cast<int>(opt->count()) < opt->get_items_expected_min()) {
-                    retval += static_cast<size_t>(opt->get_items_expected_min()) - opt->count();
+                    retval += static_cast<std::size_t>(opt->get_items_expected_min()) - opt->count();
                 }
             }
         }
@@ -2655,7 +2655,7 @@ class App {
     }
 
     /// Trigger the pre_parse callback if needed
-    void _trigger_pre_parse(size_t remaining_args) {
+    void _trigger_pre_parse(std::size_t remaining_args) {
         if(!pre_parse_called_) {
             pre_parse_called_ = true;
             if(pre_parse_callback_) {
@@ -2831,7 +2831,7 @@ class Option_group : public App {
 inline void TriggerOn(App *trigger_app, App *app_to_enable) {
     app_to_enable->enabled_by_default(false);
     app_to_enable->disabled_by_default();
-    trigger_app->preparse_callback([app_to_enable](size_t) { app_to_enable->disabled(false); });
+    trigger_app->preparse_callback([app_to_enable](std::size_t) { app_to_enable->disabled(false); });
 }
 
 /// Helper function to enable one option group/subcommand when another is used
@@ -2841,7 +2841,7 @@ inline void TriggerOn(App *trigger_app, std::vector<App *> apps_to_enable) {
         app->disabled_by_default();
     }
 
-    trigger_app->preparse_callback([apps_to_enable](size_t) {
+    trigger_app->preparse_callback([apps_to_enable](std::size_t) {
         for(auto &app : apps_to_enable) {
             app->disabled(false);
         }
@@ -2852,7 +2852,7 @@ inline void TriggerOn(App *trigger_app, std::vector<App *> apps_to_enable) {
 inline void TriggerOff(App *trigger_app, App *app_to_enable) {
     app_to_enable->disabled_by_default(false);
     app_to_enable->enabled_by_default();
-    trigger_app->preparse_callback([app_to_enable](size_t) { app_to_enable->disabled(); });
+    trigger_app->preparse_callback([app_to_enable](std::size_t) { app_to_enable->disabled(); });
 }
 
 /// Helper function to disable one option group/subcommand when another is used
@@ -2862,7 +2862,7 @@ inline void TriggerOff(App *trigger_app, std::vector<App *> apps_to_enable) {
         app->enabled_by_default();
     }
 
-    trigger_app->preparse_callback([apps_to_enable](size_t) {
+    trigger_app->preparse_callback([apps_to_enable](std::size_t) {
         for(auto &app : apps_to_enable) {
             app->disabled();
         }

@@ -84,7 +84,7 @@ std::string join(const T &v, Callable func, std::string delim = ",") {
 /// Join a string in reverse order
 template <typename T> std::string rjoin(const T &v, std::string delim = ",") {
     std::ostringstream s;
-    for(size_t start = 0; start < v.size(); start++) {
+    for(std::size_t start = 0; start < v.size(); start++) {
         if(start > 0)
             s << delim;
         s << v[v.size() - start - 1];
@@ -141,7 +141,7 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
     return trim(s, filter);
 }
 /// Print a two part "help" string
-inline std::ostream &format_help(std::ostream &out, std::string name, std::string description, size_t wid) {
+inline std::ostream &format_help(std::ostream &out, std::string name, std::string description, std::size_t wid) {
     name = "  " + name;
     out << std::setw(static_cast<int>(wid)) << std::left << name;
     if(!description.empty()) {
@@ -198,7 +198,7 @@ inline std::string remove_underscore(std::string str) {
 /// Find and replace a substring with another substring
 inline std::string find_and_replace(std::string str, std::string from, std::string to) {
 
-    size_t start_pos = 0;
+    std::size_t start_pos = 0;
 
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);
@@ -259,7 +259,7 @@ inline std::ptrdiff_t find_member(std::string name,
 /// Find a trigger string and call a modify callable function that takes the current string and starting position of the
 /// trigger and returns the position in the string to search for the next trigger string
 template <typename Callable> inline std::string find_and_modify(std::string str, std::string trigger, Callable modify) {
-    size_t start_pos = 0;
+    std::size_t start_pos = 0;
     while((start_pos = str.find(trigger, start_pos)) != std::string::npos) {
         start_pos = modify(str, start_pos);
     }
@@ -333,7 +333,7 @@ inline std::string fix_newlines(std::string leader, std::string input) {
 /// then modifies the string to replace the equality with a space.  This is needed
 /// to allow the split up function to work properly and is intended to be used with the find_and_modify function
 /// the return value is the offset+1 which is required by the find_and_modify function.
-inline size_t escape_detect(std::string &str, size_t offset) {
+inline std::size_t escape_detect(std::string &str, std::size_t offset) {
     auto next = str[offset + 1];
     if((next == '\"') || (next == '\'') || (next == '`')) {
         auto astart = str.find_last_of("-/ \"\'`", offset - 1);
