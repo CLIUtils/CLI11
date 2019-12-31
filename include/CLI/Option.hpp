@@ -475,8 +475,9 @@ class Option : public OptionBase<Option> {
 
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index) {
+        // This is an signed int so that it is not equivalent to a pointer.
         if(index >= 0 && index < static_cast<int>(validators_.size())) {
-            return &(validators_[index]);
+            return &(validators_[static_cast<decltype(validators_)::size_type>(index)]);
         }
         throw OptionNotFound("Validator index is not valid");
     }
@@ -1142,19 +1143,19 @@ class Option : public OptionBase<Option> {
         switch(multi_option_policy_) {
         case MultiOptionPolicy::TakeAll:
             break;
-        case MultiOptionPolicy::TakeLast:
+        case MultiOptionPolicy::TakeLast: {
             // Allow multi-option sizes (including 0)
-            {
-                size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), original.size());
-                if(original.size() != trim_size) {
-                    res.assign(original.end() - trim_size, original.end());
-                }
-            }
-            break;
-        case MultiOptionPolicy::TakeFirst: {
-            size_t trim_size = std::min<size_t>(std::max<size_t>(get_items_expected_max(), 1), original.size());
+            size_t trim_size =
+                std::min<size_t>(static_cast<size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
             if(original.size() != trim_size) {
-                res.assign(original.begin(), original.begin() + trim_size);
+                res.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
+            }
+        } break;
+        case MultiOptionPolicy::TakeFirst: {
+            size_t trim_size =
+                std::min<size_t>(static_cast<size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
+            if(original.size() != trim_size) {
+                res.assign(original.begin(), original.begin() + static_cast<results_t::difference_type>(trim_size));
             }
         } break;
         case MultiOptionPolicy::Join:

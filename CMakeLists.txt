@@ -62,7 +62,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
             target_compile_options(CLI11_warnings INTERFACE "/WX")
         endif()
     else()
-        target_compile_options(CLI11_warnings INTERFACE -Wall -Wextra -pedantic -Wshadow)
+        target_compile_options(CLI11_warnings INTERFACE -Wall -Wextra -pedantic -Wshadow -Wsign-conversion)
         if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
                 # GCC 4.8 has a false positive
