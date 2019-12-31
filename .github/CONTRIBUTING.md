@@ -66,3 +66,6 @@ yarn add --dev all-contributors-cli
 yarn all-contributors add username code,bug
 ```
 
+## For maintainers: Making a release
+
+Remember to replace the emoji in the readme, being careful not to replace the ones in all-contributors.
