@@ -324,6 +324,8 @@ class Option : public OptionBase<Option> {
     bool allow_extra_args_{false};
     /// Specify that the option should act like a flag vs regular option
     bool flag_like_{false};
+    /// Control option to run the callback to set the default
+    bool run_callback_for_default_{false};
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -407,6 +409,15 @@ class Option : public OptionBase<Option> {
     }
     /// Get the current value of allow extra args
     bool get_allow_extra_args() const { return allow_extra_args_; }
+
+    /// Set the value of run_callback_for_default which controls whether the callback function should be called to set
+    /// the default This is controlled automatically but could be manipulated by the user.
+    Option *run_callback_for_default(bool value = true) {
+        run_callback_for_default_ = value;
+        return this;
+    }
+    /// Get the current value of run_callback_for_default
+    bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
     /// Adds a Validator with a built in type name
     Option *check(Validator validator, const std::string &validator_name = "") {
@@ -1066,15 +1077,31 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Set the default value string representation and evaluate into the bound value
-    Option *default_val(const std::string &val) {
-        default_str(val);
-        auto old_results = results_;
+    /// Set the default value and validate the results and run the callback if appropriate to set the value into the
+    /// bound value only available for types that can be converted to a string
+    template <typename X> Option *default_val(const X &val) {
+        std::string val_str = detail::to_string(val);
+        auto old_option_state = current_option_state_;
+        auto old_results{std::move(results_)};
         results_.clear();
-        add_result(val);
-        run_callback();
+        try {
+            add_result(val_str);
+            if(run_callback_for_default_ && !val_str.empty()) {
+                current_option_state_ = option_state::parsing;
+                run_callback(); // run callback sets the state we need to reset it again
+                current_option_state_ = option_state::parsing;
+            } else {
+                _validate_results(results_);
+                current_option_state_ = old_option_state;
+            }
+        } catch(const CLI::Error &) {
+            // this should be done
+            results_ = std::move(old_results);
+            current_option_state_ = old_option_state;
+            throw;
+        }
         results_ = std::move(old_results);
-        current_option_state_ = option_state::parsing;
+        default_str_ = std::move(val_str);
         return this;
     }
 

@@ -397,6 +397,21 @@ TEST(THelp, ManualSetters) {
     EXPECT_EQ(x, 14);
     help = app.help();
     EXPECT_THAT(help, HasSubstr("=14"));
+
+    op1->default_val(12);
+    EXPECT_EQ(x, 12);
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("=12"));
+
+    EXPECT_TRUE(op1->get_run_callback_for_default());
+    op1->run_callback_for_default(false);
+    EXPECT_FALSE(op1->get_run_callback_for_default());
+
+    op1->default_val(18);
+    // x should not be modified in this case
+    EXPECT_EQ(x, 12);
+    help = app.help();
+    EXPECT_THAT(help, HasSubstr("=18"));
 }
 
 TEST(THelp, ManualSetterOverFunction) {

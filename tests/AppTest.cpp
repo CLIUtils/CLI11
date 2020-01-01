@@ -425,6 +425,10 @@ TEST_F(TApp, OneIntFlagLike) {
     opt->default_str("7");
     run();
     EXPECT_EQ(val, 7);
+
+    opt->default_val(9);
+    run();
+    EXPECT_EQ(val, 9);
 }
 
 TEST_F(TApp, TogetherInt) {
@@ -512,6 +516,33 @@ TEST_F(TApp, doubleVectorFunctionFail) {
     EXPECT_THROW(app[vstring]->results(res), CLI::ConversionError);
     auto strvec = app[vstring]->as<std::vector<std::string>>();
     EXPECT_EQ(strvec.size(), 3u);
+}
+
+TEST_F(TApp, doubleVectorFunctionRunCallbackOnDefault) {
+    std::vector<double> res;
+    auto opt = app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
+        res = val;
+        std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
+    });
+    args = {"--val", "5", "--val", "6", "--val", "7"};
+    run();
+    EXPECT_EQ(res.size(), 3u);
+    EXPECT_EQ(res[0], 10.0);
+    EXPECT_EQ(res[2], 12.0);
+    EXPECT_FALSE(opt->get_run_callback_for_default());
+    opt->run_callback_for_default();
+    opt->default_val(std::vector<int>{2, 1, -2});
+    EXPECT_EQ(res[0], 7.0);
+    EXPECT_EQ(res[2], 3.0);
+
+    EXPECT_THROW(opt->default_val("this is a string"), CLI::ConversionError);
+    auto vec = opt->as<std::vector<double>>();
+    ASSERT_EQ(vec.size(), 3U);
+    EXPECT_EQ(vec[0], 5.0);
+    EXPECT_EQ(vec[2], 7.0);
+    opt->check(CLI::Number);
+    opt->run_callback_for_default(false);
+    EXPECT_THROW(opt->default_val("this is a string"), CLI::ValidationError);
 }
 
 TEST_F(TApp, DefaultStringAgain) {
