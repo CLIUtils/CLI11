@@ -331,8 +331,8 @@ Before parsing, you can set the following options:
     `->capture_default_str()`: 🆕 Store the current value attached and display it in the help string.
 -   `->default_function(std::string())`: 🆕 Advanced: Change the function that `capture_default_str()` uses.
 -   `->always_capture_default()`: 🆕 Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
--   `default_str()`:  This function can be used to set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.  
--   `default_val(value)`: 🚧 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string.  
+-   `default_str()`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
+-   `default_val(value)`: 🚧 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or a stream operator).
 
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
@@ -534,7 +534,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
 -   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
--   `.configurable()`: 🚧 Allow the subcommand to be triggered from a configuration file.  
+-   `.configurable()`: 🚧 Allow the subcommand to be triggered from a configuration file.
 -   `.disable()`: 🆕 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 -   `.disabled_by_default()`: 🆕 Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 -   `.enabled_by_default()`: 🆕 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
@@ -571,7 +571,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.parse_complete_callback(void() function)`: 🚧 Set the callback that runs at the completion of parsing. for subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.final_callback(void() function)`: 🚧 Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.immediate_callback()`: 🆕 Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app 🚧 it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. 🚧 It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
--   `.pre_parse_callback(void(size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
+-   `.pre_parse_callback(void(std::size_t) function)`: 🆕 Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
 -   `.allow_extras()`: Do not throw an error if extra arguments are left over.
 -   `.positionals_at_end()`: 🆕 Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
 -   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
@@ -692,7 +692,7 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default,  The reader can also accept many files in [TOML](https://github.com/toml-lang/toml) format 🚧.  (other formats can be added by an adept user, some variations are available through customization points in the default formatter). An example of a file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default,  The reader can also accept many files in [TOML] format 🚧.  (other formats can be added by an adept user, some variations are available through customization points in the default formatter). An example of a file:
 
 ```ini
 ; Comments are supported, using a ;
@@ -724,10 +724,10 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, 🆕 `enable`; or `false`, `off`, `0`, `no`, 🆕 `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🚧 Subcommands can be triggered from config files if the `configurable` flag was set on the subcommand.  Then use `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.   
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, 🆕 `enable`; or `false`, `off`, `0`, `no`, 🆕 `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🚧 Subcommands can be triggered from config files if the `configurable` flag was set on the subcommand.  Then use `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.
 
 To print a configuration file from the passed
-arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.  
+arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
 
 ### Inheriting defaults
 
@@ -840,59 +840,91 @@ The API is [documented here][api-docs]. Also see the [CLI11 tutorial GitBook][gi
 
 Several short examples of different features are included in the repository. A brief description of each is included here
 
--   [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
--   [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
--   [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
--   [formatter](https://github.com/CLIUtils/CLI11/blob/master/examples/formatter.cpp): Illustrating usage of a custom formatter
--   [groups](https://github.com/CLIUtils/CLI11/blob/master/examples/groups.cpp):  Example using groups of options for help grouping and a the timer helper class
--   [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/master/examples/inter_argument_order.cpp): An app to practice mixing unlimited arguments, but still recover the original order.
--   [json](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp):  Using JSON as a config file parser
--   [modhelp](https://github.com/CLIUtils/CLI11/blob/master/examples/modhelp.cpp):  How to modify the help flag to do something other than default
--   [nested](https://github.com/CLIUtils/CLI11/blob/master/examples/nested.cpp):  Nested subcommands
--   [option_groups](https://github.com/CLIUtils/CLI11/blob/master/examples/option_groups.cpp):  illustrating the use of option groups and a required number of options.
+ - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
+ - [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
+ - [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
+ - [enum_ostream](https://github.com/CLIUtils/CLI11/blob/master/examples/enum_ostream.cpp):  In addition to the contents of example enum.cpp, this example shows how a custom ostream operator overrides CLI11's enum streaming.
+ - [formatter](https://github.com/CLIUtils/CLI11/blob/master/examples/formatter.cpp): Illustrating usage of a custom formatter
+ - [groups](https://github.com/CLIUtils/CLI11/blob/master/examples/groups.cpp):  Example using groups of options for help grouping and a the timer helper class
+ - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/master/examples/inter_argument_order.cpp): An app to practice mixing unlimited arguments, but still recover the original order.
+ - [json](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp):  Using JSON as a config file parser
+ - [modhelp](https://github.com/CLIUtils/CLI11/blob/master/examples/modhelp.cpp):  How to modify the help flag to do something other than default
+ - [nested](https://github.com/CLIUtils/CLI11/blob/master/examples/nested.cpp):  Nested subcommands
+ - [option_groups](https://github.com/CLIUtils/CLI11/blob/master/examples/option_groups.cpp):  illustrating the use of option groups and a required number of options.
  based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88) to set interacting groups of options
--   [positional_arity](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_arity.cpp): Illustrating use of `preparse_callback` to handle situations where the number of arguments can determine which should get parsed,  Based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
--   [positional_validation](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_validation.cpp): Example of how positional arguments are validated using the `validate_positional` flag, also based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
--   [prefix_command](https://github.com/CLIUtils/CLI11/blob/master/examples/prefix_command.cpp): illustrating use of the `prefix_command` flag.
--   [ranges](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp):  App to demonstrate exclusionary option groups based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88)
--   [shapes](https://github.com/CLIUtils/CLI11/blob/master/examples/shapes.cpp): illustrating how to set up repeated subcommands Based on [gitter discussion](https://gitter.im/CLI11gitter/Lobby?at=5c7af6b965ffa019ea788cd5)
--   [simple](https://github.com/CLIUtils/CLI11/blob/master/examples/simple.cpp): a simple example of how to set up a CLI11 Application with different flags and options
--   [subcom_help](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_help.cpp): configuring help for subcommands
--   [subcom_partitioned](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_partitioned.cpp): Example with a timer and subcommands generated separately and added to the main app later.
--   [subcommands](https://github.com/CLIUtils/CLI11/blob/master/examples/subcommands.cpp): Short example of subcommands
--   [validators](https://github.com/CLIUtils/CLI11/blob/master/examples/validators.cpp): Example illustrating use of validators
+ - [positional_arity](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_arity.cpp): Illustrating use of `preparse_callback` to handle situations where the number of arguments can determine which should get parsed,  Based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [positional_validation](https://github.com/CLIUtils/CLI11/blob/master/examples/positional_validation.cpp): Example of how positional arguments are validated using the `validate_positional` flag, also based on [Issue #166](https://github.com/CLIUtils/CLI11/issues/166)
+ - [prefix_command](https://github.com/CLIUtils/CLI11/blob/master/examples/prefix_command.cpp): illustrating use of the `prefix_command` flag.
+ - [ranges](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp):  App to demonstrate exclusionary option groups based on [Issue #88](https://github.com/CLIUtils/CLI11/issues/88)
+ - [shapes](https://github.com/CLIUtils/CLI11/blob/master/examples/shapes.cpp): illustrating how to set up repeated subcommands Based on [gitter discussion](https://gitter.im/CLI11gitter/Lobby?at=5c7af6b965ffa019ea788cd5)
+ - [simple](https://github.com/CLIUtils/CLI11/blob/master/examples/simple.cpp): a simple example of how to set up a CLI11 Application with different flags and options
+ - [subcom_help](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_help.cpp): configuring help for subcommands
+ - [subcom_partitioned](https://github.com/CLIUtils/CLI11/blob/master/examples/subcom_partitioned.cpp): Example with a timer and subcommands generated separately and added to the main app later.
+ - [subcommands](https://github.com/CLIUtils/CLI11/blob/master/examples/subcommands.cpp): Short example of subcommands
+ - [validators](https://github.com/CLIUtils/CLI11/blob/master/examples/validators.cpp): Example illustrating use of validators
 
 ## Contribute
 
-To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. The is also a short note to contributors [here](./.github/CONTRIBUTING.md).
+To contribute, open an [issue][github issues] or [pull request][github pull requests] on GitHub, or ask a question on [gitter][]. There is also a short note to contributors [here](./.github/CONTRIBUTING.md).
 This readme roughly follows the [Standard Readme Style][] and includes a mention of almost every feature of the library. More complex features are documented in more detail in the [CLI11 tutorial GitBook][gitbook].
 
-This project was created by [Henry Schreiner](https://github.com/henryiii).
-Significant features and/or improvements to the code were contributed by:
+This project was created by [Henry Schreiner](https://github.com/henryiii) and major features were added by  [Philip Top](https://github.com/phlptp). Special thanks to all the contributors ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
--   [Anton](https://github.com/SX91)
--   [Doug Johnston](https://github.com/dvj)
--   [Jonas Nilsson](https://github.com/SkyToGround)
--   [Lucas Czech](https://github.com/lczech)
--   [Marcus Brinkmann](https://github.com/lambdafu)
--   [Mathias Soeken](https://github.com/msoeken)
--   [Nathan Hourt](https://github.com/nathanhourt)
--   [Sean Fisk](https://github.com/seanfisk)
--   [Stéphane Del Pino](https://github.com/delpinux)
--   [Mak Kolybabi](https://github.com/mogigoma)
--   [Paweł Bylica](https://github.com/chfast)
--   [Philip Top](https://github.com/phlptp) <!-- Major features in 1.7 and 1.8 -->
--   [almikhayl](https://github.com/almikhayl)
--   [nurelin](https://github.com/nurelin) <!-- help_all in message -->
--   [ncihneg](https://github.com/ncihneg) <!-- Quoting strings in INI generation -->
--   [Fred Helmesjö](https://github.com/helmesjo) <!-- `->description()` -->
--   [Rafi Wiener](https://github.com/rafiw) <!-- INI, +ive validators and vector separators -->
-    [elszon](https://github.com/elszon) <!-- Formatting in multiline string -->
-    [ryan4729](https://github.com/ryan4729) <!-- AArch64 support -->
-    [Andrew Hardin](https://github.com/andrew-hardin) <!-- Fixing two warnings -->
-    [Paul le Roux](https://github.com/pleroux0) <!-- Arch independent CMake Config -->
--   [Viacheslav Kroilov](https://github.com/metopa) <!-- AsNumberWithUnit and AsSizeValue -->
 
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://iscinumpy.gitlab.io"><img src="https://avatars1.githubusercontent.com/u/4616906?v=4" width="100px;" alt=""/><br /><sub><b>Henry Schreiner</b></sub></a><br /><a href="#maintenance-henryiii" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/phlptp"><img src="https://avatars0.githubusercontent.com/u/20667153?v=4" width="100px;" alt=""/><br /><sub><b>Philip Top</b></sub></a><br /><a href="#maintenance-phlptp" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/cbachhuber/"><img src="https://avatars0.githubusercontent.com/u/27212661?v=4" width="100px;" alt=""/><br /><sub><b>Christoph Bachhuber</b></sub></a><br /><a href="#example-cbachhuber" title="Examples">💡</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=cbachhuber" title="Code">💻</a></td>
+    <td align="center"><a href="https://lambdafu.net/"><img src="https://avatars1.githubusercontent.com/u/1138455?v=4" width="100px;" alt=""/><br /><sub><b>Marcus Brinkmann</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Alambdafu" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=lambdafu" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/SkyToGround"><img src="https://avatars1.githubusercontent.com/u/58835?v=4" width="100px;" alt=""/><br /><sub><b>Jonas Nilsson</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3ASkyToGround" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=SkyToGround" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/dvj"><img src="https://avatars2.githubusercontent.com/u/77217?v=4" width="100px;" alt=""/><br /><sub><b>Doug Johnston</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Advj" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=dvj" title="Code">💻</a></td>
+    <td align="center"><a href="http://lucas-czech.de"><img src="https://avatars0.githubusercontent.com/u/4741887?v=4" width="100px;" alt=""/><br /><sub><b>Lucas Czech</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Alczech" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=lczech" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/rafiw"><img src="https://avatars3.githubusercontent.com/u/3034707?v=4" width="100px;" alt=""/><br /><sub><b>Rafi Wiener</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Arafiw" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=rafiw" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mensinda"><img src="https://avatars3.githubusercontent.com/u/3407462?v=4" width="100px;" alt=""/><br /><sub><b>Daniel Mensinger</b></sub></a><br /><a href="#platform-mensinda" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/jbriales"><img src="https://avatars1.githubusercontent.com/u/6850478?v=4" width="100px;" alt=""/><br /><sub><b>Jesus Briales</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=jbriales" title="Code">💻</a> <a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Ajbriales" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://seanfisk.com/"><img src="https://avatars0.githubusercontent.com/u/410322?v=4" width="100px;" alt=""/><br /><sub><b>Sean Fisk</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Aseanfisk" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=seanfisk" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/fpeng1985"><img src="https://avatars1.githubusercontent.com/u/87981?v=4" width="100px;" alt=""/><br /><sub><b>fpeng1985</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=fpeng1985" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/almikhayl"><img src="https://avatars2.githubusercontent.com/u/6747040?v=4" width="100px;" alt=""/><br /><sub><b>almikhayl</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=almikhayl" title="Code">💻</a> <a href="#platform-almikhayl" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/andrew-hardin"><img src="https://avatars0.githubusercontent.com/u/16496326?v=4" width="100px;" alt=""/><br /><sub><b>Andrew Hardin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=andrew-hardin" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/SX91"><img src="https://avatars2.githubusercontent.com/u/754754?v=4" width="100px;" alt=""/><br /><sub><b>Anton</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=SX91" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/helmesjo"><img src="https://avatars0.githubusercontent.com/u/2501070?v=4" width="100px;" alt=""/><br /><sub><b>Fred Helmesjö</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Ahelmesjo" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=helmesjo" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/skannan89"><img src="https://avatars0.githubusercontent.com/u/11918764?v=4" width="100px;" alt=""/><br /><sub><b>Kannan</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Askannan89" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=skannan89" title="Code">💻</a></td>
+    <td align="center"><a href="http://himvis.com"><img src="https://avatars3.githubusercontent.com/u/465279?v=4" width="100px;" alt=""/><br /><sub><b>Khem Raj</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=kraj" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.mogigoma.com/"><img src="https://avatars2.githubusercontent.com/u/130862?v=4" width="100px;" alt=""/><br /><sub><b>Mak Kolybabi</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=mogigoma" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://msoeken.github.io"><img src="https://avatars0.githubusercontent.com/u/1998245?v=4" width="100px;" alt=""/><br /><sub><b>Mathias Soeken</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=msoeken" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/nathanhourt"><img src="https://avatars2.githubusercontent.com/u/271977?v=4" width="100px;" alt=""/><br /><sub><b>Nathan Hourt</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Anathanhourt" title="Bug reports">🐛</a> <a href="https://github.com/CLIUtils/CLI11/commits?author=nathanhourt" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/pleroux0"><img src="https://avatars2.githubusercontent.com/u/39619854?v=4" width="100px;" alt=""/><br /><sub><b>Paul le Roux</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=pleroux0" title="Code">💻</a> <a href="#platform-pleroux0" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/chfast"><img src="https://avatars1.githubusercontent.com/u/573380?v=4" width="100px;" alt=""/><br /><sub><b>Paweł Bylica</b></sub></a><br /><a href="#platform-chfast" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/peterazmanov"><img src="https://avatars0.githubusercontent.com/u/15322318?v=4" width="100px;" alt=""/><br /><sub><b>Peter Azmanov</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=peterazmanov" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/delpinux"><img src="https://avatars0.githubusercontent.com/u/35096584?v=4" width="100px;" alt=""/><br /><sub><b>Stéphane Del Pino</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=delpinux" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/metopa"><img src="https://avatars2.githubusercontent.com/u/3974178?v=4" width="100px;" alt=""/><br /><sub><b>Viacheslav Kroilov</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=metopa" title="Code">💻</a></td>
+    <td align="center"><a href="http://cs.odu.edu/~ctsolakis"><img src="https://avatars0.githubusercontent.com/u/6725596?v=4" width="100px;" alt=""/><br /><sub><b>christos</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ChristosT" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/deining"><img src="https://avatars3.githubusercontent.com/u/18169566?v=4" width="100px;" alt=""/><br /><sub><b>deining</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=deining" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/elszon"><img src="https://avatars0.githubusercontent.com/u/2971495?v=4" width="100px;" alt=""/><br /><sub><b>elszon</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=elszon" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ncihnegn"><img src="https://avatars3.githubusercontent.com/u/12021721?v=4" width="100px;" alt=""/><br /><sub><b>ncihnegn</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ncihnegn" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nurelin"><img src="https://avatars3.githubusercontent.com/u/5276274?v=4" width="100px;" alt=""/><br /><sub><b>nurelin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=nurelin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ryan4729"><img src="https://avatars3.githubusercontent.com/u/40183301?v=4" width="100px;" alt=""/><br /><sub><b>ryan4729</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ryan4729" title="Tests">⚠️</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## License
 
@@ -960,3 +992,4 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
+
