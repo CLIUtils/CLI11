@@ -1082,12 +1082,11 @@ class Option : public OptionBase<Option> {
     template <typename X> Option *default_val(const X &val) {
         std::string val_str = detail::to_string(val);
         auto old_option_state = current_option_state_;
-        auto old_results{std::move(results_)};
+        results_t old_results{std::move(results_)};
         results_.clear();
         try {
             add_result(val_str);
-            if(run_callback_for_default_ && !val_str.empty()) {
-                current_option_state_ = option_state::parsing;
+            if(run_callback_for_default_) {
                 run_callback(); // run callback sets the state we need to reset it again
                 current_option_state_ = option_state::parsing;
             } else {
