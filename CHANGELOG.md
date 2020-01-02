@@ -1,13 +1,45 @@
-## Version 1.9: IN PROGRESS
+## Version 1.9: Config files and cleanup
 
-* The meson build system supported [#299][]
+Config file handling was revamped to fix common issues, and now supports reading [TOML](https://github.com/toml-lang/toml).
+
+Adding options is significantly more powerful with support for things like
+`std::tuple` and `std::array`, including with transforms. Several new
+configuration options were added to facilitate a wider variety of apps.  GCC
+4.7 is no longer supported.
+
+* Config files refactored, supports TOML (may become default output in 2.0) [#362][]
 * Added two template parameter form of `add_option`, allowing `std::optional` to be supported without a special import [#285][]
 * `string_view` now supported in reasonable places [#300][], [#285][]
-* `app.immediate_callback()` allows the main app to run before subcommand callbacks. [#292][]
-* GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
+* `immediate_callback`, `final_callback`, and `parse_complete_callback` added to support controlling the App callback order [#292][], [#313][]
+* Multiple positional arguments maintain order if `positionals_at_end` is set. [#306][]
+* Pair/tuple/array now supported, and validators indexed to specific components in the objects [#307][], [#310][]
+* Footer callbacks supported [#309][]
+* Subcommands now support needs (including nameless subcommands) [#317][]
+* More flexible type size, more useful `add_complex` [#325][], [#370][]
+* Added new validators `CLI::NonNegativeNumber` and `CLI::PositiveNumber` [#342][]
+* Transform now supports arrays [#349][]
+* Option groups can be hidden [#356][]
+* Add `CLI::deprecate_option` and `CLI::retire_option` functions [#358][]
+* More flexible and safer Option `default_val` [#387][]
 * Backend: Cleaner type traits [#286][]
+* Backend: File checking updates [#341][]
+* Backend: Using pre-commit to format, checked in GitHub Actions [#336][]
+* Backend: Warning cleanup, more checks from klocwork [#350][], Effective C++ [#354][], clang-tidy [#360][], CUDA NVCC [#365][], cross compile [#373][], and sign conversion [#382][]
+* Docs: CLI11 Tutorial now hosted in the same repository [#304][], [#318][], [#374][]
 * Bugfix: Fixed undefined behavior in `checked_multiply` [#290][]
+* Bugfix: `->check()` was adding the name to the wrong validator [#320][]
 * Bugfix: Resetting config option works properly [#301][]
+* Bugfix: Hidden flags were showing up in error printout [#333][]
+* Bugfix: Enum conversion no longer broken if stream operator added [#348][]
+* Build: The meson build system supported [#299][]
+* Build: GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
+
+> ### Converting from CLI11 1.8:
+>
+> * Some deprecated methods dropped
+>     - `add_set*` should be replaced with `->check`/`->transform` and `CLI::IsMember` since 1.8
+>     - `get_defaultval` was replaced by `get_default_str`  in 1.8
+> * The true/false 4th argument to `add_option` is expected to be removed in 2.0, use `->capture_default_str()` since 1.8
 
 [#160]: https://github.com/CLIUtils/CLI11/pull/160
 [#285]: https://github.com/CLIUtils/CLI11/pull/285
@@ -16,6 +48,34 @@
 [#292]: https://github.com/CLIUtils/CLI11/pull/292
 [#299]: https://github.com/CLIUtils/CLI11/pull/299
 [#300]: https://github.com/CLIUtils/CLI11/pull/300
+[#301]: https://github.com/CLIUtils/CLI11/pull/301
+[#304]: https://github.com/CLIUtils/CLI11/pull/304
+[#306]: https://github.com/CLIUtils/CLI11/pull/306
+[#307]: https://github.com/CLIUtils/CLI11/pull/307
+[#309]: https://github.com/CLIUtils/CLI11/pull/309
+[#310]: https://github.com/CLIUtils/CLI11/pull/310
+[#312]: https://github.com/CLIUtils/CLI11/pull/312
+[#313]: https://github.com/CLIUtils/CLI11/pull/313
+[#317]: https://github.com/CLIUtils/CLI11/pull/317
+[#318]: https://github.com/CLIUtils/CLI11/pull/318
+[#320]: https://github.com/CLIUtils/CLI11/pull/320
+[#325]: https://github.com/CLIUtils/CLI11/pull/325
+[#333]: https://github.com/CLIUtils/CLI11/pull/333
+[#336]: https://github.com/CLIUtils/CLI11/pull/336
+[#342]: https://github.com/CLIUtils/CLI11/pull/342
+[#348]: https://github.com/CLIUtils/CLI11/pull/348
+[#349]: https://github.com/CLIUtils/CLI11/pull/349
+[#350]: https://github.com/CLIUtils/CLI11/pull/350
+[#354]: https://github.com/CLIUtils/CLI11/pull/354
+[#356]: https://github.com/CLIUtils/CLI11/pull/356
+[#358]: https://github.com/CLIUtils/CLI11/pull/358
+[#360]: https://github.com/CLIUtils/CLI11/pull/360
+[#362]: https://github.com/CLIUtils/CLI11/pull/362
+[#365]: https://github.com/CLIUtils/CLI11/pull/365
+[#373]: https://github.com/CLIUtils/CLI11/pull/373
+[#374]: https://github.com/CLIUtils/CLI11/pull/374
+[#382]: https://github.com/CLIUtils/CLI11/pull/382
+
 
 ## Version 1.8: Transformers, default strings, and flags
 
@@ -508,4 +568,3 @@ Lots of cleanup and docs additions made it into this release. Parsing is simpler
 ## Version 0.1: First release
 
 First release before major cleanup. Still has make syntax and combiners; very clever syntax but not the best or most commonly expected way to work.
-

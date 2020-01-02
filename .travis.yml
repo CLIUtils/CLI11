@@ -106,15 +106,6 @@ deploy:
   on:
     branch: master
     condition: "$DEPLOY_MAT = yes"
-- provider: releases
-  api_key:
-    secure: L1svZ5J+RiR67dj1fNk/XiZRvYfGJC4c5/dKSvDH+yuKSzZ6ODaTiVmYF8NtMJ7/3AQenEa0OuRBVQ0YpngFz3ugIcRsGCDUHtCMK/Bti0+6ZFdICbqcv6W3BlRIM8s7EOBPhjfbCV+ae7xep9B24HmwBPKukMFjDIj4nwBsmwCHZK9iNFtfaW2J2cr2TJo7QPY01J0W1k/boaj91KzHf9UuhEH8KYqp7szv+6kV00W8bRBtugw419dIm25eXFXgXDT9s/OA7qXV7o5FXWWpkyJ5AINVbY9DerkYag5TStrdOyKk+S1FexRG6TMG4L4Jyu/QxQGhMdu0m1yRCLvIekGtWLDnjNrI2SZrd5HbKprQ0O8j1770Is4q5blVPqAZ6O9jVMJRtVEaYbsJwItz1BJWkPT4S9GFbDL1dq2Z5jR2f5gd/cz2yYH56b47iYHWtzSqEfVhsXiN+atD+tWyQFA4Q/av0bGHwJ6LX0A1q0OCHruUMoxcw1QKfYtV1bkf/folL4Z4Hx3CL+NB0Lkqs8LFsQHxODP4a26I5DS/kaDHofotho8wsWlKFDtonZa+CExORGFFMPnGRz2qX5tMgGoo84wcqrprfoQv2llqeUr3gISPl2qxrljAhj3/Dcl7iI7k0Er7Ji8ENpgjSec4aqnBx8Ke2yaDEmBvwbouFCM=
-  skip_cleanup: true
-  file: build/include/CLI11.hpp
-  on:
-    repo: CLIUtils/CLI11
-    tags: true
-    condition: "$DEPLOY_MAT = yes"
 
 notifications:
   webhooks:
