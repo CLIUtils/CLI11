@@ -331,7 +331,7 @@ Before parsing, you can set the following options:
     `->capture_default_str()`: 🆕 Store the current value attached and display it in the help string.
 -   `->default_function(std::string())`: 🆕 Advanced: Change the function that `capture_default_str()` uses.
 -   `->always_capture_default()`: 🆕 Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
--   `default_str()`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
+-   `default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
 -   `default_val(value)`: 🚧 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or a stream operator).
 
 
@@ -992,4 +992,3 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
-
