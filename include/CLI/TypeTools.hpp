@@ -46,6 +46,9 @@ template <typename T> struct is_vector : std::false_type {};
 /// Check to see if something is a vector (true if actually a vector)
 template <class T, class A> struct is_vector<std::vector<T, A>> : std::true_type {};
 
+/// Check to see if something is a vector (true if actually a const vector)
+template <class T, class A> struct is_vector<const std::vector<T, A>> : std::true_type {};
+
 /// Check to see if something is bool (fail check by default)
 template <typename T> struct is_bool : std::false_type {};
 

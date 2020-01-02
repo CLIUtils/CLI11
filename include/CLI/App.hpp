@@ -601,12 +601,13 @@ class App {
             return CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
         });
         opt->type_name(detail::type_name<ConvertTo>());
-        // these must be actual variables since (std::max) sometimes is defined in terms of references and references
+        // these must be actual lvalues since (std::max) sometimes is defined in terms of references and references
         // to structs used in the evaluation can be temporary so that would cause issues.
         auto Tcount = detail::type_count<AssignTo>::value;
         auto XCcount = detail::type_count<ConvertTo>::value;
         opt->type_size((std::max)(Tcount, XCcount));
         opt->expected(detail::expected_count<ConvertTo>::value);
+        opt->run_callback_for_default();
         return opt;
     }
 
@@ -754,7 +755,7 @@ class App {
         CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
             return CLI::detail::lexical_cast(res[0], flag_result);
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))->run_callback_for_default();
     }
 
     /// Vector version to capture multiple flags.
@@ -772,7 +773,8 @@ class App {
             return retval;
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
-            ->multi_option_policy(MultiOptionPolicy::TakeAll);
+            ->multi_option_policy(MultiOptionPolicy::TakeAll)
+            ->run_callback_for_default();
     }
 
     /// Add option for callback that is triggered with a true flag and takes no arguments
@@ -911,7 +913,7 @@ class App {
         CLI::Option *opt =
             add_option(option_name, std::move(fun), std::move(option_description), defaulted, default_function);
 
-        opt->type_name(label)->type_size(1, 2)->delimiter('+');
+        opt->type_name(label)->type_size(1, 2)->delimiter('+')->run_callback_for_default();
         return opt;
     }
 
