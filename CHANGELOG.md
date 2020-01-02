@@ -1,6 +1,7 @@
 ## Version 1.9: Config files and cleanup
 
-Config file handling was revamped to fix common issues, and now supports TOML.
+Config file handling was revamped to fix common issues, and now supports reading [TOML](https://github.com/toml-lang/toml).
+
 Adding options is significantly more powerful with support for things like
 `std::tuple` and `std::array`, including with transforms. Several new
 configuration options were added to facilitate a wider variety of apps.  GCC
@@ -11,7 +12,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 * `string_view` now supported in reasonable places [#300][], [#285][]
 * `app.immediate_callback()` allows the main app to run before subcommand callbacks. [#292][]
 * Multiple positional arguments maintain order if `positionals_at_end` is set. [#306][]
-* Tuple/array now supported [#307][], [#310][]
+* Pair/tuple/array now supported, and validators indexed to specific components in the objects [#307][], [#310][]
 * Footer callbacks supported [#309][]
 * `final_callback` and `parse_complete_callback` added to support controlling the callback order [#313][]
 * Subcommands now support needs (including nameless subcommands) [#317][]
@@ -567,4 +568,3 @@ Lots of cleanup and docs additions made it into this release. Parsing is simpler
 ## Version 0.1: First release
 
 First release before major cleanup. Still has make syntax and combiners; very clever syntax but not the best or most commonly expected way to work.
-
