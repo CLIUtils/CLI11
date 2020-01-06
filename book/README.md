@@ -53,8 +53,6 @@ Reading/producing `.ini` files for configuration is also supported, as is using 
 
 CLI11 was developed at the [University of Cincinnati] in support of the [GooFit] library under [NSF Award 1414736][NSF 1414736]. It was featured in a [DIANA/HEP] meeting at CERN. Please give it a try! Feedback is always welcome.
 
-This guide was based on CLI11 1.7.
-
 [GooFit]: https://github.com/GooFit/GooFit
 [DIANA/HEP]: http://diana-hep.org
 [CLI11]: https://github.com/CLIUtils/CLI11
