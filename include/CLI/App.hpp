@@ -1180,7 +1180,7 @@ class App {
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
     /// This allows the subcommand to be directly checked.
-    operator bool() const { return parsed_ > 0; }
+    explicit operator bool() const { return parsed_ > 0; }
 
     ///@}
     /// @name Extras for subclassing
