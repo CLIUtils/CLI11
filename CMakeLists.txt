@@ -75,21 +75,19 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         endif()
     endif()
 
-    if(NOT CMAKE_VERSION VERSION_LESS 3.6 AND CLANG_TIDY)
-        # Add clang-tidy if available
-        option(CLANG_TIDY_FIX "Perform fixes for Clang-Tidy" OFF)
-        find_program(
-            CLANG_TIDY_EXE
-            NAMES "clang-tidy"
-            DOC "Path to clang-tidy executable"
-        )
+    if(NOT CMAKE_VERSION VERSION_LESS 3.6)
+        option(CLI11_CLANG_TIDY "Look for and use Clang-Tidy")
+        set(CLI11_CLANG_TIDY_OPTIONS "" CACHE STRING "Clang tidy option, such as -fix")
+        if(CLI11_CLANG_TIDY)
 
-        if(CLANG_TIDY_EXE)
-            if(CLANG_TIDY_FIX)
-                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
-            else()
-                set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}")
-            endif()
+            find_program(
+                CLANG_TIDY_EXE
+                NAMES "clang-tidy"
+                DOC "Path to clang-tidy executable"
+                REQUIRED
+            )
+
+        set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" ${CLI11_CLANG_TIDY_OPTIONS})
         endif()
     endif()
 

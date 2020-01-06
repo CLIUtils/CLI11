@@ -17,7 +17,7 @@ In general, make sure the addition is well thought out and does not increase the
 * Once you make the PR, tests will run to make sure your code works on all supported platforms
 * The test coverage is also measured, and that should remain 100%
 * Formatting should be done with pre-commit, otherwise the format check will not pass. However, it is trivial to apply this to your PR, so don't worry about this check. If you do want to run it, see below.
-* Everything must pass clang-tidy as well, run with `-DCLANG_TIDY_FIX-ON` (make sure you use a single threaded build process!)
+* Everything must pass clang-tidy as well, run with `-DCLI11_CLANG_TIDY=ON` (if you set `-DCLI11_CLANG_TIDY_OPTIONS="-fix"`, make sure you use a single threaded build process, or just build one example target).
 
 
 ## Pre-commit
