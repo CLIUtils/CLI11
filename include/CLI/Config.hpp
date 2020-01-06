@@ -112,7 +112,7 @@ inline void checkParentSegments(std::vector<ConfigItem> &output, const std::stri
 
     std::string estring;
     auto parents = detail::generate_parents(currentSection, estring);
-    if(output.size() > 0 && output.back().name == "--") {
+    if(!output.empty() && output.back().name == "--") {
         std::size_t msize = (parents.size() > 1U) ? parents.size() : 2;
         while(output.back().parents.size() >= msize) {
             output.push_back(output.back());
@@ -279,7 +279,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             // Only process option with a long-name and configurable
             if(!opt->get_lnames().empty() && opt->get_configurable()) {
                 if(opt->get_group() != group) {
-                    if(!(group == "Options" && opt->get_group() == "")) {
+                    if(!(group == "Options" && opt->get_group().empty())) {
                         continue;
                     }
                 }
