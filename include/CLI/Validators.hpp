@@ -671,7 +671,7 @@ class IsMember : public Validator {
 
     /// This allows in-place construction using an initializer list
     template <typename T, typename... Args>
-    explicit IsMember(std::initializer_list<T> values, Args &&... args)
+    IsMember(std::initializer_list<T> values, Args &&... args)
         : IsMember(std::vector<T>(values), std::forward<Args>(args)...) {}
 
     /// This checks to see if an item is in a set (empty function)
@@ -742,7 +742,7 @@ class Transformer : public Validator {
 
     /// This allows in-place construction
     template <typename... Args>
-    explicit Transformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
+    Transformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
         : Transformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
 
     /// direct map of std::string to std::string
@@ -800,7 +800,7 @@ class CheckedTransformer : public Validator {
 
     /// This allows in-place construction
     template <typename... Args>
-    explicit CheckedTransformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
+    CheckedTransformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&... args)
         : CheckedTransformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
 
     /// direct map of std::string to std::string
