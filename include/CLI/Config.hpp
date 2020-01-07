@@ -314,7 +314,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 
-    for(const App *subcom : subcommands)
+    for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
@@ -333,6 +333,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 out << to_config(subcom, default_also, write_description, prefix + subcom->get_name() + ".");
             }
         }
+    }
 
     return out.str();
 }
