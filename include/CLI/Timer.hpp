@@ -54,7 +54,7 @@ class Timer {
 
   public:
     /// Standard constructor, can set title and print function
-    Timer(std::string title = "Timer", time_print_t time_print = Simple)
+    explicit Timer(std::string title = "Timer", time_print_t time_print = Simple)
         : title_(std::move(title)), time_print_(std::move(time_print)), start_(clock::now()) {}
 
     /// Time a function by running it multiple times. Target time is the len to target.
@@ -117,7 +117,7 @@ class Timer {
 class AutoTimer : public Timer {
   public:
     /// Reimplementing the constructor is required in GCC 4.7
-    AutoTimer(std::string title = "Timer", time_print_t time_print = Simple) : Timer(title, time_print) {}
+    explicit AutoTimer(std::string title = "Timer", time_print_t time_print = Simple) : Timer(title, time_print) {}
     // GCC 4.7 does not support using inheriting constructors.
 
     /// This destructor prints the string
