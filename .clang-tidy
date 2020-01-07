@@ -1,8 +1,5 @@
 # Checks that will be implemented in future PRs:
-# google-explicit-constructor, hints to 4 issues
-# google-runtime-int, hints to 4 issues
-# google-runtime-references, hints to ~30 issues
-# performance-unnecessary-value-param, hints to ~110 issues
+# performance-unnecessary-value-param, hints to ~110 issues. Be careful with implementing the suggested changes of this one, as auto-fixes may break the code
 
 FormatStyle: file
 
@@ -23,6 +20,7 @@ llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
 readability-container-size-empty,
+cppcoreguidelines-owning-memory,
 '
 
 WarningsAsErrors: '
@@ -42,6 +40,7 @@ llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
 readability-container-size-empty,
+cppcoreguidelines-owning-memory,
 '
 
 HeaderFilterRegex: '.*hpp'
