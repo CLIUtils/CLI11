@@ -10,7 +10,7 @@ variables:
   cli11.single: ON
   cli11.std: 14
   cli11.build_type: Debug
-  cli11.options:
+  cli11.options: -DCLI11_EXAMPLES_JSON=ON
   CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 jobs:
@@ -84,6 +84,7 @@ jobs:
       gcc4.8:
         containerImage: gcc:4.8
         cli11.std: 11
+        cli11.options:
       clang3.4:
         containerImage: silkeh/clang:3.4
         cli11.std: 11
