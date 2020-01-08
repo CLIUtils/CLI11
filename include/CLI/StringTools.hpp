@@ -28,7 +28,7 @@ std::ostream &operator<<(std::ostream &in, const T &item) {
 } // namespace enums
 
 /// Export to CLI namespace
-using namespace enums;
+using enums::operator<<;
 
 namespace detail {
 /// a constant defining an expected max vector size defined to be a big number that could be multiplied by 4 and not
