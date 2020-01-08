@@ -28,14 +28,29 @@ jobs:
     runs-on: ubuntu-latest
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: Add wget
-        run: apt-get update && apt-get install -y wget
-      - name: Install Modern CMake
-        run: wget -qO- "https://cmake.org/files/v3.16/cmake-3.16.0-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
-      - name: Configure
-        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
-      - name: Build
-        run: cmake --build build
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Add wget
+      run: apt-get update && apt-get install -y wget
+    - name: Install Modern CMake
+      run: wget -qO- "https://cmake.org/files/v3.16/cmake-3.16.0-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
+    - name: Configure
+      run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+    - name: Build
+      run: cmake --build build -j2
+
+  cmake34:
+    name: CMake 3.4
+    runs-on: ubuntu-latest
+    # container: ubuntu:latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Add CMake folder to path
+      run: mkdir -p cmake && echo "::add-path::$PWD/cmake/bin"
+    - name: Install Modern CMake
+      run: wget -qO- "https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C $PWD/cmake
+    - name: Configure
+      run: cmake --version && mkdir -p build && cd build && cmake ..
