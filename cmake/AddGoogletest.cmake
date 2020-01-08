@@ -37,6 +37,10 @@ macro(add_gtest TESTNAME)
     else()
         add_test(${TESTNAME} ${TESTNAME})
         set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
+        if (CLI11_FORCE_LIBCXX)
+           set_property(TARGET ${T} APPEND_STRING
+             PROPERTY LINK_FLAGS -stdlib=libc++)
+         endif()
     endif()
 
 endmacro()

@@ -1,45 +1,47 @@
+
 function(add_cli_exe T)
     add_executable(${T} ${ARGN} ${CLI11_headers})
     target_link_libraries(${T} PUBLIC CLI11)
-    set_target_properties(
-         ${T} PROPERTIES
-         FOLDER "Examples"
-         )
-
-    if(CLANG_TIDY_EXE)
-    set_target_properties(
-        ${T} PROPERTIES
-        CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
-        )
+    set_property(TARGET ${T} PROPERTY FOLDER "Examples")
+    if(CLI11_FORCE_LIBCXX)
+        set_property(TARGET ${T} APPEND_STRING PROPERTY LINK_FLAGS -stdlib=libc++)
+    endif()
+    if(CLI11_CLANG_TIDY)
+        set_property(TARGET ${T} PROPERTY CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
     endif()
 endfunction()
 
-option(CLI11_EXAMPLE_JSON OFF)
-if(CLI11_EXAMPLE_JSON)
-    if(NOT EXISTS "${CLI11_SOURCE_DIR}/extern/json/single_include/nlohmann/json.hpp")
-        message(ERROR "You are missing the json package for CLI11_EXAMPLE_JSON. Please update your submodules (git submodule update --init)")
+if(CLI11_BUILD_EXAMPLES_JSON)
+    FetchContent_Declare(json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_SHALLOW 1
+        GIT_TAG v3.7.3)
+    FetchContent_GetProperties(json)
+    if (NOT json_POPULATED)
+        FetchContent_Populate(json)
     endif()
-    if(CMAKE_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-        message(WARNING "The json example requires GCC 4.8+ (requirement on json library)")
-    endif()
+
     add_cli_exe(json json.cpp)
-    target_include_directories(json PUBLIC SYSTEM "${CLI11_SOURCE_DIR}/extern/json/single_include")
+    target_include_directories(json PUBLIC SYSTEM "${json_SOURCE_DIR}/single_include")
 
     add_test(NAME json_config_out COMMAND json --item 2)
     set_property(TEST json_config_out PROPERTY PASS_REGULAR_EXPRESSION
-        "{"
-        "\"item\": \"2\""
-        "\"simple\": false"
-        "}")
+        [[{]]
+        [["item": "2"]]
+        [["simple": false]]
+        [[}]]
+        )
 
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/input.json" [=[{"item":3,"simple":false}]=])
     add_test(NAME json_config_in COMMAND json --config "${CMAKE_CURRENT_BINARY_DIR}/input.json")
     set_property(TEST json_config_in PROPERTY PASS_REGULAR_EXPRESSION
-        "{"
-        "\"item\": \"3\""
-        "\"simple\": false"
-        "}")
+        [[{]]
+        [["item": "3"]]
+        [["simple": false]]
+        [[}]]
+)
 endif()
+
 
 add_cli_exe(simple simple.cpp)
 add_test(NAME simple_basic COMMAND simple)
