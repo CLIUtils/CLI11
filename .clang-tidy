@@ -1,8 +1,35 @@
-#Checks: '*,-clang-analyzer-alpha.*'
-#Checks: '-*,google-readability-casting,llvm-namespace-comment,performance-unnecessary-value-param,llvm-include-order,misc-throw-by-value-catch-by-reference,readability-container-size-empty,google-runtime-references,modernize*'
-Checks: '-*,llvm-namespace-comment,readability-container-size-empty,misc-throw-by-value-catch-by-reference,modernize*,google-readability-casting'
+# Checks that will be implemented in future PRs:
+# performance-unnecessary-value-param, hints to ~110 issues. Be careful with implementing the suggested changes of this one, as auto-fixes may break the code
+
+FormatStyle: file
+
+Checks: '
+-*,
+google-*,
+-google-runtime-int,
+-google-runtime-references,
+llvm-include-order,
+llvm-namespace-comment,
+misc-throw-by-value-catch-by-reference,
+modernize*,
+readability-container-size-empty,
+'
+
+WarningsAsErrors: '
+-*,
+google-*,
+-google-runtime-int,
+-google-runtime-references,
+llvm-include-order,
+llvm-namespace-comment,
+misc-throw-by-value-catch-by-reference,
+modernize*,
+readability-container-size-empty,
+'
+
 HeaderFilterRegex: '.*hpp'
+
 CheckOptions:
-- key:             readability-braces-around-statements.ShortStatementLines
-  value:           '1'
+- key:             google-readability-braces-around-statements.ShortStatementLines
+  value:           '3'
 

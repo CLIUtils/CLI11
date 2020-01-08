@@ -2416,10 +2416,11 @@ class App {
 
     /// Count the required remaining positional arguments
     bool _has_remaining_positionals() const {
-        for(const Option_p &opt : options_)
+        for(const Option_p &opt : options_) {
             if(opt->get_positional() && ((static_cast<int>(opt->count()) < opt->get_items_expected_min()))) {
                 return true;
             }
+        }
 
         return false;
     }
