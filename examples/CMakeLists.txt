@@ -12,10 +12,12 @@ function(add_cli_exe T)
 endfunction()
 
 if(CLI11_BUILD_EXAMPLES_JSON)
+    message(STATUS "Using nlohmann/json")
     FetchContent_Declare(json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_SHALLOW 1
-        GIT_TAG v3.7.3)
+        URL https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip
+        URL_HASH "SHA256=87b5884741427220d3a33df1363ae0e8b898099fbc59f1c451113f6732891014"
+    )
+
     FetchContent_GetProperties(json)
     if (NOT json_POPULATED)
         FetchContent_Populate(json)
