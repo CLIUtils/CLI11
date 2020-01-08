@@ -283,6 +283,13 @@ inline path_type check_path(const char *file) noexcept {
         return path_type::nonexistant;
     case std::filesystem::file_type::directory:
         return path_type::directory;
+    case std::filesystem::file_type::symlink:
+    case std::filesystem::file_type::block:
+    case std::filesystem::file_type::character:
+    case std::filesystem::file_type::fifo:
+    case std::filesystem::file_type::socket:
+    case std::filesystem::file_type::regular:
+    case std::filesystem::file_type::unknown:
     default:
         return path_type::file;
     }
