@@ -1,0 +1,16 @@
+description: 'Test out a bare bones configuration with a CMake version'
+inputs:
+  version:
+    description: 'The full version of CMake to check'
+    required: true
+  options:
+    description: 'The CMake configuration options'
+    required: false
+    default: ""
+name: 'Configure with CMake'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.version }}
+    - ${{ inputs.options }}
