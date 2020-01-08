@@ -2598,6 +2598,7 @@ class App {
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
         case detail::Classifier::SUBCOMMAND:
+        case detail::Classifier::SUBCOMMAND_TERMINATOR:
         case detail::Classifier::POSITIONAL_MARK:
         case detail::Classifier::NONE:
         default:
