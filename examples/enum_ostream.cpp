@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     CLI11_PARSE(app, argc, argv);
 
     // CLI11's built in enum streaming can be used outside CLI11 like this:
-    using namespace CLI::enums;
+    using CLI::enums::operator<<;
     std::cout << "Enum received: " << level << std::endl;
 
     return 0;
