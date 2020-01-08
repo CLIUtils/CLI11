@@ -46,7 +46,7 @@ list(APPEND force-libcxx "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
-list(APPEND build-docs "EXISTS docs")
+list(APPEND build-docs "EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docs")
 
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
@@ -64,7 +64,7 @@ cmake_dependent_option(CLI11_BUILD_TESTS
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES
     "Build CLI11 examples" ON
-    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;EXISTS examples" OFF)
+    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples" OFF)
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON
     "Build CLI11 json example" OFF
@@ -267,7 +267,7 @@ if(CLI11_BUILD_DOCS)
 endif()
 
 # From a build system, this might not be included.
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND EXISTS book)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/book")
     add_subdirectory(book)
 endif()
 

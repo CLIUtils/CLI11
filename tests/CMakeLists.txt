@@ -6,6 +6,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CLI11_SOURCE_DIR}/cmake")
 
 if(CLI11_SANITIZERS)
+    message(STATUS "Using arsenm/sanitizers-cmake")
     FetchContent_Declare(sanitizers
         GIT_REPOSITORY https://github.com/arsenm/sanitizers-cmake.git
         GIT_SHALLOW 1
