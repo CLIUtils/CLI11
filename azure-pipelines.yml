@@ -35,23 +35,22 @@ jobs:
 - job: Native
   strategy:
     matrix:
-      Linux:
+      Linux14:
         vmImage: 'ubuntu-latest'
-      macOS:
+      macOS17:
         vmImage: 'macOS-latest'
-      Windows:
+        cli11.std: 17
+      macOS11:
+        vmImage: 'macOS-latest'
+        cli11.std: 11
+      Windows17:
         vmImage: 'vs2017-win2016'
+        cli11.std: 17
+      Windows11:
+        vmImage: 'vs2017-win2016'
+        cli11.std: 11
   pool:
     vmImage: $(vmImage)
-  steps:
-    - template: .ci/azure-build.yml
-    - template: .ci/azure-test.yml
-
-- job: Clang11
-  pool:
-    vmImage: 'macOS-latest'
-  variables:
-    cli11.std: 11
   steps:
     - template: .ci/azure-build.yml
     - template: .ci/azure-test.yml
