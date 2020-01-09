@@ -47,6 +47,13 @@
 
 #if CLI11_STD_OPTIONAL
 
+#ifdef _MSC_VER
+// this warning suppresses double to int conversions that are inherent in the test
+// on windows.  This may be able to removed in the future as the add_option capability
+// improves
+#pragma warning(disable : 4244)
+#endif
+
 TEST_F(TApp, StdOptionalTest) {
     std::optional<int> opt;
     app.add_option("-c,--count", opt);
@@ -63,6 +70,10 @@ TEST_F(TApp, StdOptionalTest) {
     EXPECT_TRUE(opt);
     EXPECT_EQ(*opt, 3);
 }
+
+#ifdef _MSC_VER
+#pragma warning(default : 4244)
+#endif
 
 #endif
 #if CLI11_EXPERIMENTAL_OPTIONAL
