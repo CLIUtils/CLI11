@@ -24,7 +24,12 @@
 #if defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 101500
 #define CLI11_HAS_FILESYSTEM 0
 #else
+#include <filesystem>
+#if defined __cpp_lib_filesystem && __cpp_lib_filesystem >= 201703
 #define CLI11_HAS_FILESYSTEM 1
+#else
+#define CLI11_HAS_FILESYSTEM 0
+#endif
 #endif
 #endif
 #endif
