@@ -31,6 +31,7 @@ jobs:
     - script: git diff --exit-code --color
       displayName: Check tidy
 
+# TODO: Fix macOS error and windows warning in c++17 mode
 - job: Native
   strategy:
     matrix:
