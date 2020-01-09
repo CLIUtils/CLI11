@@ -181,38 +181,35 @@ endif()
 
 # This folder should be installed
 if(CLI11_INSTALL)
-   install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-   # Make an export target
-   install(TARGETS CLI11 EXPORT CLI11Targets)
-endif()
+    # Make an export target
+    install(TARGETS CLI11 EXPORT CLI11Targets)
 
-# Use find_package on the installed package
-# Since we have no custom code, we can directly write this
-# to Config.cmake (otherwise we'd have a custom config and would
-# import Targets.cmake
+    # Use find_package on the installed package
+    # Since we have no custom code, we can directly write this
+    # to Config.cmake (otherwise we'd have a custom config and would
+    # import Targets.cmake
 
-# Add the version in a CMake readable way
-configure_file("cmake/CLI11ConfigVersion.cmake.in"
-   "CLI11ConfigVersion.cmake" @ONLY)
+    # Add the version in a CMake readable way
+    configure_file("cmake/CLI11ConfigVersion.cmake.in"
+       "CLI11ConfigVersion.cmake" @ONLY)
 
-# These installs only make sense for a local project
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # Make version available in the install
     install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
 
     # Install the export target as a file
     install(EXPORT CLI11Targets
-            FILE CLI11Config.cmake
-            NAMESPACE CLI11::
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
+        FILE CLI11Config.cmake
+        NAMESPACE CLI11::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
 
     # Use find_package on the installed package
     export(TARGETS CLI11
-           NAMESPACE CLI11::
-           FILE CLI11Targets.cmake)
+        NAMESPACE CLI11::
+        FILE CLI11Targets.cmake)
 
     # Register in the user cmake package registry
     export(PACKAGE CLI11)
