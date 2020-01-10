@@ -30,6 +30,7 @@ class CLI11Conan(ConanFile):
         "extern/*",
         "cmake/*",
         "CMakeLists.txt",
+        "CLI11.CPack.Description.txt",
         "tests/*",
     )
 
