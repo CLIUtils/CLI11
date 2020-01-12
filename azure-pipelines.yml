@@ -31,6 +31,14 @@ jobs:
     - script: git diff --exit-code --color
       displayName: Check tidy
 
+- job: CppLint
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: sharaku/cpplint
+  steps:
+    - bash: cpplint --counting=detailed --recursive examples include/CLI
+      displayName: Checking against google style guide
+
 # TODO: Fix macOS error and windows warning in c++17 mode
 - job: Native
   strategy:
