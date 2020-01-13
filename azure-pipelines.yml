@@ -34,7 +34,7 @@ jobs:
 - job: CppLint
   pool:
     vmImage: 'ubuntu-latest'
-    container: sharaku/cpplint:latest
+  container: sharaku/cpplint:latest
   steps:
     - bash: cpplint --counting=detailed --recursive examples include/CLI
       displayName: Checking against google style guide
@@ -105,4 +105,3 @@ jobs:
     - template: .ci/azure-cmake.yml
     - template: .ci/azure-build.yml
     - template: .ci/azure-test.yml
-
