@@ -904,6 +904,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="https://github.com/nurelin"><img src="https://avatars3.githubusercontent.com/u/5276274?v=4" width="100px;" alt=""/><br /><sub><b>nurelin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=nurelin" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ryan4729"><img src="https://avatars3.githubusercontent.com/u/40183301?v=4" width="100px;" alt=""/><br /><sub><b>ryan4729</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ryan4729" title="Tests">⚠️</a></td>
     <td align="center"><a href="https://izzys.casa"><img src="https://avatars0.githubusercontent.com/u/63051?v=4" width="100px;" alt=""/><br /><sub><b>Isabella Muerte</b></sub></a><br /><a href="#platform-slurps-mad-rips" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/KOLANICH"><img src="https://avatars1.githubusercontent.com/u/240344?v=4" width="100px;" alt=""/><br /><sub><b>KOLANICH</b></sub></a><br /><a href="#platform-KOLANICH" title="Packaging/porting to new platform">📦</a></td>
   </tr>
 </table>
 
