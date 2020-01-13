@@ -10,7 +10,7 @@
 #endif
 
 #include <array>
-#include <chrono>
+#include <chrono>  //NOLINT(build/c++11)
 #include <functional>
 #include <iostream>
 #include <string>
@@ -87,8 +87,9 @@ class Timer {
     /// This prints out a time string from a time
     std::string make_time_str(double time) const {
         auto print_it = [](double x, std::string unit) {
-            std::array<char, 50> buffer;
-            std::snprintf(buffer.data(), 50, "%.5g", x);
+            const unsigned int buffer_length = 50;
+            std::array<char, buffer_length> buffer;
+            std::snprintf(buffer.data(), buffer_length, "%.5g", x);
             return buffer.data() + std::string(" ") + unit;
         };
 
