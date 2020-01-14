@@ -595,9 +595,9 @@ template <typename T,
 bool lexical_cast(const std::string &input, T &output) {
     try {
         std::size_t n = 0;
-        long long output_ll = std::stoll(input, &n, 0);
+        int64_t output_ll = std::stoll(input, &n, 0);
         output = static_cast<T>(output_ll);
-        return n == input.size() && static_cast<long long>(output) == output_ll;
+        return n == input.size() && static_cast<int64_t>(output) == output_ll;
     } catch(const std::invalid_argument &) {
         return false;
     } catch(const std::out_of_range &) {
@@ -614,9 +614,9 @@ bool lexical_cast(const std::string &input, T &output) {
 
     try {
         std::size_t n = 0;
-        unsigned long long output_ll = std::stoull(input, &n, 0);
+        uint64_t output_ll = std::stoull(input, &n, 0);
         output = static_cast<T>(output_ll);
-        return n == input.size() && static_cast<unsigned long long>(output) == output_ll;
+        return n == input.size() && static_cast<uint64_t>(output) == output_ll;
     } catch(const std::invalid_argument &) {
         return false;
     } catch(const std::out_of_range &) {
