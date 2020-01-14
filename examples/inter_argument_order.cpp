@@ -1,8 +1,9 @@
-#include <CLI/CLI.hpp>
 #include <algorithm>
 #include <iostream>
 #include <tuple>
 #include <vector>
+
+#include "CLI/CLI.hpp"
 
 int main(int argc, char **argv) {
     CLI::App app{"An app to practice mixing unlimited arguments, but still recover the original order."};

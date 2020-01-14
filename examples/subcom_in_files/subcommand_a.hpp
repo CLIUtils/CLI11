@@ -3,9 +3,10 @@
 //   subcommand_a.hpp
 // ===================================================================
 
-#include "CLI/CLI.hpp"
 #include <memory>
 #include <string>
+
+#include "CLI/CLI.hpp"
 
 /// Collection of all options of Subcommand A.
 struct SubcommandAOptions {

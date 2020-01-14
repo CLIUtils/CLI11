@@ -2,10 +2,6 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
-#include "CLI/Macros.hpp"
-#include "CLI/StringTools.hpp"
-#include "CLI/TypeTools.hpp"
-
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -13,6 +9,10 @@
 #include <map>
 #include <memory>
 #include <string>
+
+#include "CLI/Macros.hpp"
+#include "CLI/StringTools.hpp"
+#include "CLI/TypeTools.hpp"
 
 // [CLI11:verbatim]
 
