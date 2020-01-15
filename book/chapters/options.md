@@ -120,7 +120,7 @@ One of CLI11's systems to allow customizability without high levels of verbosity
 An example of usage:
 
 ```
-app.option_defauts()->ignore_case()->group("Required");
+app.option_defaults()->ignore_case()->group("Required");
 
 app.add_flag("--CaSeLeSs");
 app.get_group() // is "Required"
