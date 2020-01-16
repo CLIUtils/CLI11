@@ -332,6 +332,15 @@
       "contributions": [
         "platform"
       ]
+    },
+    {
+      "login": "jgerityneurala",
+      "name": "James Gerity",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/57360646?v=4",
+      "profile": "https://github.com/jgerityneurala",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
