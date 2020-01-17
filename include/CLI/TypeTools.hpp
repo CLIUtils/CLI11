@@ -3,13 +3,12 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
+#include "StringTools.hpp"
 #include <exception>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
-
-#include "StringTools.hpp"
 
 namespace CLI {
 

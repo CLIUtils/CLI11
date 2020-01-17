@@ -1,4 +1,4 @@
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
 
 class MyFormatter : public CLI::Formatter {
   public:

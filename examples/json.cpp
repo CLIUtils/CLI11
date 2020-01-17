@@ -1,4 +1,4 @@
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
 #include <nlohmann/json.hpp>
 
 // This example is only built on GCC 7 on Travis due to mismatch in stdlib
