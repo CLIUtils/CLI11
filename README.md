@@ -520,8 +520,8 @@ There are several options that are supported on the main app and subcommands and
 -   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
 -   `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
--   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent command. Subcommands always are allowed to fall through.
--   `.configurable()`: 🚧 Allow the subcommand to be triggered from a configuration file.
+-   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent option. Subcommands always are allowed to "fall through" as in they will first attempt to match on the current subcommand and if they fail will progressively check parents for matching subcommands.
+-   `.configurable()`: 🚧 Allow the subcommand to be triggered from a configuration file. By default subcommand options in a configuration file do not trigger a subcommand but will just update default values.
 -   `.disable()`: 🆕 Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 -   `.disabled_by_default()`: 🆕 Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 -   `.enabled_by_default()`: 🆕 Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
@@ -904,6 +904,8 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="https://github.com/nurelin"><img src="https://avatars3.githubusercontent.com/u/5276274?v=4" width="100px;" alt=""/><br /><sub><b>nurelin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=nurelin" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ryan4729"><img src="https://avatars3.githubusercontent.com/u/40183301?v=4" width="100px;" alt=""/><br /><sub><b>ryan4729</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ryan4729" title="Tests">⚠️</a></td>
     <td align="center"><a href="https://izzys.casa"><img src="https://avatars0.githubusercontent.com/u/63051?v=4" width="100px;" alt=""/><br /><sub><b>Isabella Muerte</b></sub></a><br /><a href="#platform-slurps-mad-rips" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/KOLANICH"><img src="https://avatars1.githubusercontent.com/u/240344?v=4" width="100px;" alt=""/><br /><sub><b>KOLANICH</b></sub></a><br /><a href="#platform-KOLANICH" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://github.com/jgerityneurala"><img src="https://avatars2.githubusercontent.com/u/57360646?v=4" width="100px;" alt=""/><br /><sub><b>James Gerity</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=jgerityneurala" title="Documentation">📖</a></td>
   </tr>
 </table>
 

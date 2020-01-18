@@ -1,4 +1,10 @@
+#pragma once
+// ===================================================================
+//   subcommand_a.hpp
+// ===================================================================
+
 #include <CLI/CLI.hpp>
+#include <memory>
 #include <string>
 
 /// Collection of all options of Subcommand A.

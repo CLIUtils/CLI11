@@ -106,7 +106,7 @@ allows that option, it matches there instead. This was added to allow CLI11 to r
 gitbook:code $ ./my_program my_model_1 --model_flag --shared_flag
 ```
 
-Here, `--shared_option` was set on the main app, and on the command line it "falls through" `my_model_1` to match on the main app.
+Here, `--shared_flag` was set on the main app, and on the command line it "falls through" `my_model_1` to match on the main app.
 
 ### Prefix command
 
