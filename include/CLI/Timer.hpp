@@ -10,7 +10,7 @@
 #endif
 
 #include <array>
-#include <chrono> //NOLINT(build/c++11)
+#include <chrono> // NOLINT(build/c++11)
 #include <functional>
 #include <iostream>
 #include <string>
