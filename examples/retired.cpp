@@ -1,7 +1,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
-#include <vector>
 #include <utility>
+#include <vector>
 
 // This example shows the usage of the retired and deprecated option helper methods
 int main(int argc, char **argv) {
