@@ -2657,9 +2657,7 @@ class App {
             auto res = op->get_flag_value(arg_name, value);
             op->add_result(res);
             parse_order_.push_back(op.get());
-        }
-        // --this=value
-        else if(!value.empty()) {
+        } else if(!value.empty()) { // --this=value
             op->add_result(value, result_count);
             parse_order_.push_back(op.get());
             collected += result_count;
