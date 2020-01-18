@@ -1,5 +1,7 @@
 #include <CLI/CLI.hpp>
+#include <iostream>
 #include <map>
+#include <string>
 
 enum class Level : int { High, Medium, Low };
 

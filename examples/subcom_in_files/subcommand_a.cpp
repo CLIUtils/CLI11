@@ -1,8 +1,6 @@
-// ===================================================================
-//   subcommand_a.cpp
-// ===================================================================
-
 #include "subcommand_a.hpp"
+#include <iostream>
+#include <memory>
 
 /// Set up a subcommand and capture a shared_ptr to a struct that holds all its options.
 /// The variables of the struct are bound to the CLI options.

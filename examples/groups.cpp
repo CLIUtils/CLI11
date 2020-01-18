@@ -1,5 +1,7 @@
-#include "CLI/CLI.hpp"
-#include "CLI/Timer.hpp"
+#include <CLI/CLI.hpp>
+#include <CLI/Timer.hpp>
+#include <iostream>
+#include <string>
 
 int main(int argc, char **argv) {
     CLI::AutoTimer("This is a timer");
