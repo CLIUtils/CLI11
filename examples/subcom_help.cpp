@@ -1,5 +1,6 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
+#include <string>
 
 int main(int argc, char *argv[]) {
     CLI::App cli_global{"Demo app"};

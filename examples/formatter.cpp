@@ -1,4 +1,6 @@
 #include <CLI/CLI.hpp>
+#include <iostream>
+#include <memory>
 
 class MyFormatter : public CLI::Formatter {
   public:

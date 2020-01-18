@@ -1,5 +1,9 @@
 #include <CLI/CLI.hpp>
+#include <iostream>
+#include <memory>
 #include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 
 // This example is only built on GCC 7 on Travis due to mismatch in stdlib
 // for clang (CLI11 is forgiving about mismatches, json.hpp is not)
