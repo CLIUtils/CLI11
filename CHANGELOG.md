@@ -34,6 +34,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 * Bugfix: Enum conversion no longer broken if stream operator added [#348][]
 * Build: The meson build system supported [#299][]
 * Build: GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
+* Build: Restructured significant portions of CMake build system [#394][]
 
 > ### Converting from CLI11 1.8:
 >
@@ -77,6 +78,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#374]: https://github.com/CLIUtils/CLI11/pull/374
 [#382]: https://github.com/CLIUtils/CLI11/pull/382
 [#390]: https://github.com/CLIUtils/CLI11/pull/390
+[#394]: https://github.com/CLIUtils/CLI11/pull/394
 [#400]: https://github.com/CLIUtils/CLI11/pull/400
 
 
