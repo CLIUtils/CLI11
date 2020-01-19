@@ -1,5 +1,6 @@
 #include "app_helper.hpp"
 #include <complex>
+#include <cstdint>
 #include <cstdlib>
 
 #include "gmock/gmock.h"
@@ -1431,9 +1432,9 @@ TEST_F(TApp, RequiredFlags) {
 
 TEST_F(TApp, CallbackFlags) {
 
-    int64_t value = 0;
+    std::int64_t value = 0;
 
-    auto func = [&value](int64_t x) { value = x; };
+    auto func = [&value](std::int64_t x) { value = x; };
 
     app.add_flag_function("-v", func);
 
@@ -1473,9 +1474,9 @@ TEST_F(TApp, CallbackBoolFlags) {
 }
 
 TEST_F(TApp, CallbackFlagsFalse) {
-    int64_t value = 0;
+    std::int64_t value = 0;
 
-    auto func = [&value](int64_t x) { value = x; };
+    auto func = [&value](std::int64_t x) { value = x; };
 
     app.add_flag_function("-v,-f{false},--val,--fval{false}", func);
 
@@ -1502,9 +1503,9 @@ TEST_F(TApp, CallbackFlagsFalse) {
 }
 
 TEST_F(TApp, CallbackFlagsFalseShortcut) {
-    int64_t value = 0;
+    std::int64_t value = 0;
 
-    auto func = [&value](int64_t x) { value = x; };
+    auto func = [&value](std::int64_t x) { value = x; };
 
     app.add_flag_function("-v,!-f,--val,!--fval", func);
 
@@ -1533,9 +1534,9 @@ TEST_F(TApp, CallbackFlagsFalseShortcut) {
 #if __cplusplus >= 201402L || _MSC_VER >= 1900
 TEST_F(TApp, CallbackFlagsAuto) {
 
-    int64_t value = 0;
+    std::int64_t value = 0;
 
-    auto func = [&value](int64_t x) { value = x; };
+    auto func = [&value](std::int64_t x) { value = x; };
 
     app.add_flag("-v", func);
 
@@ -2562,8 +2563,8 @@ TEST_F(TApp, EmptyOptionFail) {
 }
 
 TEST_F(TApp, BeforeRequirements) {
-    app.add_flag_function("-a", [](int64_t) { throw CLI::Success(); });
-    app.add_flag_function("-b", [](int64_t) { throw CLI::CallForHelp(); });
+    app.add_flag_function("-a", [](std::int64_t) { throw CLI::Success(); });
+    app.add_flag_function("-b", [](std::int64_t) { throw CLI::CallForHelp(); });
 
     args = {"extra"};
     EXPECT_THROW(run(), CLI::ExtrasError);

@@ -548,7 +548,7 @@ inline std::string type_name() {
 // Lexical cast
 
 /// Convert a flag into an integer value  typically binary flags
-inline int64_t to_flag_value(std::string val) {
+inline std::int64_t to_flag_value(std::string val) {
     static const std::string trueString("true");
     static const std::string falseString("false");
     if(val == trueString) {
@@ -558,10 +558,10 @@ inline int64_t to_flag_value(std::string val) {
         return -1;
     }
     val = detail::to_lower(val);
-    int64_t ret;
+    std::int64_t ret;
     if(val.size() == 1) {
         if(val[0] >= '1' && val[0] <= '9') {
-            return (static_cast<int64_t>(val[0]) - '0');
+            return (static_cast<std::int64_t>(val[0]) - '0');
         }
         switch(val[0]) {
         case '0':
@@ -972,7 +972,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, T &output) {
 template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
-    int64_t count{0};
+    std::int64_t count{0};
     for(auto &flag : flags) {
         count += detail::to_flag_value(flag);
     }
@@ -987,7 +987,7 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
 template <typename T,
           enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value, detail::enabler> = detail::dummy>
 void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
-    int64_t count{0};
+    std::int64_t count{0};
     for(auto &flag : flags) {
         count += detail::to_flag_value(flag);
     }

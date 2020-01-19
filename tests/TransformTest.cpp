@@ -1,6 +1,7 @@
 #include "app_helper.hpp"
 
 #include <array>
+#include <cstdint>
 #include <unordered_map>
 
 #if defined(CLI11_CPP17)
@@ -43,7 +44,7 @@ TEST_F(TApp, SimpleNumericalTransform) {
 }
 
 TEST_F(TApp, EnumTransform) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
     test value;
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::Transformer(
@@ -68,11 +69,11 @@ TEST_F(TApp, EnumTransform) {
     // transformer doesn't do any checking so this still works
     args = {"-s", "5"};
     run();
-    EXPECT_EQ(static_cast<int16_t>(value), int16_t(5));
+    EXPECT_EQ(static_cast<std::int16_t>(value), std::int16_t(5));
 }
 
 TEST_F(TApp, EnumCheckedTransform) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
     test value;
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::CheckedTransformer(
@@ -104,7 +105,7 @@ TEST_F(TApp, EnumCheckedTransform) {
 
 // from jzakrzewski Issue #330
 TEST_F(TApp, EnumCheckedDefualtTransform) {
-    enum class existing : int16_t { abort, overwrite, remove };
+    enum class existing : std::int16_t { abort, overwrite, remove };
     app.add_option("--existing", "What to do if file already exists in the destination")
         ->transform(
             CLI::CheckedTransformer(std::unordered_map<std::string, existing>{{"abort", existing::abort},
@@ -122,7 +123,7 @@ TEST_F(TApp, EnumCheckedDefualtTransform) {
 
 // test from https://github.com/CLIUtils/CLI11/issues/369  [Jakub Zakrzewski](https://github.com/jzakrzewski)
 TEST_F(TApp, EnumCheckedDefaultTransformCallback) {
-    enum class existing : int16_t { abort, overwrite, remove };
+    enum class existing : std::int16_t { abort, overwrite, remove };
     auto cmd = std::make_shared<CLI::App>("deploys the repository somewhere", "deploy");
     cmd->add_option("--existing", "What to do if file already exists in the destination")
         ->transform(
@@ -223,7 +224,7 @@ TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
 #endif
 
 TEST_F(TApp, EnumTransformFn) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
     test value;
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::Transformer(
@@ -249,7 +250,7 @@ TEST_F(TApp, EnumTransformFn) {
 }
 
 TEST_F(TApp, EnumTransformFnMap) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
     std::map<std::string, test> map{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}};
     test value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(map, CLI::ignore_case, CLI::ignore_underscore));
@@ -272,7 +273,7 @@ TEST_F(TApp, EnumTransformFnMap) {
 }
 
 TEST_F(TApp, EnumTransformFnPtrMap) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 37 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 37 };
     std::map<std::string, test> map{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}};
     test value;
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(&map, CLI::ignore_case, CLI::ignore_underscore));
@@ -299,7 +300,7 @@ TEST_F(TApp, EnumTransformFnPtrMap) {
 }
 
 TEST_F(TApp, EnumTransformFnSharedPtrMap) {
-    enum class test : int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 37 };
+    enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 37 };
     auto map = std::make_shared<std::unordered_map<std::string, test>>();
     auto &mp = *map;
     mp["val1"] = test::val1;
@@ -698,7 +699,7 @@ TEST_F(TApp, NumberWithUnitBadInput) {
 TEST_F(TApp, NumberWithUnitIntOverflow) {
     std::map<std::string, int> mapping{{"a", 1000000}, {"b", 100}, {"c", 101}};
 
-    int32_t value;
+    std::int32_t value;
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "1000 a"};
@@ -738,7 +739,7 @@ TEST_F(TApp, NumberWithUnitFloatOverflow) {
 }
 
 TEST_F(TApp, AsSizeValue1000_1024) {
-    uint64_t value;
+    std::uint64_t value;
     app.add_option("-s", value)->transform(CLI::AsSizeValue(true));
 
     args = {"-s", "10240"};
@@ -749,8 +750,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, 1u);
 
-    uint64_t k_value = 1000u;
-    uint64_t ki_value = 1024u;
+    std::uint64_t k_value = 1000u;
+    std::uint64_t ki_value = 1024u;
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, k_value);
@@ -844,7 +845,7 @@ TEST_F(TApp, AsSizeValue1000_1024) {
 }
 
 TEST_F(TApp, AsSizeValue1024) {
-    uint64_t value;
+    std::uint64_t value;
     app.add_option("-s", value)->transform(CLI::AsSizeValue(false));
 
     args = {"-s", "10240"};
@@ -855,7 +856,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, 1u);
 
-    uint64_t ki_value = 1024u;
+    std::uint64_t ki_value = 1024u;
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, ki_value);

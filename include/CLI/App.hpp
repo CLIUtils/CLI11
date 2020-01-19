@@ -4,6 +4,7 @@
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -759,8 +760,9 @@ class App {
     }
 
     /// Vector version to capture multiple flags.
-    template <typename T,
-              enable_if_t<!std::is_assignable<std::function<void(int64_t)>, T>::value, detail::enabler> = detail::dummy>
+    template <
+        typename T,
+        enable_if_t<!std::is_assignable<std::function<void(std::int64_t)>, T>::value, detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
                      std::vector<T> &flag_results, ///< A vector of values with the flag results
                      std::string flag_description = "") {
@@ -795,11 +797,11 @@ class App {
 
     /// Add option for callback with an integer value
     Option *add_flag_function(std::string flag_name,
-                              std::function<void(int64_t)> function, ///< A function to call, void(int)
+                              std::function<void(std::int64_t)> function, ///< A function to call, void(int)
                               std::string flag_description = "") {
 
         CLI::callback_t fun = [function](const CLI::results_t &res) {
-            int64_t flag_count = 0;
+            std::int64_t flag_count = 0;
             detail::sum_flag_vector(res, flag_count);
             function(flag_count);
             return true;
@@ -811,7 +813,7 @@ class App {
 #ifdef CLI11_CPP14
     /// Add option for callback (C++14 or better only)
     Option *add_flag(std::string flag_name,
-                     std::function<void(int64_t)> function, ///< A function to call, void(int64_t)
+                     std::function<void(std::int64_t)> function, ///< A function to call, void(std::int64_t)
                      std::string flag_description = "") {
         return add_flag_function(std::move(flag_name), std::move(function), std::move(flag_description));
     }
