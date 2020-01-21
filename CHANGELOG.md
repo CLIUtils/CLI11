@@ -25,7 +25,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 * Backend: File checking updates [#341][]
 * Backend: Using pre-commit to format, checked in GitHub Actions [#336][]
 * Backend: Clang-tidy checked again, CMake option now `CL11_CLANG_TIDY` [#390][]
-* Backend: Warning cleanup, more checks from klocwork [#350][], Effective C++ [#354][], clang-tidy [#360][], CUDA NVCC [#365][], cross compile [#373][], and sign conversion [#382][]
+* Backend: Warning cleanup, more checks from klocwork [#350][], Effective C++ [#354][], clang-tidy [#360][], CUDA NVCC [#365][], cross compile [#373][], sign conversion [#382][], and cpplint [#400][]
 * Docs: CLI11 Tutorial now hosted in the same repository [#304][], [#318][], [#374][]
 * Bugfix: Fixed undefined behavior in `checked_multiply` [#290][]
 * Bugfix: `->check()` was adding the name to the wrong validator [#320][]
@@ -34,6 +34,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 * Bugfix: Enum conversion no longer broken if stream operator added [#348][]
 * Build: The meson build system supported [#299][]
 * Build: GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
+* Build: Restructured significant portions of CMake build system [#394][]
 
 > ### Converting from CLI11 1.8:
 >
@@ -77,6 +78,8 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#374]: https://github.com/CLIUtils/CLI11/pull/374
 [#382]: https://github.com/CLIUtils/CLI11/pull/382
 [#390]: https://github.com/CLIUtils/CLI11/pull/390
+[#394]: https://github.com/CLIUtils/CLI11/pull/394
+[#400]: https://github.com/CLIUtils/CLI11/pull/400
 
 
 ## Version 1.8: Transformers, default strings, and flags

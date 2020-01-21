@@ -68,4 +68,12 @@ yarn all-contributors add username code,bug
 
 ## For maintainers: Making a release
 
-Remember to replace the emoji in the readme, being careful not to replace the ones in all-contributors.
+Remember to replace the emoji in the readme, being careful not to replace the ones in all-contributors if any overlap.
+
+Steps:
+* Update changelog if needed
+* Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
+* Find and replace in README:
+    * Replace " 🆕" and "🆕 " with "" (ignores the description line)
+    * Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
+    * Replace "🚧" with "🆕" (manually ignore the description line)

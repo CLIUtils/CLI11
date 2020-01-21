@@ -1,4 +1,5 @@
 #pragma once
+
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/CLIUtils/CLI11 for details.
 
