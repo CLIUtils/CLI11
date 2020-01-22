@@ -8,6 +8,7 @@
 #include "CLI/TypeTools.hpp"
 
 #include <cmath>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -1043,7 +1044,7 @@ class AsNumberWithUnit : public Validator {
 ///   "2 EiB" => 2^61 // Units up to exibyte are supported
 class AsSizeValue : public AsNumberWithUnit {
   public:
-    using result_t = uint64_t;
+    using result_t = std::uint64_t;
 
     /// If kb_is_1000 is true,
     /// interpret 'kb', 'k' as 1000 and 'kib', 'ki' as 1024

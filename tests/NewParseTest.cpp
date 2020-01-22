@@ -1,6 +1,7 @@
 #include "app_helper.hpp"
 #include "gmock/gmock.h"
 #include <complex>
+#include <cstdint>
 
 using ::testing::HasSubstr;
 
@@ -499,12 +500,12 @@ template <class X> class AobjWrapper {
     X val_{};
 };
 
-static_assert(std::is_assignable<AobjWrapper<uint16_t> &, uint16_t>::value,
+static_assert(std::is_assignable<AobjWrapper<std::uint16_t> &, std::uint16_t>::value,
               "AobjWrapper not assignable like it should be ");
 
 TEST_F(TApp, uint16Wrapper) {
-    AobjWrapper<uint16_t> sWrapper;
-    app.add_option<AobjWrapper<uint16_t>, uint16_t>("-v", sWrapper);
+    AobjWrapper<std::uint16_t> sWrapper;
+    app.add_option<AobjWrapper<std::uint16_t>, std::uint16_t>("-v", sWrapper);
     args = {"-v", "9"};
 
     run();

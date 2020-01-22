@@ -1013,7 +1013,7 @@ TEST(Types, LexicalCastEnum) {
     EXPECT_EQ(output, v5);
 
     EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output));
-    enum class t2 : uint64_t { enum1 = 65, enum2 = 45667, enum3 = 9999999999999 };
+    enum class t2 : std::uint64_t { enum1 = 65, enum2 = 45667, enum3 = 9999999999999 };
     t2 output2;
     EXPECT_TRUE(CLI::detail::lexical_cast("65", output2));
     EXPECT_EQ(output2, t2::enum1);

@@ -217,7 +217,7 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag_function(option_name,
-             function <void(int64_t count)>,
+             function <void(std::int64_t count)>,
              help_string="")
 
 app.add_flag_callback(option_name,function<void(void)>,help_string="")

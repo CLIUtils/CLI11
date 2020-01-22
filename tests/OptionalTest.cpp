@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 
@@ -132,7 +133,7 @@ TEST_F(TApp, BoostOptionalTestZarg) {
 }
 
 TEST_F(TApp, BoostOptionalint64Test) {
-    boost::optional<int64_t> opt;
+    boost::optional<std::int64_t> opt;
     app.add_option("-c,--count", opt);
     run();
     EXPECT_FALSE(opt);
