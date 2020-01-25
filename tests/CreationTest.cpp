@@ -164,12 +164,12 @@ TEST_F(TApp, MultipleSubcomNoMatchingInplaceUnderscore2) {
 TEST_F(TApp, IncorrectConstructionFlagPositional1) { EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction); }
 
 TEST_F(TApp, IncorrectConstructionFlagPositional2) {
-    int x;
+    int x{0};
     EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
 }
 
 TEST_F(TApp, IncorrectConstructionFlagPositional3) {
-    bool x;
+    bool x{false};
     EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
 }
 
@@ -220,7 +220,7 @@ TEST_F(TApp, CheckName) {
     auto long2 = app.add_flag("--Long2");
     auto short1 = app.add_flag("-a");
     auto short2 = app.add_flag("-B");
-    int x, y;
+    int x{0}, y{0};
     auto pos1 = app.add_option("pos1", x);
     auto pos2 = app.add_option("pOs2", y);
 
@@ -248,7 +248,7 @@ TEST_F(TApp, CheckNameNoCase) {
     auto long2 = app.add_flag("--Long2")->ignore_case();
     auto short1 = app.add_flag("-a")->ignore_case();
     auto short2 = app.add_flag("-B")->ignore_case();
-    int x, y;
+    int x{0}, y{0};
     auto pos1 = app.add_option("pos1", x)->ignore_case();
     auto pos2 = app.add_option("pOs2", y)->ignore_case();
 
@@ -275,7 +275,7 @@ TEST_F(TApp, CheckNameNoUnderscore) {
     auto long1 = app.add_flag("--longoption1")->ignore_underscore();
     auto long2 = app.add_flag("--long_option2")->ignore_underscore();
 
-    int x, y;
+    int x{0}, y{0};
     auto pos1 = app.add_option("pos_option_1", x)->ignore_underscore();
     auto pos2 = app.add_option("posoption2", y)->ignore_underscore();
 
@@ -306,7 +306,7 @@ TEST_F(TApp, CheckNameNoCaseNoUnderscore) {
     auto long1 = app.add_flag("--LongoptioN1")->ignore_underscore()->ignore_case();
     auto long2 = app.add_flag("--long_Option2")->ignore_case()->ignore_underscore();
 
-    int x, y;
+    int x{0}, y{0};
     auto pos1 = app.add_option("pos_Option_1", x)->ignore_underscore()->ignore_case();
     auto pos2 = app.add_option("posOption2", y)->ignore_case()->ignore_underscore();
 
@@ -334,7 +334,7 @@ TEST_F(TApp, CheckNameNoCaseNoUnderscore) {
 }
 
 TEST_F(TApp, PreSpaces) {
-    int x;
+    int x{0};
     auto myapp = app.add_option(" -a, --long, other", x);
 
     EXPECT_TRUE(myapp->check_lname("long"));
@@ -343,7 +343,7 @@ TEST_F(TApp, PreSpaces) {
 }
 
 TEST_F(TApp, AllSpaces) {
-    int x;
+    int x{0};
     auto myapp = app.add_option(" -a , --long , other ", x);
 
     EXPECT_TRUE(myapp->check_lname("long"));
@@ -355,7 +355,7 @@ TEST_F(TApp, OptionFromDefaults) {
     app.option_defaults()->required();
 
     // Options should remember defaults
-    int x;
+    int x{0};
     auto opt = app.add_option("--simple", x);
     EXPECT_TRUE(opt->get_required());
 
@@ -411,7 +411,7 @@ TEST_F(TApp, OptionFromDefaultsSubcommands) {
 }
 
 TEST_F(TApp, GetNameCheck) {
-    int x;
+    int x{0};
     auto a = app.add_flag("--that");
     auto b = app.add_flag("-x");
     auto c = app.add_option("pos", x);
@@ -523,7 +523,7 @@ TEST_F(TApp, SubcommandMinMax) {
 }
 
 TEST_F(TApp, GetOptionList) {
-    int two;
+    int two{0};
     auto flag = app.add_flag("--one");
     auto opt = app.add_option("--two", two);
 
@@ -704,7 +704,7 @@ TEST(ValidatorTests, ValidatorDefaults) {
 
 class Unstreamable {
   private:
-    int x_ = -1;
+    int x_{-1};
 
   public:
     Unstreamable() = default;

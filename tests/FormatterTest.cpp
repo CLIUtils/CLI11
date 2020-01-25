@@ -49,7 +49,7 @@ TEST(Formatter, OptCustomize) {
     optfmt->label("REQUIRED", "(MUST HAVE)");
     app.formatter(optfmt);
 
-    int v;
+    int v{0};
     app.add_option("--opt", v, "Something")->required();
 
     std::string help = app.help();
@@ -69,7 +69,7 @@ TEST(Formatter, OptCustomizeSimple) {
     app.get_formatter()->column_width(25);
     app.get_formatter()->label("REQUIRED", "(MUST HAVE)");
 
-    int v;
+    int v{0};
     app.add_option("--opt", v, "Something")->required();
 
     std::string help = app.help();
@@ -89,10 +89,10 @@ TEST(Formatter, FalseFlagExample) {
     app.get_formatter()->column_width(25);
     app.get_formatter()->label("REQUIRED", "(MUST HAVE)");
 
-    int v;
+    int v{0};
     app.add_flag("--opt,!--no_opt", v, "Something");
 
-    bool flag;
+    bool flag{false};
     app.add_flag("!-O,--opt2,--no_opt2{false}", flag, "Something else");
 
     std::string help = app.help();
@@ -180,7 +180,7 @@ TEST(Formatter, NamelessSubInGroup) {
     CLI::App *sub = app.add_subcommand("", "This subcommand");
     CLI::App *sub2 = app.add_subcommand("sub2", "subcommand2");
     sub->add_flag("--insub", "MyFlag");
-    int val;
+    int val{0};
     sub2->add_option("pos", val, "positional");
     sub->group("group1");
     sub2->group("group1");
