@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     app.set_help_all_flag("--help-all");
     auto circle = app.add_subcommand("circle", "draw a circle")->immediate_callback();
     double radius{0.0};
-    int circle_counter = 0;
+    int circle_counter{0};
     circle->callback([&radius, &circle_counter] {
         ++circle_counter;
         std::cout << "circle" << circle_counter << " with radius " << radius << std::endl;
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     auto rect = app.add_subcommand("rectangle", "draw a rectangle")->immediate_callback();
     double edge1{0.0};
     double edge2{0.0};
-    int rect_counter = 0;
+    int rect_counter{0};
     rect->callback([&edge1, &edge2, &rect_counter] {
         ++rect_counter;
         if(edge2 == 0) {

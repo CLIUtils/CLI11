@@ -192,7 +192,7 @@ TEST_F(TApp, DuplicateSubcommands) {
 TEST_F(TApp, DuplicateSubcommandCallbacks) {
 
     auto foo = app.add_subcommand("foo");
-    int count = 0;
+    int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
     EXPECT_TRUE(foo->get_immediate_callback());
@@ -208,7 +208,7 @@ TEST_F(TApp, DuplicateSubcommandCallbacks) {
 TEST_F(TApp, DuplicateSubcommandCallbacksValues) {
 
     auto foo = app.add_subcommand("foo");
-    int val;
+    int val{0};
     foo->add_option("--val", val);
     std::vector<int> vals;
     foo->callback([&vals, &val]() { vals.push_back(val); });
@@ -231,7 +231,7 @@ TEST_F(TApp, Callbacks) {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::Success(); });
     auto sub2 = app.add_subcommand("sub2");
-    bool val = false;
+    bool val{false};
     sub2->callback([&val]() { val = true; });
 
     args = {"sub2"};
@@ -353,7 +353,7 @@ TEST_F(TApp, RuntimeErrorInCallback) {
 }
 
 TEST_F(TApp, NoFallThroughOpts) {
-    int val = 1;
+    int val{1};
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
@@ -363,7 +363,7 @@ TEST_F(TApp, NoFallThroughOpts) {
 }
 
 TEST_F(TApp, NoFallThroughPositionals) {
-    int val = 1;
+    int val{1};
     app.add_option("val", val);
 
     app.add_subcommand("sub");
@@ -373,7 +373,7 @@ TEST_F(TApp, NoFallThroughPositionals) {
 }
 
 TEST_F(TApp, NoFallThroughOptsWithTerminator) {
-    int val = 1;
+    int val{1};
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
@@ -384,7 +384,7 @@ TEST_F(TApp, NoFallThroughOptsWithTerminator) {
 }
 
 TEST_F(TApp, NoFallThroughPositionalsWithTerminator) {
-    int val = 1;
+    int val{1};
     app.add_option("val", val);
 
     app.add_subcommand("sub");
@@ -402,7 +402,7 @@ TEST_F(TApp, NoFallThroughPositionalsWithTerminator) {
 TEST_F(TApp, NamelessSubComPositionals) {
 
     auto sub = app.add_subcommand();
-    int val = 1;
+    int val{1};
     sub->add_option("val", val);
 
     args = {"2"};
@@ -515,7 +515,7 @@ TEST_F(TApp, Nameless4LayerDeepMulti) {
 
 TEST_F(TApp, FallThroughRegular) {
     app.fallthrough();
-    int val = 1;
+    int val{1};
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
@@ -527,7 +527,7 @@ TEST_F(TApp, FallThroughRegular) {
 
 TEST_F(TApp, FallThroughShort) {
     app.fallthrough();
-    int val = 1;
+    int val{1};
     app.add_option("-v", val);
 
     app.add_subcommand("sub");
@@ -539,7 +539,7 @@ TEST_F(TApp, FallThroughShort) {
 
 TEST_F(TApp, FallThroughPositional) {
     app.fallthrough();
-    int val = 1;
+    int val{1};
     app.add_option("val", val);
 
     app.add_subcommand("sub");
@@ -551,7 +551,7 @@ TEST_F(TApp, FallThroughPositional) {
 
 TEST_F(TApp, FallThroughEquals) {
     app.fallthrough();
-    int val = 1;
+    int val{1};
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
@@ -563,7 +563,7 @@ TEST_F(TApp, FallThroughEquals) {
 
 TEST_F(TApp, EvilParseFallthrough) {
     app.fallthrough();
-    int val1 = 0, val2 = 0;
+    int val1{0}, val2{0};
     app.add_option("--val1", val1);
 
     auto sub = app.add_subcommand("sub");
@@ -579,7 +579,7 @@ TEST_F(TApp, EvilParseFallthrough) {
 
 TEST_F(TApp, CallbackOrdering) {
     app.fallthrough();
-    int val = 1, sub_val = 0;
+    int val{1}, sub_val{0};
     app.add_option("--val", val);
 
     auto sub = app.add_subcommand("sub");
@@ -598,7 +598,7 @@ TEST_F(TApp, CallbackOrdering) {
 
 TEST_F(TApp, CallbackOrderingImmediate) {
     app.fallthrough();
-    int val = 1, sub_val = 0;
+    int val{1}, sub_val{0};
     app.add_option("--val", val);
 
     auto sub = app.add_subcommand("sub")->immediate_callback();
@@ -617,7 +617,7 @@ TEST_F(TApp, CallbackOrderingImmediate) {
 
 TEST_F(TApp, CallbackOrderingImmediateMain) {
     app.fallthrough();
-    int val = 0, sub_val = 0;
+    int val{0}, sub_val{0};
 
     auto sub = app.add_subcommand("sub");
     sub->callback([&val, &sub_val]() {
@@ -814,9 +814,9 @@ struct SubcommandProgram : public TApp {
     CLI::App *start{nullptr};
     CLI::App *stop{nullptr};
 
-    int dummy{};
+    int dummy{0};
     std::string file{};
-    int count{};
+    int count{0};
 
     SubcommandProgram(const SubcommandProgram &) = delete;
     SubcommandProgram &operator=(const SubcommandProgram &) = delete;
@@ -1360,7 +1360,7 @@ TEST_F(ManySubcommands, SubcommandNeedsOptions) {
 }
 
 TEST_F(ManySubcommands, SubcommandNeedsOptionsCallbackOrdering) {
-    int count = 0;
+    int count{0};
     auto opt = app.add_flag("--subactive");
     app.add_flag("--flag1");
     sub1->needs(opt);
@@ -1461,7 +1461,7 @@ TEST_F(ManySubcommands, SubcommandTriggeredOn) {
 }
 
 TEST_F(TApp, UnnamedSub) {
-    double val;
+    double val{0.0};
     auto sub = app.add_subcommand("", "empty name");
     auto opt = sub->add_option("-v,--value", val);
     args = {"-v", "4.56"};
@@ -1481,7 +1481,7 @@ TEST_F(TApp, UnnamedSub) {
 }
 
 TEST_F(TApp, UnnamedSubMix) {
-    double val, val2, val3;
+    double val{0.0}, val2{0.0}, val3{0.0};
     app.add_option("-t", val2);
     auto sub1 = app.add_subcommand("", "empty name");
     sub1->add_option("-v,--value", val);
@@ -1497,7 +1497,7 @@ TEST_F(TApp, UnnamedSubMix) {
 }
 
 TEST_F(TApp, UnnamedSubMixExtras) {
-    double val, val2;
+    double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
     auto sub = app.add_subcommand("", "empty name");
     sub->add_option("-v,--value", val);
@@ -1511,7 +1511,7 @@ TEST_F(TApp, UnnamedSubMixExtras) {
 }
 
 TEST_F(TApp, UnnamedSubNoExtras) {
-    double val, val2;
+    double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
     auto sub = app.add_subcommand();
     sub->add_option("-v,--value", val);
@@ -1524,7 +1524,7 @@ TEST_F(TApp, UnnamedSubNoExtras) {
 }
 
 TEST_F(TApp, SubcommandAlias) {
-    double val;
+    double val{0.0};
     auto sub = app.add_subcommand("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
@@ -1552,7 +1552,7 @@ TEST_F(TApp, SubcommandAlias) {
 }
 
 TEST_F(TApp, SubcommandAliasIgnoreCaseUnderscore) {
-    double val;
+    double val{0.0};
     auto sub = app.add_subcommand("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
@@ -1595,7 +1595,7 @@ TEST_F(TApp, SubcommandAliasIgnoreCaseUnderscore) {
 }
 
 TEST_F(TApp, OptionGroupAlias) {
-    double val;
+    double val{0.0};
     auto sub = app.add_option_group("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
@@ -1694,7 +1694,7 @@ TEST_F(TApp, AliasErrorsInOptionGroup) {
 }
 
 TEST(SharedSubTests, SharedSubcommand) {
-    double val, val2, val3, val4;
+    double val{0.0}, val2{0.0}, val3{0.0}, val4{0.0};
     CLI::App app1{"test program1"};
 
     app1.add_option("-t", val2);
@@ -1724,7 +1724,7 @@ TEST(SharedSubTests, SharedSubcommand) {
 }
 
 TEST(SharedSubTests, SharedSubIndependent) {
-    double val, val2, val4;
+    double val{0.0}, val2{0.0}, val4{0.0};
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
     app1->add_option("-t", val2);
@@ -1752,7 +1752,7 @@ TEST(SharedSubTests, SharedSubIndependent) {
 }
 
 TEST(SharedSubTests, SharedSubIndependentReuse) {
-    double val, val2, val4;
+    double val{0.0}, val2{0.0}, val4{0.0};
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
     app1->add_option("-t", val2);

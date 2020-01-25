@@ -26,7 +26,7 @@ static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Sho
 static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
 TEST_F(TApp, SimpleMaps) {
-    int value;
+    int value{0};
     std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
     auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
@@ -99,8 +99,8 @@ TEST_F(TApp, EnumCMap) {
 
 TEST_F(TApp, structMap) {
     struct tstruct {
-        int val2;
-        double val3;
+        int val2{0};
+        double val3{0.0};
         std::string v4;
     };
     std::string struct_name;
@@ -119,8 +119,8 @@ TEST_F(TApp, structMap) {
 
 TEST_F(TApp, structMapChange) {
     struct tstruct {
-        int val2;
-        double val3;
+        int val2{0};
+        double val3{0.0};
         std::string v4;
     };
     std::string struct_name;
@@ -147,8 +147,8 @@ TEST_F(TApp, structMapChange) {
 
 TEST_F(TApp, structMapNoChange) {
     struct tstruct {
-        int val2;
-        double val3;
+        int val2{0};
+        double val3{0.0};
         std::string v4;
     };
     std::string struct_name;
@@ -319,7 +319,7 @@ TEST_F(TApp, SetFromCharStarArrayVector) {
 }
 
 TEST_F(TApp, OtherTypeSets) {
-    int value;
+    int value{0};
     std::vector<int> set = {2, 3, 4};
     auto opt = app.add_option("--set", value)->check(CLI::IsMember(set));
     args = {"--set", "3"};
@@ -353,7 +353,7 @@ TEST_F(TApp, OtherTypeSets) {
 }
 
 TEST_F(TApp, NumericalSets) {
-    int value;
+    int value{0};
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<int>({1, 2, 3})});
     args = {"-s", "1"};
     run();
@@ -366,7 +366,7 @@ TEST_F(TApp, NumericalSets) {
 // Converted original set tests
 
 TEST_F(TApp, SetWithDefaults) {
-    int someint = 2;
+    int someint{2};
     app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a1", "-a2"};
@@ -375,7 +375,7 @@ TEST_F(TApp, SetWithDefaults) {
 }
 
 TEST_F(TApp, SetWithDefaultsConversion) {
-    int someint = 2;
+    int someint{2};
     app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a", "hi"};
@@ -442,7 +442,7 @@ TEST_F(TApp, InCaselessSetWithDefault) {
 
 TEST_F(TApp, InIntSet) {
 
-    int choice;
+    int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--quick", "2"};
@@ -456,7 +456,7 @@ TEST_F(TApp, InIntSet) {
 
 TEST_F(TApp, InIntSetWindows) {
 
-    int choice;
+    int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
     app.allow_windows_style_options();
     args = {"/q", "2"};
@@ -473,7 +473,7 @@ TEST_F(TApp, InIntSetWindows) {
 
 TEST_F(TApp, FailSet) {
 
-    int choice;
+    int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--quick", "3", "--quick=2"};
@@ -485,7 +485,7 @@ TEST_F(TApp, FailSet) {
 
 TEST_F(TApp, FailMutableSet) {
 
-    int choice;
+    int choice{0};
     auto vals = std::shared_ptr<std::set<int>>(new std::set<int>({1, 2, 3}));
     app.add_option("-q,--quick", choice)->check(CLI::IsMember(vals));
     app.add_option("-s,--slow", choice, "", true)->check(CLI::IsMember(vals));

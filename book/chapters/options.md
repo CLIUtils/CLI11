@@ -5,14 +5,14 @@ The most versatile addition to a command line program is a option. This is like 
 
 
 ```cpp
-int int_option;
+int int_option{0};
 app.add_option("-i", int_option, "Optional description");
 ```
 
 This will bind the option `-i` to the integer `int_option`. On the command line, a single value that can be converted to an integer will be expected. Non-integer results will fail. If that option is not given, CLI11 will not touch the initial value. This allows you to set up defaults by simply setting your value beforehand. If you want CLI11 to display your default value, you can add the optional final argument `true` when you add the option. If you do not add this, you do not even need your option value to be printable[^1].
 
 ```cpp
-int int_option = 0;
+int int_option{0};
 app.add_option("-i", int_option, "Optional description", true);
 ```
 
@@ -138,7 +138,7 @@ Besides `add_option` and `add_flag`, there are several special ways to create op
 You can add a set with `add_set`, where you give a variable to set and a `std::set` of choices to pick from. There also is a `add_set_ignore_case` version which ignores case when set matching. If you use an existing set instead of an inline one, you can edit the set after adding it and changes will be reflected in the set checking and help message.
 
 ```cpp
-int val;
+int val{0};
 app.add_set("--even", val, {0,2,4,6,8});
 ```
 
@@ -147,7 +147,7 @@ app.add_set("--even", val, {0,2,4,6,8});
 You can also add a complex number. This type just needs to support a `(T x, T y)` constructor and be printable. You can also pass one extra argument that will set the label of the type; by default it is "COMPLEX".
 
 ```cpp
-std::complex<float> val;
+std::complex<float> val{0.0F,0.0F};
 app.add_complex("--cplx", val);
 ```
 
@@ -197,7 +197,7 @@ app.add_option("--opt",val,"description");
 gets into the complicated cases where the type size is now 3.  and the expected max is set to a large number and `allow_extra_args` is set to true.  In this case at least 3 arguments are required to follow the option,  and subsequent groups must come in groups of three, otherwise an error will result.
 
 ```cpp
-bool val;
+bool val{false};
 app.add_flag("--opt",val,"description");
 ```
 

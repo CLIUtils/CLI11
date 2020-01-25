@@ -23,11 +23,11 @@ TEST_F(TApp, BasicOptionGroup) {
 
 TEST_F(TApp, BasicOptionGroupExact) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(1);
     args = {"--test1", "5"};
@@ -47,11 +47,11 @@ TEST_F(TApp, BasicOptionGroupExact) {
 
 TEST_F(TApp, BasicOptionGroupExactTooMany) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(10);
     args = {"--test1", "5"};
@@ -60,11 +60,11 @@ TEST_F(TApp, BasicOptionGroupExactTooMany) {
 
 TEST_F(TApp, BasicOptionGroupMinMax) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(1, 1);
     args = {"--test1", "5"};
@@ -84,11 +84,11 @@ TEST_F(TApp, BasicOptionGroupMinMax) {
 
 TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(1, 2);
     args = {"--test1", "5"};
@@ -112,11 +112,11 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
 
 TEST_F(TApp, BasicOptionGroupMinMaxDifferentReversed) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(2, 1);
     EXPECT_EQ(ogroup->get_require_option_min(), 2u);
@@ -144,7 +144,7 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferentReversed) {
 
 TEST_F(TApp, BasicOptionGroupMax) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
@@ -168,11 +168,11 @@ TEST_F(TApp, BasicOptionGroupMax) {
 
 TEST_F(TApp, BasicOptionGroupMax1) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(-1);
     args = {"--test1", "5"};
@@ -192,11 +192,11 @@ TEST_F(TApp, BasicOptionGroupMax1) {
 
 TEST_F(TApp, BasicOptionGroupMin) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option();
 
@@ -213,11 +213,11 @@ TEST_F(TApp, BasicOptionGroupMin) {
 
 TEST_F(TApp, BasicOptionGroupExact2) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(2);
 
@@ -237,11 +237,11 @@ TEST_F(TApp, BasicOptionGroupExact2) {
 
 TEST_F(TApp, BasicOptionGroupMin2) {
     auto ogroup = app.add_option_group("clusters");
-    int res;
+    int res{ 0 };
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
     ogroup->require_option(2, 0);
 
@@ -258,11 +258,11 @@ TEST_F(TApp, BasicOptionGroupMin2) {
 
 TEST_F(TApp, BasicOptionGroupMinMoved) {
 
-    int res;
+    int res{ 0 };
     auto opt1 = app.add_option("--test1", res);
     auto opt2 = app.add_option("--test2", res);
     auto opt3 = app.add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
 
     auto ogroup = app.add_option_group("clusters");
@@ -287,11 +287,11 @@ TEST_F(TApp, BasicOptionGroupMinMoved) {
 
 TEST_F(TApp, BasicOptionGroupMinMovedAsGroup) {
 
-    int res;
+    int res{ 0 };
     auto opt1 = app.add_option("--test1", res);
     auto opt2 = app.add_option("--test2", res);
     auto opt3 = app.add_option("--test3", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
 
     auto ogroup = app.add_option_group("clusters");
@@ -315,10 +315,10 @@ TEST_F(TApp, BasicOptionGroupMinMovedAsGroup) {
 
 TEST_F(TApp, BasicOptionGroupAddFailures) {
 
-    int res;
+    int res{ 0 };
     auto opt1 = app.add_option("--test1", res);
     app.set_config("--config");
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
 
     auto ogroup = app.add_option_group("clusters");
@@ -341,10 +341,10 @@ TEST_F(TApp, BasicOptionGroupAddFailures) {
 
 TEST_F(TApp, BasicOptionGroupScrewedUpMove) {
 
-    int res;
+    int res{ 0 };
     auto opt1 = app.add_option("--test1", res);
     auto opt2 = app.add_option("--test2", res);
-    int val2;
+    int val2{ 0 };
     app.add_option("--option", val2);
 
     auto ogroup = app.add_option_group("clusters");
