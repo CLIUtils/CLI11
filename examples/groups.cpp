@@ -11,10 +11,10 @@ int main(int argc, char **argv) {
     std::string file;
     CLI::Option *opt = app.add_option("-f,--file,file", file, "File name")->required()->group("Important");
 
-    int count{ 0 };
+    int count{0};
     CLI::Option *copt = app.add_flag("-c,--count", count, "Counter")->required()->group("Important");
 
-    double value{ 0.0 }; // = 3.14;
+    double value{0.0}; // = 3.14;
     app.add_option("-d,--double", value, "Some Value")->group("Other");
 
     try {

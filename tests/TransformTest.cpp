@@ -45,7 +45,7 @@ TEST_F(TApp, SimpleNumericalTransform) {
 
 TEST_F(TApp, EnumTransform) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
-    test value{0};
+    test value{test::val2};
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::Transformer(
                        CLI::TransformPairs<test>{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}}));
