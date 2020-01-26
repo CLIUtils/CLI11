@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 // CLI library includes
 #include "CLI/StringTools.hpp"

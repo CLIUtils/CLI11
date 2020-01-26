@@ -7,6 +7,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "CLI/App.hpp"
 #include "CLI/ConfigFwd.hpp"

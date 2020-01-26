@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "CLI/Error.hpp"
 #include "CLI/StringTools.hpp"
