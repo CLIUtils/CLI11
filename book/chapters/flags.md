@@ -25,7 +25,7 @@ app.add_flag("-f", my_flag, "Optional description");
 
 After the parsing step, `my_flag` will contain the number of times this flag was found on the command line, including 0 if not found.
 
-## arbitrary Type flags
+## Arbitrary type flags
 
 CLI11 allows the type of the variable to assign to in the `add_flag` function to be any supported type.   This is particularly useful in combination with specifying default values for flags.  The allowed types include  bool, int, float, vector, enum, or string-like.
 
