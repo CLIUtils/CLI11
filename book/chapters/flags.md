@@ -7,7 +7,7 @@ The most basic addition to a command line program is a flag. This is simply some
 The simplest way to add a flag is probably a boolean flag:
 
 ```cpp
-bool my_flag=false;
+bool my_flag{false};
 app.add_flag("-f", my_flag, "Optional description");
 ```
 
@@ -19,7 +19,7 @@ This will bind the flag `-f` to the boolean `my_flag`. After the parsing step, `
 If you want to allow multiple flags, simply use any integer-like instead of a bool:
 
 ```cpp
-int my_flag=0;
+int my_flag{0};
 app.add_flag("-f", my_flag, "Optional description");
 ```
 
@@ -78,7 +78,7 @@ The name string, the first item of every `add_` method, can contain as many shor
 If you want to make an option case insensitive, you can use the `->ignore_case()` method on the `CLI::Option` to do that. For example,
 
 ```cpp
-bool flag;
+bool flag{false};
 app.add_flag("--flag", flag)
     ->ignore_case();
 ```

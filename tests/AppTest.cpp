@@ -161,7 +161,7 @@ TEST_F(TApp, BoolFlagOverride) {
 }
 
 TEST_F(TApp, OneFlagRef) {
-    int ref{ 0 };
+    int ref{0};
     app.add_flag("-c,--count", ref);
     args = {"--count"};
     run();
@@ -171,7 +171,7 @@ TEST_F(TApp, OneFlagRef) {
 }
 
 TEST_F(TApp, OneFlagRefValue) {
-    int ref{ 0 };
+    int ref{0};
     app.add_flag("-c,--count", ref);
     args = {"--count=7"};
     run();
@@ -181,7 +181,7 @@ TEST_F(TApp, OneFlagRefValue) {
 }
 
 TEST_F(TApp, OneFlagRefValueFalse) {
-    int ref{ 0 };
+    int ref{0};
     auto flg = app.add_flag("-c,--count", ref);
     args = {"--count=false"};
     run();
@@ -201,7 +201,7 @@ TEST_F(TApp, OneFlagRefValueFalse) {
 }
 
 TEST_F(TApp, FlagNegation) {
-    int ref{ 0 };
+    int ref{0};
     auto flg = app.add_flag("-c,--count,--ncount{false}", ref);
     args = {"--count", "-c", "--ncount"};
     EXPECT_FALSE(flg->check_fname("count"));
@@ -214,7 +214,7 @@ TEST_F(TApp, FlagNegation) {
 }
 
 TEST_F(TApp, FlagNegationShortcutNotation) {
-    int ref{ 0 };
+    int ref{0};
     app.add_flag("-c,--count{true},!--ncount", ref);
     args = {"--count=TRUE", "-c", "--ncount"};
     run();
@@ -225,7 +225,7 @@ TEST_F(TApp, FlagNegationShortcutNotation) {
 }
 
 TEST_F(TApp, FlagNegationShortcutNotationInvalid) {
-    int ref{ 0 };
+    int ref{0};
     app.add_flag("-c,--count,!--ncount", ref);
     args = {"--ncount=happy"};
     EXPECT_THROW(run(), CLI::ConversionError);
@@ -418,7 +418,7 @@ TEST_F(TApp, OneStringFlagLike) {
 }
 
 TEST_F(TApp, OneIntFlagLike) {
-    int val{ 0 };
+    int val{0};
     auto opt = app.add_option("-i", val)->expected(0, 1);
     args = {"-i"};
     run();
@@ -433,7 +433,7 @@ TEST_F(TApp, OneIntFlagLike) {
 }
 
 TEST_F(TApp, TogetherInt) {
-    int i{ 0 };
+    int i{0};
     app.add_option("-i,--int", i);
     args = {"-i4"};
     run();
@@ -445,7 +445,7 @@ TEST_F(TApp, TogetherInt) {
 }
 
 TEST_F(TApp, SepInt) {
-    int i{ 0 };
+    int i{0};
     app.add_option("-i,--int", i);
     args = {"-i", "4"};
     run();
@@ -475,7 +475,7 @@ TEST_F(TApp, OneStringFunction) {
 }
 
 TEST_F(TApp, doubleFunction) {
-    double res{ 0.0 };
+    double res{0.0};
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
@@ -596,7 +596,7 @@ TEST_F(TApp, LotsOfFlags) {
 
 TEST_F(TApp, NumberFlags) {
 
-    int val{ 0 };
+    int val{0};
     app.add_flag("-1{1},-2{2},-3{3},-4{4},-5{5},-6{6}, -7{7}, -8{8}, -9{9}", val);
 
     args = {"-7"};
@@ -607,7 +607,7 @@ TEST_F(TApp, NumberFlags) {
 
 TEST_F(TApp, DisableFlagOverrideTest) {
 
-    int val{ 0 };
+    int val{0};
     auto opt = app.add_flag("--1{1},--2{2},--3{3},--4{4},--5{5},--6{6}, --7{7}, --8{8}, --9{9}", val);
     EXPECT_FALSE(opt->get_disable_flag_override());
     opt->disable_flag_override();
@@ -649,9 +649,9 @@ TEST_F(TApp, LotsOfFlagsSingleStringExtraSpace) {
 
 TEST_F(TApp, BoolAndIntFlags) {
 
-    bool bflag{ false };
-    int iflag{ 0 };
-    unsigned int uflag{ 0 };
+    bool bflag{false};
+    int iflag{0};
+    unsigned int uflag{0};
 
     app.add_flag("-b", bflag);
     app.add_flag("-i", iflag);
@@ -677,7 +677,7 @@ TEST_F(TApp, BoolAndIntFlags) {
 }
 
 TEST_F(TApp, FlagLikeOption) {
-    bool val{ false };
+    bool val{false};
     auto opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
     args = {"--flag"};
     run();
@@ -693,7 +693,7 @@ TEST_F(TApp, FlagLikeOption) {
 }
 
 TEST_F(TApp, FlagLikeIntOption) {
-    int val{ -47 };
+    int val{-47};
     auto opt = app.add_option("--flag", val)->expected(0, 1);
     // normally some default value should be set, but this test is for some paths in the validators checks to skip
     // validation on empty string if nothing is expected
@@ -713,7 +713,7 @@ TEST_F(TApp, FlagLikeIntOption) {
 }
 
 TEST_F(TApp, BoolOnlyFlag) {
-    bool bflag{ false };
+    bool bflag{false};
     app.add_flag("-b", bflag)->multi_option_policy(CLI::MultiOptionPolicy::Throw);
 
     args = {"-b"};
@@ -725,7 +725,7 @@ TEST_F(TApp, BoolOnlyFlag) {
 }
 
 TEST_F(TApp, BoolOption) {
-    bool bflag{ false };
+    bool bflag{false};
     app.add_option("-b", bflag);
 
     args = {"-b", "false"};
@@ -752,7 +752,7 @@ TEST_F(TApp, BoolOption) {
 
 TEST_F(TApp, ShortOpts) {
 
-    unsigned long long funnyint{ 0 };
+    unsigned long long funnyint{0};
     std::string someopt;
     app.add_flag("-z", funnyint);
     app.add_option("-y", someopt);
@@ -772,7 +772,7 @@ TEST_F(TApp, ShortOpts) {
 
 TEST_F(TApp, TwoParamTemplateOpts) {
 
-    double funnyint{ 0.0 };
+    double funnyint{0.0};
     auto opt = app.add_option<double, unsigned int>("-y", funnyint);
 
     args = {"-y", "32"};
@@ -793,7 +793,7 @@ TEST_F(TApp, TwoParamTemplateOpts) {
 
 TEST_F(TApp, DefaultOpts) {
 
-    int i{ 3 };
+    int i{3};
     std::string s = "HI";
 
     app.add_option("-i,i", i);
@@ -971,7 +971,7 @@ TEST_F(TApp, ComplexOptMulti) {
 }
 
 TEST_F(TApp, MissingValueNonRequiredOpt) {
-    int count{ 0 };
+    int count{0};
     app.add_option("-c,--count", count);
 
     args = {"-c"};
@@ -1191,7 +1191,7 @@ TEST_F(TApp, RequiredPositionalVector) {
 // Tests positionals at end
 TEST_F(TApp, RequiredPositionalValidation) {
     std::vector<std::string> sources;
-    int dest;  //required
+    int dest; // required
     std::string d2;
     app.add_option("src", sources);
     app.add_option("dest", dest)->required()->check(CLI::PositiveNumber);
@@ -1432,7 +1432,7 @@ TEST_F(TApp, RequiredFlags) {
 
 TEST_F(TApp, CallbackFlags) {
 
-    std::int64_t value{ 0 };
+    std::int64_t value{0};
 
     auto func = [&value](std::int64_t x) { value = x; };
 
@@ -1454,7 +1454,7 @@ TEST_F(TApp, CallbackFlags) {
 
 TEST_F(TApp, CallbackBoolFlags) {
 
-    bool value{ false };
+    bool value{false};
 
     auto func = [&value]() { value = true; };
 
@@ -1534,7 +1534,7 @@ TEST_F(TApp, CallbackFlagsFalseShortcut) {
 #if __cplusplus >= 201402L || _MSC_VER >= 1900
 TEST_F(TApp, CallbackFlagsAuto) {
 
-    std::int64_t value{ 0 };
+    std::int64_t value{0};
 
     auto func = [&value](std::int64_t x) { value = x; };
 
@@ -1593,7 +1593,7 @@ TEST_F(TApp, ForcedPositional) {
 
 TEST_F(TApp, MixedPositionals) {
 
-    int positional_int{ 0 };
+    int positional_int{0};
     std::string positional_string;
     app.add_option("posit1,--posit1", positional_int, "");
     app.add_option("posit2,--posit2", positional_string, "");
@@ -1626,7 +1626,7 @@ TEST_F(TApp, BigPositional) {
 TEST_F(TApp, Reset) {
 
     app.add_flag("--simple");
-    double doub{ 0.0 };
+    double doub{0.0};
     app.add_option("-d,--double", doub);
 
     args = {"--simple", "--double", "1.2"};
@@ -1850,7 +1850,7 @@ TEST_F(TApp, VectorIndexedValidator) {
 
 TEST_F(TApp, DefaultedResult) {
     std::string sval = "NA";
-    int ival{ 0 };
+    int ival{0};
     auto opts = app.add_option("--string", sval)->capture_default_str();
     auto optv = app.add_option("--val", ival);
     args = {};
@@ -2095,7 +2095,7 @@ TEST_F(TApp, Env) {
 
     put_env("CLI11_TEST_ENV_TMP", "2");
 
-    int val{ 1 };
+    int val{1};
     CLI::Option *vopt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_TMP");
 
     run();
@@ -2111,7 +2111,7 @@ TEST_F(TApp, Env) {
 }
 
 TEST_F(TApp, RangeInt) {
-    int x{ 0 };
+    int x{0};
     app.add_option("--one", x)->check(CLI::Range(3, 6));
 
     args = {"--one=1"};
@@ -2132,7 +2132,7 @@ TEST_F(TApp, RangeInt) {
 
 TEST_F(TApp, RangeDouble) {
 
-    double x{ 0.0 };
+    double x{0.0};
     /// Note that this must be a double in Range, too
     app.add_option("--one", x)->check(CLI::Range(3.0, 6.0));
 
@@ -2157,7 +2157,7 @@ TEST_F(TApp, AllowExtras) {
 
     app.allow_extras();
 
-    bool val{ true };
+    bool val{true};
     app.add_flag("-f", val);
 
     args = {"-x", "-f"};
@@ -2217,8 +2217,8 @@ TEST_F(TApp, AllowExtrasCascadeDirect) {
     EXPECT_EQ(app.remaining(), std::vector<std::string>({"-x", "45", "-f", "27"}));
 
     CLI::App capp{"cascade_program"};
-    int v1{ 0 };
-    int v2{ 0 };
+    int v1{0};
+    int v2{0};
     capp.add_option("-x", v1);
     capp.add_option("-f", v2);
 
@@ -2229,8 +2229,8 @@ TEST_F(TApp, AllowExtrasCascadeDirect) {
 
 TEST_F(TApp, AllowExtrasArgModify) {
 
-    int v1{ 0 };
-    int v2{ 0 };
+    int v1{0};
+    int v2{0};
     app.allow_extras();
     app.add_option("-f", v2);
     args = {"27", "-f", "45", "-x"};
@@ -2308,7 +2308,7 @@ TEST_F(TApp, FallthroughParents) {
 }
 
 TEST_F(TApp, OptionWithDefaults) {
-    int someint{ 2 };
+    int someint{2};
     app.add_option("-a", someint)->capture_default_str();
 
     args = {"-a1", "-a2"};
@@ -2587,7 +2587,7 @@ TEST_F(TApp, BeforeRequirements) {
 // #209
 TEST_F(TApp, CustomUserSepParse) {
 
-    std::vector<int> vals = {1, 2, 3};
+    std::vector<int> vals{1, 2, 3};
     args = {"--idx", "1,2,3"};
     auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
@@ -2631,7 +2631,7 @@ TEST_F(TApp, BadUserSepParse) {
 // #209
 TEST_F(TApp, CustomUserSepParse2) {
 
-    std::vector<int> vals = {1, 2, 3};
+    std::vector<int> vals{1, 2, 3};
     args = {"--idx", "1,2,"};
     auto opt = app.add_option("--idx", vals)->delimiter(',');
     run();
@@ -2646,7 +2646,7 @@ TEST_F(TApp, CustomUserSepParse2) {
 
 TEST_F(TApp, CustomUserSepParseFunction) {
 
-    std::vector<int> vals = {1, 2, 3};
+    std::vector<int> vals{1, 2, 3};
     args = {"--idx", "1,2,3"};
     app.add_option_function<std::vector<int>>("--idx", [&vals](std::vector<int> v) { vals = std::move(v); })
         ->delimiter(',');

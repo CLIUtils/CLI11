@@ -726,7 +726,7 @@ class Option : public OptionBase<Option> {
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
     std::string get_name(bool positional = false, //<[input] Show the positional name
                          bool all_options = false //<[input] Show every option
-    ) const {
+                         ) const {
         if(get_group().empty())
             return {}; // Hidden
 
