@@ -330,7 +330,7 @@ TEST(THelp, Needs) {
 TEST(THelp, NeedsPositional) {
     CLI::App app{"My prog"};
 
-    int x{ 0 }, y{ 0 };
+    int x{0}, y{0};
 
     CLI::Option *op1 = app.add_option("op1", x, "one");
     app.add_option("op2", y, "two")->needs(op1);
@@ -355,7 +355,7 @@ TEST(THelp, Excludes) {
 TEST(THelp, ExcludesPositional) {
     CLI::App app{"My prog"};
 
-    int x{ 0 }, y{ 0 };
+    int x{0}, y{0};
 
     CLI::Option *op1 = app.add_option("op1", x);
     app.add_option("op2", y)->excludes(op1);
@@ -381,7 +381,7 @@ TEST(THelp, ManualSetters) {
 
     CLI::App app{"My prog"};
 
-    int x{ 1 };
+    int x{1};
 
     CLI::Option *op1 = app.add_option("--op", x);
     op1->default_str("12");
@@ -418,7 +418,7 @@ TEST(THelp, ManualSetterOverFunction) {
 
     CLI::App app{"My prog"};
 
-    int x{ 1 };
+    int x{1};
 
     CLI::Option *op1 = app.add_option("--op1", x)->check(CLI::IsMember({1, 2}));
     CLI::Option *op2 = app.add_option("--op2", x)->transform(CLI::IsMember({1, 2}));
@@ -650,7 +650,7 @@ TEST(THelp, CustomHelp) {
 
 TEST(THelp, NextLineShouldBeAlignmentInMultilineDescription) {
     CLI::App app;
-    int i{ 0 };
+    int i{0};
     const std::string first{"first line"};
     const std::string second{"second line"};
     app.add_option("-i,--int", i, first + "\n" + second);
@@ -663,7 +663,7 @@ TEST(THelp, NextLineShouldBeAlignmentInMultilineDescription) {
 TEST(THelp, NiceName) {
     CLI::App app;
 
-    int x{ 0 };
+    int x{0};
     auto long_name = app.add_option("-s,--long,-q,--other,that", x);
     auto short_name = app.add_option("more,-x,-y", x);
     auto positional = app.add_option("posit", x);
@@ -878,7 +878,7 @@ TEST(THelp, SetDescriptionAfterCreation) {
 TEST(THelp, AccessOptionDescription) {
     CLI::App app{};
 
-    int x{ 0 };
+    int x{0};
     auto opt = app.add_option("-a,--alpha", x, "My description goes here");
 
     EXPECT_EQ(opt->get_description(), "My description goes here");
@@ -887,7 +887,7 @@ TEST(THelp, AccessOptionDescription) {
 TEST(THelp, SetOptionDescriptionAfterCreation) {
     CLI::App app{};
 
-    int x{ 0 };
+    int x{0};
     auto opt = app.add_option("-a,--alpha", x);
     opt->description("My description goes here");
 
@@ -898,7 +898,7 @@ TEST(THelp, SetOptionDescriptionAfterCreation) {
 TEST(THelp, CleanNeeds) {
     CLI::App app;
 
-    int x{ 0 };
+    int x{0};
     auto a_name = app.add_option("-a,--alpha", x);
     app.add_option("-b,--boo", x)->needs(a_name);
 
@@ -910,7 +910,7 @@ TEST(THelp, CleanNeeds) {
 TEST(THelp, RequiredPrintout) {
     CLI::App app;
 
-    int x{ 0 };
+    int x{0};
     app.add_option("-a,--alpha", x)->required();
 
     EXPECT_THAT(app.help(), HasSubstr(" REQUIRED"));
@@ -936,8 +936,8 @@ TEST(THelp, ValidatorsText) {
     CLI::App app;
 
     std::string filename;
-    int x{ 0 };
-    unsigned int y{ 0 };
+    int x{0};
+    unsigned int y{0};
     app.add_option("--f1", filename)->check(CLI::ExistingFile);
     app.add_option("--f3", x)->check(CLI::Range(1, 4));
     app.add_option("--f4", y)->check(CLI::Range(12));
@@ -1032,7 +1032,7 @@ TEST(THelp, ChangingSet) {
     CLI::App app;
 
     std::set<int> vals{1, 2, 3};
-    int val{ 0 };
+    int val{0};
     app.add_option("--val", val)->check(CLI::IsMember(&vals));
 
     std::string help = app.help();
@@ -1053,7 +1053,7 @@ TEST(THelp, ChangingSetDefaulted) {
     CLI::App app;
 
     std::set<int> vals{1, 2, 3};
-    int val{ 2 };
+    int val{2};
     app.add_option("--val", val, "")->check(CLI::IsMember(&vals))->capture_default_str();
 
     std::string help = app.help();

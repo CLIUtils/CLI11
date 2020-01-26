@@ -105,7 +105,7 @@ TEST(String, InvalidName) {
 }
 
 TEST(StringTools, Modify) {
-    int cnt{ 0 };
+    int cnt{0};
     std::string newString = CLI::detail::find_and_modify("======", "=", [&cnt](std::string &str, std::size_t index) {
         if((++cnt) % 2 == 0) {
             str[index] = ':';
@@ -444,8 +444,8 @@ TEST(Validators, ProgramNameSplit) {
 }
 
 TEST(CheckedMultiply, Int) {
-    int a{ 10 };
-    int b{ -20 };
+    int a{10};
+    int b{-20};
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_EQ(a, -200);
 
@@ -562,8 +562,8 @@ TEST(CheckedMultiply, SizeT) {
 }
 
 TEST(CheckedMultiply, Float) {
-    float a{ 10.0F };
-    float b{ 20.0F };
+    float a{10.0F};
+    float b{20.0F};
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_FLOAT_EQ(a, 200);
 
@@ -609,8 +609,8 @@ TEST(CheckedMultiply, Float) {
 }
 
 TEST(CheckedMultiply, Double) {
-    double a{ 10.0F };
-    double b{ 20.0F };
+    double a{10.0F};
+    double b{20.0F};
     ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
     ASSERT_DOUBLE_EQ(a, 200);
 
@@ -1014,7 +1014,7 @@ TEST(Types, LexicalCastEnum) {
 
     EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output));
     enum class t2 : std::uint64_t { enum1 = 65, enum2 = 45667, enum3 = 9999999999999 };
-    t2 output2;
+    t2 output2{t2::enum2};
     EXPECT_TRUE(CLI::detail::lexical_cast("65", output2));
     EXPECT_EQ(output2, t2::enum1);
 
@@ -1026,7 +1026,7 @@ TEST(Types, LexicalCastEnum) {
 
 TEST(Types, LexicalConversionDouble) {
     CLI::results_t input = {"9.12"};
-    long double x;
+    long double x{0.0};
     bool res = CLI::detail::lexical_conversion<long double, double>(input, x);
     EXPECT_TRUE(res);
     EXPECT_FLOAT_EQ((float)9.12, (float)x);
@@ -1038,7 +1038,7 @@ TEST(Types, LexicalConversionDouble) {
 
 TEST(Types, LexicalConversionDoubleTuple) {
     CLI::results_t input = {"9.12"};
-    std::tuple<double> x;
+    std::tuple<double> x{0.0};
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
     EXPECT_TRUE(res);
     EXPECT_DOUBLE_EQ(9.12, std::get<0>(x));
@@ -1073,7 +1073,7 @@ static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value
 TEST(Types, LexicalConversionTuple2) {
     CLI::results_t input = {"9.12", "19"};
 
-    std::tuple<double, int> x;
+    std::tuple<double, int> x{0.0, 0};
     static_assert(CLI::detail::is_tuple_like<decltype(x)>::value,
                   "tuple type must have is_tuple_like trait to be true");
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);

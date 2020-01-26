@@ -27,7 +27,7 @@ After the parsing step, `my_flag` will contain the number of times this flag was
 
 ## arbitrary Type flags
 
-CLI11 allows the type of the variable to assign to in the `add_flag` function to be any supported type.   This is particularly useful in combination with specifying default values for flags.  The allowed types include  bool, int, float, vector, enum, or string-like.  
+CLI11 allows the type of the variable to assign to in the `add_flag` function to be any supported type.   This is particularly useful in combination with specifying default values for flags.  The allowed types include  bool, int, float, vector, enum, or string-like.
 
 ### Default Flag Values
 

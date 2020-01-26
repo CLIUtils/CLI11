@@ -99,8 +99,8 @@ TEST_F(TApp, EnumCMap) {
 
 TEST_F(TApp, structMap) {
     struct tstruct {
-        int val2{0};
-        double val3{0.0};
+        int val2;
+        double val3;
         std::string v4;
     };
     std::string struct_name;
@@ -119,8 +119,8 @@ TEST_F(TApp, structMap) {
 
 TEST_F(TApp, structMapChange) {
     struct tstruct {
-        int val2{0};
-        double val3{0.0};
+        int val2;
+        double val3;
         std::string v4;
     };
     std::string struct_name;
@@ -147,8 +147,8 @@ TEST_F(TApp, structMapChange) {
 
 TEST_F(TApp, structMapNoChange) {
     struct tstruct {
-        int val2{0};
-        double val3{0.0};
+        int val2;
+        double val3;
         std::string v4;
     };
     std::string struct_name;
