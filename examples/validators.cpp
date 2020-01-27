@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     std::string file;
     app.add_option("-f,--file,file", file, "File name")->check(CLI::ExistingFile);
 
-    int count;
+    int count{0};
     app.add_option("-v,--value", count, "Value in range")->check(CLI::Range(3, 6));
     CLI11_PARSE(app, argc, argv);
 

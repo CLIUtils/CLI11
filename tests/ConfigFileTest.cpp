@@ -439,7 +439,7 @@ TEST_F(TApp, IniSuccessOnUnknownOption) {
         out << "two=99" << std::endl;
     }
 
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     run();
     EXPECT_EQ(99, two);
@@ -459,7 +459,7 @@ TEST_F(TApp, IniGetRemainingOption) {
         out << "two=99" << std::endl;
     }
 
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_NO_THROW(run());
     std::vector<std::string> ExpectedRemaining = {ExtraOption};
@@ -477,7 +477,7 @@ TEST_F(TApp, IniGetNoRemaining) {
         out << "two=99" << std::endl;
     }
 
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_NO_THROW(run());
     EXPECT_EQ(app.remaining().size(), 0u);
@@ -487,7 +487,7 @@ TEST_F(TApp, IniRequiredNoDefault) {
 
     app.set_config("--config")->required();
 
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_THROW(run(), CLI::FileError);
 }
@@ -496,7 +496,7 @@ TEST_F(TApp, IniNotRequiredNoDefault) {
 
     app.set_config("--config");
 
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_NO_THROW(run());
 }
@@ -523,7 +523,7 @@ TEST_F(TApp, IniRequiredbadConfigurator) {
 
     app.set_config("--config", tmpini)->required();
     app.config_formatter(std::make_shared<EvilConfig>());
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_THROW(run(), CLI::FileError);
 }
@@ -541,7 +541,7 @@ TEST_F(TApp, IniNotRequiredbadConfigurator) {
 
     app.set_config("--config", tmpini);
     app.config_formatter(std::make_shared<EvilConfig>());
-    int two = 0;
+    int two{0};
     app.add_option("--two", two);
     ASSERT_NO_THROW(run());
 }
@@ -567,7 +567,7 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
         out << "three=4" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0;
+    int one{0}, two{0}, three{0};
     app.add_option("--one", one);
     app.add_option("--two", two);
     app.add_option("--three", three);
@@ -616,7 +616,7 @@ TEST_F(TApp, IniOverwrite) {
     app.set_config("--config", orig);
     // Make sure this can be overwritten
     app.set_config("--conf", next);
-    int two = 7;
+    int two{7};
     app.add_option("--two", two);
 
     run();
@@ -637,7 +637,7 @@ TEST_F(TApp, IniRequired) {
         out << "three=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0;
+    int one{0}, two{0}, three{0};
     app.add_option("--one", one)->required();
     app.add_option("--two", two)->required();
     app.add_option("--three", three)->required();
@@ -726,7 +726,7 @@ TEST_F(TApp, ColonValueSep) {
         out << "three:3\n";
     }
 
-    int two, three;
+    int two{0}, three{0};
     app.add_option("--two", two);
     app.add_option("--three", three);
 
@@ -830,7 +830,7 @@ TEST_F(TApp, IniLayered) {
         out << "subsubcom.val=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0;
+    int one{0}, two{0}, three{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
@@ -863,7 +863,7 @@ TEST_F(TApp, IniLayeredDotSection) {
         out << "val=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0;
+    int one{0}, two{0}, three{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
@@ -895,7 +895,7 @@ TEST_F(TApp, IniSubcommandConfigurable) {
         out << "subsubcom.val=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0;
+    int one{0}, two{0}, three{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     subcom->configurable();
@@ -929,7 +929,7 @@ TEST_F(TApp, IniSubcommandConfigurablePreParse) {
         out << "subsubcom.val=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0, four = 0;
+    int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     auto subcom2 = app.add_subcommand("subcom2");
@@ -971,7 +971,7 @@ TEST_F(TApp, IniSubcommandConfigurableParseComplete) {
         out << "val=3" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0, four = 0;
+    int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     auto subcom2 = app.add_subcommand("subcom2");
@@ -1018,7 +1018,7 @@ TEST_F(TApp, IniSubcommandMultipleSections) {
         out << "val=4" << std::endl;
     }
 
-    int one = 0, two = 0, three = 0, four = 0;
+    int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
     auto subcom2 = app.add_subcommand("subcom2");
@@ -1062,7 +1062,7 @@ TEST_F(TApp, DuplicateSubcommandCallbacks) {
     }
 
     auto foo = app.add_subcommand("foo");
-    int count = 0;
+    int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
     EXPECT_TRUE(foo->get_immediate_callback());
@@ -1092,7 +1092,7 @@ TEST_F(TApp, IniConfigurable) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    bool value;
+    bool value{false};
     app.add_flag("--val", value)->configurable(true);
 
     {
@@ -1110,7 +1110,7 @@ TEST_F(TApp, IniNotConfigurable) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    bool value;
+    bool value{false};
     app.add_flag("--val", value)->configurable(false);
 
     {
@@ -1165,7 +1165,7 @@ TEST_F(TApp, IniFlagConvertFailure) {
         out << "flag=moobook" << std::endl;
     }
     run();
-    bool result;
+    bool result{false};
     auto *opt = app.get_option("--flag");
     EXPECT_THROW(opt->results(result), CLI::ConversionError);
     std::string res;
@@ -1177,7 +1177,7 @@ TEST_F(TApp, IniFlagNumbers) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    bool boo;
+    bool boo{false};
     app.add_flag("--flag", boo);
     app.set_config("--config", tmpini);
 
@@ -1194,7 +1194,7 @@ TEST_F(TApp, IniFlagDual) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    bool boo;
+    bool boo{false};
     app.add_flag("--flag", boo);
     app.set_config("--config", tmpini);
 
@@ -1210,7 +1210,7 @@ TEST_F(TApp, IniFlagText) {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    bool flag1, flag2, flag3, flag4;
+    bool flag1{false}, flag2{false}, flag3{false}, flag4{false};
     app.add_flag("--flag1", flag1);
     app.add_flag("--flag2", flag2);
     app.add_flag("--flag3", flag3);
@@ -1246,8 +1246,8 @@ TEST_F(TApp, IniFlags) {
         out << "five" << std::endl;
     }
 
-    int two;
-    bool three, four, five;
+    int two{0};
+    bool three{false}, four{false}, five{false};
     app.add_flag("--two", two);
     app.add_flag("--three", three);
     app.add_flag("--four", four);
@@ -1274,8 +1274,8 @@ TEST_F(TApp, IniFalseFlags) {
         out << "five" << std::endl;
     }
 
-    int two;
-    bool three, four, five;
+    int two{0};
+    bool three{false}, four{false}, five{false};
     app.add_flag("--two", two);
     app.add_flag("--three", three);
     app.add_flag("--four", four);
@@ -1302,8 +1302,8 @@ TEST_F(TApp, IniFalseFlagsDef) {
         out << "five" << std::endl;
     }
 
-    int two;
-    bool three, four, five;
+    int two{0};
+    bool three{false}, four{false}, five{false};
     app.add_flag("--two{false}", two);
     app.add_flag("--three", three);
     app.add_flag("!--four", four);
@@ -1329,8 +1329,8 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideError) {
         out << "five" << std::endl;
     }
 
-    int two;
-    bool four, five;
+    int two{0};
+    bool four{false}, five{false};
     app.add_flag("--two{false}", two)->disable_flag_override();
     app.add_flag("!--four", four);
     app.add_flag("--five", five);
@@ -1350,7 +1350,7 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideSuccess) {
         out << "val=15" << std::endl;
     }
 
-    int two, four, val;
+    int two{0}, four{0}, val{0};
     app.add_flag("--two{2}", two)->disable_flag_override();
     app.add_flag("--four{4}", four)->disable_flag_override();
     app.add_flag("--val", val);
@@ -1364,7 +1364,7 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideSuccess) {
 
 TEST_F(TApp, IniOutputSimple) {
 
-    int v;
+    int v{0};
     app.add_option("--simple", v);
 
     args = {"--simple=3"};
@@ -1377,7 +1377,7 @@ TEST_F(TApp, IniOutputSimple) {
 
 TEST_F(TApp, IniOutputNoConfigurable) {
 
-    int v1, v2;
+    int v1{0}, v2{0};
     app.add_option("--simple", v1);
     app.add_option("--noconf", v2)->configurable(false);
 
@@ -1433,7 +1433,7 @@ TEST_F(TApp, IniOutputGroups) {
 TEST_F(TApp, IniOutputHiddenOptions) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
-    double val = 12.7;
+    double val{12.7};
     const std::string description1 = "First description.";
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
@@ -1470,7 +1470,7 @@ TEST_F(TApp, IniOutputMultiLineDescription) {
 TEST_F(TApp, IniOutputOptionGroup) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
-    double val = 12.7;
+    double val{12.7};
     const std::string description1 = "First description.";
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
@@ -1539,7 +1539,7 @@ TEST_F(TApp, IniOutputVectorCustom) {
 
 TEST_F(TApp, IniOutputFlag) {
 
-    int v, q;
+    int v{0}, q{0};
     app.add_option("--simple", v);
     app.add_flag("--nothing");
     app.add_flag("--onething");
@@ -1561,7 +1561,7 @@ TEST_F(TApp, IniOutputFlag) {
 
 TEST_F(TApp, IniOutputSet) {
 
-    int v;
+    int v{0};
     app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--simple=2"};
@@ -1574,7 +1574,7 @@ TEST_F(TApp, IniOutputSet) {
 
 TEST_F(TApp, IniOutputDefault) {
 
-    int v = 7;
+    int v{7};
     app.add_option("--simple", v, "", true);
 
     run();
@@ -1726,7 +1726,7 @@ TEST_F(TApp, StopReadingConfigOnClear) {
         out << "volume=1" << std::endl;
     }
 
-    int volume = 0;
+    int volume{0};
     app.add_option("--volume", volume, "volume1");
 
     run();

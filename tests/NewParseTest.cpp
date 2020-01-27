@@ -269,7 +269,7 @@ template <> bool lexical_cast<std::complex<double>>(const std::string &input, st
         R"(([+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)\s*([+-]\s*(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?)[ji]*)");
 
     std::smatch m;
-    double x = 0.0, y = 0.0;
+    double x{0.0}, y{0.0};
     bool worked;
     std::regex_search(input, m, creg);
     if(m.size() == 9) {

@@ -14,7 +14,7 @@
 #endif
 
 TEST_F(TApp, SimpleTransform) {
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", std::string("1")}}));
     args = {"-s", "one"};
     run();
@@ -24,7 +24,7 @@ TEST_F(TApp, SimpleTransform) {
 }
 
 TEST_F(TApp, SimpleTransformInitList) {
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", "1"}}));
     args = {"-s", "one"};
     run();
@@ -34,7 +34,7 @@ TEST_F(TApp, SimpleTransformInitList) {
 }
 
 TEST_F(TApp, SimpleNumericalTransform) {
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(CLI::TransformPairs<int>{{"one", 1}}));
     args = {"-s", "one"};
     run();
@@ -45,7 +45,7 @@ TEST_F(TApp, SimpleNumericalTransform) {
 
 TEST_F(TApp, EnumTransform) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
-    test value;
+    test value{test::val2};
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::Transformer(
                        CLI::TransformPairs<test>{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}}));
@@ -74,7 +74,7 @@ TEST_F(TApp, EnumTransform) {
 
 TEST_F(TApp, EnumCheckedTransform) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
-    test value;
+    test value{test::val1};
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::CheckedTransformer(
                        CLI::TransformPairs<test>{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}}));
@@ -141,7 +141,7 @@ TEST_F(TApp, EnumCheckedDefaultTransformCallback) {
 }
 
 TEST_F(TApp, SimpleTransformFn) {
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", "1"}}, CLI::ignore_case));
     args = {"-s", "ONE"};
     run();
@@ -164,7 +164,7 @@ TEST_F(TApp, StringViewTransformFn) {
 #endif
 
 TEST_F(TApp, SimpleNumericalTransformFn) {
-    int value;
+    int value{0};
     auto opt =
         app.add_option("-s", value)
             ->transform(CLI::Transformer(std::vector<std::pair<std::string, int>>{{"one", 1}}, CLI::ignore_case));
@@ -177,7 +177,7 @@ TEST_F(TApp, SimpleNumericalTransformFn) {
 
 TEST_F(TApp, SimpleNumericalTransformFnVector) {
     std::vector<std::pair<std::string, int>> conversions{{"one", 1}, {"two", 2}};
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
     args = {"-s", "ONe"};
     run();
@@ -191,7 +191,7 @@ TEST_F(TApp, SimpleNumericalTransformFnArray) {
     conversions[0] = std::make_pair(std::string("one"), 1);
     conversions[1] = std::make_pair(std::string("two"), 2);
 
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(conversions, CLI::ignore_case));
     args = {"-s", "ONe"};
     run();
@@ -207,7 +207,7 @@ TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
     constexpr std::pair<const char *, int> p2{"two", 2};
     constexpr std::array<std::pair<const char *, int>, 2> conversions_c{{p1, p2}};
 
-    int value;
+    int value{0};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(&conversions_c, CLI::ignore_case));
     args = {"-s", "ONe"};
     run();
@@ -225,7 +225,7 @@ TEST_F(TApp, SimpleNumericalTransformFnconstexprArray) {
 
 TEST_F(TApp, EnumTransformFn) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
-    test value;
+    test value{test::val2};
     auto opt = app.add_option("-s", value)
                    ->transform(CLI::Transformer(
                        CLI::TransformPairs<test>{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}},
@@ -252,7 +252,7 @@ TEST_F(TApp, EnumTransformFn) {
 TEST_F(TApp, EnumTransformFnMap) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17 };
     std::map<std::string, test> map{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}};
-    test value;
+    test value{test::val3};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(map, CLI::ignore_case, CLI::ignore_underscore));
     args = {"-s", "val_1"};
     run();
@@ -275,7 +275,7 @@ TEST_F(TApp, EnumTransformFnMap) {
 TEST_F(TApp, EnumTransformFnPtrMap) {
     enum class test : std::int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 37 };
     std::map<std::string, test> map{{"val1", test::val1}, {"val2", test::val2}, {"val3", test::val3}};
-    test value;
+    test value{test::val2};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(&map, CLI::ignore_case, CLI::ignore_underscore));
     args = {"-s", "val_1"};
     run();
@@ -307,7 +307,7 @@ TEST_F(TApp, EnumTransformFnSharedPtrMap) {
     mp["val2"] = test::val2;
     mp["val3"] = test::val3;
 
-    test value;
+    test value{test::val2};
     auto opt = app.add_option("-s", value)->transform(CLI::Transformer(map, CLI::ignore_case, CLI::ignore_underscore));
     args = {"-s", "val_1"};
     run();
@@ -565,7 +565,7 @@ TEST_F(TApp, NumberWithUnitCorrecltySplitNumber) {
 
 TEST_F(TApp, NumberWithUnitFloatTest) {
     std::map<std::string, double> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
-    double value = 0;
+    double value{0.0};
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "42"};
@@ -588,7 +588,7 @@ TEST_F(TApp, NumberWithUnitFloatTest) {
 TEST_F(TApp, NumberWithUnitCaseSensitive) {
     std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
 
-    int value = 0;
+    int value{0};
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_SENSITIVE));
 
     args = {"-n", "42a"};
@@ -603,7 +603,7 @@ TEST_F(TApp, NumberWithUnitCaseSensitive) {
 TEST_F(TApp, NumberWithUnitCaseInsensitive) {
     std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
 
-    int value = 0;
+    int value{0};
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping, CLI::AsNumberWithUnit::CASE_INSENSITIVE));
 
     args = {"-n", "42a"};
@@ -626,7 +626,7 @@ TEST_F(TApp, NumberWithUnitCaseInsensitive) {
 TEST_F(TApp, NumberWithUnitMandatoryUnit) {
     std::map<std::string, int> mapping{{"a", 10}, {"A", 100}};
 
-    int value;
+    int value{0};
     app.add_option("-n", value)
         ->transform(CLI::AsNumberWithUnit(mapping,
                                           CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
@@ -647,7 +647,7 @@ TEST_F(TApp, NumberWithUnitMandatoryUnit) {
 TEST_F(TApp, NumberWithUnitMandatoryUnit2) {
     std::map<std::string, int> mapping{{"a", 10}, {"B", 100}};
 
-    int value;
+    int value{0};
     app.add_option("-n", value)
         ->transform(CLI::AsNumberWithUnit(mapping,
                                           CLI::AsNumberWithUnit::Options(CLI::AsNumberWithUnit::UNIT_REQUIRED |
@@ -677,7 +677,7 @@ TEST_F(TApp, NumberWithUnitBadMapping) {
 TEST_F(TApp, NumberWithUnitBadInput) {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}};
 
-    int value;
+    int value{0};
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "13 a b"};
@@ -723,7 +723,7 @@ TEST_F(TApp, NumberWithUnitIntOverflow) {
 TEST_F(TApp, NumberWithUnitFloatOverflow) {
     std::map<std::string, float> mapping{{"a", 2.f}, {"b", 1.f}, {"c", 0.f}};
 
-    float value;
+    float value{0.0F};
     app.add_option("-n", value)->transform(CLI::AsNumberWithUnit(mapping));
 
     args = {"-n", "3e+38 a"};
@@ -739,7 +739,7 @@ TEST_F(TApp, NumberWithUnitFloatOverflow) {
 }
 
 TEST_F(TApp, AsSizeValue1000_1024) {
-    std::uint64_t value;
+    std::uint64_t value{0};
     app.add_option("-s", value)->transform(CLI::AsSizeValue(true));
 
     args = {"-s", "10240"};
@@ -750,8 +750,8 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     run();
     EXPECT_EQ(value, 1u);
 
-    std::uint64_t k_value = 1000u;
-    std::uint64_t ki_value = 1024u;
+    std::uint64_t k_value{1000u};
+    std::uint64_t ki_value{1024u};
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, k_value);
@@ -845,7 +845,7 @@ TEST_F(TApp, AsSizeValue1000_1024) {
 }
 
 TEST_F(TApp, AsSizeValue1024) {
-    std::uint64_t value;
+    std::uint64_t value{0};
     app.add_option("-s", value)->transform(CLI::AsSizeValue(false));
 
     args = {"-s", "10240"};
@@ -856,7 +856,7 @@ TEST_F(TApp, AsSizeValue1024) {
     run();
     EXPECT_EQ(value, 1u);
 
-    std::uint64_t ki_value = 1024u;
+    std::uint64_t ki_value{1024u};
     args = {"-s", "1k"};
     run();
     EXPECT_EQ(value, ki_value);

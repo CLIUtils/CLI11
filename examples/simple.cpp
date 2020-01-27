@@ -9,13 +9,13 @@ int main(int argc, char **argv) {
     std::string file;
     CLI::Option *opt = app.add_option("-f,--file,file", file, "File name");
 
-    int count;
+    int count{0};
     CLI::Option *copt = app.add_option("-c,--count", count, "Counter");
 
-    int v;
+    int v{0};
     CLI::Option *flag = app.add_flag("--flag", v, "Some flag that can be passed multiple times");
 
-    double value; // = 3.14;
+    double value{0.0}; // = 3.14;
     app.add_option("-d,--double", value, "Some Value");
 
     CLI11_PARSE(app, argc, argv);
