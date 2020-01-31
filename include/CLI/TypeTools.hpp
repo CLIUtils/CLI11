@@ -219,15 +219,24 @@ template <typename S> class is_tuple_like {
 };
 
 /// Convert an object to a string (directly forward if this can become a string)
-template <typename T, enable_if_t<std::is_constructible<std::string, T>::value, detail::enabler> = detail::dummy>
+template <typename T, enable_if_t<std::is_convertible<T, std::string>::value, detail::enabler> = detail::dummy>
 auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
     return std::forward<T>(value);
 }
 
+/// Construct a string from the object
+template <typename T,
+          enable_if_t<std::is_constructible<std::string, T>::value && !std::is_convertible<T, std::string>::value,
+                      detail::enabler> = detail::dummy>
+std::string to_string(const T &value) {
+    return std::string(value);
+}
+
 /// Convert an object to a string (streaming must be supported for that type)
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && is_ostreamable<T>::value, detail::enabler> =
-              detail::dummy>
+          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+                          is_ostreamable<T>::value,
+                      detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
     std::stringstream stream;
     stream << value;
