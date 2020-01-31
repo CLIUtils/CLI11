@@ -17,20 +17,42 @@ jobs:
     steps:
 
     - uses: actions/checkout@v1
+      with:
+        submodules: true
+
     - uses: actions/setup-python@v1
 
     - name: Make header
       run: python ./scripts/MakeSingleHeader.py CLI11.hpp
+
+    # Build in place for simplicity - don't do this in real life!
+    - name: Prepare CMake config
+      run: cmake -S . -B build
+
+    - name: Make package
+      run: cmake --build build --target package_source
+
+    - name: Copy source packages
+      run: |
+        mkdir -p CLI11-Source
+        cp build/CLI11-*-Source.* CLI11-Source
+        cp build/CLI11-*-Source.* .
 
     - uses: actions/upload-artifact@v1
       with:
         name: CLI11.hpp
         path: CLI11.hpp
 
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CLI11-Source
+        path: CLI11-Source
+
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: CLI11.hpp
+        files: |
+          CLI11.hpp
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
