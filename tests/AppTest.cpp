@@ -1886,26 +1886,24 @@ TEST_F(TApp, VectorUnlimString) {
 }
 
 // From https://github.com/CLIUtils/CLI11/issues/420
-TEST_F(TApp, stringLikeTests)
-{
-    struct nType
-    {
-        explicit nType(const std::string& a_value) : m_value{ a_value }
-        {}
+TEST_F(TApp, stringLikeTests) {
+    struct nType {
+        explicit nType(const std::string &a_value) : m_value{a_value} {}
 
-       operator std::string() const
-        {
-            return std::string{ "op str" };
-        }
+        explicit operator std::string() const { return std::string{"op str"}; }
 
         std::string m_value;
     };
 
-    nType m_type{ "abc" };
+    nType m_type{"abc"};
     app.add_option("--type", m_type, "type")->capture_default_str();
-    args = { "--type", "bca" };
     run();
-    EXPECT_EQ(std::string(m_type), "bca");
+
+    EXPECT_EQ(app["--type"]->as<std::string>(), "op str");
+    args = {"--type", "bca"};
+    run();
+    EXPECT_EQ(std::string(m_type), "op str");
+    EXPECT_EQ(m_type.m_value, "bca");
 }
 
 TEST_F(TApp, VectorExpectedRange) {
