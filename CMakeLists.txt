@@ -286,7 +286,17 @@ set(CPACK_SOURCE_IGNORE_FILES
     /\\\\.DS_Store
     /.*\\\\.egg-info
     /var
-    /Pipfile.*$
+    /azure-pipelines.yml
+    /.ci
+    /docs
+    /examples
+    /test_package
+    /book
+    /.travis.yml
+    .swp
+    /.all-contributorsrc
+    /.appveyor.yml
+    /.pre-commit.*yaml
 )
 
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})

@@ -17,6 +17,9 @@ jobs:
     steps:
 
     - uses: actions/checkout@v1
+      with:
+        submodules: true
+
     - uses: actions/setup-python@v1
 
     - name: Make header
@@ -24,13 +27,16 @@ jobs:
 
     # Build in place for simplicity - don't do this in real life!
     - name: Prepare CMake config
-      run: cmake . -DBUILD_TESTING=OFF -DCLI11_BUILD_EXAMPLES=OFF
+      run: cmake -S . -B build
 
     - name: Make package
-      run: cmake --build . --target package_source
-    
-    - name: Prepare source package folder
-      run: mkdir -p CLI11-Source && cp CLI11-*-Source.* CLI11-Source
+      run: cmake --build build --target package_source
+
+    - name: Copy source packages
+      run: |
+        mkdir -p CLI11-Source
+        cp build/CLI11-*-Source.* CLI11-Source
+        cp build/CLI11-*-Source.* .
 
     - uses: actions/upload-artifact@v1
       with:
