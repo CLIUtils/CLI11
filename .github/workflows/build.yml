@@ -22,15 +22,36 @@ jobs:
     - name: Make header
       run: python ./scripts/MakeSingleHeader.py CLI11.hpp
 
+    - name: Prepare CMake config
+      run: cmake ..
+      workingDirectory: build
+
+    - name: Make package
+      run: cmake --build package_source
+      workingDirectory: build
+
     - uses: actions/upload-artifact@v1
       with:
         name: CLI11.hpp
         path: CLI11.hpp
 
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CLI11-Source.tar.gz
+        path: CLI11-*-Source.tar.gz
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CLI11-Source.zip
+        path: CLI11-*-Source.zip
+
+
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: CLI11.hpp
+        files: |
+          CLI11.hpp
+          CLI11-*Source.*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
