@@ -24,11 +24,15 @@ jobs:
 
     - name: Prepare CMake config
       run: cmake ..
-      workingDirectory: build
+      working-directory: build
 
     - name: Make package
       run: cmake --build package_source
-      workingDirectory: build
+      working-directory: build
+      
+    - name: Copy package files
+      run: mv CLI11-*-Source.* ..
+      working-directory: build
 
     - uses: actions/upload-artifact@v1
       with:
@@ -44,7 +48,6 @@ jobs:
       with:
         name: CLI11-Source.zip
         path: CLI11-*-Source.zip
-
 
     - name: Release
       uses: softprops/action-gh-release@v1
