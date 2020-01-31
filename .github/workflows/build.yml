@@ -24,10 +24,10 @@ jobs:
 
     # Build in place for simplicity - don't do this in real life!
     - name: Prepare CMake config
-      run: cmake . -DBUILD_TESTING=OFF -DCLI11_EXAMPLES=OFF
+      run: cmake . -DBUILD_TESTING=OFF -DCLI11_BUILD_EXAMPLES=OFF
 
     - name: Make package
-      run: cmake --build package_source
+      run: cmake --build . --target package_source
 
     - uses: actions/upload-artifact@v1
       with:
