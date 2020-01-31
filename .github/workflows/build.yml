@@ -54,6 +54,5 @@ jobs:
       with:
         files: |
           CLI11.hpp
-          CLI11-*Source.*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
