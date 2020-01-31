@@ -22,17 +22,12 @@ jobs:
     - name: Make header
       run: python ./scripts/MakeSingleHeader.py CLI11.hpp
 
+    # Build in place for simplicity - don't do this in real life!
     - name: Prepare CMake config
-      run: cmake ..
-      working-directory: build
+      run: cmake .
 
     - name: Make package
       run: cmake --build package_source
-      working-directory: build
-      
-    - name: Copy package files
-      run: mv CLI11-*-Source.* ..
-      working-directory: build
 
     - uses: actions/upload-artifact@v1
       with:
