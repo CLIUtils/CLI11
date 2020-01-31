@@ -28,6 +28,9 @@ jobs:
 
     - name: Make package
       run: cmake --build . --target package_source
+    
+    - name: Prepare source package folder
+      run: mkdir -p CLI11-Source && cp CLI11-*-Source.* CLI11-Source
 
     - uses: actions/upload-artifact@v1
       with:
@@ -36,13 +39,8 @@ jobs:
 
     - uses: actions/upload-artifact@v1
       with:
-        name: CLI11-Source.tar.gz
-        path: CLI11-*-Source.tar.gz
-
-    - uses: actions/upload-artifact@v1
-      with:
-        name: CLI11-Source.zip
-        path: CLI11-*-Source.zip
+        name: CLI11-Source
+        path: CLI11-Source
 
     - name: Release
       uses: softprops/action-gh-release@v1
