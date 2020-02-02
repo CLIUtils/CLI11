@@ -610,21 +610,39 @@ class App {
         // to structs used in the evaluation can be temporary so that would cause issues.
         auto Tcount = detail::type_count<AssignTo>::value;
         auto XCcount = detail::type_count<ConvertTo>::value;
-        opt->type_size((std::max)(Tcount, XCcount));
+        opt->type_size(detail::type_count_min<ConvertTo>::value, (std::max)(Tcount, XCcount));
         opt->expected(detail::expected_count<ConvertTo>::value);
         opt->run_callback_for_default();
         return opt;
     }
 
+    /// Add option for assigning to a variable
+    template <typename AssignTo, enable_if_t<!std::is_const<AssignTo>::value, detail::enabler> = detail::dummy>
+    Option *add_option_no_stream(std::string option_name,
+                                 AssignTo &variable, ///< The variable to set
+                                 std::string option_description = "") {
+
+        auto fun = [&variable](const CLI::results_t &res) { // comment for spacing
+            return detail::lexical_conversion<AssignTo, AssignTo>(res, variable);
+        };
+
+        Option *opt = add_option(option_name, fun, option_description, false, []() { return std::string{}; });
+        opt->type_name(detail::type_name<AssignTo>());
+        opt->type_size(detail::type_count_min<AssignTo>::value, detail::type_count<AssignTo>::value);
+        opt->expected(detail::expected_count<AssignTo>::value);
+        opt->run_callback_for_default();
+        return opt;
+    }
+
     /// Add option for a callback of a specific type
-    template <typename T>
+    template <typename ArgType>
     Option *add_option_function(std::string option_name,
-                                const std::function<void(const T &)> &func,  ///< the callback to execute
+                                const std::function<void(const ArgType &)> &func, ///< the callback to execute
                                 std::string option_description = "") {
 
         auto fun = [func](const CLI::results_t &res) {
-            T variable;
-            bool result = detail::lexical_conversion<T, T>(res, variable);
+            ArgType variable;
+            bool result = detail::lexical_conversion<ArgType, ArgType>(res, variable);
             if(result) {
                 func(variable);
             }
@@ -632,15 +650,15 @@ class App {
         };
 
         Option *opt = add_option(option_name, std::move(fun), option_description, false);
-        opt->type_name(detail::type_name<T>());
-        opt->type_size(detail::type_count<T>::value);
-        opt->expected(detail::expected_count<T>::value);
+        opt->type_name(detail::type_name<ArgType>());
+        opt->type_size(detail::type_count_min<ArgType>::value, detail::type_count<ArgType>::value);
+        opt->expected(detail::expected_count<ArgType>::value);
         return opt;
     }
 
     /// Add option with no description or variable assignment
     Option *add_option(std::string option_name) {
-        return add_option(option_name, CLI::callback_t(), std::string{}, false);
+        return add_option(option_name, CLI::callback_t{}, std::string{}, false);
     }
 
     /// Add option with description but with no variable assignment or callback
@@ -749,7 +767,7 @@ class App {
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
     /// that can be converted from a string
     template <typename T,
-              enable_if_t<!is_vector<T>::value && !std::is_const<T>::value &&
+              enable_if_t<!detail::is_mutable_container<T>::value && !std::is_const<T>::value &&
                               (!std::is_integral<T>::value || is_bool<T>::value) &&
                               !std::is_constructible<std::function<void(int)>, T>::value,
                           detail::enabler> = detail::dummy>
@@ -873,7 +891,7 @@ class App {
         return opt;
     }
 
-    /// Add a complex number
+    /// Add a complex number DEPRECATED --use add_option instead
     template <typename T, typename XC = double>
     Option *add_complex(std::string option_name,
                         T &variable,
@@ -2652,7 +2670,12 @@ class App {
 
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
-
+        /// if we require a separator add it here
+        if(op->get_inject_separator()) {
+            if(!op->results().empty() && !op->results().back().empty()) {
+                op->add_result(std::string{});
+            }
+        }
         int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
         int max_num = op->get_items_expected_max();
 
@@ -2717,7 +2740,7 @@ class App {
         }
 
         // if we only partially completed a type then add an empty string for later processing
-        if(min_num > 0 && op->get_type_size_max() != min_num && collected % op->get_type_size_max() != 0) {
+        if(min_num > 0 && op->get_type_size_max() != min_num && (collected % op->get_type_size_max()) != 0) {
             op->add_result(std::string{});
         }
 

@@ -315,7 +315,7 @@ class Option : public OptionBase<Option> {
     /// results after reduction
     results_t proc_results_{};
     /// enumeration for the option state machine
-    enum class option_state {
+    enum class option_state : char {
         parsing = 0,       //!< The option is currently collecting parsed results
         validated = 2,     //!< the results have been validated
         reduced = 4,       //!< a subset of results has been generated
@@ -329,6 +329,8 @@ class Option : public OptionBase<Option> {
     bool flag_like_{false};
     /// Control option to run the callback to set the default
     bool run_callback_for_default_{false};
+    /// flag indicating a separator needs to be injected after each argument call
+    bool inject_separator_{false};
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -658,6 +660,9 @@ class Option : public OptionBase<Option> {
     /// The maximum number of arguments the option expects
     int get_type_size_max() const { return type_size_max_; }
 
+    /// The number of arguments the option expects
+    int get_inject_separator() const { return inject_separator_; }
+
     /// The environment variable associated to this value
     std::string get_envname() const { return envname_; }
 
@@ -941,8 +946,8 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    /// Get a copy of the results
-    results_t results() const { return results_; }
+    /// Get the current complete results set
+    const results_t &results() const { return results_; }
 
     /// Get a copy of the results
     results_t reduced_results() const {
@@ -964,8 +969,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Get the results as a specified type
-    template <typename T, enable_if_t<!std::is_const<T>::value, detail::enabler> = detail::dummy>
-    void results(T &output) const {
+    template <typename T> void results(T &output) const {
         bool retval;
         if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
             const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
@@ -1032,6 +1036,8 @@ class Option : public OptionBase<Option> {
             type_size_max_ = option_type_size;
             if(type_size_max_ < detail::expected_max_vector_size) {
                 type_size_min_ = option_type_size;
+            } else {
+                inject_separator_ = true;
             }
             if(type_size_max_ == 0)
                 required_ = false;
@@ -1057,8 +1063,14 @@ class Option : public OptionBase<Option> {
         if(type_size_max_ == 0) {
             required_ = false;
         }
+        if(type_size_max_ >= detail::expected_max_vector_size) {
+            inject_separator_ = true;
+        }
         return this;
     }
+
+    /// Set the value of the separator injection flag
+    void inject_separator(bool value = true) { inject_separator_ = value; }
 
     /// Set a capture function for the default. Mostly used by App.
     Option *default_function(const std::function<std::string()> &func) {
@@ -1135,7 +1147,7 @@ class Option : public OptionBase<Option> {
                 }
 
                 for(std::string &result : res) {
-                    if(result.empty() && type_size_max_ != type_size_min_ && index >= 0) {
+                    if(detail::is_separator(result) && type_size_max_ != type_size_min_ && index >= 0) {
                         index = 0;  // reset index for variable size chunks
                         continue;
                     }

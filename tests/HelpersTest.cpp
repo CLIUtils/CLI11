@@ -6,8 +6,10 @@
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <map>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 
 class NotStreamable {};
@@ -51,6 +53,57 @@ TEST(TypeTools, type_size) {
     V = CLI::detail::type_count<std::array<std::string, 5>>::value;
     EXPECT_EQ(V, 5);
     V = CLI::detail::type_count<std::vector<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count<std::tuple<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count<std::tuple<int, std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 3);
+    V = CLI::detail::type_count<std::tuple<std::pair<int, double>, std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 4);
+    // maps
+    V = CLI::detail::type_count<std::map<int, std::pair<int, double>>>::value;
+    EXPECT_EQ(V, 3);
+    // three level tuples
+    V = CLI::detail::type_count<std::tuple<int, std::pair<int, std::tuple<int, double, std::string>>>>::value;
+    EXPECT_EQ(V, 5);
+    V = CLI::detail::type_count<std::pair<int, std::vector<int>>>::value;
+    EXPECT_GE(V, CLI::detail::expected_max_vector_size);
+    V = CLI::detail::type_count<std::vector<std::vector<int>>>::value;
+    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
+}
+
+TEST(TypeTools, type_size_min) {
+    auto V = CLI::detail::type_count_min<int>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::type_count_min<void>::value;
+    EXPECT_EQ(V, 0);
+    V = CLI::detail::type_count_min<std::vector<double>>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::type_count_min<std::tuple<double, int>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count_min<std::tuple<std::string, double, int>>::value;
+    EXPECT_EQ(V, 3);
+    V = CLI::detail::type_count_min<std::array<std::string, 5>>::value;
+    EXPECT_EQ(V, 5);
+    V = CLI::detail::type_count_min<std::vector<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count_min<std::tuple<std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count_min<std::tuple<int, std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 3);
+    V = CLI::detail::type_count_min<std::tuple<std::pair<int, double>, std::pair<std::string, double>>>::value;
+    EXPECT_EQ(V, 4);
+    // maps
+    V = CLI::detail::type_count_min<std::map<int, std::pair<int, double>>>::value;
+    EXPECT_EQ(V, 3);
+    // three level tuples
+    V = CLI::detail::type_count_min<std::tuple<int, std::pair<int, std::tuple<int, double, std::string>>>>::value;
+    EXPECT_EQ(V, 5);
+    V = CLI::detail::type_count_min<std::pair<int, std::vector<int>>>::value;
+    EXPECT_EQ(V, 2);
+    V = CLI::detail::type_count_min<std::vector<std::vector<int>>>::value;
+    EXPECT_EQ(V, 1);
+    V = CLI::detail::type_count_min<std::vector<std::vector<std::pair<int, int>>>>::value;
     EXPECT_EQ(V, 2);
 }
 
@@ -862,6 +915,10 @@ TEST(Types, TypeName) {
                       CLI::detail::object_category::tuple_value,
                   "pair<int,string> does not read like a tuple");
 
+    static_assert(CLI::detail::classify_object<std::tuple<std::string, double>>::value ==
+                      CLI::detail::object_category::tuple_value,
+                  "tuple<string,double> does not read like a tuple");
+
     std::string pair_name = CLI::detail::type_name<std::vector<std::pair<int, std::string>>>();
     EXPECT_EQ("[INT,TEXT]", pair_name);
 
@@ -869,7 +926,7 @@ TEST(Types, TypeName) {
     EXPECT_EQ("UINT", vector_name);
 
     auto vclass = CLI::detail::classify_object<std::vector<std::vector<unsigned char>>>::value;
-    EXPECT_EQ(vclass, CLI::detail::object_category::vector_value);
+    EXPECT_EQ(vclass, CLI::detail::object_category::container_value);
 
     auto tclass = CLI::detail::classify_object<std::tuple<double>>::value;
     EXPECT_EQ(tclass, CLI::detail::object_category::number_constructible);
@@ -882,6 +939,18 @@ TEST(Types, TypeName) {
                   "tuple<int,string> does not read like a tuple");
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
     EXPECT_EQ("[INT,TEXT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<const int, std::string>>();
+    EXPECT_EQ("[INT,TEXT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<const std::tuple<int, std::string>>();
+    EXPECT_EQ("[INT,TEXT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<std::tuple<std::string, double>>();
+    EXPECT_EQ("[TEXT,FLOAT]", tuple_name);
+
+    tuple_name = CLI::detail::type_name<const std::tuple<std::string, double>>();
+    EXPECT_EQ("[TEXT,FLOAT]", tuple_name);
 
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double>>();
     EXPECT_EQ("[INT,TEXT,FLOAT]", tuple_name);
@@ -911,6 +980,8 @@ TEST(Types, TypeName) {
                   "tuple<test> does not classify as a tuple");
     std::string enum_name2 = CLI::detail::type_name<std::tuple<test>>();
     EXPECT_EQ("ENUM", enum_name2);
+    std::string umapName = CLI::detail::type_name<std::unordered_map<int, std::tuple<std::string, double>>>();
+    EXPECT_EQ("[INT,[TEXT,FLOAT]]", umapName);
 }
 
 TEST(Types, OverflowSmall) {
@@ -995,11 +1066,11 @@ TEST(Types, LexicalCastParsable) {
     std::complex<double> output;
     EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
     EXPECT_DOUBLE_EQ(output.real(), 4.2);  // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 7.3);  // on clang + c++4.8 due to missing const
+    EXPECT_DOUBLE_EQ(output.imag(), 7.3);  // on clang + gcc 4.8 due to missing const
 
     EXPECT_TRUE(CLI::detail::lexical_cast("2.456", output));
     EXPECT_DOUBLE_EQ(output.real(), 2.456);  // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 0.0);    // on clang + c++4.8 due to missing const
+    EXPECT_DOUBLE_EQ(output.imag(), 0.0);    // on clang + gcc 4.8 due to missing const
 
     EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
@@ -1172,6 +1243,26 @@ TEST(Types, LexicalConversionComplex) {
     EXPECT_EQ(x.real(), 5.1);
     EXPECT_EQ(x.imag(), 3.5);
 }
+
+static_assert(CLI::detail::is_wrapper<std::vector<double>>::value, "vector double should be a wrapper");
+static_assert(CLI::detail::is_wrapper<std::vector<std::string>>::value, "vector string should be a wrapper");
+static_assert(CLI::detail::is_wrapper<std::string>::value, "string should be a wrapper");
+static_assert(!CLI::detail::is_wrapper<double>::value, "double should not be a wrapper");
+
+static_assert(CLI::detail::is_mutable_container<std::vector<double>>::value, "vector class should be a container");
+static_assert(CLI::detail::is_mutable_container<std::vector<std::string>>::value, "vector class should be a container");
+static_assert(!CLI::detail::is_mutable_container<std::string>::value, "string should be a container");
+static_assert(!CLI::detail::is_mutable_container<double>::value, "double should not be a container");
+static_assert(!CLI::detail::is_mutable_container<std::array<double, 5>>::value, "array should not be a container");
+
+static_assert(CLI::detail::is_mutable_container<std::vector<int>>::value, "vector int should be a container");
+
+static_assert(CLI::detail::is_readable_container<std::vector<int> &>::value,
+              "vector int & should be a readable container");
+static_assert(CLI::detail::is_readable_container<const std::vector<int>>::value,
+              "const vector int should be a readable container");
+static_assert(CLI::detail::is_readable_container<const std::vector<int> &>::value,
+              "const vector int & should be a readable container");
 
 TEST(FixNewLines, BasicCheck) {
     std::string input = "one\ntwo";
