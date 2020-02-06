@@ -6,9 +6,12 @@ branches:
 
 install:
   - git submodule update --init --recursive
-  - set PATH=C:\Python36;%PATH%
+  - py -3 --version
+  - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
   - cmake --version
-  - pip install conan
+  - python --version
+  - python -m pip --version
+  - python -m pip install conan
   - conan user
   - conan --version
 
