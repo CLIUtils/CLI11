@@ -360,7 +360,7 @@ Note: This is the final release with `requires`, please switch to `needs`.
 * Support for `std::optional`, `std::experimental::optional`, and `boost::optional` added if `__has_include` is supported [#95]
 * All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95]
 * The internal stream was not being cleared before use in some cases. Fixed. [#95]
-* Using an emum now requires explicit conversion overload [#97]
+* Using an enum now requires explicit conversion overload [#97]
 * The separator `--` now is removed when it ends unlimited arguments [#100]
 
 Other, non-user facing changes:
