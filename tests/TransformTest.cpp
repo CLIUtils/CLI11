@@ -104,7 +104,7 @@ TEST_F(TApp, EnumCheckedTransform) {
 }
 
 // from jzakrzewski Issue #330
-TEST_F(TApp, EnumCheckedDefualtTransform) {
+TEST_F(TApp, EnumCheckedDefaultTransform) {
     enum class existing : std::int16_t { abort, overwrite, remove };
     app.add_option("--existing", "What to do if file already exists in the destination")
         ->transform(
