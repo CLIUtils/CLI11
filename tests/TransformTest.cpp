@@ -541,7 +541,7 @@ TEST_F(TApp, BoundTests) {
     EXPECT_TRUE(help.find("[3.4 - 5.9]") != std::string::npos);
 }
 
-TEST_F(TApp, NumberWithUnitCorrecltySplitNumber) {
+TEST_F(TApp, NumberWithUnitCorrectlySplitNumber) {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
 
     int value = 0;
