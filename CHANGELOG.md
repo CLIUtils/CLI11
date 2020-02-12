@@ -551,7 +551,7 @@ Lots of cleanup and docs additions made it into this release. Parsing is simpler
 ## Version 0.3: Plumbum compatibility
 
 * Added `->requires`, `->excludes`, and `->envname` from [Plumbum](http://plumbum.readthedocs.io/en/latest/)
-* Supports `->mandatory` from Plubmum
+* Supports `->mandatory` from Plumbum
 * More tests for help strings, improvements in formatting
 * Support type and set syntax in positionals help strings
 * Added help groups, with `->group("name")` syntax
