@@ -981,7 +981,7 @@ class App {
     }
 
     ///@}
-    /// @name Subcommmands
+    /// @name Subcommands
     ///@{
 
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
