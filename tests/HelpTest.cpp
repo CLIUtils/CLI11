@@ -825,7 +825,7 @@ TEST_F(CapturedHelp, AllOnlyError) {
     EXPECT_THAT(err.str(), Not(HasSubstr("Usage")));
 }
 
-TEST_F(CapturedHelp, RepacedError) {
+TEST_F(CapturedHelp, ReplacedError) {
     app.failure_message(CLI::FailureMessage::help);
 
     EXPECT_EQ(run(CLI::ExtrasError({"Thing"})), static_cast<int>(CLI::ExitCodes::ExtrasError));
