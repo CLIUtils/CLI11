@@ -89,7 +89,7 @@ cmake_dependent_option(CLI11_CUDA_TESTS
 cmake_dependent_option(CLI11_CLANG_TIDY
     "Look for and use Clang-Tidy" OFF
     "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;NOT CMAKE_VERSION VERSION_LESS 3.6" OFF)
-set(CLI11_CLANG_TIDY_OPTIONS "" CACHE STRING "Clang tidy options, such as -fix, simicolon separated")
+set(CLI11_CLANG_TIDY_OPTIONS "" CACHE STRING "Clang tidy options, such as -fix, semicolon separated")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
