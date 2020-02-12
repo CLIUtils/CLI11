@@ -731,7 +731,7 @@ struct CapturedHelp : public ::testing::Test {
     }
 };
 
-TEST_F(CapturedHelp, Sucessful) {
+TEST_F(CapturedHelp, Successful) {
     EXPECT_EQ(run(CLI::Success()), 0);
     EXPECT_EQ(out.str(), "");
     EXPECT_EQ(err.str(), "");
