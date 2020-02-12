@@ -107,14 +107,14 @@ class Validator {
             }
         }
         return retstring;
-    };
+    }
 
     /// This is the required operator for a Validator - provided to help
     /// users (CLI11 uses the member `func` directly)
     std::string operator()(const std::string &str) const {
         std::string value = str;
         return (active_) ? func_(value) : std::string{};
-    };
+    }
 
     /// Specify the type string
     Validator &description(std::string validator_desc) {
@@ -168,13 +168,13 @@ class Validator {
     Validator &application_index(int app_index) {
         application_index_ = app_index;
         return *this;
-    };
+    }
     /// Specify the application index of a validator
     Validator application_index(int app_index) const {
         Validator newval(*this);
         newval.application_index_ = app_index;
         return newval;
-    };
+    }
     /// Get the current value of the application index
     int get_application_index() const { return application_index_; }
     /// Get a boolean if the validator is active
