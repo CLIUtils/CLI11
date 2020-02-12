@@ -1394,7 +1394,7 @@ TEST_F(TApp, RequireOptPriorityShort) {
     EXPECT_EQ(remain, std::vector<std::string>({"two", "three"}));
 }
 
-TEST_F(TApp, NotRequiedExpectedDouble) {
+TEST_F(TApp, NotRequiredExpectedDouble) {
 
     std::vector<std::string> strs;
     app.add_option("--str", strs)->expected(2);
@@ -1404,7 +1404,7 @@ TEST_F(TApp, NotRequiedExpectedDouble) {
     EXPECT_THROW(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, NotRequiedExpectedDoubleShort) {
+TEST_F(TApp, NotRequiredExpectedDoubleShort) {
 
     std::vector<std::string> strs;
     app.add_option("-s", strs)->expected(2);
