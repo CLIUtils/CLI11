@@ -2338,7 +2338,7 @@ TEST_F(TApp, OptionWithDefaults) {
 }
 
 // Added to test ->transform
-TEST_F(TApp, OrderedModifingTransforms) {
+TEST_F(TApp, OrderedModifyingTransforms) {
     std::vector<std::string> val;
     auto m = app.add_option("-m", val);
     m->transform([](std::string x) { return x + "1"; });
