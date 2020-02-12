@@ -51,7 +51,7 @@ list(APPEND build-docs "EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docs")
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 cmake_dependent_option(CLI11_SANITIZERS
-    "Download the sanatizers CMake config" OFF
+    "Download the sanitizers CMake config" OFF
     "NOT CMAKE_VERSION VERSION_LESS 3.11" OFF)
 
 cmake_dependent_option(CLI11_BUILD_DOCS
