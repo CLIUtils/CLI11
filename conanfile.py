@@ -40,7 +40,6 @@ class CLI11Conan(ConanFile):
         cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"
         cmake.configure()
         cmake.build()
-        cmake.test()
         cmake.install()
 
     def package_id(self):
