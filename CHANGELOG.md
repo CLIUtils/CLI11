@@ -333,7 +333,7 @@ This is a quick patch release that makes LICENSE part of the single header file,
 
 ### Version 1.5.1: Access
 
-This patch release adds better access to the App progromatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
+This patch release adds better access to the App programmatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
 
 * Make mixing unlimited positionals and options more intuitive [#102]
 * Add missing getters `get_options` and `get_description` to App [#105]

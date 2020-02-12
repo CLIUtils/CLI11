@@ -995,7 +995,7 @@ TEST(THelp, CombinedValidatorsText) {
     app.add_option("--f1", filename)->check(CLI::ExistingFile | CLI::ExistingDirectory);
 
     // This would be nice if it put something other than string, but would it be path or file?
-    // Can't programatically tell!
+    // Can't programmatically tell!
     // (Users can use ExistingPath, by the way)
     std::string help = app.help();
     EXPECT_THAT(help, HasSubstr("TEXT:(FILE) OR (DIR)"));
