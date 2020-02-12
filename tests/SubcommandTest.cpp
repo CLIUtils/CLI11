@@ -104,7 +104,7 @@ TEST_F(TApp, CrazyNameSubcommand) {
     EXPECT_EQ(sub1->count(), 1u);
 }
 
-TEST_F(TApp, RequiredAndSubcoms) { // #23
+TEST_F(TApp, RequiredAndSubcommands) { // #23
 
     std::string baz;
     app.add_option("baz", baz, "Baz Description", true)->required();
@@ -719,7 +719,7 @@ TEST_F(TApp, Required1SubCom) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, BadSubcomSearch) {
+TEST_F(TApp, BadSubcommandSearch) {
 
     auto one = app.add_subcommand("one");
     auto two = one->add_subcommand("two");

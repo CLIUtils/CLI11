@@ -246,11 +246,11 @@ class RequiredError : public ParseError {
 class ArgumentMismatch : public ParseError {
     CLI11_ERROR_DEF(ParseError, ArgumentMismatch)
     CLI11_ERROR_SIMPLE(ArgumentMismatch)
-    ArgumentMismatch(std::string name, int expected, std::size_t recieved)
+    ArgumentMismatch(std::string name, int expected, std::size_t received)
         : ArgumentMismatch(expected > 0 ? ("Expected exactly " + std::to_string(expected) + " arguments to " + name +
-                                           ", got " + std::to_string(recieved))
+                                           ", got " + std::to_string(received))
                                         : ("Expected at least " + std::to_string(-expected) + " arguments to " + name +
-                                           ", got " + std::to_string(recieved)),
+                                           ", got " + std::to_string(received)),
                            ExitCodes::ArgumentMismatch) {}
 
     static ArgumentMismatch AtLeast(std::string name, int num, std::size_t received) {

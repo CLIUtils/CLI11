@@ -5,7 +5,7 @@
 using ::testing::HasSubstr;
 using ::testing::Not;
 
-TEST(Deprecated, Emtpy) {
+TEST(Deprecated, Empty) {
     // No deprecated features at this time.
     EXPECT_TRUE(true);
 }

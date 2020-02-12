@@ -10,7 +10,7 @@ rm -rf cmake_dir/* build_tmp/*
 v=$1
 fn=cmake-$v-Linux-x86_64.tar.gz
 
-if [ ! -f cmake_souces/$fn ]; then
+if [ ! -f cmake_sources/$fn ]; then
     wget -qO cmake_sources/$fn "https://cmake.org/files/v${v%.*}/$fn"
 fi
 

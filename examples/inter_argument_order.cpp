@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     auto foo = app.add_option("--foo,-f", foos, "Some unlimited argument");
 
     std::vector<int> bars;
-    auto bar = app.add_option("--bar", bars, "Some unlimited arggument");
+    auto bar = app.add_option("--bar", bars, "Some unlimited argument");
 
     app.add_flag("--z,--x", "Random other flags");
 
