@@ -105,7 +105,7 @@ CLI::Option* opt = app.add_flag("--opt");
 CLI11_PARSE(app, argv, argc);
 
 if(* opt)
-    std::cout << "Flag recieved " << opt->count() << " times." << std::endl;
+    std::cout << "Flag received " << opt->count() << " times." << std::endl;
 ```
 
 ## Inheritance of defaults
