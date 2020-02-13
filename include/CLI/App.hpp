@@ -1246,8 +1246,9 @@ class App {
                 name_ = nstr.first;
             }
             commandline = std::move(nstr.second);
-        } else
+        } else {
             detail::trim(commandline);
+        }
         // the next section of code is to deal with quoted arguments after an '=' or ':' for windows like operations
         if(!commandline.empty()) {
             commandline = detail::find_and_modify(commandline, "=", detail::escape_detect);

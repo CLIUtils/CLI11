@@ -42,9 +42,9 @@ constexpr int expected_max_vector_size{1 << 29};
 inline std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     // Check to see if empty string, give consistent result
-    if(s.empty())
+    if(s.empty()) {
         elems.emplace_back();
-    else {
+    } else {
         std::stringstream ss;
         ss.str(s);
         std::string item;
@@ -264,8 +264,9 @@ inline std::ptrdiff_t find_member(std::string name,
         it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
             return detail::remove_underscore(local_name) == name;
         });
-    } else
+    } else {
         it = std::find(std::begin(names), std::end(names), name);
+    }
 
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
