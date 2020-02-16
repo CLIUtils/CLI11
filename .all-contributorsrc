@@ -350,6 +350,15 @@
       "contributions": [
         "tool"
       ]
+    },
+    {
+      "login": "geir-t",
+      "name": "geir-t",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/35292136?v=4",
+      "profile": "https://github.com/geir-t",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsPerLine": 7,
