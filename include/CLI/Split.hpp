@@ -134,5 +134,5 @@ get_names(const std::vector<std::string> &input) {
         short_names, long_names, pos_name);
 }
 
-} // namespace detail
-} // namespace CLI
+}  // namespace detail
+}  // namespace CLI

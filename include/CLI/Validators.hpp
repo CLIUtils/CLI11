@@ -42,7 +42,7 @@
 #endif
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-#include <filesystem> // NOLINT(build/include)
+#include <filesystem>  // NOLINT(build/include)
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -270,7 +270,7 @@ class Validator {
             return std::string(1, '(') + f1 + ')' + merger + '(' + f2 + ')';
         };
     }
-}; // namespace CLI
+};  // namespace CLI
 
 /// Class wrapping some of the accessors of Validator
 class CustomValidator : public Validator {
@@ -459,7 +459,7 @@ class Number : public Validator {
     }
 };
 
-} // namespace detail
+}  // namespace detail
 
 // Static is not needed here, because global const implies static.
 
@@ -561,7 +561,7 @@ typename std::remove_reference<T>::type &smart_deref(T &value) {
 /// Generate a string representation of a set
 template <typename T> std::string generate_set(const T &set) {
     using element_t = typename detail::element_type<T>::type;
-    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
     std::string out(1, '{');
     out.append(detail::join(
         detail::smart_deref(set),
@@ -574,7 +574,7 @@ template <typename T> std::string generate_set(const T &set) {
 /// Generate a string representation of a map
 template <typename T> std::string generate_map(const T &map, bool key_only = false) {
     using element_t = typename detail::element_type<T>::type;
-    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
     std::string out(1, '{');
     out.append(detail::join(
         detail::smart_deref(map),
@@ -685,7 +685,7 @@ typename std::enable_if<std::is_floating_point<T>::value, bool>::type checked_mu
     return true;
 }
 
-} // namespace detail
+}  // namespace detail
 /// Verify items are in a set
 class IsMember : public Validator {
   public:
@@ -705,11 +705,11 @@ class IsMember : public Validator {
 
         // Get the type of the contained item - requires a container have ::value_type
         // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
+        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
 
-        using local_item_t = typename IsMemberType<item_t>::type; // This will convert bad types to good ones
-                                                                  // (const char * to std::string)
+        using local_item_t = typename IsMemberType<item_t>::type;  // This will convert bad types to good ones
+                                                                   // (const char * to std::string)
 
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
@@ -722,7 +722,7 @@ class IsMember : public Validator {
         func_ = [set, filter_fn](std::string &input) {
             local_item_t b;
             if(!detail::lexical_cast(input, b)) {
-                throw ValidationError(input); // name is added later
+                throw ValidationError(input);  // name is added later
             }
             if(filter_fn) {
                 b = filter_fn(b);
@@ -778,10 +778,10 @@ class Transformer : public Validator {
                       "mapping must produce value pairs");
         // Get the type of the contained item - requires a container have ::value_type
         // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
-        using local_item_t = typename IsMemberType<item_t>::type;            // This will convert bad types to good ones
-                                                                             // (const char * to std::string)
+        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
+        using local_item_t = typename IsMemberType<item_t>::type;             // Will convert bad types to good ones
+                                                                              // (const char * to std::string)
 
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
@@ -836,12 +836,11 @@ class CheckedTransformer : public Validator {
                       "mapping must produce value pairs");
         // Get the type of the contained item - requires a container have ::value_type
         // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;            // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type; // Is value_type if not a map
-        using local_item_t = typename IsMemberType<item_t>::type;            // This will convert bad types to good ones
-                                                                             // (const char * to std::string)
-        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type; // the type of the object pair //
-                                                                                       // the type of the object pair
+        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
+        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
+        using local_item_t = typename IsMemberType<item_t>::type;             // Will convert bad types to good ones
+                                                                              // (const char * to std::string)
+        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
 
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
@@ -1125,7 +1124,7 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
     return vals;
 }
 
-} // namespace detail
+}  // namespace detail
 /// @}
 
-} // namespace CLI
+}  // namespace CLI

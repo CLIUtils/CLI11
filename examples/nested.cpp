@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     app.add_flag("--version", "Get version");
 
     CLI::App *cameraApp = app.add_subcommand("camera", "Configure the app camera");
-    cameraApp->require_subcommand(0, 1); // 0 (default) or 1 camera
+    cameraApp->require_subcommand(0, 1);  // 0 (default) or 1 camera
 
     std::string mvcamera_config_file = "mvcamera_config.json";
     CLI::App *mvcameraApp = cameraApp->add_subcommand("mvcamera", "MatrixVision Camera Configuration");

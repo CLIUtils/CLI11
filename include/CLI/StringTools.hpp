@@ -28,7 +28,7 @@ std::ostream &operator<<(std::ostream &in, const T &item) {
     return in << static_cast<typename std::underlying_type<T>::type>(item);
 }
 
-} // namespace enums
+}  // namespace enums
 
 /// Export to CLI namespace
 using enums::operator<<;
@@ -298,7 +298,7 @@ inline std::vector<std::string> split_up(std::string str, char delimiter = '\0')
         if(delims.find_first_of(str[0]) != std::string::npos) {
             keyChar = str[0];
             auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\')) { // deal with escaped quotes
+            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
@@ -356,7 +356,7 @@ inline std::size_t escape_detect(std::string &str, std::size_t offset) {
         auto astart = str.find_last_of("-/ \"\'`", offset - 1);
         if(astart != std::string::npos) {
             if(str[astart] == ((str[offset] == '=') ? '-' : '/'))
-                str[offset] = ' '; // interpret this as a space so the split_up works properly
+                str[offset] = ' ';  // interpret this as a space so the split_up works properly
         }
     }
     return offset + 1;
@@ -374,6 +374,6 @@ inline std::string &add_quotes_if_needed(std::string &str) {
     return str;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace CLI
+}  // namespace CLI

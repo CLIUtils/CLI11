@@ -160,7 +160,7 @@ inline void checkParentSegments(std::vector<ConfigItem> &output, const std::stri
     output.back().parents = std::move(parents);
     output.back().name = "++";
 }
-} // namespace detail
+}  // namespace detail
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
@@ -343,4 +343,4 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     return out.str();
 }
 
-} // namespace CLI
+}  // namespace CLI

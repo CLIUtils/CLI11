@@ -128,4 +128,4 @@ class ConfigTOML : public ConfigINI {
         valueDelimiter = '=';
     }
 };
-} // namespace CLI
+}  // namespace CLI
