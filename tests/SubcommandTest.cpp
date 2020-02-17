@@ -104,7 +104,7 @@ TEST_F(TApp, CrazyNameSubcommand) {
     EXPECT_EQ(sub1->count(), 1u);
 }
 
-TEST_F(TApp, RequiredAndSubcommands) { // #23
+TEST_F(TApp, RequiredAndSubcommands) {  // #23
 
     std::string baz;
     app.add_option("baz", baz, "Baz Description", true)->required();
@@ -631,13 +631,13 @@ TEST_F(TApp, CallbackOrderingImmediateMain) {
     EXPECT_EQ(0, sub_val);
     // the main app callback should run before the subcommand callbacks
     app.immediate_callback();
-    val = 0; // reset value
+    val = 0;  // reset value
     run();
     EXPECT_EQ(2, val);
     EXPECT_EQ(1, sub_val);
     // the subcommand callback now runs immediately after processing and before the main app callback again
     sub->immediate_callback();
-    val = 0; // reset value
+    val = 0;  // reset value
     run();
     EXPECT_EQ(1, val);
     EXPECT_EQ(0, sub_val);
@@ -1213,7 +1213,7 @@ TEST_F(ManySubcommands, Unlimited) {
     run();
     EXPECT_EQ(app.remaining(true), vs_t());
 
-    app.require_subcommand(2, 0); // 2 or more
+    app.require_subcommand(2, 0);  // 2 or more
 
     run();
     EXPECT_EQ(app.remaining(true), vs_t());

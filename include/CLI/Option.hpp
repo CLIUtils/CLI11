@@ -631,8 +631,8 @@ class Option : public OptionBase<Option> {
     Option *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
         if(value != multi_option_policy_) {
             if(multi_option_policy_ == MultiOptionPolicy::Throw && expected_max_ == detail::expected_max_vector_size &&
-               expected_min_ > 1) { // this bizarre condition is to maintain backwards compatibility
-                                    // with the previous behavior of expected_ with vectors
+               expected_min_ > 1) {  // this bizarre condition is to maintain backwards compatibility
+                                     // with the previous behavior of expected_ with vectors
                 expected_max_ = expected_min_;
             }
             multi_option_policy_ = value;

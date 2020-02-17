@@ -684,7 +684,7 @@ TEST_F(TApp, FlagLikeOption) {
     EXPECT_EQ(1u, app.count("--flag"));
     EXPECT_TRUE(val);
     val = false;
-    opt->type_size(0, 0); // should be the same as above
+    opt->type_size(0, 0);  // should be the same as above
     EXPECT_EQ(opt->get_type_size_min(), 0);
     EXPECT_EQ(opt->get_type_size_max(), 0);
     run();
@@ -797,7 +797,7 @@ TEST_F(TApp, DefaultOpts) {
     std::string s = "HI";
 
     app.add_option("-i,i", i);
-    app.add_option("-s,s", s)->capture_default_str(); //  Used to be different
+    app.add_option("-s,s", s)->capture_default_str();  //  Used to be different
 
     args = {"-i2", "9"};
 
@@ -1191,7 +1191,7 @@ TEST_F(TApp, RequiredPositionalVector) {
 // Tests positionals at end
 TEST_F(TApp, RequiredPositionalValidation) {
     std::vector<std::string> sources;
-    int dest; // required
+    int dest;  // required
     std::string d2;
     app.add_option("src", sources);
     app.add_option("dest", dest)->required()->check(CLI::PositiveNumber);
@@ -1416,7 +1416,7 @@ TEST_F(TApp, NotRequiredExpectedDoubleShort) {
 
 TEST_F(TApp, RequiredFlags) {
     app.add_flag("-a")->required();
-    app.add_flag("-b")->mandatory(); // Alternate term
+    app.add_flag("-b")->mandatory();  // Alternate term
 
     EXPECT_THROW(run(), CLI::RequiredError);
 
@@ -1686,7 +1686,7 @@ TEST_F(TApp, RemoveExcludesLinks) {
 
     args = {"--two"};
 
-    run(); // Mostly hoping it does not crash
+    run();  // Mostly hoping it does not crash
 }
 
 TEST_F(TApp, FileNotExists) {
@@ -1700,7 +1700,7 @@ TEST_F(TApp, FileNotExists) {
     run();
     EXPECT_EQ(myfile, filename);
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_THROW(run(), CLI::ValidationError);
     // deactivate the check, so it should run now
@@ -1720,7 +1720,7 @@ TEST_F(TApp, FileExists) {
 
     EXPECT_THROW(run(), CLI::ValidationError);
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     run();
     EXPECT_EQ(myfile, filename);
@@ -1739,7 +1739,7 @@ TEST_F(TApp, NotFileExists) {
 
     EXPECT_NO_THROW(run());
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_THROW(run(), CLI::ValidationError);
 
@@ -1749,7 +1749,7 @@ TEST_F(TApp, NotFileExists) {
 
 TEST_F(TApp, pair_check) {
     std::string myfile{"pair_check_file.txt"};
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
 
     EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
@@ -1781,7 +1781,7 @@ TEST_F(TApp, pair_check) {
 
 TEST_F(TApp, pair_check_take_first) {
     std::string myfile{"pair_check_file2.txt"};
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
 
     EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
@@ -1924,7 +1924,7 @@ TEST_F(TApp, VectorExpectedRange) {
 
     EXPECT_EQ(opt->get_expected_max(), 4);
     EXPECT_EQ(opt->get_expected_min(), 2);
-    opt->expected(4, 2); // just test the handling of reversed arguments
+    opt->expected(4, 2);  // just test the handling of reversed arguments
     EXPECT_EQ(opt->get_expected_max(), 4);
     EXPECT_EQ(opt->get_expected_min(), 2);
     opt->expected(-5);
@@ -2459,7 +2459,7 @@ TEST_F(TApp, vectorPairTypeRange) {
 
     auto opt = app.add_option("--dict", custom_opt);
 
-    opt->type_size(2, 1); // just test switched arguments
+    opt->type_size(2, 1);  // just test switched arguments
     EXPECT_EQ(opt->get_type_size_min(), 1);
     EXPECT_EQ(opt->get_type_size_max(), 2);
 
@@ -2477,7 +2477,7 @@ TEST_F(TApp, vectorPairTypeRange) {
     EXPECT_EQ(custom_opt[2].first, -1);
     EXPECT_EQ(custom_opt[2].second, "str4");
 
-    opt->type_size(-2, -1); // test negative arguments
+    opt->type_size(-2, -1);  // test negative arguments
     EXPECT_EQ(opt->get_type_size_min(), 1);
     EXPECT_EQ(opt->get_type_size_max(), 2);
     // this type size spec should run exactly as before
