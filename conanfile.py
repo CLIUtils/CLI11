@@ -1,5 +1,5 @@
 from conans import ConanFile, CMake
-from conans.tools import load
+from conans.tools import load, cross_building
 import re
 
 
@@ -40,7 +40,8 @@ class CLI11Conan(ConanFile):
         cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"
         cmake.configure()
         cmake.build()
-        cmake.test()
+        if not cross_building(self.settings):
+            cmake.test()
         cmake.install()
 
     def package_id(self):
