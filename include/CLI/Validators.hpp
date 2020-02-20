@@ -10,6 +10,7 @@
 #include "StringTools.hpp"
 #include "TypeTools.hpp"
 
+// [CLI11:public_includes:set]
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -20,8 +21,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+// [CLI11:public_includes:end]
 
-// [CLI11:verbatim]
+// [CLI11:validators_hpp_filesystem:verbatim]
 
 // C standard library
 // Only needed for existence checking
@@ -55,9 +57,10 @@
 #include <sys/types.h>
 #endif
 
-// [CLI11:verbatim]
+// [CLI11:validators_hpp_filesystem:end]
 
 namespace CLI {
+// [CLI11:validators_hpp:verbatim]
 
 class Option;
 
@@ -1112,4 +1115,5 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
 }  // namespace detail
 /// @}
 
+// [CLI11:validators_hpp:end]
 }  // namespace CLI

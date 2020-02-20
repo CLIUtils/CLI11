@@ -6,16 +6,19 @@
 
 #pragma once
 
+// [CLI11:public_includes:set]
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+// [CLI11:public_includes:end]
 
 #include "Error.hpp"
 #include "StringTools.hpp"
 
 namespace CLI {
+// [CLI11:config_fwd_hpp:verbatim]
 
 class App;
 
@@ -128,4 +131,5 @@ class ConfigINI : public ConfigTOML {
         valueDelimiter = '=';
     }
 };
+// [CLI11:config_fwd_hpp:end]
 }  // namespace CLI

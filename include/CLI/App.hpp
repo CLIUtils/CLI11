@@ -6,6 +6,7 @@
 
 #pragma once
 
+// #[CLI11:public_includes:set]
 #include <algorithm>
 #include <cstdint>
 #include <functional>
@@ -18,6 +19,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+// #[CLI11:public_includes:end]
 
 // CLI Library includes
 #include "ConfigFwd.hpp"
@@ -30,6 +32,7 @@
 #include "TypeTools.hpp"
 
 namespace CLI {
+// [CLI11:app_hpp:verbatim]
 
 #ifndef CLI11_PARSE
 #define CLI11_PARSE(app, argc, argv)                                                                                   \
@@ -3234,4 +3237,5 @@ struct AppFriend {
 };
 }  // namespace detail
 
+// [CLI11:app_hpp:end]
 }  // namespace CLI

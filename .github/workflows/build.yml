@@ -23,7 +23,7 @@ jobs:
     - uses: actions/setup-python@v2
 
     - name: Make header
-      run: python ./scripts/MakeSingleHeader.py CLI11.hpp
+      run: python ./scripts/MakeSingleHeader.py include/CLI/* --output CLI11.hpp
 
     - name: Prepare CMake config
       run: cmake -S . -B build
