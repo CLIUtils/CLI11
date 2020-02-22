@@ -14,6 +14,9 @@
 
 #include "gtest/gtest.h"
 #include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using input_t = std::vector<std::string>;
 
