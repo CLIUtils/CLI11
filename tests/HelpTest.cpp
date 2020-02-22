@@ -461,7 +461,7 @@ TEST(THelp, Subcom) {
     char y[] = "sub2";
 
     std::vector<char *> args = {x, y};
-    app.parse((int)args.size(), args.data());
+    app.parse(static_cast<int>(args.size()), args.data());
 
     help = app.help();
     EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));
@@ -473,7 +473,7 @@ TEST(THelp, MasterName) {
     char x[] = "./myprogram";
 
     std::vector<char *> args = {x};
-    app.parse((int)args.size(), args.data());
+    app.parse(static_cast<int>(args.size()), args.data());
 
     EXPECT_THAT(app.help(), HasSubstr("Usage: MyRealName"));
 }
