@@ -902,7 +902,7 @@ TEST(Types, TypeName) {
     std::string int_name = CLI::detail::type_name<int>();
     EXPECT_EQ("INT", int_name);
 
-    std::string int2_name = CLI::detail::type_name<short>();
+    std::string int2_name = CLI::detail::type_name<std::int16_t>();
     EXPECT_EQ("INT", int2_name);
 
     std::string uint_name = CLI::detail::type_name<unsigned char>();
