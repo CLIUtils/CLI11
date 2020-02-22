@@ -611,7 +611,7 @@ TEST_F(TApp, BoolOnlyFlag) {
 
 TEST_F(TApp, ShortOpts) {
 
-    unsigned long long funnyint{0};
+    std::uint64_t funnyint{0};
     std::string someopt;
     app.add_flag("-z", funnyint);
     app.add_option("-y", someopt);
@@ -624,7 +624,7 @@ TEST_F(TApp, ShortOpts) {
 
     EXPECT_EQ(2u, app.count("-z"));
     EXPECT_EQ(1u, app.count("-y"));
-    EXPECT_EQ((unsigned long long)2, funnyint);
+    EXPECT_EQ(std::uint64_t{2}, funnyint);
     EXPECT_EQ("zyz", someopt);
     EXPECT_EQ(app.count_all(), 3u);
 }
