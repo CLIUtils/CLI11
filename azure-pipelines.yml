@@ -36,7 +36,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   container: sharaku/cpplint:latest
   steps:
-    - bash: cpplint --counting=detailed --recursive examples include/CLI
+    - bash: cpplint --counting=detailed --recursive examples include/CLI tests
       displayName: Checking against google style guide
 
 # TODO: Fix macOS error and windows warning in c++17 mode
