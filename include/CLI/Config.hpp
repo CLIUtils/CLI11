@@ -215,7 +215,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
                 items_buffer = detail::split_up(item, aSep);
-            } else if((isDefaultArray||isINIArray) && item.find_first_of(' ') != std::string::npos) {
+            } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
                 items_buffer = detail::split_up(item);
             } else {
                 items_buffer = {item};

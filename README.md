@@ -679,7 +679,7 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML] format by default 🚧, though the default reader can also accept files in INI format as well 🆕. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file🆕:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML] format by default 🚧, though the default reader can also accept files in INI format as well 🆕. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file 🆕:
 
 ```ini
 # Comments are supported, using a #
@@ -695,8 +695,7 @@ str_vector = ["one","two","and three"]
 in_subcommand = Wow
 sub.subcommand = true
 ```
-
- or equivalently in INI format 
+or equivalently in INI format
 ```ini
 ; Comments are supported, using a ;
 ; The default section is [default], case insensitive

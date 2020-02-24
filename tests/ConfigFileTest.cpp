@@ -695,7 +695,7 @@ TEST_F(TApp, TOMLVector) {
     app.set_config("--config", tmptoml);
 
     {
-        std::ofstream out{ tmptoml };
+        std::ofstream out{tmptoml};
         out << "#this is a comment line\n";
         out << "[default]\n";
         out << "two=[2,3]\n";
@@ -1748,10 +1748,10 @@ TEST_F(TApp, ConfigWriteReadWrite) {
 
 TEST_F(TApp, IniOutputSimple) {
 
-    int v{ 0 };
+    int v{0};
     app.add_option("--simple", v);
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple=3" };
+    args = {"--simple=3"};
 
     run();
 
@@ -1761,11 +1761,11 @@ TEST_F(TApp, IniOutputSimple) {
 
 TEST_F(TApp, IniOutputNoConfigurable) {
 
-    int v1{ 0 }, v2{ 0 };
+    int v1{0}, v2{0};
     app.add_option("--simple", v1);
     app.add_option("--noconf", v2)->configurable(false);
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple=3", "--noconf=2" };
+    args = {"--simple=3", "--noconf=2"};
 
     run();
 
@@ -1817,7 +1817,7 @@ TEST_F(TApp, IniOutputGroups) {
 TEST_F(TApp, IniOutputHiddenOptions) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
-    double val{ 12.7 };
+    double val{12.7};
     const std::string description1 = "First description.";
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
@@ -1854,7 +1854,7 @@ TEST_F(TApp, IniOutputMultiLineDescription) {
 TEST_F(TApp, IniOutputOptionGroup) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
-    double val{ 12.7 };
+    double val{12.7};
     const std::string description1 = "First description.";
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
@@ -1885,7 +1885,7 @@ TEST_F(TApp, IniOutputVector) {
     std::vector<int> v;
     app.add_option("--vector", v);
 
-    args = { "--vector", "1", "2", "3" };
+    args = {"--vector", "1", "2", "3"};
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -1895,13 +1895,13 @@ TEST_F(TApp, IniOutputVector) {
 
 TEST_F(TApp, IniOutputFlag) {
 
-    int v{ 0 }, q{ 0 };
+    int v{0}, q{0};
     app.add_option("--simple", v);
     app.add_flag("--nothing");
     app.add_flag("--onething");
     app.add_flag("--something", q);
 
-    args = { "--simple=3", "--onething", "--something", "--something" };
+    args = {"--simple=3", "--onething", "--something", "--something"};
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -1917,10 +1917,10 @@ TEST_F(TApp, IniOutputFlag) {
 
 TEST_F(TApp, IniOutputSet) {
 
-    int v{ 0 };
-    app.add_option("--simple", v)->check(CLI::IsMember({ 1, 2, 3 }));
+    int v{0};
+    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
 
-    args = { "--simple=2" };
+    args = {"--simple=2"};
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -1930,7 +1930,7 @@ TEST_F(TApp, IniOutputSet) {
 
 TEST_F(TApp, IniOutputDefault) {
 
-    int v{ 7 };
+    int v{7};
     app.add_option("--simple", v, "", true);
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
@@ -1948,7 +1948,7 @@ TEST_F(TApp, IniOutputSubcom) {
     auto subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple", "other", "--newer" };
+    args = {"--simple", "other", "--newer"};
     run();
 
     std::string str = app.config_to_str();
@@ -1962,7 +1962,7 @@ TEST_F(TApp, IniOutputSubcomConfigurable) {
     auto subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple", "other", "--newer" };
+    args = {"--simple", "other", "--newer"};
     run();
 
     std::string str = app.config_to_str();
@@ -1980,7 +1980,7 @@ TEST_F(TApp, IniOutputSubsubcom) {
     auto subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple", "other", "--newer", "sub2", "--newest" };
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
     run();
 
     std::string str = app.config_to_str();
@@ -1998,7 +1998,7 @@ TEST_F(TApp, IniOutputSubsubcomConfigurable) {
     auto subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple", "other", "--newer", "sub2", "--newest" };
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
     run();
 
     std::string str = app.config_to_str();
@@ -2023,7 +2023,7 @@ TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
     auto s5com = sssscom->add_subcommand("sub-level3");
     s5com->add_flag("--absolute_newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest" };
+    args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
     run();
 
     std::string str = app.config_to_str();
@@ -2041,7 +2041,7 @@ TEST_F(TApp, IniOutputQuoted) {
     std::string val2;
     app.add_option("--val2", val2);
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    args = { "--val1", "I am a string", "--val2", R"(I am a "confusing" string)" };
+    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
 
     run();
 
@@ -2055,10 +2055,10 @@ TEST_F(TApp, IniOutputQuoted) {
 
 TEST_F(TApp, DefaultsIniOutputQuoted) {
 
-    std::string val1{ "I am a string" };
+    std::string val1{"I am a string"};
     app.add_option("--val1", val1, "", true);
 
-    std::string val2{ R"(I am a "confusing" string)" };
+    std::string val2{R"(I am a "confusing" string)"};
     app.add_option("--val2", val2, "", true);
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
