@@ -508,11 +508,11 @@ TEST_F(TApp, InSetIgnoreCase) {
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
+    EXPECT_EQ("Two", choice);  // Keeps caps from set
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
+    EXPECT_EQ("THREE", choice);  // Keeps caps from set
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ValidationError);
@@ -533,11 +533,11 @@ TEST_F(TApp, InSetIgnoreCaseMutableValue) {
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
+    EXPECT_EQ("Two", choice);  // Keeps caps from set
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
+    EXPECT_EQ("THREE", choice);  // Keeps caps from set
 
     options.clear();
     args = {"--quick", "ThrEE"};
@@ -556,16 +556,16 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice); // Keeps caps from set
+    EXPECT_EQ("Two", choice);  // Keeps caps from set
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice); // Keeps caps from set
+    EXPECT_EQ("THREE", choice);  // Keeps caps from set
 
     delete options;
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice); // this does not throw a segfault
+    EXPECT_EQ("THREE", choice);  // this does not throw a segfault
 
     args = {"--quick", "four"};
     EXPECT_THROW(run(), CLI::ValidationError);
@@ -600,11 +600,11 @@ TEST_F(TApp, InSetIgnoreUnderscore) {
 
     args = {"--quick", "optiontwo"};
     run();
-    EXPECT_EQ("option_two", choice); // Keeps underscore from set
+    EXPECT_EQ("option_two", choice);  // Keeps underscore from set
 
     args = {"--quick", "_option_thr_ee"};
     run();
-    EXPECT_EQ("optionthree", choice); // no underscore
+    EXPECT_EQ("optionthree", choice);  // no underscore
 
     args = {"--quick", "Option4"};
     EXPECT_THROW(run(), CLI::ValidationError);
@@ -626,11 +626,11 @@ TEST_F(TApp, InSetIgnoreCaseUnderscore) {
 
     args = {"--quick", "OptionTwo"};
     run();
-    EXPECT_EQ("option_two", choice); // Keeps underscore and case from set
+    EXPECT_EQ("option_two", choice);  // Keeps underscore and case from set
 
     args = {"--quick", "_OPTION_thr_ee"};
     run();
-    EXPECT_EQ("OptionThree", choice); // no underscore
+    EXPECT_EQ("OptionThree", choice);  // no underscore
 
     args = {"--quick", "Option4"};
     EXPECT_THROW(run(), CLI::ValidationError);

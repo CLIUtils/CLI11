@@ -337,4 +337,4 @@ class OptionNotFound : public Error {
 
 /// @}
 
-} // namespace CLI
+}  // namespace CLI

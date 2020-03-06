@@ -1045,7 +1045,7 @@ TEST_F(TApp, IniSubcommandMultipleSections) {
     EXPECT_EQ(parse_c[0], 68U);
     EXPECT_EQ(parse_c[1], 58U);
     EXPECT_EQ(subsubcom->count(), 1u);
-    EXPECT_EQ(subcom2->count(), 0u); // not configurable but value is updated
+    EXPECT_EQ(subcom2->count(), 0u);  // not configurable but value is updated
 }
 
 TEST_F(TApp, DuplicateSubcommandCallbacks) {
@@ -1718,7 +1718,7 @@ TEST_F(TApp, StopReadingConfigOnClear) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    auto ptr = app.set_config(); // Should *not* read config file
+    auto ptr = app.set_config();  // Should *not* read config file
     EXPECT_EQ(ptr, nullptr);
 
     {

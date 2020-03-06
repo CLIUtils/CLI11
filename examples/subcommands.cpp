@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     app.add_flag("--random", "Some random flag");
     CLI::App *start = app.add_subcommand("start", "A great subcommand");
     CLI::App *stop = app.add_subcommand("stop", "Do you really want to stop?");
-    app.require_subcommand(); // 1 or more
+    app.require_subcommand();  // 1 or more
 
     std::string file;
     start->add_option("-f,--file", file, "File name");

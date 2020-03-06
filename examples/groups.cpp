@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     int count{0};
     CLI::Option *copt = app.add_flag("-c,--count", count, "Counter")->required()->group("Important");
 
-    double value{0.0}; // = 3.14;
+    double value{0.0};  // = 3.14;
     app.add_option("-d,--double", value, "Some Value")->group("Other");
 
     try {

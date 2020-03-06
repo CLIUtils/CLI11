@@ -768,6 +768,6 @@ TEST_F(ManyGroupsPreTrigger, PreTriggerTestsSubcommand) {
     EXPECT_EQ(triggerMain, 4u);
     EXPECT_EQ(trigger1, 1u);
     EXPECT_EQ(trigger2, 3u);
-    EXPECT_EQ(trigger3, 1u); // processes the first argument in group3 which includes the entire subcommand, which will
-                             // go until the sub1 command is given
+    EXPECT_EQ(trigger3, 1u);  // processes the first argument in group3 which includes the entire subcommand, which will
+                              // go until the sub1 command is given
 }

@@ -218,7 +218,7 @@ TEST(Trim, TrimCopy) {
 TEST(Validators, FileExists) {
     std::string myfile{"TestFileNotUsed.txt"};
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
 
@@ -229,7 +229,7 @@ TEST(Validators, FileExists) {
 TEST(Validators, FileNotExists) {
     std::string myfile{"TestFileNotUsed.txt"};
     EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_FALSE(CLI::NonexistentPath(myfile).empty());
 
@@ -255,7 +255,7 @@ TEST(Validators, DirectoryNotExists) {
 TEST(Validators, DirectoryIsFile) {
     std::string myfile{"TestFileNotUsed.txt"};
     EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_FALSE(CLI::ExistingDirectory(myfile).empty());
 
@@ -271,7 +271,7 @@ TEST(Validators, PathExistsDir) {
 TEST(Validators, PathExistsFile) {
     std::string myfile{"TestFileNotUsed.txt"};
     EXPECT_FALSE(CLI::ExistingPath(myfile).empty());
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
     EXPECT_TRUE(CLI::ExistingPath(myfile).empty());
 
@@ -383,7 +383,7 @@ TEST(Validators, CombinedOrRange) {
 TEST(Validators, CombinedPaths) {
     std::string myfile{"TestFileNotUsed.txt"};
     EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     EXPECT_TRUE(ok);
 
     std::string dir{"../tests"};
@@ -435,7 +435,7 @@ TEST(Validators, ProgramNameSplit) {
     EXPECT_EQ(res.second, "this is a bunch of extra stuff");
 
     res = CLI::detail::split_program_name("./program_name    this is a bunch of extra stuff  ");
-    EXPECT_EQ(res.first, "./program_name"); // test sectioning of first argument even if it can't detect the file
+    EXPECT_EQ(res.first, "./program_name");  // test sectioning of first argument even if it can't detect the file
     EXPECT_EQ(res.second, "this is a bunch of extra stuff");
 
     res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
@@ -663,7 +663,7 @@ TEST(AppHelper, TempfileCreated) {
 
         EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
 
-        bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+        bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
         EXPECT_TRUE(ok);
         EXPECT_TRUE(CLI::ExistingFile(name).empty());
         EXPECT_THROW({ TempFile otherfile(name); }, std::runtime_error);
@@ -994,12 +994,12 @@ TEST(Types, LexicalCastParsable) {
 
     std::complex<double> output;
     EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
-    EXPECT_DOUBLE_EQ(output.real(), 4.2); // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 7.3); // on clang + c++4.8 due to missing const
+    EXPECT_DOUBLE_EQ(output.real(), 4.2);  // Doing this in one go sometimes has trouble
+    EXPECT_DOUBLE_EQ(output.imag(), 7.3);  // on clang + c++4.8 due to missing const
 
     EXPECT_TRUE(CLI::detail::lexical_cast("2.456", output));
-    EXPECT_DOUBLE_EQ(output.real(), 2.456); // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 0.0);   // on clang + c++4.8 due to missing const
+    EXPECT_DOUBLE_EQ(output.real(), 2.456);  // Doing this in one go sometimes has trouble
+    EXPECT_DOUBLE_EQ(output.imag(), 0.0);    // on clang + c++4.8 due to missing const
 
     EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));

@@ -75,7 +75,7 @@ SortIncludes:    true
 # SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Never
 # SpaceInEmptyParentheses: false
-# SpacesBeforeTrailingComments: 1
+SpacesBeforeTrailingComments: 2
 # SpacesInAngles:  false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false

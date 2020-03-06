@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     CLI::Option *copt = impOpt->add_flag("-c,--count", count, "Counter")->required();
 
     CLI::App_p otherOpt = std::make_shared<CLI::App>("Other");
-    double value{0.0}; // = 3.14;
+    double value{0.0};  // = 3.14;
     otherOpt->add_option("-d,--double", value, "Some Value");
 
     // add the subapps to the main one

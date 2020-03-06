@@ -527,7 +527,7 @@ TEST_F(TApp, GetOptionList) {
     auto flag = app.add_flag("--one");
     auto opt = app.add_option("--two", two);
 
-    const CLI::App &const_app = app; // const alias to force use of const-methods
+    const CLI::App &const_app = app;  // const alias to force use of const-methods
     std::vector<const CLI::Option *> opt_list = const_app.get_options();
 
     ASSERT_EQ(opt_list.size(), static_cast<std::size_t>(3));

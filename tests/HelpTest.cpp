@@ -715,7 +715,7 @@ TEST(Exit, ExitCodes) {
     EXPECT_EQ(0, app.exit(CLI::CallForHelp()));
     EXPECT_EQ(i, app.exit(CLI::ExtrasError({"Thing"})));
     EXPECT_EQ(42, app.exit(CLI::RuntimeError(42)));
-    EXPECT_EQ(1, app.exit(CLI::RuntimeError())); // Not sure if a default here is a good thing
+    EXPECT_EQ(1, app.exit(CLI::RuntimeError()));  // Not sure if a default here is a good thing
 }
 
 struct CapturedHelp : public ::testing::Test {
@@ -945,7 +945,7 @@ TEST(THelp, ValidatorsText) {
     std::string help = app.help();
     EXPECT_THAT(help, HasSubstr("TEXT:FILE"));
     EXPECT_THAT(help, HasSubstr("INT in [1 - 4]"));
-    EXPECT_THAT(help, HasSubstr("UINT:INT in [0 - 12]")); // Loses UINT
+    EXPECT_THAT(help, HasSubstr("UINT:INT in [0 - 12]"));  // Loses UINT
 }
 
 TEST(THelp, ValidatorsTextCustom) {

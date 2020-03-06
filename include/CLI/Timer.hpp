@@ -13,7 +13,7 @@
 #endif
 
 #include <array>
-#include <chrono> // NOLINT(build/c++11)
+#include <chrono>  // NOLINT(build/c++11)
 #include <functional>
 #include <iostream>
 #include <string>
@@ -128,7 +128,7 @@ class AutoTimer : public Timer {
     ~AutoTimer() { std::cout << to_string() << std::endl; }
 };
 
-} // namespace CLI
+}  // namespace CLI
 
 /// This prints out the time if shifted into a std::cout like stream.
 inline std::ostream &operator<<(std::ostream &in, const CLI::Timer &timer) { return in << timer.to_string(); }

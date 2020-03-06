@@ -33,7 +33,7 @@ class TempFile {
     }
 
     ~TempFile() {
-        std::remove(_name.c_str()); // Doesn't matter if returns 0 or not
+        std::remove(_name.c_str());  // Doesn't matter if returns 0 or not
     }
 
     operator const std::string &() const { return _name; }
