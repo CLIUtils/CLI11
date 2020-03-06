@@ -619,10 +619,10 @@ class App {
     /// Add option for assigning to a variable
     template <typename AssignTo, enable_if_t<!std::is_const<AssignTo>::value, detail::enabler> = detail::dummy>
     Option *add_option_no_stream(std::string option_name,
-                                 AssignTo &variable, ///< The variable to set
+                                 AssignTo &variable,  ///< The variable to set
                                  std::string option_description = "") {
 
-        auto fun = [&variable](const CLI::results_t &res) { // comment for spacing
+        auto fun = [&variable](const CLI::results_t &res) {  // comment for spacing
             return detail::lexical_conversion<AssignTo, AssignTo>(res, variable);
         };
 
@@ -637,7 +637,7 @@ class App {
     /// Add option for a callback of a specific type
     template <typename ArgType>
     Option *add_option_function(std::string option_name,
-                                const std::function<void(const ArgType &)> &func, ///< the callback to execute
+                                const std::function<void(const ArgType &)> &func,  ///< the callback to execute
                                 std::string option_description = "") {
 
         auto fun = [func](const CLI::results_t &res) {

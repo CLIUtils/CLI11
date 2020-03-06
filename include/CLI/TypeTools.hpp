@@ -713,14 +713,14 @@ constexpr const char *type_name() {
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::tuple_value && type_count_base<T>::value >= 2,
                       detail::enabler> = detail::dummy>
-std::string type_name(); // forward declaration
+std::string type_name();  // forward declaration
 
 /// Generate type name for a wrapper or container value
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::container_value ||
                           classify_object<T>::value == object_category::wrapper_value,
                       detail::enabler> = detail::dummy>
-std::string type_name(); // forward declaration
+std::string type_name();  // forward declaration
 
 /// Print name for single element tuple types
 template <typename T,
@@ -1179,7 +1179,7 @@ template <class AssignTo,
                           (type_count_base<ConvertTo>::value != type_count<ConvertTo>::value ||
                            type_count<ConvertTo>::value > 2),
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output); // forward declaration
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output);  // forward declaration
 
 /// Conversion for operations where the assigned type is some class but the conversion is a mutable container or large
 /// tuple

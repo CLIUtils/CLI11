@@ -108,14 +108,14 @@ template <> bool lexical_cast<std::complex<double>>(const std::string &input, st
     }
     return worked;
 }
-} // namespace detail
-} // namespace CLI
+}  // namespace detail
+}  // namespace CLI
 
 TEST_F(TApp, AddingComplexParserDetail) {
 
     bool skip_tests = false;
-    try { // check if the library actually supports regex,  it is possible to link against a non working regex in the
-          // standard library
+    try {  // check if the library actually supports regex,  it is possible to link against a non working regex in the
+           // standard library
         std::smatch m;
         std::string input = "1.5+2.5j";
         static const std::regex creg(
