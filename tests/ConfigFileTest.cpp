@@ -690,12 +690,12 @@ TEST_F(TApp, IniVector) {
 }
 TEST_F(TApp, TOMLVector) {
 
-    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmptoml{"TestTomlTmp.toml"};
 
-    app.set_config("--config", tmpini);
+    app.set_config("--config", tmptoml);
 
     {
-        std::ofstream out{tmpini};
+        std::ofstream out{tmptoml};
         out << "#this is a comment line\n";
         out << "[default]\n";
         out << "two=[2,3]\n";
@@ -1050,12 +1050,12 @@ TEST_F(TApp, IniSubcommandMultipleSections) {
 
 TEST_F(TApp, DuplicateSubcommandCallbacks) {
 
-    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmptoml{"TesttomlTmp.toml"};
 
-    app.set_config("--config", tmpini);
+    app.set_config("--config", tmptoml);
 
     {
-        std::ofstream out{tmpini};
+        std::ofstream out{tmptoml};
         out << "[[foo]]" << std::endl;
         out << "[[foo]]" << std::endl;
         out << "[[foo]]" << std::endl;
@@ -1195,6 +1195,7 @@ TEST_F(TApp, IniFlagDual) {
     TempFile tmpini{"TestIniTmp.ini"};
 
     bool boo{false};
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
     app.add_flag("--flag", boo);
     app.set_config("--config", tmpini);
 
@@ -1362,7 +1363,7 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideSuccess) {
     EXPECT_EQ(15, val);
 }
 
-TEST_F(TApp, IniOutputSimple) {
+TEST_F(TApp, TomlOutputSimple) {
 
     int v{0};
     app.add_option("--simple", v);
@@ -1375,7 +1376,7 @@ TEST_F(TApp, IniOutputSimple) {
     EXPECT_EQ("simple=3\n", str);
 }
 
-TEST_F(TApp, IniOutputNoConfigurable) {
+TEST_F(TApp, TomlOutputNoConfigurable) {
 
     int v1{0}, v2{0};
     app.add_option("--simple", v1);
@@ -1389,7 +1390,7 @@ TEST_F(TApp, IniOutputNoConfigurable) {
     EXPECT_EQ("simple=3\n", str);
 }
 
-TEST_F(TApp, IniOutputShortSingleDescription) {
+TEST_F(TApp, TomlOutputShortSingleDescription) {
     std::string flag = "some_flag";
     const std::string description = "Some short description.";
     app.add_flag("--" + flag, description);
@@ -1397,10 +1398,10 @@ TEST_F(TApp, IniOutputShortSingleDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("; " + description + "\n" + flag + "=false\n"));
+    EXPECT_THAT(str, HasSubstr("# " + description + "\n" + flag + "=false\n"));
 }
 
-TEST_F(TApp, IniOutputShortDoubleDescription) {
+TEST_F(TApp, TomlOutputShortDoubleDescription) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -1412,10 +1413,10 @@ TEST_F(TApp, IniOutputShortDoubleDescription) {
 
     std::string str = app.config_to_str(true, true);
     EXPECT_THAT(
-        str, HasSubstr("; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n"));
+        str, HasSubstr("# " + description1 + "\n" + flag1 + "=false\n\n# " + description2 + "\n" + flag2 + "=false\n"));
 }
 
-TEST_F(TApp, IniOutputGroups) {
+TEST_F(TApp, TomlOutputGroups) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -1430,7 +1431,7 @@ TEST_F(TApp, IniOutputGroups) {
     EXPECT_THAT(str, HasSubstr("group2"));
 }
 
-TEST_F(TApp, IniOutputHiddenOptions) {
+TEST_F(TApp, TomlOutputHiddenOptions) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -1454,7 +1455,7 @@ TEST_F(TApp, IniOutputHiddenOptions) {
     EXPECT_EQ(loc, std::string::npos);
 }
 
-TEST_F(TApp, IniOutputMultiLineDescription) {
+TEST_F(TApp, TomlOutputMultiLineDescription) {
     std::string flag = "some_flag";
     const std::string description = "Some short description.\nThat has lines.";
     app.add_flag("--" + flag, description);
@@ -1462,12 +1463,12 @@ TEST_F(TApp, IniOutputMultiLineDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("; Some short description.\n"));
-    EXPECT_THAT(str, HasSubstr("; That has lines.\n"));
+    EXPECT_THAT(str, HasSubstr("# Some short description.\n"));
+    EXPECT_THAT(str, HasSubstr("# That has lines.\n"));
     EXPECT_THAT(str, HasSubstr(flag + "=false\n"));
 }
 
-TEST_F(TApp, IniOutputOptionGroup) {
+TEST_F(TApp, TomlOutputOptionGroup) {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -1496,20 +1497,7 @@ TEST_F(TApp, IniOutputOptionGroup) {
     EXPECT_GT(locg3, locg1);
 }
 
-TEST_F(TApp, IniOutputVector) {
-
-    std::vector<int> v;
-    app.add_option("--vector", v);
-
-    args = {"--vector", "1", "2", "3"};
-
-    run();
-
-    std::string str = app.config_to_str();
-    EXPECT_EQ("vector=1 2 3\n", str);
-}
-
-TEST_F(TApp, IniOutputVectorTOML) {
+TEST_F(TApp, TomlOutputVector) {
 
     std::vector<int> v;
     app.add_option("--vector", v);
@@ -1522,7 +1510,7 @@ TEST_F(TApp, IniOutputVectorTOML) {
     EXPECT_EQ("vector=[1, 2, 3]\n", str);
 }
 
-TEST_F(TApp, IniOutputVectorCustom) {
+TEST_F(TApp, ConfigOutputVectorCustom) {
 
     std::vector<int> v;
     app.add_option("--vector", v);
@@ -1537,7 +1525,7 @@ TEST_F(TApp, IniOutputVectorCustom) {
     EXPECT_EQ("vector:{1; 2; 3}\n", str);
 }
 
-TEST_F(TApp, IniOutputFlag) {
+TEST_F(TApp, TomlOutputFlag) {
 
     int v{0}, q{0};
     app.add_option("--simple", v);
@@ -1553,13 +1541,13 @@ TEST_F(TApp, IniOutputFlag) {
     EXPECT_THAT(str, HasSubstr("simple=3"));
     EXPECT_THAT(str, Not(HasSubstr("nothing")));
     EXPECT_THAT(str, HasSubstr("onething=true"));
-    EXPECT_THAT(str, HasSubstr("something=true true"));
+    EXPECT_THAT(str, HasSubstr("something=[true, true]"));
 
     str = app.config_to_str(true);
     EXPECT_THAT(str, HasSubstr("nothing"));
 }
 
-TEST_F(TApp, IniOutputSet) {
+TEST_F(TApp, TomlOutputSet) {
 
     int v{0};
     app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
@@ -1572,7 +1560,7 @@ TEST_F(TApp, IniOutputSet) {
     EXPECT_THAT(str, HasSubstr("simple=2"));
 }
 
-TEST_F(TApp, IniOutputDefault) {
+TEST_F(TApp, TomlOutputDefault) {
 
     int v{7};
     app.add_option("--simple", v, "", true);
@@ -1586,7 +1574,7 @@ TEST_F(TApp, IniOutputDefault) {
     EXPECT_THAT(str, HasSubstr("simple=7"));
 }
 
-TEST_F(TApp, IniOutputSubcom) {
+TEST_F(TApp, TomlOutputSubcom) {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -1600,7 +1588,7 @@ TEST_F(TApp, IniOutputSubcom) {
     EXPECT_THAT(str, HasSubstr("other.newer=true"));
 }
 
-TEST_F(TApp, IniOutputSubcomConfigurable) {
+TEST_F(TApp, TomlOutputSubcomConfigurable) {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1616,7 +1604,7 @@ TEST_F(TApp, IniOutputSubcomConfigurable) {
     EXPECT_EQ(str.find("other.newer=true"), std::string::npos);
 }
 
-TEST_F(TApp, IniOutputSubsubcom) {
+TEST_F(TApp, TomlOutputSubsubcom) {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -1633,7 +1621,7 @@ TEST_F(TApp, IniOutputSubsubcom) {
     EXPECT_THAT(str, HasSubstr("other.sub2.newest=true"));
 }
 
-TEST_F(TApp, IniOutputSubsubcomConfigurable) {
+TEST_F(TApp, TomlOutputSubsubcomConfigurable) {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1654,7 +1642,7 @@ TEST_F(TApp, IniOutputSubsubcomConfigurable) {
     EXPECT_EQ(str.find("sub2.newest=true"), std::string::npos);
 }
 
-TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
+TEST_F(TApp, TomlOutputSubsubcomConfigurableDeep) {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1677,7 +1665,7 @@ TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
     EXPECT_EQ(str.find(".absolute_newest=true"), std::string::npos);
 }
 
-TEST_F(TApp, IniQuotedOutput) {
+TEST_F(TApp, TomlOutputQuoted) {
 
     std::string val1;
     app.add_option("--val1", val1);
@@ -1697,7 +1685,7 @@ TEST_F(TApp, IniQuotedOutput) {
     EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
 }
 
-TEST_F(TApp, DefaultsIniQuotedOutput) {
+TEST_F(TApp, DefaultsTomlOutputQuoted) {
 
     std::string val1{"I am a string"};
     app.add_option("--val1", val1, "", true);
@@ -1754,4 +1742,328 @@ TEST_F(TApp, ConfigWriteReadWrite) {
     std::string config2 = app.config_to_str(true, true);
 
     EXPECT_EQ(config1, config2);
+}
+
+///////INI output tests
+
+TEST_F(TApp, IniOutputSimple) {
+
+    int v{0};
+    app.add_option("--simple", v);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple=3"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("simple=3\n", str);
+}
+
+TEST_F(TApp, IniOutputNoConfigurable) {
+
+    int v1{0}, v2{0};
+    app.add_option("--simple", v1);
+    app.add_option("--noconf", v2)->configurable(false);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple=3", "--noconf=2"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("simple=3\n", str);
+}
+
+TEST_F(TApp, IniOutputShortSingleDescription) {
+    std::string flag = "some_flag";
+    const std::string description = "Some short description.";
+    app.add_flag("--" + flag, description);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(str, HasSubstr("; " + description + "\n" + flag + "=false\n"));
+}
+
+TEST_F(TApp, IniOutputShortDoubleDescription) {
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1);
+    app.add_flag("--" + flag2, description2);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(
+        str, HasSubstr("; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n"));
+}
+
+TEST_F(TApp, IniOutputGroups) {
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(str, HasSubstr("group1"));
+    EXPECT_THAT(str, HasSubstr("group2"));
+}
+
+TEST_F(TApp, IniOutputHiddenOptions) {
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    double val{12.7};
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+    app.add_option("--dval", val, "", true)->group("");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(str, HasSubstr("group1"));
+    EXPECT_THAT(str, HasSubstr("group2"));
+    EXPECT_THAT(str, HasSubstr("dval=12.7"));
+    auto loc = str.find("dval=12.7");
+    auto locg1 = str.find("group1");
+    EXPECT_GT(locg1, loc);
+    // make sure it doesn't come twice
+    loc = str.find("dval=12.7", loc + 4);
+    EXPECT_EQ(loc, std::string::npos);
+}
+
+TEST_F(TApp, IniOutputMultiLineDescription) {
+    std::string flag = "some_flag";
+    const std::string description = "Some short description.\nThat has lines.";
+    app.add_flag("--" + flag, description);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(str, HasSubstr("; Some short description.\n"));
+    EXPECT_THAT(str, HasSubstr("; That has lines.\n"));
+    EXPECT_THAT(str, HasSubstr(flag + "=false\n"));
+}
+
+TEST_F(TApp, IniOutputOptionGroup) {
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    double val{12.7};
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+    auto og = app.add_option_group("group3", "g3 desc");
+    og->add_option("--dval", val, "", true)->group("");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    EXPECT_THAT(str, HasSubstr("group1"));
+    EXPECT_THAT(str, HasSubstr("group2"));
+    EXPECT_THAT(str, HasSubstr("dval=12.7"));
+    EXPECT_THAT(str, HasSubstr("group3"));
+    EXPECT_THAT(str, HasSubstr("g3 desc"));
+    auto loc = str.find("dval=12.7");
+    auto locg1 = str.find("group1");
+    auto locg3 = str.find("group3");
+    EXPECT_LT(locg1, loc);
+    // make sure it doesn't come twice
+    loc = str.find("dval=12.7", loc + 4);
+    EXPECT_EQ(loc, std::string::npos);
+    EXPECT_GT(locg3, locg1);
+}
+
+TEST_F(TApp, IniOutputVector) {
+
+    std::vector<int> v;
+    app.add_option("--vector", v);
+
+    args = {"--vector", "1", "2", "3"};
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("vector=1 2 3\n", str);
+}
+
+TEST_F(TApp, IniOutputFlag) {
+
+    int v{0}, q{0};
+    app.add_option("--simple", v);
+    app.add_flag("--nothing");
+    app.add_flag("--onething");
+    app.add_flag("--something", q);
+
+    args = {"--simple=3", "--onething", "--something", "--something"};
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=3"));
+    EXPECT_THAT(str, Not(HasSubstr("nothing")));
+    EXPECT_THAT(str, HasSubstr("onething=true"));
+    EXPECT_THAT(str, HasSubstr("something=true true"));
+
+    str = app.config_to_str(true);
+    EXPECT_THAT(str, HasSubstr("nothing"));
+}
+
+TEST_F(TApp, IniOutputSet) {
+
+    int v{0};
+    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
+
+    args = {"--simple=2"};
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=2"));
+}
+
+TEST_F(TApp, IniOutputDefault) {
+
+    int v{7};
+    app.add_option("--simple", v, "", true);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, Not(HasSubstr("simple=7")));
+
+    str = app.config_to_str(true);
+    EXPECT_THAT(str, HasSubstr("simple=7"));
+}
+
+TEST_F(TApp, IniOutputSubcom) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("other.newer=true"));
+}
+
+TEST_F(TApp, IniOutputSubcomConfigurable) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("[other]"));
+    EXPECT_THAT(str, HasSubstr("newer=true"));
+    EXPECT_EQ(str.find("other.newer=true"), std::string::npos);
+}
+
+TEST_F(TApp, IniOutputSubsubcom) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("other.newer=true"));
+    EXPECT_THAT(str, HasSubstr("other.sub2.newest=true"));
+}
+
+TEST_F(TApp, IniOutputSubsubcomConfigurable) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("[other]"));
+    EXPECT_THAT(str, HasSubstr("newer=true"));
+    EXPECT_THAT(str, HasSubstr("[other.sub2]"));
+    EXPECT_THAT(str, HasSubstr("newest=true"));
+    EXPECT_EQ(str.find("sub2.newest=true"), std::string::npos);
+}
+
+TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    auto sssscom = subsubcom->add_subcommand("sub-level2");
+    subsubcom->add_flag("--still_newer");
+    auto s5com = sssscom->add_subcommand("sub-level3");
+    s5com->add_flag("--absolute_newest");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("simple=true"));
+    EXPECT_THAT(str, HasSubstr("[other.sub2.sub-level2.sub-level3]"));
+    EXPECT_THAT(str, HasSubstr("absolute_newest=true"));
+    EXPECT_EQ(str.find(".absolute_newest=true"), std::string::npos);
+}
+
+TEST_F(TApp, IniOutputQuoted) {
+
+    std::string val1;
+    app.add_option("--val1", val1);
+
+    std::string val2;
+    app.add_option("--val2", val2);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
+
+    run();
+
+    EXPECT_EQ("I am a string", val1);
+    EXPECT_EQ("I am a \"confusing\" string", val2);
+
+    std::string str = app.config_to_str();
+    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
+    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+}
+
+TEST_F(TApp, DefaultsIniOutputQuoted) {
+
+    std::string val1{"I am a string"};
+    app.add_option("--val1", val1, "", true);
+
+    std::string val2{R"(I am a "confusing" string)"};
+    app.add_option("--val2", val2, "", true);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true);
+    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
+    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
 }

@@ -247,7 +247,7 @@ class App {
     Option *config_ptr_{nullptr};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
-    std::shared_ptr<Config> config_formatter_{new ConfigINI()};
+    std::shared_ptr<Config> config_formatter_{new ConfigTOML()};
 
     ///@}
 

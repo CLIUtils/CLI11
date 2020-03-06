@@ -71,17 +71,17 @@ class Config {
     virtual ~Config() = default;
 };
 
-/// This converter works with INI/TOML files; to write proper TOML files use ConfigTOML
+/// This converter works with INI/TOML files; to write INI files use ConfigINI
 class ConfigBase : public Config {
   protected:
     /// the character used for comments
-    char commentChar = ';';
+    char commentChar = '#';
     /// the character used to start an array '\0' is a default to not use
-    char arrayStart = '\0';
+    char arrayStart = '[';
     /// the character used to end an array '\0' is a default to not use
-    char arrayEnd = '\0';
+    char arrayEnd = ']';
     /// the character used to separate elements in an array
-    char arraySeparator = ' ';
+    char arraySeparator = ',';
     /// the character used separate the name from the value
     char valueDelimiter = '=';
 
@@ -113,18 +113,18 @@ class ConfigBase : public Config {
     }
 };
 
-/// the default Config is the INI file format
-using ConfigINI = ConfigBase;
+/// the default Config is the TOML file format
+using ConfigTOML = ConfigBase;
 
-/// ConfigTOML generates a TOML compliant output
-class ConfigTOML : public ConfigINI {
+/// ConfigINI generates a "standard" INI compliant output
+class ConfigINI : public ConfigTOML {
 
   public:
-    ConfigTOML() {
-        commentChar = '#';
-        arrayStart = '[';
-        arrayEnd = ']';
-        arraySeparator = ',';
+    ConfigINI() {
+        commentChar = ';';
+        arrayStart = '\0';
+        arrayEnd = '\0';
+        arraySeparator = ' ';
         valueDelimiter = '=';
     }
 };

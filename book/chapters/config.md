@@ -41,7 +41,26 @@ If it is needed to get the configuration file name used this can be obtained via
 
 ## Configure file format
 
-Here is an example configuration file, in INI format:
+Here is an example configuration file, in [TOML](https://github.com/toml-lang/toml) format:
+
+```ini
+# Comments are supported, using a #
+# The default section is [default], case insensitive
+
+value = 1
+str = "A string"
+vector = [1,2,3]
+
+# Section map to subcommands
+[subcommand]
+in_subcommand = Wow
+[subcommand.sub]
+subcommand = true # could also be give as sub.subcommand=true
+```
+
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `y`, `t`, `+`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `n`, `f`, `-`, `disable`, (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults". If a subcommand is set to `configurable` then passing the subcommand using `[sub]` in a configuration file will trigger the subcommand.)
+
+CLI11 also supports configuration file in INI format.
 
 ```ini
 ; Comments are supported, using a ;
@@ -57,25 +76,6 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `y`, `t`, `+`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `n`, `f`, `-`, `disable`, (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults". If a subcommand is set to `configurable` then passing the subcommand using `[sub]` in a configuration file will trigger the subcommand.)
-
-CLI11 also supports configuration file in [TOML](https://github.com/toml-lang/toml) format.
-
-```toml
-# Comments are supported, using a #
-# The default section is [default], case insensitive
-
-value = 1
-str = "A string"
-vector = [1,2,3]
-
-# Section map to subcommands
-[subcommand]
-in_subcommand = Wow
-[subcommand.sub]
-subcommand = true # could also be give as sub.subcommand=true
-```
-
 The main differences are in vector notation and comment character.  Note: CLI11 is not a full TOML parser as it just reads values as strings.  It is possible (but not recommended) to mix notation.
 
 ## Writing out a configure file
@@ -83,16 +83,16 @@ The main differences are in vector notation and comment character.  Note: CLI11 
 To print a configuration file from the passed arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
 
 ### Customization of configure file output
-The default config parser/generator has some customization points that allow variations on the INI format.  The default formatter has a base configuration that matches the INI format.  It defines 5 characters that define how different aspects of the configuration are handled
+The default config parser/generator has some customization points that allow variations on the TOML format.  The default formatter has a base configuration that matches the TOML format.  It defines 5 characters that define how different aspects of the configuration are handled
 ```cpp
 /// the character used for comments
-char commentChar = ';';
+char commentChar = '#';
 /// the character used to start an array '\0' is a default to not use
-char arrayStart = '\0';
+char arrayStart = '[';
 /// the character used to end an array '\0' is a default to not use
-char arrayEnd = '\0';
+char arrayEnd = ']';
 /// the character used to separate elements in an array
-char arraySeparator = ' ';
+char arraySeparator = ',';
 /// the character used separate the name from the value
 char valueDelimiter = '=';
 ```
@@ -111,11 +111,11 @@ auto config_base=app.get_config_formatter_base();
 config_base->valueSeparator(':');
 ```
 
-The default configuration file will read TOML files, but will write out files in the INI format.  To specify outputting TOML formatted files use
+The default configuration file will read INI files, but will write out files in the TOML format.  To specify outputting INI formatted files use
 ```cpp
-app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+app.config_formatter(std::make_shared<CLI::ConfigINI>());
 ```
-which makes use of a predefined modification of the ConfigBase class which INI also uses.
+which makes use of a predefined modification of the ConfigBase class which TOML also uses.
 
 ## Custom formats
 

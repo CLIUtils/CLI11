@@ -679,8 +679,23 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in `ini` format by default,  The reader can also accept many files in [TOML] format 🆕.  (other formats can be added by an adept user, some variations are available through customization points in the default formatter). An example of a file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML] format by default 🚧, though the default reader can also accept files in INI format as well 🆕. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file 🆕:
 
+```ini
+# Comments are supported, using a #
+# The default section is [default], case insensitive
+
+value = 1
+str = "A string"
+vector = [1,2,3]
+str_vector = ["one","two","and three"]
+
+# Sections map to subcommands
+[subcommand]
+in_subcommand = Wow
+sub.subcommand = true
+```
+or equivalently in INI format
 ```ini
 ; Comments are supported, using a ;
 ; The default section is [default], case insensitive
@@ -695,23 +710,8 @@ str_vector = "one" "two" "and three"
 in_subcommand = Wow
 sub.subcommand = true
 ```
- or equivalently in TOML 🆕
-```toml
-# Comments are supported, using a #
-# The default section is [default], case insensitive
 
-value = 1
-str = "A string"
-vector = [1,2,3]
-str_vector = ["one","two","and three"]
-
-# Sections map to subcommands
-[subcommand]
-in_subcommand = Wow
-sub.subcommand = true
-```
-
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🆕 Subcommands can be triggered from config files if the `configurable` flag was set on the subcommand.  Then use `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.
+Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🆕 Subcommands can be triggered from configuration files if the `configurable` flag was set on the subcommand.  Then the use of `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.
 
 To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
@@ -744,7 +744,7 @@ The App class was designed allow toolkits to subclass it, to provide preset defa
 but before run behavior, while
 still giving the user freedom to `callback` on the main app.
 
-The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional bool should be set to true if you are
+The most important parse function is `parse(std::vector<std::string>)`, which takes a reversed list of arguments (so that `pop_back` processes the args in the correct order). `get_help_ptr` and `get_config_ptr` give you access to the help/config option pointers. The standard `parse` manually sets the name from the first argument, so it should not be in this vector. You can also use `parse(string, bool)` to split up and parse a string; the optional boolean should be set to true if you are
 including the program name in the string, and false otherwise.
 
 Also, in a related note, the `App` you get a pointer to is stored in the parent `App` in a `shared_ptr`s (similar to `Option`s) and are deleted when the main `App` goes out of scope unless the object has another owner.

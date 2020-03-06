@@ -167,10 +167,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     std::string section = "default";
 
     std::vector<ConfigItem> output;
-    bool defaultArray = (arrayStart == '\0' || arrayStart == ' ') && arrayStart == arrayEnd;
-    char aStart = (defaultArray) ? '[' : arrayStart;
-    char aEnd = (defaultArray) ? ']' : arrayEnd;
-    char aSep = (defaultArray && arraySeparator == ' ') ? ',' : arraySeparator;
+    bool isDefaultArray = (arrayStart == '[' && arrayEnd == ']' && arraySeparator == ',');
+    bool isINIArray = (arrayStart == '\0' || arrayStart == ' ') && arrayStart == arrayEnd;
+    char aStart = (isINIArray) ? '[' : arrayStart;
+    char aEnd = (isINIArray) ? ']' : arrayEnd;
+    char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
 
     while(getline(input, line)) {
         std::vector<std::string> items_buffer;
@@ -212,9 +213,9 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             std::string item = detail::trim_copy(line.substr(pos + 1));
             if(item.size() > 1 && item.front() == aStart && item.back() == aEnd) {
                 items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
-            } else if(defaultArray && item.find_first_of(aSep) != std::string::npos) {
+            } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
                 items_buffer = detail::split_up(item, aSep);
-            } else if(defaultArray && item.find_first_of(' ') != std::string::npos) {
+            } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
                 items_buffer = detail::split_up(item);
             } else {
                 items_buffer = {item};
