@@ -1844,7 +1844,7 @@ TEST_F(TApp, ConfigWriteReadWrite) {
     EXPECT_EQ(config1, config2);
 }
 
-///////INI output tests
+/////// INI output tests
 
 TEST_F(TApp, IniOutputSimple) {
 
