@@ -2336,6 +2336,14 @@ class App {
         }
         Option *op = get_option_no_throw("--" + item.name);
         if(op == nullptr) {
+            if(item.name.size() == 1) {
+                op = get_option_no_throw("-" + item.name);
+            }
+        }
+        if(op == nullptr) {
+            op = get_option_no_throw(item.name);
+        }
+        if(op == nullptr) {
             // If the option was not present
             if(get_allow_config_extras() == config_extras_mode::capture)
                 // Should we worry about classifying the extras properly?
