@@ -1207,6 +1207,40 @@ TEST_F(TApp, IniFlagDual) {
     EXPECT_THROW(run(), CLI::ConversionError);
 }
 
+TEST_F(TApp, IniShort) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    int key{0};
+    app.add_option("--flag,-f", key);
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "f=3" << std::endl;
+    }
+
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(key, 3);
+}
+
+TEST_F(TApp, IniPositional) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    int key{0};
+    app.add_option("key", key);
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "key=3" << std::endl;
+    }
+
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(key, 3);
+}
+
 TEST_F(TApp, IniFlagText) {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -1374,6 +1408,32 @@ TEST_F(TApp, TomlOutputSimple) {
 
     std::string str = app.config_to_str();
     EXPECT_EQ("simple=3\n", str);
+}
+
+TEST_F(TApp, TomlOutputShort) {
+
+    int v{0};
+    app.add_option("-s", v);
+
+    args = {"-s3"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("s=3\n", str);
+}
+
+TEST_F(TApp, TomlOutputPositional) {
+
+    int v{0};
+    app.add_option("pos", v);
+
+    args = {"3"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    EXPECT_EQ("pos=3\n", str);
 }
 
 TEST_F(TApp, TomlOutputNoConfigurable) {
