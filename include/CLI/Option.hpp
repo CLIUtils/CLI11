@@ -848,23 +848,33 @@ class Option : public OptionBase<Option> {
     bool operator==(const Option &other) const { return !matching_name(other).empty(); }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
-    bool check_name(std::string name) const {
+    bool check_name(const std::string &name) const {
 
         if(name.length() > 2 && name[0] == '-' && name[1] == '-')
             return check_lname(name.substr(2));
         if(name.length() > 1 && name.front() == '-')
             return check_sname(name.substr(1));
+        if(!pname_.empty()) {
+            std::string local_pname = pname_;
+            std::string local_name = name;
+            if(ignore_underscore_) {
+                local_pname = detail::remove_underscore(local_pname);
+                local_name = detail::remove_underscore(local_name);
+            }
+            if(ignore_case_) {
+                local_pname = detail::to_lower(local_pname);
+                local_name = detail::to_lower(local_name);
+            }
+            if(local_name == local_pname) {
+                return true;
+            }
+        }
 
-        std::string local_pname = pname_;
-        if(ignore_underscore_) {
-            local_pname = detail::remove_underscore(local_pname);
-            name = detail::remove_underscore(name);
+        if(!envname_.empty()) {
+            //this needs to be the original since envname_ shouldn't match on case insensitivity
+            return (name == envname_);
         }
-        if(ignore_case_) {
-            local_pname = detail::to_lower(local_pname);
-            name = detail::to_lower(name);
-        }
-        return name == local_pname;
+        return false;
     }
 
     /// Requires "-" to be removed from string

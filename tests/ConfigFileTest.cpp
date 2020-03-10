@@ -1241,6 +1241,23 @@ TEST_F(TApp, IniPositional) {
     EXPECT_EQ(key, 3);
 }
 
+TEST_F(TApp, IniEnvironmental) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    int key{0};
+    app.add_option("key", key)->envname("CLI11_TEST_ENV_KEY_TMP");
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "CLI11_TEST_ENV_KEY_TMP=3" << std::endl;
+    }
+
+    ASSERT_NO_THROW(run());
+    EXPECT_EQ(key, 3);
+}
+
 TEST_F(TApp, IniFlagText) {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -1434,6 +1451,23 @@ TEST_F(TApp, TomlOutputPositional) {
 
     std::string str = app.config_to_str();
     EXPECT_EQ("pos=3\n", str);
+}
+
+// try the output with environmental only arguments
+TEST_F(TApp, TomlOutputEnvironmental) {
+
+    put_env("CLI11_TEST_ENV_TMP", "2");
+
+    int val{1};
+    app.add_option(std::string{}, val)->envname("CLI11_TEST_ENV_TMP");
+
+    run();
+
+    EXPECT_EQ(2, val);
+    std::string str = app.config_to_str();
+    EXPECT_EQ("CLI11_TEST_ENV_TMP=2\n", str);
+
+    unset_env("CLI11_TEST_ENV_TMP");
 }
 
 TEST_F(TApp, TomlOutputNoConfigurable) {

@@ -2131,6 +2131,26 @@ TEST_F(TApp, Env) {
     EXPECT_THROW(run(), CLI::RequiredError);
 }
 
+// curiously check if an environmental only option works
+TEST_F(TApp, EnvOnly) {
+
+    put_env("CLI11_TEST_ENV_TMP", "2");
+
+    int val{ 1 };
+    CLI::Option *vopt = app.add_option("", val)->envname("CLI11_TEST_ENV_TMP");
+
+    run();
+
+    EXPECT_EQ(2, val);
+    EXPECT_EQ(1u, vopt->count());
+
+    vopt->required();
+    run();
+
+    unset_env("CLI11_TEST_ENV_TMP");
+    EXPECT_THROW(run(), CLI::RequiredError);
+}
+
 TEST_F(TApp, RangeInt) {
     int x{0};
     app.add_option("--one", x)->check(CLI::Range(3, 6));
