@@ -871,7 +871,7 @@ class Option : public OptionBase<Option> {
         }
 
         if(!envname_.empty()) {
-            //this needs to be the original since envname_ shouldn't match on case insensitivity
+            // this needs to be the original since envname_ shouldn't match on case insensitivity
             return (name == envname_);
         }
         return false;
