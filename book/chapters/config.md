@@ -135,13 +135,9 @@ The default configuration file will read INI files, but will write out files in 
 ```cpp
 app.config_formatter(std::make_shared<CLI::ConfigINI>());
 ```
-which makes use of a predefined modification of the ConfigBase class which TOML also uses. If a custom formatter is used that is not inheriting from the from ConfigBase class `get_config_formatter_base() will return a nullptr, so some care must be exercised in its us with custom configurations.  
+which makes use of a predefined modification of the ConfigBase class which TOML also uses. If a custom formatter is used that is not inheriting from the from ConfigBase class `get_config_formatter_base() will return a nullptr, so some care must be exercised in its us with custom configurations.
 
 ## Custom formats
-
-{% hint style='info' %}
-New in CLI11 1.6
-{% endhint %}
 
 You can invent a custom format and set that instead of the default INI formatter. You need to inherit from `CLI::Config` and implement the following two functions:
 

@@ -2136,7 +2136,7 @@ TEST_F(TApp, EnvOnly) {
 
     put_env("CLI11_TEST_ENV_TMP", "2");
 
-    int val{ 1 };
+    int val{1};
     CLI::Option *vopt = app.add_option("", val)->envname("CLI11_TEST_ENV_TMP");
 
     run();
