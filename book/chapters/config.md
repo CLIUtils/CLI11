@@ -80,7 +80,27 @@ The main differences are in vector notation and comment character.  Note: CLI11 
 
 ## Writing out a configure file
 
-To print a configuration file from the passed arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.
+To print a configuration file from the passed arguments, use `.config_to_str(default_also=false, write_description=false)`, where `default_also` will also show any defaulted arguments, and `write_description` will include option descriptions and the App description
+
+```cpp
+
+ CLI::App app;
+ app.add_option(...);
+    // several other options
+ CLI11_PARSE(app, argc, argv);
+ //the config printout should be after the parse to capture the given arguments
+ std::cout<<app.config_to_str(true,true);
+```
+
+if a prefix is needed to print before the options, for example to print a config for just a subcommand, the config formatter can be obtained directly.
+
+```cpp
+
+  auto fmtr=app.get_config_formatter();
+  //std::string to_config(const App *app, bool default_also, bool write_description, std::string prefix)
+  fmtr->to_config(&app,true,true,"sub.");
+  //prefix can be used to set a prefix before each argument,  like "sub."
+```
 
 ### Customization of configure file output
 The default config parser/generator has some customization points that allow variations on the TOML format.  The default formatter has a base configuration that matches the TOML format.  It defines 5 characters that define how different aspects of the configuration are handled
@@ -115,7 +135,7 @@ The default configuration file will read INI files, but will write out files in 
 ```cpp
 app.config_formatter(std::make_shared<CLI::ConfigINI>());
 ```
-which makes use of a predefined modification of the ConfigBase class which TOML also uses.
+which makes use of a predefined modification of the ConfigBase class which TOML also uses. If a custom formatter is used that is not inheriting from the from ConfigBase class `get_config_formatter_base() will return a nullptr, so some care must be exercised in its us with custom configurations.  
 
 ## Custom formats
 

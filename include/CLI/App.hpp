@@ -1491,7 +1491,7 @@ class App {
         return this;
     }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
-    /// include default arguments. Prefix will add a string to the beginning of each option.
+    /// include default arguments. write_descriptions will print a description for the App and for each option.  
     std::string config_to_str(bool default_also = false, bool write_description = false) const {
         return config_formatter_->to_config(this, default_also, write_description, "");
     }

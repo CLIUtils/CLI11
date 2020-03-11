@@ -714,7 +714,7 @@ sub.subcommand = true
 Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults"). You cannot set positional-only arguments.  🆕 Subcommands can be triggered from configuration files if the `configurable` flag was set on the subcommand.  Then the use of `[subcommand]` notation will trigger a subcommand and cause it to act as if it were on the command line.
 
 To print a configuration file from the passed
-arguments, use `.config_to_str(default_also=false, prefix="", write_description=false)`, where `default_also` will also show any defaulted arguments, `prefix` will add a prefix, and `write_description` will include option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
+arguments, use `.config_to_str(default_also=false, write_description=false)`, where `default_also` will also show any defaulted arguments, and `write_description` will include the app and option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
 
 ### Inheriting defaults
 
