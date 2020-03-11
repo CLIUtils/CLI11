@@ -161,3 +161,11 @@ See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples
 Configuration files can be used to trigger subcommands if a subcommand is set to configure.  By default configuration file just set the default values of a subcommand.  But if the `configure()` option is set on a subcommand then the if the subcommand is utilized via a `[subname]` block in the configuration file it will act as if it were called from the command line.  Subsubcommands can be triggered via [subname.subsubname].  Using the `[[subname]]` will be as if the subcommand were triggered multiple times from the command line.  This functionality can allow the configuration file to act as a scripting file.
 
 For custom configuration files this behavior can be triggered by specifying the parent subcommands in the structure and `++` as the name to open a new subcommand scope and `--` to close it.  These names trigger the different callbacks of configurable subcommands.
+
+## Implementation Notes
+The config file input works with any form of the option given:  Long, short, positional, or the environment variable name.  When generating a config file it will create a name in following priority.
+
+1.   First long name
+1.   Positional name
+1.   First short name
+1.   Environment name

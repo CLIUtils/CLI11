@@ -681,16 +681,16 @@ class Option : public OptionBase<Option> {
 
     /// Get the flag names with specified default values
     const std::vector<std::string> &get_fnames() const { return fnames_; }
-    /// Get a single name for the option, first of lname, sname,pname, envname
+    /// Get a single name for the option, first of lname, pname, sname, envname
     const std::string &get_single_name() const {
         if(!lnames_.empty()) {
             return lnames_[0];
         }
-        if(!snames_.empty()) {
-            return snames_[0];
-        }
         if(!pname_.empty()) {
             return pname_;
+        }
+        if(!snames_.empty()) {
+            return snames_[0];
         }
         return envname_;
     }
