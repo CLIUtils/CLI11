@@ -145,7 +145,7 @@ add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
 if (CMAKE_CXX_STANDARD GREATER 16)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8)
-       target_link_libraries(CLI11 PUBLIC -lstdc++fs)
+       target_link_libraries(CLI11 INTERFACE -lstdc++fs)
     endif()
 endif()
 # Duplicated because CMake adds the current source dir if you don't.
