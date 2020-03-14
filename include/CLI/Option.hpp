@@ -300,7 +300,7 @@ class Option : public OptionBase<Option> {
     /// @name Other
     ///@{
 
-    /// Remember the parent app
+    /// link back up to the parent App for fallthrough
     App *parent_{nullptr};
 
     /// Options store a callback to do all the work
