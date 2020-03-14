@@ -6,6 +6,9 @@
 trigger:
 - master
 
+pr:
+- master
+
 variables:
   cli11.single: ON
   cli11.std: 14
