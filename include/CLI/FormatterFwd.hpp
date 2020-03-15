@@ -24,9 +24,9 @@ class App;
 /// the second argument.
 
 enum class AppFormatMode {
-    Normal,  //< The normal, detailed help
-    All,     //< A fully expanded help
-    Sub,     //< Used when printed as part of expanded subcommand
+    Normal,  ///< The normal, detailed help
+    All,     ///< A fully expanded help
+    Sub,     ///< Used when printed as part of expanded subcommand
 };
 
 /// This is the minimum requirements to run a formatter.
