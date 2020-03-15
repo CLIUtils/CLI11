@@ -7,10 +7,10 @@
 #include "CLI/Timer.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include <chrono>  // NOLINT(build/c++11)
+#include <chrono>
 #include <sstream>
 #include <string>
-#include <thread>  // NOLINT(build/c++11)
+#include <thread>
 
 using ::testing::HasSubstr;
 
