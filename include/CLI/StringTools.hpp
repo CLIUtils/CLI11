@@ -190,6 +190,12 @@ inline bool valid_name_string(const std::string &str) {
     return true;
 }
 
+/// check if a string is a container segment separator (empty or "%%"
+inline bool is_separator(const std::string &str) {
+    static const std::string sep("%%");
+    return (str.empty() || str == sep);
+}
+
 /// Verify that str consists of letters only
 inline bool isalpha(const std::string &str) {
     return std::all_of(str.begin(), str.end(), [](char c) { return std::isalpha(c, std::locale()); });

@@ -195,14 +195,15 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="")
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string or that takes an int 🆕, double 🆕, or string in a constructor. Also allowed are tuples 🆕, std::array 🆕 or std::pair 🆕.
+               variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or anything with a defined conversion from a string or that takes an int 🆕, double 🆕, or string in a constructor. Also allowed are tuples 🆕, std::array 🆕 or std::pair 🆕. Also supported are complex numbers🚧, wrapper types🚧, and containers besides vector🚧 of any other supported type.
                help_string="")
 
 app.add_option_function<type>(option_name,
                function <void(const type &value)>, // type can be any type supported by add_option
                help_string="")
 
-app.add_complex(... // Special case: support for complex numbers
+app.add_complex(... // Special case: support for complex numbers ⚠️. Complex numbers are now fully supported in the add_option so this function is redundant.
+
 // 🆕 There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.  For tuples or other multi element types, XC must be a single type or a tuple like object of the same size as the assignment type
 app.add_option<typename T, typename XC>(option_name,
                T &output, // output must be assignable or constructible from a value of type XC
@@ -213,7 +214,7 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, float, vector, enum, or string-like, or any singular object with a defined conversion from a string like add_option
+             variable_to_bind_to, // bool, int, float, complex, containers, enum, or string-like, or any singular object with a defined conversion from a string like add_option
              help_string="")
 
 app.add_flag_function(option_name,
@@ -245,9 +246,9 @@ app.add_option<vtype,std:string>("--vs",v1);
 app.add_option<vtype,int>("--vi",v1);
 app.add_option<vtype,double>("--vf",v1);
 ```
-otherwise the output would default to a string.  The `add_option` can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std::string in an assignment operator or constructor.  If an object can take multiple varieties of those, std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
+otherwise the output would default to a string.  The `add_option` can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std\::string in an assignment operator or constructor.  If an object can take multiple varieties of those, std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
 
-Types such as (std or boost) `optional<int>`, `optional<double>`, and `optional<string>` are supported directly, other optional types can be added using the two parameter template.  See [CLI11 Advanced Topics/Custom Converters][] for information on how this could be done and how you can add your own converters for additional types.
+Types such as (std or boost) `optional<int>`, `optional<double>`, and `optional<string>` and any other wrapper types are supported directly. For purposes of CLI11 wrapper types are those which `value_type` definition.  See [CLI11 Advanced Topics/Custom Converters][] for information on how you can add your own converters for additional types.
 
 Vector types can also be used in the two parameter template overload
 ```
@@ -308,7 +309,7 @@ Before parsing, you can set the following options:
 -   `->disable_flag_override()`: From the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
 -   `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 -   `->description(str)`: Set/change the description.
--   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
+-   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
 -   `->check(std::string(const std::string &), validator_name="",validator_description="")`: Define a check function.  The function should return a non empty string with the error message if the check fails
 -   `->check(Validator)`: Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
 -   `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
@@ -319,7 +320,7 @@ Before parsing, you can set the following options:
 -   `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
 -   `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
 -   `default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
--   `default_val(value)`: 🆕 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or a stream operator).
+-   `default_val(value)`: 🆕 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
 
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.

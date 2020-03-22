@@ -11,10 +11,11 @@
 
 using input_t = std::vector<std::string>;
 
-struct TApp : public ::testing::Test {
+class TApp_base {
+  public:
     CLI::App app{"My Test Program"};
     input_t args{};
-
+    virtual ~TApp_base() = default;
     void run() {
         // It is okay to re-parse - clear is called automatically before a parse.
         input_t newargs = args;
@@ -22,6 +23,8 @@ struct TApp : public ::testing::Test {
         app.parse(newargs);
     }
 };
+
+class TApp : public TApp_base, public ::testing::Test {};
 
 class TempFile {
     std::string _name{};

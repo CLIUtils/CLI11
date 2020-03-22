@@ -32,13 +32,19 @@ endif()
 set(GOOGLE_TEST_INDIVIDUAL OFF)
 include(AddGoogletest)
 
+# Add boost to test boost::optional if available
+find_package(Boost 1.61)
+
+set(boost-optional-def $<$<BOOL:${Boost_FOUND}>:CLI11_BOOST_OPTIONAL>)
+
 set(CLI11_TESTS
     HelpersTest
     ConfigFileTest
+    OptionTypeTest
     SimpleTest
     AppTest
     SetTest
-	TransformTest
+    TransformTest
     CreationTest
     SubcommandTest
     HelpTest
@@ -47,12 +53,17 @@ set(CLI11_TESTS
     OptionalTest
     DeprecatedTest
     StringParseTest
+    ComplexTypeTest
     TrueFalseTest
     OptionGroupTest
     )
 
 if(WIN32)
     list(APPEND CLI11_TESTS WindowsTest)
+endif()
+
+if (Boost_FOUND)
+   list(APPEND CLI11_TESTS BoostOptionTypeTest)
 endif()
 
 set(CLI11_MULTIONLY_TESTS TimerTest)
@@ -140,20 +151,29 @@ file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
     "set(CTEST_CUSTOM_PRE_TEST \"${CMAKE_BINARY_DIR}/informational\")"
 )
 
-# Add boost to test boost::optional if available
-find_package(Boost 1.61)
-
-set(boost-optional-def $<$<BOOL:${Boost_FOUND}>:CLI11_BOOST_OPTIONAL>)
-
 target_compile_definitions(informational PRIVATE ${boost-optional-def})
 target_compile_definitions(OptionalTest PRIVATE ${boost-optional-def})
 
+message(STATUS "Boost libs=${Boost_INCLUDE_DIRS}")
+
 if(TARGET Boost::boost)
+    message(STATUS "including boost target")
     target_link_libraries(informational PRIVATE Boost::boost)
     target_link_libraries(OptionalTest PRIVATE Boost::boost)
+    target_link_libraries(BoostOptionTypeTest PRIVATE Boost::boost)
+    if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
+       target_link_libraries(OptionalTest_Single PRIVATE Boost::boost)
+       target_link_libraries(BoostOptionTypeTest_Single PRIVATE Boost::boost)
+    endif()
 elseif(BOOST_FOUND)
+message(STATUS "no boost target")
     target_include_directories(informational PRIVATE ${Boost_INCLUDE_DIRS})
     target_include_directories(OptionalTest PRIVATE ${Boost_INCLUDE_DIRS})
+    target_include_directories(BoostOptionTypeTest PRIVATE ${Boost_INCLUDE_DIRS})
+    if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
+        target_include_directories(OptionalTest_Single PRIVATE ${Boost_INCLUDE_DIRS})
+        target_include_directories(BoostOptionTypeTest_Single PRIVATE ${Boost_INCLUDE_DIRS})
+     endif()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
