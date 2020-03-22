@@ -282,14 +282,14 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
         }
         for(const Option *opt : app->get_options({})) {
 
-            // Only process option with a long-name and configurable
-            if(!opt->get_lnames().empty() && opt->get_configurable()) {
+            // Only process options that are configurable
+            if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
                     if(!(group == "Options" && opt->get_group().empty())) {
                         continue;
                     }
                 }
-                std::string name = prefix + opt->get_lnames()[0];
+                std::string name = prefix + opt->get_single_name();
                 std::string value = detail::ini_join(opt->reduced_results(), arraySeparator, arrayStart, arrayEnd);
 
                 if(value.empty() && default_also) {

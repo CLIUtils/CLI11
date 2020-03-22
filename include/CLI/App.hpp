@@ -1491,7 +1491,7 @@ class App {
         return this;
     }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
-    /// include default arguments. Prefix will add a string to the beginning of each option.
+    /// include default arguments. write_descriptions will print a description for the App and for each option.
     std::string config_to_str(bool default_also = false, bool write_description = false) const {
         return config_formatter_->to_config(this, default_also, write_description, "");
     }
@@ -2335,6 +2335,14 @@ class App {
             return true;
         }
         Option *op = get_option_no_throw("--" + item.name);
+        if(op == nullptr) {
+            if(item.name.size() == 1) {
+                op = get_option_no_throw("-" + item.name);
+            }
+        }
+        if(op == nullptr) {
+            op = get_option_no_throw(item.name);
+        }
         if(op == nullptr) {
             // If the option was not present
             if(get_allow_config_extras() == config_extras_mode::capture)
