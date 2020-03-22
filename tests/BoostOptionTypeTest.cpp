@@ -1,3 +1,9 @@
+// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "app_helper.hpp"
 #include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
@@ -11,13 +17,14 @@
 
 #include "gmock/gmock.h"
 
-using namespace boost::container;
+namespace boost {
+namespace container {
 
 template <class T> class TApp_container_single_boost : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_single_boost() : TApp(){};
+    TApp_container_single_boost() : TApp() {}
 };
 
 using containerTypes_single_boost =
@@ -47,7 +54,7 @@ template <class T> class TApp_container_pair_boost : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_pair_boost() : TApp(){};
+    TApp_container_pair_boost() : TApp() {}
 };
 
 using isp = std::pair<int, std::string>;
@@ -75,7 +82,7 @@ template <class T> class TApp_container_tuple_boost : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_tuple_boost() : TApp(){};
+    TApp_container_tuple_boost() : TApp() {}
 };
 
 using tup_obj = std::tuple<int, std::string, double>;
@@ -119,7 +126,7 @@ template <class T> class TApp_container_container_boost : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_container_boost() : TApp(){};
+    TApp_container_container_boost() : TApp() {}
 };
 
 TYPED_TEST_SUITE(TApp_container_container_boost, containerTypes_container_boost, );
@@ -139,3 +146,6 @@ TYPED_TEST(TApp_container_container_boost, containerContainer_boost) {
     TApp::run();
     EXPECT_EQ(cv.size(), 4u);
 }
+
+}  // namespace container
+}  // namespace boost
