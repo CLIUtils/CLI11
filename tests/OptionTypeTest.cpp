@@ -1,3 +1,9 @@
+// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "app_helper.hpp"
 #include <complex>
 #include <cstdint>
@@ -644,7 +650,7 @@ template <class T> class TApp_container_single : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_single() : TApp(){};
+    TApp_container_single() : TApp() {}
 };
 
 using containerTypes_single =
@@ -674,7 +680,7 @@ template <class T> class TApp_container_pair : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_pair() : TApp(){};
+    TApp_container_pair() : TApp() {}
 };
 
 using isp = std::pair<int, std::string>;
@@ -706,7 +712,7 @@ template <class T> class TApp_container_tuple : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_tuple() : TApp(){};
+    TApp_container_tuple() : TApp() {}
 };
 
 using tup_obj = std::tuple<int, std::string, double>;
@@ -756,7 +762,7 @@ template <class T> class TApp_container_container : public TApp {
   public:
     using container_type = T;
     container_type cval{};
-    TApp_container_container() : TApp(){};
+    TApp_container_container() : TApp() {}
 };
 
 TYPED_TEST_SUITE(TApp_container_container, containerTypes_container, );
@@ -798,7 +804,7 @@ TEST_F(TApp, unknownContainerWrapper) {
     class vopt {
       public:
         vopt() = default;
-        vopt(const std::vector<double> &vdub) : val_{vdub} {};
+        explicit vopt(const std::vector<double> &vdub) : val_{vdub} {};
         std::vector<double> val_{};
     };
 

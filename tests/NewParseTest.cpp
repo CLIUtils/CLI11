@@ -532,7 +532,7 @@ template <class T> class SimpleWrapper {
   public:
     SimpleWrapper() : val_{} {};
     explicit SimpleWrapper(const T &initial) : val_{initial} {};
-    T &getRef() { return val_; };
+    T &getRef() { return val_; }
     using value_type = T;
 
   private:
