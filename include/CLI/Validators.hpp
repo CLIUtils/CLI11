@@ -34,10 +34,8 @@
 #include <filesystem>
 #if defined __cpp_lib_filesystem && __cpp_lib_filesystem >= 201703
 #if defined _GLIBCXX_RELEASE && _GLIBCXX_RELEASE >= 9
-static_assert(false,"in gcc 9")
 #define CLI11_HAS_FILESYSTEM 1
 #elif defined(__GLIBCXX__)
-static_assert(false, "in gcc 8")
 // if we are using gcc and Version <9 default to no filesystem
 #define CLI11_HAS_FILESYSTEM 0
 #else

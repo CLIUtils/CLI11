@@ -153,13 +153,13 @@ GTEST_COLOR=1 CTEST_OUTPUT_ON_FAILURE=1 make test
 
 <details><summary>Note: Special instructions for GCC 8</summary><p>
 
-If you are using GCC 8 and using it in C++17 mode with CLI11.  CLI11 makes use of the `<filesystem>` header. Specifically for this compiler, the `filesystem` library is separate from the standard library and needs to be linked separately.  The CMake target `CLI11::CLI11` will do this automatically for GCC 8, but if you are using the single header separately this will need to be taken into account for this compiler.
+If you are using GCC 8 and using it in C++17 mode with CLI11.  CLI11 makes use of the `<filesystem>` header if available, but specifically for this compiler, the `filesystem` library is separate from the standard library and needs to be linked separately. So it is available but CLI11 doesn't use it by default.
 
-Specifically `libstdc++fs` needs to be added to the linking list.
+Specifically `libstdc++fs` needs to be added to the linking list and `CLI11_HAS_FILESYSTEM=1` has to be defined.  Then the filesystem variant of the Validators could be used on GCC 8.  GCC 9+ does not have this issue so the `<filesystem>` is used by default.
 
-This may also need to be done in other cases where the library is linked with gcc 8 standard library even with other compilers.
+There may also be other cases where a specific library needs to be linked.
 
-Another option is to define `CLI11_HAS_FILESYSTEM=0`  which will remove the usage and hence the linking issue.
+Defining `CLI11_HAS_FILESYSTEM=0`  which will remove the usage and hence any linking issue.
 
 In some cases certain clang compilations may require linking against `libc++fs`.  These situations have not been encountered so the specific situations requiring them are unknown yet.
 
