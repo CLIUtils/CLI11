@@ -22,6 +22,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 |-------------|-------|
 | number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number |
 | string-like | std\::string, or anything that can be constructed from or assigned a std\::string |
+| char | For a single char, single string values are accepted, otherwise longer strings are treated as integral values and a conversion is attempted |
 | complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2" |
 | enumeration | any enum or enum class type is supported through conversion from the underlying type(typically int, though it can be specified otherwise) |
 | container-like | a container(like vector) of any available types including other containers |

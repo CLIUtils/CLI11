@@ -218,6 +218,7 @@ TEST_F(TApp, BoostOptionalEnumTest) {
 
     enum class eval : char { val0 = 0, val1 = 1, val2 = 2, val3 = 3, val4 = 4 };
     boost::optional<eval> opt, opt2;
+
     auto optptr = app.add_option<decltype(opt), eval>("-v,--val", opt);
     app.add_option_no_stream("-e,--eval", opt2);
     optptr->capture_default_str();

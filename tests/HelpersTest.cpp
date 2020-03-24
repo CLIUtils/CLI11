@@ -911,6 +911,9 @@ TEST(Types, TypeName) {
     std::string float_name = CLI::detail::type_name<double>();
     EXPECT_EQ("FLOAT", float_name);
 
+    std::string char_name = CLI::detail::type_name<char>();
+    EXPECT_EQ("CHAR", char_name);
+
     std::string vector_name = CLI::detail::type_name<std::vector<int>>();
     EXPECT_EQ("INT", vector_name);
 
@@ -1025,6 +1028,11 @@ TEST(Types, LexicalCastInt) {
 
     std::string extra_input = "912i";
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, y));
+
+    std::string empty_input{};
+    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x_signed));
+    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x_unsigned));
+    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, y_signed));
 }
 
 TEST(Types, LexicalCastDouble) {
@@ -1037,10 +1045,14 @@ TEST(Types, LexicalCastDouble) {
     EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
 
     std::string overflow_input = "1" + std::to_string(LDBL_MAX);
-    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, x));
+    EXPECT_TRUE(CLI::detail::lexical_cast(overflow_input, x));
+    EXPECT_FALSE(std::isfinite(x));
 
     std::string extra_input = "9.12i";
     EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, x));
+
+    std::string empty_input{};
+    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x));
 }
 
 TEST(Types, LexicalCastBool) {

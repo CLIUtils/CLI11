@@ -968,14 +968,11 @@ class AsNumberWithUnit : public Validator {
             if(opts & CASE_INSENSITIVE) {
                 unit = detail::to_lower(unit);
             }
-
-            bool converted = detail::lexical_cast(input, num);
-            if(!converted) {
-                throw ValidationError(std::string("Value ") + input + " could not be converted to " +
-                                      detail::type_name<Number>());
-            }
-
             if(unit.empty()) {
+                if(!detail::lexical_cast(input, num)) {
+                    throw ValidationError(std::string("Value ") + input + " could not be converted to " +
+                                          detail::type_name<Number>());
+                }
                 // No need to modify input if no unit passed
                 return {};
             }
@@ -989,12 +986,22 @@ class AsNumberWithUnit : public Validator {
                                       detail::generate_map(mapping, true));
             }
 
-            // perform safe multiplication
-            bool ok = detail::checked_multiply(num, it->second);
-            if(!ok) {
-                throw ValidationError(detail::to_string(num) + " multiplied by " + unit +
-                                      " factor would cause number overflow. Use smaller value.");
+            if(!input.empty()) {
+                bool converted = detail::lexical_cast(input, num);
+                if(!converted) {
+                    throw ValidationError(std::string("Value ") + input + " could not be converted to " +
+                                          detail::type_name<Number>());
+                }
+                // perform safe multiplication
+                bool ok = detail::checked_multiply(num, it->second);
+                if(!ok) {
+                    throw ValidationError(detail::to_string(num) + " multiplied by " + unit +
+                                          " factor would cause number overflow. Use smaller value.");
+                }
+            } else {
+                num = static_cast<Number>(it->second);
             }
+
             input = detail::to_string(num);
 
             return {};

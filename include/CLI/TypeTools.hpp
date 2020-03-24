@@ -505,6 +505,7 @@ struct expected_count<T, typename std::enable_if<!is_mutable_container<T>::value
 
 // Enumeration of the different supported categorizations of objects
 enum class object_category : int {
+    char_value = 1,
     integral_value = 2,
     unsigned_integral = 4,
     enumeration = 6,
@@ -525,25 +526,34 @@ enum class object_category : int {
 
 };
 
+/// Set of overloads to classify an object according to type
+
 /// some type that is not otherwise recognized
 template <typename T, typename Enable = void> struct classify_object {
     static constexpr object_category value{object_category::other};
 };
 
-/// Set of overloads to classify an object according to type
+/// Signed integers
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value &&
-                                               !is_bool<T>::value && !std::is_enum<T>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, char>::value && std::is_signed<T>::value &&
+                            !is_bool<T>::value && !std::is_enum<T>::value>::type> {
     static constexpr object_category value{object_category::integral_value};
 };
 
 /// Unsigned integers
 template <typename T>
-struct classify_object<
-    T,
-    typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value && !is_bool<T>::value>::type> {
+struct classify_object<T,
+                       typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value &&
+                                               !std::is_same<T, char>::value && !is_bool<T>::value>::type> {
     static constexpr object_category value{object_category::unsigned_integral};
+};
+
+/// single character values
+template <typename T>
+struct classify_object<T, typename std::enable_if<std::is_same<T, char>::value && !std::is_enum<T>::value>::type> {
+    static constexpr object_category value{object_category::char_value};
 };
 
 /// Boolean values
@@ -658,6 +668,12 @@ template <typename T> struct classify_object<T, typename std::enable_if<is_mutab
 /// But this is cleaner and works better in this case
 
 template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::char_value, detail::enabler> = detail::dummy>
+constexpr const char *type_name() {
+    return "CHAR";
+}
+
+template <typename T,
           enable_if_t<classify_object<T>::value == object_category::integral_value ||
                           classify_object<T>::value == object_category::integer_constructible,
                       detail::enabler> = detail::dummy>
@@ -767,6 +783,30 @@ inline std::string type_name() {
 
 // Lexical cast
 
+/// Convert to an unsigned integral
+template <typename T, enable_if_t<std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+bool integral_conversion(const std::string &input, T &output) noexcept {
+    if(input.empty()) {
+        return false;
+    }
+    char *val = nullptr;
+    std::uint64_t output_ll = std::strtoull(input.c_str(), &val, 0);
+    output = static_cast<T>(output_ll);
+    return val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll;
+}
+
+/// Convert to a signed integral
+template <typename T, enable_if_t<std::is_signed<T>::value, detail::enabler> = detail::dummy>
+bool integral_conversion(const std::string &input, T &output) noexcept {
+    if(input.empty()) {
+        return false;
+    }
+    char *val = nullptr;
+    std::int64_t output_ll = std::strtoll(input.c_str(), &val, 0);
+    output = static_cast<T>(output_ll);
+    return val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll;
+}
+
 /// Convert a flag into an integer value  typically binary flags
 inline std::int64_t to_flag_value(std::string val) {
     static const std::string trueString("true");
@@ -810,39 +850,24 @@ inline std::int64_t to_flag_value(std::string val) {
     return ret;
 }
 
-/// Signed integers
+/// Integer conversion
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::integral_value, detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == object_category::integral_value ||
+                          classify_object<T>::value == object_category::unsigned_integral,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
-    try {
-        std::size_t n = 0;
-        std::int64_t output_ll = std::stoll(input, &n, 0);
-        output = static_cast<T>(output_ll);
-        return n == input.size() && static_cast<std::int64_t>(output) == output_ll;
-    } catch(const std::invalid_argument &) {
-        return false;
-    } catch(const std::out_of_range &) {
-        return false;
-    }
+    return integral_conversion(input, output);
 }
 
-/// Unsigned integers
+/// char values
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::unsigned_integral, detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == object_category::char_value, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
-    if(!input.empty() && input.front() == '-')
-        return false;  // std::stoull happily converts negative values to junk without any errors.
-
-    try {
-        std::size_t n = 0;
-        std::uint64_t output_ll = std::stoull(input, &n, 0);
-        output = static_cast<T>(output_ll);
-        return n == input.size() && static_cast<std::uint64_t>(output) == output_ll;
-    } catch(const std::invalid_argument &) {
-        return false;
-    } catch(const std::out_of_range &) {
-        return false;
+    if(input.size() == 1) {
+        output = static_cast<T>(input[0]);
+        return true;
     }
+    return integral_conversion(input, output);
 }
 
 /// Boolean values
@@ -867,15 +892,13 @@ bool lexical_cast(const std::string &input, T &output) {
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::floating_point, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
-    try {
-        std::size_t n = 0;
-        output = static_cast<T>(std::stold(input, &n));
-        return n == input.size();
-    } catch(const std::invalid_argument &) {
-        return false;
-    } catch(const std::out_of_range &) {
+    if(input.empty()) {
         return false;
     }
+    char *val = nullptr;
+    auto output_ld = std::strtold(input.c_str(), &val);
+    output = static_cast<T>(output_ld);
+    return val == (input.c_str() + input.size());
 }
 
 /// complex
@@ -932,8 +955,7 @@ template <typename T,
           enable_if_t<classify_object<T>::value == object_category::enumeration, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     typename std::underlying_type<T>::type val;
-    bool retval = detail::lexical_cast(input, val);
-    if(!retval) {
+    if(!integral_conversion(input, val)) {
         return false;
     }
     output = static_cast<T>(val);
@@ -958,7 +980,7 @@ template <
     enable_if_t<classify_object<T>::value == object_category::number_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
-    if(lexical_cast(input, val)) {
+    if(integral_conversion(input, val)) {
         output = T(val);
         return true;
     } else {
@@ -977,7 +999,7 @@ template <
     enable_if_t<classify_object<T>::value == object_category::integer_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     int val;
-    if(lexical_cast(input, val)) {
+    if(integral_conversion(input, val)) {
         output = T(val);
         return true;
     }
