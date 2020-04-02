@@ -6,6 +6,9 @@
 trigger:
 - master
 
+pr:
+- master
+
 variables:
   cli11.single: ON
   cli11.std: 14
@@ -57,6 +60,9 @@ jobs:
       Windows11:
         vmImage: 'vs2017-win2016'
         cli11.std: 11
+      Windowslatest:
+        vmImage: 'windows-2019'
+        cli11.std: 17
   pool:
     vmImage: $(vmImage)
   steps:
@@ -89,6 +95,9 @@ jobs:
       gcc9:
         containerImage: gcc:9
         cli11.std: 17
+      gcc8:
+        containerImage: gcc:8
+        cli11.std: 17
       gcc4.8:
         containerImage: gcc:4.8
         cli11.std: 11
@@ -99,6 +108,10 @@ jobs:
       clang8:
         containerImage: silkeh/clang:8
         cli11.std: 14
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON
+      clang8_17:
+        containerImage: silkeh/clang:8
+        cli11.std: 17
         cli11.options: -DCLI11_FORCE_LIBCXX=ON
   container: $[ variables['containerImage'] ]
   steps:
