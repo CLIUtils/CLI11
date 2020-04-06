@@ -374,6 +374,18 @@ TEST_F(TApp, InvalidOptions) {
     EXPECT_THROW(ogroup->add_option(opt), CLI::OptionNotFound);
 }
 
+TEST_F(TApp, OptionGroupInheritedOptionDefaults) {
+    app.option_defaults()->ignore_case();
+    auto ogroup = app.add_option_group("clusters");
+    int res{0};
+    ogroup->add_option("--test1", res);
+
+    args = {"--Test1", "5"};
+    run();
+    EXPECT_EQ(res, 5);
+    EXPECT_EQ(app.count_all(), 1u);
+}
+
 struct ManyGroups : public TApp {
 
     CLI::Option_group *main{nullptr};
