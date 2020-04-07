@@ -169,6 +169,12 @@ class CallForAllHelp : public ParseError {
         : CallForAllHelp("This should be caught in your main function, see examples", ExitCodes::Success) {}
 };
 
+/// -v or --version on command line
+class CallForVersion : public ParseError {
+    CLI11_ERROR_DEF(ParseError, CallForVersion)
+        CallForVersion() : CallForVersion("This should be caught in your main function, see examples", ExitCodes::Success) {}
+};
+
 /// Does not output a diagnostic in CLI11_PARSE, but allows to return from main() with a specific error code.
 class RuntimeError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RuntimeError)
