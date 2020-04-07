@@ -11,6 +11,7 @@ llvm-include-order,
 llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
+-modernize-use-trailing-return-type,
 readability-container-size-empty,
 '
 
@@ -22,6 +23,7 @@ llvm-include-order,
 llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
+-modernize-use-trailing-return-type,
 readability-container-size-empty,
 '
 
