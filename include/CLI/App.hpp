@@ -742,6 +742,17 @@ class App {
 
         return version_ptr_;
     }
+    /// Set the version as a string
+    App *version(const std::string &version) {
+        set_version_flag("-v,--version", version);
+        return this;
+    }
+
+    /// Set the version as a function
+    App *version(std::function<std::string()> vfunc) {
+        set_version_flag("-v,--version", vfunc);
+        return this;
+    }
 
   private:
     /// Internal function for adding a flag
@@ -1787,6 +1798,12 @@ class App {
 
     /// Get a pointer to the config option. (const)
     const Option *get_config_ptr() const { return config_ptr_; }
+
+    /// Get a pointer to the version option.
+    Option *get_version_ptr() { return version_ptr_; }
+
+    /// Get a pointer to the version option. (const)
+    const Option *get_version_ptr() const { return version_ptr_; }
 
     /// Get the parent of this subcommand (or nullptr if master app)
     App *get_parent() { return parent_; }
