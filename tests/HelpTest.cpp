@@ -1220,7 +1220,7 @@ TEST(TVersion, parse_throw) {
     app.version(CLI11_VERSION);
 
     EXPECT_THROW(app.parse("--version"), CLI::CallForVersion);
-    EXPECT_THROW(app.parse("-v --arg2 5"), CLI::CallForVersion);
+    EXPECT_THROW(app.parse("--version --arg2 5"), CLI::CallForVersion);
 
     auto ptr = app.get_version_ptr();
 

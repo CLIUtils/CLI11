@@ -232,7 +232,7 @@ struct is_mutable_container<
 // check to see if an object is a mutable container (fail by default)
 template <typename T, typename _ = void> struct is_readable_container : std::false_type {};
 
-/// type trait to test if a type is a container meaning it has a value_type, it has an iterator, a clear, and an en end
+/// type trait to test if a type is a container meaning it has a value_type, it has an iterator, a clear, and an end
 /// methods and an insert function.  And for our purposes we exclude std::string and types that can be constructed from
 /// a std::string
 template <typename T>
@@ -244,7 +244,7 @@ struct is_readable_container<
 // check to see if an object is a wrapper (fail by default)
 template <typename T, typename _ = void> struct is_wrapper : std::false_type {};
 
-// check if an object is a is a wrapper (it has a value_type defined)
+// check if an object is a wrapper (it has a value_type defined)
 template <typename T>
 struct is_wrapper<T, conditional_t<false, void_t<typename T::value_type>, void>> : public std::true_type {};
 
@@ -344,7 +344,7 @@ auto value_string(const T &value) -> decltype(to_string(value)) {
     return to_string(value);
 }
 
-/// temple to get the underlying value type if it exists or use a default
+/// template to get the underlying value type if it exists or use a default
 template <typename T, typename def, typename Enable = void> struct wrapped_type { using type = def; };
 
 /// Type size for regular object types that do not look like a tuple

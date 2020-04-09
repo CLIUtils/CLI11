@@ -746,13 +746,13 @@ class App {
     }
     /// Set the version as a string
     App *version(const std::string &versionString) {
-        set_version_flag("-v,--version", versionString);
+        set_version_flag("--version", versionString);
         return this;
     }
 
     /// Generate the version string through a callback function
     App *version(std::function<std::string()> vfunc) {
-        set_version_flag("-v,--version", vfunc);
+        set_version_flag("--version", vfunc);
         return this;
     }
 
