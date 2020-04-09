@@ -707,7 +707,7 @@ class App {
     }
 
     /// Set a version flag and version display string, replace the existing one if present
-    Option *set_version_flag(std::string flag_name = "", const std::string &version = "") {
+    Option *set_version_flag(std::string flag_name = "", const std::string &versionString = "") {
         // take flag_description by const reference otherwise add_flag tries to assign to help_description
         if(version_ptr_ != nullptr) {
             remove_option(version_ptr_);
@@ -716,9 +716,10 @@ class App {
 
         // Empty name will simply remove the help flag
         if(!flag_name.empty()) {
-            version_ptr_ = add_flag_callback(flag_name,
-                                             [version]() { throw(CLI::CallForVersion(version, 0)); },
-                                             "display program version information and exit");
+            version_ptr_ = add_flag_callback(
+                flag_name,
+                [versionString]() { throw(CLI::CallForVersion(versionString, 0)); },
+                "display program version information and exit");
             version_ptr_->configurable(false);
         }
 
@@ -734,9 +735,10 @@ class App {
 
         // Empty name will simply remove the help flag
         if(!flag_name.empty()) {
-            version_ptr_ = add_flag_callback(flag_name,
-                                             [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); },
-                                             "display program version information and exit");
+            version_ptr_ = add_flag_callback(
+                flag_name,
+                [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); },
+                "display program version information and exit");
             version_ptr_->configurable(false);
         }
 
