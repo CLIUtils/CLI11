@@ -708,13 +708,13 @@ class App {
 
     /// Set a version flag and version display string, replace the existing one if present
     Option *set_version_flag(std::string flag_name = "", const std::string &versionString = "") {
-        // take flag_description by const reference otherwise add_flag tries to assign to help_description
+        // take flag_description by const reference otherwise add_flag tries to assign to version_description
         if(version_ptr_ != nullptr) {
             remove_option(version_ptr_);
             version_ptr_ = nullptr;
         }
 
-        // Empty name will simply remove the help flag
+        // Empty name will simply remove the version flag
         if(!flag_name.empty()) {
             version_ptr_ = add_flag_callback(
                 flag_name,
@@ -725,15 +725,15 @@ class App {
 
         return version_ptr_;
     }
-    /// Set a version flag, using a callback
+    /// Generate the version string through a callback function
     Option *set_version_flag(std::string flag_name, std::function<std::string()> vfunc) {
-        // take flag_description by const reference otherwise add_flag tries to assign to help_description
+        // take flag_description by const reference otherwise add_flag tries to assign to version_description
         if(version_ptr_ != nullptr) {
             remove_option(version_ptr_);
             version_ptr_ = nullptr;
         }
 
-        // Empty name will simply remove the help flag
+        // Empty name will simply remove the version flag
         if(!flag_name.empty()) {
             version_ptr_ = add_flag_callback(
                 flag_name,
@@ -745,12 +745,12 @@ class App {
         return version_ptr_;
     }
     /// Set the version as a string
-    App *version(const std::string &version) {
-        set_version_flag("-v,--version", version);
+    App *version(const std::string &versionString) {
+        set_version_flag("-v,--version", versionString);
         return this;
     }
 
-    /// Set the version as a function
+    /// Generate the version string through a callback function
     App *version(std::function<std::string()> vfunc) {
         set_version_flag("-v,--version", vfunc);
         return this;
