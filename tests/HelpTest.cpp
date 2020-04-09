@@ -1189,7 +1189,7 @@ TEST(TVersion, callback_flag) {
     EXPECT_THAT(vers, HasSubstr("VERSION"));
 
     app.set_version_flag("-v", []() { return std::string("VERSION2 " CLI11_VERSION); });
-    auto vers = app.version();
+    vers = app.version();
     EXPECT_THAT(vers, HasSubstr("VERSION"));
 }
 
