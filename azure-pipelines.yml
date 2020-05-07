@@ -114,10 +114,9 @@ jobs:
         cli11.std: 17
         cli11.options: -DCLI11_FORCE_LIBCXX=ON
       clang10_20:
-        CXX_FLAGS: "-std=c++20 "
         containerImage: helics/buildenv:clang10-builder
         cli11.std: 20
-        cli11.options: -DCLI11_FORCE_LIBCXX=ON
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
   container: $[ variables['containerImage'] ]
   steps:
     - template: .ci/azure-cmake.yml
