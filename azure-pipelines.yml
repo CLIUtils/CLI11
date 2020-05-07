@@ -113,6 +113,11 @@ jobs:
         containerImage: silkeh/clang:8
         cli11.std: 17
         cli11.options: -DCLI11_FORCE_LIBCXX=ON
+      clang10_20:
+        containerImage: silkeh/clang:10
+        CXX_FLAGS: "-std=c++20"
+        cli11.std: 20
+        cli11.options: -DCLI11_FORCE_LIBCXX=ON
   container: $[ variables['containerImage'] ]
   steps:
     - template: .ci/azure-cmake.yml
