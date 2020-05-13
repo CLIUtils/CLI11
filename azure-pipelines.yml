@@ -63,6 +63,7 @@ jobs:
       Windowslatest:
         vmImage: 'windows-2019'
         cli11.std: 20
+        cli11.options: -DCMAKE_CXX_FLAG="/std:C++latest"
   pool:
     vmImage: $(vmImage)
   steps:
