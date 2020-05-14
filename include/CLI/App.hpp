@@ -3086,7 +3086,20 @@ inline std::string help(const App *app, const Error &e) {
 namespace detail {
 /// This class is simply to allow tests access to App's protected functions
 struct AppFriend {
+#ifdef CLI11_CPP14
 
+    /// Wrap _parse_short, perfectly forward arguments and return
+    template <typename... Args>
+    static decltype(auto) parse_arg(App *app, Args &&... args) {
+        return app->_parse_arg(std::forward<Args>(args)...);
+    }
+
+    /// Wrap _parse_subcommand, perfectly forward arguments and return
+    template <typename... Args>
+    static decltype(auto) parse_subcommand(App *app, Args &&... args) {
+        return app->_parse_subcommand(std::forward<Args>(args)...);
+    }
+#else
     /// Wrap _parse_short, perfectly forward arguments and return
     template <typename... Args>
     static auto parse_arg(App *app, Args &&... args) ->
@@ -3100,6 +3113,7 @@ struct AppFriend {
         typename std::result_of<decltype (&App::_parse_subcommand)(App, Args...)>::type {
         return app->_parse_subcommand(std::forward<Args>(args)...);
     }
+#endif
     /// Wrap the fallthrough parent function to make sure that is working correctly
     static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
 };
