@@ -3089,14 +3089,12 @@ struct AppFriend {
 #ifdef CLI11_CPP14
 
     /// Wrap _parse_short, perfectly forward arguments and return
-    template <typename... Args>
-    static decltype(auto) parse_arg(App *app, Args &&... args) {
+    template <typename... Args> static decltype(auto) parse_arg(App *app, Args &&... args) {
         return app->_parse_arg(std::forward<Args>(args)...);
     }
 
     /// Wrap _parse_subcommand, perfectly forward arguments and return
-    template <typename... Args>
-    static decltype(auto) parse_subcommand(App *app, Args &&... args) {
+    template <typename... Args> static decltype(auto) parse_subcommand(App *app, Args &&... args) {
         return app->_parse_subcommand(std::forward<Args>(args)...);
     }
 #else
