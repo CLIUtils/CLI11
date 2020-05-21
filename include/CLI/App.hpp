@@ -993,7 +993,7 @@ class App {
     /// creates an option group as part of the given app
     template <typename T = Option_group>
     T *add_option_group(std::string group_name, std::string group_description = "") {
-        auto option_group = std::make_shared<T>(std::move(group_description), group_name, nullptr);
+        auto option_group = std::make_shared<T>(std::move(group_description), group_name, this);
         auto ptr = option_group.get();
         // move to App_p for overload resolution on older gcc versions
         App_p app_ptr = std::dynamic_pointer_cast<App>(option_group);
