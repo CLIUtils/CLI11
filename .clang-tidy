@@ -6,24 +6,24 @@ FormatStyle: file
 Checks: '
 -*,
 google-*,
--google-runtime-int,
 -google-runtime-references,
 llvm-include-order,
 llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
+-modernize-use-trailing-return-type,
 readability-container-size-empty,
 '
 
 WarningsAsErrors: '
 -*,
 google-*,
--google-runtime-int,
 -google-runtime-references,
 llvm-include-order,
 llvm-namespace-comment,
 misc-throw-by-value-catch-by-reference,
 modernize*,
+-modernize-use-trailing-return-type,
 readability-container-size-empty,
 '
 
