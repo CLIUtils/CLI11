@@ -1166,28 +1166,17 @@ TEST(THelp, FunctionDefaultString) {
     EXPECT_THAT(help, HasSubstr("INT=Powerful"));
 }
 
-static std::string getVersion(CLI::App& app, const std::string &args="--version")
-{
-    try {
-        app.parse(args);
-    }
-    catch (const CLI::CallForVersion& v)
-    {
-        return v.what();
-    }
-    return std::string{};
-}
 TEST(TVersion, simple_flag) {
 
     CLI::App app;
 
     app.set_version_flag("-v,--version", "VERSION " CLI11_VERSION);
 
-    auto vers = getVersion(app);
+    auto vers = app.version();
     EXPECT_THAT(vers, HasSubstr("VERSION"));
-    app.allow_extras();
+
     app.set_version_flag();
-    EXPECT_TRUE(getVersion(app).empty());
+    EXPECT_TRUE(app.version().empty());
 }
 
 TEST(TVersion, callback_flag) {
@@ -1196,11 +1185,11 @@ TEST(TVersion, callback_flag) {
 
     app.set_version_flag("-v,--version", []() { return std::string("VERSION " CLI11_VERSION); });
 
-    auto vers = getVersion(app);
+    auto vers = app.version();
     EXPECT_THAT(vers, HasSubstr("VERSION"));
 
     app.set_version_flag("-v", []() { return std::string("VERSION2 " CLI11_VERSION); });
-    vers = getVersion(app,"-v");
+    vers = app.version();
     EXPECT_THAT(vers, HasSubstr("VERSION"));
 }
 
