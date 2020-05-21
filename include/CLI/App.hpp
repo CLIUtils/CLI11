@@ -744,17 +744,6 @@ class App {
 
         return version_ptr_;
     }
-    /// Set the version as a string
-    App *version(const std::string &versionString) {
-        set_version_flag("--version", versionString);
-        return this;
-    }
-
-    /// Generate the version string through a callback function
-    App *version(std::function<std::string()> vfunc) {
-        set_version_flag("--version", vfunc);
-        return this;
-    }
 
   private:
     /// Internal function for adding a flag
@@ -1588,23 +1577,6 @@ class App {
         return formatter_->make_help(this, prev, mode);
     }
 
-    /// Displays a version string
-    std::string version() const {
-        std::string val;
-        if(version_ptr_ != nullptr) {
-            auto rv = version_ptr_->results();
-            version_ptr_->clear();
-            version_ptr_->add_result("true");
-            try {
-                version_ptr_->run_callback();
-            } catch(const CLI::CallForVersion &cfv) {
-                val = cfv.what();
-            }
-            version_ptr_->clear();
-            version_ptr_->add_result(rv);
-        }
-        return val;
-    }
     ///@}
     /// @name Getters
     ///@{
