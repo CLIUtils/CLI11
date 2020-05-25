@@ -1165,3 +1165,53 @@ TEST(THelp, FunctionDefaultString) {
 
     EXPECT_THAT(help, HasSubstr("INT=Powerful"));
 }
+
+TEST(TVersion, simple_flag) {
+
+    CLI::App app;
+
+    app.set_version_flag("-v,--version", "VERSION " CLI11_VERSION);
+
+    auto vers = app.version();
+    EXPECT_THAT(vers, HasSubstr("VERSION"));
+
+    app.set_version_flag();
+    EXPECT_TRUE(app.version().empty());
+}
+
+TEST(TVersion, callback_flag) {
+
+    CLI::App app;
+
+    app.set_version_flag("-v,--version", []() { return std::string("VERSION " CLI11_VERSION); });
+
+    auto vers = app.version();
+    EXPECT_THAT(vers, HasSubstr("VERSION"));
+
+    app.set_version_flag("-v", []() { return std::string("VERSION2 " CLI11_VERSION); });
+    vers = app.version();
+    EXPECT_THAT(vers, HasSubstr("VERSION"));
+}
+
+TEST(TVersion, parse_throw) {
+
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+
+    EXPECT_THROW(app.parse("--version"), CLI::CallForVersion);
+    EXPECT_THROW(app.parse("--version --arg2 5"), CLI::CallForVersion);
+
+    auto ptr = app.get_version_ptr();
+
+    ptr->ignore_case();
+    try {
+        app.parse("--Version");
+    } catch(const CLI::CallForVersion &v) {
+        EXPECT_STREQ(v.what(), CLI11_VERSION);
+        EXPECT_EQ(v.get_exit_code(), 0);
+        const auto &appc = app;
+        auto cptr = appc.get_version_ptr();
+        EXPECT_EQ(cptr->count(), 1U);
+    }
+}

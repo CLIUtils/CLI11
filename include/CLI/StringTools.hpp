@@ -190,7 +190,7 @@ inline bool valid_name_string(const std::string &str) {
     return true;
 }
 
-/// check if a string is a container segment separator (empty or "%%"
+/// check if a string is a container segment separator (empty or "%%")
 inline bool is_separator(const std::string &str) {
     static const std::string sep("%%");
     return (str.empty() || str == sep);

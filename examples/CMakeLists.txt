@@ -54,6 +54,9 @@ set_property(TEST simple_all PROPERTY PASS_REGULAR_EXPRESSION
     "Received flag: 2 (2) times"
     "Some value: 1.2")
 
+add_test(NAME simple_version COMMAND simple --version)
+set_property(TEST simple_version PROPERTY PASS_REGULAR_EXPRESSION
+    "${CLI11_VERSION}")
 
 add_cli_exe(subcommands subcommands.cpp)
 add_test(NAME subcommands_none COMMAND subcommands)

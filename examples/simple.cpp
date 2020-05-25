@@ -11,7 +11,8 @@
 int main(int argc, char **argv) {
 
     CLI::App app("K3Pi goofit fitter");
-
+    // add version output
+    app.set_version_flag("--version", std::string(CLI11_VERSION));
     std::string file;
     CLI::Option *opt = app.add_option("-f,--file,file", file, "File name");
 

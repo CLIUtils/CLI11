@@ -139,6 +139,9 @@ class App {
     /// A pointer to the help all flag if there is one INHERITABLE
     Option *help_all_ptr_{nullptr};
 
+    /// A pointer to a version flag if there is one
+    Option *version_ptr_{nullptr};
+
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
 
@@ -701,6 +704,45 @@ class App {
         }
 
         return help_all_ptr_;
+    }
+
+    /// Set a version flag and version display string, replace the existing one if present
+    Option *set_version_flag(std::string flag_name = "", const std::string &versionString = "") {
+        // take flag_description by const reference otherwise add_flag tries to assign to version_description
+        if(version_ptr_ != nullptr) {
+            remove_option(version_ptr_);
+            version_ptr_ = nullptr;
+        }
+
+        // Empty name will simply remove the version flag
+        if(!flag_name.empty()) {
+            version_ptr_ = add_flag_callback(
+                flag_name,
+                [versionString]() { throw(CLI::CallForVersion(versionString, 0)); },
+                "display program version information and exit");
+            version_ptr_->configurable(false);
+        }
+
+        return version_ptr_;
+    }
+    /// Generate the version string through a callback function
+    Option *set_version_flag(std::string flag_name, std::function<std::string()> vfunc) {
+        // take flag_description by const reference otherwise add_flag tries to assign to version_description
+        if(version_ptr_ != nullptr) {
+            remove_option(version_ptr_);
+            version_ptr_ = nullptr;
+        }
+
+        // Empty name will simply remove the version flag
+        if(!flag_name.empty()) {
+            version_ptr_ = add_flag_callback(
+                flag_name,
+                [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); },
+                "display program version information and exit");
+            version_ptr_->configurable(false);
+        }
+
+        return version_ptr_;
     }
 
   private:
@@ -1345,6 +1387,11 @@ class App {
             return e.get_exit_code();
         }
 
+        if(dynamic_cast<const CLI::CallForVersion *>(&e) != nullptr) {
+            out << e.what() << std::endl;
+            return e.get_exit_code();
+        }
+
         if(e.get_exit_code() != static_cast<int>(ExitCodes::Success)) {
             if(failure_message_)
                 err << failure_message_(this, e) << std::flush;
@@ -1530,6 +1577,23 @@ class App {
         return formatter_->make_help(this, prev, mode);
     }
 
+    /// Displays a version string
+    std::string version() const {
+        std::string val;
+        if(version_ptr_ != nullptr) {
+            auto rv = version_ptr_->results();
+            version_ptr_->clear();
+            version_ptr_->add_result("true");
+            try {
+                version_ptr_->run_callback();
+            } catch(const CLI::CallForVersion &cfv) {
+                val = cfv.what();
+            }
+            version_ptr_->clear();
+            version_ptr_->add_result(rv);
+        }
+        return val;
+    }
     ///@}
     /// @name Getters
     ///@{
@@ -1725,6 +1789,12 @@ class App {
 
     /// Get a pointer to the config option. (const)
     const Option *get_config_ptr() const { return config_ptr_; }
+
+    /// Get a pointer to the version option.
+    Option *get_version_ptr() { return version_ptr_; }
+
+    /// Get a pointer to the version option. (const)
+    const Option *get_version_ptr() const { return version_ptr_; }
 
     /// Get the parent of this subcommand (or nullptr if master app)
     App *get_parent() { return parent_; }
