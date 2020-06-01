@@ -1606,7 +1606,12 @@ class App {
 
     /// Access the config formatter as a configBase pointer
     std::shared_ptr<ConfigBase> get_config_formatter_base() const {
+        // This is safer as a dynamic_cast if we have RTTI, as Config -> ConfigBase
+#if defined(__cpp_rtti) || (defined(__GXX_RTTI) && __GXX_RTTI) || (defined(_HAS_STATIC_RTTI) && (_HAS_STATIC_RTTI == 0))
+        return std::dynamic_pointer_cast<ConfigBase>(config_formatter_);
+#else
         return std::static_pointer_cast<ConfigBase>(config_formatter_);
+#endif
     }
 
     /// Get the app or subcommand description

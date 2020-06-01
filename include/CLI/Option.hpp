@@ -508,7 +508,7 @@ class Option : public OptionBase<Option> {
 
     /// Can find a string if needed
     template <typename T = App> Option *needs(std::string opt_name) {
-        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        auto opt = static_cast<T *>(parent_)->get_option_no_throw(opt_name);
         if(opt == nullptr) {
             throw IncorrectConstruction::MissingOption(opt_name);
         }
@@ -550,7 +550,7 @@ class Option : public OptionBase<Option> {
 
     /// Can find a string if needed
     template <typename T = App> Option *excludes(std::string opt_name) {
-        auto opt = dynamic_cast<T *>(parent_)->get_option_no_throw(opt_name);
+        auto opt = static_cast<T *>(parent_)->get_option_no_throw(opt_name);
         if(opt == nullptr) {
             throw IncorrectConstruction::MissingOption(opt_name);
         }
@@ -587,7 +587,7 @@ class Option : public OptionBase<Option> {
     template <typename T = App> Option *ignore_case(bool value = true) {
         if(!ignore_case_ && value) {
             ignore_case_ = value;
-            auto *parent = dynamic_cast<T *>(parent_);
+            auto *parent = static_cast<T *>(parent_);
             for(const Option_p &opt : parent->options_) {
                 if(opt.get() == this) {
                     continue;
@@ -612,7 +612,7 @@ class Option : public OptionBase<Option> {
 
         if(!ignore_underscore_ && value) {
             ignore_underscore_ = value;
-            auto *parent = dynamic_cast<T *>(parent_);
+            auto *parent = static_cast<T *>(parent_);
             for(const Option_p &opt : parent->options_) {
                 if(opt.get() == this) {
                     continue;
