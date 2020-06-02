@@ -926,6 +926,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
   <tr>
     <td align="center"><a href="https://github.com/jsoref"><img src="https://avatars0.githubusercontent.com/u/2119212?v=4" width="100px;" alt=""/><br /><sub><b>Josh Soref</b></sub></a><br /><a href="#tool-jsoref" title="Tools">🔧</a></td>
     <td align="center"><a href="https://github.com/geir-t"><img src="https://avatars3.githubusercontent.com/u/35292136?v=4" width="100px;" alt=""/><br /><sub><b>geir-t</b></sub></a><br /><a href="#platform-geir-t" title="Packaging/porting to new platform">📦</a></td>
+    <td align="center"><a href="https://ondrejcertik.com/"><img src="https://avatars3.githubusercontent.com/u/20568?v=4" width="100px;" alt=""/><br /><sub><b>Ondřej Čertík</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Acertik" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
