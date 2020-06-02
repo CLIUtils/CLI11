@@ -115,7 +115,8 @@ The default configuration file will read TOML files, but will write out files in
 ```cpp
 app.config_formatter(std::make_shared<CLI::ConfigTOML>());
 ```
-which makes use of a predefined modification of the ConfigBase class which INI also uses.
+
+which makes use of a predefined modification of the ConfigBase class which INI also uses. If a custom formatter is used that is not inheriting from the from ConfigBase class `get_config_formatter_base() will return a nullptr if RTTI is on (usually the default), or garbage if RTTI is off, so some care must be exercised in its use with custom configurations.
 
 ## Custom formats
 

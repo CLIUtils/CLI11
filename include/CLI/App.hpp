@@ -1314,15 +1314,15 @@ class App {
     int exit(const Error &e, std::ostream &out = std::cout, std::ostream &err = std::cerr) const {
 
         /// Avoid printing anything if this is a CLI::RuntimeError
-        if(dynamic_cast<const CLI::RuntimeError *>(&e) != nullptr)
+        if(e.get_name() == "RuntimeError")
             return e.get_exit_code();
 
-        if(dynamic_cast<const CLI::CallForHelp *>(&e) != nullptr) {
+        if(e.get_name() == "CallForHelp") {
             out << help();
             return e.get_exit_code();
         }
 
-        if(dynamic_cast<const CLI::CallForAllHelp *>(&e) != nullptr) {
+        if(e.get_name() == "CallForAllHelp") {
             out << help("", AppFormatMode::All);
             return e.get_exit_code();
         }
@@ -1524,7 +1524,12 @@ class App {
 
     /// Access the config formatter as a configBase pointer
     std::shared_ptr<ConfigBase> get_config_formatter_base() const {
+        // This is safer as a dynamic_cast if we have RTTI, as Config -> ConfigBase
+#if defined(__cpp_rtti) || (defined(__GXX_RTTI) && __GXX_RTTI) || (defined(_HAS_STATIC_RTTI) && (_HAS_STATIC_RTTI == 0))
         return std::dynamic_pointer_cast<ConfigBase>(config_formatter_);
+#else
+        return std::static_pointer_cast<ConfigBase>(config_formatter_);
+#endif
     }
 
     /// Get the app or subcommand description
