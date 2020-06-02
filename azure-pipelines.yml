@@ -5,9 +5,11 @@
 
 trigger:
 - master
+- 'v*'
 
 pr:
 - master
+- 'v*'
 
 variables:
   cli11.single: ON
