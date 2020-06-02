@@ -1,3 +1,33 @@
+## Version 2.0: In progress
+
+* Built-in config format is TOML compliant now [#435]
+* Config updates [#442]
+* More powerful containers, `%%` separator [#423]
+* Add a version flag easily [#452]
+
+[#435]: https://github.com/CLIUtils/CLI11/pull/435
+[#443]: https://github.com/CLIUtils/CLI11/pull/443
+[#423]: https://github.com/CLIUtils/CLI11/pull/423
+[#452]: https://github.com/CLIUtils/CLI11/pull/452
+
+
+### Version 1.9.1: Backporting fixes
+
+This is a patch version that backports fixes from the development of 2.0.
+
+* Fix an issue with string conversion [#421][]
+* Cross-compiling improvement for Conan.io [#430][]
+* Fix option group default propagation [#450][]
+* Fix for C++20 [#459][]
+* Support compiling with RTTI off [#461][]
+
+[#421]: https://github.com/CLIUtils/CLI11/pull/421
+[#430]: https://github.com/CLIUtils/CLI11/pull/430
+[#450]: https://github.com/CLIUtils/CLI11/pull/450
+[#459]: https://github.com/CLIUtils/CLI11/pull/459
+[#461]: https://github.com/CLIUtils/CLI11/pull/461
+
+
 ## Version 1.9: Config files and cleanup
 
 Config file handling was revamped to fix common issues, and now supports reading [TOML](https://github.com/toml-lang/toml).
