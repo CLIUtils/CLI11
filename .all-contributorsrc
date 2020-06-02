@@ -359,6 +359,15 @@
       "contributions": [
         "platform"
       ]
+    },
+    {
+      "login": "certik",
+      "name": "Ondřej Čertík",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20568?v=4",
+      "profile": "https://ondrejcertik.com/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
