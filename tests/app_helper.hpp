@@ -1,3 +1,9 @@
+// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #pragma once
 
 #ifdef CLI11_SINGLE_FILE
@@ -8,13 +14,17 @@
 
 #include "gtest/gtest.h"
 #include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using input_t = std::vector<std::string>;
 
-struct TApp : public ::testing::Test {
+class TApp_base {
+  public:
     CLI::App app{"My Test Program"};
     input_t args{};
-
+    virtual ~TApp_base() = default;
     void run() {
         // It is okay to re-parse - clear is called automatically before a parse.
         input_t newargs = args;
@@ -22,6 +32,8 @@ struct TApp : public ::testing::Test {
         app.parse(newargs);
     }
 };
+
+class TApp : public TApp_base, public ::testing::Test {};
 
 class TempFile {
     std::string _name{};
