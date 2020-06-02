@@ -145,7 +145,7 @@ add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(CLI11 INTERFACE
-     $<BUILD_INTERFACE:"${CMAKE_CURRENT_SOURCE_DIR}/include">
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
      $<INSTALL_INTERFACE:include>)
 
 
@@ -246,7 +246,7 @@ if(CLI11_SINGLE_FILE)
     add_dependencies(CLI11_SINGLE CLI11-generate-single-file)
     target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI11_SINGLE_FILE)
     target_include_directories(CLI11_SINGLE INTERFACE
-        $<BUILD_INTERFACE:"${PROJECT_BINARY_DIR}/include/">
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>
         $<INSTALL_INTERFACE:include>)
 endif()
 
