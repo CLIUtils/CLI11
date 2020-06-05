@@ -46,7 +46,6 @@ list(APPEND force-libcxx "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
-list(APPEND build-docs "EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/docs\"")
 
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
@@ -56,7 +55,7 @@ cmake_dependent_option(CLI11_SANITIZERS
 
 cmake_dependent_option(CLI11_BUILD_DOCS
     "Build CLI11 documentation" ON
-    "${build-docs}" OFF)
+    "${build-docs};EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/docs\"" OFF)
 
 cmake_dependent_option(CLI11_BUILD_TESTS
     "Build CLI11 tests" ON
