@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "CLI/Macros.hpp"
-#include "CLI/StringTools.hpp"
-#include "CLI/TypeTools.hpp"
+#include "Macros.hpp"
+#include "StringTools.hpp"
+#include "TypeTools.hpp"
 
 #include <cmath>
 #include <cstdint>

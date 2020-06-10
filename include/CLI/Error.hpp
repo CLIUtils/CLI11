@@ -13,7 +13,7 @@
 #include <vector>
 
 // CLI library includes
-#include "CLI/StringTools.hpp"
+#include "StringTools.hpp"
 
 namespace CLI {
 
