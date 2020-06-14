@@ -47,6 +47,20 @@ list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
 
+# Necessary to support paths with spaces, see #457
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs")
+    set(docs_EXIST TRUE)
+else()
+    set(docs_EXIST FALSE)
+endif()
+list(APPEND build-docs "docs_EXIST")
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+    set(examples_EXIST TRUE)
+else()
+    set(examples_EXIST FALSE)
+endif()
+
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 cmake_dependent_option(CLI11_SANITIZERS
@@ -55,7 +69,7 @@ cmake_dependent_option(CLI11_SANITIZERS
 
 cmake_dependent_option(CLI11_BUILD_DOCS
     "Build CLI11 documentation" ON
-    "${build-docs};EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/docs\"" OFF)
+    "${build-docs}" OFF)
 
 cmake_dependent_option(CLI11_BUILD_TESTS
     "Build CLI11 tests" ON
@@ -63,7 +77,7 @@ cmake_dependent_option(CLI11_BUILD_TESTS
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES
     "Build CLI11 examples" ON
-    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/examples\"" OFF)
+    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;${examples_EXIST}" OFF)
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON
     "Build CLI11 json example" OFF
