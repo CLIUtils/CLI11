@@ -719,7 +719,7 @@ class App {
             version_ptr_ = add_flag_callback(
                 flag_name,
                 [versionString]() { throw(CLI::CallForVersion(versionString, 0)); },
-                "display program version information and exit");
+                "Display program version information and exit");
             version_ptr_->configurable(false);
         }
 
@@ -738,7 +738,7 @@ class App {
             version_ptr_ = add_flag_callback(
                 flag_name,
                 [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); },
-                "display program version information and exit");
+                "Display program version information and exit");
             version_ptr_->configurable(false);
         }
 
