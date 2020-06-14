@@ -368,6 +368,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "samhocevar",
+      "name": "Sam Hocevar",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/245089?v=4",
+      "profile": "http://sam.hocevar.net/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
