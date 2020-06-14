@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "CLI/Error.hpp"
-#include "CLI/StringTools.hpp"
+#include "Error.hpp"
+#include "StringTools.hpp"
 
 namespace CLI {
 namespace detail {

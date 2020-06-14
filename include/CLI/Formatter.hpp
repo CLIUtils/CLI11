@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "CLI/App.hpp"
-#include "CLI/FormatterFwd.hpp"
+#include "App.hpp"
+#include "FormatterFwd.hpp"
 
 namespace CLI {
 

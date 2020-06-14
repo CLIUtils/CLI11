@@ -15,11 +15,11 @@
 #include <utility>
 #include <vector>
 
-#include "CLI/Error.hpp"
-#include "CLI/Macros.hpp"
-#include "CLI/Split.hpp"
-#include "CLI/StringTools.hpp"
-#include "CLI/Validators.hpp"
+#include "Error.hpp"
+#include "Macros.hpp"
+#include "Split.hpp"
+#include "StringTools.hpp"
+#include "Validators.hpp"
 
 namespace CLI {
 
