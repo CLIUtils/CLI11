@@ -15,7 +15,8 @@
 
 This is a patch version that backports fixes from the development of 2.0.
 
-* Fix cases where spaces in paths could break CMake support [#475][]
+* Support relative inclusion [#475][]
+* Fix cases where spaces in paths could break CMake support [#471][]
 * Fix an issue with string conversion [#421][]
 * Cross-compiling improvement for Conan.io [#430][]
 * Fix option group default propagation [#450][]
@@ -27,6 +28,7 @@ This is a patch version that backports fixes from the development of 2.0.
 [#450]: https://github.com/CLIUtils/CLI11/pull/450
 [#459]: https://github.com/CLIUtils/CLI11/pull/459
 [#461]: https://github.com/CLIUtils/CLI11/pull/461
+[#471]: https://github.com/CLIUtils/CLI11/pull/471
 [#475]: https://github.com/CLIUtils/CLI11/pull/475
 
 
