@@ -128,6 +128,7 @@ def MakeHeader(
 
     base_dir = os.path.abspath(os.path.join(DIR, include_dir))
     main_header = os.path.join(base_dir, main_header)
+    header_dir = os.path.dirname(main_header)
     licence_file = os.path.abspath(os.path.join(DIR, "../LICENSE"))
 
     with open(licence_file) as f:
@@ -138,7 +139,7 @@ def MakeHeader(
 
     include_files = includes_local.findall(header)
 
-    headers = [HeaderFile(base_dir, inc) for inc in include_files]
+    headers = [HeaderFile(header_dir, inc) for inc in include_files]
     single_header = reduce(add, headers)
 
     if macro is not None:

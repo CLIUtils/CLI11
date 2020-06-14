@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "CLI/StringTools.hpp"
+#include "StringTools.hpp"
 
 namespace CLI {
 

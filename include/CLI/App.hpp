@@ -20,14 +20,14 @@
 #include <vector>
 
 // CLI Library includes
-#include "CLI/ConfigFwd.hpp"
-#include "CLI/Error.hpp"
-#include "CLI/FormatterFwd.hpp"
-#include "CLI/Macros.hpp"
-#include "CLI/Option.hpp"
-#include "CLI/Split.hpp"
-#include "CLI/StringTools.hpp"
-#include "CLI/TypeTools.hpp"
+#include "ConfigFwd.hpp"
+#include "Error.hpp"
+#include "FormatterFwd.hpp"
+#include "Macros.hpp"
+#include "Option.hpp"
+#include "Split.hpp"
+#include "StringTools.hpp"
+#include "TypeTools.hpp"
 
 namespace CLI {
 
