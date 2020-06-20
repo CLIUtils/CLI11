@@ -1,8 +1,9 @@
-version: 1.9.0.{build}
+version: 1.9.1.{build}
 
 branches:
   only:
     - master
+    - v1
 
 install:
   - git submodule update --init --recursive
