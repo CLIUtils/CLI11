@@ -4,12 +4,12 @@ cmake_minimum_required(VERSION 3.4)
 
 # Make sure users don't get warnings on a tested (3.4 to 3.16) version
 # of CMake. For most of the policies, the new version is better (hence the change).
-# We don't use the 3.4...3.16 syntax because of a bug in an older MSVC's
+# We don't use the 3.4...3.17 syntax because of a bug in an older MSVC's
 # built-in and modified CMake 3.11
-if(${CMAKE_VERSION} VERSION_LESS 3.16)
+if(${CMAKE_VERSION} VERSION_LESS 3.17)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-    cmake_policy(VERSION 3.16)
+    cmake_policy(VERSION 3.17)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -46,7 +46,20 @@ list(APPEND force-libcxx "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
-list(APPEND build-docs "EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/docs")
+
+# Necessary to support paths with spaces, see #457
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs")
+    set(docs_EXIST TRUE)
+else()
+    set(docs_EXIST FALSE)
+endif()
+list(APPEND build-docs "docs_EXIST")
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+    set(examples_EXIST TRUE)
+else()
+    set(examples_EXIST FALSE)
+endif()
 
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
@@ -64,7 +77,7 @@ cmake_dependent_option(CLI11_BUILD_TESTS
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES
     "Build CLI11 examples" ON
-    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples" OFF)
+    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;${examples_EXIST}" OFF)
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON
     "Build CLI11 json example" OFF
@@ -181,8 +194,8 @@ endif()
 
 # This folder should be installed
 if(CLI11_INSTALL)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
     # Make an export target
     install(TARGETS CLI11 EXPORT CLI11Targets)
@@ -198,13 +211,13 @@ if(CLI11_INSTALL)
 
     # Make version available in the install
     install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
 
     # Install the export target as a file
     install(EXPORT CLI11Targets
         FILE CLI11Config.cmake
         NAMESPACE CLI11::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CLI11)
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
 
     # Use find_package on the installed package
     export(TARGETS CLI11
@@ -239,7 +252,7 @@ if(CLI11_SINGLE_FILE)
     add_custom_target(CLI11-generate-single-file ALL
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
     set_property(TARGET CLI11-generate-single-file PROPERTY FOLDER "Scripts")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         DESTINATION include)
     add_library(CLI11_SINGLE INTERFACE)
     target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
