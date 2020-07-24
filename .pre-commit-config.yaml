@@ -1,11 +1,11 @@
 
 repos:
 - repo: https://github.com/psf/black
-  rev: 19.3b0
+  rev: 19.10b0
   hooks:
   - id: black
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.3.0
+  rev: v3.1.0
   hooks:
   - id: check-added-large-files
   - id: mixed-line-ending
