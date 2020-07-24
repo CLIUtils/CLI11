@@ -838,3 +838,29 @@ TEST_F(TApp, tupleTwoVectors) {
     EXPECT_EQ(std::get<0>(cv).size(), 2U);
     EXPECT_EQ(std::get<1>(cv).size(), 3U);
 }
+
+TEST_F(TApp, vectorSingleArg) {
+
+    std::vector<int> cv;
+    app.add_option("-c", cv)->allow_extra_args(false);
+    std::string extra;
+    app.add_option("args", extra);
+    args = {"-c", "1", "-c", "2", "4"};
+
+    run();
+    EXPECT_EQ(cv.size(), 2U);
+    EXPECT_EQ(extra, "4");
+}
+
+TEST_F(TApp, vectorDoubleArg) {
+
+    std::vector<std::pair<int, std::string>> cv;
+    app.add_option("-c", cv)->allow_extra_args(false);
+    std::vector<std::string> extras;
+    app.add_option("args", extras);
+    args = {"-c", "1", "bob", "-c", "2", "apple", "4", "key"};
+
+    run();
+    EXPECT_EQ(cv.size(), 2U);
+    EXPECT_EQ(extras.size(), 2U);
+}

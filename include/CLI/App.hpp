@@ -2761,7 +2761,12 @@ class App {
         }
         int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
         int max_num = op->get_items_expected_max();
-
+        // check container like options to limit the argument size to a single type if the allow_extra_flags argument is
+        // set. 16 is somewhat arbitrary (needs to be at least 4)
+        if(max_num >= detail::expected_max_vector_size / 16 && !op->get_allow_extra_args()) {
+            auto tmax = op->get_type_size_max();
+            max_num = detail::checked_multiply(tmax, op->get_expected_min()) ? tmax : detail::expected_max_vector_size;
+        }
         // Make sure we always eat the minimum for unlimited vectors
         int collected = 0;     // total number of arguments collected
         int result_count = 0;  // local variable for number of results in a single arg string
