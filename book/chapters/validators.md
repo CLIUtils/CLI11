@@ -1,9 +1,5 @@
 # Validators
 
-{% hint style='info' %}
-Improved in CLI11 1.6
-{% endhint %}
-
 There are two forms of validators:
 
 * `transform` validators: mutating
@@ -15,9 +11,9 @@ the function should throw a `CLI::ValidationError` with the appropriate reason a
 
 However, `check` validators come in two forms; either a simple function with the const version of the
 above signature, `std::string(const std::string &)`, or a subclass of `struct CLI::Validator`. This
-structure has two members that a user should set; one (`func`) is the function to add to the Option
+structure has two members that a user should set; one (`func_`) is the function to add to the Option
 (exactly matching the above function signature, since it will become that function), and the other is
-`tname`, and is the type name to set on the Option (unless empty, in which case the typename will be
+`name_`, and is the type name to set on the Option (unless empty, in which case the typename will be
 left unchanged).
 
 Validators can be combined with `&` and `|`, and they have an `operator()` so that you can call them
@@ -29,8 +25,8 @@ An example of a custom validator:
 ```cpp
 struct LowerCaseValidator : public Validator {
     LowerCaseValidator() {
-        tname = "LOWER";
-        func = [](const std::string &str) {
+        name_ = "LOWER";
+        func_ = [](const std::string &str) {
             if(CLI::detail::to_lower(str) != str)
                 return std::string("String is not lower case");
             else
@@ -52,5 +48,17 @@ The built-in validators for CLI11 are:
 | `ExistingPath`      | Check for an existing path |
 | `NonexistentPath`   | Check for an non-existing path |
 | `Range(min=0, max)` |  Produce a range (factory). Min and max are inclusive. |
+
+
+And, the protected members that you can set when you make your own are:
+
+| Type | Member | Description |
+|------|--------|-------------|
+| `std::function<std::string(std::string &)>` | `func_` | Core validation function - modifies input and returns "" if successful |
+| `std::function<std::string()>` | `desc_function` | Optional description function (uses `description_` instead if not set) |
+| `std::string` | `name_` | The name for search purposes |
+| `int` (`-1`) | `application_index_` | The element this validator applies to (-1 for all) |
+| `bool` (`true`) | `active_` | This can be disabled |
+| `bool` (`false`) | `non_modifying_` | Specify that this is a Validator instead of a Transformer |
 
 
