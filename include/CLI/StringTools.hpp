@@ -310,7 +310,12 @@ inline std::vector<std::string> split_up(std::string str, char delimiter = '\0')
             }
             if(end != std::string::npos) {
                 output.push_back(str.substr(1, end - 1));
-                str = str.substr(end + 1);
+                if(end + 2 < str.size()) {
+                    str = str.substr(end + 2);
+                } else {
+                    str.clear();
+                }
+
             } else {
                 output.push_back(str.substr(1));
                 str = "";
