@@ -770,6 +770,30 @@ TEST_F(TApp, TOMLVectordirect) {
     EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
 }
 
+TEST_F(TApp, TOMLStringVector) {
+
+    TempFile tmptoml{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmptoml);
+
+    {
+        std::ofstream out{tmptoml};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=[\"2\",\"3\"]\n";
+        out << "three=[\"1\",\"2\",\"3\"]\n";
+    }
+
+    std::vector<std::string> two, three;
+    app.add_option("--two", two)->required();
+    app.add_option("--three", three)->required();
+
+    run();
+
+    EXPECT_EQ(std::vector<std::string>({"2", "3"}), two);
+    EXPECT_EQ(std::vector<std::string>({"1", "2", "3"}), three);
+}
+
 TEST_F(TApp, IniVectorCsep) {
 
     TempFile tmpini{"TestIniTmp.ini"};
