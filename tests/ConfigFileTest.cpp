@@ -591,6 +591,89 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
     EXPECT_EQ(app.get_config_ptr()->as<std::string>(), tmpini2.c_str());
 }
 
+TEST_F(TApp, MultiConfig) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+
+    app.set_config("--config")->expected(1, 3);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "one=55" << std::endl;
+        out << "three=4" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    args = {"--config", tmpini2, "--config", tmpini};
+    run();
+
+    EXPECT_EQ(99, two);
+    EXPECT_EQ(3, three);
+    EXPECT_EQ(55, one);
+
+    args = {"--config", tmpini, "--config", tmpini2};
+    run();
+
+    EXPECT_EQ(99, two);
+    EXPECT_EQ(4, three);
+    EXPECT_EQ(55, one);
+}
+
+TEST_F(TApp, MultiConfig_single) {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+
+    app.set_config("--config")->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "one=55" << std::endl;
+        out << "three=4" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    args = {"--config", tmpini2, "--config", tmpini};
+    run();
+
+    EXPECT_EQ(99, two);
+    EXPECT_EQ(3, three);
+    EXPECT_EQ(0, one);
+
+    two = 0;
+    args = {"--config", tmpini, "--config", tmpini2};
+    run();
+
+    EXPECT_EQ(0, two);
+    EXPECT_EQ(4, three);
+    EXPECT_EQ(55, one);
+}
+
 TEST_F(TApp, IniRequiredNotFound) {
 
     std::string noini = "TestIniNotExist.ini";

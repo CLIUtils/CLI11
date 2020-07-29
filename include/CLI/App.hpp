@@ -2053,29 +2053,31 @@ class App {
     void _process_config_file() {
         if(config_ptr_ != nullptr) {
             bool config_required = config_ptr_->get_required();
-            bool file_given = config_ptr_->count() > 0;
-            auto config_file = config_ptr_->as<std::string>();
-            if(config_file.empty()) {
+            auto file_given = config_ptr_->count() > 0;
+            auto config_files = config_ptr_->as<std::vector<std::string>>();
+            if(config_files.empty() || config_files.front().empty()) {
                 if(config_required) {
                     throw FileError::Missing("no specified config file");
                 }
                 return;
             }
-
-            auto path_result = detail::check_path(config_file.c_str());
-            if(path_result == detail::path_type::file) {
-                try {
-                    std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
-                    _parse_config(values);
-                    if(!file_given) {
-                        config_ptr_->add_result(config_file);
+            for(auto rit = config_files.rbegin(); rit != config_files.rend(); ++rit) {
+                const auto &config_file = *rit;
+                auto path_result = detail::check_path(config_file.c_str());
+                if(path_result == detail::path_type::file) {
+                    try {
+                        std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
+                        _parse_config(values);
+                        if(!file_given) {
+                            config_ptr_->add_result(config_file);
+                        }
+                    } catch(const FileError &) {
+                        if(config_required || file_given)
+                            throw;
                     }
-                } catch(const FileError &) {
-                    if(config_required || file_given)
-                        throw;
+                } else if(config_required || file_given) {
+                    throw FileError::Missing(config_file);
                 }
-            } else if(config_required || file_given) {
-                throw FileError::Missing(config_file);
             }
         }
     }
