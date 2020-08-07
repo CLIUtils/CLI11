@@ -264,6 +264,9 @@ class Option : public OptionBase<Option> {
     /// A human readable default value, either manually set, captured, or captured by default
     std::string default_str_{};
 
+    /// If given, replace the text that describes the option type and usage in the help text
+	std::string option_text_{};
+	
     /// A human readable type value, set when App creates this
     ///
     /// This is a lambda function so "types" can be dynamic, such as when a set prints its contents.
@@ -735,6 +738,17 @@ class Option : public OptionBase<Option> {
         description_ = std::move(option_description);
         return this;
     }
+
+	Option * option_text(std::string option_text)
+	{
+		option_text_ = std::move(option_text);
+		return this;
+	}
+
+	const std::string & get_option_text() const
+	{
+		return option_text_;
+	}
 
     ///@}
     /// @name Help tools
