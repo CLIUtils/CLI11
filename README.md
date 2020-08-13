@@ -133,11 +133,25 @@ There are some other possible "features" that are intentionally not supported by
 
 ## Install
 
-To use, there are two methods:
+To use, there are several methods:
 
-1.  Copy `CLI11.hpp` from the [most recent release][github releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
-2.  Use `CLI/*.hpp` files. You could check out the repository as a submodule, for example. You can use the `CLI11::CLI11` interface target when linking from `add_subdirectory`.
-    You can also configure and optionally install the project, and then use `find_package(CLI11 CONFIG)` to get the `CLI11::CLI11` target. You can also use [Conan.io][conan-link] or [Hunter][].
+1.  All-in-one local header: Copy `CLI11.hpp` from the [most recent release][github releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
+2.  All-in-one global header: Like above, but copying the file to a shared folder location like `/opt/CLI11`. Then, the C++ include path has to be extended to point at this folder. With CMake, use `include_directories(/opt/CLI11)`
+3.  Local headers and target: Use `CLI/*.hpp` files. You could check out the repository as a git submodule, for example. With CMake, you can use `add_subdirectory` and the `CLI11::CLI11` interface target when linking. If not using a submodule, you must ensure that the copied files are located inside the same tree directory than your current project, to prevent an error with CMake and `add_subdirectory`.
+4.  Global headers: Use `CLI/*.hpp` files stored in a shared folder. You could check out the git repository in a system-wide folder, for example `/opt/`. With CMake, you could add to the include path via:
+```bash
+if(NOT DEFINED CLI11_DIR)
+set (CLI11_DIR "/opt/CLI11" CACHE STRING "CLI11 git repository")
+endif()
+include_directories(${CLI11_DIR}/include)
+```
+And then in the source code (adding several headers might be needed to prevent linker errors):
+```cpp
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
+```
+5.  Global headers and target: configuring and installing the project is required for linking CLI11 to your project in the same way as you would do with any other external library. With CMake, this step allows using `find_package(CLI11 CONFIG REQUIRED)` and then using the `CLI11::CLI11` target when linking. If `CMAKE_INSTALL_PREFIX` was changed during install to a specific folder like `/opt/CLI11`, then you have to pass `-DCLI11_DIR=/opt/CLI11` when building your current project. You can also use [Conan.io][conan-link] or [Hunter][].
     (These are just conveniences to allow you to use your favorite method of managing packages; it's just header only so including the correct path and
     using C++11 is all you really need.)
 
