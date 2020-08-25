@@ -32,9 +32,11 @@ endif()
 set(GOOGLE_TEST_INDIVIDUAL OFF)
 include(AddGoogletest)
 
-# Add boost to test boost::optional if available
-find_package(Boost 1.61)
-
+# Add boost to test boost::optional (currently explicitly requested)"
+option(CLI11_BOOST "Turn on boost test (currently may fail with Boost 1.70)" OFF)
+if(CLI11_BOOST)
+    find_package(Boost 1.61 REQUIRED)
+endif()
 set(boost-optional-def $<$<BOOL:${Boost_FOUND}>:CLI11_BOOST_OPTIONAL>)
 
 set(CLI11_TESTS
