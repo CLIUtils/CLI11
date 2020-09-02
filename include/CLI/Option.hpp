@@ -265,7 +265,7 @@ class Option : public OptionBase<Option> {
     std::string default_str_{};
 
     /// If given, replace the text that describes the option type and usage in the help text
-	std::string option_text_{};
+    std::string option_text_{};
 
     /// A human readable type value, set when App creates this
     ///
@@ -739,16 +739,12 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-	Option * option_text(std::string text)
-	{
-		option_text_ = std::move(text);
-		return this;
-	}
+    Option *option_text(std::string text) {
+        option_text_ = std::move(text);
+        return this;
+    }
 
-	const std::string & get_option_text() const
-	{
-		return option_text_;
-	}
+    const std::string &get_option_text() const { return option_text_; }
 
     ///@}
     /// @name Help tools
