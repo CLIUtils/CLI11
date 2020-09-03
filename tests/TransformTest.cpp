@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <unordered_map>
 
@@ -848,6 +849,22 @@ TEST_F(TApp, AsSizeValue1000_1024) {
     args = {"-s", "1eib"};
     run();
     EXPECT_EQ(value, ki_value);
+}
+
+TEST_F(TApp, duration_test) {
+    std::chrono::seconds duration{1};
+
+    app.option_defaults()->ignore_case();
+    app.add_option_function<std::size_t>(
+           "--duration",
+           [&](size_t a_value) { duration = std::chrono::seconds{a_value}; },
+           "valid units: sec, min, h, day.")
+        ->capture_default_str()
+        ->transform(CLI::AsNumberWithUnit(
+            std::map<std::string, std::size_t>{{"sec", 1}, {"min", 60}, {"h", 3600}, {"day", 24 * 3600}}));
+    EXPECT_NO_THROW(app.parse(std::vector<std::string>{"1 day", "--duration"}));
+
+    EXPECT_EQ(duration, std::chrono::seconds(86400));
 }
 
 TEST_F(TApp, AsSizeValue1024) {

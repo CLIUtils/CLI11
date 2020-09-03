@@ -78,6 +78,16 @@ sub.subcommand = true
 
 The main differences are in vector notation and comment character.  Note: CLI11 is not a full TOML parser as it just reads values as strings.  It is possible (but not recommended) to mix notation.
 
+## Multiple configuration files
+
+If it is desired that multiple configuration be allowed.  Use
+
+```cpp
+app.set_config("--config")->expected(1, X);
+```
+
+Where X is some positive integer and will allow up to `X` configuration files to be specified by separate `--config` arguments.
+
 ## Writing out a configure file
 
 To print a configuration file from the passed arguments, use `.config_to_str(default_also=false, write_description=false)`, where `default_also` will also show any defaulted arguments, and `write_description` will include option descriptions and the App description

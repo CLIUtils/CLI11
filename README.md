@@ -748,6 +748,14 @@ Spaces before and after the name and argument are ignored. Multiple arguments ar
 To print a configuration file from the passed
 arguments, use `.config_to_str(default_also=false, write_description=false)`, where `default_also` will also show any defaulted arguments, and `write_description` will include the app and option descriptions.  See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for some additional details.
 
+If it is desired that multiple configuration be allowed.  Use
+
+```cpp
+app.set_config("--config")->expected(1, X);
+```
+
+Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.
+
 ### Inheriting defaults
 
 Many of the defaults for subcommands and even options are inherited from their creators. The inherited default values for subcommands are `allow_extras`, `prefix_command`, `ignore_case`, `ignore_underscore`, `fallthrough`, `group`, `footer`,`immediate_callback` and maximum number of required subcommands. The help flag existence, name, and description are inherited, as well.
