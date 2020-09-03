@@ -89,6 +89,25 @@ TEST(Formatter, OptCustomizeSimple) {
               "  --opt INT (MUST HAVE)  Something\n\n");
 }
 
+TEST(Formatter, OptCustomizeOptionText) {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+
+    int v{0};
+    app.add_option("--opt", v, "Something")->option_text("(ARG)");
+
+    std::string help = app.help();
+
+    EXPECT_THAT(help, HasSubstr("(ARG)"));
+    EXPECT_EQ(help,
+              "My prog\n"
+              "Usage: [OPTIONS]\n\n"
+              "Options:\n"
+              "  -h,--help              Print this help message and exit\n"
+              "  --opt (ARG)            Something\n\n");
+}
+
 TEST(Formatter, FalseFlagExample) {
     CLI::App app{"My prog"};
 
