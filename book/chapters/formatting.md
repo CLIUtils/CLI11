@@ -30,7 +30,7 @@ You can further configure pieces of the code while still keeping most of the for
 ```cpp
 class MyFormatter : public CLI::Formatter {
   public:
-    std::string make_opts(const CLI::Option *) const override {return "";}
+    std::string make_option_opts(const CLI::Option *) const override {return "";}
 };
 app.formatter(std::make_shared<MyFormatter>());
 ```
