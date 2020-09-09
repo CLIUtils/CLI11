@@ -377,6 +377,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "rcurtin",
+      "name": "Ryan Curtin",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1845039?v=4",
+      "profile": "http://www.ratml.org/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
