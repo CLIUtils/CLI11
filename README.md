@@ -952,6 +952,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="https://github.com/geir-t"><img src="https://avatars3.githubusercontent.com/u/35292136?v=4" width="100px;" alt=""/><br /><sub><b>geir-t</b></sub></a><br /><a href="#platform-geir-t" title="Packaging/porting to new platform">📦</a></td>
     <td align="center"><a href="https://ondrejcertik.com/"><img src="https://avatars3.githubusercontent.com/u/20568?v=4" width="100px;" alt=""/><br /><sub><b>Ondřej Čertík</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/issues?q=author%3Acertik" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://sam.hocevar.net/"><img src="https://avatars2.githubusercontent.com/u/245089?v=4" width="100px;" alt=""/><br /><sub><b>Sam Hocevar</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=samhocevar" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ferdymercury"><img src="https://avatars3.githubusercontent.com/u/10653970?v=4" width="100px;" alt=""/><br /><sub><b>ferdymercury</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ferdymercury" title="Documentation">📖</a></td>
   </tr>
 </table>
 
