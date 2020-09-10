@@ -386,6 +386,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "mbhall88",
+      "name": "Michael Hall",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20403931?v=4",
+      "profile": "https://mbh.sh",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
