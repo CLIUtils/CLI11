@@ -954,6 +954,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="http://sam.hocevar.net/"><img src="https://avatars2.githubusercontent.com/u/245089?v=4" width="100px;" alt=""/><br /><sub><b>Sam Hocevar</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=samhocevar" title="Code">💻</a></td>
     <td align="center"><a href="http://www.ratml.org/"><img src="https://avatars0.githubusercontent.com/u/1845039?v=4" width="100px;" alt=""/><br /><sub><b>Ryan Curtin</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=rcurtin" title="Documentation">📖</a></td>
     <td align="center"><a href="https://mbh.sh"><img src="https://avatars3.githubusercontent.com/u/20403931?v=4" width="100px;" alt=""/><br /><sub><b>Michael Hall</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=mbhall88" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/ferdymercury"><img src="https://avatars3.githubusercontent.com/u/10653970?v=4" width="100px;" alt=""/><br /><sub><b>ferdymercury</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ferdymercury" title="Documentation">📖</a></td>
   </tr>
 </table>
 
