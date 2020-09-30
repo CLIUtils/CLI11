@@ -746,9 +746,7 @@ class IsMember : public Validator {
             }
 
             // If you reach this point, the result was not found
-            std::string out(" not in ");
-            out += detail::generate_set(detail::smart_deref(set));
-            return out;
+            return input + " not in " + detail::generate_set(detail::smart_deref(set));
         };
     }
 
