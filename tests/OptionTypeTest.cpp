@@ -167,6 +167,31 @@ TEST_F(TApp, BoolOption) {
     EXPECT_FALSE(bflag);
 }
 
+TEST_F(TApp, CharOption) {
+    char c1{'t'};
+    app.add_option("-c", c1);
+
+    args = {"-c", "g"};
+    run();
+    EXPECT_EQ(c1, 'g');
+
+    args = {"-c", "1"};
+    run();
+    EXPECT_EQ(c1, '1');
+
+    args = {"-c", "77"};
+    run();
+    EXPECT_EQ(c1, 77);
+
+    // convert hex for digit
+    args = {"-c", "0x44"};
+    run();
+    EXPECT_EQ(c1, 0x44);
+
+    args = {"-c", "751615654161688126132138844896646748852"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, vectorDefaults) {
     std::vector<int> vals{4, 5};
     auto opt = app.add_option("--long", vals, "", true);

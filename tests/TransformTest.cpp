@@ -692,7 +692,8 @@ TEST_F(TApp, NumberWithUnitBadInput) {
     args = {"-n", "13 c"};
     EXPECT_THROW(run(), CLI::ValidationError);
     args = {"-n", "a"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    // Assume 1.0 unit
+    EXPECT_NO_THROW(run());
     args = {"-n", "12.0a"};
     EXPECT_THROW(run(), CLI::ValidationError);
     args = {"-n", "a5"};
