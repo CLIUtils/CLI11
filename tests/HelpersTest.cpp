@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 
 #include <array>
+#include <atomic>
 #include <climits>
 #include <complex>
 #include <cstdint>
@@ -991,6 +992,8 @@ TEST(Types, TypeName) {
     EXPECT_EQ("ENUM", enum_name2);
     std::string umapName = CLI::detail::type_name<std::unordered_map<int, std::tuple<std::string, double>>>();
     EXPECT_EQ("[INT,[TEXT,FLOAT]]", umapName);
+
+    vclass = CLI::detail::classify_object<std::atomic<int>>::value;
 }
 
 TEST(Types, OverflowSmall) {
