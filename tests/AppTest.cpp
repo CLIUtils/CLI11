@@ -564,6 +564,26 @@ TEST_F(TApp, LotsOfFlagsSingleStringExtraSpace) {
     EXPECT_EQ(1u, app.count("-A"));
 }
 
+TEST_F(TApp, SingleArgVector) {
+
+    std::vector<std::string> channels;
+    std::vector<std::string> iargs;
+    std::string path;
+    app.add_option("-c", channels)->type_size(1)->allow_extra_args(false);
+    app.add_option("args", iargs);
+    app.add_option("-p", path);
+
+    app.parse("-c t1 -c t2 -c t3 a1 a2 a3 a4 -p happy");
+    EXPECT_EQ(3u, channels.size());
+    EXPECT_EQ(4u, iargs.size());
+    EXPECT_EQ(path, "happy");
+
+    app.parse("-c t1 a1 -c t2 -c t3 a2 a3 a4 -p happy");
+    EXPECT_EQ(3u, channels.size());
+    EXPECT_EQ(4u, iargs.size());
+    EXPECT_EQ(path, "happy");
+}
+
 TEST_F(TApp, FlagLikeOption) {
     bool val{false};
     auto opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
