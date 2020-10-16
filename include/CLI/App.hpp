@@ -2390,8 +2390,8 @@ class App {
     ///
     /// If this has more than one dot.separated.name, go into the subcommand matching it
     /// Returns true if it managed to find the option, if false you'll need to remove the arg manually.
-    void _parse_config(std::vector<ConfigItem> &args) {
-        for(ConfigItem item : args) {
+    void _parse_config(const std::vector<ConfigItem> &args) {
+        for(const ConfigItem &item : args) {
             if(!_parse_single_config(item) && allow_config_extras_ == config_extras_mode::error)
                 throw ConfigError::Extras(item.fullname());
         }
