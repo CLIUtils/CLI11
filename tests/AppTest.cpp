@@ -1815,6 +1815,24 @@ TEST_F(TApp, RangeDouble) {
     run();
 }
 
+TEST_F(TApp, typeCheck) {
+
+    /// Note that this must be a double in Range, too
+    app.add_option("--one")->check(CLI::TypeValidator<unsigned int>());
+
+    args = {"--one=1"};
+    EXPECT_NO_THROW(run());
+
+    args = {"--one=-7"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"--one=error"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+
+    args = {"--one=4.568"};
+    EXPECT_THROW(run(), CLI::ValidationError);
+}
+
 // Check to make sure programmatic access to left over is available
 TEST_F(TApp, AllowExtras) {
 
