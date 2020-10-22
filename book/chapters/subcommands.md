@@ -112,3 +112,18 @@ Here, `--shared_flag` was set on the main app, and on the command line it "falls
 
 This is a special mode that allows "prefix" commands, where the parsing completely stops when it gets to an unknown option. Further unknown options are ignored, even if they could match. Git is the traditional example for prefix commands; if you run git with an unknown subcommand, like "`git thing`", it then calls another command called "`git-thing`" with the remaining options intact.
 
+### Silent subcommands
+
+Subcommands can be modified by using the `silent` option.  This will prevent the subcommand from showing up in the get_subcommands list.  This can be used to make subcommands into modifiers. For example, a help subcommand might look like
+
+```c++
+    auto sub1 = app.add_subcommand("help")->silent();
+    sub1->parse_complete_callback([]() { throw CLI::CallForHelp(); });
+```
+
+This would allow calling help such as:
+
+```bash
+./app help
+./app help sub1
+```
