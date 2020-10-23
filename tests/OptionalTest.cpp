@@ -117,6 +117,19 @@ TEST_F(TApp, StdOptionalComplexDirect) {
     EXPECT_EQ(*opt, val2);
 }
 
+TEST_F(TApp, StdOptionalUint) {
+    std::optional<std::uint64_t> opt;
+    app.add_option("-i,--int", opt);
+    run();
+    EXPECT_FALSE(opt);
+
+    args = {"-i", "15"};
+    run();
+    EXPECT_EQ(*opt, 15U);
+    static_assert(CLI::detail::classify_object<std::optional<std::uint64_t>>::value ==
+                  CLI::detail::object_category::wrapper_value);
+}
+
 #ifdef _MSC_VER
 #pragma warning(default : 4244)
 #endif
