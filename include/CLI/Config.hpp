@@ -212,7 +212,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line.substr(0, pos));
             std::string item = detail::trim_copy(line.substr(pos + 1));
             if(item.size() > 1 && item.front() == aStart) {
-                for(std::string multiline; item.back() != aEnd && getline(input, multiline);) {
+                for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
                     item += multiline;
                 }
