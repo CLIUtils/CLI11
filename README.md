@@ -961,6 +961,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
   <tr>
     <td align="center"><a href="https://github.com/jakoblover"><img src="https://avatars0.githubusercontent.com/u/14160441?v=4" width="100px;" alt=""/><br /><sub><b>Jakob Lover</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=jakoblover" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ZeeD26"><img src="https://avatars2.githubusercontent.com/u/2487468?v=4" width="100px;" alt=""/><br /><sub><b>Dominik Steinberger</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ZeeD26" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/dfleury2"><img src="https://avatars1.githubusercontent.com/u/4805384?v=4" width="100px;" alt=""/><br /><sub><b>D. Fleury</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=dfleury2" title="Code">💻</a></td>
   </tr>
 </table>
 
