@@ -224,6 +224,8 @@ if(CLI11_INSTALL)
         NAMESPACE CLI11::
         FILE CLI11Targets.cmake)
 
+    include(cmake/CLI11GeneratePkgConfig.cmake)
+
     # Register in the user cmake package registry
     export(PACKAGE CLI11)
 endif()
