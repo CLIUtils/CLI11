@@ -135,11 +135,14 @@ TEST_F(TApp, RequireOptionsError) {
     app.add_flag("-c");
     app.add_flag("--q");
     app.add_flag("--this,--that");
+    app.set_help_flag("-h,--help");
+    app.set_help_all_flag("--help_all");
     app.require_option(1, 2);
     try {
         app.parse("-c --q --this --that");
     } catch(const CLI::RequiredError &re) {
         EXPECT_THAT(re.what(), Not(HasSubstr("-h,--help")));
+        EXPECT_THAT(re.what(), Not(HasSubstr("help_all")));
     }
 
     EXPECT_NO_THROW(app.parse("-c --q"));

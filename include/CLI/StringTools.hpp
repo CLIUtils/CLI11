@@ -76,10 +76,14 @@ std::string join(const T &v, Callable func, std::string delim = ",") {
     std::ostringstream s;
     auto beg = std::begin(v);
     auto end = std::end(v);
-    if(beg != end)
-        s << func(*beg++);
+    auto loc = s.tellp();
     while(beg != end) {
-        s << delim << func(*beg++);
+        auto nloc = s.tellp();
+        if(nloc > loc) {
+            s << delim;
+            loc = nloc;
+        }
+        s << func(*beg++);
     }
     return s.str();
 }

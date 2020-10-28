@@ -2253,10 +2253,13 @@ class App {
         }
 
         if(require_option_min_ > used_options || (require_option_max_ > 0 && require_option_max_ < used_options)) {
-            auto option_list = detail::join(options_, [](const Option_p &ptr) { return ptr->get_name(false, true); });
-            if(option_list.compare(0, 10, "-h,--help,") == 0) {
-                option_list.erase(0, 10);
-            }
+            auto option_list = detail::join(options_, [this](const Option_p &ptr) {
+                if(ptr.get() == help_ptr_ || ptr.get() == help_all_ptr_) {
+                    return std::string{};
+                }
+                return ptr->get_name(false, true);
+            });
+
             auto subc_list = get_subcommands([](App *app) { return ((app->get_name().empty()) && (!app->disabled_)); });
             if(!subc_list.empty()) {
                 option_list += "," + detail::join(subc_list, [](const App *app) { return app->get_display_name(); });
