@@ -6,6 +6,7 @@
 [![Build Status Windows][appveyor-badge]][appveyor]
 [![Build Status Azure][azure-badge]][azure]
 [![Actions Status][actions-badge]][actions-link]
+[![pre-commit.ci status][pre-commit-badge]][pre-commit-link]
 [![Code Coverage][codecov-badge]][codecov]
 [![Codacy Badge][codacy-badge]][codacy-link]
 [![Join the chat at https://gitter.im/CLI11gitter/Lobby][gitter-badge]][gitter]
@@ -1037,3 +1038,5 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
+[pre-commit-link]: https://results.pre-commit.ci/latest/github/CLIUtils/CLI11/master
+[pre-commit-badge]: https://results.pre-commit.ci/badge/github/CLIUtils/CLI11/master.svg
