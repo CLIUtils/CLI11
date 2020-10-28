@@ -211,7 +211,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         if(pos != std::string::npos) {
             name = detail::trim_copy(line.substr(0, pos));
             std::string item = detail::trim_copy(line.substr(pos + 1));
-            if(item.size() > 1 && item.front() == aStart && item.back() == aEnd) {
+            if(item.size() > 1 && item.front() == aStart) {
+                for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
+                    detail::trim(multiline);
+                    item += multiline;
+                }
                 items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
                 items_buffer = detail::split_up(item, aSep);

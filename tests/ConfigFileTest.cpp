@@ -150,6 +150,47 @@ TEST(StringBased, Vector) {
     EXPECT_EQ("seven", output.at(2).inputs.at(2));
 }
 
+TEST(StringBased, TomlVector) {
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "two = [four]\n";
+    ofile << "five = [six, and, seven]\n";
+    ofile << "eight = [nine, \n"
+             "ten, eleven,     twelve    \n"
+             "]\n";
+    ofile << "one_more = [one, \n"
+             "two,     three  ]    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
+
+    EXPECT_EQ(5u, output.size());
+    EXPECT_EQ("one", output.at(0).name);
+    EXPECT_EQ(1u, output.at(0).inputs.size());
+    EXPECT_EQ("three", output.at(0).inputs.at(0));
+    EXPECT_EQ("two", output.at(1).name);
+    EXPECT_EQ(1u, output.at(1).inputs.size());
+    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    EXPECT_EQ("five", output.at(2).name);
+    EXPECT_EQ(3u, output.at(2).inputs.size());
+    EXPECT_EQ("six", output.at(2).inputs.at(0));
+    EXPECT_EQ("and", output.at(2).inputs.at(1));
+    EXPECT_EQ("seven", output.at(2).inputs.at(2));
+    EXPECT_EQ("eight", output.at(3).name);
+    EXPECT_EQ(4u, output.at(3).inputs.size());
+    EXPECT_EQ("nine", output.at(3).inputs.at(0));
+    EXPECT_EQ("ten", output.at(3).inputs.at(1));
+    EXPECT_EQ("eleven", output.at(3).inputs.at(2));
+    EXPECT_EQ("twelve", output.at(3).inputs.at(3));
+    EXPECT_EQ("one_more", output.at(4).name);
+    EXPECT_EQ(3u, output.at(4).inputs.size());
+    EXPECT_EQ("one", output.at(4).inputs.at(0));
+    EXPECT_EQ("two", output.at(4).inputs.at(1));
+    EXPECT_EQ("three", output.at(4).inputs.at(2));
+}
+
 TEST(StringBased, Spaces) {
     std::stringstream ofile;
 
