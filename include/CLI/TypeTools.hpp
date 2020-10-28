@@ -964,7 +964,22 @@ bool lexical_cast(const std::string &input, T &output) {
 
 /// wrapper types
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::wrapper_value, detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == object_category::wrapper_value &&
+                          std::is_assignable<T &, typename T::value_type>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    typename T::value_type val;
+    if(lexical_cast(input, val)) {
+        output = val;
+        return true;
+    }
+    return from_stream(input, output);
+}
+
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::wrapper_value &&
+                          !std::is_assignable<T &, typename T::value_type>::value && std::is_assignable<T &, T>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     typename T::value_type val;
     if(lexical_cast(input, val)) {
@@ -1019,8 +1034,36 @@ bool lexical_cast(const std::string &input, T &output) {
     return from_stream(input, output);
 }
 
+/// Non-string convertible from an int
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::other && std::is_assignable<T &, int>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    int val;
+    if(integral_conversion(input, val)) {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4800)
+#endif
+        // with Atomic<XX> this could produce a warning due to the conversion but if atomic gets here it is an old style
+        // so will most likely still work
+        output = val;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+        return true;
+    }
+    // LCOV_EXCL_START
+    // This version of cast is only used for odd cases in an older compilers the fail over
+    // from_stream is tested elsewhere an not relevent for coverage here
+    return from_stream(input, output);
+    // LCOV_EXCL_STOP
+}
+
 /// Non-string parsable by a stream
-template <typename T, enable_if_t<classify_object<T>::value == object_category::other, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::other && !std::is_assignable<T &, int>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     static_assert(is_istreamable<T>::value,
                   "option object type must have a lexical cast overload or streaming input operator(>>) defined, if it "
@@ -1043,7 +1086,7 @@ bool lexical_assign(const std::string &input, AssignTo &output) {
 /// Assign a value through lexical cast operations
 template <typename AssignTo,
           typename ConvertTo,
-          enable_if_t<std::is_same<AssignTo, ConvertTo>::value &&
+          enable_if_t<std::is_same<AssignTo, ConvertTo>::value && std::is_assignable<AssignTo &, AssignTo>::value &&
                           classify_object<AssignTo>::value != object_category::string_assignable &&
                           classify_object<AssignTo>::value != object_category::string_constructible,
                       detail::enabler> = detail::dummy>
@@ -1052,7 +1095,44 @@ bool lexical_assign(const std::string &input, AssignTo &output) {
         output = AssignTo{};
         return true;
     }
+
     return lexical_cast(input, output);
+}
+
+/// Assign a value through lexical cast operations
+template <typename AssignTo,
+          typename ConvertTo,
+          enable_if_t<std::is_same<AssignTo, ConvertTo>::value && !std::is_assignable<AssignTo &, AssignTo>::value &&
+                          classify_object<AssignTo>::value == object_category::wrapper_value,
+                      detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, AssignTo &output) {
+    if(input.empty()) {
+        typename AssignTo::value_type emptyVal{};
+        output = emptyVal;
+        return true;
+    }
+    return lexical_cast(input, output);
+}
+
+/// Assign a value through lexical cast operations for int compatible values
+/// mainly for atomic operations on some compilers
+template <typename AssignTo,
+          typename ConvertTo,
+          enable_if_t<std::is_same<AssignTo, ConvertTo>::value && !std::is_assignable<AssignTo &, AssignTo>::value &&
+                          classify_object<AssignTo>::value != object_category::wrapper_value &&
+                          std::is_assignable<AssignTo &, int>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, AssignTo &output) {
+    if(input.empty()) {
+        output = 0;
+        return true;
+    }
+    int val;
+    if(lexical_cast(input, val)) {
+        output = val;
+        return true;
+    }
+    return false;
 }
 
 /// Assign a value converted from a string in lexical cast to the output value directly
@@ -1366,10 +1446,11 @@ bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &outp
 }
 
 /// conversion for wrapper types
-template <
-    typename AssignTo,
-    class ConvertTo,
-    enable_if_t<classify_object<ConvertTo>::value == object_category::wrapper_value, detail::enabler> = detail::dummy>
+template <typename AssignTo,
+          class ConvertTo,
+          enable_if_t<classify_object<ConvertTo>::value == object_category::wrapper_value &&
+                          std::is_assignable<ConvertTo &, ConvertTo>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     if(strings.empty() || strings.front().empty()) {
         output = ConvertTo{};
@@ -1378,6 +1459,26 @@ bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &outpu
     typename ConvertTo::value_type val;
     if(lexical_conversion<typename ConvertTo::value_type, typename ConvertTo::value_type>(strings, val)) {
         output = ConvertTo{val};
+        return true;
+    }
+    return false;
+}
+
+/// conversion for wrapper types
+template <typename AssignTo,
+          class ConvertTo,
+          enable_if_t<classify_object<ConvertTo>::value == object_category::wrapper_value &&
+                          !std::is_assignable<AssignTo &, ConvertTo>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
+    using ConvertType = typename ConvertTo::value_type;
+    if(strings.empty() || strings.front().empty()) {
+        output = ConvertType{};
+        return true;
+    }
+    ConvertType val;
+    if(lexical_conversion<typename ConvertTo::value_type, typename ConvertTo::value_type>(strings, val)) {
+        output = val;
         return true;
     }
     return false;
@@ -1410,6 +1511,33 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
     }
     output = static_cast<T>(count);
 }
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4800)
+#endif
+// with Atomic<XX> this could produce a warning due to the conversion but if atomic gets here it is an old style so will
+// most likely still work
+
+/// Sum a vector of flag representations
+/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
+/// by
+/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
+/// common true and false strings then uses stoll to convert the rest for summing
+template <typename T,
+          enable_if_t<!std::is_signed<T>::value && !std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
+void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
+    std::int64_t count{0};
+    for(auto &flag : flags) {
+        count += detail::to_flag_value(flag);
+    }
+    std::string out = detail::to_string(count);
+    lexical_cast(out, output);
+}
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 }  // namespace detail
 }  // namespace CLI

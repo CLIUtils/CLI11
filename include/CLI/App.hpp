@@ -789,7 +789,8 @@ class App {
     /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
     /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
     template <typename T,
-              enable_if_t<std::is_integral<T>::value && !is_bool<T>::value, detail::enabler> = detail::dummy>
+              enable_if_t<std::is_constructible<T, std::int64_t>::value && !is_bool<T>::value, detail::enabler> =
+                  detail::dummy>
     Option *add_flag(std::string flag_name,
                      T &flag_count,  ///< A variable holding the count
                      std::string flag_description = "") {
@@ -810,7 +811,7 @@ class App {
     /// that can be converted from a string
     template <typename T,
               enable_if_t<!detail::is_mutable_container<T>::value && !std::is_const<T>::value &&
-                              (!std::is_integral<T>::value || is_bool<T>::value) &&
+                              (!std::is_constructible<T, std::int64_t>::value || is_bool<T>::value) &&
                               !std::is_constructible<std::function<void(int)>, T>::value,
                           detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
@@ -824,9 +825,9 @@ class App {
     }
 
     /// Vector version to capture multiple flags.
-    template <
-        typename T,
-        enable_if_t<!std::is_assignable<std::function<void(std::int64_t)>, T>::value, detail::enabler> = detail::dummy>
+    template <typename T,
+              enable_if_t<!std::is_assignable<std::function<void(std::int64_t)> &, T>::value, detail::enabler> =
+                  detail::dummy>
     Option *add_flag(std::string flag_name,
                      std::vector<T> &flag_results,  ///< A vector of values with the flag results
                      std::string flag_description = "") {

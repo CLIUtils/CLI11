@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <atomic>
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
@@ -141,6 +142,33 @@ TEST_F(TApp, BoolAndIntFlags) {
     EXPECT_EQ((unsigned int)2, uflag);
 }
 
+TEST_F(TApp, atomic_bool_flags) {
+
+    std::atomic<bool> bflag{false};
+    std::atomic<int> iflag{0};
+
+    app.add_flag("-b", bflag);
+    app.add_flag("-i,--int", iflag);
+
+    args = {"-b", "-i"};
+    run();
+    EXPECT_TRUE(bflag.load());
+    EXPECT_EQ(1, iflag.load());
+
+    args = {"-b", "-b"};
+    ASSERT_NO_THROW(run());
+    EXPECT_TRUE(bflag.load());
+
+    bflag = false;
+
+    args = {"-iii"};
+    run();
+    EXPECT_FALSE(bflag.load());
+    EXPECT_EQ(3, iflag.load());
+    args = {"--int=notanumber"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+}
+
 TEST_F(TApp, BoolOption) {
     bool bflag{false};
     app.add_option("-b", bflag);
@@ -165,6 +193,26 @@ TEST_F(TApp, BoolOption) {
     args = {"-b", "-751615654161688126132138844896646748852"};
     run();
     EXPECT_FALSE(bflag);
+}
+
+TEST_F(TApp, atomic_int_option) {
+    std::atomic<int> i{0};
+    auto aopt = app.add_option("-i,--int", i);
+    args = {"-i4"};
+    run();
+    EXPECT_EQ(1u, app.count("--int"));
+    EXPECT_EQ(1u, app.count("-i"));
+    EXPECT_EQ(i, 4);
+    EXPECT_EQ(app["-i"]->as<std::string>(), "4");
+    EXPECT_EQ(app["--int"]->as<double>(), 4.0);
+
+    args = {"--int", "notAnInt"};
+    EXPECT_THROW(run(), CLI::ConversionError);
+
+    aopt->expected(0, 1);
+    args = {"--int"};
+    run();
+    EXPECT_EQ(i, 0);
 }
 
 TEST_F(TApp, CharOption) {
