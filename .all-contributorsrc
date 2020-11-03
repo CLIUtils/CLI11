@@ -431,6 +431,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "dbarowy",
+      "name": "Dan Barowy",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/573142?v=4",
+      "profile": "https://github.com/dbarowy",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
