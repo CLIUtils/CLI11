@@ -205,15 +205,18 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
 
 inline std::string Formatter::make_subcommand(const App *sub) const {
     std::stringstream out;
-    detail::format_help(out, sub->get_name(), sub->get_description(), column_width_);
+    detail::format_help(out, sub->get_display_name(true), sub->get_description(), column_width_);
     return out.str();
 }
 
 inline std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    out << sub->get_display_name() << "\n";
+    out << sub->get_display_name(true) << "\n";
 
     out << make_description(sub);
+    if(sub->get_name().empty() && !sub->get_aliases().empty()) {
+        detail::format_aliases(out, sub->get_aliases(), column_width_ + 2);
+    }
     out << make_positionals(sub);
     out << make_groups(sub, AppFormatMode::Sub);
     out << make_subcommands(sub, AppFormatMode::Sub);

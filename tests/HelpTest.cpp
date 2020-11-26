@@ -467,6 +467,36 @@ TEST(THelp, Subcom) {
     EXPECT_THAT(help, HasSubstr("Usage: ./myprogram sub2"));
 }
 
+TEST(THelp, Subcom_alias) {
+    CLI::App app{"My prog"};
+
+    auto sub1 = app.add_subcommand("sub1", "Subcommand1 description test");
+    sub1->alias("sub_alias1");
+    sub1->alias("sub_alias2");
+
+    app.add_subcommand("sub2", "Subcommand2 description test");
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS] [SUBCOMMAND]"));
+    EXPECT_THAT(help, HasSubstr("sub_alias1"));
+    EXPECT_THAT(help, HasSubstr("sub_alias2"));
+}
+
+TEST(THelp, Subcom_alias_group) {
+    CLI::App app{"My prog"};
+
+    auto sub1 = app.add_subcommand("", "Subcommand1 description test");
+    sub1->alias("sub_alias1");
+    sub1->alias("sub_alias2");
+
+    app.add_subcommand("sub2", "Subcommand2 description test");
+
+    std::string help = app.help();
+    EXPECT_THAT(help, HasSubstr("Usage: [OPTIONS] [SUBCOMMAND]"));
+    EXPECT_THAT(help, HasSubstr("sub_alias1"));
+    EXPECT_THAT(help, HasSubstr("sub_alias2"));
+}
+
 TEST(THelp, MasterName) {
     CLI::App app{"My prog", "MyRealName"};
 
