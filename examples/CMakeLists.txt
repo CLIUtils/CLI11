@@ -81,6 +81,26 @@ add_test(NAME subcom_partitioned_help COMMAND subcom_partitioned --help)
 set_property(TEST subcom_partitioned_help PROPERTY PASS_REGULAR_EXPRESSION
                                                    "-f,--file TEXT REQUIRED" "-d,--double FLOAT")
 
+####################################################
+add_cli_exe(config_app config_app.cpp)
+add_test(NAME config_app1 COMMAND config_app -p)
+set_property(TEST config_app1 PROPERTY PASS_REGULAR_EXPRESSION
+    "file=")
+
+add_test(NAME config_app2 COMMAND config_app -p -f /)
+set_property(TEST config_app2 PROPERTY PASS_REGULAR_EXPRESSION
+    "file=\"/\"")
+
+add_test(NAME config_app3 COMMAND config_app -f "" -p )
+set_property(TEST config_app3 PROPERTY PASS_REGULAR_EXPRESSION
+    "file=\"\"")
+
+add_test(NAME config_app4 COMMAND config_app -f "/" -p )
+set_property(TEST config_app4 PROPERTY PASS_REGULAR_EXPRESSION
+    "file=\"/\"")
+
+####################################################
+
 add_cli_exe(option_groups option_groups.cpp)
 add_test(NAME option_groups_missing COMMAND option_groups)
 set_property(TEST option_groups_missing PROPERTY PASS_REGULAR_EXPRESSION "Exactly 1 option from"
