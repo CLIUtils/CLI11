@@ -1,11 +1,12 @@
 
 repos:
 - repo: https://github.com/psf/black
-  rev: 19.10b0
+  rev: 20.8b1
   hooks:
   - id: black
+
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.1.0
+  rev: v3.4.0
   hooks:
   - id: check-added-large-files
   - id: mixed-line-ending
@@ -14,6 +15,7 @@ repos:
   - id: check-case-conflict
   - id: check-symlinks
   - id: check-yaml
+
 - repo: local
   hooks:
   - id: docker-clang-format
