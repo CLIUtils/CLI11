@@ -1834,7 +1834,21 @@ class App {
     }
 
     /// Get a display name for an app
-    std::string get_display_name() const { return (!name_.empty()) ? name_ : "[Option Group: " + get_group() + "]"; }
+    std::string get_display_name(bool with_aliases = false) const {
+        if(name_.empty()) {
+            return std::string("[Option Group: ") + get_group() + "]";
+        }
+        if(aliases_.empty() || !with_aliases || aliases_.empty()) {
+            return name_;
+        }
+        std::string dispname = name_;
+        for(const auto &lalias : aliases_) {
+            dispname.push_back(',');
+            dispname.push_back(' ');
+            dispname.append(lalias);
+        }
+        return dispname;
+    }
 
     /// Check the name, case insensitive and underscore insensitive if set
     bool check_name(std::string name_to_check) const {

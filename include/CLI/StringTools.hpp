@@ -159,7 +159,7 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
     return trim(s, filter);
 }
 /// Print a two part "help" string
-inline std::ostream &format_help(std::ostream &out, std::string name, std::string description, std::size_t wid) {
+inline std::ostream &format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid) {
     name = "  " + name;
     out << std::setw(static_cast<int>(wid)) << std::left << name;
     if(!description.empty()) {
@@ -173,6 +173,24 @@ inline std::ostream &format_help(std::ostream &out, std::string name, std::strin
         }
     }
     out << "\n";
+    return out;
+}
+
+/// Print subcommand aliases
+inline std::ostream &format_aliases(std::ostream &out, const std::vector<std::string> &aliases, std::size_t wid) {
+    if(!aliases.empty()) {
+        out << std::setw(static_cast<int>(wid)) << "     aliases: ";
+        bool front = true;
+        for(const auto &alias : aliases) {
+            if(!front) {
+                out << ", ";
+            } else {
+                front = false;
+            }
+            out << alias;
+        }
+        out << "\n";
+    }
     return out;
 }
 
