@@ -409,6 +409,7 @@ CLI11 has several Validators built-in that perform some common checks
 -   `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
 -   `CLI::Number`: Requires the input be a number.
 -   `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
+-   `CLI::TypeValidator<TYPE>`:🚧 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
 
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
 
@@ -715,7 +716,7 @@ app.set_config(option_name="",
 
 If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML] format by default 🚧, though the default reader can also accept files in INI format as well 🆕. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file 🆕:
 
-```ini
+```toml
 # Comments are supported, using a #
 # The default section is [default], case insensitive
 

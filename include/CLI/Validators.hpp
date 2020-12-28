@@ -419,53 +419,6 @@ class IPV4Validator : public Validator {
     }
 };
 
-/// Validate the argument is a number and greater than 0
-class PositiveNumber : public Validator {
-  public:
-    PositiveNumber() : Validator("POSITIVE") {
-        func_ = [](std::string &number_str) {
-            double number;
-            if(!detail::lexical_cast(number_str, number)) {
-                return std::string("Failed parsing number: (") + number_str + ')';
-            }
-            if(number <= 0) {
-                return std::string("Number less or equal to 0: (") + number_str + ')';
-            }
-            return std::string();
-        };
-    }
-};
-/// Validate the argument is a number and greater than or equal to 0
-class NonNegativeNumber : public Validator {
-  public:
-    NonNegativeNumber() : Validator("NONNEGATIVE") {
-        func_ = [](std::string &number_str) {
-            double number;
-            if(!detail::lexical_cast(number_str, number)) {
-                return std::string("Failed parsing number: (") + number_str + ')';
-            }
-            if(number < 0) {
-                return std::string("Number less than 0: (") + number_str + ')';
-            }
-            return std::string();
-        };
-    }
-};
-
-/// Validate the argument is a number
-class Number : public Validator {
-  public:
-    Number() : Validator("NUMBER") {
-        func_ = [](std::string &number_str) {
-            double number;
-            if(!detail::lexical_cast(number_str, number)) {
-                return std::string("Failed parsing as a number (") + number_str + ')';
-            }
-            return std::string();
-        };
-    }
-};
-
 }  // namespace detail
 
 // Static is not needed here, because global const implies static.
@@ -485,14 +438,23 @@ const detail::NonexistentPathValidator NonexistentPath;
 /// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;
 
-/// Check for a positive number
-const detail::PositiveNumber PositiveNumber;
-
-/// Check for a non-negative number
-const detail::NonNegativeNumber NonNegativeNumber;
+/// Validate the input as a particular type
+template <typename DesiredType> class TypeValidator : public Validator {
+  public:
+    explicit TypeValidator(const std::string &validator_name) : Validator(validator_name) {
+        func_ = [](std::string &input_string) {
+            auto val = DesiredType();
+            if(!detail::lexical_cast(input_string, val)) {
+                return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
+            }
+            return std::string();
+        };
+    }
+    TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
+};
 
 /// Check for a number
-const detail::Number Number;
+const TypeValidator<double> Number("NUMBER");
 
 /// Produce a range (factory). Min and max are inclusive.
 class Range : public Validator {
@@ -501,10 +463,13 @@ class Range : public Validator {
     ///
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
     /// needed to provide nice syntax for Range(a,b).
-    template <typename T> Range(T min, T max) {
-        std::stringstream out;
-        out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
-        description(out.str());
+    template <typename T>
+    Range(T min, T max, const std::string &validator_name = std::string{}) : Validator(validator_name) {
+        if(validator_name.empty()) {
+            std::stringstream out;
+            out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
+            description(out.str());
+        }
 
         func_ = [min, max](std::string &input) {
             T val;
@@ -518,8 +483,16 @@ class Range : public Validator {
     }
 
     /// Range of one value is 0 to value
-    template <typename T> explicit Range(T max) : Range(static_cast<T>(0), max) {}
+    template <typename T>
+    explicit Range(T max, const std::string &validator_name = std::string{})
+        : Range(static_cast<T>(0), max, validator_name) {}
 };
+
+/// Check for a non negative number
+const Range NonNegativeNumber(std::numeric_limits<double>::max(), "NONNEGATIVE");
+
+/// Check for a positive valued number (val>0.0), min() her is the smallest positive number
+const Range PositiveNumber(std::numeric_limits<double>::min(), std::numeric_limits<double>::max(), "POSITIVE");
 
 /// Produce a bounded range (factory). Min and max are inclusive.
 class Bound : public Validator {
