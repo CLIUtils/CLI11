@@ -218,11 +218,12 @@ class App {
     /// If set to true positional options are validated before assigning INHERITABLE
     bool validate_positionals_{false};
 
-    /// A pointer to the parent if this is a subcommand
-    App *parent_{nullptr};
+    /// indicator that the subcommand is silent and won't show up in subcommands list
+    /// This is potentially useful as a modifier subcommand
+    bool silent_{false};
 
     /// Counts the number of times this command/subcommand was parsed
-    std::size_t parsed_{0};
+    std::uint32_t parsed_{0U};
 
     /// Minimum required subcommands (not inheritable!)
     std::size_t require_subcommand_min_{0};
@@ -235,6 +236,9 @@ class App {
 
     /// Max number of options allowed. 0 is unlimited (not inheritable)
     std::size_t require_option_max_{0};
+
+    /// A pointer to the parent if this is a subcommand
+    App *parent_{nullptr};
 
     /// The group membership INHERITABLE
     std::string group_{"Subcommands"};
@@ -393,6 +397,12 @@ class App {
     /// Disable the subcommand or option group
     App *disabled(bool disable = true) {
         disabled_ = disable;
+        return this;
+    }
+
+    /// silence the subcommand from showing up in the processed list
+    App *silent(bool silence = true) {
+        silent_ = silence;
         return this;
     }
 
@@ -1767,6 +1777,9 @@ class App {
     /// Get the status of disabled
     bool get_disabled() const { return disabled_; }
 
+    /// Get the status of silence
+    bool get_silent() const { return silent_; }
+
     /// Get the status of disabled
     bool get_immediate_callback() const { return immediate_callback_; }
 
@@ -2673,12 +2686,16 @@ class App {
         auto com = _find_subcommand(args.back(), true, true);
         if(com != nullptr) {
             args.pop_back();
-            parsed_subcommands_.push_back(com);
+            if(!com->silent_) {
+                parsed_subcommands_.push_back(com);
+            }
             com->_parse(args);
             auto parent_app = com->parent_;
             while(parent_app != this) {
                 parent_app->_trigger_pre_parse(args.size());
-                parent_app->parsed_subcommands_.push_back(com);
+                if(!com->silent_) {
+                    parent_app->parsed_subcommands_.push_back(com);
+                }
                 parent_app = parent_app->parent_;
             }
             return true;

@@ -1466,6 +1466,21 @@ TEST_F(ManySubcommands, SubcommandTriggeredOn) {
     EXPECT_THROW(run(), CLI::ExtrasError);
 }
 
+TEST_F(ManySubcommands, SubcommandSilence) {
+
+    sub1->silent();
+    args = {"sub1", "sub2"};
+    EXPECT_NO_THROW(run());
+
+    auto subs = app.get_subcommands();
+    EXPECT_EQ(subs.size(), 1U);
+    sub1->silent(false);
+    EXPECT_FALSE(sub1->get_silent());
+    run();
+    subs = app.get_subcommands();
+    EXPECT_EQ(subs.size(), 2U);
+}
+
 TEST_F(TApp, UnnamedSub) {
     double val{0.0};
     auto sub = app.add_subcommand("", "empty name");
@@ -1620,6 +1635,23 @@ TEST_F(TApp, OptionGroupAlias) {
     args = {"-v", "-3"};
     run();
     EXPECT_EQ(val, -3);
+}
+
+TEST_F(TApp, subcommand_help) {
+    auto sub1 = app.add_subcommand("help")->silent();
+    bool flag{false};
+    app.add_flag("--one", flag, "FLAGGER");
+    sub1->parse_complete_callback([]() { throw CLI::CallForHelp(); });
+    bool called{false};
+    args = {"help"};
+    try {
+        run();
+    } catch(const CLI::CallForHelp &) {
+        called = true;
+    }
+    auto helpstr = app.help();
+    EXPECT_THAT(helpstr, HasSubstr("FLAGGER"));
+    EXPECT_TRUE(called);
 }
 
 TEST_F(TApp, AliasErrors) {
