@@ -62,12 +62,17 @@ class HeaderGroups(dict):
                 ), "{name} read in more than once! Quitting.".format(name=name)
                 self[name] = content
             elif action == "set":
-                self[name] = self.get("name", set()) | set(content.strip().splitlines())
+                self[name] = self.get(name, set()) | set(content.strip().splitlines())
             else:
                 raise RuntimeError("Action not understood, must be verbatim or set")
 
+    def post_process(self):
+        for key in self:
+            if isinstance(self[key], set):
+                self[key] = "\n".join(self[key])
 
-def MakeHeader(output, main_header, files, tag, namespace, macro=None):
+
+def MakeHeader(output, main_header, files, tag, namespace, macro=None, version=None):
     groups = HeaderGroups(tag)
 
     # Set tag if possible to class variable
@@ -80,14 +85,13 @@ def MakeHeader(output, main_header, files, tag, namespace, macro=None):
     except OSError:
         groups["git"] = ""
 
-    with open(main_header) as f:
-        header = f.read()
-
     for f in files:
         groups.read_header(f)
 
     groups["namespace"] = namespace
-    groups["version"] = "HACK"
+    groups["version"] = version or groups["git"]
+
+    groups.post_process()
 
     with open(main_header) as f:
         single_header = f.read().format(**groups)
@@ -122,6 +126,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--macro", nargs=2, help="Replaces OLD_PREFIX_ with NEW_PREFIX_"
     )
+    parser.add_argument("--version", help="Include this version in the generated file")
     args = parser.parse_args()
 
-    MakeHeader(args.output, args.main, args.files, args.tag, args.namespace, args.macro)
+    MakeHeader(
+        args.output,
+        args.main,
+        args.files,
+        args.tag,
+        args.namespace,
+        args.macro,
+        args.version,
+    )

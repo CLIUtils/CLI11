@@ -6,7 +6,7 @@
 
 #pragma once
 
-// #[CLI11:public_includes:set]
+// [CLI11:public_includes:set]
 #include <algorithm>
 #include <functional>
 #include <memory>
@@ -15,7 +15,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-// #[CLI11:public_includes:end]
+// [CLI11:public_includes:end]
 
 #include "Error.hpp"
 #include "Macros.hpp"
