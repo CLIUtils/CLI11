@@ -6,7 +6,7 @@
 
 #pragma once
 
-// [CLI11:verbatim]
+// [CLI11:macros_hpp:verbatim]
 
 // The following version macro is very similar to the one in PyBind11
 #if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
@@ -41,4 +41,4 @@
 #define CLI11_DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
-// [CLI11:verbatim]
+// [CLI11:macros_hpp:end]

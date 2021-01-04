@@ -6,14 +6,17 @@
 
 #pragma once
 
+// [CLI11:public_includes:set]
 #include <algorithm>
 #include <string>
 #include <vector>
+// [CLI11:public_includes:end]
 
 #include "App.hpp"
 #include "FormatterFwd.hpp"
 
 namespace CLI {
+// [CLI11:formatter_hpp:verbatim]
 
 inline std::string
 Formatter::make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const {
@@ -285,4 +288,5 @@ inline std::string Formatter::make_option_usage(const Option *opt) const {
     return opt->get_required() ? out.str() : "[" + out.str() + "]";
 }
 
+// [CLI11:formatter_hpp:end]
 }  // namespace CLI

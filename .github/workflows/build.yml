@@ -22,11 +22,8 @@ jobs:
 
     - uses: actions/setup-python@v2
 
-    - name: Make header
-      run: python ./scripts/MakeSingleHeader.py CLI11.hpp
-
     - name: Prepare CMake config
-      run: cmake -S . -B build
+      run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON
 
     - name: Make package
       run: cmake --build build --target package_source
@@ -37,10 +34,13 @@ jobs:
         cp build/CLI11-*-Source.* CLI11-Source
         cp build/CLI11-*-Source.* .
 
+    - name: Make header
+      run: cmake --build build --target CLI11-generate-single-file
+
     - uses: actions/upload-artifact@v2
       with:
         name: CLI11.hpp
-        path: CLI11.hpp
+        path: build/include/CLI11.hpp
 
     - uses: actions/upload-artifact@v2
       with:

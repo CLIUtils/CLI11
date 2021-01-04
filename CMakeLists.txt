@@ -247,7 +247,10 @@ if(CLI11_SINGLE_FILE)
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
         COMMAND Python::Interpreter
         "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py"
-        "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
+        ${CLI11_headers}
+        --main "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.hpp.in"
+        --output "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
+        --version "${CLI11_VERSION}"
         DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp"
         ${CLI11_headers})

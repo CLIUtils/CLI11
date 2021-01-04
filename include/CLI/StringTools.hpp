@@ -6,6 +6,7 @@
 
 #pragma once
 
+// [CLI11:public_includes:set]
 #include <algorithm>
 #include <iomanip>
 #include <locale>
@@ -14,8 +15,11 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+// [CLI11:public_includes:end]
 
 namespace CLI {
+
+// [CLI11:string_tools_hpp:verbatim]
 
 /// Include the items in this namespace to get free conversion of enums to/from streams.
 /// (This is available inside CLI as well, so CLI11 will use this without a using statement).
@@ -408,5 +412,7 @@ inline std::string &add_quotes_if_needed(std::string &str) {
 }
 
 }  // namespace detail
+
+// [CLI11:string_tools_hpp:end]
 
 }  // namespace CLI

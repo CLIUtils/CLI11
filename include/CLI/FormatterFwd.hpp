@@ -6,14 +6,17 @@
 
 #pragma once
 
+// [CLI11:public_includes:set]
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
+// [CLI11:public_includes:end]
 
 #include "StringTools.hpp"
 
 namespace CLI {
+// [CLI11:formatter_fwd_hpp:verbatim]
 
 class Option;
 class App;
@@ -177,4 +180,5 @@ class Formatter : public FormatterBase {
     ///@}
 };
 
+// [CLI11:formatter_fwd_hpp:end]
 }  // namespace CLI

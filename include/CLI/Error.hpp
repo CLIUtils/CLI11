@@ -6,16 +6,19 @@
 
 #pragma once
 
+// [CLI11:public_includes:set]
 #include <exception>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// [CLI11:public_includes:end]
 
 // CLI library includes
 #include "StringTools.hpp"
 
 namespace CLI {
+// [CLI11:error_hpp:verbatim]
 
 // Use one of these on all error classes.
 // These are temporary and are undef'd at the end of this file.
@@ -344,4 +347,5 @@ class OptionNotFound : public Error {
 
 /// @}
 
+// [CLI11:error_hpp:end]
 }  // namespace CLI

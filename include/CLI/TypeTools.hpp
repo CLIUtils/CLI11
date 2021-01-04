@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "StringTools.hpp"
+// [CLI11:public_includes:set]
 #include <cstdint>
 #include <exception>
 #include <memory>
@@ -14,8 +14,12 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+// [CLI11:public_includes:end]
+
+#include "StringTools.hpp"
 
 namespace CLI {
+// [CLI11:type_tools_hpp:verbatim]
 
 // Type tools
 
@@ -1540,4 +1544,5 @@ void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
 #endif
 
 }  // namespace detail
+// [CLI11:type_tools_hpp:end]
 }  // namespace CLI
