@@ -224,7 +224,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="")
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, char(see note)🚧, int, float, vector, enum, or string-like, or anything with a defined conversion from a string or that takes an int 🆕, double 🆕, or string in a constructor. Also allowed are tuples 🆕, std::array 🆕 or std::pair 🆕. Also supported are complex numbers🚧, wrapper types🚧, and containers besides vector🚧 of any other supported type.
+               variable_to_bind_to, // bool, char(see note)🚧, int, float, vector, enum, std::atomic 🚧, or string-like, or anything with a defined conversion from a string or that takes an int 🆕, double 🆕, or string in a constructor. Also allowed are tuples 🆕, std::array 🆕 or std::pair 🆕. Also supported are complex numbers🚧, wrapper types🚧, and containers besides vector🚧 of any other supported type.
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -245,7 +245,7 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, float, complex, containers, enum, or string-like, or any singular object with a defined conversion from a string like add_option
+             variable_to_bind_to, // bool, int, float, complex, containers, enum, std::atomic 🚧, or string-like, or any singular object with a defined conversion from a string like add_option
              help_string="")
 
 app.add_flag_function(option_name,
