@@ -1964,7 +1964,7 @@ TEST_CASE_METHOD(TApp, "CheckLongFail", "[app]") {
 TEST_CASE_METHOD(TApp, "CheckWindowsFail", "[app]") {
     args = {"-t"};
 
-    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::WINDOWS),
+    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::WINDOWS_STYLE),
                     CLI::HorribleError);
 }
 
