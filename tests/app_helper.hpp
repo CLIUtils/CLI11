@@ -12,7 +12,7 @@
 #include "CLI/CLI.hpp"
 #endif
 
-#include "gtest/gtest.h"
+#include "catch.hpp"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -20,11 +20,11 @@
 
 using input_t = std::vector<std::string>;
 
-class TApp_base {
+class TApp {
   public:
     CLI::App app{"My Test Program"};
     input_t args{};
-    virtual ~TApp_base() = default;
+    virtual ~TApp() = default;
     void run() {
         // It is okay to re-parse - clear is called automatically before a parse.
         input_t newargs = args;
@@ -32,8 +32,6 @@ class TApp_base {
         app.parse(newargs);
     }
 };
-
-class TApp : public TApp_base, public ::testing::Test {};
 
 class TempFile {
     std::string _name{};
