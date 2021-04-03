@@ -6,15 +6,11 @@
 
 #include "app_helper.hpp"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-
-using ::testing::HasSubstr;
-using ::testing::Not;
+using Catch::Matchers::Contains;
 
 using vs_t = std::vector<std::string>;
 
-TEST_F(TApp, BasicOptionGroup) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroup", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res;
     ogroup->add_option("--test1", res);
@@ -23,11 +19,11 @@ TEST_F(TApp, BasicOptionGroup) {
 
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
-    EXPECT_EQ(app.count_all(), 1u);
+    CHECK(5 == res);
+    CHECK(1u == app.count_all());
 }
 
-TEST_F(TApp, BasicOptionGroupExact) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupExact", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -38,20 +34,20 @@ TEST_F(TApp, BasicOptionGroupExact) {
     ogroup->require_option(1);
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
+    CHECK(5 == res);
 
     args = {"--test1", "5", "--test2", "4"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[Exactly 1");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupExactTooMany) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupExactTooMany", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -61,10 +57,10 @@ TEST_F(TApp, BasicOptionGroupExactTooMany) {
     app.add_option("--option", val2);
     ogroup->require_option(10);
     args = {"--test1", "5"};
-    EXPECT_THROW(run(), CLI::InvalidError);
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
 }
 
-TEST_F(TApp, BasicOptionGroupMinMax) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMax", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -75,20 +71,20 @@ TEST_F(TApp, BasicOptionGroupMinMax) {
     ogroup->require_option(1, 1);
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
+    CHECK(5 == res);
 
     args = {"--test1", "5", "--test2", "4"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[Exactly 1");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferent", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -99,24 +95,24 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferent) {
     ogroup->require_option(1, 2);
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
+    CHECK(5 == res);
 
     args = {"--test1", "5", "--test2", "4"};
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(app.count_all(), 2u);
+    CHECK_NOTHROW(run());
+    CHECK(2u == app.count_all());
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[Between 1 and 2");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMinMaxDifferentReversed) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferentReversed", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -125,30 +121,30 @@ TEST_F(TApp, BasicOptionGroupMinMaxDifferentReversed) {
     int val2{0};
     app.add_option("--option", val2);
     ogroup->require_option(2, 1);
-    EXPECT_EQ(ogroup->get_require_option_min(), 2u);
-    EXPECT_EQ(ogroup->get_require_option_max(), 1u);
+    CHECK(2u == ogroup->get_require_option_min());
+    CHECK(1u == ogroup->get_require_option_max());
     args = {"--test1", "5"};
-    EXPECT_THROW(run(), CLI::InvalidError);
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
     ogroup->require_option(1, 2);
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(res, 5);
-    EXPECT_EQ(ogroup->get_require_option_min(), 1u);
-    EXPECT_EQ(ogroup->get_require_option_max(), 2u);
+    CHECK_NOTHROW(run());
+    CHECK(5 == res);
+    CHECK(1u == ogroup->get_require_option_min());
+    CHECK(2u == ogroup->get_require_option_max());
     args = {"--test1", "5", "--test2", "4"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[Between 1 and 2");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMax) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMax", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -159,20 +155,20 @@ TEST_F(TApp, BasicOptionGroupMax) {
     ogroup->require_option(-2);
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
+    CHECK(5 == res);
 
     args = {"--option", "9"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[At most 2");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMax1) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMax1", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -183,20 +179,20 @@ TEST_F(TApp, BasicOptionGroupMax1) {
     ogroup->require_option(-1);
     args = {"--test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
+    CHECK(5 == res);
 
     args = {"--option", "9"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"--test1", "5", "--test2", "4"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[At most 1");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMin) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMin", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -207,17 +203,17 @@ TEST_F(TApp, BasicOptionGroupMin) {
     ogroup->require_option();
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[At least 1");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupExact2) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupExact2", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -228,20 +224,20 @@ TEST_F(TApp, BasicOptionGroupExact2) {
     ogroup->require_option(2);
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test3=5"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[Exactly 2");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMin2) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMin2", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
@@ -252,17 +248,17 @@ TEST_F(TApp, BasicOptionGroupMin2) {
     ogroup->require_option(2, 0);
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     std::string help = ogroup->help();
     auto exactloc = help.find("[At least 2");
-    EXPECT_NE(exactloc, std::string::npos);
+    CHECK(std::string::npos != exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMinMoved) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMoved", "[optiongroup]") {
 
     int res{0};
     auto opt1 = app.add_option("--test1", res);
@@ -278,20 +274,20 @@ TEST_F(TApp, BasicOptionGroupMinMoved) {
     ogroup->add_option(opt3);
 
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     std::string help = app.help();
     auto exactloc = help.find("[At least 1");
     auto oloc = help.find("--test1");
-    EXPECT_NE(exactloc, std::string::npos);
-    EXPECT_NE(oloc, std::string::npos);
-    EXPECT_LT(exactloc, oloc);
+    CHECK(std::string::npos != exactloc);
+    CHECK(std::string::npos != oloc);
+    CHECK(oloc > exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupMinMovedAsGroup) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMovedAsGroup", "[optiongroup]") {
 
     int res{0};
     auto opt1 = app.add_option("--test1", res);
@@ -304,22 +300,22 @@ TEST_F(TApp, BasicOptionGroupMinMovedAsGroup) {
     ogroup->require_option();
     ogroup->add_options(opt1, opt2, opt3);
 
-    EXPECT_THROW(ogroup->add_options(opt1), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->add_options(opt1), CLI::OptionNotFound);
     args = {"--option", "9"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     std::string help = app.help();
     auto exactloc = help.find("[At least 1");
     auto oloc = help.find("--test1");
-    EXPECT_NE(exactloc, std::string::npos);
-    EXPECT_NE(oloc, std::string::npos);
-    EXPECT_LT(exactloc, oloc);
+    CHECK(std::string::npos != exactloc);
+    CHECK(std::string::npos != oloc);
+    CHECK(oloc > exactloc);
 }
 
-TEST_F(TApp, BasicOptionGroupAddFailures) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupAddFailures", "[optiongroup]") {
 
     int res{0};
     auto opt1 = app.add_option("--test1", res);
@@ -328,24 +324,24 @@ TEST_F(TApp, BasicOptionGroupAddFailures) {
     app.add_option("--option", val2);
 
     auto ogroup = app.add_option_group("clusters");
-    EXPECT_THROW(ogroup->add_options(app.get_config_ptr()), CLI::OptionAlreadyAdded);
-    EXPECT_THROW(ogroup->add_options(app.get_help_ptr()), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(ogroup->add_options(app.get_config_ptr()), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(ogroup->add_options(app.get_help_ptr()), CLI::OptionAlreadyAdded);
 
     auto sub = app.add_subcommand("sub", "subcommand");
     auto opt2 = sub->add_option("--option2", val2);
 
-    EXPECT_THROW(ogroup->add_option(opt2), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->add_option(opt2), CLI::OptionNotFound);
 
-    EXPECT_THROW(ogroup->add_options(nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->add_options(nullptr), CLI::OptionNotFound);
 
     ogroup->add_option(opt1);
 
     auto opt3 = app.add_option("--test1", res);
 
-    EXPECT_THROW(ogroup->add_option(opt3), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(ogroup->add_option(opt3), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, BasicOptionGroupScrewedUpMove) {
+TEST_CASE_METHOD(TApp, "BasicOptionGroupScrewedUpMove", "[optiongroup]") {
 
     int res{0};
     auto opt1 = app.add_option("--test1", res);
@@ -356,25 +352,25 @@ TEST_F(TApp, BasicOptionGroupScrewedUpMove) {
     auto ogroup = app.add_option_group("clusters");
     ogroup->require_option();
     auto ogroup2 = ogroup->add_option_group("clusters2");
-    EXPECT_THROW(ogroup2->add_options(opt1, opt2), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup2->add_options(opt1, opt2), CLI::OptionNotFound);
 
     CLI::Option_group EmptyGroup("description", "new group", nullptr);
 
-    EXPECT_THROW(EmptyGroup.add_option(opt2), CLI::OptionNotFound);
-    EXPECT_THROW(app._move_option(opt2, ogroup2), CLI::OptionNotFound);
+    CHECK_THROWS_AS(EmptyGroup.add_option(opt2), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app._move_option(opt2, ogroup2), CLI::OptionNotFound);
 }
 
-TEST_F(TApp, InvalidOptions) {
+TEST_CASE_METHOD(TApp, "InvalidOptions", "[optiongroup]") {
     auto ogroup = app.add_option_group("clusters");
     CLI::Option *opt = nullptr;
-    EXPECT_THROW(ogroup->excludes(opt), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->excludes(opt), CLI::OptionNotFound);
     CLI::App *app_p = nullptr;
-    EXPECT_THROW(ogroup->excludes(app_p), CLI::OptionNotFound);
-    EXPECT_THROW(ogroup->excludes(ogroup), CLI::OptionNotFound);
-    EXPECT_THROW(ogroup->add_option(opt), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->excludes(app_p), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->excludes(ogroup), CLI::OptionNotFound);
+    CHECK_THROWS_AS(ogroup->add_option(opt), CLI::OptionNotFound);
 }
 
-TEST_F(TApp, OptionGroupInheritedOptionDefaults) {
+TEST_CASE_METHOD(TApp, "OptionGroupInheritedOptionDefaults", "[optiongroup]") {
     app.option_defaults()->ignore_case();
     auto ogroup = app.add_option_group("clusters");
     int res{0};
@@ -382,8 +378,8 @@ TEST_F(TApp, OptionGroupInheritedOptionDefaults) {
 
     args = {"--Test1", "5"};
     run();
-    EXPECT_EQ(res, 5);
-    EXPECT_EQ(app.count_all(), 1u);
+    CHECK(5 == res);
+    CHECK(1u == app.count_all());
 }
 
 struct ManyGroups : public TApp {
@@ -425,48 +421,48 @@ struct ManyGroups : public TApp {
     }
 };
 
-TEST_F(ManyGroups, SingleGroup) {
+TEST_CASE_METHOD(ManyGroups, "SingleGroup", "[optiongroup]") {
     // only 1 group can be used
     main->require_option(1);
     args = {"--name1", "test"};
     run();
-    EXPECT_EQ(name1, "test");
+    CHECK("test" == name1);
 
     args = {"--name2", "test", "--val2", "tval"};
 
     run();
-    EXPECT_EQ(val2, "tval");
+    CHECK("tval" == val2);
 
     args = {"--name1", "test", "--val2", "tval"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManyGroups, ExcludesGroup) {
+TEST_CASE_METHOD(ManyGroups, "ExcludesGroup", "[optiongroup]") {
     // only 1 group can be used
     g1->excludes(g2);
     g1->excludes(g3);
     args = {"--name1", "test"};
     run();
-    EXPECT_EQ(name1, "test");
+    CHECK("test" == name1);
 
     args = {"--name1", "test", "--name2", "test2"};
 
-    EXPECT_THROW(run(), CLI::ExcludesError);
+    CHECK_THROWS_AS(run(), CLI::ExcludesError);
 
-    EXPECT_TRUE(g1->remove_excludes(g2));
-    EXPECT_NO_THROW(run());
-    EXPECT_FALSE(g1->remove_excludes(g1));
-    EXPECT_FALSE(g1->remove_excludes(g2));
+    CHECK(g1->remove_excludes(g2));
+    CHECK_NOTHROW(run());
+    CHECK(!g1->remove_excludes(g1));
+    CHECK(!g1->remove_excludes(g2));
 }
 
-TEST_F(ManyGroups, NeedsGroup) {
+TEST_CASE_METHOD(ManyGroups, "NeedsGroup", "[optiongroup]") {
     remove_required();
     // all groups needed if g1 is used
     g1->needs(g2);
     g1->needs(g3);
     args = {"--name1", "test"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
     // other groups should run fine
     args = {"--name2", "test2"};
 
@@ -474,11 +470,11 @@ TEST_F(ManyGroups, NeedsGroup) {
     // all three groups should be fine
     args = {"--name1", "test", "--name2", "test2", "--name3", "test3"};
 
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
 // test adding an option group with existing subcommands to an app
-TEST_F(TApp, ExistingSubcommandMatch) {
+TEST_CASE_METHOD(TApp, "ExistingSubcommandMatch", "[optiongroup]") {
     auto sshared = std::make_shared<CLI::Option_group>("documenting the subcommand", "sub1g", nullptr);
     auto s1 = sshared->add_subcommand("sub1");
     auto o1 = sshared->add_option_group("opt1");
@@ -489,9 +485,9 @@ TEST_F(TApp, ExistingSubcommandMatch) {
     try {
         app.add_subcommand(sshared);
         // this should throw the next line should never be reached
-        EXPECT_FALSE(true);
+        CHECK(!true);
     } catch(const CLI::OptionAlreadyAdded &oaa) {
-        EXPECT_THAT(oaa.what(), HasSubstr("sub1"));
+        CHECK_THAT(oaa.what(), Contains("sub1"));
     }
     sshared->remove_subcommand(s1);
 
@@ -500,40 +496,40 @@ TEST_F(TApp, ExistingSubcommandMatch) {
     try {
         app.add_subcommand(sshared);
         // this should throw the next line should never be reached
-        EXPECT_FALSE(true);
+        CHECK(!true);
     } catch(const CLI::OptionAlreadyAdded &oaa) {
-        EXPECT_THAT(oaa.what(), HasSubstr("sub3"));
+        CHECK_THAT(oaa.what(), Contains("sub3"));
     }
 }
 
-TEST_F(ManyGroups, SingleGroupError) {
+TEST_CASE_METHOD(ManyGroups, "SingleGroupError", "[optiongroup]") {
     // only 1 group can be used
     main->require_option(1);
     args = {"--name1", "test", "--name2", "test3"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManyGroups, AtMostOneGroup) {
+TEST_CASE_METHOD(ManyGroups, "AtMostOneGroup", "[optiongroup]") {
     // only 1 group can be used
     main->require_option(0, 1);
     args = {"--name1", "test", "--name2", "test3"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManyGroups, AtLeastTwoGroups) {
+TEST_CASE_METHOD(ManyGroups, "AtLeastTwoGroups", "[optiongroup]") {
     // only 1 group can be used
     main->require_option(2, 0);
     args = {"--name1", "test", "--name2", "test3"};
     run();
 
     args = {"--name1", "test"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManyGroups, BetweenOneAndTwoGroups) {
+TEST_CASE_METHOD(ManyGroups, "BetweenOneAndTwoGroups", "[optiongroup]") {
     // only 1 group can be used
     main->require_option(1, 2);
     args = {"--name1", "test", "--name2", "test3"};
@@ -543,19 +539,19 @@ TEST_F(ManyGroups, BetweenOneAndTwoGroups) {
     run();
 
     args = {};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManyGroups, RequiredFirst) {
+TEST_CASE_METHOD(ManyGroups, "RequiredFirst", "[optiongroup]") {
     // only 1 group can be used
     remove_required();
     g1->required();
 
-    EXPECT_TRUE(g1->get_required());
-    EXPECT_FALSE(g2->get_required());
+    CHECK(g1->get_required());
+    CHECK(!g2->get_required());
     args = {"--name1", "test", "--name2", "test3"};
     run();
 
@@ -563,32 +559,32 @@ TEST_F(ManyGroups, RequiredFirst) {
     try {
         run();
     } catch(const CLI::RequiredError &re) {
-        EXPECT_THAT(re.what(), HasSubstr("g1"));
+        CHECK_THAT(re.what(), Contains("g1"));
     }
 
     args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManyGroups, DisableFirst) {
+TEST_CASE_METHOD(ManyGroups, "DisableFirst", "[optiongroup]") {
     // only 1 group can be used if remove_required not used
     remove_required();
     g1->disabled();
 
-    EXPECT_TRUE(g1->get_disabled());
-    EXPECT_FALSE(g2->get_disabled());
+    CHECK(g1->get_disabled());
+    CHECK(!g2->get_disabled());
     args = {"--name2", "test"};
 
     run();
 
     args = {"--name1", "test", "--name2", "test3"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     g1->disabled(false);
     args = {"--name1", "test", "--name2", "test3", "--name3=test3"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManyGroups, SameSubcommand) {
+TEST_CASE_METHOD(ManyGroups, "SameSubcommand", "[optiongroup]") {
     // only 1 group can be used if remove_required not used
     remove_required();
     auto sub1 = g1->add_subcommand("sub1")->disabled();
@@ -602,30 +598,30 @@ TEST_F(ManyGroups, SameSubcommand) {
 
     run();
 
-    EXPECT_TRUE(*sub1);
-    EXPECT_TRUE(*sub2);
-    EXPECT_TRUE(*sub3);
+    CHECK(*sub1);
+    CHECK(*sub2);
+    CHECK(*sub3);
     auto subs = app.get_subcommands();
-    EXPECT_EQ(subs.size(), 3u);
-    EXPECT_EQ(subs[0], sub1);
-    EXPECT_EQ(subs[1], sub2);
-    EXPECT_EQ(subs[2], sub3);
+    CHECK(3u == subs.size());
+    CHECK(sub1 == subs[0]);
+    CHECK(sub2 == subs[1]);
+    CHECK(sub3 == subs[2]);
 
     args = {"sub1", "sub1", "sub1", "sub1"};
     // for the 4th and future ones they will route to the first one
     run();
-    EXPECT_EQ(sub1->count(), 2u);
-    EXPECT_EQ(sub2->count(), 1u);
-    EXPECT_EQ(sub3->count(), 1u);
+    CHECK(2u == sub1->count());
+    CHECK(1u == sub2->count());
+    CHECK(1u == sub3->count());
 
     // subs should remain the same since the duplicate would not be registered there
     subs = app.get_subcommands();
-    EXPECT_EQ(subs.size(), 3u);
-    EXPECT_EQ(subs[0], sub1);
-    EXPECT_EQ(subs[1], sub2);
-    EXPECT_EQ(subs[2], sub3);
+    CHECK(3u == subs.size());
+    CHECK(sub1 == subs[0]);
+    CHECK(sub2 == subs[1]);
+    CHECK(sub3 == subs[2]);
 }
-TEST_F(ManyGroups, CallbackOrder) {
+TEST_CASE_METHOD(ManyGroups, "CallbackOrder", "[optiongroup]") {
     // only 1 group can be used if remove_required not used
     remove_required();
     std::vector<int> callback_order;
@@ -635,61 +631,61 @@ TEST_F(ManyGroups, CallbackOrder) {
 
     args = {"--name2", "test"};
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({2, 3}));
+    CHECK(std::vector<int>({2, 3}) == callback_order);
 
     callback_order.clear();
     args = {"--name1", "t2", "--name2", "test"};
     g2->immediate_callback();
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({2, 1, 3}));
+    CHECK(std::vector<int>({2, 1, 3}) == callback_order);
     callback_order.clear();
 
     args = {"--name2", "test", "--name1", "t2"};
     g2->immediate_callback(false);
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({1, 2, 3}));
+    CHECK(std::vector<int>({1, 2, 3}) == callback_order);
 }
 
 // Test the fallthrough for extra arguments
-TEST_F(ManyGroups, ExtrasFallDown) {
+TEST_CASE_METHOD(ManyGroups, "ExtrasFallDown", "[optiongroup]") {
     // only 1 group can be used if remove_required not used
     remove_required();
 
     args = {"--test1", "--flag", "extra"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     main->allow_extras();
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
-    EXPECT_EQ(app.remaining_size(true), 3u);
-    EXPECT_EQ(main->remaining_size(), 3u);
+    CHECK(3u == app.remaining_size(true));
+    CHECK(3u == main->remaining_size());
 
     std::vector<std::string> extras{"--test1", "--flag", "extra"};
-    EXPECT_EQ(app.remaining(true), extras);
-    EXPECT_EQ(main->remaining(), extras);
+    CHECK(extras == app.remaining(true));
+    CHECK(extras == main->remaining());
 }
 
 // Test the option Inheritance
-TEST_F(ManyGroups, Inheritance) {
+TEST_CASE_METHOD(ManyGroups, "Inheritance", "[optiongroup]") {
     remove_required();
     g1->ignore_case();
     g1->ignore_underscore();
     auto t2 = g1->add_subcommand("t2");
     args = {"T2", "t_2"};
-    EXPECT_TRUE(t2->get_ignore_underscore());
-    EXPECT_TRUE(t2->get_ignore_case());
+    CHECK(t2->get_ignore_underscore());
+    CHECK(t2->get_ignore_case());
     run();
-    EXPECT_EQ(t2->count(), 2u);
+    CHECK(2u == t2->count());
 }
 
-TEST_F(ManyGroups, Moving) {
+TEST_CASE_METHOD(ManyGroups, "Moving", "[optiongroup]") {
     remove_required();
     auto mg = app.add_option_group("maing");
     mg->add_subcommand(g1);
     mg->add_subcommand(g2);
 
-    EXPECT_EQ(g1->get_parent(), mg);
-    EXPECT_EQ(g2->get_parent(), mg);
-    EXPECT_EQ(g3->get_parent(), main);
+    CHECK(mg == g1->get_parent());
+    CHECK(mg == g2->get_parent());
+    CHECK(main == g3->get_parent());
 }
 
 struct ManyGroupsPreTrigger : public ManyGroups {
@@ -704,35 +700,35 @@ struct ManyGroupsPreTrigger : public ManyGroups {
     }
 };
 
-TEST_F(ManyGroupsPreTrigger, PreTriggerTestsOptions) {
+TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsOptions", "[optiongroup]") {
 
     args = {"--name1", "test", "--name2", "test3"};
     run();
-    EXPECT_EQ(triggerMain, 4u);
-    EXPECT_EQ(trigger1, 2u);
-    EXPECT_EQ(trigger2, 0u);
-    EXPECT_EQ(trigger3, 27u);
+    CHECK(4u == triggerMain);
+    CHECK(2u == trigger1);
+    CHECK(0u == trigger2);
+    CHECK(27u == trigger3);
 
     args = {"--name1", "test"};
     trigger2 = 34u;
     run();
-    EXPECT_EQ(triggerMain, 2u);
-    EXPECT_EQ(trigger1, 0u);
-    EXPECT_EQ(trigger2, 34u);
+    CHECK(2u == triggerMain);
+    CHECK(0u == trigger1);
+    CHECK(34u == trigger2);
 
     args = {};
     run();
-    EXPECT_EQ(triggerMain, 0u);
+    CHECK(0u == triggerMain);
 
     args = {"--name1", "test", "--val1", "45", "--name2", "test3", "--name3=test3", "--val2=37"};
     run();
-    EXPECT_EQ(triggerMain, 8u);
-    EXPECT_EQ(trigger1, 6u);
-    EXPECT_EQ(trigger2, 2u);
-    EXPECT_EQ(trigger3, 1u);
+    CHECK(8u == triggerMain);
+    CHECK(6u == trigger1);
+    CHECK(2u == trigger2);
+    CHECK(1u == trigger3);
 }
 
-TEST_F(ManyGroupsPreTrigger, PreTriggerTestsPositionals) {
+TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsPositionals", "[optiongroup]") {
     // only 1 group can be used
     g1->add_option("pos1");
     g2->add_option("pos2");
@@ -740,26 +736,26 @@ TEST_F(ManyGroupsPreTrigger, PreTriggerTestsPositionals) {
 
     args = {"pos1"};
     run();
-    EXPECT_EQ(triggerMain, 1u);
-    EXPECT_EQ(trigger1, 0u);
-    EXPECT_EQ(trigger2, 34u);
-    EXPECT_EQ(trigger3, 27u);
+    CHECK(1u == triggerMain);
+    CHECK(0u == trigger1);
+    CHECK(34u == trigger2);
+    CHECK(27u == trigger3);
 
     args = {"pos1", "pos2"};
     run();
-    EXPECT_EQ(triggerMain, 2u);
-    EXPECT_EQ(trigger1, 1u);
-    EXPECT_EQ(trigger2, 0u);
+    CHECK(2u == triggerMain);
+    CHECK(1u == trigger1);
+    CHECK(0u == trigger2);
 
     args = {"pos1", "pos2", "pos3"};
     run();
-    EXPECT_EQ(triggerMain, 3u);
-    EXPECT_EQ(trigger1, 2u);
-    EXPECT_EQ(trigger2, 1u);
-    EXPECT_EQ(trigger3, 0u);
+    CHECK(3u == triggerMain);
+    CHECK(2u == trigger1);
+    CHECK(1u == trigger2);
+    CHECK(0u == trigger3);
 }
 
-TEST_F(ManyGroupsPreTrigger, PreTriggerTestsSubcommand) {
+TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsSubcommand", "[optiongroup]") {
 
     auto sub1 = g1->add_subcommand("sub1")->fallthrough();
     g2->add_subcommand("sub2")->fallthrough();
@@ -769,23 +765,23 @@ TEST_F(ManyGroupsPreTrigger, PreTriggerTestsSubcommand) {
     sub1->preparse_callback([&subtrigger](std::size_t count) { subtrigger = count; });
     args = {"sub1"};
     run();
-    EXPECT_EQ(triggerMain, 1u);
-    EXPECT_EQ(trigger1, 0u);
-    EXPECT_EQ(trigger2, 34u);
-    EXPECT_EQ(trigger3, 27u);
+    CHECK(1u == triggerMain);
+    CHECK(0u == trigger1);
+    CHECK(34u == trigger2);
+    CHECK(27u == trigger3);
 
     args = {"sub1", "sub2"};
     run();
-    EXPECT_EQ(triggerMain, 2u);
-    EXPECT_EQ(subtrigger, 1u);
-    EXPECT_EQ(trigger1, 1u);
-    EXPECT_EQ(trigger2, 0u);
+    CHECK(2u == triggerMain);
+    CHECK(1u == subtrigger);
+    CHECK(1u == trigger1);
+    CHECK(0u == trigger2);
 
     args = {"sub2", "sub3", "--name1=test", "sub1"};
     run();
-    EXPECT_EQ(triggerMain, 4u);
-    EXPECT_EQ(trigger1, 1u);
-    EXPECT_EQ(trigger2, 3u);
-    EXPECT_EQ(trigger3, 1u);  // processes the first argument in group3 which includes the entire subcommand, which will
-                              // go until the sub1 command is given
+    CHECK(4u == triggerMain);
+    CHECK(1u == trigger1);
+    CHECK(3u == trigger2);
+    CHECK(1u == trigger3);
+    // go until the sub1 command is given
 }

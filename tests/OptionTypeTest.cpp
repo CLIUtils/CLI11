@@ -19,46 +19,44 @@
 #include <unordered_set>
 #include <vector>
 
-#include "gmock/gmock.h"
-
-TEST_F(TApp, OneStringAgain) {
+TEST_CASE_METHOD(TApp, "OneStringAgain", "[optiontype]") {
     std::string str;
     app.add_option("-s,--string", str);
     args = {"--string", "mystring"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--string"));
-    EXPECT_EQ(str, "mystring");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
 }
 
-TEST_F(TApp, OneStringFunction) {
+TEST_CASE_METHOD(TApp, "OneStringFunction", "[optiontype]") {
     std::string str;
     app.add_option_function<std::string>("-s,--string", [&str](const std::string &val) { str = val; });
     args = {"--string", "mystring"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--string"));
-    EXPECT_EQ(str, "mystring");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
 }
 
-TEST_F(TApp, doubleFunction) {
+TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     double res{0.0};
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
-    EXPECT_EQ(res, 300.356);
+    CHECK(300.356 == res);
     // get the original value as entered as an integer
-    EXPECT_EQ(app["--val"]->as<float>(), -354.356f);
+    CHECK(-354.356f == app["--val"]->as<float>());
 }
 
-TEST_F(TApp, doubleFunctionFail) {
+TEST_CASE_METHOD(TApp, "doubleFunctionFail", "[optiontype]") {
     double res;
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "not_double"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, doubleVectorFunction) {
+TEST_CASE_METHOD(TApp, "doubleVectorFunction", "[optiontype]") {
     std::vector<double> res;
     app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
         res = val;
@@ -66,12 +64,12 @@ TEST_F(TApp, doubleVectorFunction) {
     });
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
-    EXPECT_EQ(res.size(), 3u);
-    EXPECT_EQ(res[0], 10.0);
-    EXPECT_EQ(res[2], 12.0);
+    CHECK(3u == res.size());
+    CHECK(10.0 == res[0]);
+    CHECK(12.0 == res[2]);
 }
 
-TEST_F(TApp, doubleVectorFunctionFail) {
+TEST_CASE_METHOD(TApp, "doubleVectorFunctionFail", "[optiontype]") {
     std::vector<double> res;
     std::string vstring = "--val";
     app.add_option_function<std::vector<double>>(vstring, [&res](const std::vector<double> &val) {
@@ -79,14 +77,14 @@ TEST_F(TApp, doubleVectorFunctionFail) {
         std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
     });
     args = {"--val", "five", "--val", "nine", "--val", "7"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
     // check that getting the results through the results function generates the same error
-    EXPECT_THROW(app[vstring]->results(res), CLI::ConversionError);
+    CHECK_THROWS_AS(app[vstring]->results(res), CLI::ConversionError);
     auto strvec = app[vstring]->as<std::vector<std::string>>();
-    EXPECT_EQ(strvec.size(), 3u);
+    CHECK(3u == strvec.size());
 }
 
-TEST_F(TApp, doubleVectorFunctionRunCallbackOnDefault) {
+TEST_CASE_METHOD(TApp, "doubleVectorFunctionRunCallbackOnDefault", "[optiontype]") {
     std::vector<double> res;
     auto opt = app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
         res = val;
@@ -94,26 +92,26 @@ TEST_F(TApp, doubleVectorFunctionRunCallbackOnDefault) {
     });
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
-    EXPECT_EQ(res.size(), 3u);
-    EXPECT_EQ(res[0], 10.0);
-    EXPECT_EQ(res[2], 12.0);
-    EXPECT_FALSE(opt->get_run_callback_for_default());
+    CHECK(3u == res.size());
+    CHECK(10.0 == res[0]);
+    CHECK(12.0 == res[2]);
+    CHECK(!opt->get_run_callback_for_default());
     opt->run_callback_for_default();
     opt->default_val(std::vector<int>{2, 1, -2});
-    EXPECT_EQ(res[0], 7.0);
-    EXPECT_EQ(res[2], 3.0);
+    CHECK(7.0 == res[0]);
+    CHECK(3.0 == res[2]);
 
-    EXPECT_THROW(opt->default_val("this is a string"), CLI::ConversionError);
+    CHECK_THROWS_AS(opt->default_val("this is a string"), CLI::ConversionError);
     auto vec = opt->as<std::vector<double>>();
-    ASSERT_EQ(vec.size(), 3U);
-    EXPECT_EQ(vec[0], 5.0);
-    EXPECT_EQ(vec[2], 7.0);
+    REQUIRE(3U == vec.size());
+    CHECK(5.0 == vec[0]);
+    CHECK(7.0 == vec[2]);
     opt->check(CLI::Number);
     opt->run_callback_for_default(false);
-    EXPECT_THROW(opt->default_val("this is a string"), CLI::ValidationError);
+    CHECK_THROWS_AS(opt->default_val("this is a string"), CLI::ValidationError);
 }
 
-TEST_F(TApp, BoolAndIntFlags) {
+TEST_CASE_METHOD(TApp, "BoolAndIntFlags", "[optiontype]") {
 
     bool bflag{false};
     int iflag{0};
@@ -125,24 +123,24 @@ TEST_F(TApp, BoolAndIntFlags) {
 
     args = {"-b", "-i", "-u"};
     run();
-    EXPECT_TRUE(bflag);
-    EXPECT_EQ(1, iflag);
-    EXPECT_EQ((unsigned int)1, uflag);
+    CHECK(bflag);
+    CHECK(iflag == 1);
+    CHECK(uflag == (unsigned int)1);
 
     args = {"-b", "-b"};
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(bflag);
+    REQUIRE_NOTHROW(run());
+    CHECK(bflag);
 
     bflag = false;
 
     args = {"-iiiuu"};
     run();
-    EXPECT_FALSE(bflag);
-    EXPECT_EQ(3, iflag);
-    EXPECT_EQ((unsigned int)2, uflag);
+    CHECK(!bflag);
+    CHECK(iflag == 3);
+    CHECK(uflag == (unsigned int)2);
 }
 
-TEST_F(TApp, atomic_bool_flags) {
+TEST_CASE_METHOD(TApp, "atomic_bool_flags", "[optiontype]") {
 
     std::atomic<bool> bflag{false};
     std::atomic<int> iflag{0};
@@ -152,95 +150,95 @@ TEST_F(TApp, atomic_bool_flags) {
 
     args = {"-b", "-i"};
     run();
-    EXPECT_TRUE(bflag.load());
-    EXPECT_EQ(1, iflag.load());
+    CHECK(bflag.load());
+    CHECK(iflag.load() == 1);
 
     args = {"-b", "-b"};
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(bflag.load());
+    REQUIRE_NOTHROW(run());
+    CHECK(bflag.load());
 
     bflag = false;
 
     args = {"-iii"};
     run();
-    EXPECT_FALSE(bflag.load());
-    EXPECT_EQ(3, iflag.load());
+    CHECK(!bflag.load());
+    CHECK(iflag.load() == 3);
     args = {"--int=notanumber"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, BoolOption) {
+TEST_CASE_METHOD(TApp, "BoolOption", "[optiontype]") {
     bool bflag{false};
     app.add_option("-b", bflag);
 
     args = {"-b", "false"};
     run();
-    EXPECT_FALSE(bflag);
+    CHECK(!bflag);
 
     args = {"-b", "1"};
     run();
-    EXPECT_TRUE(bflag);
+    CHECK(bflag);
 
     args = {"-b", "-7"};
     run();
-    EXPECT_FALSE(bflag);
+    CHECK(!bflag);
 
     // cause an out of bounds error internally
     args = {"-b", "751615654161688126132138844896646748852"};
     run();
-    EXPECT_TRUE(bflag);
+    CHECK(bflag);
 
     args = {"-b", "-751615654161688126132138844896646748852"};
     run();
-    EXPECT_FALSE(bflag);
+    CHECK(!bflag);
 }
 
-TEST_F(TApp, atomic_int_option) {
+TEST_CASE_METHOD(TApp, "atomic_int_option", "[optiontype]") {
     std::atomic<int> i{0};
     auto aopt = app.add_option("-i,--int", i);
     args = {"-i4"};
     run();
-    EXPECT_EQ(1u, app.count("--int"));
-    EXPECT_EQ(1u, app.count("-i"));
-    EXPECT_EQ(i, 4);
-    EXPECT_EQ(app["-i"]->as<std::string>(), "4");
-    EXPECT_EQ(app["--int"]->as<double>(), 4.0);
+    CHECK(app.count("--int") == 1u);
+    CHECK(app.count("-i") == 1u);
+    CHECK(4 == i);
+    CHECK("4" == app["-i"]->as<std::string>());
+    CHECK(4.0 == app["--int"]->as<double>());
 
     args = {"--int", "notAnInt"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 
     aopt->expected(0, 1);
     args = {"--int"};
     run();
-    EXPECT_EQ(i, 0);
+    CHECK(0 == i);
 }
 
-TEST_F(TApp, CharOption) {
+TEST_CASE_METHOD(TApp, "CharOption", "[optiontype]") {
     char c1{'t'};
     app.add_option("-c", c1);
 
     args = {"-c", "g"};
     run();
-    EXPECT_EQ(c1, 'g');
+    CHECK('g' == c1);
 
     args = {"-c", "1"};
     run();
-    EXPECT_EQ(c1, '1');
+    CHECK('1' == c1);
 
     args = {"-c", "77"};
     run();
-    EXPECT_EQ(c1, 77);
+    CHECK(77 == c1);
 
     // convert hex for digit
     args = {"-c", "0x44"};
     run();
-    EXPECT_EQ(c1, 0x44);
+    CHECK(0x44 == c1);
 
     args = {"-c", "751615654161688126132138844896646748852"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, vectorDefaults) {
+TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
     std::vector<int> vals{4, 5};
     auto opt = app.add_option("--long", vals, "", true);
 
@@ -248,30 +246,30 @@ TEST_F(TApp, vectorDefaults) {
 
     run();
 
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    CHECK(std::vector<int>({1, 2, 3}) == vals);
 
     args.clear();
     run();
     auto res = app["--long"]->as<std::vector<int>>();
-    EXPECT_EQ(res, std::vector<int>({4, 5}));
+    CHECK(std::vector<int>({4, 5}) == res);
 
     app.clear();
     opt->expected(1)->take_last();
     res = app["--long"]->as<std::vector<int>>();
-    EXPECT_EQ(res, std::vector<int>({5}));
+    CHECK(std::vector<int>({5}) == res);
     opt->take_first();
     res = app["--long"]->as<std::vector<int>>();
-    EXPECT_EQ(res, std::vector<int>({4}));
+    CHECK(std::vector<int>({4}) == res);
 
     opt->expected(0, 1)->take_last();
     run();
 
-    EXPECT_EQ(res, std::vector<int>({4}));
+    CHECK(std::vector<int>({4}) == res);
     res = app["--long"]->as<std::vector<int>>();
-    EXPECT_EQ(res, std::vector<int>({5}));
+    CHECK(std::vector<int>({5}) == res);
 }
 
-TEST_F(TApp, CallbackBoolFlags) {
+TEST_CASE_METHOD(TApp, "CallbackBoolFlags", "[optiontype]") {
 
     bool value{false};
 
@@ -280,24 +278,24 @@ TEST_F(TApp, CallbackBoolFlags) {
     auto cback = app.add_flag_callback("--val", func);
     args = {"--val"};
     run();
-    EXPECT_TRUE(value);
+    CHECK(value);
     value = false;
     args = {"--val=false"};
     run();
-    EXPECT_FALSE(value);
+    CHECK(!value);
 
-    EXPECT_THROW(app.add_flag_callback("hi", func), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_flag_callback("hi", func), CLI::IncorrectConstruction);
     cback->multi_option_policy(CLI::MultiOptionPolicy::Throw);
     args = {"--val", "--val=false"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, pair_check) {
+TEST_CASE_METHOD(TApp, "pair_check", "[optiontype]") {
     std::string myfile{"pair_check_file.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
+    CHECK(ok);
 
-    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+    CHECK(CLI::ExistingFile(myfile).empty());
     std::pair<std::string, int> findex;
 
     auto v0 = CLI::ExistingFile;
@@ -308,112 +306,112 @@ TEST_F(TApp, pair_check) {
 
     args = {"--file", myfile, "2"};
 
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
-    EXPECT_EQ(findex.first, myfile);
-    EXPECT_EQ(findex.second, 2);
+    CHECK(myfile == findex.first);
+    CHECK(2 == findex.second);
 
     args = {"--file", myfile, "-3"};
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--file", myfile, "2"};
     std::remove(myfile.c_str());
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
 // this will require that modifying the multi-option policy for tuples be allowed which it isn't at present
 
-TEST_F(TApp, pair_check_take_first) {
+TEST_CASE_METHOD(TApp, "pair_check_take_first", "[optiontype]") {
     std::string myfile{"pair_check_file2.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
+    CHECK(ok);
 
-    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+    CHECK(CLI::ExistingFile(myfile).empty());
     std::pair<std::string, int> findex;
 
     auto opt = app.add_option("--file", findex)->check(CLI::ExistingFile)->check(CLI::PositiveNumber);
-    EXPECT_THROW(opt->get_validator(3), CLI::OptionNotFound);
+    CHECK_THROWS_AS(opt->get_validator(3), CLI::OptionNotFound);
     opt->get_validator(0)->application_index(0);
     opt->get_validator(1)->application_index(1);
     opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
     args = {"--file", "not_a_file.txt", "-16", "--file", myfile, "2"};
     // should only check the last one
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
-    EXPECT_EQ(findex.first, myfile);
-    EXPECT_EQ(findex.second, 2);
+    CHECK(myfile == findex.first);
+    CHECK(2 == findex.second);
 
     opt->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, VectorFixedString) {
+TEST_CASE_METHOD(TApp, "VectorFixedString", "[optiontype]") {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec)->expected(3);
-    EXPECT_EQ(3, opt->get_expected());
+    CHECK(opt->get_expected() == 3);
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
-    EXPECT_EQ(answer, strvec);
+    CHECK(app.count("--string") == 3u);
+    CHECK(strvec == answer);
 }
 
-TEST_F(TApp, VectorDefaultedFixedString) {
+TEST_CASE_METHOD(TApp, "VectorDefaultedFixedString", "[optiontype]") {
     std::vector<std::string> strvec{"one"};
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec, "")->expected(3)->capture_default_str();
-    EXPECT_EQ(3, opt->get_expected());
+    CHECK(opt->get_expected() == 3);
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
-    EXPECT_EQ(answer, strvec);
+    CHECK(app.count("--string") == 3u);
+    CHECK(strvec == answer);
 }
 
-TEST_F(TApp, VectorIndexedValidator) {
+TEST_CASE_METHOD(TApp, "VectorIndexedValidator", "[optiontype]") {
     std::vector<int> vvec;
 
     CLI::Option *opt = app.add_option("-v", vvec);
 
     args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
     run();
-    EXPECT_EQ(4u, app.count("-v"));
-    EXPECT_EQ(4u, vvec.size());
+    CHECK(app.count("-v") == 4u);
+    CHECK(vvec.size() == 4u);
     opt->check(CLI::PositiveNumber.application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(4u, vvec.size());
+    CHECK_NOTHROW(run());
+    CHECK(vvec.size() == 4u);
     // v[3] would be negative
     opt->check(CLI::PositiveNumber.application_index(3));
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, VectorUnlimString) {
+TEST_CASE_METHOD(TApp, "VectorUnlimString", "[optiontype]") {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec);
-    EXPECT_EQ(1, opt->get_expected());
-    EXPECT_EQ(CLI::detail::expected_max_vector_size, opt->get_expected_max());
+    CHECK(opt->get_expected() == 1);
+    CHECK(opt->get_expected_max() == CLI::detail::expected_max_vector_size);
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
-    EXPECT_EQ(answer, strvec);
+    CHECK(app.count("--string") == 3u);
+    CHECK(strvec == answer);
 
     args = {"-s", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
-    EXPECT_EQ(answer, strvec);
+    CHECK(app.count("--string") == 3u);
+    CHECK(strvec == answer);
 }
 
 // From https://github.com/CLIUtils/CLI11/issues/420
-TEST_F(TApp, stringLikeTests) {
+TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
     struct nType {
         explicit nType(const std::string &a_value) : m_value{a_value} {}
 
@@ -426,14 +424,14 @@ TEST_F(TApp, stringLikeTests) {
     app.add_option("--type", m_type, "type")->capture_default_str();
     run();
 
-    EXPECT_EQ(app["--type"]->as<std::string>(), "op str");
+    CHECK("op str" == app["--type"]->as<std::string>());
     args = {"--type", "bca"};
     run();
-    EXPECT_EQ(std::string(m_type), "op str");
-    EXPECT_EQ(m_type.m_value, "bca");
+    CHECK("op str" == std::string(m_type));
+    CHECK("bca" == m_type.m_value);
 }
 
-TEST_F(TApp, VectorExpectedRange) {
+TEST_CASE_METHOD(TApp, "VectorExpectedRange", "[optiontype]") {
     std::vector<std::string> strvec;
 
     CLI::Option *opt = app.add_option("--string", strvec);
@@ -441,47 +439,47 @@ TEST_F(TApp, VectorExpectedRange) {
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
+    CHECK(app.count("--string") == 3u);
 
     args = {"--string", "mystring"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 
     args = {"--string", "mystring", "mystring2", "string2", "--string", "string4", "string5"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 
-    EXPECT_EQ(opt->get_expected_max(), 4);
-    EXPECT_EQ(opt->get_expected_min(), 2);
+    CHECK(4 == opt->get_expected_max());
+    CHECK(2 == opt->get_expected_min());
     opt->expected(4, 2);  // just test the handling of reversed arguments
-    EXPECT_EQ(opt->get_expected_max(), 4);
-    EXPECT_EQ(opt->get_expected_min(), 2);
+    CHECK(4 == opt->get_expected_max());
+    CHECK(2 == opt->get_expected_min());
     opt->expected(-5);
-    EXPECT_EQ(opt->get_expected_max(), 5);
-    EXPECT_EQ(opt->get_expected_min(), 5);
+    CHECK(5 == opt->get_expected_max());
+    CHECK(5 == opt->get_expected_min());
     opt->expected(-5, 7);
-    EXPECT_EQ(opt->get_expected_max(), 7);
-    EXPECT_EQ(opt->get_expected_min(), 5);
+    CHECK(7 == opt->get_expected_max());
+    CHECK(5 == opt->get_expected_min());
 }
 
-TEST_F(TApp, VectorFancyOpts) {
+TEST_CASE_METHOD(TApp, "VectorFancyOpts", "[optiontype]") {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
 
     CLI::Option *opt = app.add_option("-s,--string", strvec)->required()->expected(3);
-    EXPECT_EQ(3, opt->get_expected());
+    CHECK(opt->get_expected() == 3);
 
     args = {"--string", "mystring", "mystring2", "mystring3"};
     run();
-    EXPECT_EQ(3u, app.count("--string"));
-    EXPECT_EQ(answer, strvec);
+    CHECK(app.count("--string") == 3u);
+    CHECK(strvec == answer);
 
     args = {"one", "two"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
-    EXPECT_THROW(run(), CLI::ParseError);
+    CHECK_THROWS_AS(run(), CLI::ParseError);
 }
 
 // #87
-TEST_F(TApp, CustomDoubleOption) {
+TEST_CASE_METHOD(TApp, "CustomDoubleOption", "[optiontype]") {
 
     std::pair<int, double> custom_opt;
 
@@ -494,12 +492,12 @@ TEST_F(TApp, CustomDoubleOption) {
     args = {"12", "1.5"};
 
     run();
-    EXPECT_EQ(custom_opt.first, 12);
-    EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+    CHECK(12 == custom_opt.first);
+    CHECK(1.5 == Approx(custom_opt.second));
 }
 
 // now with tuple support this is possible
-TEST_F(TApp, CustomDoubleOptionAlt) {
+TEST_CASE_METHOD(TApp, "CustomDoubleOptionAlt", "[optiontype]") {
 
     std::pair<int, double> custom_opt;
 
@@ -508,12 +506,12 @@ TEST_F(TApp, CustomDoubleOptionAlt) {
     args = {"12", "1.5"};
 
     run();
-    EXPECT_EQ(custom_opt.first, 12);
-    EXPECT_DOUBLE_EQ(custom_opt.second, 1.5);
+    CHECK(12 == custom_opt.first);
+    CHECK(1.5 == Approx(custom_opt.second));
 }
 
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, vectorPair) {
+TEST_CASE_METHOD(TApp, "vectorPair", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
 
@@ -522,21 +520,21 @@ TEST_F(TApp, vectorPair) {
     args = {"--dict", "1", "str1", "--dict", "3", "str3"};
 
     run();
-    ASSERT_EQ(custom_opt.size(), 2u);
-    EXPECT_EQ(custom_opt[0].first, 1);
-    EXPECT_EQ(custom_opt[1].second, "str3");
+    REQUIRE(2u == custom_opt.size());
+    CHECK(1 == custom_opt[0].first);
+    CHECK("str3" == custom_opt[1].second);
 
     args = {"--dict", "1", "str1", "--dict", "3", "str3", "--dict", "-1", "str4"};
     run();
-    ASSERT_EQ(custom_opt.size(), 3u);
-    EXPECT_EQ(custom_opt[2].first, -1);
-    EXPECT_EQ(custom_opt[2].second, "str4");
+    REQUIRE(3u == custom_opt.size());
+    CHECK(-1 == custom_opt[2].first);
+    CHECK("str4" == custom_opt[2].second);
     opt->check(CLI::PositiveNumber.application_index(0));
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, vectorPairFail) {
+TEST_CASE_METHOD(TApp, "vectorPairFail", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
 
@@ -544,46 +542,46 @@ TEST_F(TApp, vectorPairFail) {
 
     args = {"--dict", "1", "str1", "--dict", "str3", "1"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, vectorPairTypeRange) {
+TEST_CASE_METHOD(TApp, "vectorPairTypeRange", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
 
     auto opt = app.add_option("--dict", custom_opt);
 
     opt->type_size(2, 1);  // just test switched arguments
-    EXPECT_EQ(opt->get_type_size_min(), 1);
-    EXPECT_EQ(opt->get_type_size_max(), 2);
+    CHECK(1 == opt->get_type_size_min());
+    CHECK(2 == opt->get_type_size_max());
 
     args = {"--dict", "1", "str1", "--dict", "3", "str3"};
 
     run();
-    ASSERT_EQ(custom_opt.size(), 2u);
-    EXPECT_EQ(custom_opt[0].first, 1);
-    EXPECT_EQ(custom_opt[1].second, "str3");
+    REQUIRE(2u == custom_opt.size());
+    CHECK(1 == custom_opt[0].first);
+    CHECK("str3" == custom_opt[1].second);
 
     args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
     run();
-    ASSERT_EQ(custom_opt.size(), 3u);
-    EXPECT_TRUE(custom_opt[1].second.empty());
-    EXPECT_EQ(custom_opt[2].first, -1);
-    EXPECT_EQ(custom_opt[2].second, "str4");
+    REQUIRE(3u == custom_opt.size());
+    CHECK(custom_opt[1].second.empty());
+    CHECK(-1 == custom_opt[2].first);
+    CHECK("str4" == custom_opt[2].second);
 
     opt->type_size(-2, -1);  // test negative arguments
-    EXPECT_EQ(opt->get_type_size_min(), 1);
-    EXPECT_EQ(opt->get_type_size_max(), 2);
+    CHECK(1 == opt->get_type_size_min());
+    CHECK(2 == opt->get_type_size_max());
     // this type size spec should run exactly as before
     run();
-    ASSERT_EQ(custom_opt.size(), 3u);
-    EXPECT_TRUE(custom_opt[1].second.empty());
-    EXPECT_EQ(custom_opt[2].first, -1);
-    EXPECT_EQ(custom_opt[2].second, "str4");
+    REQUIRE(3u == custom_opt.size());
+    CHECK(custom_opt[1].second.empty());
+    CHECK(-1 == custom_opt[2].first);
+    CHECK("str4" == custom_opt[2].second);
 }
 
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, vectorTuple) {
+TEST_CASE_METHOD(TApp, "vectorTuple", "[optiontype]") {
 
     std::vector<std::tuple<int, std::string, double>> custom_opt;
 
@@ -592,28 +590,28 @@ TEST_F(TApp, vectorTuple) {
     args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
 
     run();
-    ASSERT_EQ(custom_opt.size(), 2u);
-    EXPECT_EQ(std::get<0>(custom_opt[0]), 1);
-    EXPECT_EQ(std::get<1>(custom_opt[1]), "str3");
-    EXPECT_EQ(std::get<2>(custom_opt[1]), 2.7);
+    REQUIRE(2u == custom_opt.size());
+    CHECK(1 == std::get<0>(custom_opt[0]));
+    CHECK("str3" == std::get<1>(custom_opt[1]));
+    CHECK(2.7 == std::get<2>(custom_opt[1]));
 
     args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
     run();
-    ASSERT_EQ(custom_opt.size(), 3u);
-    EXPECT_EQ(std::get<0>(custom_opt[2]), -1);
-    EXPECT_EQ(std::get<1>(custom_opt[2]), "str4");
-    EXPECT_EQ(std::get<2>(custom_opt[2]), -1.87);
+    REQUIRE(3u == custom_opt.size());
+    CHECK(-1 == std::get<0>(custom_opt[2]));
+    CHECK("str4" == std::get<1>(custom_opt[2]));
+    CHECK(-1.87 == std::get<2>(custom_opt[2]));
     opt->check(CLI::PositiveNumber.application_index(0));
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args.back() = "haha";
     args[9] = "45";
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, vectorVector) {
+TEST_CASE_METHOD(TApp, "vectorVector", "[optiontype]") {
 
     std::vector<std::vector<int>> custom_opt;
 
@@ -622,34 +620,34 @@ TEST_F(TApp, vectorVector) {
     args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
 
     run();
-    ASSERT_EQ(custom_opt.size(), 2u);
-    EXPECT_EQ(custom_opt[0].size(), 3u);
-    EXPECT_EQ(custom_opt[1].size(), 2u);
+    REQUIRE(2u == custom_opt.size());
+    CHECK(3u == custom_opt[0].size());
+    CHECK(2u == custom_opt[1].size());
 
     args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
             "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
     run();
-    ASSERT_EQ(custom_opt.size(), 4u);
-    EXPECT_EQ(custom_opt[0].size(), 3u);
-    EXPECT_EQ(custom_opt[1].size(), 2u);
-    EXPECT_EQ(custom_opt[2].size(), 1u);
-    EXPECT_EQ(custom_opt[3].size(), 10u);
+    REQUIRE(4u == custom_opt.size());
+    CHECK(3u == custom_opt[0].size());
+    CHECK(2u == custom_opt[1].size());
+    CHECK(1u == custom_opt[2].size());
+    CHECK(10u == custom_opt[3].size());
     opt->check(CLI::PositiveNumber.application_index(9));
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
     args.pop_back();
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args.back() = "haha";
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 
     args = {"--dict", "1", "2", "4", "%%", "3", "1", "%%", "3", "%%", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3"};
     run();
-    ASSERT_EQ(custom_opt.size(), 4u);
+    REQUIRE(4u == custom_opt.size());
 }
 
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, vectorVectorFixedSize) {
+TEST_CASE_METHOD(TApp, "vectorVectorFixedSize", "[optiontype]") {
 
     std::vector<std::vector<int>> custom_opt;
 
@@ -658,21 +656,21 @@ TEST_F(TApp, vectorVectorFixedSize) {
     args = {"--dict", "1", "2", "4", "3", "--dict", "3", "1", "2", "8"};
 
     run();
-    ASSERT_EQ(custom_opt.size(), 2u);
-    EXPECT_EQ(custom_opt[0].size(), 4u);
-    EXPECT_EQ(custom_opt[1].size(), 4u);
+    REQUIRE(2u == custom_opt.size());
+    CHECK(4u == custom_opt[0].size());
+    CHECK(4u == custom_opt[1].size());
 
     args = {"--dict", "1", "2", "4", "--dict", "3", "1", "7", "6"};
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
     // this should reset it
     opt->type_size(CLI::detail::expected_max_vector_size);
     opt->type_size(1, CLI::detail::expected_max_vector_size);
-    EXPECT_NO_THROW(run());
-    ASSERT_EQ(custom_opt.size(), 2U);
+    CHECK_NOTHROW(run());
+    REQUIRE(2U == custom_opt.size());
 }
 
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, tuplePair) {
+TEST_CASE_METHOD(TApp, "tuplePair", "[optiontype]") {
     std::tuple<std::pair<int, double>> custom_opt;
 
     app.add_option("--pr", custom_opt);
@@ -680,11 +678,11 @@ TEST_F(TApp, tuplePair) {
     args = {"--pr", "1", "2"};
 
     run();
-    EXPECT_EQ(std::get<0>(custom_opt).first, 1);
-    EXPECT_EQ(std::get<0>(custom_opt).second, 2.0);
+    CHECK(1 == std::get<0>(custom_opt).first);
+    CHECK(2.0 == std::get<0>(custom_opt).second);
 }
 // now with independent type sizes and expected this is possible
-TEST_F(TApp, tupleintPair) {
+TEST_CASE_METHOD(TApp, "tupleintPair", "[optiontype]") {
     std::tuple<int, std::pair<int, double>> custom_opt;
 
     app.add_option("--pr", custom_opt);
@@ -692,9 +690,9 @@ TEST_F(TApp, tupleintPair) {
     args = {"--pr", "3", "1", "2"};
 
     run();
-    EXPECT_EQ(std::get<0>(custom_opt), 3);
-    EXPECT_EQ(std::get<1>(custom_opt).first, 1);
-    EXPECT_EQ(std::get<1>(custom_opt).second, 2.0);
+    CHECK(3 == std::get<0>(custom_opt));
+    CHECK(1 == std::get<1>(custom_opt).first);
+    CHECK(2.0 == std::get<1>(custom_opt).second);
 }
 
 static_assert(CLI::detail::is_mutable_container<std::set<std::string>>::value, "set should be a container");
@@ -719,66 +717,54 @@ static_assert(CLI::detail::type_count<std::list<std::pair<int, std::string>>>::v
 static_assert(CLI::detail::type_count<std::map<std::string, std::pair<int, std::string>>>::value == 3,
               "map<string,pair<int,string>> should have a type size of 3");
 
-template <class T> class TApp_container_single : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_single() : TApp() {}
-};
+TEMPLATE_TEST_CASE("Container int single",
+                   "[optiontype]",
+                   std::vector<int>,
+                   std::deque<int>,
+                   std::set<int>,
+                   std::list<int>,
+                   std::unordered_set<int>) {
+    TApp tapp;
+    TestType cv;
 
-using containerTypes_single =
-    ::testing::Types<std::vector<int>, std::deque<int>, std::set<int>, std::list<int>, std::unordered_set<int>>;
+    CLI::Option *opt = tapp.app.add_option("-v", cv);
 
-TYPED_TEST_SUITE(TApp_container_single, containerTypes_single, );
-
-TYPED_TEST(TApp_container_single, containerInt) {
-
-    auto &cv = TApp_container_single<TypeParam>::cval;
-    CLI::Option *opt = (TApp::app).add_option("-v", cv);
-
-    TApp::args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
-    TApp::run();
-    EXPECT_EQ(4u, (TApp::app).count("-v"));
-    EXPECT_EQ(4u, cv.size());
+    tapp.args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
+    tapp.run();
+    CHECK(tapp.app.count("-v") == 4u);
+    CHECK(cv.size() == 4u);
     opt->check(CLI::PositiveNumber.application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
-    EXPECT_NO_THROW(TApp::run());
-    EXPECT_EQ(4u, cv.size());
+    CHECK_NOTHROW(tapp.run());
+    CHECK(cv.size() == 4u);
     // v[3] would be negative
     opt->check(CLI::PositiveNumber.application_index(3));
-    EXPECT_THROW(TApp::run(), CLI::ValidationError);
+    CHECK_THROWS_AS(tapp.run(), CLI::ValidationError);
 }
 
-template <class T> class TApp_container_pair : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_pair() : TApp() {}
-};
-
 using isp = std::pair<int, std::string>;
-using containerTypes_pair = ::testing::Types<std::vector<isp>,
-                                             std::deque<isp>,
-                                             std::set<isp>,
-                                             std::list<isp>,
-                                             std::map<int, std::string>,
-                                             std::unordered_map<int, std::string>>;
 
-TYPED_TEST_SUITE(TApp_container_pair, containerTypes_pair, );
+TEMPLATE_TEST_CASE("Container pair",
+                   "[optiontype]",
+                   std::vector<isp>,
+                   std::deque<isp>,
+                   std::set<isp>,
+                   std::list<isp>,
+                   (std::map<int, std::string>),
+                   (std::unordered_map<int, std::string>)) {
+    TApp tapp;
+    TestType cv;
 
-TYPED_TEST(TApp_container_pair, containerPair) {
+    (tapp.app).add_option("--dict", cv);
 
-    auto &cv = TApp_container_pair<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
+    tapp.args = {"--dict", "1", "str1", "--dict", "3", "str3"};
 
-    TApp::args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
-
-    TApp::args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 3u);
+    tapp.args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
+    tapp.run();
+    CHECK(3u == cv.size());
 }
 
 template <class T> class TApp_container_tuple : public TApp {
@@ -789,28 +775,28 @@ template <class T> class TApp_container_tuple : public TApp {
 };
 
 using tup_obj = std::tuple<int, std::string, double>;
-using containerTypes_tuple = ::testing::Types<std::vector<tup_obj>,
-                                              std::deque<tup_obj>,
-                                              std::set<tup_obj>,
-                                              std::list<tup_obj>,
-                                              std::map<int, std::pair<std::string, double>>,
-                                              std::unordered_map<int, std::tuple<std::string, double>>>;
 
-TYPED_TEST_SUITE(TApp_container_tuple, containerTypes_tuple, );
+TEMPLATE_TEST_CASE("Container tuple",
+                   "[optiontype]",
+                   std::vector<tup_obj>,
+                   std::deque<tup_obj>,
+                   std::set<tup_obj>,
+                   std::list<tup_obj>,
+                   (std::map<int, std::pair<std::string, double>>),
+                   (std::unordered_map<int, std::tuple<std::string, double>>)) {
+    TApp tapp;
+    TestType cv;
 
-TYPED_TEST(TApp_container_tuple, containerTuple) {
+    (tapp.app).add_option("--dict", cv);
 
-    auto &cv = TApp_container_tuple<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
+    tapp.args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
 
-    TApp::args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
-
-    TApp::args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 3u);
+    tapp.args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
+    tapp.run();
+    CHECK(3u == cv.size());
 }
 
 using icontainer1 = std::vector<int>;
@@ -818,45 +804,37 @@ using icontainer2 = std::list<int>;
 using icontainer3 = std::set<int>;
 using icontainer4 = std::pair<int, std::vector<int>>;
 
-using containerTypes_container = ::testing::Types<std::vector<icontainer1>,
-                                                  std::list<icontainer1>,
-                                                  std::set<icontainer1>,
-                                                  std::deque<icontainer1>,
-                                                  std::vector<icontainer2>,
-                                                  std::list<icontainer2>,
-                                                  std::set<icontainer2>,
-                                                  std::deque<icontainer2>,
-                                                  std::vector<icontainer3>,
-                                                  std::list<icontainer3>,
-                                                  std::set<icontainer3>,
-                                                  std::deque<icontainer3>>;
+TEMPLATE_TEST_CASE("Container container",
+                   "[optiontype]",
+                   std::vector<icontainer1>,
+                   std::list<icontainer1>,
+                   std::set<icontainer1>,
+                   std::deque<icontainer1>,
+                   std::vector<icontainer2>,
+                   std::list<icontainer2>,
+                   std::set<icontainer2>,
+                   std::deque<icontainer2>,
+                   std::vector<icontainer3>,
+                   std::list<icontainer3>,
+                   std::set<icontainer3>,
+                   std::deque<icontainer3>) {
+    TApp tapp;
+    TestType cv;
 
-template <class T> class TApp_container_container : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_container() : TApp() {}
-};
+    (tapp.app).add_option("--dict", cv);
 
-TYPED_TEST_SUITE(TApp_container_container, containerTypes_container, );
+    tapp.args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
 
-TYPED_TEST(TApp_container_container, containerContainer) {
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    auto &cv = TApp_container_container<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
-
-    TApp::args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
-
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
-
-    TApp::args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
-                  "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 4u);
+    tapp.args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
+                 "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
+    tapp.run();
+    CHECK(4u == cv.size());
 }
 
-TEST_F(TApp, containerContainer) {
+TEST_CASE_METHOD(TApp, "containerContainer", "[optiontype]") {
 
     std::vector<icontainer4> cv;
     app.add_option("--dict", cv);
@@ -864,15 +842,15 @@ TEST_F(TApp, containerContainer) {
     args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
 
     run();
-    EXPECT_EQ(cv.size(), 2u);
+    CHECK(2u == cv.size());
 
     args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "",  "--dict",
             "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
     run();
-    EXPECT_EQ(cv.size(), 4u);
+    CHECK(4u == cv.size());
 }
 
-TEST_F(TApp, unknownContainerWrapper) {
+TEST_CASE_METHOD(TApp, "unknownContainerWrapper", "[optiontype]") {
 
     class vopt {
       public:
@@ -887,14 +865,14 @@ TEST_F(TApp, unknownContainerWrapper) {
     args = {"--vv", "1", "2", "4"};
 
     run();
-    EXPECT_EQ(cv.val_.size(), 3u);
+    CHECK(3u == cv.val_.size());
     args = {"--vv", ""};
 
     run();
-    EXPECT_TRUE(cv.val_.empty());
+    CHECK(cv.val_.empty());
 }
 
-TEST_F(TApp, tupleTwoVectors) {
+TEST_CASE_METHOD(TApp, "tupleTwoVectors", "[optiontype]") {
 
     std::tuple<std::vector<int>, std::vector<int>> cv;
     app.add_option("--vv", cv);
@@ -902,17 +880,17 @@ TEST_F(TApp, tupleTwoVectors) {
     args = {"--vv", "1", "2", "4"};
 
     run();
-    EXPECT_EQ(std::get<0>(cv).size(), 3U);
-    EXPECT_TRUE(std::get<1>(cv).empty());
+    CHECK(3U == std::get<0>(cv).size());
+    CHECK(std::get<1>(cv).empty());
 
     args = {"--vv", "1", "2", "%%", "4", "4", "5"};
 
     run();
-    EXPECT_EQ(std::get<0>(cv).size(), 2U);
-    EXPECT_EQ(std::get<1>(cv).size(), 3U);
+    CHECK(2U == std::get<0>(cv).size());
+    CHECK(3U == std::get<1>(cv).size());
 }
 
-TEST_F(TApp, vectorSingleArg) {
+TEST_CASE_METHOD(TApp, "vectorSingleArg", "[optiontype]") {
 
     std::vector<int> cv;
     app.add_option("-c", cv)->allow_extra_args(false);
@@ -921,11 +899,11 @@ TEST_F(TApp, vectorSingleArg) {
     args = {"-c", "1", "-c", "2", "4"};
 
     run();
-    EXPECT_EQ(cv.size(), 2U);
-    EXPECT_EQ(extra, "4");
+    CHECK(2U == cv.size());
+    CHECK("4" == extra);
 }
 
-TEST_F(TApp, vectorDoubleArg) {
+TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> cv;
     app.add_option("-c", cv)->allow_extra_args(false);
@@ -934,6 +912,6 @@ TEST_F(TApp, vectorDoubleArg) {
     args = {"-c", "1", "bob", "-c", "2", "apple", "4", "key"};
 
     run();
-    EXPECT_EQ(cv.size(), 2U);
-    EXPECT_EQ(extras.size(), 2U);
+    CHECK(2U == cv.size());
+    CHECK(2U == extras.size());
 }

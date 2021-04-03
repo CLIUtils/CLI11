@@ -15,137 +15,112 @@
 #include <string>
 #include <vector>
 
-#include "gmock/gmock.h"
+using namespace boost::container;
 
-namespace boost {
-namespace container {
+TEMPLATE_TEST_CASE("Boost container single",
+                   "[boost][optional]",
+                   (small_vector<int, 2>),
+                   (small_vector<int, 3>),
+                   flat_set<int>,
+                   stable_vector<int>,
+                   slist<int>) {
+    TApp tapp;
+    TestType cv;
+    CLI::Option *opt = tapp.app.add_option("-v", cv);
 
-template <class T> class TApp_container_single_boost : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_single_boost() : TApp() {}
-};
-
-using containerTypes_single_boost =
-    ::testing::Types<small_vector<int, 2>, small_vector<int, 3>, flat_set<int>, stable_vector<int>, slist<int>>;
-
-TYPED_TEST_SUITE(TApp_container_single_boost, containerTypes_single_boost, );
-
-TYPED_TEST(TApp_container_single_boost, containerInt_boost) {
-
-    auto &cv = TApp_container_single_boost<TypeParam>::cval;
-    CLI::Option *opt = (TApp::app).add_option("-v", cv);
-
-    TApp::args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
-    TApp::run();
-    EXPECT_EQ(4u, (TApp::app).count("-v"));
-    EXPECT_EQ(4u, cv.size());
+    tapp.args = {"-v", "1", "-1", "-v", "3", "-v", "-976"};
+    tapp.run();
+    CHECK(tapp.app.count("-v") == 4u);
+    CHECK(cv.size() == 4u);
     opt->check(CLI::PositiveNumber.application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
-    EXPECT_NO_THROW(TApp::run());
-    EXPECT_EQ(4u, cv.size());
+    CHECK_NOTHROW(tapp.run());
+    CHECK(cv.size() == 4u);
     // v[3] would be negative
     opt->check(CLI::PositiveNumber.application_index(3));
-    EXPECT_THROW(TApp::run(), CLI::ValidationError);
+    CHECK_THROWS_AS(tapp.run(), CLI::ValidationError);
 }
-
-template <class T> class TApp_container_pair_boost : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_pair_boost() : TApp() {}
-};
 
 using isp = std::pair<int, std::string>;
-using containerTypes_pair_boost = ::testing::
-    Types<stable_vector<isp>, small_vector<isp, 2>, flat_set<isp>, slist<isp>, vector<isp>, flat_map<int, std::string>>;
 
-TYPED_TEST_SUITE(TApp_container_pair_boost, containerTypes_pair_boost, );
+TEMPLATE_TEST_CASE("Boost container pair",
+                   "[boost][optional]",
+                   stable_vector<isp>,
+                   (small_vector<isp, 2>),
+                   flat_set<isp>,
+                   slist<isp>,
+                   vector<isp>,
+                   (flat_map<int, std::string>)) {
 
-TYPED_TEST(TApp_container_pair_boost, containerPair_boost) {
+    TApp tapp;
+    TestType cv;
 
-    auto &cv = TApp_container_pair_boost<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
+    tapp.app.add_option("--dict", cv);
 
-    TApp::args = {"--dict", "1", "str1", "--dict", "3", "str3"};
+    tapp.args = {"--dict", "1", "str1", "--dict", "3", "str3"};
 
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    TApp::args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 3u);
+    tapp.args = {"--dict", "1", "str1", "--dict", "3", "--dict", "-1", "str4"};
+    tapp.run();
+    CHECK(3u == cv.size());
 }
 
-template <class T> class TApp_container_tuple_boost : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_tuple_boost() : TApp() {}
-};
-
 using tup_obj = std::tuple<int, std::string, double>;
-using containerTypes_tuple_boost =
-    ::testing::Types<small_vector<tup_obj, 3>, stable_vector<tup_obj>, flat_set<tup_obj>, slist<tup_obj>>;
 
-TYPED_TEST_SUITE(TApp_container_tuple_boost, containerTypes_tuple_boost, );
+TEMPLATE_TEST_CASE("Boost container tuple",
+                   "[boost][optional]",
+                   (small_vector<tup_obj, 3>),
+                   stable_vector<tup_obj>,
+                   flat_set<tup_obj>,
+                   slist<tup_obj>) {
+    TApp tapp;
+    TestType cv;
 
-TYPED_TEST(TApp_container_tuple_boost, containerTuple_boost) {
+    tapp.app.add_option("--dict", cv);
 
-    auto &cv = TApp_container_tuple_boost<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
+    tapp.args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
 
-    TApp::args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
-
-    TApp::args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 3u);
+    tapp.args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7", "--dict", "-1", "str4", "-1.87"};
+    tapp.run();
+    CHECK(3u == cv.size());
 }
 
 using icontainer1 = vector<int>;
 using icontainer2 = flat_set<int>;
 using icontainer3 = slist<int>;
-using containerTypes_container_boost = ::testing::Types<std::vector<icontainer1>,
-                                                        slist<icontainer1>,
-                                                        flat_set<icontainer1>,
-                                                        small_vector<icontainer1, 2>,
-                                                        std::vector<icontainer2>,
-                                                        slist<icontainer2>,
-                                                        flat_set<icontainer2>,
-                                                        stable_vector<icontainer2>,
-                                                        static_vector<icontainer3, 10>,
-                                                        slist<icontainer3>,
-                                                        flat_set<icontainer3>,
-                                                        static_vector<icontainer3, 10>>;
 
-template <class T> class TApp_container_container_boost : public TApp {
-  public:
-    using container_type = T;
-    container_type cval{};
-    TApp_container_container_boost() : TApp() {}
-};
+TEMPLATE_TEST_CASE("Boost container container",
+                   "[boost][optional]",
+                   std::vector<icontainer1>,
+                   slist<icontainer1>,
+                   flat_set<icontainer1>,
+                   (small_vector<icontainer1, 2>),
+                   std::vector<icontainer2>,
+                   slist<icontainer2>,
+                   flat_set<icontainer2>,
+                   stable_vector<icontainer2>,
+                   (static_vector<icontainer2, 10>),
+                   slist<icontainer3>,
+                   flat_set<icontainer3>,
+                   (static_vector<icontainer3, 10>)) {
 
-TYPED_TEST_SUITE(TApp_container_container_boost, containerTypes_container_boost, );
+    TApp tapp;
+    TestType cv;
 
-TYPED_TEST(TApp_container_container_boost, containerContainer_boost) {
+    tapp.app.add_option("--dict", cv);
 
-    auto &cv = TApp_container_container_boost<TypeParam>::cval;
-    (TApp::app).add_option("--dict", cv);
+    tapp.args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
 
-    TApp::args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
+    tapp.run();
+    CHECK(2u == cv.size());
 
-    TApp::run();
-    EXPECT_EQ(cv.size(), 2u);
-
-    TApp::args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
-                  "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
-    TApp::run();
-    EXPECT_EQ(cv.size(), 4u);
+    tapp.args = {"--dict", "1", "2", "4", "--dict", "3", "1", "--dict", "3", "--dict",
+                 "3",      "3", "3", "3", "3",      "3", "3", "3",      "3", "-3"};
+    tapp.run();
+    CHECK(4u == cv.size());
 }
-
-}  // namespace container
-}  // namespace boost

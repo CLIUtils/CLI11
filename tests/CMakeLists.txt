@@ -1,8 +1,3 @@
-if(NOT EXISTS "${CLI11_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
-    message(FATAL_ERROR "You have requested tests be built, but googletest is not downloaded. Please run:
-    git submodule update --init")
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CLI11_SOURCE_DIR}/cmake")
 
 if(CLI11_SANITIZERS)
@@ -29,8 +24,6 @@ else()
     endmacro()
 endif()
 
-set(GOOGLE_TEST_INDIVIDUAL OFF)
-include(AddGoogletest)
 
 # Add boost to test boost::optional (currently explicitly requested)"
 option(CLI11_BOOST "Turn on boost test (currently may fail with Boost 1.70)" OFF)
@@ -70,8 +63,32 @@ endif()
 
 set(CLI11_MULTIONLY_TESTS TimerTest)
 
-# Only affects current directory, so safe
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_library(catch_main main.cpp)
+target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Currently a required download; could be make to look for existing Catch2, but
+# that would require changing the includes. FetchContent would be better, but
+# requires newer CMake.
+
+set(url https://github.com/philsquared/Catch/releases/download/v2.13.4/catch.hpp)
+file(DOWNLOAD ${url} "${CMAKE_CURRENT_BINARY_DIR}/catch.hpp" STATUS status EXPECTED_HASH SHA256=6e0fa3dd160891a01c1f3b34e8bcd6e0140abe08eca022e390027f27dec2050b)
+list(GET status 0 error)
+if(error)
+    message(FATAL_ERROR "Could not download ${url}")
+endif()
+target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
+
+# Target must already exist
+macro(add_catch_test TESTNAME)
+    target_link_libraries(${TESTNAME} PUBLIC catch_main)
+
+    add_test(${TESTNAME} ${TESTNAME})
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
+    if (CLI11_FORCE_LIBCXX)
+       set_property(TARGET ${T} APPEND_STRING
+         PROPERTY LINK_FLAGS -stdlib=libc++)
+     endif()
+endmacro()
 
 foreach(T IN LISTS CLI11_TESTS)
     if(CLI11_CUDA_TESTS)
@@ -86,12 +103,12 @@ foreach(T IN LISTS CLI11_TESTS)
         target_link_libraries(${T} PRIVATE CLI11_warnings)
     endif()
     target_link_libraries(${T} PRIVATE CLI11)
-    add_gtest(${T})
+    add_catch_test(${T})
 
     if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
         add_executable(${T}_Single ${T}.cpp)
         target_link_libraries(${T}_Single PRIVATE CLI11_SINGLE)
-        add_gtest(${T}_Single)
+        add_catch_test(${T}_Single)
         set_property(TARGET ${T}_Single PROPERTY FOLDER "Tests Single File")
     endif()
 endforeach()
@@ -100,7 +117,7 @@ foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
     add_executable(${T} ${T}.cpp ${CLI11_headers})
     add_sanitizers(${T})
     target_link_libraries(${T} PUBLIC CLI11)
-    add_gtest(${T})
+    add_catch_test(${T})
 endforeach()
 
 # Add -Wno-deprecated-declarations to DeprecatedTest
@@ -123,7 +140,7 @@ target_link_libraries(link_test_1 PUBLIC CLI11)
 set_target_properties(link_test_1 PROPERTIES FOLDER "Tests")
 add_executable(link_test_2 link_test_2.cpp)
 target_link_libraries(link_test_2 PUBLIC CLI11 link_test_1)
-add_gtest(link_test_2)
+add_catch_test(link_test_2)
 if(CLI11_FORCE_LIBCXX)
     set_property(TARGET link_test_1 APPEND_STRING
         PROPERTY LINK_FLAGS -stdlib=libc++)

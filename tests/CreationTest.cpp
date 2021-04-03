@@ -7,224 +7,224 @@
 #include "app_helper.hpp"
 #include <cstdlib>
 
-TEST_F(TApp, AddingExistingShort) {
+TEST_CASE_METHOD(TApp, "AddingExistingShort", "[creation]") {
     CLI::Option *opt = app.add_flag("-c,--count");
-    EXPECT_EQ(opt->get_lnames(), std::vector<std::string>({"count"}));
-    EXPECT_EQ(opt->get_snames(), std::vector<std::string>({"c"}));
+    CHECK(std::vector<std::string>({"count"}) == opt->get_lnames());
+    CHECK(std::vector<std::string>({"c"}) == opt->get_snames());
 
-    EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingLong) {
+TEST_CASE_METHOD(TApp, "AddingExistingLong", "[creation]") {
     app.add_flag("-q,--count");
-    EXPECT_THROW(app.add_flag("--count,-c"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_flag("--count,-c"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingShortNoCase) {
+TEST_CASE_METHOD(TApp, "AddingExistingShortNoCase", "[creation]") {
     app.add_flag("-C,--count")->ignore_case();
-    EXPECT_THROW(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_flag("--cat,-c"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingLongNoCase) {
+TEST_CASE_METHOD(TApp, "AddingExistingLongNoCase", "[creation]") {
     app.add_flag("-q,--count")->ignore_case();
-    EXPECT_THROW(app.add_flag("--Count,-c"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_flag("--Count,-c"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingNoCaseReversed) {
+TEST_CASE_METHOD(TApp, "AddingExistingNoCaseReversed", "[creation]") {
     app.add_flag("-c,--count")->ignore_case();
-    EXPECT_THROW(app.add_flag("--cat,-C"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_flag("--cat,-C"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingWithCase) {
+TEST_CASE_METHOD(TApp, "AddingExistingWithCase", "[creation]") {
     app.add_flag("-c,--count");
-    EXPECT_NO_THROW(app.add_flag("--Cat,-C"));
+    CHECK_NOTHROW(app.add_flag("--Cat,-C"));
 }
 
-TEST_F(TApp, AddingExistingWithCaseAfter) {
+TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter", "[creation]") {
     auto count = app.add_flag("-c,--count");
     app.add_flag("--Cat,-C");
 
-    EXPECT_THROW(count->ignore_case(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(count->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingWithCaseAfter2) {
+TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter2", "[creation]") {
     app.add_flag("-c,--count");
     auto cat = app.add_flag("--Cat,-C");
 
-    EXPECT_THROW(cat->ignore_case(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(cat->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingWithUnderscoreAfter) {
+TEST_CASE_METHOD(TApp, "AddingExistingWithUnderscoreAfter", "[creation]") {
     auto count = app.add_flag("--underscore");
     app.add_flag("--under_score");
 
-    EXPECT_THROW(count->ignore_underscore(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(count->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingExistingWithUnderscoreAfter2) {
+TEST_CASE_METHOD(TApp, "AddingExistingWithUnderscoreAfter2", "[creation]") {
     auto count = app.add_flag("--under_score");
     app.add_flag("--underscore");
 
-    EXPECT_THROW(count->ignore_underscore(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(count->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, AddingMultipleInfPositionals) {
+TEST_CASE_METHOD(TApp, "AddingMultipleInfPositionals", "[creation]") {
     std::vector<std::string> one, two;
     app.add_option("one", one);
     app.add_option("two", two);
 
-    EXPECT_THROW(run(), CLI::InvalidError);
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
 }
 
-TEST_F(TApp, AddingMultipleInfPositionalsSubcom) {
+TEST_CASE_METHOD(TApp, "AddingMultipleInfPositionalsSubcom", "[creation]") {
     std::vector<std::string> one, two;
     CLI::App *below = app.add_subcommand("below");
     below->add_option("one", one);
     below->add_option("two", two);
 
-    EXPECT_THROW(run(), CLI::InvalidError);
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
 }
 
-TEST_F(TApp, MultipleSubcomMatching) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatching", "[creation]") {
     app.add_subcommand("first");
     app.add_subcommand("second");
     app.add_subcommand("Second");
-    EXPECT_THROW(app.add_subcommand("first"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_subcommand("first"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, RecoverSubcommands) {
+TEST_CASE_METHOD(TApp, "RecoverSubcommands", "[creation]") {
     CLI::App *app1 = app.add_subcommand("app1");
     CLI::App *app2 = app.add_subcommand("app2");
     CLI::App *app3 = app.add_subcommand("app3");
     CLI::App *app4 = app.add_subcommand("app4");
 
-    EXPECT_EQ(app.get_subcommands({}), std::vector<CLI::App *>({app1, app2, app3, app4}));
+    CHECK(std::vector<CLI::App *>({app1, app2, app3, app4}) == app.get_subcommands({}));
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithCase) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCase", "[creation]") {
     app.add_subcommand("first")->ignore_case();
-    EXPECT_THROW(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithCaseFirst) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseFirst", "[creation]") {
     app.ignore_case();
     app.add_subcommand("first");
-    EXPECT_THROW(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_subcommand("fIrst"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithUnderscore) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscore", "[creation]") {
     app.add_subcommand("first_option")->ignore_underscore();
-    EXPECT_THROW(app.add_subcommand("firstoption"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_subcommand("firstoption"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithUnderscoreFirst) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreFirst", "[creation]") {
     app.ignore_underscore();
     app.add_subcommand("first_option");
-    EXPECT_THROW(app.add_subcommand("firstoption"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(app.add_subcommand("firstoption"), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseInplace", "[creation]") {
     app.add_subcommand("first");
     auto first = app.add_subcommand("fIrst");
 
-    EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(first->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithCaseInplace2) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseInplace2", "[creation]") {
     auto first = app.add_subcommand("first");
     app.add_subcommand("fIrst");
 
-    EXPECT_THROW(first->ignore_case(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(first->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithUnderscoreInplace) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreInplace", "[creation]") {
     app.add_subcommand("first_option");
     auto first = app.add_subcommand("firstoption");
 
-    EXPECT_THROW(first->ignore_underscore(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(first->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomMatchingWithUnderscoreInplace2) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreInplace2", "[creation]") {
     auto first = app.add_subcommand("firstoption");
     app.add_subcommand("first_option");
 
-    EXPECT_THROW(first->ignore_underscore(), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(first->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
-TEST_F(TApp, MultipleSubcomNoMatchingInplace2) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomNoMatchingInplace2", "[creation]") {
     auto first = app.add_subcommand("first");
     auto second = app.add_subcommand("second");
 
-    EXPECT_NO_THROW(first->ignore_case());
-    EXPECT_NO_THROW(second->ignore_case());
+    CHECK_NOTHROW(first->ignore_case());
+    CHECK_NOTHROW(second->ignore_case());
 }
 
-TEST_F(TApp, MultipleSubcomNoMatchingInplaceUnderscore2) {
+TEST_CASE_METHOD(TApp, "MultipleSubcomNoMatchingInplaceUnderscore2", "[creation]") {
     auto first = app.add_subcommand("first_option");
     auto second = app.add_subcommand("second_option");
 
-    EXPECT_NO_THROW(first->ignore_underscore());
-    EXPECT_NO_THROW(second->ignore_underscore());
+    CHECK_NOTHROW(first->ignore_underscore());
+    CHECK_NOTHROW(second->ignore_underscore());
 }
 
-TEST_F(TApp, IncorrectConstructionFlagPositional1) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionFlagPositional1", "[creation]") {
     // This wants to be one line with clang-format
-    EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_flag("cat"), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionFlagPositional2) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionFlagPositional2", "[creation]") {
     int x{0};
-    EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_flag("cat", x), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionFlagPositional3) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionFlagPositional3", "[creation]") {
     bool x{false};
-    EXPECT_THROW(app.add_flag("cat", x), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_flag("cat", x), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionNeedsCannotFind) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionNeedsCannotFind", "[creation]") {
     auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->needs("--nothing"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(cat->needs("--nothing"), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionExcludesCannotFind) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionExcludesCannotFind", "[creation]") {
     auto cat = app.add_flag("--cat");
-    EXPECT_THROW(cat->excludes("--nothing"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(cat->excludes("--nothing"), CLI::IncorrectConstruction);
 }
 
-TEST_F(TApp, IncorrectConstructionDuplicateNeeds) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionDuplicateNeeds", "[creation]") {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
-    ASSERT_NO_THROW(cat->needs(other));
+    REQUIRE_NOTHROW(cat->needs(other));
     // duplicated needs is redundant but not an error
-    EXPECT_NO_THROW(cat->needs(other));
+    CHECK_NOTHROW(cat->needs(other));
 }
 
-TEST_F(TApp, IncorrectConstructionDuplicateNeedsTxt) {
+TEST_CASE_METHOD(TApp, "IncorrectConstructionDuplicateNeedsTxt", "[creation]") {
     auto cat = app.add_flag("--cat");
     app.add_flag("--other");
-    ASSERT_NO_THROW(cat->needs("--other"));
+    REQUIRE_NOTHROW(cat->needs("--other"));
     // duplicate needs is redundant but not an error
-    EXPECT_NO_THROW(cat->needs("--other"));
+    CHECK_NOTHROW(cat->needs("--other"));
 }
 
 // Now allowed
-TEST_F(TApp, CorrectConstructionDuplicateExcludes) {
+TEST_CASE_METHOD(TApp, "CorrectConstructionDuplicateExcludes", "[creation]") {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
-    ASSERT_NO_THROW(cat->excludes(other));
-    ASSERT_NO_THROW(other->excludes(cat));
+    REQUIRE_NOTHROW(cat->excludes(other));
+    REQUIRE_NOTHROW(other->excludes(cat));
 }
 
 // Now allowed
-TEST_F(TApp, CorrectConstructionDuplicateExcludesTxt) {
+TEST_CASE_METHOD(TApp, "CorrectConstructionDuplicateExcludesTxt", "[creation]") {
     auto cat = app.add_flag("--cat");
     auto other = app.add_flag("--other");
-    ASSERT_NO_THROW(cat->excludes("--other"));
-    ASSERT_NO_THROW(other->excludes("--cat"));
+    REQUIRE_NOTHROW(cat->excludes("--other"));
+    REQUIRE_NOTHROW(other->excludes("--cat"));
 }
 
-TEST_F(TApp, CheckName) {
+TEST_CASE_METHOD(TApp, "CheckName", "[creation]") {
     auto long1 = app.add_flag("--long1");
     auto long2 = app.add_flag("--Long2");
     auto short1 = app.add_flag("-a");
@@ -233,26 +233,26 @@ TEST_F(TApp, CheckName) {
     auto pos1 = app.add_option("pos1", x);
     auto pos2 = app.add_option("pOs2", y);
 
-    EXPECT_TRUE(long1->check_name("--long1"));
-    EXPECT_FALSE(long1->check_name("--lonG1"));
+    CHECK(long1->check_name("--long1"));
+    CHECK(!long1->check_name("--lonG1"));
 
-    EXPECT_TRUE(long2->check_name("--Long2"));
-    EXPECT_FALSE(long2->check_name("--long2"));
+    CHECK(long2->check_name("--Long2"));
+    CHECK(!long2->check_name("--long2"));
 
-    EXPECT_TRUE(short1->check_name("-a"));
-    EXPECT_FALSE(short1->check_name("-A"));
+    CHECK(short1->check_name("-a"));
+    CHECK(!short1->check_name("-A"));
 
-    EXPECT_TRUE(short2->check_name("-B"));
-    EXPECT_FALSE(short2->check_name("-b"));
+    CHECK(short2->check_name("-B"));
+    CHECK(!short2->check_name("-b"));
 
-    EXPECT_TRUE(pos1->check_name("pos1"));
-    EXPECT_FALSE(pos1->check_name("poS1"));
+    CHECK(pos1->check_name("pos1"));
+    CHECK(!pos1->check_name("poS1"));
 
-    EXPECT_TRUE(pos2->check_name("pOs2"));
-    EXPECT_FALSE(pos2->check_name("pos2"));
+    CHECK(pos2->check_name("pOs2"));
+    CHECK(!pos2->check_name("pos2"));
 }
 
-TEST_F(TApp, CheckNameNoCase) {
+TEST_CASE_METHOD(TApp, "CheckNameNoCase", "[creation]") {
     auto long1 = app.add_flag("--long1")->ignore_case();
     auto long2 = app.add_flag("--Long2")->ignore_case();
     auto short1 = app.add_flag("-a")->ignore_case();
@@ -261,26 +261,26 @@ TEST_F(TApp, CheckNameNoCase) {
     auto pos1 = app.add_option("pos1", x)->ignore_case();
     auto pos2 = app.add_option("pOs2", y)->ignore_case();
 
-    EXPECT_TRUE(long1->check_name("--long1"));
-    EXPECT_TRUE(long1->check_name("--lonG1"));
+    CHECK(long1->check_name("--long1"));
+    CHECK(long1->check_name("--lonG1"));
 
-    EXPECT_TRUE(long2->check_name("--Long2"));
-    EXPECT_TRUE(long2->check_name("--long2"));
+    CHECK(long2->check_name("--Long2"));
+    CHECK(long2->check_name("--long2"));
 
-    EXPECT_TRUE(short1->check_name("-a"));
-    EXPECT_TRUE(short1->check_name("-A"));
+    CHECK(short1->check_name("-a"));
+    CHECK(short1->check_name("-A"));
 
-    EXPECT_TRUE(short2->check_name("-B"));
-    EXPECT_TRUE(short2->check_name("-b"));
+    CHECK(short2->check_name("-B"));
+    CHECK(short2->check_name("-b"));
 
-    EXPECT_TRUE(pos1->check_name("pos1"));
-    EXPECT_TRUE(pos1->check_name("poS1"));
+    CHECK(pos1->check_name("pos1"));
+    CHECK(pos1->check_name("poS1"));
 
-    EXPECT_TRUE(pos2->check_name("pOs2"));
-    EXPECT_TRUE(pos2->check_name("pos2"));
+    CHECK(pos2->check_name("pOs2"));
+    CHECK(pos2->check_name("pos2"));
 }
 
-TEST_F(TApp, CheckNameNoUnderscore) {
+TEST_CASE_METHOD(TApp, "CheckNameNoUnderscore", "[creation]") {
     auto long1 = app.add_flag("--longoption1")->ignore_underscore();
     auto long2 = app.add_flag("--long_option2")->ignore_underscore();
 
@@ -288,30 +288,30 @@ TEST_F(TApp, CheckNameNoUnderscore) {
     auto pos1 = app.add_option("pos_option_1", x)->ignore_underscore();
     auto pos2 = app.add_option("posoption2", y)->ignore_underscore();
 
-    EXPECT_TRUE(long1->check_name("--long_option1"));
-    EXPECT_TRUE(long1->check_name("--longoption_1"));
-    EXPECT_TRUE(long1->check_name("--longoption1"));
-    EXPECT_TRUE(long1->check_name("--long__opt_ion__1"));
-    EXPECT_TRUE(long1->check_name("--__l_o_n_g_o_p_t_i_o_n_1"));
+    CHECK(long1->check_name("--long_option1"));
+    CHECK(long1->check_name("--longoption_1"));
+    CHECK(long1->check_name("--longoption1"));
+    CHECK(long1->check_name("--long__opt_ion__1"));
+    CHECK(long1->check_name("--__l_o_n_g_o_p_t_i_o_n_1"));
 
-    EXPECT_TRUE(long2->check_name("--long_option2"));
-    EXPECT_TRUE(long2->check_name("--longoption2"));
-    EXPECT_TRUE(long2->check_name("--longoption_2"));
-    EXPECT_TRUE(long2->check_name("--long__opt_ion__2"));
-    EXPECT_TRUE(long2->check_name("--__l_o_n_go_p_t_i_o_n_2__"));
+    CHECK(long2->check_name("--long_option2"));
+    CHECK(long2->check_name("--longoption2"));
+    CHECK(long2->check_name("--longoption_2"));
+    CHECK(long2->check_name("--long__opt_ion__2"));
+    CHECK(long2->check_name("--__l_o_n_go_p_t_i_o_n_2__"));
 
-    EXPECT_TRUE(pos1->check_name("pos_option1"));
-    EXPECT_TRUE(pos1->check_name("pos_option_1"));
-    EXPECT_TRUE(pos1->check_name("pos_o_p_t_i_on_1"));
-    EXPECT_TRUE(pos1->check_name("posoption1"));
+    CHECK(pos1->check_name("pos_option1"));
+    CHECK(pos1->check_name("pos_option_1"));
+    CHECK(pos1->check_name("pos_o_p_t_i_on_1"));
+    CHECK(pos1->check_name("posoption1"));
 
-    EXPECT_TRUE(pos2->check_name("pos_option2"));
-    EXPECT_TRUE(pos2->check_name("pos_option_2"));
-    EXPECT_TRUE(pos2->check_name("pos_o_p_t_i_on_2"));
-    EXPECT_TRUE(pos2->check_name("posoption2"));
+    CHECK(pos2->check_name("pos_option2"));
+    CHECK(pos2->check_name("pos_option_2"));
+    CHECK(pos2->check_name("pos_o_p_t_i_on_2"));
+    CHECK(pos2->check_name("posoption2"));
 }
 
-TEST_F(TApp, CheckNameNoCaseNoUnderscore) {
+TEST_CASE_METHOD(TApp, "CheckNameNoCaseNoUnderscore", "[creation]") {
     auto long1 = app.add_flag("--LongoptioN1")->ignore_underscore()->ignore_case();
     auto long2 = app.add_flag("--long_Option2")->ignore_case()->ignore_underscore();
 
@@ -319,85 +319,85 @@ TEST_F(TApp, CheckNameNoCaseNoUnderscore) {
     auto pos1 = app.add_option("pos_Option_1", x)->ignore_underscore()->ignore_case();
     auto pos2 = app.add_option("posOption2", y)->ignore_case()->ignore_underscore();
 
-    EXPECT_TRUE(long1->check_name("--Long_Option1"));
-    EXPECT_TRUE(long1->check_name("--lONgoption_1"));
-    EXPECT_TRUE(long1->check_name("--LongOption1"));
-    EXPECT_TRUE(long1->check_name("--long__Opt_ion__1"));
-    EXPECT_TRUE(long1->check_name("--__l_o_N_g_o_P_t_i_O_n_1"));
+    CHECK(long1->check_name("--Long_Option1"));
+    CHECK(long1->check_name("--lONgoption_1"));
+    CHECK(long1->check_name("--LongOption1"));
+    CHECK(long1->check_name("--long__Opt_ion__1"));
+    CHECK(long1->check_name("--__l_o_N_g_o_P_t_i_O_n_1"));
 
-    EXPECT_TRUE(long2->check_name("--long_Option2"));
-    EXPECT_TRUE(long2->check_name("--LongOption2"));
-    EXPECT_TRUE(long2->check_name("--longOPTION_2"));
-    EXPECT_TRUE(long2->check_name("--long__OPT_ion__2"));
-    EXPECT_TRUE(long2->check_name("--__l_o_n_GO_p_t_i_o_n_2__"));
+    CHECK(long2->check_name("--long_Option2"));
+    CHECK(long2->check_name("--LongOption2"));
+    CHECK(long2->check_name("--longOPTION_2"));
+    CHECK(long2->check_name("--long__OPT_ion__2"));
+    CHECK(long2->check_name("--__l_o_n_GO_p_t_i_o_n_2__"));
 
-    EXPECT_TRUE(pos1->check_name("POS_Option1"));
-    EXPECT_TRUE(pos1->check_name("pos_option_1"));
-    EXPECT_TRUE(pos1->check_name("pos_o_p_t_i_on_1"));
-    EXPECT_TRUE(pos1->check_name("posoption1"));
+    CHECK(pos1->check_name("POS_Option1"));
+    CHECK(pos1->check_name("pos_option_1"));
+    CHECK(pos1->check_name("pos_o_p_t_i_on_1"));
+    CHECK(pos1->check_name("posoption1"));
 
-    EXPECT_TRUE(pos2->check_name("pos_option2"));
-    EXPECT_TRUE(pos2->check_name("pos_OPTION_2"));
-    EXPECT_TRUE(pos2->check_name("poS_o_p_T_I_on_2"));
-    EXPECT_TRUE(pos2->check_name("PosOption2"));
+    CHECK(pos2->check_name("pos_option2"));
+    CHECK(pos2->check_name("pos_OPTION_2"));
+    CHECK(pos2->check_name("poS_o_p_T_I_on_2"));
+    CHECK(pos2->check_name("PosOption2"));
 }
 
-TEST_F(TApp, PreSpaces) {
+TEST_CASE_METHOD(TApp, "PreSpaces", "[creation]") {
     int x{0};
     auto myapp = app.add_option(" -a, --long, other", x);
 
-    EXPECT_TRUE(myapp->check_lname("long"));
-    EXPECT_TRUE(myapp->check_sname("a"));
-    EXPECT_TRUE(myapp->check_name("other"));
+    CHECK(myapp->check_lname("long"));
+    CHECK(myapp->check_sname("a"));
+    CHECK(myapp->check_name("other"));
 }
 
-TEST_F(TApp, AllSpaces) {
+TEST_CASE_METHOD(TApp, "AllSpaces", "[creation]") {
     int x{0};
     auto myapp = app.add_option(" -a , --long , other ", x);
 
-    EXPECT_TRUE(myapp->check_lname("long"));
-    EXPECT_TRUE(myapp->check_sname("a"));
-    EXPECT_TRUE(myapp->check_name("other"));
+    CHECK(myapp->check_lname("long"));
+    CHECK(myapp->check_sname("a"));
+    CHECK(myapp->check_name("other"));
 }
 
-TEST_F(TApp, OptionFromDefaults) {
+TEST_CASE_METHOD(TApp, "OptionFromDefaults", "[creation]") {
     app.option_defaults()->required();
 
     // Options should remember defaults
     int x{0};
     auto opt = app.add_option("--simple", x);
-    EXPECT_TRUE(opt->get_required());
+    CHECK(opt->get_required());
 
     // Flags cannot be required
     auto flag = app.add_flag("--other");
-    EXPECT_FALSE(flag->get_required());
+    CHECK(!flag->get_required());
 
     app.option_defaults()->required(false);
     auto opt2 = app.add_option("--simple2", x);
-    EXPECT_FALSE(opt2->get_required());
+    CHECK(!opt2->get_required());
 
     app.option_defaults()->required()->ignore_case();
 
     auto opt3 = app.add_option("--simple3", x);
-    EXPECT_TRUE(opt3->get_required());
-    EXPECT_TRUE(opt3->get_ignore_case());
+    CHECK(opt3->get_required());
+    CHECK(opt3->get_ignore_case());
 
     app.option_defaults()->required()->ignore_underscore();
 
     auto opt4 = app.add_option("--simple4", x);
-    EXPECT_TRUE(opt4->get_required());
-    EXPECT_TRUE(opt4->get_ignore_underscore());
+    CHECK(opt4->get_required());
+    CHECK(opt4->get_ignore_underscore());
 }
 
-TEST_F(TApp, OptionFromDefaultsSubcommands) {
+TEST_CASE_METHOD(TApp, "OptionFromDefaultsSubcommands", "[creation]") {
     // Initial defaults
-    EXPECT_FALSE(app.option_defaults()->get_required());
-    EXPECT_EQ(app.option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::Throw);
-    EXPECT_FALSE(app.option_defaults()->get_ignore_case());
-    EXPECT_FALSE(app.option_defaults()->get_ignore_underscore());
-    EXPECT_FALSE(app.option_defaults()->get_disable_flag_override());
-    EXPECT_TRUE(app.option_defaults()->get_configurable());
-    EXPECT_EQ(app.option_defaults()->get_group(), "Options");
+    CHECK(!app.option_defaults()->get_required());
+    CHECK(CLI::MultiOptionPolicy::Throw == app.option_defaults()->get_multi_option_policy());
+    CHECK(!app.option_defaults()->get_ignore_case());
+    CHECK(!app.option_defaults()->get_ignore_underscore());
+    CHECK(!app.option_defaults()->get_disable_flag_override());
+    CHECK(app.option_defaults()->get_configurable());
+    CHECK("Options" == app.option_defaults()->get_group());
 
     app.option_defaults()
         ->required()
@@ -410,55 +410,55 @@ TEST_F(TApp, OptionFromDefaultsSubcommands) {
 
     auto app2 = app.add_subcommand("app2");
 
-    EXPECT_TRUE(app2->option_defaults()->get_required());
-    EXPECT_EQ(app2->option_defaults()->get_multi_option_policy(), CLI::MultiOptionPolicy::TakeLast);
-    EXPECT_TRUE(app2->option_defaults()->get_ignore_case());
-    EXPECT_TRUE(app2->option_defaults()->get_ignore_underscore());
-    EXPECT_FALSE(app2->option_defaults()->get_configurable());
-    EXPECT_TRUE(app.option_defaults()->get_disable_flag_override());
-    EXPECT_EQ(app2->option_defaults()->get_group(), "Something");
+    CHECK(app2->option_defaults()->get_required());
+    CHECK(CLI::MultiOptionPolicy::TakeLast == app2->option_defaults()->get_multi_option_policy());
+    CHECK(app2->option_defaults()->get_ignore_case());
+    CHECK(app2->option_defaults()->get_ignore_underscore());
+    CHECK(!app2->option_defaults()->get_configurable());
+    CHECK(app.option_defaults()->get_disable_flag_override());
+    CHECK("Something" == app2->option_defaults()->get_group());
 }
 
-TEST_F(TApp, GetNameCheck) {
+TEST_CASE_METHOD(TApp, "GetNameCheck", "[creation]") {
     int x{0};
     auto a = app.add_flag("--that");
     auto b = app.add_flag("-x");
     auto c = app.add_option("pos", x);
     auto d = app.add_option("one,-o,--other", x);
 
-    EXPECT_EQ(a->get_name(false, true), "--that");
-    EXPECT_EQ(b->get_name(false, true), "-x");
-    EXPECT_EQ(c->get_name(false, true), "pos");
+    CHECK("--that" == a->get_name(false, true));
+    CHECK("-x" == b->get_name(false, true));
+    CHECK("pos" == c->get_name(false, true));
 
-    EXPECT_EQ(d->get_name(), "--other");
-    EXPECT_EQ(d->get_name(false, false), "--other");
-    EXPECT_EQ(d->get_name(false, true), "-o,--other");
-    EXPECT_EQ(d->get_name(true, true), "one,-o,--other");
-    EXPECT_EQ(d->get_name(true, false), "one");
+    CHECK("--other" == d->get_name());
+    CHECK("--other" == d->get_name(false, false));
+    CHECK("-o,--other" == d->get_name(false, true));
+    CHECK("one,-o,--other" == d->get_name(true, true));
+    CHECK("one" == d->get_name(true, false));
 }
 
-TEST_F(TApp, SubcommandDefaults) {
+TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     // allow_extras, prefix_command, ignore_case, fallthrough, group, min/max subcommand, validate_positionals
 
     // Initial defaults
-    EXPECT_FALSE(app.get_allow_extras());
-    EXPECT_FALSE(app.get_prefix_command());
-    EXPECT_FALSE(app.get_immediate_callback());
-    EXPECT_FALSE(app.get_ignore_case());
-    EXPECT_FALSE(app.get_ignore_underscore());
+    CHECK(!app.get_allow_extras());
+    CHECK(!app.get_prefix_command());
+    CHECK(!app.get_immediate_callback());
+    CHECK(!app.get_ignore_case());
+    CHECK(!app.get_ignore_underscore());
 #ifdef _WIN32
-    EXPECT_TRUE(app.get_allow_windows_style_options());
+    CHECK(app.get_allow_windows_style_options());
 #else
-    EXPECT_FALSE(app.get_allow_windows_style_options());
+    CHECK(!app.get_allow_windows_style_options());
 #endif
-    EXPECT_FALSE(app.get_fallthrough());
-    EXPECT_FALSE(app.get_configurable());
-    EXPECT_FALSE(app.get_validate_positionals());
+    CHECK(!app.get_fallthrough());
+    CHECK(!app.get_configurable());
+    CHECK(!app.get_validate_positionals());
 
-    EXPECT_EQ(app.get_footer(), "");
-    EXPECT_EQ(app.get_group(), "Subcommands");
-    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
+    CHECK("" == app.get_footer());
+    CHECK("Subcommands" == app.get_group());
+    CHECK(0u == app.get_require_subcommand_min());
+    CHECK(0u == app.get_require_subcommand_max());
 
     app.allow_extras();
     app.prefix_command();
@@ -481,57 +481,57 @@ TEST_F(TApp, SubcommandDefaults) {
     auto app2 = app.add_subcommand("app2");
 
     // Initial defaults
-    EXPECT_TRUE(app2->get_allow_extras());
-    EXPECT_TRUE(app2->get_prefix_command());
-    EXPECT_TRUE(app2->get_immediate_callback());
-    EXPECT_TRUE(app2->get_ignore_case());
-    EXPECT_TRUE(app2->get_ignore_underscore());
+    CHECK(app2->get_allow_extras());
+    CHECK(app2->get_prefix_command());
+    CHECK(app2->get_immediate_callback());
+    CHECK(app2->get_ignore_case());
+    CHECK(app2->get_ignore_underscore());
 #ifdef _WIN32
-    EXPECT_FALSE(app2->get_allow_windows_style_options());
+    CHECK(!app2->get_allow_windows_style_options());
 #else
-    EXPECT_TRUE(app2->get_allow_windows_style_options());
+    CHECK(app2->get_allow_windows_style_options());
 #endif
-    EXPECT_TRUE(app2->get_fallthrough());
-    EXPECT_TRUE(app2->get_validate_positionals());
-    EXPECT_TRUE(app2->get_configurable());
-    EXPECT_EQ(app2->get_footer(), "footy");
-    EXPECT_EQ(app2->get_group(), "Stuff");
-    EXPECT_EQ(app2->get_require_subcommand_min(), 0u);
-    EXPECT_EQ(app2->get_require_subcommand_max(), 3u);
+    CHECK(app2->get_fallthrough());
+    CHECK(app2->get_validate_positionals());
+    CHECK(app2->get_configurable());
+    CHECK("footy" == app2->get_footer());
+    CHECK("Stuff" == app2->get_group());
+    CHECK(0u == app2->get_require_subcommand_min());
+    CHECK(3u == app2->get_require_subcommand_max());
 }
 
-TEST_F(TApp, SubcommandMinMax) {
+TEST_CASE_METHOD(TApp, "SubcommandMinMax", "[creation]") {
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
+    CHECK(0u == app.get_require_subcommand_min());
+    CHECK(0u == app.get_require_subcommand_max());
 
     app.require_subcommand();
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 1u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
+    CHECK(1u == app.get_require_subcommand_min());
+    CHECK(0u == app.get_require_subcommand_max());
 
     app.require_subcommand(2);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 2u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 2u);
+    CHECK(2u == app.get_require_subcommand_min());
+    CHECK(2u == app.get_require_subcommand_max());
 
     app.require_subcommand(0);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 0u);
+    CHECK(0u == app.get_require_subcommand_min());
+    CHECK(0u == app.get_require_subcommand_max());
 
     app.require_subcommand(-2);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 0u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 2u);
+    CHECK(0u == app.get_require_subcommand_min());
+    CHECK(2u == app.get_require_subcommand_max());
 
     app.require_subcommand(3, 7);
 
-    EXPECT_EQ(app.get_require_subcommand_min(), 3u);
-    EXPECT_EQ(app.get_require_subcommand_max(), 7u);
+    CHECK(3u == app.get_require_subcommand_min());
+    CHECK(7u == app.get_require_subcommand_max());
 }
 
-TEST_F(TApp, GetOptionList) {
+TEST_CASE_METHOD(TApp, "GetOptionList", "[creation]") {
     int two{0};
     auto flag = app.add_flag("--one");
     auto opt = app.add_option("--two", two);
@@ -539,36 +539,36 @@ TEST_F(TApp, GetOptionList) {
     const CLI::App &const_app = app;  // const alias to force use of const-methods
     std::vector<const CLI::Option *> opt_list = const_app.get_options();
 
-    ASSERT_EQ(opt_list.size(), static_cast<std::size_t>(3));
-    EXPECT_EQ(opt_list.at(1), flag);
-    EXPECT_EQ(opt_list.at(2), opt);
+    REQUIRE(static_cast<std::size_t>(3) == opt_list.size());
+    CHECK(flag == opt_list.at(1));
+    CHECK(opt == opt_list.at(2));
 
     std::vector<CLI::Option *> nonconst_opt_list = app.get_options();
     for(std::size_t i = 0; i < opt_list.size(); ++i) {
-        EXPECT_EQ(nonconst_opt_list.at(i), opt_list.at(i));
+        CHECK(opt_list.at(i) == nonconst_opt_list.at(i));
     }
 }
 
-TEST(ValidatorTests, TestValidatorCreation) {
+TEST_CASE("ValidatorTests: TestValidatorCreation", "[creation]") {
     std::function<std::string(std::string &)> op1 = [](std::string &val) {
         return (val.size() >= 5) ? std::string{} : val;
     };
     CLI::Validator V(op1, "", "size");
 
-    EXPECT_EQ(V.get_name(), "size");
+    CHECK("size" == V.get_name());
     V.name("harry");
-    EXPECT_EQ(V.get_name(), "harry");
-    EXPECT_TRUE(V.get_active());
+    CHECK("harry" == V.get_name());
+    CHECK(V.get_active());
 
-    EXPECT_EQ(V("test"), "test");
-    EXPECT_EQ(V("test5"), std::string{});
+    CHECK("test" == V("test"));
+    CHECK(std::string{} == V("test5"));
 
-    EXPECT_EQ(V.get_description(), std::string{});
+    CHECK(std::string{} == V.get_description());
     V.description("this is a description");
-    EXPECT_EQ(V.get_description(), "this is a description");
+    CHECK("this is a description" == V.get_description());
 }
 
-TEST(ValidatorTests, TestValidatorOps) {
+TEST_CASE("ValidatorTests: TestValidatorOps", "[creation]") {
     std::function<std::string(std::string &)> op1 = [](std::string &val) {
         return (val.size() >= 5) ? std::string{} : val;
     };
@@ -593,72 +593,72 @@ TEST(ValidatorTests, TestValidatorOps) {
     std::string eight(8, 'a');
     std::string nine(9, 'a');
     std::string ten(10, 'a');
-    EXPECT_TRUE(V1(five).empty());
-    EXPECT_FALSE(V1(four).empty());
+    CHECK(V1(five).empty());
+    CHECK(!V1(four).empty());
 
-    EXPECT_TRUE(V2(nine).empty());
-    EXPECT_FALSE(V2(eight).empty());
+    CHECK(V2(nine).empty());
+    CHECK(!V2(eight).empty());
 
-    EXPECT_TRUE(V3(two).empty());
-    EXPECT_FALSE(V3(four).empty());
+    CHECK(V3(two).empty());
+    CHECK(!V3(four).empty());
 
-    EXPECT_TRUE(V4(eight).empty());
-    EXPECT_FALSE(V4(ten).empty());
+    CHECK(V4(eight).empty());
+    CHECK(!V4(ten).empty());
 
     auto V1a2 = V1 & V2;
-    EXPECT_EQ(V1a2.get_description(), "(SIZE >= 5) AND (SIZE >= 9)");
-    EXPECT_FALSE(V1a2(five).empty());
-    EXPECT_TRUE(V1a2(nine).empty());
+    CHECK("(SIZE >= 5) AND (SIZE >= 9)" == V1a2.get_description());
+    CHECK(!V1a2(five).empty());
+    CHECK(V1a2(nine).empty());
 
     auto V1a4 = V1 & V4;
-    EXPECT_EQ(V1a4.get_description(), "(SIZE >= 5) AND (SIZE <= 9)");
-    EXPECT_TRUE(V1a4(five).empty());
-    EXPECT_TRUE(V1a4(eight).empty());
-    EXPECT_FALSE(V1a4(ten).empty());
-    EXPECT_FALSE(V1a4(four).empty());
+    CHECK("(SIZE >= 5) AND (SIZE <= 9)" == V1a4.get_description());
+    CHECK(V1a4(five).empty());
+    CHECK(V1a4(eight).empty());
+    CHECK(!V1a4(ten).empty());
+    CHECK(!V1a4(four).empty());
 
     auto V1o3 = V1 | V3;
-    EXPECT_EQ(V1o3.get_description(), "(SIZE >= 5) OR (SIZE < 3)");
-    EXPECT_TRUE(V1o3(two).empty());
-    EXPECT_TRUE(V1o3(eight).empty());
-    EXPECT_TRUE(V1o3(ten).empty());
-    EXPECT_TRUE(V1o3(two).empty());
-    EXPECT_FALSE(V1o3(four).empty());
+    CHECK("(SIZE >= 5) OR (SIZE < 3)" == V1o3.get_description());
+    CHECK(V1o3(two).empty());
+    CHECK(V1o3(eight).empty());
+    CHECK(V1o3(ten).empty());
+    CHECK(V1o3(two).empty());
+    CHECK(!V1o3(four).empty());
 
     auto m1 = V1o3 & V4;
-    EXPECT_EQ(m1.get_description(), "((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)");
-    EXPECT_TRUE(m1(two).empty());
-    EXPECT_TRUE(m1(eight).empty());
-    EXPECT_FALSE(m1(ten).empty());
-    EXPECT_TRUE(m1(two).empty());
-    EXPECT_TRUE(m1(five).empty());
-    EXPECT_FALSE(m1(four).empty());
+    CHECK("((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)" == m1.get_description());
+    CHECK(m1(two).empty());
+    CHECK(m1(eight).empty());
+    CHECK(!m1(ten).empty());
+    CHECK(m1(two).empty());
+    CHECK(m1(five).empty());
+    CHECK(!m1(four).empty());
 
     auto m2 = m1 & V2;
-    EXPECT_EQ(m2.get_description(), "(((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)");
-    EXPECT_FALSE(m2(two).empty());
-    EXPECT_FALSE(m2(eight).empty());
-    EXPECT_FALSE(m2(ten).empty());
-    EXPECT_FALSE(m2(two).empty());
-    EXPECT_TRUE(m2(nine).empty());
-    EXPECT_FALSE(m2(four).empty());
+    CHECK("(((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)" == m2.get_description());
+    CHECK(!m2(two).empty());
+    CHECK(!m2(eight).empty());
+    CHECK(!m2(ten).empty());
+    CHECK(!m2(two).empty());
+    CHECK(m2(nine).empty());
+    CHECK(!m2(four).empty());
 
     auto m3 = m2 | V3;
-    EXPECT_EQ(m3.get_description(), "((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)) OR (SIZE < 3)");
-    EXPECT_TRUE(m3(two).empty());
-    EXPECT_FALSE(m3(eight).empty());
-    EXPECT_TRUE(m3(nine).empty());
-    EXPECT_FALSE(m3(four).empty());
+    CHECK("((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9)) OR (SIZE < 3)" == m3.get_description());
+    CHECK(m3(two).empty());
+    CHECK(!m3(eight).empty());
+    CHECK(m3(nine).empty());
+    CHECK(!m3(four).empty());
 
     auto m4 = V3 | m2;
-    EXPECT_EQ(m4.get_description(), "(SIZE < 3) OR ((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9))");
-    EXPECT_TRUE(m4(two).empty());
-    EXPECT_FALSE(m4(eight).empty());
-    EXPECT_TRUE(m4(nine).empty());
-    EXPECT_FALSE(m4(four).empty());
+    CHECK("(SIZE < 3) OR ((((SIZE >= 5) OR (SIZE < 3)) AND (SIZE <= 9)) AND (SIZE >= 9))" == m4.get_description());
+    CHECK(m4(two).empty());
+    CHECK(!m4(eight).empty());
+    CHECK(m4(nine).empty());
+    CHECK(!m4(four).empty());
 }
 
-TEST(ValidatorTests, TestValidatorNegation) {
+TEST_CASE("ValidatorTests: TestValidatorNegation", "[creation]") {
 
     std::function<std::string(std::string &)> op1 = [](std::string &val) {
         return (val.size() >= 5) ? std::string{} : val;
@@ -669,21 +669,21 @@ TEST(ValidatorTests, TestValidatorNegation) {
     std::string four(4, 'a');
     std::string five(5, 'a');
 
-    EXPECT_TRUE(V1(five).empty());
-    EXPECT_FALSE(V1(four).empty());
+    CHECK(V1(five).empty());
+    CHECK(!V1(four).empty());
 
     auto V2 = !V1;
-    EXPECT_FALSE(V2(five).empty());
-    EXPECT_TRUE(V2(four).empty());
-    EXPECT_EQ(V2.get_description(), "NOT SIZE >= 5");
+    CHECK(!V2(five).empty());
+    CHECK(V2(four).empty());
+    CHECK("NOT SIZE >= 5" == V2.get_description());
 
     V2.active(false);
-    EXPECT_TRUE(V2(five).empty());
-    EXPECT_TRUE(V2(four).empty());
-    EXPECT_TRUE(V2.get_description().empty());
+    CHECK(V2(five).empty());
+    CHECK(V2(four).empty());
+    CHECK(V2.get_description().empty());
 }
 
-TEST(ValidatorTests, ValidatorDefaults) {
+TEST_CASE("ValidatorTests: ValidatorDefaults", "[creation]") {
 
     CLI::Validator V1{};
 
@@ -691,23 +691,23 @@ TEST(ValidatorTests, ValidatorDefaults) {
     std::string five(5, 'a');
 
     // make sure this doesn't generate a seg fault or something
-    EXPECT_TRUE(V1(five).empty());
-    EXPECT_TRUE(V1(four).empty());
+    CHECK(V1(five).empty());
+    CHECK(V1(four).empty());
 
-    EXPECT_TRUE(V1.get_name().empty());
-    EXPECT_TRUE(V1.get_description().empty());
-    EXPECT_TRUE(V1.get_active());
-    EXPECT_TRUE(V1.get_modifying());
+    CHECK(V1.get_name().empty());
+    CHECK(V1.get_description().empty());
+    CHECK(V1.get_active());
+    CHECK(V1.get_modifying());
 
     CLI::Validator V2{"check"};
     // make sure this doesn't generate a seg fault or something
-    EXPECT_TRUE(V2(five).empty());
-    EXPECT_TRUE(V2(four).empty());
+    CHECK(V2(five).empty());
+    CHECK(V2(four).empty());
 
-    EXPECT_TRUE(V2.get_name().empty());
-    EXPECT_EQ(V2.get_description(), "check");
-    EXPECT_TRUE(V2.get_active());
-    EXPECT_TRUE(V2.get_modifying());
+    CHECK(V2.get_name().empty());
+    CHECK("check" == V2.get_description());
+    CHECK(V2.get_active());
+    CHECK(V2.get_modifying());
     // This class only support streaming in, not out
 }
 
@@ -734,7 +734,7 @@ std::istream &operator>>(std::istream &in, Unstreamable &value) {
 static_assert(CLI::detail::is_istreamable<Unstreamable>::value,
               "Unstreamable type is still unstreamable and it should be");
 
-TEST_F(TApp, MakeUnstreamableOptions) {
+TEST_CASE_METHOD(TApp, "MakeUnstreamableOptions", "[creation]") {
     Unstreamable value;
     app.add_option("--value", value);
 
@@ -749,10 +749,10 @@ TEST_F(TApp, MakeUnstreamableOptions) {
 
     args = {"--value", "45"};
     run();
-    EXPECT_EQ(value.get_x(), 45);
+    CHECK(45 == value.get_x());
 
     args = {"--values", "45", "27", "34"};
     run();
-    EXPECT_EQ(values.size(), 3u);
-    EXPECT_EQ(values[2].get_x(), 34);
+    CHECK(3u == values.size());
+    CHECK(34 == values[2].get_x());
 }

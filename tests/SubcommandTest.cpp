@@ -6,59 +6,55 @@
 
 #include "app_helper.hpp"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-
-using ::testing::HasSubstr;
-using ::testing::Not;
+using Catch::Matchers::Contains;
 
 using vs_t = std::vector<std::string>;
 
-TEST_F(TApp, BasicSubcommands) {
+TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    EXPECT_EQ(sub1->get_parent(), &app);
+    CHECK(&app == sub1->get_parent());
 
-    EXPECT_EQ(sub1, app.get_subcommand(sub1));
-    EXPECT_EQ(sub1, app.get_subcommand("sub1"));
-    EXPECT_THROW(app.get_subcommand("sub3"), CLI::OptionNotFound);
+    CHECK(app.get_subcommand(sub1) == sub1);
+    CHECK(app.get_subcommand("sub1") == sub1);
+    CHECK_THROWS_AS(app.get_subcommand("sub3"), CLI::OptionNotFound);
 
     run();
-    EXPECT_EQ(0u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().size() == 0u);
 
     args = {"sub1"};
     run();
-    EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ(1u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().at(0) == sub1);
+    CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    EXPECT_EQ(0u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().size() == 0u);
 
     args = {"sub2"};
     run();
-    EXPECT_EQ(1u, app.get_subcommands().size());
-    EXPECT_EQ(sub2, app.get_subcommands().at(0));
+    CHECK(app.get_subcommands().size() == 1u);
+    CHECK(app.get_subcommands().at(0) == sub2);
 
     args = {"SUb2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"SUb2"};
     try {
         run();
     } catch(const CLI::ExtrasError &e) {
-        EXPECT_THAT(e.what(), HasSubstr("SUb2"));
+        CHECK_THAT(e.what(), Contains("SUb2"));
     }
 
     args = {"sub1", "extra"};
     try {
         run();
     } catch(const CLI::ExtrasError &e) {
-        EXPECT_THAT(e.what(), HasSubstr("extra"));
+        CHECK_THAT(e.what(), Contains("extra"));
     }
 }
 
-TEST_F(TApp, MultiSubFallthrough) {
+TEST_CASE_METHOD(TApp, "MultiSubFallthrough", "[subcom]") {
 
     // No explicit fallthrough
     auto sub1 = app.add_subcommand("sub1");
@@ -66,15 +62,15 @@ TEST_F(TApp, MultiSubFallthrough) {
 
     args = {"sub1", "sub2"};
     run();
-    EXPECT_TRUE(app.got_subcommand("sub1"));
-    EXPECT_TRUE(app.got_subcommand(sub1));
-    EXPECT_TRUE(*sub1);
-    EXPECT_TRUE(sub1->parsed());
-    EXPECT_EQ(sub1->count(), 1u);
+    CHECK(app.got_subcommand("sub1"));
+    CHECK(app.got_subcommand(sub1));
+    CHECK(*sub1);
+    CHECK(sub1->parsed());
+    CHECK(1u == sub1->count());
 
-    EXPECT_TRUE(app.got_subcommand("sub2"));
-    EXPECT_TRUE(app.got_subcommand(sub2));
-    EXPECT_TRUE(*sub2);
+    CHECK(app.got_subcommand("sub2"));
+    CHECK(app.got_subcommand(sub2));
+    CHECK(*sub2);
 
     app.require_subcommand();
     run();
@@ -83,34 +79,34 @@ TEST_F(TApp, MultiSubFallthrough) {
     run();
 
     app.require_subcommand(1);
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"sub1"};
     run();
 
-    EXPECT_TRUE(app.got_subcommand("sub1"));
-    EXPECT_FALSE(app.got_subcommand("sub2"));
+    CHECK(app.got_subcommand("sub1"));
+    CHECK(!app.got_subcommand("sub2"));
 
-    EXPECT_TRUE(*sub1);
-    EXPECT_FALSE(*sub2);
-    EXPECT_FALSE(sub2->parsed());
-    EXPECT_EQ(sub2->count(), 0u);
+    CHECK(*sub1);
+    CHECK(!*sub2);
+    CHECK(!sub2->parsed());
+    CHECK(0u == sub2->count());
 
-    EXPECT_THROW(app.got_subcommand("sub3"), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app.got_subcommand("sub3"), CLI::OptionNotFound);
 }
 
-TEST_F(TApp, CrazyNameSubcommand) {
+TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     // name can be set to whatever
-    EXPECT_NO_THROW(sub1->name("crazy name with spaces"));
+    CHECK_NOTHROW(sub1->name("crazy name with spaces"));
     args = {"crazy name with spaces"};
     run();
 
-    EXPECT_TRUE(app.got_subcommand("crazy name with spaces"));
-    EXPECT_EQ(sub1->count(), 1u);
+    CHECK(app.got_subcommand("crazy name with spaces"));
+    CHECK(1u == sub1->count());
 }
 
-TEST_F(TApp, RequiredAndSubcommands) {  // #23
+TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {
 
     std::string baz;
     app.add_option("baz", baz, "Baz Description", true)->required();
@@ -118,26 +114,26 @@ TEST_F(TApp, RequiredAndSubcommands) {  // #23
     auto bar = app.add_subcommand("bar");
 
     args = {"bar", "foo"};
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(*foo);
-    EXPECT_FALSE(*bar);
-    EXPECT_EQ(baz, "bar");
+    REQUIRE_NOTHROW(run());
+    CHECK(*foo);
+    CHECK(!*bar);
+    CHECK("bar" == baz);
 
     args = {"foo"};
-    ASSERT_NO_THROW(run());
-    EXPECT_FALSE(*foo);
-    EXPECT_EQ(baz, "foo");
+    REQUIRE_NOTHROW(run());
+    CHECK(!*foo);
+    CHECK("foo" == baz);
 
     args = {"foo", "foo"};
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(*foo);
-    EXPECT_EQ(baz, "foo");
+    REQUIRE_NOTHROW(run());
+    CHECK(*foo);
+    CHECK("foo" == baz);
 
     args = {"foo", "other"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, RequiredAndSubcomFallthrough) {
+TEST_CASE_METHOD(TApp, "RequiredAndSubcomFallthrough", "[subcom]") {
 
     std::string baz;
     app.add_option("baz", baz)->required();
@@ -147,14 +143,14 @@ TEST_F(TApp, RequiredAndSubcomFallthrough) {
 
     args = {"other", "bar"};
     run();
-    EXPECT_TRUE(bar);
-    EXPECT_EQ(baz, "other");
+    CHECK(bar);
+    CHECK("other" == baz);
 
     args = {"bar", "other2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, FooFooProblem) {
+TEST_CASE_METHOD(TApp, "FooFooProblem", "[subcom]") {
 
     std::string baz_str, other_str;
     auto baz = app.add_option("baz", baz_str);
@@ -163,55 +159,55 @@ TEST_F(TApp, FooFooProblem) {
 
     args = {"foo", "foo"};
     run();
-    EXPECT_TRUE(*foo);
-    EXPECT_FALSE(*baz);
-    EXPECT_TRUE(*other);
-    EXPECT_EQ(baz_str, "");
-    EXPECT_EQ(other_str, "foo");
+    CHECK(*foo);
+    CHECK(!*baz);
+    CHECK(*other);
+    CHECK("" == baz_str);
+    CHECK("foo" == other_str);
 
     baz_str = "";
     other_str = "";
     baz->required();
     run();
-    EXPECT_TRUE(*foo);
-    EXPECT_TRUE(*baz);
-    EXPECT_FALSE(*other);
-    EXPECT_EQ(baz_str, "foo");
-    EXPECT_EQ(other_str, "");
+    CHECK(*foo);
+    CHECK(*baz);
+    CHECK(!*other);
+    CHECK("foo" == baz_str);
+    CHECK("" == other_str);
 }
 
-TEST_F(TApp, DuplicateSubcommands) {
+TEST_CASE_METHOD(TApp, "DuplicateSubcommands", "[subcom]") {
 
     auto foo = app.add_subcommand("foo");
 
     args = {"foo", "foo"};
     run();
-    EXPECT_TRUE(*foo);
-    EXPECT_EQ(foo->count(), 2u);
+    CHECK(*foo);
+    CHECK(2u == foo->count());
 
     args = {"foo", "foo", "foo"};
     run();
-    EXPECT_TRUE(*foo);
-    EXPECT_EQ(foo->count(), 3u);
+    CHECK(*foo);
+    CHECK(3u == foo->count());
 }
 
-TEST_F(TApp, DuplicateSubcommandCallbacks) {
+TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[subcom]") {
 
     auto foo = app.add_subcommand("foo");
     int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
-    EXPECT_TRUE(foo->get_immediate_callback());
+    CHECK(foo->get_immediate_callback());
     args = {"foo", "foo"};
     run();
-    EXPECT_EQ(count, 2);
+    CHECK(2 == count);
     count = 0;
     args = {"foo", "foo", "foo"};
     run();
-    EXPECT_EQ(count, 3);
+    CHECK(3 == count);
 }
 
-TEST_F(TApp, DuplicateSubcommandCallbacksValues) {
+TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacksValues", "[subcom]") {
 
     auto foo = app.add_subcommand("foo");
     int val{0};
@@ -221,19 +217,19 @@ TEST_F(TApp, DuplicateSubcommandCallbacksValues) {
     foo->immediate_callback();
     args = {"foo", "--val=45", "foo", "--val=27"};
     run();
-    EXPECT_EQ(vals.size(), 2u);
-    EXPECT_EQ(vals[0], 45);
-    EXPECT_EQ(vals[1], 27);
+    CHECK(2u == vals.size());
+    CHECK(45 == vals[0]);
+    CHECK(27 == vals[1]);
     vals.clear();
     args = {"foo", "--val=45", "foo", "--val=27", "foo", "--val=36"};
     run();
-    EXPECT_EQ(vals.size(), 3u);
-    EXPECT_EQ(vals[0], 45);
-    EXPECT_EQ(vals[1], 27);
-    EXPECT_EQ(vals[2], 36);
+    CHECK(3u == vals.size());
+    CHECK(45 == vals[0]);
+    CHECK(27 == vals[1]);
+    CHECK(36 == vals[2]);
 }
 
-TEST_F(TApp, Callbacks) {
+TEST_CASE_METHOD(TApp, "Callbacks", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::Success(); });
     auto sub2 = app.add_subcommand("sub2");
@@ -241,12 +237,12 @@ TEST_F(TApp, Callbacks) {
     sub2->callback([&val]() { val = true; });
 
     args = {"sub2"};
-    EXPECT_FALSE(val);
+    CHECK(!val);
     run();
-    EXPECT_TRUE(val);
+    CHECK(val);
 }
 
-TEST_F(TApp, CallbackOrder) {
+TEST_CASE_METHOD(TApp, "CallbackOrder", "[subcom]") {
 
     std::vector<std::string> cb;
     app.parse_complete_callback([&cb]() { cb.push_back("ac1"); });
@@ -281,18 +277,18 @@ TEST_F(TApp, CallbackOrder) {
             "--sub2opt2",
             "val"};
     run();
-    EXPECT_EQ(cb.size(), 8u);
-    EXPECT_EQ(cb[0], "pa-13");
-    EXPECT_EQ(cb[1], "pc1-10");
-    EXPECT_EQ(cb[2], "c1");
-    EXPECT_EQ(cb[3], "pc2-6");
-    EXPECT_EQ(cb[4], "c1");
-    EXPECT_EQ(cb[5], "ac1");
-    EXPECT_EQ(cb[6], "c2");
-    EXPECT_EQ(cb[7], "ac2");
+    CHECK(8u == cb.size());
+    CHECK("pa-13" == cb[0]);
+    CHECK("pc1-10" == cb[1]);
+    CHECK("c1" == cb[2]);
+    CHECK("pc2-6" == cb[3]);
+    CHECK("c1" == cb[4]);
+    CHECK("ac1" == cb[5]);
+    CHECK("c2" == cb[6]);
+    CHECK("ac2" == cb[7]);
 }
 
-TEST_F(TApp, CallbackOrder2) {
+TEST_CASE_METHOD(TApp, "CallbackOrder2", "[subcom]") {
 
     std::vector<std::string> cb;
     app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.push_back("sub1"); });
@@ -301,17 +297,17 @@ TEST_F(TApp, CallbackOrder2) {
 
     args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
     run();
-    EXPECT_EQ(cb.size(), 7u);
-    EXPECT_EQ(cb[0], "sub1");
-    EXPECT_EQ(cb[1], "sub2");
-    EXPECT_EQ(cb[2], "sub3");
-    EXPECT_EQ(cb[3], "sub1");
-    EXPECT_EQ(cb[4], "sub1");
-    EXPECT_EQ(cb[5], "sub2");
-    EXPECT_EQ(cb[6], "sub1");
+    CHECK(7u == cb.size());
+    CHECK("sub1" == cb[0]);
+    CHECK("sub2" == cb[1]);
+    CHECK("sub3" == cb[2]);
+    CHECK("sub1" == cb[3]);
+    CHECK("sub1" == cb[4]);
+    CHECK("sub2" == cb[5]);
+    CHECK("sub1" == cb[6]);
 }
 
-TEST_F(TApp, CallbackOrder2_withFallthrough) {
+TEST_CASE_METHOD(TApp, "CallbackOrder2_withFallthrough", "[subcom]") {
 
     std::vector<std::string> cb;
 
@@ -321,64 +317,64 @@ TEST_F(TApp, CallbackOrder2_withFallthrough) {
 
     args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
     run();
-    EXPECT_EQ(cb.size(), 7u);
-    EXPECT_EQ(cb[0], "sub1");
-    EXPECT_EQ(cb[1], "sub2");
-    EXPECT_EQ(cb[2], "sub3");
-    EXPECT_EQ(cb[3], "sub1");
-    EXPECT_EQ(cb[4], "sub1");
-    EXPECT_EQ(cb[5], "sub2");
-    EXPECT_EQ(cb[6], "sub1");
+    CHECK(7u == cb.size());
+    CHECK("sub1" == cb[0]);
+    CHECK("sub2" == cb[1]);
+    CHECK("sub3" == cb[2]);
+    CHECK("sub1" == cb[3]);
+    CHECK("sub1" == cb[4]);
+    CHECK("sub2" == cb[5]);
+    CHECK("sub1" == cb[6]);
 }
 
-TEST_F(TApp, RuntimeErrorInCallback) {
+TEST_CASE_METHOD(TApp, "RuntimeErrorInCallback", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::RuntimeError(); });
     auto sub2 = app.add_subcommand("sub2");
     sub2->callback([]() { throw CLI::RuntimeError(2); });
 
     args = {"sub1"};
-    EXPECT_THROW(run(), CLI::RuntimeError);
+    CHECK_THROWS_AS(run(), CLI::RuntimeError);
 
     args = {"sub1"};
     try {
         run();
     } catch(const CLI::RuntimeError &e) {
-        EXPECT_EQ(1, e.get_exit_code());
+        CHECK(e.get_exit_code() == 1);
     }
 
     args = {"sub2"};
-    EXPECT_THROW(run(), CLI::RuntimeError);
+    CHECK_THROWS_AS(run(), CLI::RuntimeError);
 
     args = {"sub2"};
     try {
         run();
     } catch(const CLI::RuntimeError &e) {
-        EXPECT_EQ(2, e.get_exit_code());
+        CHECK(e.get_exit_code() == 2);
     }
 }
 
-TEST_F(TApp, NoFallThroughOpts) {
+TEST_CASE_METHOD(TApp, "NoFallThroughOpts", "[subcom]") {
     int val{1};
     app.add_option("--val", val);
 
     app.add_subcommand("sub");
 
     args = {"sub", "--val", "2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, NoFallThroughPositionals) {
+TEST_CASE_METHOD(TApp, "NoFallThroughPositionals", "[subcom]") {
     int val{1};
     app.add_option("val", val);
 
     app.add_subcommand("sub");
 
     args = {"sub", "2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, NoFallThroughOptsWithTerminator) {
+TEST_CASE_METHOD(TApp, "NoFallThroughOptsWithTerminator", "[subcom]") {
     int val{1};
     app.add_option("--val", val);
 
@@ -386,10 +382,10 @@ TEST_F(TApp, NoFallThroughOptsWithTerminator) {
 
     args = {"sub", "++", "--val", "2"};
     run();
-    EXPECT_EQ(val, 2);
+    CHECK(2 == val);
 }
 
-TEST_F(TApp, NoFallThroughPositionalsWithTerminator) {
+TEST_CASE_METHOD(TApp, "NoFallThroughPositionalsWithTerminator", "[subcom]") {
     int val{1};
     app.add_option("val", val);
 
@@ -397,15 +393,15 @@ TEST_F(TApp, NoFallThroughPositionalsWithTerminator) {
 
     args = {"sub", "++", "2"};
     run();
-    EXPECT_EQ(val, 2);
+    CHECK(2 == val);
 
     // try with positional only mark
     args = {"sub", "--", "3"};
     run();
-    EXPECT_EQ(val, 3);
+    CHECK(3 == val);
 }
 
-TEST_F(TApp, NamelessSubComPositionals) {
+TEST_CASE_METHOD(TApp, "NamelessSubComPositionals", "[subcom]") {
 
     auto sub = app.add_subcommand();
     int val{1};
@@ -413,21 +409,21 @@ TEST_F(TApp, NamelessSubComPositionals) {
 
     args = {"2"};
     run();
-    EXPECT_EQ(val, 2);
+    CHECK(2 == val);
 }
 
-TEST_F(TApp, NamelessSubWithSub) {
+TEST_CASE_METHOD(TApp, "NamelessSubWithSub", "[subcom]") {
 
     auto sub = app.add_subcommand();
     auto subsub = sub->add_subcommand("val");
 
     args = {"val"};
     run();
-    EXPECT_TRUE(subsub->parsed());
-    EXPECT_TRUE(app.got_subcommand("val"));
+    CHECK(subsub->parsed());
+    CHECK(app.got_subcommand("val"));
 }
 
-TEST_F(TApp, NamelessSubWithMultipleSub) {
+TEST_CASE_METHOD(TApp, "NamelessSubWithMultipleSub", "[subcom]") {
 
     auto sub1 = app.add_subcommand();
     auto sub2 = app.add_subcommand();
@@ -437,33 +433,33 @@ TEST_F(TApp, NamelessSubWithMultipleSub) {
     auto sub2sub2 = sub2->add_subcommand("val4");
     args = {"val1"};
     run();
-    EXPECT_TRUE(sub1sub1->parsed());
-    EXPECT_TRUE(app.got_subcommand("val1"));
+    CHECK(sub1sub1->parsed());
+    CHECK(app.got_subcommand("val1"));
 
     args = {"val2"};
     run();
-    EXPECT_TRUE(sub1sub2->parsed());
-    EXPECT_TRUE(app.got_subcommand("val2"));
+    CHECK(sub1sub2->parsed());
+    CHECK(app.got_subcommand("val2"));
 
     args = {"val3"};
     run();
-    EXPECT_TRUE(sub2sub1->parsed());
-    EXPECT_TRUE(app.got_subcommand("val3"));
+    CHECK(sub2sub1->parsed());
+    CHECK(app.got_subcommand("val3"));
 
     args = {"val4"};
     run();
-    EXPECT_TRUE(sub2sub2->parsed());
-    EXPECT_TRUE(app.got_subcommand("val4"));
+    CHECK(sub2sub2->parsed());
+    CHECK(app.got_subcommand("val4"));
 
     args = {"val4", "val1"};
     run();
-    EXPECT_TRUE(sub2sub2->parsed());
-    EXPECT_TRUE(app.got_subcommand("val4"));
-    EXPECT_TRUE(sub1sub1->parsed());
-    EXPECT_TRUE(app.got_subcommand("val1"));
+    CHECK(sub2sub2->parsed());
+    CHECK(app.got_subcommand("val4"));
+    CHECK(sub1sub1->parsed());
+    CHECK(app.got_subcommand("val1"));
 }
 
-TEST_F(TApp, Nameless4LayerDeep) {
+TEST_CASE_METHOD(TApp, "Nameless4LayerDeep", "[subcom]") {
 
     auto sub = app.add_subcommand();
     auto ssub = sub->add_subcommand();
@@ -474,12 +470,12 @@ TEST_F(TApp, Nameless4LayerDeep) {
 
     args = {"val"};
     run();
-    EXPECT_TRUE(sssssub->parsed());
-    EXPECT_TRUE(app.got_subcommand("val"));
+    CHECK(sssssub->parsed());
+    CHECK(app.got_subcommand("val"));
 }
 
 /// Put subcommands in some crazy pattern and make everything still works
-TEST_F(TApp, Nameless4LayerDeepMulti) {
+TEST_CASE_METHOD(TApp, "Nameless4LayerDeepMulti", "[subcom]") {
 
     auto sub1 = app.add_subcommand();
     auto sub2 = app.add_subcommand();
@@ -495,31 +491,31 @@ TEST_F(TApp, Nameless4LayerDeepMulti) {
     sssub2->add_subcommand("val5");
     args = {"val1"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val1"));
+    CHECK(app.got_subcommand("val1"));
 
     args = {"val2"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val2"));
+    CHECK(app.got_subcommand("val2"));
 
     args = {"val3"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val3"));
+    CHECK(app.got_subcommand("val3"));
 
     args = {"val4"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val4"));
+    CHECK(app.got_subcommand("val4"));
     args = {"val5"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val5"));
+    CHECK(app.got_subcommand("val5"));
 
     args = {"val4", "val1", "val5"};
     run();
-    EXPECT_TRUE(app.got_subcommand("val4"));
-    EXPECT_TRUE(app.got_subcommand("val1"));
-    EXPECT_TRUE(app.got_subcommand("val5"));
+    CHECK(app.got_subcommand("val4"));
+    CHECK(app.got_subcommand("val1"));
+    CHECK(app.got_subcommand("val5"));
 }
 
-TEST_F(TApp, FallThroughRegular) {
+TEST_CASE_METHOD(TApp, "FallThroughRegular", "[subcom]") {
     app.fallthrough();
     int val{1};
     app.add_option("--val", val);
@@ -531,7 +527,7 @@ TEST_F(TApp, FallThroughRegular) {
     run();
 }
 
-TEST_F(TApp, FallThroughShort) {
+TEST_CASE_METHOD(TApp, "FallThroughShort", "[subcom]") {
     app.fallthrough();
     int val{1};
     app.add_option("-v", val);
@@ -543,7 +539,7 @@ TEST_F(TApp, FallThroughShort) {
     run();
 }
 
-TEST_F(TApp, FallThroughPositional) {
+TEST_CASE_METHOD(TApp, "FallThroughPositional", "[subcom]") {
     app.fallthrough();
     int val{1};
     app.add_option("val", val);
@@ -555,7 +551,7 @@ TEST_F(TApp, FallThroughPositional) {
     run();
 }
 
-TEST_F(TApp, FallThroughEquals) {
+TEST_CASE_METHOD(TApp, "FallThroughEquals", "[subcom]") {
     app.fallthrough();
     int val{1};
     app.add_option("--val", val);
@@ -567,7 +563,7 @@ TEST_F(TApp, FallThroughEquals) {
     run();
 }
 
-TEST_F(TApp, EvilParseFallthrough) {
+TEST_CASE_METHOD(TApp, "EvilParseFallthrough", "[subcom]") {
     app.fallthrough();
     int val1{0}, val2{0};
     app.add_option("--val1", val1);
@@ -579,11 +575,11 @@ TEST_F(TApp, EvilParseFallthrough) {
     // Should not throw
     run();
 
-    EXPECT_EQ(1, val1);
-    EXPECT_EQ(2, val2);
+    CHECK(val1 == 1);
+    CHECK(val2 == 2);
 }
 
-TEST_F(TApp, CallbackOrdering) {
+TEST_CASE_METHOD(TApp, "CallbackOrdering", "[subcom]") {
     app.fallthrough();
     int val{1}, sub_val{0};
     app.add_option("--val", val);
@@ -593,16 +589,16 @@ TEST_F(TApp, CallbackOrdering) {
 
     args = {"sub", "--val=2"};
     run();
-    EXPECT_EQ(2, val);
-    EXPECT_EQ(2, sub_val);
+    CHECK(val == 2);
+    CHECK(sub_val == 2);
 
     args = {"--val=2", "sub"};
     run();
-    EXPECT_EQ(2, val);
-    EXPECT_EQ(2, sub_val);
+    CHECK(val == 2);
+    CHECK(sub_val == 2);
 }
 
-TEST_F(TApp, CallbackOrderingImmediate) {
+TEST_CASE_METHOD(TApp, "CallbackOrderingImmediate", "[subcom]") {
     app.fallthrough();
     int val{1}, sub_val{0};
     app.add_option("--val", val);
@@ -612,16 +608,16 @@ TEST_F(TApp, CallbackOrderingImmediate) {
 
     args = {"sub", "--val=2"};
     run();
-    EXPECT_EQ(2, val);
-    EXPECT_EQ(1, sub_val);
+    CHECK(val == 2);
+    CHECK(sub_val == 1);
 
     args = {"--val=2", "sub"};
     run();
-    EXPECT_EQ(2, val);
-    EXPECT_EQ(2, sub_val);
+    CHECK(val == 2);
+    CHECK(sub_val == 2);
 }
 
-TEST_F(TApp, CallbackOrderingImmediateMain) {
+TEST_CASE_METHOD(TApp, "CallbackOrderingImmediateMain", "[subcom]") {
     app.fallthrough();
     int val{0}, sub_val{0};
 
@@ -633,24 +629,24 @@ TEST_F(TApp, CallbackOrderingImmediateMain) {
     app.callback([&val]() { val = 1; });
     args = {"sub"};
     run();
-    EXPECT_EQ(1, val);
-    EXPECT_EQ(0, sub_val);
+    CHECK(val == 1);
+    CHECK(sub_val == 0);
     // the main app callback should run before the subcommand callbacks
     app.immediate_callback();
     val = 0;  // reset value
     run();
-    EXPECT_EQ(2, val);
-    EXPECT_EQ(1, sub_val);
+    CHECK(val == 2);
+    CHECK(sub_val == 1);
     // the subcommand callback now runs immediately after processing and before the main app callback again
     sub->immediate_callback();
     val = 0;  // reset value
     run();
-    EXPECT_EQ(1, val);
-    EXPECT_EQ(0, sub_val);
+    CHECK(val == 1);
+    CHECK(sub_val == 0);
 }
 
 // Test based on issue #308
-TEST_F(TApp, CallbackOrderingImmediateModeOrder) {
+TEST_CASE_METHOD(TApp, "CallbackOrderingImmediateModeOrder", "[subcom]") {
 
     app.require_subcommand(1, 1);
     std::vector<int> v;
@@ -660,81 +656,81 @@ TEST_F(TApp, CallbackOrderingImmediateModeOrder) {
     args = {"hello"};
     run();
     // immediate_callback inherited
-    ASSERT_EQ(v.size(), 2u);
-    EXPECT_EQ(v[0], 1);
-    EXPECT_EQ(v[1], 2);
+    REQUIRE(2u == v.size());
+    CHECK(1 == v[0]);
+    CHECK(2 == v[1]);
     v.clear();
     sub->immediate_callback(true);
     run();
     // immediate_callback is now triggered for the main first
-    ASSERT_EQ(v.size(), 2u);
-    EXPECT_EQ(v[0], 2);
-    EXPECT_EQ(v[1], 1);
+    REQUIRE(2u == v.size());
+    CHECK(2 == v[0]);
+    CHECK(1 == v[1]);
 }
 
-TEST_F(TApp, RequiredSubCom) {
+TEST_CASE_METHOD(TApp, "RequiredSubCom", "[subcom]") {
     app.add_subcommand("sub1");
     app.add_subcommand("sub2");
 
     app.require_subcommand();
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"sub1"};
     run();
 }
 
-TEST_F(TApp, SubComExtras) {
+TEST_CASE_METHOD(TApp, "SubComExtras", "[subcom]") {
     app.allow_extras();
     auto sub = app.add_subcommand("sub");
 
     args = {"extra", "sub"};
     run();
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra"}));
-    EXPECT_EQ(sub->remaining(), std::vector<std::string>());
+    CHECK(std::vector<std::string>({"extra"}) == app.remaining());
+    CHECK(std::vector<std::string>() == sub->remaining());
 
     args = {"extra1", "extra2", "sub"};
     run();
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra1", "extra2"}));
-    EXPECT_EQ(sub->remaining(), std::vector<std::string>());
+    CHECK(std::vector<std::string>({"extra1", "extra2"}) == app.remaining());
+    CHECK(std::vector<std::string>() == sub->remaining());
 
     args = {"sub", "extra1", "extra2"};
     run();
-    EXPECT_EQ(app.remaining(), std::vector<std::string>());
-    EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra1", "extra2"}));
+    CHECK(std::vector<std::string>() == app.remaining());
+    CHECK(std::vector<std::string>({"extra1", "extra2"}) == sub->remaining());
 
     args = {"extra1", "extra2", "sub", "extra3", "extra4"};
     run();
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"extra1", "extra2"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"extra1", "extra2", "extra3", "extra4"}));
-    EXPECT_EQ(sub->remaining(), std::vector<std::string>({"extra3", "extra4"}));
+    CHECK(std::vector<std::string>({"extra1", "extra2"}) == app.remaining());
+    CHECK(std::vector<std::string>({"extra1", "extra2", "extra3", "extra4"}) == app.remaining(true));
+    CHECK(std::vector<std::string>({"extra3", "extra4"}) == sub->remaining());
 }
 
-TEST_F(TApp, Required1SubCom) {
+TEST_CASE_METHOD(TApp, "Required1SubCom", "[subcom]") {
     app.require_subcommand(1);
     app.add_subcommand("sub1");
     app.add_subcommand("sub2");
     app.add_subcommand("sub3");
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"sub1"};
     run();
 
     args = {"sub1", "sub2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, BadSubcommandSearch) {
+TEST_CASE_METHOD(TApp, "BadSubcommandSearch", "[subcom]") {
 
     auto one = app.add_subcommand("one");
     auto two = one->add_subcommand("two");
 
-    EXPECT_THROW(app.get_subcommand(two), CLI::OptionNotFound);
-    EXPECT_THROW(app.get_subcommand_ptr(two), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app.get_subcommand(two), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app.get_subcommand_ptr(two), CLI::OptionNotFound);
 }
 
-TEST_F(TApp, PrefixProgram) {
+TEST_CASE_METHOD(TApp, "PrefixProgram", "[subcom]") {
 
     app.prefix_command();
 
@@ -743,10 +739,10 @@ TEST_F(TApp, PrefixProgram) {
     args = {"--simple", "other", "--simple", "--mine"};
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
+    CHECK(std::vector<std::string>({"other", "--simple", "--mine"}) == app.remaining());
 }
 
-TEST_F(TApp, PrefixNoSeparation) {
+TEST_CASE_METHOD(TApp, "PrefixNoSeparation", "[subcom]") {
 
     app.prefix_command();
 
@@ -755,10 +751,10 @@ TEST_F(TApp, PrefixNoSeparation) {
 
     args = {"--vals", "1", "2", "3", "other"};
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, PrefixSeparation) {
+TEST_CASE_METHOD(TApp, "PrefixSeparation", "[subcom]") {
 
     app.prefix_command();
 
@@ -769,11 +765,11 @@ TEST_F(TApp, PrefixSeparation) {
 
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"other"}));
-    EXPECT_EQ(vals, std::vector<int>({1, 2, 3}));
+    CHECK(std::vector<std::string>({"other"}) == app.remaining());
+    CHECK(std::vector<int>({1, 2, 3}) == vals);
 }
 
-TEST_F(TApp, PrefixSubcom) {
+TEST_CASE_METHOD(TApp, "PrefixSubcom", "[subcom]") {
     auto subc = app.add_subcommand("subc");
     subc->prefix_command();
 
@@ -782,19 +778,19 @@ TEST_F(TApp, PrefixSubcom) {
     args = {"--simple", "subc", "other", "--simple", "--mine"};
     run();
 
-    EXPECT_EQ(app.remaining_size(), 0u);
-    EXPECT_EQ(app.remaining_size(true), 3u);
-    EXPECT_EQ(subc->remaining(), std::vector<std::string>({"other", "--simple", "--mine"}));
+    CHECK(0u == app.remaining_size());
+    CHECK(3u == app.remaining_size(true));
+    CHECK(std::vector<std::string>({"other", "--simple", "--mine"}) == subc->remaining());
 }
 
-TEST_F(TApp, InheritHelpAllFlag) {
+TEST_CASE_METHOD(TApp, "InheritHelpAllFlag", "[subcom]") {
     app.set_help_all_flag("--help-all");
     auto subc = app.add_subcommand("subc");
     auto help_opt_list = subc->get_options([](const CLI::Option *opt) { return opt->get_name() == "--help-all"; });
-    EXPECT_EQ(help_opt_list.size(), 1u);
+    CHECK(1u == help_opt_list.size());
 }
 
-TEST_F(TApp, RequiredPosInSubcommand) {
+TEST_CASE_METHOD(TApp, "RequiredPosInSubcommand", "[subcom]") {
     app.require_subcommand();
     std::string bar;
 
@@ -806,13 +802,13 @@ TEST_F(TApp, RequiredPosInSubcommand) {
 
     args = {"foo", "abc"};
     run();
-    EXPECT_EQ(bar, "abc");
+    CHECK("abc" == bar);
     args = {"baz", "cba"};
     run();
-    EXPECT_EQ(bar, "cba");
+    CHECK("cba" == bar);
 
     args = {};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
 struct SubcommandProgram : public TApp {
@@ -839,54 +835,54 @@ struct SubcommandProgram : public TApp {
     }
 };
 
-TEST_F(SubcommandProgram, Working) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand Working", "[subcom]") {
     args = {"-d", "start", "-ffilename"};
 
     run();
 
-    EXPECT_EQ(1, dummy);
-    EXPECT_EQ(start, app.get_subcommands().at(0));
-    EXPECT_EQ("filename", file);
+    CHECK(dummy == 1);
+    CHECK(app.get_subcommands().at(0) == start);
+    CHECK(file == "filename");
 }
 
-TEST_F(SubcommandProgram, Spare) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand Spare", "[subcom]") {
     args = {"extra", "-d", "start", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(SubcommandProgram, SpareSub) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand SpareSub", "[subcom]") {
     args = {"-d", "start", "spare", "-ffilename"};
 
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(SubcommandProgram, Multiple) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand Multiple", "[subcom]") {
     args = {"-d", "start", "-ffilename", "stop"};
 
     run();
-    EXPECT_EQ(2u, app.get_subcommands().size());
-    EXPECT_EQ(1, dummy);
-    EXPECT_EQ("filename", file);
+    CHECK(app.get_subcommands().size() == 2u);
+    CHECK(dummy == 1);
+    CHECK(file == "filename");
 }
 
-TEST_F(SubcommandProgram, MultipleOtherOrder) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand MultipleOtherOrder", "[subcom]") {
     args = {"start", "-d", "-ffilename", "stop"};
 
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(SubcommandProgram, MultipleArgs) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand MultipleArgs", "[subcom]") {
     args = {"start", "stop"};
 
     run();
 
-    EXPECT_EQ(2u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().size() == 2u);
 }
 
-TEST_F(SubcommandProgram, CaseCheck) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand CaseCheck", "[subcom]") {
     args = {"Start"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"start"};
     run();
@@ -898,32 +894,32 @@ TEST_F(SubcommandProgram, CaseCheck) {
     run();
 }
 
-TEST_F(TApp, SubcomInheritCaseCheck) {
+TEST_CASE_METHOD(TApp, "SubcomInheritCaseCheck", "[subcom]") {
     app.ignore_case();
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
     run();
-    EXPECT_EQ(0u, app.get_subcommands().size());
-    EXPECT_EQ(2u, app.get_subcommands({}).size());
-    EXPECT_EQ(1u, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size());
+    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands({}).size() == 2u);
+    CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
 
     args = {"SuB1"};
     run();
-    EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ(1u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().at(0) == sub1);
+    CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    EXPECT_EQ(0u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().size() == 0u);
 
     args = {"sUb2"};
     run();
-    EXPECT_EQ(sub2, app.get_subcommands().at(0));
+    CHECK(app.get_subcommands().at(0) == sub2);
 }
 
-TEST_F(SubcommandProgram, UnderscoreCheck) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand UnderscoreCheck", "[subcom]") {
     args = {"start_"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"start"};
     run();
@@ -935,54 +931,54 @@ TEST_F(SubcommandProgram, UnderscoreCheck) {
     run();
 }
 
-TEST_F(TApp, SubcomInheritUnderscoreCheck) {
+TEST_CASE_METHOD(TApp, "SubcomInheritUnderscoreCheck", "[subcom]") {
     app.ignore_underscore();
     auto sub1 = app.add_subcommand("sub_option1");
     auto sub2 = app.add_subcommand("sub_option2");
 
     run();
-    EXPECT_EQ(0u, app.get_subcommands().size());
-    EXPECT_EQ(2u, app.get_subcommands({}).size());
-    EXPECT_EQ(1u, app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size());
+    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands({}).size() == 2u);
+    CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size() == 1u);
 
     args = {"suboption1"};
     run();
-    EXPECT_EQ(sub1, app.get_subcommands().at(0));
-    EXPECT_EQ(1u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().at(0) == sub1);
+    CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    EXPECT_EQ(0u, app.get_subcommands().size());
+    CHECK(app.get_subcommands().size() == 0u);
 
     args = {"_suboption2"};
     run();
-    EXPECT_EQ(sub2, app.get_subcommands().at(0));
+    CHECK(app.get_subcommands().at(0) == sub2);
 }
 
-TEST_F(SubcommandProgram, HelpOrder) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand HelpOrder", "[subcom]") {
 
     args = {"-h"};
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 
     args = {"start", "-h"};
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 
     args = {"-h", "start"};
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 }
 
-TEST_F(SubcommandProgram, HelpAllOrder) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand HelpAllOrder", "[subcom]") {
 
     args = {"--help-all"};
-    EXPECT_THROW(run(), CLI::CallForAllHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForAllHelp);
 
     args = {"start", "--help-all"};
-    EXPECT_THROW(run(), CLI::CallForAllHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForAllHelp);
 
     args = {"--help-all", "start"};
-    EXPECT_THROW(run(), CLI::CallForAllHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForAllHelp);
 }
 
-TEST_F(SubcommandProgram, Callbacks) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand Callbacks", "[subcom]") {
 
     start->callback([]() { throw CLI::Success(); });
 
@@ -990,63 +986,63 @@ TEST_F(SubcommandProgram, Callbacks) {
 
     args = {"start"};
 
-    EXPECT_THROW(run(), CLI::Success);
+    CHECK_THROWS_AS(run(), CLI::Success);
 }
 
-TEST_F(SubcommandProgram, Groups) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand Groups", "[subcom]") {
 
     std::string help = app.help();
-    EXPECT_THAT(help, Not(HasSubstr("More Commands:")));
-    EXPECT_THAT(help, HasSubstr("Subcommands:"));
+    CHECK_THAT(help, !Contains("More Commands:"));
+    CHECK_THAT(help, Contains("Subcommands:"));
 
     start->group("More Commands");
     help = app.help();
-    EXPECT_THAT(help, HasSubstr("More Commands:"));
-    EXPECT_THAT(help, HasSubstr("Subcommands:"));
+    CHECK_THAT(help, Contains("More Commands:"));
+    CHECK_THAT(help, Contains("Subcommands:"));
 
     // Case is ignored but for the first subcommand in a group.
     stop->group("more commands");
     help = app.help();
-    EXPECT_THAT(help, HasSubstr("More Commands:"));
-    EXPECT_THAT(help, Not(HasSubstr("Subcommands:")));
+    CHECK_THAT(help, Contains("More Commands:"));
+    CHECK_THAT(help, !Contains("Subcommands:"));
 }
 
-TEST_F(SubcommandProgram, ExtrasErrors) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand ExtrasErrors", "[subcom]") {
 
     args = {"one", "two", "start", "three", "four"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"start", "three", "four"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"one", "two"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(SubcommandProgram, OrderedExtras) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand OrderedExtras", "[subcom]") {
 
     app.allow_extras();
     args = {"one", "two", "start", "three", "four"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     start->allow_extras();
 
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
-    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "four"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four"}));
+    CHECK(std::vector<std::string>({"one", "two"}) == app.remaining());
+    CHECK(std::vector<std::string>({"three", "four"}) == start->remaining());
+    CHECK(std::vector<std::string>({"one", "two", "three", "four"}) == app.remaining(true));
 
     args = {"one", "two", "start", "three", "--", "four"};
 
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two", "four"}));
-    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "four", "three"}));
+    CHECK(std::vector<std::string>({"one", "two", "four"}) == app.remaining());
+    CHECK(std::vector<std::string>({"three"}) == start->remaining());
+    CHECK(std::vector<std::string>({"one", "two", "four", "three"}) == app.remaining(true));
 }
 
-TEST_F(SubcommandProgram, MixedOrderExtras) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand MixedOrderExtras", "[subcom]") {
 
     app.allow_extras();
     start->allow_extras();
@@ -1055,50 +1051,50 @@ TEST_F(SubcommandProgram, MixedOrderExtras) {
     args = {"one", "two", "start", "three", "four", "stop", "five", "six"};
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
-    EXPECT_EQ(start->remaining(), std::vector<std::string>({"three", "four"}));
-    EXPECT_EQ(stop->remaining(), std::vector<std::string>({"five", "six"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four", "five", "six"}));
+    CHECK(std::vector<std::string>({"one", "two"}) == app.remaining());
+    CHECK(std::vector<std::string>({"three", "four"}) == start->remaining());
+    CHECK(std::vector<std::string>({"five", "six"}) == stop->remaining());
+    CHECK(std::vector<std::string>({"one", "two", "three", "four", "five", "six"}) == app.remaining(true));
 
     args = {"one", "two", "stop", "three", "four", "start", "five", "six"};
     run();
 
-    EXPECT_EQ(app.remaining(), std::vector<std::string>({"one", "two"}));
-    EXPECT_EQ(stop->remaining(), std::vector<std::string>({"three", "four"}));
-    EXPECT_EQ(start->remaining(), std::vector<std::string>({"five", "six"}));
-    EXPECT_EQ(app.remaining(true), std::vector<std::string>({"one", "two", "three", "four", "five", "six"}));
+    CHECK(std::vector<std::string>({"one", "two"}) == app.remaining());
+    CHECK(std::vector<std::string>({"three", "four"}) == stop->remaining());
+    CHECK(std::vector<std::string>({"five", "six"}) == start->remaining());
+    CHECK(std::vector<std::string>({"one", "two", "three", "four", "five", "six"}) == app.remaining(true));
 }
 
-TEST_F(SubcommandProgram, CallbackOrder) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand CallbackOrder", "[subcom]") {
     std::vector<int> callback_order;
     start->callback([&callback_order]() { callback_order.push_back(1); });
     stop->callback([&callback_order]() { callback_order.push_back(2); });
 
     args = {"start", "stop"};
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({1, 2}));
+    CHECK(std::vector<int>({1, 2}) == callback_order);
 
     callback_order.clear();
 
     args = {"stop", "start"};
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({2, 1}));
+    CHECK(std::vector<int>({2, 1}) == callback_order);
 }
 
-TEST_F(SubcommandProgram, CallbackOrderImmediate) {
+TEST_CASE_METHOD(SubcommandProgram, "Subcommand CallbackOrderImmediate", "[subcom]") {
     std::vector<int> callback_order;
     start->callback([&callback_order]() { callback_order.push_back(1); })->immediate_callback();
     stop->callback([&callback_order]() { callback_order.push_back(2); });
 
     args = {"start", "stop", "start"};
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({1, 1, 2}));
+    CHECK(std::vector<int>({1, 1, 2}) == callback_order);
 
     callback_order.clear();
 
     args = {"stop", "start", "stop", "start"};
     run();
-    EXPECT_EQ(callback_order, std::vector<int>({1, 1, 2}));
+    CHECK(std::vector<int>({1, 1, 2}) == callback_order);
 }
 
 struct ManySubcommands : public TApp {
@@ -1121,137 +1117,137 @@ struct ManySubcommands : public TApp {
     ManySubcommands &operator=(const ManySubcommands &) = delete;
 };
 
-TEST_F(ManySubcommands, Required1Exact) {
+TEST_CASE_METHOD(ManySubcommands, "Required1Exact", "[subcom]") {
     app.require_subcommand(1);
 
     run();
-    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
-    EXPECT_EQ(app.remaining(true), vs_t({"sub2", "sub3"}));
+    CHECK(vs_t({"sub2", "sub3"}) == sub1->remaining());
+    CHECK(vs_t({"sub2", "sub3"}) == app.remaining(true));
 }
 
-TEST_F(ManySubcommands, Required2Exact) {
+TEST_CASE_METHOD(ManySubcommands, "Required2Exact", "[subcom]") {
     app.require_subcommand(2);
 
     run();
-    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
+    CHECK(vs_t({"sub3"}) == sub2->remaining());
 }
 
-TEST_F(ManySubcommands, Required4Failure) {
+TEST_CASE_METHOD(ManySubcommands, "Required4Failure", "[subcom]") {
     app.require_subcommand(4);
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManySubcommands, RemoveSub) {
+TEST_CASE_METHOD(ManySubcommands, "RemoveSub", "[subcom]") {
     run();
-    EXPECT_EQ(app.remaining_size(true), 0u);
+    CHECK(0u == app.remaining_size(true));
     app.remove_subcommand(sub1);
     app.allow_extras();
     run();
-    EXPECT_EQ(app.remaining_size(true), 1u);
+    CHECK(1u == app.remaining_size(true));
 }
 
-TEST_F(ManySubcommands, RemoveSubFail) {
+TEST_CASE_METHOD(ManySubcommands, "RemoveSubFail", "[subcom]") {
     auto sub_sub = sub1->add_subcommand("subsub");
-    EXPECT_FALSE(app.remove_subcommand(sub_sub));
-    EXPECT_TRUE(sub1->remove_subcommand(sub_sub));
-    EXPECT_FALSE(app.remove_subcommand(nullptr));
+    CHECK(!app.remove_subcommand(sub_sub));
+    CHECK(sub1->remove_subcommand(sub_sub));
+    CHECK(!app.remove_subcommand(nullptr));
 }
 
-TEST_F(ManySubcommands, manyIndexQuery) {
+TEST_CASE_METHOD(ManySubcommands, "manyIndexQuery", "[subcom]") {
     auto s1 = app.get_subcommand(0);
     auto s2 = app.get_subcommand(1);
     auto s3 = app.get_subcommand(2);
     auto s4 = app.get_subcommand(3);
-    EXPECT_EQ(s1, sub1);
-    EXPECT_EQ(s2, sub2);
-    EXPECT_EQ(s3, sub3);
-    EXPECT_EQ(s4, sub4);
-    EXPECT_THROW(app.get_subcommand(4), CLI::OptionNotFound);
+    CHECK(sub1 == s1);
+    CHECK(sub2 == s2);
+    CHECK(sub3 == s3);
+    CHECK(sub4 == s4);
+    CHECK_THROWS_AS(app.get_subcommand(4), CLI::OptionNotFound);
     auto s0 = app.get_subcommand();
-    EXPECT_EQ(s0, sub1);
+    CHECK(sub1 == s0);
 }
 
-TEST_F(ManySubcommands, manyIndexQueryPtr) {
+TEST_CASE_METHOD(ManySubcommands, "manyIndexQueryPtr", "[subcom]") {
     auto s1 = app.get_subcommand_ptr(0);
     auto s2 = app.get_subcommand_ptr(1);
     auto s3 = app.get_subcommand_ptr(2);
     auto s4 = app.get_subcommand_ptr(3);
-    EXPECT_EQ(s1.get(), sub1);
-    EXPECT_EQ(s2.get(), sub2);
-    EXPECT_EQ(s3.get(), sub3);
-    EXPECT_EQ(s4.get(), sub4);
-    EXPECT_THROW(app.get_subcommand_ptr(4), CLI::OptionNotFound);
+    CHECK(sub1 == s1.get());
+    CHECK(sub2 == s2.get());
+    CHECK(sub3 == s3.get());
+    CHECK(sub4 == s4.get());
+    CHECK_THROWS_AS(app.get_subcommand_ptr(4), CLI::OptionNotFound);
 }
 
-TEST_F(ManySubcommands, Required1Fuzzy) {
+TEST_CASE_METHOD(ManySubcommands, "Required1Fuzzy", "[subcom]") {
 
     app.require_subcommand(0, 1);
 
     run();
-    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+    CHECK(vs_t({"sub2", "sub3"}) == sub1->remaining());
 
     app.require_subcommand(-1);
 
     run();
-    EXPECT_EQ(sub1->remaining(), vs_t({"sub2", "sub3"}));
+    CHECK(vs_t({"sub2", "sub3"}) == sub1->remaining());
 }
 
-TEST_F(ManySubcommands, Required2Fuzzy) {
+TEST_CASE_METHOD(ManySubcommands, "Required2Fuzzy", "[subcom]") {
     app.require_subcommand(0, 2);
 
     run();
-    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
-    EXPECT_EQ(app.remaining(true), vs_t({"sub3"}));
+    CHECK(vs_t({"sub3"}) == sub2->remaining());
+    CHECK(vs_t({"sub3"}) == app.remaining(true));
 
     app.require_subcommand(-2);
 
     run();
-    EXPECT_EQ(sub2->remaining(), vs_t({"sub3"}));
+    CHECK(vs_t({"sub3"}) == sub2->remaining());
 }
 
-TEST_F(ManySubcommands, Unlimited) {
+TEST_CASE_METHOD(ManySubcommands, "Unlimited", "[subcom]") {
     run();
-    EXPECT_EQ(app.remaining(true), vs_t());
+    CHECK(vs_t() == app.remaining(true));
 
     app.require_subcommand();
 
     run();
-    EXPECT_EQ(app.remaining(true), vs_t());
+    CHECK(vs_t() == app.remaining(true));
 
     app.require_subcommand(2, 0);  // 2 or more
 
     run();
-    EXPECT_EQ(app.remaining(true), vs_t());
+    CHECK(vs_t() == app.remaining(true));
 }
 
-TEST_F(ManySubcommands, HelpFlags) {
+TEST_CASE_METHOD(ManySubcommands, "HelpFlags", "[subcom]") {
 
     args = {"-h"};
 
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 
     args = {"sub2", "-h"};
 
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 
     args = {"-h", "sub2"};
 
-    EXPECT_THROW(run(), CLI::CallForHelp);
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 }
 
-TEST_F(ManySubcommands, MaxCommands) {
+TEST_CASE_METHOD(ManySubcommands, "MaxCommands", "[subcom]") {
 
     app.require_subcommand(2);
 
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     // The extra subcommand counts as an extra
     args = {"sub1", "sub2", "sub3"};
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(sub2->remaining().size(), 1u);
-    EXPECT_EQ(app.count_all(), 2u);
+    CHECK_NOTHROW(run());
+    CHECK(1u == sub2->remaining().size());
+    CHECK(2u == app.count_all());
 
     // Currently, setting sub2 to throw causes an extras error
     // In the future, would passing on up to app's extras be better?
@@ -1262,31 +1258,31 @@ TEST_F(ManySubcommands, MaxCommands) {
 
     args = {"sub1", "sub2"};
 
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2", "sub3"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(ManySubcommands, SubcommandExclusion) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandExclusion", "[subcom]") {
 
     sub1->excludes(sub3);
     sub2->excludes(sub3);
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2", "sub3"};
-    EXPECT_THROW(run(), CLI::ExcludesError);
+    CHECK_THROWS_AS(run(), CLI::ExcludesError);
 
     args = {"sub1", "sub2", "sub4"};
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(app.count_all(), 3u);
+    CHECK_NOTHROW(run());
+    CHECK(3u == app.count_all());
 
     args = {"sub3", "sub4"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManySubcommands, SubcommandOptionExclusion) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandOptionExclusion", "[subcom]") {
 
     auto excluder_flag = app.add_flag("--exclude");
     sub1->excludes(excluder_flag)->fallthrough();
@@ -1294,78 +1290,78 @@ TEST_F(ManySubcommands, SubcommandOptionExclusion) {
     sub3->fallthrough();
     sub4->fallthrough();
     args = {"sub3", "sub4", "--exclude"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub3", "--exclude"};
-    EXPECT_THROW(run(), CLI::ExcludesError);
-    EXPECT_TRUE(sub1->remove_excludes(excluder_flag));
-    EXPECT_NO_THROW(run());
-    EXPECT_FALSE(sub1->remove_excludes(excluder_flag));
+    CHECK_THROWS_AS(run(), CLI::ExcludesError);
+    CHECK(sub1->remove_excludes(excluder_flag));
+    CHECK_NOTHROW(run());
+    CHECK(!sub1->remove_excludes(excluder_flag));
 
     args = {"--exclude", "sub2", "sub4"};
-    EXPECT_THROW(run(), CLI::ExcludesError);
-    EXPECT_EQ(sub1->excludes(excluder_flag), sub1);
+    CHECK_THROWS_AS(run(), CLI::ExcludesError);
+    CHECK(sub1 == sub1->excludes(excluder_flag));
     args = {"sub1", "--exclude", "sub2", "sub4"};
     try {
         run();
     } catch(const CLI::ExcludesError &ee) {
-        EXPECT_NE(std::string(ee.what()).find("sub1"), std::string::npos);
+        CHECK(std::string::npos != std::string(ee.what()).find("sub1"));
     }
 }
 
-TEST_F(ManySubcommands, SubcommandNeeds) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandNeeds", "[subcom]") {
 
     sub1->needs(sub2);
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
 
     sub1->needs(sub3);
     args = {"sub1", "sub2", "sub3"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2", "sub4"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
 
     args = {"sub1", "sub2", "sub4"};
     sub1->remove_needs(sub3);
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManySubcommands, SubcommandNeedsOptions) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptions", "[subcom]") {
 
     auto opt = app.add_flag("--subactive");
     sub1->needs(opt);
     sub1->fallthrough();
     args = {"sub1", "--subactive"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
 
     args = {"--subactive"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     auto opt2 = app.add_flag("--subactive2");
 
     sub1->needs(opt2);
     args = {"sub1", "--subactive"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
 
     args = {"--subactive", "--subactive2", "sub1"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     sub1->remove_needs(opt2);
     args = {"sub1", "--subactive"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManySubcommands, SubcommandNeedsOptionsCallbackOrdering) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptionsCallbackOrdering", "[subcom]") {
     int count{0};
     auto opt = app.add_flag("--subactive");
     app.add_flag("--flag1");
@@ -1373,135 +1369,135 @@ TEST_F(ManySubcommands, SubcommandNeedsOptionsCallbackOrdering) {
     sub1->fallthrough();
     sub1->parse_complete_callback([&count]() { ++count; });
     args = {"sub1", "--flag1", "sub1", "--subactive"};
-    EXPECT_THROW(run(), CLI::RequiresError);
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
     // the subcommand has to pass validation by the first callback
     sub1->immediate_callback(false);
     // now since the callback executes after
 
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(count, 1);
+    CHECK_NOTHROW(run());
+    CHECK(1 == count);
     sub1->immediate_callback();
     args = {"--subactive", "sub1"};
     // now the required is processed first
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManySubcommands, SubcommandNeedsFail) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {
 
     auto opt = app.add_flag("--subactive");
     auto opt2 = app.add_flag("--dummy");
     sub1->needs(opt);
-    EXPECT_THROW(sub1->needs((CLI::Option *)nullptr), CLI::OptionNotFound);
-    EXPECT_THROW(sub1->needs((CLI::App *)nullptr), CLI::OptionNotFound);
-    EXPECT_THROW(sub1->needs(sub1), CLI::OptionNotFound);
+    CHECK_THROWS_AS(sub1->needs((CLI::Option *)nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(sub1->needs((CLI::App *)nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(sub1->needs(sub1), CLI::OptionNotFound);
 
-    EXPECT_TRUE(sub1->remove_needs(opt));
-    EXPECT_FALSE(sub1->remove_needs(opt2));
-    EXPECT_FALSE(sub1->remove_needs(sub1));
+    CHECK(sub1->remove_needs(opt));
+    CHECK(!sub1->remove_needs(opt2));
+    CHECK(!sub1->remove_needs(sub1));
 }
 
-TEST_F(ManySubcommands, SubcommandRequired) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandRequired", "[subcom]") {
 
     sub1->required();
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2", "sub3"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub3", "sub4"};
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(ManySubcommands, SubcommandDisabled) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandDisabled", "[subcom]") {
 
     sub3->disabled();
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2", "sub3"};
     app.allow_extras(false);
     sub2->allow_extras(false);
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     args = {"sub3", "sub4"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     sub3->disabled(false);
     args = {"sub3", "sub4"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 }
 
-TEST_F(ManySubcommands, SubcommandTriggeredOff) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandTriggeredOff", "[subcom]") {
 
     app.allow_extras(false);
     sub1->allow_extras(false);
     sub2->allow_extras(false);
     CLI::TriggerOff(sub1, sub2);
     args = {"sub1", "sub2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"sub2", "sub1", "sub3"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
     CLI::TriggerOff(sub1, {sub3, sub4});
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     args = {"sub1", "sub2", "sub4"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(ManySubcommands, SubcommandTriggeredOn) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandTriggeredOn", "[subcom]") {
 
     app.allow_extras(false);
     sub1->allow_extras(false);
     sub2->allow_extras(false);
     CLI::TriggerOn(sub1, sub2);
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     args = {"sub2", "sub1", "sub4"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
     CLI::TriggerOn(sub1, {sub3, sub4});
     sub2->disabled_by_default(false);
     sub2->disabled(false);
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
     args = {"sub3", "sub1", "sub2"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(ManySubcommands, SubcommandSilence) {
+TEST_CASE_METHOD(ManySubcommands, "SubcommandSilence", "[subcom]") {
 
     sub1->silent();
     args = {"sub1", "sub2"};
-    EXPECT_NO_THROW(run());
+    CHECK_NOTHROW(run());
 
     auto subs = app.get_subcommands();
-    EXPECT_EQ(subs.size(), 1U);
+    CHECK(1U == subs.size());
     sub1->silent(false);
-    EXPECT_FALSE(sub1->get_silent());
+    CHECK(!sub1->get_silent());
     run();
     subs = app.get_subcommands();
-    EXPECT_EQ(subs.size(), 2U);
+    CHECK(2U == subs.size());
 }
 
-TEST_F(TApp, UnnamedSub) {
+TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
     double val{0.0};
     auto sub = app.add_subcommand("", "empty name");
     auto opt = sub->add_option("-v,--value", val);
     args = {"-v", "4.56"};
 
     run();
-    EXPECT_EQ(val, 4.56);
+    CHECK(4.56 == val);
     // make sure unnamed sub options can be found from the main app
     auto opt2 = app.get_option("-v");
-    EXPECT_EQ(opt, opt2);
+    CHECK(opt2 == opt);
 
-    EXPECT_THROW(app.get_option("--vvvv"), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app.get_option("--vvvv"), CLI::OptionNotFound);
     // now test in the constant context
     const auto &appC = app;
     auto opt3 = appC.get_option("-v");
-    EXPECT_EQ(opt3->get_name(), "--value");
-    EXPECT_THROW(appC.get_option("--vvvv"), CLI::OptionNotFound);
+    CHECK("--value" == opt3->get_name());
+    CHECK_THROWS_AS(appC.get_option("--vvvv"), CLI::OptionNotFound);
 }
 
-TEST_F(TApp, UnnamedSubMix) {
+TEST_CASE_METHOD(TApp, "UnnamedSubMix", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0};
     app.add_option("-t", val2);
     auto sub1 = app.add_subcommand("", "empty name");
@@ -1511,13 +1507,13 @@ TEST_F(TApp, UnnamedSubMix) {
     args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
 
     run();
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(val3, 4.56);
-    EXPECT_EQ(app.count_all(), 3u);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(4.56 == val3);
+    CHECK(3u == app.count_all());
 }
 
-TEST_F(TApp, UnnamedSubMixExtras) {
+TEST_CASE_METHOD(TApp, "UnnamedSubMixExtras", "[subcom]") {
     double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
     auto sub = app.add_subcommand("", "empty name");
@@ -1525,26 +1521,26 @@ TEST_F(TApp, UnnamedSubMixExtras) {
     args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
     app.allow_extras();
     run();
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(app.remaining_size(), 2u);
-    EXPECT_EQ(sub->remaining_size(), 0u);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(2u == app.remaining_size());
+    CHECK(0u == sub->remaining_size());
 }
 
-TEST_F(TApp, UnnamedSubNoExtras) {
+TEST_CASE_METHOD(TApp, "UnnamedSubNoExtras", "[subcom]") {
     double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
     auto sub = app.add_subcommand();
     sub->add_option("-v,--value", val);
     args = {"-t", "5.93", "-v", "-3"};
     run();
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(app.remaining_size(), 0u);
-    EXPECT_EQ(sub->remaining_size(), 0u);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(0u == app.remaining_size());
+    CHECK(0u == sub->remaining_size());
 }
 
-TEST_F(TApp, SubcommandAlias) {
+TEST_CASE_METHOD(TApp, "SubcommandAlias", "[subcom]") {
     double val{0.0};
     auto sub = app.add_subcommand("sub1");
     sub->alias("sub2");
@@ -1552,27 +1548,27 @@ TEST_F(TApp, SubcommandAlias) {
     sub->add_option("-v,--value", val);
     args = {"sub1", "-v", "-3"};
     run();
-    EXPECT_EQ(val, -3.0);
+    CHECK(-3.0 == val);
 
     args = {"sub2", "--value", "-5"};
     run();
-    EXPECT_EQ(val, -5.0);
+    CHECK(-5.0 == val);
 
     args = {"sub3", "-v", "7"};
     run();
-    EXPECT_EQ(val, 7);
+    CHECK(7 == val);
 
     auto &al = sub->get_aliases();
-    ASSERT_GE(al.size(), 2U);
+    REQUIRE(2U <= al.size());
 
-    EXPECT_EQ(al[0], "sub2");
-    EXPECT_EQ(al[1], "sub3");
+    CHECK("sub2" == al[0]);
+    CHECK("sub3" == al[1]);
 
     sub->clear_aliases();
-    EXPECT_TRUE(al.empty());
+    CHECK(al.empty());
 }
 
-TEST_F(TApp, SubcommandAliasIgnoreCaseUnderscore) {
+TEST_CASE_METHOD(TApp, "SubcommandAliasIgnoreCaseUnderscore", "[subcom]") {
     double val{0.0};
     auto sub = app.add_subcommand("sub1");
     sub->alias("sub2");
@@ -1581,63 +1577,63 @@ TEST_F(TApp, SubcommandAliasIgnoreCaseUnderscore) {
     sub->add_option("-v,--value", val);
     args = {"sub1", "-v", "-3"};
     run();
-    EXPECT_EQ(val, -3.0);
+    CHECK(-3.0 == val);
 
     args = {"SUB2", "--value", "-5"};
     run();
-    EXPECT_EQ(val, -5.0);
+    CHECK(-5.0 == val);
 
     args = {"sUb3", "-v", "7"};
     run();
-    EXPECT_EQ(val, 7);
+    CHECK(7 == val);
     sub->ignore_underscore();
     args = {"sub_1", "-v", "-3"};
     run();
-    EXPECT_EQ(val, -3.0);
+    CHECK(-3.0 == val);
 
     args = {"SUB_2", "--value", "-5"};
     run();
-    EXPECT_EQ(val, -5.0);
+    CHECK(-5.0 == val);
 
     args = {"sUb_3", "-v", "7"};
     run();
-    EXPECT_EQ(val, 7);
+    CHECK(7 == val);
 
     sub->ignore_case(false);
     args = {"sub_1", "-v", "-3"};
     run();
-    EXPECT_EQ(val, -3.0);
+    CHECK(-3.0 == val);
 
     args = {"SUB_2", "--value", "-5"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"sUb_3", "-v", "7"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, OptionGroupAlias) {
+TEST_CASE_METHOD(TApp, "OptionGroupAlias", "[subcom]") {
     double val{0.0};
     auto sub = app.add_option_group("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
     sub->add_option("-v,--value", val);
     args = {"sub1", "-v", "-3"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"sub2", "--value", "-5"};
     run();
-    EXPECT_EQ(val, -5.0);
+    CHECK(-5.0 == val);
 
     args = {"sub3", "-v", "7"};
     run();
-    EXPECT_EQ(val, 7);
+    CHECK(7 == val);
 
     args = {"-v", "-3"};
     run();
-    EXPECT_EQ(val, -3);
+    CHECK(-3 == val);
 }
 
-TEST_F(TApp, subcommand_help) {
+TEST_CASE_METHOD(TApp, "subcommand_help", "[subcom]") {
     auto sub1 = app.add_subcommand("help")->silent();
     bool flag{false};
     app.add_flag("--one", flag, "FLAGGER");
@@ -1650,52 +1646,52 @@ TEST_F(TApp, subcommand_help) {
         called = true;
     }
     auto helpstr = app.help();
-    EXPECT_THAT(helpstr, HasSubstr("FLAGGER"));
-    EXPECT_TRUE(called);
+    CHECK_THAT(helpstr, Contains("FLAGGER"));
+    CHECK(called);
 }
 
-TEST_F(TApp, AliasErrors) {
+TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    EXPECT_THROW(sub2->alias("this is a not a valid alias"), CLI::IncorrectConstruction);
-    EXPECT_THROW(sub2->alias("-alias"), CLI::IncorrectConstruction);
-    EXPECT_THROW(sub2->alias("alia$"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(sub2->alias("this is a not a valid alias"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(sub2->alias("-alias"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(sub2->alias("alia$"), CLI::IncorrectConstruction);
 
-    EXPECT_THROW(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
-                 CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
+                    CLI::IncorrectConstruction);
 
-    EXPECT_THROW(app.add_subcommand("documenting a subcommand", "sub3"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.add_subcommand("documenting a subcommand", "sub3"), CLI::IncorrectConstruction);
     // cannot alias to an existing subcommand
-    EXPECT_THROW(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
-    EXPECT_THROW(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
     // aliasing to an existing name should be allowed
-    EXPECT_NO_THROW(sub1->alias(sub1->get_name()));
+    CHECK_NOTHROW(sub1->alias(sub1->get_name()));
 
     sub1->alias("les1")->alias("les2")->alias("les_3");
     sub2->alias("s2les1")->alias("s2les2")->alias("s2les3");
 
-    EXPECT_THROW(sub2->alias("les2"), CLI::OptionAlreadyAdded);
-    EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->alias("les2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
 
-    EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->name("sub1"), CLI::OptionAlreadyAdded);
     sub2->ignore_underscore();
-    EXPECT_THROW(sub2->alias("les3"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->alias("les3"), CLI::OptionAlreadyAdded);
 }
 // test adding a subcommand via the pointer
-TEST_F(TApp, ExistingSubcommandMatch) {
+TEST_CASE_METHOD(TApp, "ExistingSubcommandMatch", "[subcom]") {
     auto sshared = std::make_shared<CLI::App>("documenting the subcommand", "sub1");
     sshared->alias("sub2")->alias("sub3");
 
-    EXPECT_EQ(sshared->get_name(), "sub1");
+    CHECK("sub1" == sshared->get_name());
     app.add_subcommand("sub1");
 
     try {
         app.add_subcommand(sshared);
         // this should throw the next line should never be reached
-        EXPECT_FALSE(true);
+        CHECK(!true);
     } catch(const CLI::OptionAlreadyAdded &oaa) {
-        EXPECT_THAT(oaa.what(), HasSubstr("sub1"));
+        CHECK_THAT(oaa.what(), Contains("sub1"));
     }
     sshared->name("osub");
     app.add_subcommand("sub2");
@@ -1703,35 +1699,35 @@ TEST_F(TApp, ExistingSubcommandMatch) {
     try {
         app.add_subcommand(sshared);
         // this should throw the next line should never be reached
-        EXPECT_FALSE(true);
+        CHECK(!true);
     } catch(const CLI::OptionAlreadyAdded &oaa) {
-        EXPECT_THAT(oaa.what(), HasSubstr("sub2"));
+        CHECK_THAT(oaa.what(), Contains("sub2"));
     }
     // now check that disabled subcommands can be added regardless of name
     sshared->name("sub1");
     sshared->disabled();
-    EXPECT_NO_THROW(app.add_subcommand(sshared));
+    CHECK_NOTHROW(app.add_subcommand(sshared));
 }
 
-TEST_F(TApp, AliasErrorsInOptionGroup) {
+TEST_CASE_METHOD(TApp, "AliasErrorsInOptionGroup", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     auto g2 = app.add_option_group("g1");
     auto sub2 = g2->add_subcommand("sub2");
 
     // cannot alias to an existing subcommand even if it is in an option group
-    EXPECT_THROW(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
-    EXPECT_THROW(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->alias("sub2"), CLI::OptionAlreadyAdded);
 
     sub1->alias("les1")->alias("les2")->alias("les3");
     sub2->alias("s2les1")->alias("s2les2")->alias("s2les3");
 
-    EXPECT_THROW(sub2->alias("les2"), CLI::OptionAlreadyAdded);
-    EXPECT_THROW(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->alias("les2"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->alias("s2les2"), CLI::OptionAlreadyAdded);
 
-    EXPECT_THROW(sub2->name("sub1"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub2->name("sub1"), CLI::OptionAlreadyAdded);
 }
 
-TEST(SharedSubTests, SharedSubcommand) {
+TEST_CASE("SharedSubTests: SharedSubcommand", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0}, val4{0.0};
     CLI::App app1{"test program1"};
 
@@ -1745,7 +1741,7 @@ TEST(SharedSubTests, SharedSubcommand) {
     auto subown = app1.get_subcommand_ptr(sub);
     // add the extracted subcommand to a different app
     app2.add_subcommand(std::move(subown));
-    EXPECT_THROW(app2.add_subcommand(CLI::App_p{}), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app2.add_subcommand(CLI::App_p{}), CLI::IncorrectConstruction);
     input_t args1 = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
     input_t args2 = {"-m", "4.56", "-g", "8.235"};
     std::reverse(std::begin(args1), std::end(args1));
@@ -1755,13 +1751,13 @@ TEST(SharedSubTests, SharedSubcommand) {
 
     app2.parse(args2);
 
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(val3, 4.56);
-    EXPECT_EQ(val4, 8.235);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(4.56 == val3);
+    CHECK(8.235 == val4);
 }
 
-TEST(SharedSubTests, SharedSubIndependent) {
+TEST_CASE("SharedSubTests: SharedSubIndependent", "[subcom]") {
     double val{0.0}, val2{0.0}, val4{0.0};
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
@@ -1784,12 +1780,12 @@ TEST(SharedSubTests, SharedSubIndependent) {
     // parse with the extracted subcommand
     subown->parse(args2);
 
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(val4, 8.235);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(8.235 == val4);
 }
 
-TEST(SharedSubTests, SharedSubIndependentReuse) {
+TEST_CASE("SharedSubTests: SharedSubIndependentReuse", "[subcom]") {
     double val{0.0}, val2{0.0}, val4{0.0};
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
@@ -1809,60 +1805,60 @@ TEST(SharedSubTests, SharedSubIndependentReuse) {
     // parse with the extracted subcommand
     subown->parse("program1 -m 4.56 -g 8.235", true);
 
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
-    EXPECT_EQ(val4, 8.235);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
+    CHECK(8.235 == val4);
     val = 0.0;
     val2 = 0.0;
-    EXPECT_EQ(subown->get_name(), "program1");
+    CHECK("program1" == subown->get_name());
     // this tests the name reset in subcommand since it was automatic
     app1->parse(args2);
-    EXPECT_EQ(val, -3.0);
-    EXPECT_EQ(val2, 5.93);
+    CHECK(-3.0 == val);
+    CHECK(5.93 == val2);
 }
 
-TEST_F(ManySubcommands, getSubtests) {
+TEST_CASE_METHOD(ManySubcommands, "getSubtests", "[subcom]") {
     CLI::App_p sub2p = app.get_subcommand_ptr(sub2);
-    EXPECT_EQ(sub2p.get(), sub2);
-    EXPECT_THROW(app.get_subcommand_ptr(nullptr), CLI::OptionNotFound);
-    EXPECT_THROW(app.get_subcommand(nullptr), CLI::OptionNotFound);
+    CHECK(sub2 == sub2p.get());
+    CHECK_THROWS_AS(app.get_subcommand_ptr(nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(app.get_subcommand(nullptr), CLI::OptionNotFound);
     CLI::App_p sub3p = app.get_subcommand_ptr(2);
-    EXPECT_EQ(sub3p.get(), sub3);
+    CHECK(sub3 == sub3p.get());
 }
 
-TEST_F(ManySubcommands, defaultDisabledSubcommand) {
+TEST_CASE_METHOD(ManySubcommands, "defaultDisabledSubcommand", "[subcom]") {
 
     sub1->fallthrough();
     sub2->disabled_by_default();
     run();
     auto rem = app.remaining();
-    EXPECT_EQ(rem.size(), 1u);
-    EXPECT_EQ(rem[0], "sub2");
-    EXPECT_TRUE(sub2->get_disabled_by_default());
+    CHECK(1u == rem.size());
+    CHECK("sub2" == rem[0]);
+    CHECK(sub2->get_disabled_by_default());
     sub2->disabled(false);
-    EXPECT_FALSE(sub2->get_disabled());
+    CHECK(!sub2->get_disabled());
     run();
     // this should disable it again even though it was disabled
     rem = app.remaining();
-    EXPECT_EQ(rem.size(), 1u);
-    EXPECT_EQ(rem[0], "sub2");
-    EXPECT_TRUE(sub2->get_disabled_by_default());
-    EXPECT_TRUE(sub2->get_disabled());
+    CHECK(1u == rem.size());
+    CHECK("sub2" == rem[0]);
+    CHECK(sub2->get_disabled_by_default());
+    CHECK(sub2->get_disabled());
 }
 
-TEST_F(ManySubcommands, defaultEnabledSubcommand) {
+TEST_CASE_METHOD(ManySubcommands, "defaultEnabledSubcommand", "[subcom]") {
 
     sub2->enabled_by_default();
     run();
     auto rem = app.remaining();
-    EXPECT_EQ(rem.size(), 0u);
-    EXPECT_TRUE(sub2->get_enabled_by_default());
+    CHECK(0u == rem.size());
+    CHECK(sub2->get_enabled_by_default());
     sub2->disabled();
-    EXPECT_TRUE(sub2->get_disabled());
+    CHECK(sub2->get_disabled());
     run();
     // this should disable it again even though it was disabled
     rem = app.remaining();
-    EXPECT_EQ(rem.size(), 0u);
-    EXPECT_TRUE(sub2->get_enabled_by_default());
-    EXPECT_FALSE(sub2->get_disabled());
+    CHECK(0u == rem.size());
+    CHECK(sub2->get_enabled_by_default());
+    CHECK(!sub2->get_disabled());
 }

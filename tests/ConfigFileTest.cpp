@@ -6,63 +6,61 @@
 
 #include "app_helper.hpp"
 
-#include "gmock/gmock.h"
 #include <cstdio>
 #include <sstream>
 
-using ::testing::HasSubstr;
-using ::testing::Not;
+using Catch::Matchers::Contains;
 
-TEST(StringBased, convert_arg_for_ini) {
+TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini(std::string{}), "\"\"");
+    CHECK("\"\"" == CLI::detail::convert_arg_for_ini(std::string{}));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("true"), "true");
+    CHECK("true" == CLI::detail::convert_arg_for_ini("true"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("nan"), "nan");
+    CHECK("nan" == CLI::detail::convert_arg_for_ini("nan"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("happy hippo"), "\"happy hippo\"");
+    CHECK("\"happy hippo\"" == CLI::detail::convert_arg_for_ini("happy hippo"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("47"), "47");
+    CHECK("47" == CLI::detail::convert_arg_for_ini("47"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("47.365225"), "47.365225");
+    CHECK("47.365225" == CLI::detail::convert_arg_for_ini("47.365225"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("+3.28e-25"), "+3.28e-25");
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("-22E14"), "-22E14");
+    CHECK("+3.28e-25" == CLI::detail::convert_arg_for_ini("+3.28e-25"));
+    CHECK("-22E14" == CLI::detail::convert_arg_for_ini("-22E14"));
 
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("a"), "'a'");
+    CHECK("'a'" == CLI::detail::convert_arg_for_ini("a"));
     // hex
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0x5461FAED"), "0x5461FAED");
+    CHECK("0x5461FAED" == CLI::detail::convert_arg_for_ini("0x5461FAED"));
     // hex fail
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0x5461FAEG"), "\"0x5461FAEG\"");
+    CHECK("\"0x5461FAEG\"" == CLI::detail::convert_arg_for_ini("0x5461FAEG"));
 
     // octal
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0o546123567"), "0o546123567");
+    CHECK("0o546123567" == CLI::detail::convert_arg_for_ini("0o546123567"));
     // octal fail
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0o546123587"), "\"0o546123587\"");
+    CHECK("\"0o546123587\"" == CLI::detail::convert_arg_for_ini("0o546123587"));
 
     // binary
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0b01101110010"), "0b01101110010");
+    CHECK("0b01101110010" == CLI::detail::convert_arg_for_ini("0b01101110010"));
     // binary fail
-    EXPECT_EQ(CLI::detail::convert_arg_for_ini("0b01102110010"), "\"0b01102110010\"");
+    CHECK("\"0b01102110010\"" == CLI::detail::convert_arg_for_ini("0b01102110010"));
 }
 
-TEST(StringBased, IniJoin) {
+TEST_CASE("StringBased: IniJoin", "[config]") {
     std::vector<std::string> items = {"one", "two", "three four"};
     std::string result = "\"one\" \"two\" \"three four\"";
 
-    EXPECT_EQ(CLI::detail::ini_join(items, ' ', '\0', '\0'), result);
+    CHECK(result == CLI::detail::ini_join(items, ' ', '\0', '\0'));
 
     result = "[\"one\", \"two\", \"three four\"]";
 
-    EXPECT_EQ(CLI::detail::ini_join(items), result);
+    CHECK(result == CLI::detail::ini_join(items));
 
     result = "{\"one\"; \"two\"; \"three four\"}";
 
-    EXPECT_EQ(CLI::detail::ini_join(items, ';', '{', '}'), result);
+    CHECK(result == CLI::detail::ini_join(items, ';', '{', '}'));
 }
 
-TEST(StringBased, First) {
+TEST_CASE("StringBased: First", "[config]") {
     std::stringstream ofile;
 
     ofile << "one=three\n";
@@ -72,16 +70,16 @@ TEST(StringBased, First) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(2u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    CHECK(output.size() == 2u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
 }
 
-TEST(StringBased, FirstWithComments) {
+TEST_CASE("StringBased: FirstWithComments", "[config]") {
     std::stringstream ofile;
 
     ofile << ";this is a comment\n";
@@ -93,16 +91,16 @@ TEST(StringBased, FirstWithComments) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(2u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    CHECK(output.size() == 2u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
 }
 
-TEST(StringBased, Quotes) {
+TEST_CASE("StringBased: Quotes", "[config]") {
     std::stringstream ofile;
 
     ofile << R"(one = "three")" << '\n';
@@ -113,19 +111,19 @@ TEST(StringBased, Quotes) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(3u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
-    EXPECT_EQ("five", output.at(2).name);
-    EXPECT_EQ(1u, output.at(2).inputs.size());
-    EXPECT_EQ("six and seven", output.at(2).inputs.at(0));
+    CHECK(output.size() == 3u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
+    CHECK(output.at(2).name == "five");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "six and seven");
 }
 
-TEST(StringBased, Vector) {
+TEST_CASE("StringBased: Vector", "[config]") {
     std::stringstream ofile;
 
     ofile << "one = three\n";
@@ -136,21 +134,21 @@ TEST(StringBased, Vector) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(3u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
-    EXPECT_EQ("five", output.at(2).name);
-    EXPECT_EQ(3u, output.at(2).inputs.size());
-    EXPECT_EQ("six", output.at(2).inputs.at(0));
-    EXPECT_EQ("and", output.at(2).inputs.at(1));
-    EXPECT_EQ("seven", output.at(2).inputs.at(2));
+    CHECK(output.size() == 3u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
+    CHECK(output.at(2).name == "five");
+    CHECK(output.at(2).inputs.size() == 3u);
+    CHECK(output.at(2).inputs.at(0) == "six");
+    CHECK(output.at(2).inputs.at(1) == "and");
+    CHECK(output.at(2).inputs.at(2) == "seven");
 }
 
-TEST(StringBased, TomlVector) {
+TEST_CASE("StringBased: TomlVector", "[config]") {
     std::stringstream ofile;
 
     ofile << "one = [three]\n";
@@ -166,32 +164,32 @@ TEST(StringBased, TomlVector) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(5u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
-    EXPECT_EQ("five", output.at(2).name);
-    EXPECT_EQ(3u, output.at(2).inputs.size());
-    EXPECT_EQ("six", output.at(2).inputs.at(0));
-    EXPECT_EQ("and", output.at(2).inputs.at(1));
-    EXPECT_EQ("seven", output.at(2).inputs.at(2));
-    EXPECT_EQ("eight", output.at(3).name);
-    EXPECT_EQ(4u, output.at(3).inputs.size());
-    EXPECT_EQ("nine", output.at(3).inputs.at(0));
-    EXPECT_EQ("ten", output.at(3).inputs.at(1));
-    EXPECT_EQ("eleven", output.at(3).inputs.at(2));
-    EXPECT_EQ("twelve", output.at(3).inputs.at(3));
-    EXPECT_EQ("one_more", output.at(4).name);
-    EXPECT_EQ(3u, output.at(4).inputs.size());
-    EXPECT_EQ("one", output.at(4).inputs.at(0));
-    EXPECT_EQ("two", output.at(4).inputs.at(1));
-    EXPECT_EQ("three", output.at(4).inputs.at(2));
+    CHECK(output.size() == 5u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
+    CHECK(output.at(2).name == "five");
+    CHECK(output.at(2).inputs.size() == 3u);
+    CHECK(output.at(2).inputs.at(0) == "six");
+    CHECK(output.at(2).inputs.at(1) == "and");
+    CHECK(output.at(2).inputs.at(2) == "seven");
+    CHECK(output.at(3).name == "eight");
+    CHECK(output.at(3).inputs.size() == 4u);
+    CHECK(output.at(3).inputs.at(0) == "nine");
+    CHECK(output.at(3).inputs.at(1) == "ten");
+    CHECK(output.at(3).inputs.at(2) == "eleven");
+    CHECK(output.at(3).inputs.at(3) == "twelve");
+    CHECK(output.at(4).name == "one_more");
+    CHECK(output.at(4).inputs.size() == 3u);
+    CHECK(output.at(4).inputs.at(0) == "one");
+    CHECK(output.at(4).inputs.at(1) == "two");
+    CHECK(output.at(4).inputs.at(2) == "three");
 }
 
-TEST(StringBased, Spaces) {
+TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
     ofile << "one = three\n";
@@ -201,16 +199,16 @@ TEST(StringBased, Spaces) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(2u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(1).name);
-    EXPECT_EQ(1u, output.at(1).inputs.size());
-    EXPECT_EQ("four", output.at(1).inputs.at(0));
+    CHECK(output.size() == 2u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "four");
 }
 
-TEST(StringBased, Sections) {
+TEST_CASE("StringBased: Sections", "[config]") {
     std::stringstream ofile;
 
     ofile << "one=three\n";
@@ -221,18 +219,18 @@ TEST(StringBased, Sections) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(4u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("two", output.at(2).name);
-    EXPECT_EQ("second", output.at(2).parents.at(0));
-    EXPECT_EQ(1u, output.at(2).inputs.size());
-    EXPECT_EQ("four", output.at(2).inputs.at(0));
-    EXPECT_EQ("second.two", output.at(2).fullname());
+    CHECK(output.size() == 4u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(2).name == "two");
+    CHECK(output.at(2).parents.at(0) == "second");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "four");
+    CHECK(output.at(2).fullname() == "second.two");
 }
 
-TEST(StringBased, SpacesSections) {
+TEST_CASE("StringBased: SpacesSections", "[config]") {
     std::stringstream ofile;
 
     ofile << "one=three\n\n";
@@ -244,19 +242,19 @@ TEST(StringBased, SpacesSections) {
 
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
-    EXPECT_EQ(4u, output.size());
-    EXPECT_EQ("one", output.at(0).name);
-    EXPECT_EQ(1u, output.at(0).inputs.size());
-    EXPECT_EQ("three", output.at(0).inputs.at(0));
-    EXPECT_EQ("second", output.at(1).parents.at(0));
-    EXPECT_EQ("++", output.at(1).name);
-    EXPECT_EQ("two", output.at(2).name);
-    EXPECT_EQ(1u, output.at(2).parents.size());
-    EXPECT_EQ("second", output.at(2).parents.at(0));
-    EXPECT_EQ(1u, output.at(2).inputs.size());
-    EXPECT_EQ("four", output.at(2).inputs.at(0));
-    EXPECT_EQ("second", output.at(3).parents.at(0));
-    EXPECT_EQ("--", output.at(3).name);
+    CHECK(output.size() == 4u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).parents.at(0) == "second");
+    CHECK(output.at(1).name == "++");
+    CHECK(output.at(2).name == "two");
+    CHECK(output.at(2).parents.size() == 1u);
+    CHECK(output.at(2).parents.at(0) == "second");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "four");
+    CHECK(output.at(3).parents.at(0) == "second");
+    CHECK(output.at(3).name == "--");
 }
 
 // check function to make sure that open sections match close sections
@@ -284,7 +282,7 @@ bool checkSections(const std::vector<CLI::ConfigItem> &output) {
     }
     return open.empty();
 }
-TEST(StringBased, Layers) {
+TEST_CASE("StringBased: Layers", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -298,11 +296,11 @@ TEST(StringBased, Layers) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 4 openings and 4 closings
-    EXPECT_EQ(10u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 10u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, LayersSkip) {
+TEST_CASE("StringBased: LayersSkip", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -314,11 +312,11 @@ TEST(StringBased, LayersSkip) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 4 openings and 4 closings
-    EXPECT_EQ(10u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 10u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, LayersSkipOrdered) {
+TEST_CASE("StringBased: LayersSkipOrdered", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -330,11 +328,11 @@ TEST(StringBased, LayersSkipOrdered) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 4 openings and 4 closings
-    EXPECT_EQ(12u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 12u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, LayersChange) {
+TEST_CASE("StringBased: LayersChange", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -346,11 +344,11 @@ TEST(StringBased, LayersChange) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 3 openings and 3 closings
-    EXPECT_EQ(8u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 8u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, Layers2LevelChange) {
+TEST_CASE("StringBased: Layers2LevelChange", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -362,11 +360,11 @@ TEST(StringBased, Layers2LevelChange) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 5 openings and 5 closings
-    EXPECT_EQ(12u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 12u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, Layers3LevelChange) {
+TEST_CASE("StringBased: Layers3LevelChange", "[config]") {
     std::stringstream ofile;
 
     ofile << "[other.sub2.subsub.cmd]\n";
@@ -377,11 +375,11 @@ TEST(StringBased, Layers3LevelChange) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 1 flags and 7 openings and 7 closings
-    EXPECT_EQ(15u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 15u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, newSegment) {
+TEST_CASE("StringBased: newSegment", "[config]") {
     std::stringstream ofile;
 
     ofile << "[other.sub2.subsub.cmd]\n";
@@ -393,11 +391,11 @@ TEST(StringBased, newSegment) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 5 openings and 5 closings
-    EXPECT_EQ(12u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 12u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, LayersDirect) {
+TEST_CASE("StringBased: LayersDirect", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -409,11 +407,11 @@ TEST(StringBased, LayersDirect) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 2 flags and 4 openings and 4 closings
-    EXPECT_EQ(10u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 10u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, LayersComplex) {
+TEST_CASE("StringBased: LayersComplex", "[config]") {
     std::stringstream ofile;
 
     ofile << "simple = true\n\n";
@@ -429,15 +427,15 @@ TEST(StringBased, LayersComplex) {
     std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
 
     // 4 flags and 6 openings and 6 closings
-    EXPECT_EQ(16u, output.size());
-    EXPECT_TRUE(checkSections(output));
+    CHECK(output.size() == 16u);
+    CHECK(checkSections(output));
 }
 
-TEST(StringBased, file_error) {
-    EXPECT_THROW(std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_file("nonexist_file"), CLI::FileError);
+TEST_CASE("StringBased: file_error", "[config]") {
+    CHECK_THROWS_AS(CLI::ConfigINI().from_file("nonexist_file"), CLI::FileError);
 }
 
-TEST_F(TApp, IniNotRequired) {
+TEST_CASE_METHOD(TApp, "IniNotRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -459,22 +457,22 @@ TEST_F(TApp, IniNotRequired) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(99, two);
-    EXPECT_EQ(3, three);
+    CHECK(one == 1);
+    CHECK(two == 99);
+    CHECK(three == 3);
 
     one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(app["--config"]->as<std::string>(), "TestIniTmp.ini");
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+    CHECK("TestIniTmp.ini" == app["--config"]->as<std::string>());
 }
 
-TEST_F(TApp, IniSuccessOnUnknownOption) {
+TEST_CASE_METHOD(TApp, "IniSuccessOnUnknownOption", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
@@ -489,10 +487,10 @@ TEST_F(TApp, IniSuccessOnUnknownOption) {
     int two{0};
     app.add_option("--two", two);
     run();
-    EXPECT_EQ(99, two);
+    CHECK(two == 99);
 }
 
-TEST_F(TApp, IniGetRemainingOption) {
+TEST_CASE_METHOD(TApp, "IniGetRemainingOption", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
@@ -508,12 +506,12 @@ TEST_F(TApp, IniGetRemainingOption) {
 
     int two{0};
     app.add_option("--two", two);
-    ASSERT_NO_THROW(run());
+    REQUIRE_NOTHROW(run());
     std::vector<std::string> ExpectedRemaining = {ExtraOption};
-    EXPECT_EQ(app.remaining(), ExpectedRemaining);
+    CHECK(ExpectedRemaining == app.remaining());
 }
 
-TEST_F(TApp, IniGetNoRemaining) {
+TEST_CASE_METHOD(TApp, "IniGetNoRemaining", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
@@ -526,26 +524,26 @@ TEST_F(TApp, IniGetNoRemaining) {
 
     int two{0};
     app.add_option("--two", two);
-    ASSERT_NO_THROW(run());
-    EXPECT_EQ(app.remaining().size(), 0u);
+    REQUIRE_NOTHROW(run());
+    CHECK(0u == app.remaining().size());
 }
 
-TEST_F(TApp, IniRequiredNoDefault) {
+TEST_CASE_METHOD(TApp, "IniRequiredNoDefault", "[config]") {
 
     app.set_config("--config")->required();
 
     int two{0};
     app.add_option("--two", two);
-    ASSERT_THROW(run(), CLI::FileError);
+    REQUIRE_THROWS_AS(run(), CLI::FileError);
 }
 
-TEST_F(TApp, IniNotRequiredNoDefault) {
+TEST_CASE_METHOD(TApp, "IniNotRequiredNoDefault", "[config]") {
 
     app.set_config("--config");
 
     int two{0};
     app.add_option("--two", two);
-    ASSERT_NO_THROW(run());
+    REQUIRE_NOTHROW(run());
 }
 
 /// Define a class for testing purposes that does bad things
@@ -557,7 +555,7 @@ class EvilConfig : public CLI::Config {
     virtual std::vector<CLI::ConfigItem> from_config(std::istream &) const { throw CLI::FileError("evil"); }
 };
 
-TEST_F(TApp, IniRequiredbadConfigurator) {
+TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -572,10 +570,10 @@ TEST_F(TApp, IniRequiredbadConfigurator) {
     app.config_formatter(std::make_shared<EvilConfig>());
     int two{0};
     app.add_option("--two", two);
-    ASSERT_THROW(run(), CLI::FileError);
+    REQUIRE_THROWS_AS(run(), CLI::FileError);
 }
 
-TEST_F(TApp, IniNotRequiredbadConfigurator) {
+TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -590,10 +588,10 @@ TEST_F(TApp, IniNotRequiredbadConfigurator) {
     app.config_formatter(std::make_shared<EvilConfig>());
     int two{0};
     app.add_option("--two", two);
-    ASSERT_NO_THROW(run());
+    REQUIRE_NOTHROW(run());
 }
 
-TEST_F(TApp, IniNotRequiredNotDefault) {
+TEST_CASE_METHOD(TApp, "IniNotRequiredNotDefault", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     TempFile tmpini2{"TestIniTmp2.ini"};
@@ -620,19 +618,19 @@ TEST_F(TApp, IniNotRequiredNotDefault) {
     app.add_option("--three", three);
 
     run();
-    EXPECT_EQ(app["--config"]->as<std::string>(), tmpini.c_str());
-    EXPECT_EQ(99, two);
-    EXPECT_EQ(3, three);
+    CHECK(tmpini.c_str() == app["--config"]->as<std::string>());
+    CHECK(two == 99);
+    CHECK(three == 3);
 
     args = {"--config", tmpini2};
     run();
 
-    EXPECT_EQ(98, two);
-    EXPECT_EQ(4, three);
-    EXPECT_EQ(app.get_config_ptr()->as<std::string>(), tmpini2.c_str());
+    CHECK(two == 98);
+    CHECK(three == 4);
+    CHECK(tmpini2.c_str() == app.get_config_ptr()->as<std::string>());
 }
 
-TEST_F(TApp, MultiConfig) {
+TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     TempFile tmpini2{"TestIniTmp2.ini"};
@@ -661,19 +659,19 @@ TEST_F(TApp, MultiConfig) {
     args = {"--config", tmpini2, "--config", tmpini};
     run();
 
-    EXPECT_EQ(99, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(55, one);
+    CHECK(two == 99);
+    CHECK(three == 3);
+    CHECK(one == 55);
 
     args = {"--config", tmpini, "--config", tmpini2};
     run();
 
-    EXPECT_EQ(99, two);
-    EXPECT_EQ(4, three);
-    EXPECT_EQ(55, one);
+    CHECK(two == 99);
+    CHECK(three == 4);
+    CHECK(one == 55);
 }
 
-TEST_F(TApp, MultiConfig_single) {
+TEST_CASE_METHOD(TApp, "MultiConfig_single", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     TempFile tmpini2{"TestIniTmp2.ini"};
@@ -702,37 +700,37 @@ TEST_F(TApp, MultiConfig_single) {
     args = {"--config", tmpini2, "--config", tmpini};
     run();
 
-    EXPECT_EQ(99, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(0, one);
+    CHECK(two == 99);
+    CHECK(three == 3);
+    CHECK(one == 0);
 
     two = 0;
     args = {"--config", tmpini, "--config", tmpini2};
     run();
 
-    EXPECT_EQ(0, two);
-    EXPECT_EQ(4, three);
-    EXPECT_EQ(55, one);
+    CHECK(two == 0);
+    CHECK(three == 4);
+    CHECK(one == 55);
 }
 
-TEST_F(TApp, IniRequiredNotFound) {
+TEST_CASE_METHOD(TApp, "IniRequiredNotFound", "[config]") {
 
     std::string noini = "TestIniNotExist.ini";
     app.set_config("--config", noini, "", true);
 
-    EXPECT_THROW(run(), CLI::FileError);
+    CHECK_THROWS_AS(run(), CLI::FileError);
 }
 
-TEST_F(TApp, IniNotRequiredPassedNotFound) {
+TEST_CASE_METHOD(TApp, "IniNotRequiredPassedNotFound", "[config]") {
 
     std::string noini = "TestIniNotExist.ini";
     app.set_config("--config", "", "", false);
 
     args = {"--config", noini};
-    EXPECT_THROW(run(), CLI::FileError);
+    CHECK_THROWS_AS(run(), CLI::FileError);
 }
 
-TEST_F(TApp, IniOverwrite) {
+TEST_CASE_METHOD(TApp, "IniOverwrite", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     {
@@ -751,10 +749,10 @@ TEST_F(TApp, IniOverwrite) {
 
     run();
 
-    EXPECT_EQ(99, two);
+    CHECK(two == 99);
 }
 
-TEST_F(TApp, IniRequired) {
+TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -775,28 +773,28 @@ TEST_F(TApp, IniRequired) {
     args = {"--one=1"};
 
     run();
-    EXPECT_EQ(one, 1);
-    EXPECT_EQ(two, 99);
-    EXPECT_EQ(three, 3);
+    CHECK(1 == one);
+    CHECK(99 == two);
+    CHECK(3 == three);
 
     one = two = three = 0;
     args = {"--one=1", "--two=2"};
 
-    EXPECT_NO_THROW(run());
-    EXPECT_EQ(one, 1);
-    EXPECT_EQ(two, 2);
-    EXPECT_EQ(three, 3);
+    CHECK_NOTHROW(run());
+    CHECK(1 == one);
+    CHECK(2 == two);
+    CHECK(3 == three);
 
     args = {};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"--two=2"};
 
-    EXPECT_THROW(run(), CLI::RequiredError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-TEST_F(TApp, IniVector) {
+TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -815,10 +813,10 @@ TEST_F(TApp, IniVector) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2, 3}), two);
-    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
 }
-TEST_F(TApp, TOMLVector) {
+TEST_CASE_METHOD(TApp, "TOMLVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
 
@@ -838,11 +836,11 @@ TEST_F(TApp, TOMLVector) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2, 3}), two);
-    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
-TEST_F(TApp, ColonValueSep) {
+TEST_CASE_METHOD(TApp, "ColonValueSep", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -864,11 +862,11 @@ TEST_F(TApp, ColonValueSep) {
 
     run();
 
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
+    CHECK(two == 2);
+    CHECK(three == 3);
 }
 
-TEST_F(TApp, TOMLVectordirect) {
+TEST_CASE_METHOD(TApp, "TOMLVectordirect", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -890,11 +888,11 @@ TEST_F(TApp, TOMLVectordirect) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2, 3}), two);
-    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
-TEST_F(TApp, TOMLStringVector) {
+TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
 
@@ -914,11 +912,11 @@ TEST_F(TApp, TOMLStringVector) {
 
     run();
 
-    EXPECT_EQ(std::vector<std::string>({"2", "3"}), two);
-    EXPECT_EQ(std::vector<std::string>({"1", "2", "3"}), three);
+    CHECK(two == std::vector<std::string>({"2", "3"}));
+    CHECK(three == std::vector<std::string>({"1", "2", "3"}));
 }
 
-TEST_F(TApp, IniVectorCsep) {
+TEST_CASE_METHOD(TApp, "IniVectorCsep", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -938,11 +936,11 @@ TEST_F(TApp, IniVectorCsep) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2, 3}), two);
-    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
-TEST_F(TApp, IniVectorMultiple) {
+TEST_CASE_METHOD(TApp, "IniVectorMultiple", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -965,11 +963,11 @@ TEST_F(TApp, IniVectorMultiple) {
 
     run();
 
-    EXPECT_EQ(std::vector<int>({2, 3}), two);
-    EXPECT_EQ(std::vector<int>({1, 2, 3}), three);
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
-TEST_F(TApp, IniLayered) {
+TEST_CASE_METHOD(TApp, "IniLayered", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -993,15 +991,15 @@ TEST_F(TApp, IniLayered) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
 
-    EXPECT_EQ(subcom->count(), 0U);
-    EXPECT_FALSE(*subcom);
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
 }
 
-TEST_F(TApp, IniLayeredDotSection) {
+TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1026,15 +1024,15 @@ TEST_F(TApp, IniLayeredDotSection) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
 
-    EXPECT_EQ(subcom->count(), 0U);
-    EXPECT_FALSE(*subcom);
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
 }
 
-TEST_F(TApp, IniSubcommandConfigurable) {
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurable", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1059,16 +1057,16 @@ TEST_F(TApp, IniSubcommandConfigurable) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
 
-    EXPECT_EQ(subcom->count(), 1U);
-    EXPECT_TRUE(*subcom);
-    EXPECT_TRUE(app.got_subcommand(subcom));
+    CHECK(1U == subcom->count());
+    CHECK(*subcom);
+    CHECK(app.got_subcommand(subcom));
 }
 
-TEST_F(TApp, IniSubcommandConfigurablePreParse) {
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1098,18 +1096,18 @@ TEST_F(TApp, IniSubcommandConfigurablePreParse) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(0, four);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+    CHECK(four == 0);
 
-    EXPECT_EQ(parse_c.size(), 1U);
-    EXPECT_EQ(parse_c[0], 2U);
+    CHECK(1U == parse_c.size());
+    CHECK(2U == parse_c[0]);
 
-    EXPECT_EQ(subcom2->count(), 0U);
+    CHECK(0U == subcom2->count());
 }
 
-TEST_F(TApp, IniSubcommandConfigurableParseComplete) {
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1142,19 +1140,19 @@ TEST_F(TApp, IniSubcommandConfigurableParseComplete) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(0, four);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+    CHECK(four == 0);
 
-    ASSERT_EQ(parse_c.size(), 2u);
-    EXPECT_EQ(parse_c[0], 68U);
-    EXPECT_EQ(parse_c[1], 58U);
-    EXPECT_EQ(subsubcom->count(), 1u);
-    EXPECT_EQ(subcom2->count(), 0u);
+    REQUIRE(2u == parse_c.size());
+    CHECK(68U == parse_c[0]);
+    CHECK(58U == parse_c[1]);
+    CHECK(1u == subsubcom->count());
+    CHECK(0u == subcom2->count());
 }
 
-TEST_F(TApp, IniSubcommandMultipleSections) {
+TEST_CASE_METHOD(TApp, "IniSubcommandMultipleSections", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1190,19 +1188,19 @@ TEST_F(TApp, IniSubcommandMultipleSections) {
 
     run();
 
-    EXPECT_EQ(1, one);
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(3, three);
-    EXPECT_EQ(4, four);
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+    CHECK(four == 4);
 
-    ASSERT_EQ(parse_c.size(), 2u);
-    EXPECT_EQ(parse_c[0], 68U);
-    EXPECT_EQ(parse_c[1], 58U);
-    EXPECT_EQ(subsubcom->count(), 1u);
-    EXPECT_EQ(subcom2->count(), 0u);  // not configurable but value is updated
+    REQUIRE(2u == parse_c.size());
+    CHECK(68U == parse_c[0]);
+    CHECK(58U == parse_c[1]);
+    CHECK(1u == subsubcom->count());
+    CHECK(0u == subcom2->count());
 }
 
-TEST_F(TApp, DuplicateSubcommandCallbacks) {
+TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[config]") {
 
     TempFile tmptoml{"TesttomlTmp.toml"};
 
@@ -1219,14 +1217,14 @@ TEST_F(TApp, DuplicateSubcommandCallbacks) {
     int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
-    EXPECT_TRUE(foo->get_immediate_callback());
+    CHECK(foo->get_immediate_callback());
     foo->configurable();
 
     run();
-    EXPECT_EQ(count, 3);
+    CHECK(3 == count);
 }
 
-TEST_F(TApp, IniFailure) {
+TEST_CASE_METHOD(TApp, "IniFailure", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1238,10 +1236,10 @@ TEST_F(TApp, IniFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConfigError);
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
 }
 
-TEST_F(TApp, IniConfigurable) {
+TEST_CASE_METHOD(TApp, "IniConfigurable", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1255,11 +1253,11 @@ TEST_F(TApp, IniConfigurable) {
         out << "val=1" << std::endl;
     }
 
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(value);
+    REQUIRE_NOTHROW(run());
+    CHECK(value);
 }
 
-TEST_F(TApp, IniNotConfigurable) {
+TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1273,10 +1271,10 @@ TEST_F(TApp, IniNotConfigurable) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConfigError);
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
 }
 
-TEST_F(TApp, IniSubFailure) {
+TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1289,10 +1287,10 @@ TEST_F(TApp, IniSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConfigError);
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
 }
 
-TEST_F(TApp, IniNoSubFailure) {
+TEST_CASE_METHOD(TApp, "IniNoSubFailure", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1304,10 +1302,10 @@ TEST_F(TApp, IniNoSubFailure) {
         out << "val=1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConfigError);
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
 }
 
-TEST_F(TApp, IniFlagConvertFailure) {
+TEST_CASE_METHOD(TApp, "IniFlagConvertFailure", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1321,13 +1319,13 @@ TEST_F(TApp, IniFlagConvertFailure) {
     run();
     bool result{false};
     auto *opt = app.get_option("--flag");
-    EXPECT_THROW(opt->results(result), CLI::ConversionError);
+    CHECK_THROWS_AS(opt->results(result), CLI::ConversionError);
     std::string res;
     opt->results(res);
-    EXPECT_EQ(res, "moobook");
+    CHECK("moobook" == res);
 }
 
-TEST_F(TApp, IniFlagNumbers) {
+TEST_CASE_METHOD(TApp, "IniFlagNumbers", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1340,11 +1338,11 @@ TEST_F(TApp, IniFlagNumbers) {
         out << "flag=3" << std::endl;
     }
 
-    ASSERT_NO_THROW(run());
-    EXPECT_TRUE(boo);
+    REQUIRE_NOTHROW(run());
+    CHECK(boo);
 }
 
-TEST_F(TApp, IniFlagDual) {
+TEST_CASE_METHOD(TApp, "IniFlagDual", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1358,10 +1356,10 @@ TEST_F(TApp, IniFlagDual) {
         out << "flag=1 1" << std::endl;
     }
 
-    EXPECT_THROW(run(), CLI::ConversionError);
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-TEST_F(TApp, IniShort) {
+TEST_CASE_METHOD(TApp, "IniShort", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1374,11 +1372,11 @@ TEST_F(TApp, IniShort) {
         out << "f=3" << std::endl;
     }
 
-    ASSERT_NO_THROW(run());
-    EXPECT_EQ(key, 3);
+    REQUIRE_NOTHROW(run());
+    CHECK(3 == key);
 }
 
-TEST_F(TApp, IniPositional) {
+TEST_CASE_METHOD(TApp, "IniPositional", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1391,11 +1389,11 @@ TEST_F(TApp, IniPositional) {
         out << "key=3" << std::endl;
     }
 
-    ASSERT_NO_THROW(run());
-    EXPECT_EQ(key, 3);
+    REQUIRE_NOTHROW(run());
+    CHECK(3 == key);
 }
 
-TEST_F(TApp, IniEnvironmental) {
+TEST_CASE_METHOD(TApp, "IniEnvironmental", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1408,11 +1406,11 @@ TEST_F(TApp, IniEnvironmental) {
         out << "CLI11_TEST_ENV_KEY_TMP=3" << std::endl;
     }
 
-    ASSERT_NO_THROW(run());
-    EXPECT_EQ(key, 3);
+    REQUIRE_NOTHROW(run());
+    CHECK(3 == key);
 }
 
-TEST_F(TApp, IniFlagText) {
+TEST_CASE_METHOD(TApp, "IniFlagText", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1433,13 +1431,13 @@ TEST_F(TApp, IniFlagText) {
 
     run();
 
-    EXPECT_TRUE(flag1);
-    EXPECT_TRUE(flag2);
-    EXPECT_FALSE(flag3);
-    EXPECT_TRUE(flag4);
+    CHECK(flag1);
+    CHECK(flag2);
+    CHECK(!flag3);
+    CHECK(flag4);
 }
 
-TEST_F(TApp, IniFlags) {
+TEST_CASE_METHOD(TApp, "IniFlags", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
 
@@ -1461,13 +1459,13 @@ TEST_F(TApp, IniFlags) {
 
     run();
 
-    EXPECT_EQ(2, two);
-    EXPECT_TRUE(three);
-    EXPECT_TRUE(four);
-    EXPECT_TRUE(five);
+    CHECK(two == 2);
+    CHECK(three);
+    CHECK(four);
+    CHECK(five);
 }
 
-TEST_F(TApp, IniFalseFlags) {
+TEST_CASE_METHOD(TApp, "IniFalseFlags", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
 
@@ -1489,13 +1487,13 @@ TEST_F(TApp, IniFalseFlags) {
 
     run();
 
-    EXPECT_EQ(-2, two);
-    EXPECT_FALSE(three);
-    EXPECT_TRUE(four);
-    EXPECT_TRUE(five);
+    CHECK(two == -2);
+    CHECK(!three);
+    CHECK(four);
+    CHECK(five);
 }
 
-TEST_F(TApp, IniFalseFlagsDef) {
+TEST_CASE_METHOD(TApp, "IniFalseFlagsDef", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
 
@@ -1517,13 +1515,13 @@ TEST_F(TApp, IniFalseFlagsDef) {
 
     run();
 
-    EXPECT_EQ(-2, two);
-    EXPECT_TRUE(three);
-    EXPECT_FALSE(four);
-    EXPECT_TRUE(five);
+    CHECK(two == -2);
+    CHECK(three);
+    CHECK(!four);
+    CHECK(five);
 }
 
-TEST_F(TApp, IniFalseFlagsDefDisableOverrideError) {
+TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideError", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
 
@@ -1541,10 +1539,10 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideError) {
     app.add_flag("!--four", four);
     app.add_flag("--five", five);
 
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, IniFalseFlagsDefDisableOverrideSuccess) {
+TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideSuccess", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
 
@@ -1563,12 +1561,12 @@ TEST_F(TApp, IniFalseFlagsDefDisableOverrideSuccess) {
 
     run();
 
-    EXPECT_EQ(2, two);
-    EXPECT_EQ(4, four);
-    EXPECT_EQ(15, val);
+    CHECK(two == 2);
+    CHECK(four == 4);
+    CHECK(val == 15);
 }
 
-TEST_F(TApp, TomlOutputSimple) {
+TEST_CASE_METHOD(TApp, "TomlOutputSimple", "[config]") {
 
     int v{0};
     app.add_option("--simple", v);
@@ -1578,10 +1576,10 @@ TEST_F(TApp, TomlOutputSimple) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("simple=3\n", str);
+    CHECK(str == "simple=3\n");
 }
 
-TEST_F(TApp, TomlOutputShort) {
+TEST_CASE_METHOD(TApp, "TomlOutputShort", "[config]") {
 
     int v{0};
     app.add_option("-s", v);
@@ -1591,10 +1589,10 @@ TEST_F(TApp, TomlOutputShort) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("s=3\n", str);
+    CHECK(str == "s=3\n");
 }
 
-TEST_F(TApp, TomlOutputPositional) {
+TEST_CASE_METHOD(TApp, "TomlOutputPositional", "[config]") {
 
     int v{0};
     app.add_option("pos", v);
@@ -1604,11 +1602,11 @@ TEST_F(TApp, TomlOutputPositional) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("pos=3\n", str);
+    CHECK(str == "pos=3\n");
 }
 
 // try the output with environmental only arguments
-TEST_F(TApp, TomlOutputEnvironmental) {
+TEST_CASE_METHOD(TApp, "TomlOutputEnvironmental", "[config]") {
 
     put_env("CLI11_TEST_ENV_TMP", "2");
 
@@ -1617,14 +1615,14 @@ TEST_F(TApp, TomlOutputEnvironmental) {
 
     run();
 
-    EXPECT_EQ(2, val);
+    CHECK(val == 2);
     std::string str = app.config_to_str();
-    EXPECT_EQ("CLI11_TEST_ENV_TMP=2\n", str);
+    CHECK(str == "CLI11_TEST_ENV_TMP=2\n");
 
     unset_env("CLI11_TEST_ENV_TMP");
 }
 
-TEST_F(TApp, TomlOutputNoConfigurable) {
+TEST_CASE_METHOD(TApp, "TomlOutputNoConfigurable", "[config]") {
 
     int v1{0}, v2{0};
     app.add_option("--simple", v1);
@@ -1635,10 +1633,10 @@ TEST_F(TApp, TomlOutputNoConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("simple=3\n", str);
+    CHECK(str == "simple=3\n");
 }
 
-TEST_F(TApp, TomlOutputShortSingleDescription) {
+TEST_CASE_METHOD(TApp, "TomlOutputShortSingleDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.";
     app.add_flag("--" + flag, description);
@@ -1646,10 +1644,10 @@ TEST_F(TApp, TomlOutputShortSingleDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("# " + description + "\n" + flag + "=false\n"));
+    CHECK_THAT(str, Contains("# " + description + "\n" + flag + "=false\n"));
 }
 
-TEST_F(TApp, TomlOutputShortDoubleDescription) {
+TEST_CASE_METHOD(TApp, "TomlOutputShortDoubleDescription", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -1660,11 +1658,11 @@ TEST_F(TApp, TomlOutputShortDoubleDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(
-        str, HasSubstr("# " + description1 + "\n" + flag1 + "=false\n\n# " + description2 + "\n" + flag2 + "=false\n"));
+    std::string ans = "# " + description1 + "\n" + flag1 + "=false\n\n# " + description2 + "\n" + flag2 + "=false\n";
+    CHECK_THAT(str, Contains(ans));
 }
 
-TEST_F(TApp, TomlOutputGroups) {
+TEST_CASE_METHOD(TApp, "TomlOutputGroups", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -1675,11 +1673,11 @@ TEST_F(TApp, TomlOutputGroups) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
 }
 
-TEST_F(TApp, TomlOutputHiddenOptions) {
+TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -1692,18 +1690,18 @@ TEST_F(TApp, TomlOutputHiddenOptions) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
-    EXPECT_THAT(str, HasSubstr("dval=12.7"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval=12.7"));
     auto loc = str.find("dval=12.7");
     auto locg1 = str.find("group1");
-    EXPECT_GT(locg1, loc);
+    CHECK(loc < locg1);
     // make sure it doesn't come twice
     loc = str.find("dval=12.7", loc + 4);
-    EXPECT_EQ(loc, std::string::npos);
+    CHECK(std::string::npos == loc);
 }
 
-TEST_F(TApp, TomlOutputMultiLineDescription) {
+TEST_CASE_METHOD(TApp, "TomlOutputMultiLineDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.\nThat has lines.";
     app.add_flag("--" + flag, description);
@@ -1711,12 +1709,12 @@ TEST_F(TApp, TomlOutputMultiLineDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("# Some short description.\n"));
-    EXPECT_THAT(str, HasSubstr("# That has lines.\n"));
-    EXPECT_THAT(str, HasSubstr(flag + "=false\n"));
+    CHECK_THAT(str, Contains("# Some short description.\n"));
+    CHECK_THAT(str, Contains("# That has lines.\n"));
+    CHECK_THAT(str, Contains(flag + "=false\n"));
 }
 
-TEST_F(TApp, TomlOutputOptionGroup) {
+TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -1730,22 +1728,22 @@ TEST_F(TApp, TomlOutputOptionGroup) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
-    EXPECT_THAT(str, HasSubstr("dval=12.7"));
-    EXPECT_THAT(str, HasSubstr("group3"));
-    EXPECT_THAT(str, HasSubstr("g3 desc"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval=12.7"));
+    CHECK_THAT(str, Contains("group3"));
+    CHECK_THAT(str, Contains("g3 desc"));
     auto loc = str.find("dval=12.7");
     auto locg1 = str.find("group1");
     auto locg3 = str.find("group3");
-    EXPECT_LT(locg1, loc);
+    CHECK(loc > locg1);
     // make sure it doesn't come twice
     loc = str.find("dval=12.7", loc + 4);
-    EXPECT_EQ(loc, std::string::npos);
-    EXPECT_GT(locg3, locg1);
+    CHECK(std::string::npos == loc);
+    CHECK(locg1 < locg3);
 }
 
-TEST_F(TApp, TomlOutputVector) {
+TEST_CASE_METHOD(TApp, "TomlOutputVector", "[config]") {
 
     std::vector<int> v;
     app.add_option("--vector", v);
@@ -1755,10 +1753,10 @@ TEST_F(TApp, TomlOutputVector) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("vector=[1, 2, 3]\n", str);
+    CHECK(str == "vector=[1, 2, 3]\n");
 }
 
-TEST_F(TApp, ConfigOutputVectorCustom) {
+TEST_CASE_METHOD(TApp, "ConfigOutputVectorCustom", "[config]") {
 
     std::vector<int> v;
     app.add_option("--vector", v);
@@ -1770,10 +1768,10 @@ TEST_F(TApp, ConfigOutputVectorCustom) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("vector:{1; 2; 3}\n", str);
+    CHECK(str == "vector:{1; 2; 3}\n");
 }
 
-TEST_F(TApp, TomlOutputFlag) {
+TEST_CASE_METHOD(TApp, "TomlOutputFlag", "[config]") {
 
     int v{0}, q{0};
     app.add_option("--simple", v);
@@ -1786,16 +1784,16 @@ TEST_F(TApp, TomlOutputFlag) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=3"));
-    EXPECT_THAT(str, Not(HasSubstr("nothing")));
-    EXPECT_THAT(str, HasSubstr("onething=true"));
-    EXPECT_THAT(str, HasSubstr("something=[true, true]"));
+    CHECK_THAT(str, Contains("simple=3"));
+    CHECK_THAT(str, !Contains("nothing"));
+    CHECK_THAT(str, Contains("onething=true"));
+    CHECK_THAT(str, Contains("something=[true, true]"));
 
     str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("nothing"));
+    CHECK_THAT(str, Contains("nothing"));
 }
 
-TEST_F(TApp, TomlOutputSet) {
+TEST_CASE_METHOD(TApp, "TomlOutputSet", "[config]") {
 
     int v{0};
     app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
@@ -1805,10 +1803,10 @@ TEST_F(TApp, TomlOutputSet) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=2"));
+    CHECK_THAT(str, Contains("simple=2"));
 }
 
-TEST_F(TApp, TomlOutputDefault) {
+TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
 
     int v{7};
     app.add_option("--simple", v, "", true);
@@ -1816,13 +1814,13 @@ TEST_F(TApp, TomlOutputDefault) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, Not(HasSubstr("simple=7")));
+    CHECK_THAT(str, !Contains("simple=7"));
 
     str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("simple=7"));
+    CHECK_THAT(str, Contains("simple=7"));
 }
 
-TEST_F(TApp, TomlOutputSubcom) {
+TEST_CASE_METHOD(TApp, "TomlOutputSubcom", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -1832,11 +1830,11 @@ TEST_F(TApp, TomlOutputSubcom) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("other.newer=true"));
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other.newer=true"));
 }
 
-TEST_F(TApp, TomlOutputSubcomConfigurable) {
+TEST_CASE_METHOD(TApp, "TomlOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1846,13 +1844,13 @@ TEST_F(TApp, TomlOutputSubcomConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other]"));
-    EXPECT_THAT(str, HasSubstr("newer=true"));
-    EXPECT_EQ(str.find("other.newer=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other]"));
+    CHECK_THAT(str, Contains("newer=true"));
+    CHECK(std::string::npos == str.find("other.newer=true"));
 }
 
-TEST_F(TApp, TomlOutputSubsubcom) {
+TEST_CASE_METHOD(TApp, "TomlOutputSubsubcom", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -1864,12 +1862,12 @@ TEST_F(TApp, TomlOutputSubsubcom) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("other.newer=true"));
-    EXPECT_THAT(str, HasSubstr("other.sub2.newest=true"));
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other.newer=true"));
+    CHECK_THAT(str, Contains("other.sub2.newest=true"));
 }
 
-TEST_F(TApp, TomlOutputSubsubcomConfigurable) {
+TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1882,15 +1880,15 @@ TEST_F(TApp, TomlOutputSubsubcomConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other]"));
-    EXPECT_THAT(str, HasSubstr("newer=true"));
-    EXPECT_THAT(str, HasSubstr("[other.sub2]"));
-    EXPECT_THAT(str, HasSubstr("newest=true"));
-    EXPECT_EQ(str.find("sub2.newest=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other]"));
+    CHECK_THAT(str, Contains("newer=true"));
+    CHECK_THAT(str, Contains("[other.sub2]"));
+    CHECK_THAT(str, Contains("newest=true"));
+    CHECK(std::string::npos == str.find("sub2.newest=true"));
 }
 
-TEST_F(TApp, TomlOutputSubsubcomConfigurableDeep) {
+TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurableDeep", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -1907,13 +1905,13 @@ TEST_F(TApp, TomlOutputSubsubcomConfigurableDeep) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other.sub2.sub-level2.sub-level3]"));
-    EXPECT_THAT(str, HasSubstr("absolute_newest=true"));
-    EXPECT_EQ(str.find(".absolute_newest=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other.sub2.sub-level2.sub-level3]"));
+    CHECK_THAT(str, Contains("absolute_newest=true"));
+    CHECK(std::string::npos == str.find(".absolute_newest=true"));
 }
 
-TEST_F(TApp, TomlOutputQuoted) {
+TEST_CASE_METHOD(TApp, "TomlOutputQuoted", "[config]") {
 
     std::string val1;
     app.add_option("--val1", val1);
@@ -1925,15 +1923,15 @@ TEST_F(TApp, TomlOutputQuoted) {
 
     run();
 
-    EXPECT_EQ("I am a string", val1);
-    EXPECT_EQ("I am a \"confusing\" string", val2);
+    CHECK(val1 == "I am a string");
+    CHECK(val2 == "I am a \"confusing\" string");
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
-    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val1=\"I am a string\""));
+    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 }
 
-TEST_F(TApp, DefaultsTomlOutputQuoted) {
+TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
 
     std::string val1{"I am a string"};
     app.add_option("--val1", val1, "", true);
@@ -1944,18 +1942,18 @@ TEST_F(TApp, DefaultsTomlOutputQuoted) {
     run();
 
     std::string str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
-    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val1=\"I am a string\""));
+    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 }
 
 // #298
-TEST_F(TApp, StopReadingConfigOnClear) {
+TEST_CASE_METHOD(TApp, "StopReadingConfigOnClear", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
     auto ptr = app.set_config();  // Should *not* read config file
-    EXPECT_EQ(ptr, nullptr);
+    CHECK(nullptr == ptr);
 
     {
         std::ofstream out{tmpini};
@@ -1967,10 +1965,10 @@ TEST_F(TApp, StopReadingConfigOnClear) {
 
     run();
 
-    EXPECT_EQ(volume, 0);
+    CHECK(0 == volume);
 }
 
-TEST_F(TApp, ConfigWriteReadWrite) {
+TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -1989,12 +1987,12 @@ TEST_F(TApp, ConfigWriteReadWrite) {
 
     std::string config2 = app.config_to_str(true, true);
 
-    EXPECT_EQ(config1, config2);
+    CHECK(config2 == config1);
 }
 
 /////// INI output tests
 
-TEST_F(TApp, IniOutputSimple) {
+TEST_CASE_METHOD(TApp, "IniOutputSimple", "[config]") {
 
     int v{0};
     app.add_option("--simple", v);
@@ -2004,10 +2002,10 @@ TEST_F(TApp, IniOutputSimple) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("simple=3\n", str);
+    CHECK(str == "simple=3\n");
 }
 
-TEST_F(TApp, IniOutputNoConfigurable) {
+TEST_CASE_METHOD(TApp, "IniOutputNoConfigurable", "[config]") {
 
     int v1{0}, v2{0};
     app.add_option("--simple", v1);
@@ -2018,10 +2016,10 @@ TEST_F(TApp, IniOutputNoConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("simple=3\n", str);
+    CHECK(str == "simple=3\n");
 }
 
-TEST_F(TApp, IniOutputShortSingleDescription) {
+TEST_CASE_METHOD(TApp, "IniOutputShortSingleDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.";
     app.add_flag("--" + flag, description);
@@ -2029,10 +2027,10 @@ TEST_F(TApp, IniOutputShortSingleDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("; " + description + "\n" + flag + "=false\n"));
+    CHECK_THAT(str, Contains("; " + description + "\n" + flag + "=false\n"));
 }
 
-TEST_F(TApp, IniOutputShortDoubleDescription) {
+TEST_CASE_METHOD(TApp, "IniOutputShortDoubleDescription", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -2043,11 +2041,11 @@ TEST_F(TApp, IniOutputShortDoubleDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(
-        str, HasSubstr("; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n"));
+    std::string ans = "; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n";
+    CHECK_THAT(str, Contains(ans));
 }
 
-TEST_F(TApp, IniOutputGroups) {
+TEST_CASE_METHOD(TApp, "IniOutputGroups", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     const std::string description1 = "First description.";
@@ -2058,11 +2056,11 @@ TEST_F(TApp, IniOutputGroups) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
 }
 
-TEST_F(TApp, IniOutputHiddenOptions) {
+TEST_CASE_METHOD(TApp, "IniOutputHiddenOptions", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -2075,18 +2073,18 @@ TEST_F(TApp, IniOutputHiddenOptions) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
-    EXPECT_THAT(str, HasSubstr("dval=12.7"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval=12.7"));
     auto loc = str.find("dval=12.7");
     auto locg1 = str.find("group1");
-    EXPECT_GT(locg1, loc);
+    CHECK(loc < locg1);
     // make sure it doesn't come twice
     loc = str.find("dval=12.7", loc + 4);
-    EXPECT_EQ(loc, std::string::npos);
+    CHECK(std::string::npos == loc);
 }
 
-TEST_F(TApp, IniOutputMultiLineDescription) {
+TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.\nThat has lines.";
     app.add_flag("--" + flag, description);
@@ -2094,12 +2092,12 @@ TEST_F(TApp, IniOutputMultiLineDescription) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("; Some short description.\n"));
-    EXPECT_THAT(str, HasSubstr("; That has lines.\n"));
-    EXPECT_THAT(str, HasSubstr(flag + "=false\n"));
+    CHECK_THAT(str, Contains("; Some short description.\n"));
+    CHECK_THAT(str, Contains("; That has lines.\n"));
+    CHECK_THAT(str, Contains(flag + "=false\n"));
 }
 
-TEST_F(TApp, IniOutputOptionGroup) {
+TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
     std::string flag1 = "flagnr1";
     std::string flag2 = "flagnr2";
     double val{12.7};
@@ -2113,22 +2111,22 @@ TEST_F(TApp, IniOutputOptionGroup) {
     run();
 
     std::string str = app.config_to_str(true, true);
-    EXPECT_THAT(str, HasSubstr("group1"));
-    EXPECT_THAT(str, HasSubstr("group2"));
-    EXPECT_THAT(str, HasSubstr("dval=12.7"));
-    EXPECT_THAT(str, HasSubstr("group3"));
-    EXPECT_THAT(str, HasSubstr("g3 desc"));
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval=12.7"));
+    CHECK_THAT(str, Contains("group3"));
+    CHECK_THAT(str, Contains("g3 desc"));
     auto loc = str.find("dval=12.7");
     auto locg1 = str.find("group1");
     auto locg3 = str.find("group3");
-    EXPECT_LT(locg1, loc);
+    CHECK(loc > locg1);
     // make sure it doesn't come twice
     loc = str.find("dval=12.7", loc + 4);
-    EXPECT_EQ(loc, std::string::npos);
-    EXPECT_GT(locg3, locg1);
+    CHECK(std::string::npos == loc);
+    CHECK(locg1 < locg3);
 }
 
-TEST_F(TApp, IniOutputVector) {
+TEST_CASE_METHOD(TApp, "IniOutputVector", "[config]") {
 
     std::vector<int> v;
     app.add_option("--vector", v);
@@ -2138,10 +2136,10 @@ TEST_F(TApp, IniOutputVector) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_EQ("vector=1 2 3\n", str);
+    CHECK(str == "vector=1 2 3\n");
 }
 
-TEST_F(TApp, IniOutputFlag) {
+TEST_CASE_METHOD(TApp, "IniOutputFlag", "[config]") {
 
     int v{0}, q{0};
     app.add_option("--simple", v);
@@ -2154,16 +2152,16 @@ TEST_F(TApp, IniOutputFlag) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=3"));
-    EXPECT_THAT(str, Not(HasSubstr("nothing")));
-    EXPECT_THAT(str, HasSubstr("onething=true"));
-    EXPECT_THAT(str, HasSubstr("something=true true"));
+    CHECK_THAT(str, Contains("simple=3"));
+    CHECK_THAT(str, !Contains("nothing"));
+    CHECK_THAT(str, Contains("onething=true"));
+    CHECK_THAT(str, Contains("something=true true"));
 
     str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("nothing"));
+    CHECK_THAT(str, Contains("nothing"));
 }
 
-TEST_F(TApp, IniOutputSet) {
+TEST_CASE_METHOD(TApp, "IniOutputSet", "[config]") {
 
     int v{0};
     app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
@@ -2173,10 +2171,10 @@ TEST_F(TApp, IniOutputSet) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=2"));
+    CHECK_THAT(str, Contains("simple=2"));
 }
 
-TEST_F(TApp, IniOutputDefault) {
+TEST_CASE_METHOD(TApp, "IniOutputDefault", "[config]") {
 
     int v{7};
     app.add_option("--simple", v, "", true);
@@ -2184,13 +2182,13 @@ TEST_F(TApp, IniOutputDefault) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, Not(HasSubstr("simple=7")));
+    CHECK_THAT(str, !Contains("simple=7"));
 
     str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("simple=7"));
+    CHECK_THAT(str, Contains("simple=7"));
 }
 
-TEST_F(TApp, IniOutputSubcom) {
+TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -2200,11 +2198,11 @@ TEST_F(TApp, IniOutputSubcom) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("other.newer=true"));
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other.newer=true"));
 }
 
-TEST_F(TApp, IniOutputSubcomConfigurable) {
+TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -2214,13 +2212,13 @@ TEST_F(TApp, IniOutputSubcomConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other]"));
-    EXPECT_THAT(str, HasSubstr("newer=true"));
-    EXPECT_EQ(str.find("other.newer=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other]"));
+    CHECK_THAT(str, Contains("newer=true"));
+    CHECK(std::string::npos == str.find("other.newer=true"));
 }
 
-TEST_F(TApp, IniOutputSubsubcom) {
+TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other");
@@ -2232,12 +2230,12 @@ TEST_F(TApp, IniOutputSubsubcom) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("other.newer=true"));
-    EXPECT_THAT(str, HasSubstr("other.sub2.newest=true"));
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other.newer=true"));
+    CHECK_THAT(str, Contains("other.sub2.newest=true"));
 }
 
-TEST_F(TApp, IniOutputSubsubcomConfigurable) {
+TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -2250,15 +2248,15 @@ TEST_F(TApp, IniOutputSubsubcomConfigurable) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other]"));
-    EXPECT_THAT(str, HasSubstr("newer=true"));
-    EXPECT_THAT(str, HasSubstr("[other.sub2]"));
-    EXPECT_THAT(str, HasSubstr("newest=true"));
-    EXPECT_EQ(str.find("sub2.newest=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other]"));
+    CHECK_THAT(str, Contains("newer=true"));
+    CHECK_THAT(str, Contains("[other.sub2]"));
+    CHECK_THAT(str, Contains("newest=true"));
+    CHECK(std::string::npos == str.find("sub2.newest=true"));
 }
 
-TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
+TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurableDeep", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
@@ -2275,13 +2273,13 @@ TEST_F(TApp, IniOutputSubsubcomConfigurableDeep) {
     run();
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("simple=true"));
-    EXPECT_THAT(str, HasSubstr("[other.sub2.sub-level2.sub-level3]"));
-    EXPECT_THAT(str, HasSubstr("absolute_newest=true"));
-    EXPECT_EQ(str.find(".absolute_newest=true"), std::string::npos);
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other.sub2.sub-level2.sub-level3]"));
+    CHECK_THAT(str, Contains("absolute_newest=true"));
+    CHECK(std::string::npos == str.find(".absolute_newest=true"));
 }
 
-TEST_F(TApp, IniOutputQuoted) {
+TEST_CASE_METHOD(TApp, "IniOutputQuoted", "[config]") {
 
     std::string val1;
     app.add_option("--val1", val1);
@@ -2293,15 +2291,15 @@ TEST_F(TApp, IniOutputQuoted) {
 
     run();
 
-    EXPECT_EQ("I am a string", val1);
-    EXPECT_EQ("I am a \"confusing\" string", val2);
+    CHECK(val1 == "I am a string");
+    CHECK(val2 == "I am a \"confusing\" string");
 
     std::string str = app.config_to_str();
-    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
-    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val1=\"I am a string\""));
+    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 }
 
-TEST_F(TApp, DefaultsIniOutputQuoted) {
+TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
 
     std::string val1{"I am a string"};
     app.add_option("--val1", val1, "", true);
@@ -2312,6 +2310,6 @@ TEST_F(TApp, DefaultsIniOutputQuoted) {
     run();
 
     std::string str = app.config_to_str(true);
-    EXPECT_THAT(str, HasSubstr("val1=\"I am a string\""));
-    EXPECT_THAT(str, HasSubstr("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val1=\"I am a string\""));
+    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 }

@@ -31,79 +31,79 @@ static_assert(CLI::detail::pair_adaptor<std::vector<std::string>>::value == fals
 static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
 static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
-TEST_F(TApp, SimpleMaps) {
+TEST_CASE_METHOD(TApp, "SimpleMaps", "[set]") {
     int value{0};
     std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
     auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, 1);
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(1 == value);
 }
 
-TEST_F(TApp, StringStringMap) {
+TEST_CASE_METHOD(TApp, "StringStringMap", "[set]") {
     std::string value;
     std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
     app.add_option("-s,--set", value)->transform(CLI::CheckedTransformer(map));
     args = {"-s", "a"};
     run();
-    EXPECT_EQ(value, "b");
+    CHECK("b" == value);
 
     args = {"-s", "b"};
     run();
-    EXPECT_EQ(value, "c");
+    CHECK("c" == value);
 
     args = {"-s", "c"};
-    EXPECT_EQ(value, "c");
+    CHECK("c" == value);
 }
 
-TEST_F(TApp, StringStringMapNoModify) {
+TEST_CASE_METHOD(TApp, "StringStringMapNoModify", "[set]") {
     std::string value;
     std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
     app.add_option("-s,--set", value)->check(CLI::IsMember(map));
     args = {"-s", "a"};
     run();
-    EXPECT_EQ(value, "a");
+    CHECK("a" == value);
 
     args = {"-s", "b"};
     run();
-    EXPECT_EQ(value, "b");
+    CHECK("b" == value);
 
     args = {"-s", "c"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
 enum SimpleEnum { SE_one = 1, SE_two = 2 };
 
-TEST_F(TApp, EnumMap) {
+TEST_CASE_METHOD(TApp, "EnumMap", "[set]") {
     SimpleEnum value;
     std::map<std::string, SimpleEnum> map = {{"one", SE_one}, {"two", SE_two}};
     auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, SE_one);
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(SE_one == value);
 }
 
 enum class SimpleEnumC { one = 1, two = 2 };
 
-TEST_F(TApp, EnumCMap) {
+TEST_CASE_METHOD(TApp, "EnumCMap", "[set]") {
     SimpleEnumC value;
     std::map<std::string, SimpleEnumC> map = {{"one", SimpleEnumC::one}, {"two", SimpleEnumC::two}};
     auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, SimpleEnumC::one);
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(SimpleEnumC::one == value);
 }
 
-TEST_F(TApp, structMap) {
+TEST_CASE_METHOD(TApp, "structMap", "[set]") {
     struct tstruct {
         int val2;
         double val3;
@@ -114,16 +114,16 @@ TEST_F(TApp, structMap) {
     auto opt = app.add_option("-s,--set", struct_name)->check(CLI::IsMember(map));
     args = {"-s", "sone"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(struct_name, "sone");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("sone" == struct_name);
 
     args = {"-s", "sthree"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, structMapChange) {
+TEST_CASE_METHOD(TApp, "structMapChange", "[set]") {
     struct tstruct {
         int val2;
         double val3;
@@ -135,23 +135,23 @@ TEST_F(TApp, structMapChange) {
                    ->transform(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
     args = {"-s", "s one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(struct_name, "sone");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("sone" == struct_name);
 
     args = {"-s", "sthree"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"-s", "S_t_w_o"};
     run();
-    EXPECT_EQ(struct_name, "stwo");
+    CHECK("stwo" == struct_name);
     args = {"-s", "S two"};
     run();
-    EXPECT_EQ(struct_name, "stwo");
+    CHECK("stwo" == struct_name);
 }
 
-TEST_F(TApp, structMapNoChange) {
+TEST_CASE_METHOD(TApp, "structMapNoChange", "[set]") {
     struct tstruct {
         int val2;
         double val3;
@@ -163,24 +163,24 @@ TEST_F(TApp, structMapNoChange) {
                    ->check(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
     args = {"-s", "SONE"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(struct_name, "SONE");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("SONE" == struct_name);
 
     args = {"-s", "sthree"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"-s", "S_t_w_o"};
     run();
-    EXPECT_EQ(struct_name, "S_t_w_o");
+    CHECK("S_t_w_o" == struct_name);
 
     args = {"-s", "S two"};
     run();
-    EXPECT_EQ(struct_name, "S two");
+    CHECK("S two" == struct_name);
 }
 
-TEST_F(TApp, NonCopyableMap) {
+TEST_CASE_METHOD(TApp, "NonCopyableMap", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
@@ -189,16 +189,16 @@ TEST_F(TApp, NonCopyableMap) {
     auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "e1"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(map_name, "e1");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("e1" == map_name);
 
     args = {"-s", "e45"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, NonCopyableMapWithFunction) {
+TEST_CASE_METHOD(TApp, "NonCopyableMapWithFunction", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
@@ -207,16 +207,16 @@ TEST_F(TApp, NonCopyableMapWithFunction) {
     auto opt = app.add_option("-s,--set", map_name)->transform(CLI::IsMember(&map, CLI::ignore_underscore));
     args = {"-s", "e_1"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(map_name, "e1");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("e1" == map_name);
 
     args = {"-s", "e45"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, NonCopyableMapNonStringMap) {
+TEST_CASE_METHOD(TApp, "NonCopyableMapNonStringMap", "[set]") {
 
     std::string map_name;
     std::map<int, std::unique_ptr<double>> map;
@@ -225,16 +225,16 @@ TEST_F(TApp, NonCopyableMapNonStringMap) {
     auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "4"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(map_name, "4");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("4" == map_name);
 
     args = {"-s", "e45"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, CopyableMapMove) {
+TEST_CASE_METHOD(TApp, "CopyableMapMove", "[set]") {
 
     std::string map_name;
     std::map<int, double> map;
@@ -243,162 +243,162 @@ TEST_F(TApp, CopyableMapMove) {
     auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(std::move(map)));
     args = {"-s", "4"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(map_name, "4");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("4" == map_name);
 
     args = {"-s", "e45"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SimpleSets) {
+TEST_CASE_METHOD(TApp, "SimpleSets", "[set]") {
     std::string value;
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<std::string>({"one", "two", "three"})});
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "one");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("one" == value);
 }
 
-TEST_F(TApp, SimpleSetsPtrs) {
+TEST_CASE_METHOD(TApp, "SimpleSetsPtrs", "[set]") {
     auto set = std::shared_ptr<std::set<std::string>>(new std::set<std::string>{"one", "two", "three"});
     std::string value;
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{set});
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "one");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("one" == value);
 
     set->insert("four");
 
     args = {"-s", "four"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "four");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("four" == value);
 }
 
-TEST_F(TApp, SimiShortcutSets) {
+TEST_CASE_METHOD(TApp, "SimiShortcutSets", "[set]") {
     std::string value;
     auto opt = app.add_option("--set", value)->check(CLI::IsMember({"one", "two", "three"}));
     args = {"--set", "one"};
     run();
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "one");
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("one" == value);
 
     std::string value2;
     auto opt2 = app.add_option("--set2", value2)->transform(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
     args = {"--set2", "onE"};
     run();
-    EXPECT_EQ(1u, app.count("--set2"));
-    EXPECT_EQ(1u, opt2->count());
-    EXPECT_EQ(value2, "One");
+    CHECK(app.count("--set2") == 1u);
+    CHECK(opt2->count() == 1u);
+    CHECK("One" == value2);
 
     std::string value3;
     auto opt3 = app.add_option("--set3", value3)
                     ->transform(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
     args = {"--set3", "onE"};
     run();
-    EXPECT_EQ(1u, app.count("--set3"));
-    EXPECT_EQ(1u, opt3->count());
-    EXPECT_EQ(value3, "O_ne");
+    CHECK(app.count("--set3") == 1u);
+    CHECK(opt3->count() == 1u);
+    CHECK("O_ne" == value3);
 }
 
-TEST_F(TApp, SetFromCharStarArrayVector) {
+TEST_CASE_METHOD(TApp, "SetFromCharStarArrayVector", "[set]") {
     constexpr const char *names[3]{"one", "two", "three"};
     std::string value;
     auto opt = app.add_option("-s,--set", value)
                    ->check(CLI::IsMember{std::vector<std::string>(std::begin(names), std::end(names))});
     args = {"-s", "one"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, "one");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK("one" == value);
 }
 
-TEST_F(TApp, OtherTypeSets) {
+TEST_CASE_METHOD(TApp, "OtherTypeSets", "[set]") {
     int value{0};
     std::vector<int> set = {2, 3, 4};
     auto opt = app.add_option("--set", value)->check(CLI::IsMember(set));
     args = {"--set", "3"};
     run();
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, 3);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(3 == value);
 
     args = {"--set", "5"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     std::vector<int> set2 = {-2, 3, 4};
     auto opt2 = app.add_option("--set2", value)->transform(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
     args = {"--set2", "-3"};
     run();
-    EXPECT_EQ(1u, app.count("--set2"));
-    EXPECT_EQ(1u, opt2->count());
-    EXPECT_EQ(value, 3);
+    CHECK(app.count("--set2") == 1u);
+    CHECK(opt2->count() == 1u);
+    CHECK(3 == value);
 
     args = {"--set2", "-3"};
     run();
-    EXPECT_EQ(1u, app.count("--set2"));
-    EXPECT_EQ(1u, opt2->count());
-    EXPECT_EQ(value, 3);
+    CHECK(app.count("--set2") == 1u);
+    CHECK(opt2->count() == 1u);
+    CHECK(3 == value);
 
     args = {"--set2", "2"};
     run();
-    EXPECT_EQ(1u, app.count("--set2"));
-    EXPECT_EQ(1u, opt2->count());
-    EXPECT_EQ(value, -2);
+    CHECK(app.count("--set2") == 1u);
+    CHECK(opt2->count() == 1u);
+    CHECK(-2 == value);
 }
 
-TEST_F(TApp, NumericalSets) {
+TEST_CASE_METHOD(TApp, "NumericalSets", "[set]") {
     int value{0};
     auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<int>({1, 2, 3})});
     args = {"-s", "1"};
     run();
-    EXPECT_EQ(1u, app.count("-s"));
-    EXPECT_EQ(1u, app.count("--set"));
-    EXPECT_EQ(1u, opt->count());
-    EXPECT_EQ(value, 1);
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--set") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(1 == value);
 }
 
 // Converted original set tests
 
-TEST_F(TApp, SetWithDefaults) {
+TEST_CASE_METHOD(TApp, "SetWithDefaults", "[set]") {
     int someint{2};
     app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a1", "-a2"};
 
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, SetWithDefaultsConversion) {
+TEST_CASE_METHOD(TApp, "SetWithDefaultsConversion", "[set]") {
     int someint{2};
     app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a", "hi"};
 
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, SetWithDefaultsIC) {
+TEST_CASE_METHOD(TApp, "SetWithDefaultsIC", "[set]") {
     std::string someint = "ho";
     app.add_option("-a", someint, "", true)->check(CLI::IsMember({"Hi", "Ho"}));
 
     args = {"-aHi", "-aHo"};
 
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, InSet) {
+TEST_CASE_METHOD(TApp, "InSet", "[set]") {
 
     std::string choice;
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({"one", "two", "three"}));
@@ -406,47 +406,47 @@ TEST_F(TApp, InSet) {
     args = {"--quick", "two"};
 
     run();
-    EXPECT_EQ("two", choice);
+    CHECK(choice == "two");
 
     args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InSetWithDefault) {
+TEST_CASE_METHOD(TApp, "InSetWithDefault", "[set]") {
 
     std::string choice = "one";
     app.add_option("-q,--quick", choice, "", true)->check(CLI::IsMember({"one", "two", "three"}));
 
     run();
-    EXPECT_EQ("one", choice);
+    CHECK(choice == "one");
 
     args = {"--quick", "two"};
 
     run();
-    EXPECT_EQ("two", choice);
+    CHECK(choice == "two");
 
     args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InCaselessSetWithDefault) {
+TEST_CASE_METHOD(TApp, "InCaselessSetWithDefault", "[set]") {
 
     std::string choice = "one";
     app.add_option("-q,--quick", choice, "", true)->transform(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
 
     run();
-    EXPECT_EQ("one", choice);
+    CHECK(choice == "one");
 
     args = {"--quick", "tWo"};
 
     run();
-    EXPECT_EQ("two", choice);
+    CHECK(choice == "two");
 
     args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InIntSet) {
+TEST_CASE_METHOD(TApp, "InIntSet", "[set]") {
 
     int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
@@ -454,13 +454,13 @@ TEST_F(TApp, InIntSet) {
     args = {"--quick", "2"};
 
     run();
-    EXPECT_EQ(2, choice);
+    CHECK(choice == 2);
 
     args = {"--quick", "4"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InIntSetWindows) {
+TEST_CASE_METHOD(TApp, "InIntSetWindows", "[set]") {
 
     int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
@@ -468,28 +468,28 @@ TEST_F(TApp, InIntSetWindows) {
     args = {"/q", "2"};
 
     run();
-    EXPECT_EQ(2, choice);
+    CHECK(choice == 2);
 
     args = {"/q", "4"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"/q4"};
-    EXPECT_THROW(run(), CLI::ExtrasError);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
-TEST_F(TApp, FailSet) {
+TEST_CASE_METHOD(TApp, "FailSet", "[set]") {
 
     int choice{0};
     app.add_option("-q,--quick", choice)->check(CLI::IsMember({1, 2, 3}));
 
     args = {"--quick", "3", "--quick=2"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 
     args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, FailMutableSet) {
+TEST_CASE_METHOD(TApp, "FailMutableSet", "[set]") {
 
     int choice{0};
     auto vals = std::shared_ptr<std::set<int>>(new std::set<int>({1, 2, 3}));
@@ -497,37 +497,37 @@ TEST_F(TApp, FailMutableSet) {
     app.add_option("-s,--slow", choice, "", true)->check(CLI::IsMember(vals));
 
     args = {"--quick=hello"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--slow=hello"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InSetIgnoreCase) {
+TEST_CASE_METHOD(TApp, "InSetIgnoreCase", "[set]") {
 
     std::string choice;
     app.add_option("-q,--quick", choice)->transform(CLI::IsMember({"one", "Two", "THREE"}, CLI::ignore_case));
 
     args = {"--quick", "One"};
     run();
-    EXPECT_EQ("one", choice);
+    CHECK(choice == "one");
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice);  // Keeps caps from set
+    CHECK(choice == "Two");
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice);  // Keeps caps from set
+    CHECK(choice == "THREE");
 
     args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, InSetIgnoreCaseMutableValue) {
+TEST_CASE_METHOD(TApp, "InSetIgnoreCaseMutableValue", "[set]") {
 
     std::set<std::string> options{"one", "Two", "THREE"};
     std::string choice;
@@ -535,22 +535,22 @@ TEST_F(TApp, InSetIgnoreCaseMutableValue) {
 
     args = {"--quick", "One"};
     run();
-    EXPECT_EQ("one", choice);
+    CHECK(choice == "one");
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice);  // Keeps caps from set
+    CHECK(choice == "Two");
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice);  // Keeps caps from set
+    CHECK(choice == "THREE");
 
     options.clear();
     args = {"--quick", "ThrEE"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, InSetIgnoreCasePointer) {
+TEST_CASE_METHOD(TApp, "InSetIgnoreCasePointer", "[set]") {
 
     std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
@@ -558,43 +558,43 @@ TEST_F(TApp, InSetIgnoreCasePointer) {
 
     args = {"--quick", "One"};
     run();
-    EXPECT_EQ("one", choice);
+    CHECK(choice == "one");
 
     args = {"--quick", "two"};
     run();
-    EXPECT_EQ("Two", choice);  // Keeps caps from set
+    CHECK(choice == "Two");
 
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice);  // Keeps caps from set
+    CHECK(choice == "THREE");
 
     delete options;
     args = {"--quick", "ThrEE"};
     run();
-    EXPECT_EQ("THREE", choice);  // this does not throw a segfault
+    CHECK(choice == "THREE");
 
     args = {"--quick", "four"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--quick=one", "--quick=two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, NotInSetIgnoreCasePointer) {
+TEST_CASE_METHOD(TApp, "NotInSetIgnoreCasePointer", "[set]") {
 
     std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
     app.add_option("-q,--quick", choice)->check(!CLI::IsMember(*options, CLI::ignore_case));
 
     args = {"--quick", "One"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--quick", "four"};
     run();
-    EXPECT_EQ(choice, "four");
+    CHECK("four" == choice);
 }
 
-TEST_F(TApp, InSetIgnoreUnderscore) {
+TEST_CASE_METHOD(TApp, "InSetIgnoreUnderscore", "[set]") {
 
     std::string choice;
     app.add_option("-q,--quick", choice)
@@ -602,24 +602,24 @@ TEST_F(TApp, InSetIgnoreUnderscore) {
 
     args = {"--quick", "option_one"};
     run();
-    EXPECT_EQ("option_one", choice);
+    CHECK(choice == "option_one");
 
     args = {"--quick", "optiontwo"};
     run();
-    EXPECT_EQ("option_two", choice);  // Keeps underscore from set
+    CHECK(choice == "option_two");
 
     args = {"--quick", "_option_thr_ee"};
     run();
-    EXPECT_EQ("optionthree", choice);  // no underscore
+    CHECK(choice == "optionthree");
 
     args = {"--quick", "Option4"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--quick=option_one", "--quick=option_two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
-TEST_F(TApp, InSetIgnoreCaseUnderscore) {
+TEST_CASE_METHOD(TApp, "InSetIgnoreCaseUnderscore", "[set]") {
 
     std::string choice;
     app.add_option("-q,--quick", choice)
@@ -628,25 +628,25 @@ TEST_F(TApp, InSetIgnoreCaseUnderscore) {
 
     args = {"--quick", "option_one"};
     run();
-    EXPECT_EQ("Option_One", choice);
+    CHECK(choice == "Option_One");
 
     args = {"--quick", "OptionTwo"};
     run();
-    EXPECT_EQ("option_two", choice);  // Keeps underscore and case from set
+    CHECK(choice == "option_two");
 
     args = {"--quick", "_OPTION_thr_ee"};
     run();
-    EXPECT_EQ("OptionThree", choice);  // no underscore
+    CHECK(choice == "OptionThree");
 
     args = {"--quick", "Option4"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--quick=option_one", "--quick=option_two"};
-    EXPECT_THROW(run(), CLI::ArgumentMismatch);
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
 // #113
-TEST_F(TApp, AddRemoveSetItems) {
+TEST_CASE_METHOD(TApp, "AddRemoveSetItems", "[set]") {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
@@ -656,8 +656,8 @@ TEST_F(TApp, AddRemoveSetItems) {
     args = {"--type1", "TYPE1", "--type2", "TYPE2"};
 
     run();
-    EXPECT_EQ(type1, "TYPE1");
-    EXPECT_EQ(type2, "TYPE2");
+    CHECK("TYPE1" == type1);
+    CHECK("TYPE2" == type2);
 
     items.insert("TYPE6");
     items.insert("TYPE7");
@@ -667,17 +667,17 @@ TEST_F(TApp, AddRemoveSetItems) {
 
     args = {"--type1", "TYPE6", "--type2", "TYPE7"};
     run();
-    EXPECT_EQ(type1, "TYPE6");
-    EXPECT_EQ(type2, "TYPE7");
+    CHECK("TYPE6" == type1);
+    CHECK("TYPE7" == type2);
 
     args = {"--type1", "TYPE1"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--type2", "TYPE2"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_F(TApp, AddRemoveSetItemsNoCase) {
+TEST_CASE_METHOD(TApp, "AddRemoveSetItemsNoCase", "[set]") {
     std::set<std::string> items{"TYPE1", "TYPE2", "TYPE3", "TYPE4", "TYPE5"};
 
     std::string type1, type2;
@@ -687,8 +687,8 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
     args = {"--type1", "TYPe1", "--type2", "TyPE2"};
 
     run();
-    EXPECT_EQ(type1, "TYPE1");
-    EXPECT_EQ(type2, "TYPE2");
+    CHECK("TYPE1" == type1);
+    CHECK("TYPE2" == type2);
 
     items.insert("TYPE6");
     items.insert("TYPE7");
@@ -698,12 +698,12 @@ TEST_F(TApp, AddRemoveSetItemsNoCase) {
 
     args = {"--type1", "TyPE6", "--type2", "tYPE7"};
     run();
-    EXPECT_EQ(type1, "TYPE6");
-    EXPECT_EQ(type2, "TYPE7");
+    CHECK("TYPE6" == type1);
+    CHECK("TYPE7" == type2);
 
     args = {"--type1", "TYPe1"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--type2", "TYpE2"};
-    EXPECT_THROW(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
