@@ -1002,11 +1002,11 @@ TEST_CASE("Types: TypeName", "[helpers]") {
 
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
     signed char x;
-    auto strmax = std::to_string(SCHAR_MAX + 1);
+    auto strmax = std::to_string(std::numeric_limits<signed char>::max() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, x));
 
     unsigned char y;
-    strmax = std::to_string(UINT8_MAX + 1);
+    strmax = std::to_string(std::numeric_limits<unsigned char>::max() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, y));
 }
 
@@ -1024,7 +1024,7 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     CHECK_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
     unsigned char y;
-    std::string overflow_input = std::to_string(UINT64_MAX) + "0";
+    std::string overflow_input = std::to_string(std::numeric_limits<uint64_t>::max()) + "0";
     CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
     char y_signed;
