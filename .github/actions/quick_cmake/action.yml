@@ -1,0 +1,18 @@
+name: Quick CMake config
+description: 'Runs CMake 3.4+ (if already setup)'
+inputs:
+  args:
+    description: 'Other arguments'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - run: |
+        mkdir -p build-tmp
+        touch build-tmp/tmp
+        rm -r build-tmp/*
+        (cd build-tmp && cmake .. ${{ inputs.args}})
+        rm -r build-tmp
+      shell: bash
