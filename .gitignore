@@ -12,3 +12,4 @@ a.out*
 /node_modules/*
 /package.json
 /yarn.lock
+/CLI11.hpp

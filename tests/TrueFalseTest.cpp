@@ -6,31 +6,24 @@
 
 #include "app_helper.hpp"
 
-/// This allows a set of strings to be run over by a test
-struct TApp_TBO : public TApp_base, testing::TestWithParam<const char *> {};
-
-TEST_P(TApp_TBO, TrueBoolOption) {
+TEST_CASE_METHOD(TApp, "True Bool Option", "[bool][flag]") {
+    // Strings needed here due to MSVC 2015.
+    auto param = GENERATE(as<std::string>{}, "true", "on", "True", "ON");
     bool value{false};  // Not used, but set just in case
     app.add_option("-b,--bool", value);
-    args = {"--bool", GetParam()};
+    args = {"--bool", param};
     run();
-    EXPECT_EQ(1u, app.count("--bool"));
-    EXPECT_TRUE(value);
+    CHECK(app.count("--bool") == 1u);
+    CHECK(value);
 }
 
-// Change to INSTANTIATE_TEST_SUITE_P in GTest master
-INSTANTIATE_TEST_SUITE_P(TrueBoolOptions_test, TApp_TBO, testing::Values("true", "on", "True", "ON"));
+TEST_CASE_METHOD(TApp, "False Bool Option", "[bool][flag]") {
+    auto param = GENERATE(as<std::string>{}, "false", "off", "False", "OFF");
 
-/// This allows a set of strings to be run over by a test
-struct TApp_FBO : public TApp_base, public ::testing::TestWithParam<const char *> {};
-
-TEST_P(TApp_FBO, FalseBoolOptions) {
     bool value{true};  // Not used, but set just in case
     app.add_option("-b,--bool", value);
-    args = {"--bool", GetParam()};
+    args = {"--bool", param};
     run();
-    EXPECT_EQ(1u, app.count("--bool"));
-    EXPECT_FALSE(value);
+    CHECK(app.count("--bool") == 1u);
+    CHECK_FALSE(value);
 }
-
-INSTANTIATE_TEST_SUITE_P(FalseBoolOptions_test, TApp_FBO, ::testing::Values("false", "off", "False", "OFF"));

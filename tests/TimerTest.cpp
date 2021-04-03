@@ -5,66 +5,66 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "CLI/Timer.hpp"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+
+#include "catch.hpp"
 #include <chrono>
 #include <sstream>
 #include <string>
 #include <thread>
 
-using ::testing::HasSubstr;
+using Catch::Matchers::Contains;
 
-TEST(Timer, MSTimes) {
+TEST_CASE("Timer: MSTimes", "[timer]") {
     CLI::Timer timer{"My Timer"};
     std::this_thread::sleep_for(std::chrono::milliseconds(123));
     std::string output = timer.to_string();
     std::string new_output = (timer / 1000000).to_string();
-    EXPECT_THAT(output, HasSubstr("My Timer"));
-    EXPECT_THAT(output, HasSubstr(" ms"));
-    EXPECT_THAT(new_output, HasSubstr(" ns"));
+    CHECK_THAT(output, Contains("My Timer"));
+    CHECK_THAT(output, Contains(" ms"));
+    CHECK_THAT(new_output, Contains(" ns"));
 }
 
 /* Takes too long
-TEST(Timer, STimes) {
+TEST_CASE("Timer: STimes", "[timer]") {
     CLI::Timer timer;
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::string output = timer.to_string();
-    EXPECT_THAT(output, HasSubstr(" s"));
+    CHECK_THAT (output, Contains(" s"));
 }
 */
 
 // Fails on Windows
-// TEST(Timer, UStimes) {
+// TEST_CASE("Timer: UStimes", "[timer]") {
 //    CLI::Timer timer;
 //    std::this_thread::sleep_for(std::chrono::microseconds(2));
 //    std::string output = timer.to_string();
-//    EXPECT_THAT(output, HasSubstr(" ms"));
+//    CHECK_THAT (output, Contains(" ms"));
 //}
 
-TEST(Timer, BigTimer) {
+TEST_CASE("Timer: BigTimer", "[timer]") {
     CLI::Timer timer{"My Timer", CLI::Timer::Big};
     std::string output = timer.to_string();
-    EXPECT_THAT(output, HasSubstr("Time ="));
-    EXPECT_THAT(output, HasSubstr("-----------"));
+    CHECK_THAT(output, Contains("Time ="));
+    CHECK_THAT(output, Contains("-----------"));
 }
 
-TEST(Timer, AutoTimer) {
+TEST_CASE("Timer: AutoTimer", "[timer]") {
     CLI::AutoTimer timer;
     std::string output = timer.to_string();
-    EXPECT_THAT(output, HasSubstr("Timer"));
+    CHECK_THAT(output, Contains("Timer"));
 }
 
-TEST(Timer, PrintTimer) {
+TEST_CASE("Timer: PrintTimer", "[timer]") {
     std::stringstream out;
     CLI::AutoTimer timer;
     out << timer;
     std::string output = out.str();
-    EXPECT_THAT(output, HasSubstr("Timer"));
+    CHECK_THAT(output, Contains("Timer"));
 }
 
-TEST(Timer, TimeItTimer) {
+TEST_CASE("Timer: TimeItTimer", "[timer]") {
     CLI::Timer timer;
     std::string output = timer.time_it([]() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }, .1);
     std::cout << output << std::endl;
-    EXPECT_THAT(output, HasSubstr("ms"));
+    CHECK_THAT(output, Contains("ms"));
 }

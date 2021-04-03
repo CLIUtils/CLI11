@@ -10,10 +10,10 @@
 // This test verifies that CLI11 still works if
 // Windows.h is included. #145
 
-TEST_F(TApp, WindowsTestSimple) {
+TEST_CASE_METHOD(TApp, "WindowsTestSimple", "[windows]") {
     app.add_flag("-c,--count");
     args = {"-c"};
     run();
-    EXPECT_EQ(1u, app.count("-c"));
-    EXPECT_EQ(1u, app.count("--count"));
+    CHECK(app.count("-c") == 1u);
+    CHECK(app.count("--count") == 1u);
 }

@@ -62,70 +62,70 @@
 #pragma warning(disable : 4244)
 #endif
 
-TEST_F(TApp, StdOptionalTest) {
+TEST_CASE_METHOD(TApp, "StdOptionalTest", "[optional]") {
     std::optional<int> opt;
     app.add_option("-c,--count", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-c", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 1);
+    CHECK(opt);
+    CHECK(1 == *opt);
 
     args = {"--count", "3"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 3);
+    CHECK(opt);
+    CHECK(3 == *opt);
 }
 
-TEST_F(TApp, StdOptionalVectorEmptyDirect) {
+TEST_CASE_METHOD(TApp, "StdOptionalVectorEmptyDirect", "[optional]") {
     std::optional<std::vector<int>> opt;
     app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v", "1", "4", "5"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::vector<int> expV{1, 4, 5};
-    EXPECT_EQ(*opt, expV);
+    CHECK(expV == *opt);
 }
 
-TEST_F(TApp, StdOptionalComplexDirect) {
+TEST_CASE_METHOD(TApp, "StdOptionalComplexDirect", "[optional]") {
     std::optional<std::complex<double>> opt;
     app.add_option("-c,--complex", opt)->type_size(0, 2);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-c"};
     opt = std::complex<double>{4.0, 3.0};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-c", "1+2j"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::complex<double> val{1, 2};
-    EXPECT_EQ(*opt, val);
+    CHECK(val == *opt);
     args = {"-c", "3", "-4"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::complex<double> val2{3, -4};
-    EXPECT_EQ(*opt, val2);
+    CHECK(val2 == *opt);
 }
 
-TEST_F(TApp, StdOptionalUint) {
+TEST_CASE_METHOD(TApp, "StdOptionalUint", "[optional]") {
     std::optional<std::uint64_t> opt;
     app.add_option("-i,--int", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-i", "15"};
     run();
-    EXPECT_EQ(*opt, 15U);
+    CHECK(15U == *opt);
     static_assert(CLI::detail::classify_object<std::optional<std::uint64_t>>::value ==
                   CLI::detail::object_category::wrapper_value);
 }
@@ -137,97 +137,97 @@ TEST_F(TApp, StdOptionalUint) {
 #endif
 #if CLI11_EXPERIMENTAL_OPTIONAL
 
-TEST_F(TApp, ExperimentalOptionalTest) {
+TEST_CASE_METHOD(TApp, "ExperimentalOptionalTest", "[optional]") {
     std::experimental::optional<int> opt;
     app.add_option("-c,--count", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-c", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 1);
+    CHECK(opt);
+    CHECK(1 == *opt);
 
     args = {"--count", "3"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 3);
+    CHECK(opt);
+    CHECK(3 == *opt);
 }
 
 #endif
 #if CLI11_BOOST_OPTIONAL
 
-TEST_F(TApp, BoostOptionalTest) {
+TEST_CASE_METHOD(TApp, "BoostOptionalTest", "[optional]") {
     boost::optional<int> opt;
     app.add_option("-c,--count", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-c", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 1);
+    CHECK(opt);
+    CHECK(1 == *opt);
     opt = {};
     args = {"--count", "3"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 3);
+    CHECK(opt);
+    CHECK(3 == *opt);
 }
 
-TEST_F(TApp, BoostOptionalTestZarg) {
+TEST_CASE_METHOD(TApp, "BoostOptionalTestZarg", "[optional]") {
     boost::optional<int> opt;
     app.add_option("-c,--count", opt)->expected(0, 1);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-c", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 1);
+    CHECK(opt);
+    CHECK(1 == *opt);
     opt = {};
     args = {"--count"};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 }
 
-TEST_F(TApp, BoostOptionalint64Test) {
+TEST_CASE_METHOD(TApp, "BoostOptionalint64Test", "[optional]") {
     boost::optional<std::int64_t> opt;
     app.add_option("-c,--count", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-c", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 1);
+    CHECK(opt);
+    CHECK(1 == *opt);
     opt = {};
     args = {"--count", "3"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, 3);
+    CHECK(opt);
+    CHECK(3 == *opt);
 }
 
-TEST_F(TApp, BoostOptionalStringTest) {
+TEST_CASE_METHOD(TApp, "BoostOptionalStringTest", "[optional]") {
     boost::optional<std::string> opt;
     app.add_option("-s,--string", opt);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-s", "strval"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, "strval");
+    CHECK(opt);
+    CHECK("strval" == *opt);
     opt = {};
     args = {"--string", "strv"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_EQ(*opt, "strv");
+    CHECK(opt);
+    CHECK("strv" == *opt);
 }
 namespace boost {
 using CLI::enums::operator<<;
 }
 
-TEST_F(TApp, BoostOptionalEnumTest) {
+TEST_CASE_METHOD(TApp, "BoostOptionalEnumTest", "[optional]") {
 
     enum class eval : char { val0 = 0, val1 = 1, val2 = 2, val3 = 3, val4 = 4 };
     boost::optional<eval> opt, opt2;
@@ -237,93 +237,89 @@ TEST_F(TApp, BoostOptionalEnumTest) {
     optptr->capture_default_str();
 
     auto dstring = optptr->get_default_str();
-    EXPECT_TRUE(dstring.empty());
+    CHECK(dstring.empty());
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-v", "3"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_TRUE(*opt == eval::val3);
+    CHECK(opt);
+    CHECK(*opt == eval::val3);
     opt = {};
     args = {"--val", "1"};
     run();
-    EXPECT_TRUE(opt);
-    EXPECT_TRUE(*opt == eval::val1);
+    CHECK(opt);
+    CHECK(*opt == eval::val1);
 }
 
-TEST_F(TApp, BoostOptionalVector) {
+TEST_CASE_METHOD(TApp, "BoostOptionalVector", "[optional]") {
     boost::optional<std::vector<int>> opt;
     app.add_option_function<std::vector<int>>(
            "-v,--vec", [&opt](const std::vector<int> &v) { opt = v; }, "some vector")
         ->expected(3);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
 
     args = {"-v", "1", "4", "5"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::vector<int> expV{1, 4, 5};
-    EXPECT_EQ(*opt, expV);
+    CHECK(expV == *opt);
 }
 
-TEST_F(TApp, BoostOptionalVectorEmpty) {
+TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmpty", "[optional]") {
     boost::optional<std::vector<int>> opt;
     app.add_option<decltype(opt), std::vector<int>>("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v", "1", "4", "5"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::vector<int> expV{1, 4, 5};
-    EXPECT_EQ(*opt, expV);
+    CHECK(expV == *opt);
 }
 
-TEST_F(TApp, BoostOptionalVectorEmptyDirect) {
+TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmptyDirect", "[optional]") {
     boost::optional<std::vector<int>> opt;
     app.add_option_no_stream("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-v", "1", "4", "5"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::vector<int> expV{1, 4, 5};
-    EXPECT_EQ(*opt, expV);
+    CHECK(expV == *opt);
 }
 
-TEST_F(TApp, BoostOptionalComplexDirect) {
+TEST_CASE_METHOD(TApp, "BoostOptionalComplexDirect", "[optional]") {
     boost::optional<std::complex<double>> opt;
     app.add_option("-c,--complex", opt)->type_size(0, 2);
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-c"};
     opt = std::complex<double>{4.0, 3.0};
     run();
-    EXPECT_FALSE(opt);
+    CHECK(!opt);
     args = {"-c", "1+2j"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::complex<double> val{1, 2};
-    EXPECT_EQ(*opt, val);
+    CHECK(val == *opt);
     args = {"-c", "3", "-4"};
     run();
-    EXPECT_TRUE(opt);
+    CHECK(opt);
     std::complex<double> val2{3, -4};
-    EXPECT_EQ(*opt, val2);
+    CHECK(val2 == *opt);
 }
 
-#endif
-
-#if !CLI11_OPTIONAL
-TEST_F(TApp, DISABLED_OptionalTest) {}
 #endif

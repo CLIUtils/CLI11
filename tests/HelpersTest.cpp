@@ -8,11 +8,11 @@
 
 #include <array>
 #include <atomic>
-#include <climits>
 #include <complex>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <limits>
 #include <map>
 #include <string>
 #include <tuple>
@@ -25,146 +25,146 @@ class Streamable {};
 
 std::ostream &operator<<(std::ostream &out, const Streamable &) { return out << "Streamable"; }
 
-TEST(TypeTools, Streaming) {
+TEST_CASE("TypeTools: Streaming", "[helpers]") {
 
-    EXPECT_EQ(CLI::detail::to_string(NotStreamable{}), "");
+    CHECK("" == CLI::detail::to_string(NotStreamable{}));
 
-    EXPECT_EQ(CLI::detail::to_string(Streamable{}), "Streamable");
+    CHECK("Streamable" == CLI::detail::to_string(Streamable{}));
 
-    EXPECT_EQ(CLI::detail::to_string(5), "5");
+    CHECK("5" == CLI::detail::to_string(5));
 
-    EXPECT_EQ(CLI::detail::to_string("string"), std::string("string"));
-    EXPECT_EQ(CLI::detail::to_string(std::string("string")), std::string("string"));
+    CHECK(std::string("string") == CLI::detail::to_string("string"));
+    CHECK(std::string("string") == CLI::detail::to_string(std::string("string")));
 }
 
-TEST(TypeTools, tuple) {
-    EXPECT_FALSE(CLI::detail::is_tuple_like<int>::value);
-    EXPECT_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
+TEST_CASE("TypeTools: tuple", "[helpers]") {
+    CHECK_FALSE(CLI::detail::is_tuple_like<int>::value);
+    CHECK_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
     auto v = CLI::detail::is_tuple_like<std::tuple<double, int>>::value;
-    EXPECT_TRUE(v);
+    CHECK(v);
     v = CLI::detail::is_tuple_like<std::tuple<double, double, double>>::value;
-    EXPECT_TRUE(v);
+    CHECK(v);
 }
 
-TEST(TypeTools, type_size) {
+TEST_CASE("TypeTools: type_size", "[helpers]") {
     auto V = CLI::detail::type_count<int>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::type_count<void>::value;
-    EXPECT_EQ(V, 0);
+    CHECK(0 == V);
     V = CLI::detail::type_count<std::vector<double>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::type_count<std::tuple<double, int>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count<std::tuple<std::string, double, int>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     V = CLI::detail::type_count<std::array<std::string, 5>>::value;
-    EXPECT_EQ(V, 5);
+    CHECK(5 == V);
     V = CLI::detail::type_count<std::vector<std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count<std::tuple<std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count<std::tuple<int, std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     V = CLI::detail::type_count<std::tuple<std::pair<int, double>, std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 4);
+    CHECK(4 == V);
     // maps
     V = CLI::detail::type_count<std::map<int, std::pair<int, double>>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     // three level tuples
     V = CLI::detail::type_count<std::tuple<int, std::pair<int, std::tuple<int, double, std::string>>>>::value;
-    EXPECT_EQ(V, 5);
+    CHECK(5 == V);
     V = CLI::detail::type_count<std::pair<int, std::vector<int>>>::value;
-    EXPECT_GE(V, CLI::detail::expected_max_vector_size);
+    CHECK(CLI::detail::expected_max_vector_size <= V);
     V = CLI::detail::type_count<std::vector<std::vector<int>>>::value;
-    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
+    CHECK(CLI::detail::expected_max_vector_size == V);
 }
 
-TEST(TypeTools, type_size_min) {
+TEST_CASE("TypeTools: type_size_min", "[helpers]") {
     auto V = CLI::detail::type_count_min<int>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::type_count_min<void>::value;
-    EXPECT_EQ(V, 0);
+    CHECK(0 == V);
     V = CLI::detail::type_count_min<std::vector<double>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::type_count_min<std::tuple<double, int>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count_min<std::tuple<std::string, double, int>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     V = CLI::detail::type_count_min<std::array<std::string, 5>>::value;
-    EXPECT_EQ(V, 5);
+    CHECK(5 == V);
     V = CLI::detail::type_count_min<std::vector<std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count_min<std::tuple<std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count_min<std::tuple<int, std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     V = CLI::detail::type_count_min<std::tuple<std::pair<int, double>, std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, 4);
+    CHECK(4 == V);
     // maps
     V = CLI::detail::type_count_min<std::map<int, std::pair<int, double>>>::value;
-    EXPECT_EQ(V, 3);
+    CHECK(3 == V);
     // three level tuples
     V = CLI::detail::type_count_min<std::tuple<int, std::pair<int, std::tuple<int, double, std::string>>>>::value;
-    EXPECT_EQ(V, 5);
+    CHECK(5 == V);
     V = CLI::detail::type_count_min<std::pair<int, std::vector<int>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
     V = CLI::detail::type_count_min<std::vector<std::vector<int>>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::type_count_min<std::vector<std::vector<std::pair<int, int>>>>::value;
-    EXPECT_EQ(V, 2);
+    CHECK(2 == V);
 }
 
-TEST(TypeTools, expected_count) {
+TEST_CASE("TypeTools: expected_count", "[helpers]") {
     auto V = CLI::detail::expected_count<int>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::expected_count<void>::value;
-    EXPECT_EQ(V, 0);
+    CHECK(0 == V);
     V = CLI::detail::expected_count<std::vector<double>>::value;
-    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
+    CHECK(CLI::detail::expected_max_vector_size == V);
     V = CLI::detail::expected_count<std::tuple<double, int>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::expected_count<std::tuple<std::string, double, int>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::expected_count<std::array<std::string, 5>>::value;
-    EXPECT_EQ(V, 1);
+    CHECK(1 == V);
     V = CLI::detail::expected_count<std::vector<std::pair<std::string, double>>>::value;
-    EXPECT_EQ(V, CLI::detail::expected_max_vector_size);
+    CHECK(CLI::detail::expected_max_vector_size == V);
 }
 
-TEST(Split, SimpleByToken) {
+TEST_CASE("Split: SimpleByToken", "[helpers]") {
     auto out = CLI::detail::split("one.two.three", '.');
-    ASSERT_EQ(3u, out.size());
-    EXPECT_EQ("one", out.at(0));
-    EXPECT_EQ("two", out.at(1));
-    EXPECT_EQ("three", out.at(2));
+    REQUIRE(out.size() == 3u);
+    CHECK(out.at(0) == "one");
+    CHECK(out.at(1) == "two");
+    CHECK(out.at(2) == "three");
 }
 
-TEST(Split, Single) {
+TEST_CASE("Split: Single", "[helpers]") {
     auto out = CLI::detail::split("one", '.');
-    ASSERT_EQ(1u, out.size());
-    EXPECT_EQ("one", out.at(0));
+    REQUIRE(out.size() == 1u);
+    CHECK(out.at(0) == "one");
 }
 
-TEST(Split, Empty) {
+TEST_CASE("Split: Empty", "[helpers]") {
     auto out = CLI::detail::split("", '.');
-    ASSERT_EQ(1u, out.size());
-    EXPECT_EQ("", out.at(0));
+    REQUIRE(out.size() == 1u);
+    CHECK(out.at(0) == "");
 }
 
-TEST(String, InvalidName) {
-    EXPECT_TRUE(CLI::detail::valid_name_string("valid"));
-    EXPECT_FALSE(CLI::detail::valid_name_string("-invalid"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("va-li-d"));
-    EXPECT_FALSE(CLI::detail::valid_name_string("vali&d"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("_valid"));
-    EXPECT_FALSE(CLI::detail::valid_name_string("/valid"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("vali?d"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("@@@@"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("b@d2?"));
-    EXPECT_TRUE(CLI::detail::valid_name_string("2vali?d"));
+TEST_CASE("String: InvalidName", "[helpers]") {
+    CHECK(CLI::detail::valid_name_string("valid"));
+    CHECK_FALSE(CLI::detail::valid_name_string("-invalid"));
+    CHECK(CLI::detail::valid_name_string("va-li-d"));
+    CHECK_FALSE(CLI::detail::valid_name_string("vali&d"));
+    CHECK(CLI::detail::valid_name_string("_valid"));
+    CHECK_FALSE(CLI::detail::valid_name_string("/valid"));
+    CHECK(CLI::detail::valid_name_string("vali?d"));
+    CHECK(CLI::detail::valid_name_string("@@@@"));
+    CHECK(CLI::detail::valid_name_string("b@d2?"));
+    CHECK(CLI::detail::valid_name_string("2vali?d"));
 }
 
-TEST(StringTools, Modify) {
+TEST_CASE("StringTools: Modify", "[helpers]") {
     int cnt{0};
     std::string newString = CLI::detail::find_and_modify("======", "=", [&cnt](std::string &str, std::size_t index) {
         if((++cnt) % 2 == 0) {
@@ -172,10 +172,10 @@ TEST(StringTools, Modify) {
         }
         return index + 1;
     });
-    EXPECT_EQ(newString, "=:=:=:");
+    CHECK("=:=:=:" == newString);
 }
 
-TEST(StringTools, Modify2) {
+TEST_CASE("StringTools: Modify2", "[helpers]") {
     std::string newString =
         CLI::detail::find_and_modify("this is a string test", "is", [](std::string &str, std::size_t index) {
             if((index > 1) && (str[index - 1] != ' ')) {
@@ -184,296 +184,296 @@ TEST(StringTools, Modify2) {
             }
             return index + 1;
         });
-    EXPECT_EQ(newString, "that is a string test");
+    CHECK("that is a string test" == newString);
 }
 
-TEST(StringTools, Modify3) {
+TEST_CASE("StringTools: Modify3", "[helpers]") {
     // this picks up 3 sets of 3 after the 'b' then collapses the new first set
     std::string newString = CLI::detail::find_and_modify("baaaaaaaaaa", "aaa", [](std::string &str, std::size_t index) {
         str.erase(index, 3);
         str.insert(str.begin(), 'a');
         return 0u;
     });
-    EXPECT_EQ(newString, "aba");
+    CHECK("aba" == newString);
 }
 
-TEST(StringTools, flagValues) {
-    EXPECT_EQ(CLI::detail::to_flag_value("0"), -1);
-    EXPECT_EQ(CLI::detail::to_flag_value("t"), 1);
-    EXPECT_EQ(CLI::detail::to_flag_value("1"), 1);
-    EXPECT_EQ(CLI::detail::to_flag_value("6"), 6);
-    EXPECT_EQ(CLI::detail::to_flag_value("-6"), -6);
-    EXPECT_EQ(CLI::detail::to_flag_value("false"), -1);
-    EXPECT_EQ(CLI::detail::to_flag_value("YES"), 1);
-    EXPECT_THROW(CLI::detail::to_flag_value("frog"), std::invalid_argument);
-    EXPECT_THROW(CLI::detail::to_flag_value("q"), std::invalid_argument);
-    EXPECT_EQ(CLI::detail::to_flag_value("NO"), -1);
-    EXPECT_EQ(CLI::detail::to_flag_value("475555233"), 475555233);
+TEST_CASE("StringTools: flagValues", "[helpers]") {
+    CHECK(-1 == CLI::detail::to_flag_value("0"));
+    CHECK(1 == CLI::detail::to_flag_value("t"));
+    CHECK(1 == CLI::detail::to_flag_value("1"));
+    CHECK(6 == CLI::detail::to_flag_value("6"));
+    CHECK(-6 == CLI::detail::to_flag_value("-6"));
+    CHECK(-1 == CLI::detail::to_flag_value("false"));
+    CHECK(1 == CLI::detail::to_flag_value("YES"));
+    CHECK_THROWS_AS(CLI::detail::to_flag_value("frog"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::to_flag_value("q"), std::invalid_argument);
+    CHECK(-1 == CLI::detail::to_flag_value("NO"));
+    CHECK(475555233 == CLI::detail::to_flag_value("475555233"));
 }
 
-TEST(StringTools, Validation) {
-    EXPECT_TRUE(CLI::detail::isalpha(""));
-    EXPECT_TRUE(CLI::detail::isalpha("a"));
-    EXPECT_TRUE(CLI::detail::isalpha("abcd"));
-    EXPECT_FALSE(CLI::detail::isalpha("_"));
-    EXPECT_FALSE(CLI::detail::isalpha("2"));
-    EXPECT_FALSE(CLI::detail::isalpha("test test"));
-    EXPECT_FALSE(CLI::detail::isalpha("test "));
-    EXPECT_FALSE(CLI::detail::isalpha(" test"));
-    EXPECT_FALSE(CLI::detail::isalpha("test2"));
+TEST_CASE("StringTools: Validation", "[helpers]") {
+    CHECK(CLI::detail::isalpha(""));
+    CHECK(CLI::detail::isalpha("a"));
+    CHECK(CLI::detail::isalpha("abcd"));
+    CHECK_FALSE(CLI::detail::isalpha("_"));
+    CHECK_FALSE(CLI::detail::isalpha("2"));
+    CHECK_FALSE(CLI::detail::isalpha("test test"));
+    CHECK_FALSE(CLI::detail::isalpha("test "));
+    CHECK_FALSE(CLI::detail::isalpha(" test"));
+    CHECK_FALSE(CLI::detail::isalpha("test2"));
 }
 
-TEST(Trim, Various) {
+TEST_CASE("Trim: Various", "[helpers]") {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
     CLI::detail::trim(s1);
-    EXPECT_EQ(a1, s1);
+    CHECK(s1 == a1);
 
     std::string s2{" a \t"};
     CLI::detail::trim(s2);
-    EXPECT_EQ("a", s2);
+    CHECK(s2 == "a");
 
     std::string s3{" a \n"};
     CLI::detail::trim(s3);
-    EXPECT_EQ("a", s3);
+    CHECK(s3 == "a");
 
     std::string s4{" a b "};
-    EXPECT_EQ("a b", CLI::detail::trim(s4));
+    CHECK(CLI::detail::trim(s4) == "a b");
 }
 
-TEST(Trim, VariousFilters) {
+TEST_CASE("Trim: VariousFilters", "[helpers]") {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
     CLI::detail::trim(s1, " ");
-    EXPECT_EQ(a1, s1);
+    CHECK(s1 == a1);
 
     std::string s2{" a \t"};
     CLI::detail::trim(s2, " ");
-    EXPECT_EQ("a \t", s2);
+    CHECK(s2 == "a \t");
 
     std::string s3{"abdavda"};
     CLI::detail::trim(s3, "a");
-    EXPECT_EQ("bdavd", s3);
+    CHECK(s3 == "bdavd");
 
     std::string s4{"abcabcabc"};
-    EXPECT_EQ("cabcabc", CLI::detail::trim(s4, "ab"));
+    CHECK(CLI::detail::trim(s4, "ab") == "cabcabc");
 }
 
-TEST(Trim, TrimCopy) {
+TEST_CASE("Trim: TrimCopy", "[helpers]") {
     std::string orig{" cabc  "};
     std::string trimmed = CLI::detail::trim_copy(orig);
-    EXPECT_EQ("cabc", trimmed);
-    EXPECT_NE(orig, trimmed);
+    CHECK(trimmed == "cabc");
+    CHECK(trimmed != orig);
     CLI::detail::trim(orig);
-    EXPECT_EQ(trimmed, orig);
+    CHECK(orig == trimmed);
 
     orig = "abcabcabc";
     trimmed = CLI::detail::trim_copy(orig, "ab");
-    EXPECT_EQ("cabcabc", trimmed);
-    EXPECT_NE(orig, trimmed);
+    CHECK(trimmed == "cabcabc");
+    CHECK(trimmed != orig);
     CLI::detail::trim(orig, "ab");
-    EXPECT_EQ(trimmed, orig);
+    CHECK(orig == trimmed);
 }
 
-TEST(Validators, FileExists) {
+TEST_CASE("Validators: FileExists", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+    CHECK_FALSE(CLI::ExistingFile(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
-    EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+    CHECK(ok);
+    CHECK(CLI::ExistingFile(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+    CHECK_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
-TEST(Validators, FileNotExists) {
+TEST_CASE("Validators: FileNotExists", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
+    CHECK(CLI::NonexistentPath(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
-    EXPECT_FALSE(CLI::NonexistentPath(myfile).empty());
+    CHECK(ok);
+    CHECK_FALSE(CLI::NonexistentPath(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
+    CHECK(CLI::NonexistentPath(myfile).empty());
 }
 
-TEST(Validators, FileIsDir) {
+TEST_CASE("Validators: FileIsDir", "[helpers]") {
     std::string mydir{"../tests"};
-    EXPECT_NE(CLI::ExistingFile(mydir), "");
+    CHECK("" != CLI::ExistingFile(mydir));
 }
 
-TEST(Validators, DirectoryExists) {
+TEST_CASE("Validators: DirectoryExists", "[helpers]") {
     std::string mydir{"../tests"};
-    EXPECT_EQ(CLI::ExistingDirectory(mydir), "");
+    CHECK("" == CLI::ExistingDirectory(mydir));
 }
 
-TEST(Validators, DirectoryNotExists) {
+TEST_CASE("Validators: DirectoryNotExists", "[helpers]") {
     std::string mydir{"nondirectory"};
-    EXPECT_NE(CLI::ExistingDirectory(mydir), "");
+    CHECK("" != CLI::ExistingDirectory(mydir));
 }
 
-TEST(Validators, DirectoryIsFile) {
+TEST_CASE("Validators: DirectoryIsFile", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
+    CHECK(CLI::NonexistentPath(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
-    EXPECT_FALSE(CLI::ExistingDirectory(myfile).empty());
+    CHECK(ok);
+    CHECK_FALSE(CLI::ExistingDirectory(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_TRUE(CLI::NonexistentPath(myfile).empty());
+    CHECK(CLI::NonexistentPath(myfile).empty());
 }
 
-TEST(Validators, PathExistsDir) {
+TEST_CASE("Validators: PathExistsDir", "[helpers]") {
     std::string mydir{"../tests"};
-    EXPECT_EQ(CLI::ExistingPath(mydir), "");
+    CHECK("" == CLI::ExistingPath(mydir));
 }
 
-TEST(Validators, PathExistsFile) {
+TEST_CASE("Validators: PathExistsFile", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::ExistingPath(myfile).empty());
+    CHECK_FALSE(CLI::ExistingPath(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
-    EXPECT_TRUE(CLI::ExistingPath(myfile).empty());
+    CHECK(ok);
+    CHECK(CLI::ExistingPath(myfile).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingPath(myfile).empty());
+    CHECK_FALSE(CLI::ExistingPath(myfile).empty());
 }
 
-TEST(Validators, PathNotExistsDir) {
+TEST_CASE("Validators: PathNotExistsDir", "[helpers]") {
     std::string mydir{"nonpath"};
-    EXPECT_NE(CLI::ExistingPath(mydir), "");
+    CHECK("" != CLI::ExistingPath(mydir));
 }
 
-TEST(Validators, IPValidate1) {
+TEST_CASE("Validators: IPValidate1", "[helpers]") {
     std::string ip = "1.1.1.1";
-    EXPECT_TRUE(CLI::ValidIPV4(ip).empty());
+    CHECK(CLI::ValidIPV4(ip).empty());
     ip = "224.255.0.1";
-    EXPECT_TRUE(CLI::ValidIPV4(ip).empty());
+    CHECK(CLI::ValidIPV4(ip).empty());
     ip = "-1.255.0.1";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.256.0.1";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.256.0.1";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "aaa";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.2.3.abc";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "11.22";
-    EXPECT_FALSE(CLI::ValidIPV4(ip).empty());
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
 }
 
-TEST(Validators, PositiveValidator) {
+TEST_CASE("Validators: PositiveValidator", "[helpers]") {
     std::string num = "1.1.1.1";
-    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    CHECK_FALSE(CLI::PositiveNumber(num).empty());
     num = "1";
-    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    CHECK(CLI::PositiveNumber(num).empty());
     num = "10000";
-    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    CHECK(CLI::PositiveNumber(num).empty());
     num = "0";
-    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    CHECK_FALSE(CLI::PositiveNumber(num).empty());
     num = "+0.5";
-    EXPECT_TRUE(CLI::PositiveNumber(num).empty());
+    CHECK(CLI::PositiveNumber(num).empty());
     num = "-1";
-    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    CHECK_FALSE(CLI::PositiveNumber(num).empty());
     num = "-1.5";
-    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    CHECK_FALSE(CLI::PositiveNumber(num).empty());
     num = "a";
-    EXPECT_FALSE(CLI::PositiveNumber(num).empty());
+    CHECK_FALSE(CLI::PositiveNumber(num).empty());
 }
 
-TEST(Validators, NonNegativeValidator) {
+TEST_CASE("Validators: NonNegativeValidator", "[helpers]") {
     std::string num = "1.1.1.1";
-    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
     num = "1";
-    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    CHECK(CLI::NonNegativeNumber(num).empty());
     num = "10000";
-    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    CHECK(CLI::NonNegativeNumber(num).empty());
     num = "0";
-    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    CHECK(CLI::NonNegativeNumber(num).empty());
     num = "+0.5";
-    EXPECT_TRUE(CLI::NonNegativeNumber(num).empty());
+    CHECK(CLI::NonNegativeNumber(num).empty());
     num = "-1";
-    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
     num = "-1.5";
-    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
     num = "a";
-    EXPECT_FALSE(CLI::NonNegativeNumber(num).empty());
+    CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
 }
 
-TEST(Validators, NumberValidator) {
+TEST_CASE("Validators: NumberValidator", "[helpers]") {
     std::string num = "1.1.1.1";
-    EXPECT_FALSE(CLI::Number(num).empty());
+    CHECK_FALSE(CLI::Number(num).empty());
     num = "1.7";
-    EXPECT_TRUE(CLI::Number(num).empty());
+    CHECK(CLI::Number(num).empty());
     num = "10000";
-    EXPECT_TRUE(CLI::Number(num).empty());
+    CHECK(CLI::Number(num).empty());
     num = "-0.000";
-    EXPECT_TRUE(CLI::Number(num).empty());
+    CHECK(CLI::Number(num).empty());
     num = "+1.55";
-    EXPECT_TRUE(CLI::Number(num).empty());
+    CHECK(CLI::Number(num).empty());
     num = "a";
-    EXPECT_FALSE(CLI::Number(num).empty());
+    CHECK_FALSE(CLI::Number(num).empty());
 }
 
-TEST(Validators, CombinedAndRange) {
+TEST_CASE("Validators: CombinedAndRange", "[helpers]") {
     auto crange = CLI::Range(0, 12) & CLI::Range(4, 16);
-    EXPECT_TRUE(crange("4").empty());
-    EXPECT_TRUE(crange("12").empty());
-    EXPECT_TRUE(crange("7").empty());
+    CHECK(crange("4").empty());
+    CHECK(crange("12").empty());
+    CHECK(crange("7").empty());
 
-    EXPECT_FALSE(crange("-2").empty());
-    EXPECT_FALSE(crange("2").empty());
-    EXPECT_FALSE(crange("15").empty());
-    EXPECT_FALSE(crange("16").empty());
-    EXPECT_FALSE(crange("18").empty());
+    CHECK_FALSE(crange("-2").empty());
+    CHECK_FALSE(crange("2").empty());
+    CHECK_FALSE(crange("15").empty());
+    CHECK_FALSE(crange("16").empty());
+    CHECK_FALSE(crange("18").empty());
 }
 
-TEST(Validators, CombinedOrRange) {
+TEST_CASE("Validators: CombinedOrRange", "[helpers]") {
     auto crange = CLI::Range(0, 4) | CLI::Range(8, 12);
 
-    EXPECT_FALSE(crange("-2").empty());
-    EXPECT_TRUE(crange("2").empty());
-    EXPECT_FALSE(crange("5").empty());
-    EXPECT_TRUE(crange("8").empty());
-    EXPECT_TRUE(crange("12").empty());
-    EXPECT_FALSE(crange("16").empty());
+    CHECK_FALSE(crange("-2").empty());
+    CHECK(crange("2").empty());
+    CHECK_FALSE(crange("5").empty());
+    CHECK(crange("8").empty());
+    CHECK(crange("12").empty());
+    CHECK_FALSE(crange("16").empty());
 }
 
-TEST(Validators, CombinedPaths) {
+TEST_CASE("Validators: CombinedPaths", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
-    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+    CHECK_FALSE(CLI::ExistingFile(myfile).empty());
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    EXPECT_TRUE(ok);
+    CHECK(ok);
 
     std::string dir{"../tests"};
     std::string notpath{"nondirectory"};
 
     auto path_or_dir = CLI::ExistingPath | CLI::ExistingDirectory;
-    EXPECT_TRUE(path_or_dir(dir).empty());
-    EXPECT_TRUE(path_or_dir(myfile).empty());
-    EXPECT_FALSE(path_or_dir(notpath).empty());
+    CHECK(path_or_dir(dir).empty());
+    CHECK(path_or_dir(myfile).empty());
+    CHECK_FALSE(path_or_dir(notpath).empty());
 
     auto file_or_dir = CLI::ExistingFile | CLI::ExistingDirectory;
-    EXPECT_TRUE(file_or_dir(dir).empty());
-    EXPECT_TRUE(file_or_dir(myfile).empty());
-    EXPECT_FALSE(file_or_dir(notpath).empty());
+    CHECK(file_or_dir(dir).empty());
+    CHECK(file_or_dir(myfile).empty());
+    CHECK_FALSE(file_or_dir(notpath).empty());
 
     auto path_and_dir = CLI::ExistingPath & CLI::ExistingDirectory;
-    EXPECT_TRUE(path_and_dir(dir).empty());
-    EXPECT_FALSE(path_and_dir(myfile).empty());
-    EXPECT_FALSE(path_and_dir(notpath).empty());
+    CHECK(path_and_dir(dir).empty());
+    CHECK_FALSE(path_and_dir(myfile).empty());
+    CHECK_FALSE(path_and_dir(notpath).empty());
 
     auto path_and_file = CLI::ExistingFile & CLI::ExistingDirectory;
-    EXPECT_FALSE(path_and_file(dir).empty());
-    EXPECT_FALSE(path_and_file(myfile).empty());
-    EXPECT_FALSE(path_and_file(notpath).empty());
+    CHECK_FALSE(path_and_file(dir).empty());
+    CHECK_FALSE(path_and_file(myfile).empty());
+    CHECK_FALSE(path_and_file(notpath).empty());
 
     std::remove(myfile.c_str());
-    EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+    CHECK_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
-TEST(Validators, ProgramNameSplit) {
+TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     TempFile myfile{"program_name1.exe"};
     {
         std::ofstream out{myfile};
@@ -481,8 +481,8 @@ TEST(Validators, ProgramNameSplit) {
     }
     auto res =
         CLI::detail::split_program_name(std::string("./") + std::string(myfile) + " this is a bunch of extra stuff  ");
-    EXPECT_EQ(res.first, std::string("./") + std::string(myfile));
-    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+    CHECK(std::string("./") + std::string(myfile) == res.first);
+    CHECK("this is a bunch of extra stuff" == res.second);
 
     TempFile myfile2{"program name1.exe"};
     {
@@ -491,257 +491,257 @@ TEST(Validators, ProgramNameSplit) {
     }
     res = CLI::detail::split_program_name(std::string("   ") + std::string("./") + std::string(myfile2) +
                                           "      this is a bunch of extra stuff  ");
-    EXPECT_EQ(res.first, std::string("./") + std::string(myfile2));
-    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+    CHECK(std::string("./") + std::string(myfile2) == res.first);
+    CHECK("this is a bunch of extra stuff" == res.second);
 
     res = CLI::detail::split_program_name("./program_name    this is a bunch of extra stuff  ");
-    EXPECT_EQ(res.first, "./program_name");  // test sectioning of first argument even if it can't detect the file
-    EXPECT_EQ(res.second, "this is a bunch of extra stuff");
+    CHECK("./program_name" == res.first);
+    CHECK("this is a bunch of extra stuff" == res.second);
 
     res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
-    EXPECT_EQ(res.first, std::string("./") + std::string(myfile));
-    EXPECT_TRUE(res.second.empty());
+    CHECK(std::string("./") + std::string(myfile) == res.first);
+    CHECK(res.second.empty());
 }
 
-TEST(CheckedMultiply, Int) {
+TEST_CASE("CheckedMultiply: Int", "[helpers]") {
     int a{10};
     int b{-20};
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, -200);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(-200 == a);
 
     a = 0;
     b = -20;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, 0);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0 == a);
 
     a = 20;
     b = 0;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, 0);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0 == a);
 
     a = std::numeric_limits<int>::max();
     b = 1;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::max());
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::max() == a);
 
     a = std::numeric_limits<int>::max();
     b = 2;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::max());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::max() == a);
 
     a = std::numeric_limits<int>::max();
     b = -1;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, -std::numeric_limits<int>::max());
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(-std::numeric_limits<int>::max() == a);
 
     a = std::numeric_limits<int>::max();
     b = std::numeric_limits<int>::max();
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::max());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::max() == a);
 
     a = std::numeric_limits<int>::min();
     b = std::numeric_limits<int>::max();
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::min());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::min() == a);
 
     a = std::numeric_limits<int>::min();
     b = 1;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::min());
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::min() == a);
 
     a = std::numeric_limits<int>::min();
     b = -1;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::min());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::min() == a);
 
     b = std::numeric_limits<int>::min();
     a = -1;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, -1);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(-1 == a);
 
     a = std::numeric_limits<int>::min() / 100;
     b = 99;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::min() / 100 * 99);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::min() / 100 * 99 == a);
 
     a = std::numeric_limits<int>::min() / 100;
     b = -101;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<int>::min() / 100);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<int>::min() / 100 == a);
     a = 2;
     b = std::numeric_limits<int>::min() / 2;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(CLI::detail::checked_multiply(a, b));
     a = std::numeric_limits<int>::min() / 2;
     b = 2;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(CLI::detail::checked_multiply(a, b));
 
     a = 4;
     b = std::numeric_limits<int>::min() / 4;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(CLI::detail::checked_multiply(a, b));
 
     a = 48;
     b = std::numeric_limits<int>::min() / 48;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(CLI::detail::checked_multiply(a, b));
 }
 
-TEST(CheckedMultiply, SizeT) {
+TEST_CASE("CheckedMultiply: SizeT", "[helpers]") {
     std::size_t a = 10;
     std::size_t b = 20;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, 200u);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(200u == a);
 
     a = 0u;
     b = 20u;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, 0u);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0u == a);
 
     a = 20u;
     b = 0u;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, 0u);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0u == a);
 
     a = std::numeric_limits<std::size_t>::max();
     b = 1u;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
 
     a = std::numeric_limits<std::size_t>::max();
     b = 2u;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
 
     a = std::numeric_limits<std::size_t>::max();
     b = std::numeric_limits<std::size_t>::max();
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max());
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
 
     a = std::numeric_limits<std::size_t>::max() / 100;
     b = 99u;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_EQ(a, std::numeric_limits<std::size_t>::max() / 100u * 99u);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<std::size_t>::max() / 100u * 99u == a);
 }
 
-TEST(CheckedMultiply, Float) {
+TEST_CASE("CheckedMultiply: Float", "[helpers]") {
     float a{10.0F};
     float b{20.0F};
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, 200);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(200 == Approx(a));
 
     a = 0.0F;
     b = 20.0F;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, 0);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0 == Approx(a));
 
     a = INFINITY;
     b = 20.0F;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, INFINITY);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(INFINITY == Approx(a));
 
     a = 2.0F;
     b = -INFINITY;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, -INFINITY);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(-INFINITY == Approx(a));
 
     a = std::numeric_limits<float>::max() / 100.0F;
     b = 1.0F;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100.0F);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
 
     a = std::numeric_limits<float>::max() / 100.0F;
     b = 99.0F;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100.0F * 99.0F);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<float>::max() / 100.0F * 99.0F == Approx(a));
 
     a = std::numeric_limits<float>::max() / 100.0F;
     b = 101;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100.0F);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
 
     a = std::numeric_limits<float>::max() / 100.0F;
     b = -99;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100.0F * -99.0F);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<float>::max() / 100.0F * -99.0F == Approx(a));
 
     a = std::numeric_limits<float>::max() / 100.0F;
     b = -101;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_FLOAT_EQ(a, std::numeric_limits<float>::max() / 100.0F);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
 }
 
-TEST(CheckedMultiply, Double) {
+TEST_CASE("CheckedMultiply: Double", "[helpers]") {
     double a{10.0F};
     double b{20.0F};
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, 200);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(200 == Approx(a));
 
     a = 0;
     b = 20;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, 0);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(0 == Approx(a));
 
     a = INFINITY;
     b = 20;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, INFINITY);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(INFINITY == Approx(a));
 
     a = 2;
     b = -INFINITY;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, -INFINITY);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(-INFINITY == Approx(a));
 
     a = std::numeric_limits<double>::max() / 100;
     b = 1;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
 
     a = std::numeric_limits<double>::max() / 100;
     b = 99;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100 * 99);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<double>::max() / 100 * 99 == Approx(a));
 
     a = std::numeric_limits<double>::max() / 100;
     b = 101;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
 
     a = std::numeric_limits<double>::max() / 100;
     b = -99;
-    ASSERT_TRUE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100 * -99);
+    REQUIRE(CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<double>::max() / 100 * -99 == Approx(a));
 
     a = std::numeric_limits<double>::max() / 100;
     b = -101;
-    ASSERT_FALSE(CLI::detail::checked_multiply(a, b));
-    ASSERT_DOUBLE_EQ(a, std::numeric_limits<double>::max() / 100);
+    REQUIRE(!CLI::detail::checked_multiply(a, b));
+    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
 }
 
 // Yes, this is testing an app_helper :)
-TEST(AppHelper, TempfileCreated) {
+TEST_CASE("AppHelper: TempfileCreated", "[helpers]") {
     std::string name = "TestFileNotUsed.txt";
     {
         TempFile myfile{name};
 
-        EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+        CHECK_FALSE(CLI::ExistingFile(myfile).empty());
 
         bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-        EXPECT_TRUE(ok);
-        EXPECT_TRUE(CLI::ExistingFile(name).empty());
-        EXPECT_THROW({ TempFile otherfile(name); }, std::runtime_error);
+        CHECK(ok);
+        CHECK(CLI::ExistingFile(name).empty());
+        CHECK_THROWS_AS([&]() { TempFile otherfile(name); }(), std::runtime_error);
     }
-    EXPECT_FALSE(CLI::ExistingFile(name).empty());
+    CHECK_FALSE(CLI::ExistingFile(name).empty());
 }
 
-TEST(AppHelper, TempfileNotCreated) {
+TEST_CASE("AppHelper: TempfileNotCreated", "[helpers]") {
     std::string name = "TestFileNotUsed.txt";
     {
         TempFile myfile{name};
 
-        EXPECT_FALSE(CLI::ExistingFile(myfile).empty());
+        CHECK_FALSE(CLI::ExistingFile(myfile).empty());
     }
-    EXPECT_FALSE(CLI::ExistingFile(name).empty());
+    CHECK_FALSE(CLI::ExistingFile(name).empty());
 }
 
-TEST(AppHelper, Ofstream) {
+TEST_CASE("AppHelper: Ofstream", "[helpers]") {
 
     std::string name = "TestFileNotUsed.txt";
     {
@@ -752,174 +752,178 @@ TEST(AppHelper, Ofstream) {
             out << "this is output" << std::endl;
         }
 
-        EXPECT_TRUE(CLI::ExistingFile(myfile).empty());
+        CHECK(CLI::ExistingFile(myfile).empty());
     }
-    EXPECT_FALSE(CLI::ExistingFile(name).empty());
+    CHECK_FALSE(CLI::ExistingFile(name).empty());
 }
 
-TEST(Split, StringList) {
+TEST_CASE("Split: StringList", "[helpers]") {
 
     std::vector<std::string> results{"a", "long", "--lone", "-q"};
-    EXPECT_EQ(results, CLI::detail::split_names("a,long,--lone,-q"));
-    EXPECT_EQ(results, CLI::detail::split_names(" a, long, --lone, -q"));
-    EXPECT_EQ(results, CLI::detail::split_names(" a , long , --lone , -q "));
-    EXPECT_EQ(results, CLI::detail::split_names("   a  ,  long  ,  --lone  ,    -q  "));
+    CHECK(CLI::detail::split_names("a,long,--lone,-q") == results);
+    CHECK(CLI::detail::split_names(" a, long, --lone, -q") == results);
+    CHECK(CLI::detail::split_names(" a , long , --lone , -q ") == results);
+    CHECK(CLI::detail::split_names("   a  ,  long  ,  --lone  ,    -q  ") == results);
 
-    EXPECT_EQ(std::vector<std::string>({"one"}), CLI::detail::split_names("one"));
+    CHECK(CLI::detail::split_names("one") == std::vector<std::string>({"one"}));
 }
 
-TEST(RegEx, Shorts) {
+TEST_CASE("RegEx: Shorts", "[helpers]") {
     std::string name, value;
 
-    EXPECT_TRUE(CLI::detail::split_short("-a", name, value));
-    EXPECT_EQ("a", name);
-    EXPECT_EQ("", value);
+    CHECK(CLI::detail::split_short("-a", name, value));
+    CHECK(name == "a");
+    CHECK(value == "");
 
-    EXPECT_TRUE(CLI::detail::split_short("-B", name, value));
-    EXPECT_EQ("B", name);
-    EXPECT_EQ("", value);
+    CHECK(CLI::detail::split_short("-B", name, value));
+    CHECK(name == "B");
+    CHECK(value == "");
 
-    EXPECT_TRUE(CLI::detail::split_short("-cc", name, value));
-    EXPECT_EQ("c", name);
-    EXPECT_EQ("c", value);
+    CHECK(CLI::detail::split_short("-cc", name, value));
+    CHECK(name == "c");
+    CHECK(value == "c");
 
-    EXPECT_TRUE(CLI::detail::split_short("-simple", name, value));
-    EXPECT_EQ("s", name);
-    EXPECT_EQ("imple", value);
+    CHECK(CLI::detail::split_short("-simple", name, value));
+    CHECK(name == "s");
+    CHECK(value == "imple");
 
-    EXPECT_FALSE(CLI::detail::split_short("--a", name, value));
-    EXPECT_FALSE(CLI::detail::split_short("--thing", name, value));
-    EXPECT_FALSE(CLI::detail::split_short("--", name, value));
-    EXPECT_FALSE(CLI::detail::split_short("something", name, value));
-    EXPECT_FALSE(CLI::detail::split_short("s", name, value));
+    CHECK_FALSE(CLI::detail::split_short("--a", name, value));
+    CHECK_FALSE(CLI::detail::split_short("--thing", name, value));
+    CHECK_FALSE(CLI::detail::split_short("--", name, value));
+    CHECK_FALSE(CLI::detail::split_short("something", name, value));
+    CHECK_FALSE(CLI::detail::split_short("s", name, value));
 }
 
-TEST(RegEx, Longs) {
+TEST_CASE("RegEx: Longs", "[helpers]") {
     std::string name, value;
 
-    EXPECT_TRUE(CLI::detail::split_long("--a", name, value));
-    EXPECT_EQ("a", name);
-    EXPECT_EQ("", value);
+    CHECK(CLI::detail::split_long("--a", name, value));
+    CHECK(name == "a");
+    CHECK(value == "");
 
-    EXPECT_TRUE(CLI::detail::split_long("--thing", name, value));
-    EXPECT_EQ("thing", name);
-    EXPECT_EQ("", value);
+    CHECK(CLI::detail::split_long("--thing", name, value));
+    CHECK(name == "thing");
+    CHECK(value == "");
 
-    EXPECT_TRUE(CLI::detail::split_long("--some=thing", name, value));
-    EXPECT_EQ("some", name);
-    EXPECT_EQ("thing", value);
+    CHECK(CLI::detail::split_long("--some=thing", name, value));
+    CHECK(name == "some");
+    CHECK(value == "thing");
 
-    EXPECT_FALSE(CLI::detail::split_long("-a", name, value));
-    EXPECT_FALSE(CLI::detail::split_long("-things", name, value));
-    EXPECT_FALSE(CLI::detail::split_long("Q", name, value));
-    EXPECT_FALSE(CLI::detail::split_long("--", name, value));
+    CHECK_FALSE(CLI::detail::split_long("-a", name, value));
+    CHECK_FALSE(CLI::detail::split_long("-things", name, value));
+    CHECK_FALSE(CLI::detail::split_long("Q", name, value));
+    CHECK_FALSE(CLI::detail::split_long("--", name, value));
 }
 
-TEST(RegEx, SplittingNew) {
+TEST_CASE("RegEx: SplittingNew", "[helpers]") {
 
     std::vector<std::string> shorts;
     std::vector<std::string> longs;
     std::string pname;
 
-    EXPECT_NO_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}));
-    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
-    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
-    EXPECT_EQ("", pname);
+    CHECK_NOTHROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}));
+    CHECK(longs == std::vector<std::string>({"long", "also-long"}));
+    CHECK(shorts == std::vector<std::string>({"s", "q"}));
+    CHECK(pname == "");
 
-    EXPECT_NO_THROW(std::tie(shorts, longs, pname) =
-                        CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"}));
-    EXPECT_EQ(std::vector<std::string>({"long", "also-long"}), longs);
-    EXPECT_EQ(std::vector<std::string>({"s", "q"}), shorts);
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"});
+    CHECK(longs == std::vector<std::string>({"long", "also-long"}));
+    CHECK(shorts == std::vector<std::string>({"s", "q"}));
 
-    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}), CLI::BadNameString);
-    EXPECT_THROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"}), CLI::BadNameString);
+    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}); }(), CLI::BadNameString);
+    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}); }(), CLI::BadNameString);
+    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}); }(), CLI::BadNameString);
+    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}); }(),
+                    CLI::BadNameString);
+    CHECK_THROWS_AS(
+        [&]() {
+            std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"});
+        }(),
+        CLI::BadNameString);
 }
 
-TEST(String, ToLower) { EXPECT_EQ("one and two", CLI::detail::to_lower("one And TWO")); }
+TEST_CASE("String: ToLower", "[helpers]") { CHECK("one and two" == CLI::detail::to_lower("one And TWO")); }
 
-TEST(Join, Forward) {
+TEST_CASE("Join: Forward", "[helpers]") {
     std::vector<std::string> val{{"one", "two", "three"}};
-    EXPECT_EQ("one,two,three", CLI::detail::join(val));
-    EXPECT_EQ("one;two;three", CLI::detail::join(val, ";"));
+    CHECK(CLI::detail::join(val) == "one,two,three");
+    CHECK(CLI::detail::join(val, ";") == "one;two;three");
 }
 
-TEST(Join, Backward) {
+TEST_CASE("Join: Backward", "[helpers]") {
     std::vector<std::string> val{{"three", "two", "one"}};
-    EXPECT_EQ("one,two,three", CLI::detail::rjoin(val));
-    EXPECT_EQ("one;two;three", CLI::detail::rjoin(val, ";"));
+    CHECK(CLI::detail::rjoin(val) == "one,two,three");
+    CHECK(CLI::detail::rjoin(val, ";") == "one;two;three");
 }
 
-TEST(SplitUp, Simple) {
+TEST_CASE("SplitUp: Simple", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one "two three")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 }
 
-TEST(SplitUp, SimpleDifferentQuotes) {
+TEST_CASE("SplitUp: SimpleDifferentQuotes", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one `two three`)"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 }
 
-TEST(SplitUp, SimpleDifferentQuotes2) {
+TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one 'two three')"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 }
 
-TEST(SplitUp, Layered) {
+TEST_CASE("SplitUp: Layered", "[helpers]") {
     std::vector<std::string> output = {R"(one 'two three')"};
     std::string orig{R"("one 'two three'")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(output, result);
+    CHECK(result == output);
 }
 
-TEST(SplitUp, Spaces) {
+TEST_CASE("SplitUp: Spaces", "[helpers]") {
     std::vector<std::string> oput = {"one", "  two three"};
     std::string orig{R"(  one  "  two three" )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 }
 
-TEST(SplitUp, BadStrings) {
+TEST_CASE("SplitUp: BadStrings", "[helpers]") {
     std::vector<std::string> oput = {"one", "  two three"};
     std::string orig{R"(  one  "  two three )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 
     oput = {"one", "  two three"};
     orig = R"(  one  '  two three )";
     result = CLI::detail::split_up(orig);
-    EXPECT_EQ(oput, result);
+    CHECK(result == oput);
 }
 
-TEST(Types, TypeName) {
+TEST_CASE("Types: TypeName", "[helpers]") {
     std::string int_name = CLI::detail::type_name<int>();
-    EXPECT_EQ("INT", int_name);
+    CHECK(int_name == "INT");
 
     std::string int2_name = CLI::detail::type_name<std::int16_t>();
-    EXPECT_EQ("INT", int2_name);
+    CHECK(int2_name == "INT");
 
     std::string uint_name = CLI::detail::type_name<unsigned char>();
-    EXPECT_EQ("UINT", uint_name);
+    CHECK(uint_name == "UINT");
 
     std::string float_name = CLI::detail::type_name<double>();
-    EXPECT_EQ("FLOAT", float_name);
+    CHECK(float_name == "FLOAT");
 
     std::string char_name = CLI::detail::type_name<char>();
-    EXPECT_EQ("CHAR", char_name);
+    CHECK(char_name == "CHAR");
 
     std::string vector_name = CLI::detail::type_name<std::vector<int>>();
-    EXPECT_EQ("INT", vector_name);
+    CHECK(vector_name == "INT");
 
     vector_name = CLI::detail::type_name<std::vector<double>>();
-    EXPECT_EQ("FLOAT", vector_name);
+    CHECK(vector_name == "FLOAT");
 
     static_assert(CLI::detail::classify_object<std::pair<int, std::string>>::value ==
                       CLI::detail::object_category::tuple_value,
@@ -930,228 +934,228 @@ TEST(Types, TypeName) {
                   "tuple<string,double> does not read like a tuple");
 
     std::string pair_name = CLI::detail::type_name<std::vector<std::pair<int, std::string>>>();
-    EXPECT_EQ("[INT,TEXT]", pair_name);
+    CHECK(pair_name == "[INT,TEXT]");
 
     vector_name = CLI::detail::type_name<std::vector<std::vector<unsigned char>>>();
-    EXPECT_EQ("UINT", vector_name);
+    CHECK(vector_name == "UINT");
 
     auto vclass = CLI::detail::classify_object<std::vector<std::vector<unsigned char>>>::value;
-    EXPECT_EQ(vclass, CLI::detail::object_category::container_value);
+    CHECK(CLI::detail::object_category::container_value == vclass);
 
     auto tclass = CLI::detail::classify_object<std::tuple<double>>::value;
-    EXPECT_EQ(tclass, CLI::detail::object_category::number_constructible);
+    CHECK(CLI::detail::object_category::number_constructible == tclass);
 
     std::string tuple_name = CLI::detail::type_name<std::tuple<double>>();
-    EXPECT_EQ("FLOAT", tuple_name);
+    CHECK(tuple_name == "FLOAT");
 
     static_assert(CLI::detail::classify_object<std::tuple<int, std::string>>::value ==
                       CLI::detail::object_category::tuple_value,
                   "tuple<int,string> does not read like a tuple");
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string>>();
-    EXPECT_EQ("[INT,TEXT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT]");
 
     tuple_name = CLI::detail::type_name<std::tuple<const int, std::string>>();
-    EXPECT_EQ("[INT,TEXT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT]");
 
     tuple_name = CLI::detail::type_name<const std::tuple<int, std::string>>();
-    EXPECT_EQ("[INT,TEXT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT]");
 
     tuple_name = CLI::detail::type_name<std::tuple<std::string, double>>();
-    EXPECT_EQ("[TEXT,FLOAT]", tuple_name);
+    CHECK(tuple_name == "[TEXT,FLOAT]");
 
     tuple_name = CLI::detail::type_name<const std::tuple<std::string, double>>();
-    EXPECT_EQ("[TEXT,FLOAT]", tuple_name);
+    CHECK(tuple_name == "[TEXT,FLOAT]");
 
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double>>();
-    EXPECT_EQ("[INT,TEXT,FLOAT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT,FLOAT]");
 
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int>>();
-    EXPECT_EQ("[INT,TEXT,FLOAT,UINT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT,FLOAT,UINT]");
 
     tuple_name = CLI::detail::type_name<std::tuple<int, std::string, double, unsigned int, std::string>>();
-    EXPECT_EQ("[INT,TEXT,FLOAT,UINT,TEXT]", tuple_name);
+    CHECK(tuple_name == "[INT,TEXT,FLOAT,UINT,TEXT]");
 
     tuple_name = CLI::detail::type_name<std::array<int, 10>>();
-    EXPECT_EQ("[INT,INT,INT,INT,INT,INT,INT,INT,INT,INT]", tuple_name);
+    CHECK(tuple_name == "[INT,INT,INT,INT,INT,INT,INT,INT,INT,INT]");
 
     std::string text_name = CLI::detail::type_name<std::string>();
-    EXPECT_EQ("TEXT", text_name);
+    CHECK(text_name == "TEXT");
 
     std::string text2_name = CLI::detail::type_name<char *>();
-    EXPECT_EQ("TEXT", text2_name);
+    CHECK(text2_name == "TEXT");
 
     enum class test { test1, test2, test3 };
     std::string enum_name = CLI::detail::type_name<test>();
-    EXPECT_EQ("ENUM", enum_name);
+    CHECK(enum_name == "ENUM");
 
     vclass = CLI::detail::classify_object<std::tuple<test>>::value;
-    EXPECT_EQ(vclass, CLI::detail::object_category::tuple_value);
+    CHECK(CLI::detail::object_category::tuple_value == vclass);
     static_assert(CLI::detail::classify_object<std::tuple<test>>::value == CLI::detail::object_category::tuple_value,
                   "tuple<test> does not classify as a tuple");
     std::string enum_name2 = CLI::detail::type_name<std::tuple<test>>();
-    EXPECT_EQ("ENUM", enum_name2);
+    CHECK(enum_name2 == "ENUM");
     std::string umapName = CLI::detail::type_name<std::unordered_map<int, std::tuple<std::string, double>>>();
-    EXPECT_EQ("[INT,[TEXT,FLOAT]]", umapName);
+    CHECK(umapName == "[INT,[TEXT,FLOAT]]");
 
     vclass = CLI::detail::classify_object<std::atomic<int>>::value;
 }
 
-TEST(Types, OverflowSmall) {
+TEST_CASE("Types: OverflowSmall", "[helpers]") {
     signed char x;
     auto strmax = std::to_string(SCHAR_MAX + 1);
-    EXPECT_FALSE(CLI::detail::lexical_cast(strmax, x));
+    CHECK_FALSE(CLI::detail::lexical_cast(strmax, x));
 
     unsigned char y;
     strmax = std::to_string(UINT8_MAX + 1);
-    EXPECT_FALSE(CLI::detail::lexical_cast(strmax, y));
+    CHECK_FALSE(CLI::detail::lexical_cast(strmax, y));
 }
 
-TEST(Types, LexicalCastInt) {
+TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     std::string signed_input = "-912";
     int x_signed;
-    EXPECT_TRUE(CLI::detail::lexical_cast(signed_input, x_signed));
-    EXPECT_EQ(-912, x_signed);
+    CHECK(CLI::detail::lexical_cast(signed_input, x_signed));
+    CHECK(x_signed == -912);
 
     std::string unsigned_input = "912";
     unsigned int x_unsigned;
-    EXPECT_TRUE(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
-    EXPECT_EQ((unsigned int)912, x_unsigned);
+    CHECK(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
+    CHECK(x_unsigned == (unsigned int)912);
 
-    EXPECT_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
+    CHECK_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
     unsigned char y;
     std::string overflow_input = std::to_string(UINT64_MAX) + "0";
-    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y));
+    CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
     char y_signed;
-    EXPECT_FALSE(CLI::detail::lexical_cast(overflow_input, y_signed));
+    CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y_signed));
 
     std::string bad_input = "hello";
-    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, y));
+    CHECK_FALSE(CLI::detail::lexical_cast(bad_input, y));
 
     std::string extra_input = "912i";
-    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, y));
+    CHECK_FALSE(CLI::detail::lexical_cast(extra_input, y));
 
     std::string empty_input{};
-    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x_signed));
-    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x_unsigned));
-    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, y_signed));
+    CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x_signed));
+    CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x_unsigned));
+    CHECK_FALSE(CLI::detail::lexical_cast(empty_input, y_signed));
 }
 
-TEST(Types, LexicalCastDouble) {
+TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
     std::string input = "9.12";
     long double x;
-    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
-    EXPECT_FLOAT_EQ((float)9.12, (float)x);
+    CHECK(CLI::detail::lexical_cast(input, x));
+    CHECK((float)x == Approx((float)9.12));
 
     std::string bad_input = "hello";
-    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
+    CHECK_FALSE(CLI::detail::lexical_cast(bad_input, x));
 
-    std::string overflow_input = "1" + std::to_string(LDBL_MAX);
-    EXPECT_TRUE(CLI::detail::lexical_cast(overflow_input, x));
-    EXPECT_FALSE(std::isfinite(x));
+    std::string overflow_input = "1" + std::to_string(std::numeric_limits<long double>::max());
+    CHECK(CLI::detail::lexical_cast(overflow_input, x));
+    CHECK_FALSE(std::isfinite(x));
 
     std::string extra_input = "9.12i";
-    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, x));
+    CHECK_FALSE(CLI::detail::lexical_cast(extra_input, x));
 
     std::string empty_input{};
-    EXPECT_FALSE(CLI::detail::lexical_cast(empty_input, x));
+    CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x));
 }
 
-TEST(Types, LexicalCastBool) {
+TEST_CASE("Types: LexicalCastBool", "[helpers]") {
     std::string input = "false";
     bool x;
-    EXPECT_TRUE(CLI::detail::lexical_cast(input, x));
-    EXPECT_FALSE(x);
+    CHECK(CLI::detail::lexical_cast(input, x));
+    CHECK_FALSE(x);
 
     std::string bad_input = "happy";
-    EXPECT_FALSE(CLI::detail::lexical_cast(bad_input, x));
+    CHECK_FALSE(CLI::detail::lexical_cast(bad_input, x));
 
     std::string input_true = "EnaBLE";
-    EXPECT_TRUE(CLI::detail::lexical_cast(input_true, x));
-    EXPECT_TRUE(x);
+    CHECK(CLI::detail::lexical_cast(input_true, x));
+    CHECK(x);
 }
 
-TEST(Types, LexicalCastString) {
+TEST_CASE("Types: LexicalCastString", "[helpers]") {
     std::string input = "one";
     std::string output;
     CLI::detail::lexical_cast(input, output);
-    EXPECT_EQ(input, output);
+    CHECK(output == input);
 }
 
-TEST(Types, LexicalCastParsable) {
+TEST_CASE("Types: LexicalCastParsable", "[helpers]") {
     std::string input = "(4.2,7.3)";
     std::string fail_input = "4.2,7.3";
     std::string extra_input = "(4.2,7.3)e";
 
     std::complex<double> output;
-    EXPECT_TRUE(CLI::detail::lexical_cast(input, output));
-    EXPECT_DOUBLE_EQ(output.real(), 4.2);  // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 7.3);  // on clang + gcc 4.8 due to missing const
+    CHECK(CLI::detail::lexical_cast(input, output));
+    CHECK(4.2 == Approx(output.real()));
+    CHECK(7.3 == Approx(output.imag()));
 
-    EXPECT_TRUE(CLI::detail::lexical_cast("2.456", output));
-    EXPECT_DOUBLE_EQ(output.real(), 2.456);  // Doing this in one go sometimes has trouble
-    EXPECT_DOUBLE_EQ(output.imag(), 0.0);    // on clang + gcc 4.8 due to missing const
+    CHECK(CLI::detail::lexical_cast("2.456", output));
+    CHECK(2.456 == Approx(output.real()));
+    CHECK(0.0 == Approx(output.imag()));
 
-    EXPECT_FALSE(CLI::detail::lexical_cast(fail_input, output));
-    EXPECT_FALSE(CLI::detail::lexical_cast(extra_input, output));
+    CHECK_FALSE(CLI::detail::lexical_cast(fail_input, output));
+    CHECK_FALSE(CLI::detail::lexical_cast(extra_input, output));
 }
 
-TEST(Types, LexicalCastEnum) {
+TEST_CASE("Types: LexicalCastEnum", "[helpers]") {
     enum t1 : signed char { v1 = 5, v3 = 7, v5 = -9 };
 
     t1 output;
-    EXPECT_TRUE(CLI::detail::lexical_cast("-9", output));
-    EXPECT_EQ(output, v5);
+    CHECK(CLI::detail::lexical_cast("-9", output));
+    CHECK(v5 == output);
 
-    EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output));
+    CHECK_FALSE(CLI::detail::lexical_cast("invalid", output));
     enum class t2 : std::uint64_t { enum1 = 65, enum2 = 45667, enum3 = 9999999999999 };
     t2 output2{t2::enum2};
-    EXPECT_TRUE(CLI::detail::lexical_cast("65", output2));
-    EXPECT_EQ(output2, t2::enum1);
+    CHECK(CLI::detail::lexical_cast("65", output2));
+    CHECK(t2::enum1 == output2);
 
-    EXPECT_FALSE(CLI::detail::lexical_cast("invalid", output2));
+    CHECK_FALSE(CLI::detail::lexical_cast("invalid", output2));
 
-    EXPECT_TRUE(CLI::detail::lexical_cast("9999999999999", output2));
-    EXPECT_EQ(output2, t2::enum3);
+    CHECK(CLI::detail::lexical_cast("9999999999999", output2));
+    CHECK(t2::enum3 == output2);
 }
 
-TEST(Types, LexicalConversionDouble) {
+TEST_CASE("Types: LexicalConversionDouble", "[helpers]") {
     CLI::results_t input = {"9.12"};
     long double x{0.0};
     bool res = CLI::detail::lexical_conversion<long double, double>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_FLOAT_EQ((float)9.12, (float)x);
+    CHECK(res);
+    CHECK((float)x == Approx((float)9.12));
 
     CLI::results_t bad_input = {"hello"};
     res = CLI::detail::lexical_conversion<long double, double>(input, x);
-    EXPECT_TRUE(res);
+    CHECK(res);
 }
 
-TEST(Types, LexicalConversionDoubleTuple) {
+TEST_CASE("Types: LexicalConversionDoubleTuple", "[helpers]") {
     CLI::results_t input = {"9.12"};
     std::tuple<double> x{0.0};
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_DOUBLE_EQ(9.12, std::get<0>(x));
+    CHECK(res);
+    CHECK(std::get<0>(x) == Approx(9.12));
 
     CLI::results_t bad_input = {"hello"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
+    CHECK(res);
 }
 
-TEST(Types, LexicalConversionVectorDouble) {
+TEST_CASE("Types: LexicalConversionVectorDouble", "[helpers]") {
     CLI::results_t input = {"9.12", "10.79", "-3.54"};
     std::vector<double> x;
     bool res = CLI::detail::lexical_conversion<std::vector<double>, double>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(x.size(), 3u);
-    EXPECT_DOUBLE_EQ(x[2], -3.54);
+    CHECK(res);
+    CHECK(3u == x.size());
+    CHECK(-3.54 == Approx(x[2]));
 
     res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(x.size(), 3u);
-    EXPECT_DOUBLE_EQ(x[2], -3.54);
+    CHECK(res);
+    CHECK(3u == x.size());
+    CHECK(-3.54 == Approx(x[2]));
 }
 
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");
@@ -1162,107 +1166,107 @@ static_assert(!CLI::detail::is_tuple_like<std::string>::value, "std::string shou
 static_assert(!CLI::detail::is_tuple_like<double>::value, "double should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value, "tuple should look like a tuple");
 
-TEST(Types, LexicalConversionTuple2) {
+TEST_CASE("Types: LexicalConversionTuple2", "[helpers]") {
     CLI::results_t input = {"9.12", "19"};
 
     std::tuple<double, int> x{0.0, 0};
     static_assert(CLI::detail::is_tuple_like<decltype(x)>::value,
                   "tuple type must have is_tuple_like trait to be true");
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19);
-    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
+    CHECK(res);
+    CHECK(19 == std::get<1>(x));
+    CHECK(9.12 == Approx(std::get<0>(x)));
 
     input = {"19", "9.12"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionTuple3) {
+TEST_CASE("Types: LexicalConversionTuple3", "[helpers]") {
     CLI::results_t input = {"9.12", "19", "hippo"};
     std::tuple<double, int, std::string> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19);
-    EXPECT_DOUBLE_EQ(std::get<0>(x), 9.12);
-    EXPECT_EQ(std::get<2>(x), "hippo");
+    CHECK(res);
+    CHECK(19 == std::get<1>(x));
+    CHECK(9.12 == Approx(std::get<0>(x)));
+    CHECK("hippo" == std::get<2>(x));
 
     input = {"19", "9.12"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionTuple4) {
+TEST_CASE("Types: LexicalConversionTuple4", "[helpers]") {
     CLI::results_t input = {"9.12", "19", "18.6", "5.87"};
     std::array<double, 4> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_DOUBLE_EQ(std::get<1>(x), 19);
-    EXPECT_DOUBLE_EQ(x[0], 9.12);
-    EXPECT_DOUBLE_EQ(x[2], 18.6);
-    EXPECT_DOUBLE_EQ(x[3], 5.87);
+    CHECK(res);
+    CHECK(19 == Approx(std::get<1>(x)));
+    CHECK(9.12 == Approx(x[0]));
+    CHECK(18.6 == Approx(x[2]));
+    CHECK(5.87 == Approx(x[3]));
 
     input = {"19", "9.12", "hippo"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionTuple5) {
+TEST_CASE("Types: LexicalConversionTuple5", "[helpers]") {
     CLI::results_t input = {"9", "19", "18", "5", "235235"};
     std::array<unsigned int, 5> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19u);
-    EXPECT_EQ(x[0], 9u);
-    EXPECT_EQ(x[2], 18u);
-    EXPECT_EQ(x[3], 5u);
-    EXPECT_EQ(x[4], 235235u);
+    CHECK(res);
+    CHECK(19u == std::get<1>(x));
+    CHECK(9u == x[0]);
+    CHECK(18u == x[2]);
+    CHECK(5u == x[3]);
+    CHECK(235235u == x[4]);
 
     input = {"19", "9.12", "hippo"};
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionTuple10) {
+TEST_CASE("Types: LexicalConversionTuple10", "[helpers]") {
     CLI::results_t input = {"9", "19", "18", "5", "235235", "9", "19", "18", "5", "235235"};
     std::array<unsigned int, 10> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19u);
-    EXPECT_EQ(x[0], 9u);
-    EXPECT_EQ(x[2], 18u);
-    EXPECT_EQ(x[3], 5u);
-    EXPECT_EQ(x[4], 235235u);
-    EXPECT_EQ(x[9], 235235u);
+    CHECK(res);
+    CHECK(19u == std::get<1>(x));
+    CHECK(9u == x[0]);
+    CHECK(18u == x[2]);
+    CHECK(5u == x[3]);
+    CHECK(235235u == x[4]);
+    CHECK(235235u == x[9]);
     input[3] = "hippo";
     res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionTuple10XC) {
+TEST_CASE("Types: LexicalConversionTuple10XC", "[helpers]") {
     CLI::results_t input = {"9", "19", "18", "5", "235235", "9", "19", "18", "5", "235235"};
     std::array<double, 10> x;
     bool res = CLI::detail::lexical_conversion<decltype(x), std::array<unsigned int, 10>>(input, x);
 
-    EXPECT_TRUE(res);
-    EXPECT_EQ(std::get<1>(x), 19.0);
-    EXPECT_EQ(x[0], 9.0);
-    EXPECT_EQ(x[2], 18.0);
-    EXPECT_EQ(x[3], 5.0);
-    EXPECT_EQ(x[4], 235235.0);
-    EXPECT_EQ(x[9], 235235.0);
+    CHECK(res);
+    CHECK(19.0 == std::get<1>(x));
+    CHECK(9.0 == x[0]);
+    CHECK(18.0 == x[2]);
+    CHECK(5.0 == x[3]);
+    CHECK(235235.0 == x[4]);
+    CHECK(235235.0 == x[9]);
     input[3] = "19.7";
     res = CLI::detail::lexical_conversion<decltype(x), std::array<unsigned int, 10>>(input, x);
-    EXPECT_FALSE(res);
+    CHECK_FALSE(res);
 }
 
-TEST(Types, LexicalConversionComplex) {
+TEST_CASE("Types: LexicalConversionComplex", "[helpers]") {
     CLI::results_t input = {"5.1", "3.5"};
     std::complex<double> x;
     bool res = CLI::detail::lexical_conversion<std::complex<double>, std::array<double, 2>>(input, x);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(x.real(), 5.1);
-    EXPECT_EQ(x.imag(), 3.5);
+    CHECK(res);
+    CHECK(5.1 == x.real());
+    CHECK(3.5 == x.imag());
 }
 
 static_assert(CLI::detail::is_wrapper<std::vector<double>>::value, "vector double should be a wrapper");
@@ -1285,16 +1289,16 @@ static_assert(CLI::detail::is_readable_container<const std::vector<int>>::value,
 static_assert(CLI::detail::is_readable_container<const std::vector<int> &>::value,
               "const vector int & should be a readable container");
 
-TEST(FixNewLines, BasicCheck) {
+TEST_CASE("FixNewLines: BasicCheck", "[helpers]") {
     std::string input = "one\ntwo";
     std::string output = "one\n; two";
     std::string result = CLI::detail::fix_newlines("; ", input);
-    EXPECT_EQ(result, output);
+    CHECK(output == result);
 }
 
-TEST(FixNewLines, EdgesCheck) {
+TEST_CASE("FixNewLines: EdgesCheck", "[helpers]") {
     std::string input = "\none\ntwo\n";
     std::string output = "\n; one\n; two\n; ";
     std::string result = CLI::detail::fix_newlines("; ", input);
-    EXPECT_EQ(result, output);
+    CHECK(output == result);
 }

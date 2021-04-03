@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-#include "gmock/gmock.h"
+
 #include <complex>
 #include <cstdint>
 
-using ::testing::HasSubstr;
+using Catch::Matchers::Contains;
 
 using cx = std::complex<double>;
 
@@ -33,7 +33,7 @@ add_option(CLI::App &app, std::string name, cx &variable, std::string descriptio
     return opt;
 }
 
-TEST_F(TApp, AddingComplexParser) {
+TEST_CASE_METHOD(TApp, "AddingComplexParser", "[complex]") {
 
     cx comp{0, 0};
     add_option(app, "-c,--complex", comp);
@@ -41,27 +41,27 @@ TEST_F(TApp, AddingComplexParser) {
 
     run();
 
-    EXPECT_DOUBLE_EQ(1.5, comp.real());
-    EXPECT_DOUBLE_EQ(2.5, comp.imag());
+    CHECK(comp.real() == Approx(1.5));
+    CHECK(comp.imag() == Approx(2.5));
 }
 
-TEST_F(TApp, DefaultedComplex) {
+TEST_CASE_METHOD(TApp, "DefaultedComplex", "[complex]") {
 
     cx comp{1, 2};
     add_option(app, "-c,--complex", comp, "", true);
     args = {"-c", "4", "3"};
 
     std::string help = app.help();
-    EXPECT_THAT(help, HasSubstr("1"));
-    EXPECT_THAT(help, HasSubstr("2"));
+    CHECK_THAT(help, Contains("1"));
+    CHECK_THAT(help, Contains("2"));
 
-    EXPECT_DOUBLE_EQ(1, comp.real());
-    EXPECT_DOUBLE_EQ(2, comp.imag());
+    CHECK(comp.real() == Approx(1));
+    CHECK(comp.imag() == Approx(2));
 
     run();
 
-    EXPECT_DOUBLE_EQ(4, comp.real());
-    EXPECT_DOUBLE_EQ(3, comp.imag());
+    CHECK(comp.real() == Approx(4));
+    CHECK(comp.imag() == Approx(3));
 }
 
 // an example of custom complex number converter that can be used to add new parsing options
@@ -117,7 +117,7 @@ template <> bool lexical_cast<std::complex<double>>(const std::string &input, st
 }  // namespace detail
 }  // namespace CLI
 
-TEST_F(TApp, AddingComplexParserDetail) {
+TEST_CASE_METHOD(TApp, "AddingComplexParserDetail", "[complex]") {
 
     bool skip_tests = false;
     try {  // check if the library actually supports regex,  it is possible to link against a non working regex in the
@@ -131,7 +131,7 @@ TEST_F(TApp, AddingComplexParserDetail) {
         if(!rsearch) {
             skip_tests = true;
         } else {
-            EXPECT_EQ(m.size(), 9u);
+            CHECK(9u == m.size());
         }
 
     } catch(...) {
@@ -146,14 +146,14 @@ TEST_F(TApp, AddingComplexParserDetail) {
 
         run();
 
-        EXPECT_DOUBLE_EQ(1.5, comp.real());
-        EXPECT_DOUBLE_EQ(2.5, comp.imag());
+        CHECK(comp.real() == Approx(1.5));
+        CHECK(comp.imag() == Approx(2.5));
         args = {"-c", "1.5-2.5j"};
 
         run();
 
-        EXPECT_DOUBLE_EQ(1.5, comp.real());
-        EXPECT_DOUBLE_EQ(-2.5, comp.imag());
+        CHECK(comp.real() == Approx(1.5));
+        CHECK(comp.imag() == Approx(-2.5));
     }
 }
 #endif
@@ -170,7 +170,7 @@ class complex_new {
     double val2_{0.0};
 };
 
-TEST_F(TApp, newComplex) {
+TEST_CASE_METHOD(TApp, "newComplex", "[complex]") {
     complex_new cval;
     static_assert(CLI::detail::is_complex<complex_new>::value, "complex new does not register as a complex type");
     static_assert(CLI::detail::classify_object<complex_new>::value == CLI::detail::object_category::complex_number,
@@ -180,12 +180,12 @@ TEST_F(TApp, newComplex) {
 
     run();
 
-    EXPECT_DOUBLE_EQ(1.5, cval.real());
-    EXPECT_DOUBLE_EQ(2.5, cval.imag());
+    CHECK(cval.real() == Approx(1.5));
+    CHECK(cval.imag() == Approx(2.5));
     args = {"-c", "1.5-2.5j"};
 
     run();
 
-    EXPECT_DOUBLE_EQ(1.5, cval.real());
-    EXPECT_DOUBLE_EQ(-2.5, cval.imag());
+    CHECK(cval.real() == Approx(1.5));
+    CHECK(cval.imag() == Approx(-2.5));
 }

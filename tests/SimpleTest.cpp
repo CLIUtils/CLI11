@@ -10,11 +10,11 @@
 #include "CLI/CLI.hpp"
 #endif
 
-#include "gtest/gtest.h"
+#include "catch.hpp"
 
 using input_t = std::vector<std::string>;
 
-TEST(Basic, Empty) {
+TEST_CASE("Basic: Empty", "[simple]") {
 
     {
         CLI::App app;
@@ -24,7 +24,7 @@ TEST(Basic, Empty) {
     {
         CLI::App app;
         input_t spare = {"spare"};
-        EXPECT_THROW(app.parse(spare), CLI::ExtrasError);
+        CHECK_THROWS_AS(app.parse(spare), CLI::ExtrasError);
     }
     {
         CLI::App app;
