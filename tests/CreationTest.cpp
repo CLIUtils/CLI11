@@ -167,7 +167,10 @@ TEST_F(TApp, MultipleSubcomNoMatchingInplaceUnderscore2) {
     EXPECT_NO_THROW(second->ignore_underscore());
 }
 
-TEST_F(TApp, IncorrectConstructionFlagPositional1) { EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction); }
+TEST_F(TApp, IncorrectConstructionFlagPositional1) {
+    // This wants to be one line with clang-format
+    EXPECT_THROW(app.add_flag("cat"), CLI::IncorrectConstruction);
+}
 
 TEST_F(TApp, IncorrectConstructionFlagPositional2) {
     int x{0};
