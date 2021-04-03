@@ -39,81 +39,144 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: true
+
     - name: CMake 3.4
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.4.3
+        cmake-version: "3.4"
+    - name: Check CMake 3.4
+      uses: ./.github/actions/quick_cmake
+
     - name: CMake 3.5
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.5.2
+        cmake-version: "3.5"
+    - name: Check CMake 3.5
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.6
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.6.3
+        cmake-version: "3.6"
+    - name: Check CMake 3.6
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.7
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.7.2
+        cmake-version: "3.7"
+    - name: Check CMake 3.7
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.8
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.8.2
+        cmake-version: "3.8"
+    - name: Check CMake 3.8
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.9
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.9.6
+        cmake-version: "3.9"
+    - name: Check CMake 3.9
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.10
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.10.3
+        cmake-version: "3.10"
+    - name: Check CMake 3.10
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
-    - name: CMake 3.11 (full)
-      uses: ./.github/actions/cmake_config
+
+    - name: CMake 3.11
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.11.4
-        options: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        cmake-version: "3.11"
+    - name: Check CMake 3.11 (full)
+      uses: ./.github/actions/quick_cmake
+      with:
+        args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
       if: success() || failure()
+
     - name: CMake 3.12
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.12.4
+        cmake-version: "3.12"
+    - name: Check CMake 3.12
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.13
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.13.5
+        cmake-version: "3.13"
+    - name: Check CMake 3.13
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.14
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.14.7
+        cmake-version: "3.14"
+    - name: Check CMake 3.14
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.15
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.15.6
+        cmake-version: "3.15"
+    - name: Check CMake 3.15
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.16
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.16.8
+        cmake-version: "3.16"
+    - name: Check CMake 3.16
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
     - name: CMake 3.17
-      uses: ./.github/actions/cmake_config
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.17.3
+        cmake-version: "3.17"
+    - name: Check CMake 3.17
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
-    - name: CMake 3.18 (full)
-      uses: ./.github/actions/cmake_config
+
+    - name: CMake 3.18
+      uses: jwlawson/actions-setup-cmake@v1.8
       with:
-        version: 3.18.0
-        options: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        cmake-version: "3.18"
+    - name: Check CMake 3.18
+      uses: ./.github/actions/quick_cmake
       if: success() || failure()
+
+    - name: CMake 3.19
+      uses: jwlawson/actions-setup-cmake@v1.8
+      with:
+        cmake-version: "3.19"
+    - name: Check CMake 3.19 (full)
+      uses: ./.github/actions/quick_cmake
+      with:
+        args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+      if: success() || failure()
+
+    - name: CMake 3.20
+      uses: jwlawson/actions-setup-cmake@v1.8
+      with:
+        cmake-version: "3.20"
+    - name: Check CMake 3.20
+      uses: ./.github/actions/quick_cmake
+      if: success() || failure()
+
+
