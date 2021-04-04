@@ -897,56 +897,6 @@ class App {
     }
 #endif
 
-    /// Add set of options (No default, temp reference, such as an inline set) DEPRECATED
-    template <typename T>
-    Option *add_set(std::string option_name,
-                    T &member,            ///< The selected member of the set
-                    std::set<T> options,  ///< The set of possibilities
-                    std::string option_description = "") {
-
-        Option *opt = add_option(option_name, member, std::move(option_description));
-        opt->check(IsMember{options});
-        return opt;
-    }
-
-    /// Add set of options (No default, set can be changed afterwards - do not destroy the set) DEPRECATED
-    template <typename T>
-    Option *add_mutable_set(std::string option_name,
-                            T &member,                   ///< The selected member of the set
-                            const std::set<T> &options,  ///< The set of possibilities
-                            std::string option_description = "") {
-
-        Option *opt = add_option(option_name, member, std::move(option_description));
-        opt->check(IsMember{&options});
-        return opt;
-    }
-
-    /// Add set of options (with default, static set, such as an inline set) DEPRECATED
-    template <typename T>
-    Option *add_set(std::string option_name,
-                    T &member,            ///< The selected member of the set
-                    std::set<T> options,  ///< The set of possibilities
-                    std::string option_description,
-                    bool defaulted) {
-
-        Option *opt = add_option(option_name, member, std::move(option_description), defaulted);
-        opt->check(IsMember{options});
-        return opt;
-    }
-
-    /// Add set of options (with default, set can be changed afterwards - do not destroy the set) DEPRECATED
-    template <typename T>
-    Option *add_mutable_set(std::string option_name,
-                            T &member,                   ///< The selected member of the set
-                            const std::set<T> &options,  ///< The set of possibilities
-                            std::string option_description,
-                            bool defaulted) {
-
-        Option *opt = add_option(option_name, member, std::move(option_description), defaulted);
-        opt->check(IsMember{&options});
-        return opt;
-    }
-
     /// Add a complex number DEPRECATED --use add_option instead
     template <typename T, typename XC = double>
     Option *add_complex(std::string option_name,
