@@ -1,14 +1,42 @@
 ## Version 2.0: In progress
 
-* Built-in config format is TOML compliant now [#435]
-* Config updates [#442]
-* More powerful containers, `%%` separator [#423]
-* Add a version flag easily [#452]
+* Built-in config format is TOML compliant now [#435][]
+    * Support multiline TOML [#528][]
+* Support short/positional options in config mode [#443][]
+* More powerful containers, `%%` separator [#423][]
+* Add a version flag easily [#452][]
+* Support atomic types [#520][]
+* Add a type validator `CLI::TypeValidator<TYPE>` [#526][]
+* Support `->silent()` on subcommands. [#529][]
+* Add alias section to help for subcommands [#545][]
+* Redesigned MakeSingleFiles to have a higher level of manual control, to support future features. [#546][]
+* Moved testing from GTest to Catch2 [#574][]
+
+* Bugfix: avoid listing helpall as a required flag [#530][]
+* Bugfix: avoid a clash with WINDOWS define [#563][]
+
+* Removed deprecated set commands, use validators instead. [#565][]
+
+* Build: support pkg-config [#523][]
+
 
 [#435]: https://github.com/CLIUtils/CLI11/pull/435
 [#443]: https://github.com/CLIUtils/CLI11/pull/443
 [#423]: https://github.com/CLIUtils/CLI11/pull/423
 [#452]: https://github.com/CLIUtils/CLI11/pull/452
+[#520]: https://github.com/CLIUtils/CLI11/pull/520
+[#523]: https://github.com/CLIUtils/CLI11/pull/523
+[#526]: https://github.com/CLIUtils/CLI11/pull/526
+[#528]: https://github.com/CLIUtils/CLI11/pull/528
+[#529]: https://github.com/CLIUtils/CLI11/pull/529
+[#530]: https://github.com/CLIUtils/CLI11/pull/530
+[#545]: https://github.com/CLIUtils/CLI11/pull/545
+[#546]: https://github.com/CLIUtils/CLI11/pull/546
+[#563]: https://github.com/CLIUtils/CLI11/pull/563
+[#565]: https://github.com/CLIUtils/CLI11/pull/565
+[#574]: https://github.com/CLIUtils/CLI11/pull/574
+
+
 
 
 ### Version 1.9.1: Backporting fixes
