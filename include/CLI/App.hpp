@@ -44,7 +44,7 @@ namespace CLI {
 #endif
 
 namespace detail {
-enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS, SUBCOMMAND, SUBCOMMAND_TERMINATOR };
+enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS_STYLE, SUBCOMMAND, SUBCOMMAND_TERMINATOR };
 struct AppFriend;
 }  // namespace detail
 
@@ -2072,7 +2072,7 @@ class App {
             return detail::Classifier::SHORT;
         }
         if((allow_windows_style_options_) && (detail::split_windows_style(current, dummy1, dummy2)))
-            return detail::Classifier::WINDOWS;
+            return detail::Classifier::WINDOWS_STYLE;
         if((current == "++") && !name_.empty() && parent_ != nullptr)
             return detail::Classifier::SUBCOMMAND_TERMINATOR;
         return detail::Classifier::NONE;
@@ -2525,7 +2525,7 @@ class App {
             break;
         case detail::Classifier::LONG:
         case detail::Classifier::SHORT:
-        case detail::Classifier::WINDOWS:
+        case detail::Classifier::WINDOWS_STYLE:
             // If already parsed a subcommand, don't accept options_
             _parse_arg(args, classifier);
             break;
@@ -2742,7 +2742,7 @@ class App {
             if(!detail::split_short(current, arg_name, rest))
                 throw HorribleError("Short parsed but missing! You should not see this");
             break;
-        case detail::Classifier::WINDOWS:
+        case detail::Classifier::WINDOWS_STYLE:
             if(!detail::split_windows_style(current, arg_name, value))
                 throw HorribleError("windows option parsed but missing! You should not see this");
             break;
@@ -2760,7 +2760,7 @@ class App {
                     return opt->check_lname(arg_name);
                 if(current_type == detail::Classifier::SHORT)
                     return opt->check_sname(arg_name);
-                // this will only get called for detail::Classifier::WINDOWS
+                // this will only get called for detail::Classifier::WINDOWS_STYLE
                 return opt->check_lname(arg_name) || opt->check_sname(arg_name);
             });
 
