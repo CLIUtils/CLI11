@@ -24,4 +24,3 @@ Usage: ./a.out [OPTIONS]
 Options:
   -h,--help                   Print this help message and exit
 ```
-

@@ -8,5 +8,3 @@ steps:
   inputs:
     testResultsFormat: 'cTest'
     testResultsFiles: '**/Test.xml'
-
-

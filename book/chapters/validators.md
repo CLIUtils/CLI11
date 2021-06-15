@@ -60,5 +60,3 @@ And, the protected members that you can set when you make your own are:
 | `int` (`-1`) | `application_index_` | The element this validator applies to (-1 for all) |
 | `bool` (`true`) | `active_` | This can be disabled |
 | `bool` (`false`) | `non_modifying_` | Specify that this is a Validator instead of a Transformer |
-
-

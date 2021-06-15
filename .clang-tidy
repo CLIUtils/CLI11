@@ -22,4 +22,3 @@ HeaderFilterRegex: '.*hpp'
 CheckOptions:
 - key:             google-readability-braces-around-statements.ShortStatementLines
   value:           '3'
-

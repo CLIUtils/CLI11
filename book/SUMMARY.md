@@ -13,4 +13,3 @@
 * [Toolkits](/chapters/toolkits.md)
 * [Advanced topics](/chapters/advanced-topics.md)
 * [Internals](/chapters/internals.md)
-

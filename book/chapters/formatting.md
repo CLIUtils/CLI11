@@ -72,7 +72,3 @@ Notes:
 
 * `*1`: This signature depends on whether the call is from a positional or optional.
 * `o` is opt pointer, `p` is true if positional.
-
-
-
-

@@ -21,6 +21,3 @@ Groups of related topics:
 |----------------------|------------------------------------------------|
 | @ref error_group     | Errors that can be thrown                      |
 | @ref validator_group | Common validators used in CLI::Option::check() |
-
-
-

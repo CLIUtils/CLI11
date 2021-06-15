@@ -41,5 +41,3 @@ The `_process` procedure runs the following steps; each step is recursive and co
 ## Exceptions
 
 The library immediately returns a C++ exception when it detects a problem, such as an incorrect construction or a malformed command line.
-
-
