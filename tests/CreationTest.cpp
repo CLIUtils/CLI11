@@ -739,13 +739,13 @@ TEST_CASE_METHOD(TApp, "MakeUnstreamableOptions", "[creation]") {
     app.add_option("--value", value);
 
     // This used to fail to build, since it tries to stream from Unstreamable
-    app.add_option("--value2", value, "", false);
+    app.add_option("--value2", value);
 
     std::vector<Unstreamable> values;
     app.add_option("--values", values);
 
     // This used to fail to build, since it tries to stream from Unstreamable
-    app.add_option("--values2", values, "", false);
+    app.add_option("--values2", values);
 
     args = {"--value", "45"};
     run();

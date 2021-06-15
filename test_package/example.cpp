@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     CLI::App app("Some nice description");
 
     int x = 0;
-    app.add_option("-x", x, "an integer value", true /* show default */);
+    app.add_option("-x", x, "an integer value")->capture_default_str();
 
     bool flag;
     app.add_flag("-f,--flag", flag, "a flag option");

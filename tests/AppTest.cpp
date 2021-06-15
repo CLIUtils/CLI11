@@ -2219,7 +2219,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse3", "[app]") {
     CHECK(std::vector<int>({1, 2}) == vals);
     app.remove_option(opt);
 
-    app.add_option("--idx", vals, "", false)->delimiter(',');
+    app.add_option("--idx", vals)->delimiter(',');
     run();
     CHECK(std::vector<int>({1, 2}) == vals);
 }

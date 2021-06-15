@@ -1685,7 +1685,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
-    app.add_option("--dval", val, "", true)->group("");
+    app.add_option("--dval", val)->capture_default_str()->group("");
 
     run();
 
@@ -1723,7 +1723,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
     auto og = app.add_option_group("group3", "g3 desc");
-    og->add_option("--dval", val, "", true)->group("");
+    og->add_option("--dval", val)->capture_default_str()->group("");
 
     run();
 
@@ -1809,7 +1809,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputSet", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
 
     int v{7};
-    app.add_option("--simple", v, "", true);
+    app.add_option("--simple", v)->capture_default_str();
 
     run();
 
@@ -1934,10 +1934,10 @@ TEST_CASE_METHOD(TApp, "TomlOutputQuoted", "[config]") {
 TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
 
     std::string val1{"I am a string"};
-    app.add_option("--val1", val1, "", true);
+    app.add_option("--val1", val1)->capture_default_str();
 
     std::string val2{R"(I am a "confusing" string)"};
-    app.add_option("--val2", val2, "", true);
+    app.add_option("--val2", val2)->capture_default_str();
 
     run();
 
@@ -2068,7 +2068,7 @@ TEST_CASE_METHOD(TApp, "IniOutputHiddenOptions", "[config]") {
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
-    app.add_option("--dval", val, "", true)->group("");
+    app.add_option("--dval", val)->capture_default_str()->group("");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -2106,7 +2106,7 @@ TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
     auto og = app.add_option_group("group3", "g3 desc");
-    og->add_option("--dval", val, "", true)->group("");
+    og->add_option("--dval", val)->capture_default_str()->group("");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -2177,7 +2177,7 @@ TEST_CASE_METHOD(TApp, "IniOutputSet", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputDefault", "[config]") {
 
     int v{7};
-    app.add_option("--simple", v, "", true);
+    app.add_option("--simple", v)->capture_default_str();
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 
@@ -2302,10 +2302,10 @@ TEST_CASE_METHOD(TApp, "IniOutputQuoted", "[config]") {
 TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
 
     std::string val1{"I am a string"};
-    app.add_option("--val1", val1, "", true);
+    app.add_option("--val1", val1)->capture_default_str();
 
     std::string val2{R"(I am a "confusing" string)"};
-    app.add_option("--val2", val2, "", true);
+    app.add_option("--val2", val2)->capture_default_str();
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
 

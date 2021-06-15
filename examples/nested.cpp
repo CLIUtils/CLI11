@@ -18,7 +18,9 @@ int main(int argc, char **argv) {
 
     std::string mvcamera_config_file = "mvcamera_config.json";
     CLI::App *mvcameraApp = cameraApp->add_subcommand("mvcamera", "MatrixVision Camera Configuration");
-    mvcameraApp->add_option("-c,--config", mvcamera_config_file, "Config filename", true)->check(CLI::ExistingFile);
+    mvcameraApp->add_option("-c,--config", mvcamera_config_file, "Config filename")
+        ->capture_default_str()
+        ->check(CLI::ExistingFile);
 
     std::string mock_camera_path;
     CLI::App *mockcameraApp = cameraApp->add_subcommand("mock", "Mock Camera Configuration");

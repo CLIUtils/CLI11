@@ -109,7 +109,7 @@ TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {
 TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {
 
     std::string baz;
-    app.add_option("baz", baz, "Baz Description", true)->required();
+    app.add_option("baz", baz, "Baz Description")->required()->capture_default_str();
     auto foo = app.add_subcommand("foo");
     auto bar = app.add_subcommand("bar");
 
