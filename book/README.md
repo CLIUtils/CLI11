@@ -64,6 +64,3 @@ CLI11 was developed at the [University of Cincinnati] in support of the [GooFit]
 [University of Cincinnati]: http://www.uc.edu
 [Plumbum]: http://plumbum.readthedocs.io/en/latest/
 [Click]: https://click.palletsprojects.com/
-
-
-

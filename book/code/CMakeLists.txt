@@ -12,27 +12,21 @@ enable_testing()
 
 # Quick function to add the base executable
 function(add_cli_exe NAME)
-    add_executable(${NAME} ${NAME}.cpp)
-    target_link_libraries(${NAME} CLI11::CLI11)
+  add_executable(${NAME} ${NAME}.cpp)
+  target_link_libraries(${NAME} CLI11::CLI11)
 endfunction()
-
 
 add_cli_exe(simplest)
 add_test(NAME simplest COMMAND simplest)
-
 
 add_cli_exe(intro)
 add_test(NAME intro COMMAND intro)
 add_test(NAME intro_p COMMAND intro -p 5)
 
-
 add_cli_exe(flags)
 add_test(NAME flags COMMAND flags)
 add_test(NAME flags_bip COMMAND flags -b -i -p)
 
-
 add_cli_exe(geet)
-add_test(NAME geet_add    COMMAND geet add)
+add_test(NAME geet_add COMMAND geet add)
 add_test(NAME geet_commit COMMAND geet commit -m "Test")
-
-

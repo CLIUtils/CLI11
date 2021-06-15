@@ -23,4 +23,3 @@ export PATH="${DEPS_DIR}/doxygen/build/bin:${PATH}"
 cd "${TRAVIS_BUILD_DIR}"
 
 set +evx
-
