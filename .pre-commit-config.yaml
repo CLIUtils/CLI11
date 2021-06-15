@@ -1,20 +1,26 @@
+ci:
+  autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
+  skip:
+    - docker-clang-format
+
 
 repos:
 - repo: https://github.com/psf/black
-  rev: 20.8b1
+  rev: 21.6b0
   hooks:
   - id: black
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.4.0
+  rev: v4.0.1
   hooks:
   - id: check-added-large-files
-  - id: mixed-line-ending
-  - id: trailing-whitespace
-  - id: check-merge-conflict
   - id: check-case-conflict
+  - id: check-merge-conflict
   - id: check-symlinks
   - id: check-yaml
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+  - id: trailing-whitespace
 
 - repo: local
   hooks:
@@ -27,3 +33,9 @@ repos:
     args:
     - -style=file
     - -i
+
+- repo: https://github.com/cheshirekow/cmake-format-precommit
+  rev: v0.6.13
+  hooks:
+  - id: cmake-format
+    additional_dependencies: [pyyaml]
