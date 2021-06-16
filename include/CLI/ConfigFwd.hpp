@@ -90,7 +90,7 @@ class ConfigBase : public Config {
     /// the character to use around strings
     char stringQuote = '"';
     /// the character to use around single characters
-    char characterQuote ='\'';
+    char characterQuote = '\'';
 
   public:
     std::string
@@ -119,8 +119,8 @@ class ConfigBase : public Config {
         return this;
     }
     /// Specify the quote characters used around strings and characters
-    ConfigBase *quoteCharacter(char qString,char qChar) {
-       stringQuote = qString;
+    ConfigBase *quoteCharacter(char qString, char qChar) {
+        stringQuote = qString;
         characterQuote = qChar;
         return this;
     }

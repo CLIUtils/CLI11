@@ -84,20 +84,16 @@ set_property(TEST subcom_partitioned_help PROPERTY PASS_REGULAR_EXPRESSION
 ####################################################
 add_cli_exe(config_app config_app.cpp)
 add_test(NAME config_app1 COMMAND config_app -p)
-set_property(TEST config_app1 PROPERTY PASS_REGULAR_EXPRESSION
-    "file=")
+set_property(TEST config_app1 PROPERTY PASS_REGULAR_EXPRESSION "file=")
 
 add_test(NAME config_app2 COMMAND config_app -p -f /)
-set_property(TEST config_app2 PROPERTY PASS_REGULAR_EXPRESSION
-    "file=\"/\"")
+set_property(TEST config_app2 PROPERTY PASS_REGULAR_EXPRESSION "file=\"/\"")
 
 add_test(NAME config_app3 COMMAND config_app -f "" -p )
-set_property(TEST config_app3 PROPERTY PASS_REGULAR_EXPRESSION
-    "file=\"\"")
+set_property(TEST config_app3 PROPERTY PASS_REGULAR_EXPRESSION "file=\"\"")
 
 add_test(NAME config_app4 COMMAND config_app -f "/" -p )
-set_property(TEST config_app4 PROPERTY PASS_REGULAR_EXPRESSION
-    "file=\"/\"")
+set_property(TEST config_app4 PROPERTY PASS_REGULAR_EXPRESSION "file=\"/\"")
 
 ####################################################
 

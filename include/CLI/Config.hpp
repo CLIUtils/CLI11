@@ -23,7 +23,7 @@ namespace CLI {
 // [CLI11:config_hpp:verbatim]
 namespace detail {
 
-inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote='"', char characterQuote='\'') {
+inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote = '"', char characterQuote = '\'') {
     if(arg.empty()) {
         return std::string(2, stringQuote);
     }
@@ -40,7 +40,7 @@ inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote=
     }
     // just quote a single non numeric character
     if(arg.size() == 1) {
-        return std::string(1,characterQuote) + arg + characterQuote;
+        return std::string(1, characterQuote) + arg + characterQuote;
     }
     // handle hex, binary or octal arguments
     if(arg.front() == '0') {
@@ -61,15 +61,19 @@ inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote=
         }
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
-        return std::string(1,stringQuote) + arg + stringQuote;
+        return std::string(1, stringQuote) + arg + stringQuote;
     } else {
         return characterQuote + arg + characterQuote;
     }
 }
 
 /// Comma separated join, adds quotes if needed
-inline std::string
-ini_join(const std::vector<std::string> &args, char sepChar = ',', char arrayStart = '[', char arrayEnd = ']', char stringQuote='"',char characterQuote='\'') {
+inline std::string ini_join(const std::vector<std::string> &args,
+                            char sepChar = ',',
+                            char arrayStart = '[',
+                            char arrayEnd = ']',
+                            char stringQuote = '"',
+                            char characterQuote = '\'') {
     std::string joined;
     if(args.size() > 1 && arrayStart != '\0') {
         joined.push_back(arrayStart);
@@ -82,7 +86,7 @@ ini_join(const std::vector<std::string> &args, char sepChar = ',', char arraySta
                 joined.push_back(' ');
             }
         }
-        joined.append(convert_arg_for_ini(arg,stringQuote,characterQuote));
+        joined.append(convert_arg_for_ini(arg, stringQuote, characterQuote));
     }
     if(args.size() > 1 && arrayEnd != '\0') {
         joined.push_back(arrayEnd);
@@ -296,15 +300,16 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     }
                 }
                 std::string name = prefix + opt->get_single_name();
-                std::string value = detail::ini_join(opt->reduced_results(), arraySeparator, arrayStart, arrayEnd,stringQuote,characterQuote);
+                std::string value = detail::ini_join(
+                    opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, characterQuote);
 
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
-                        value = detail::convert_arg_for_ini(opt->get_default_str(),stringQuote,characterQuote);
+                        value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, characterQuote);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
-                    } else if (opt->get_run_callback_for_default()) {
-                        value = "\"\""; // empty string default value
+                    } else if(opt->get_run_callback_for_default()) {
+                        value = "\"\"";  // empty string default value
                     }
                 }
 

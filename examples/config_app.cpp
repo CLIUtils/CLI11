@@ -15,8 +15,9 @@ int main(int argc, char **argv) {
     app.add_flag("-p,--print", "Print configuration and exit")->configurable(false);  // NEW: print flag
 
     std::string file;
-    CLI::Option *opt =
-        app.add_option("-f,--file,file", file, "File name")->capture_default_str()->run_callback_for_default();  // NEW: capture_default_str()
+    CLI::Option *opt = app.add_option("-f,--file,file", file, "File name")
+                           ->capture_default_str()
+                           ->run_callback_for_default();  // NEW: capture_default_str()
 
     int count{0};
     CLI::Option *copt =
