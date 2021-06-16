@@ -9,11 +9,11 @@ int int_option{0};
 app.add_option("-i", int_option, "Optional description");
 ```
 
-This will bind the option `-i` to the integer `int_option`. On the command line, a single value that can be converted to an integer will be expected. Non-integer results will fail. If that option is not given, CLI11 will not touch the initial value. This allows you to set up defaults by simply setting your value beforehand. If you want CLI11 to display your default value, you can add the optional final argument `true` when you add the option.
+This will bind the option `-i` to the integer `int_option`. On the command line, a single value that can be converted to an integer will be expected. Non-integer results will fail. If that option is not given, CLI11 will not touch the initial value. This allows you to set up defaults by simply setting your value beforehand. If you want CLI11 to display your default value, you can add `->capture_default_str()` after the option.
 
 ```cpp
 int int_option{0};
-app.add_option("-i", int_option, "Optional description", true);
+app.add_option("-i", int_option, "Optional description")->capture_default_str();
 ```
 
 You can use any C++ int-like type, not just `int`. CLI11 understands the following categories of types:

@@ -373,7 +373,7 @@ TEST_CASE_METHOD(TApp, "NumericalSets", "[set]") {
 
 TEST_CASE_METHOD(TApp, "SetWithDefaults", "[set]") {
     int someint{2};
-    app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
+    app.add_option("-a", someint)->capture_default_str()->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a1", "-a2"};
 
@@ -382,7 +382,7 @@ TEST_CASE_METHOD(TApp, "SetWithDefaults", "[set]") {
 
 TEST_CASE_METHOD(TApp, "SetWithDefaultsConversion", "[set]") {
     int someint{2};
-    app.add_option("-a", someint, "", true)->check(CLI::IsMember({1, 2, 3, 4}));
+    app.add_option("-a", someint)->capture_default_str()->check(CLI::IsMember({1, 2, 3, 4}));
 
     args = {"-a", "hi"};
 
@@ -391,7 +391,7 @@ TEST_CASE_METHOD(TApp, "SetWithDefaultsConversion", "[set]") {
 
 TEST_CASE_METHOD(TApp, "SetWithDefaultsIC", "[set]") {
     std::string someint = "ho";
-    app.add_option("-a", someint, "", true)->check(CLI::IsMember({"Hi", "Ho"}));
+    app.add_option("-a", someint)->capture_default_str()->check(CLI::IsMember({"Hi", "Ho"}));
 
     args = {"-aHi", "-aHo"};
 
@@ -415,7 +415,7 @@ TEST_CASE_METHOD(TApp, "InSet", "[set]") {
 TEST_CASE_METHOD(TApp, "InSetWithDefault", "[set]") {
 
     std::string choice = "one";
-    app.add_option("-q,--quick", choice, "", true)->check(CLI::IsMember({"one", "two", "three"}));
+    app.add_option("-q,--quick", choice)->capture_default_str()->check(CLI::IsMember({"one", "two", "three"}));
 
     run();
     CHECK(choice == "one");
@@ -432,7 +432,9 @@ TEST_CASE_METHOD(TApp, "InSetWithDefault", "[set]") {
 TEST_CASE_METHOD(TApp, "InCaselessSetWithDefault", "[set]") {
 
     std::string choice = "one";
-    app.add_option("-q,--quick", choice, "", true)->transform(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
+    app.add_option("-q,--quick", choice)
+        ->capture_default_str()
+        ->transform(CLI::IsMember({"one", "two", "three"}, CLI::ignore_case));
 
     run();
     CHECK(choice == "one");
@@ -494,7 +496,7 @@ TEST_CASE_METHOD(TApp, "FailMutableSet", "[set]") {
     int choice{0};
     auto vals = std::shared_ptr<std::set<int>>(new std::set<int>({1, 2, 3}));
     app.add_option("-q,--quick", choice)->check(CLI::IsMember(vals));
-    app.add_option("-s,--slow", choice, "", true)->check(CLI::IsMember(vals));
+    app.add_option("-s,--slow", choice)->capture_default_str()->check(CLI::IsMember(vals));
 
     args = {"--quick=hello"};
     CHECK_THROWS_AS(run(), CLI::ValidationError);
@@ -651,7 +653,7 @@ TEST_CASE_METHOD(TApp, "AddRemoveSetItems", "[set]") {
 
     std::string type1, type2;
     app.add_option("--type1", type1)->check(CLI::IsMember(&items));
-    app.add_option("--type2", type2, "", true)->check(CLI::IsMember(&items));
+    app.add_option("--type2", type2)->capture_default_str()->check(CLI::IsMember(&items));
 
     args = {"--type1", "TYPE1", "--type2", "TYPE2"};
 
@@ -682,7 +684,7 @@ TEST_CASE_METHOD(TApp, "AddRemoveSetItemsNoCase", "[set]") {
 
     std::string type1, type2;
     app.add_option("--type1", type1)->transform(CLI::IsMember(&items, CLI::ignore_case));
-    app.add_option("--type2", type2, "", true)->transform(CLI::IsMember(&items, CLI::ignore_case));
+    app.add_option("--type2", type2)->capture_default_str()->transform(CLI::IsMember(&items, CLI::ignore_case));
 
     args = {"--type1", "TYPe1", "--type2", "TyPE2"};
 

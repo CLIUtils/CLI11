@@ -15,9 +15,14 @@
 * Bugfix: avoid listing helpall as a required flag [#530][]
 * Bugfix: avoid a clash with WINDOWS define [#563][]
 
-* Removed deprecated set commands, use validators instead. [#565][]
-
 * Build: support pkg-config [#523][]
+
+#### Converting from CLI11 1.9:
+
+* Removed deprecated set commands, use validators instead. [#565][]
+* The final "defaulted" bool has been removed, use `->capture_default_str()`
+  instead. Use `app.option_defaults()->always_capture_default()` to set this for
+  all future options. [#597][]
 
 
 [#435]: https://github.com/CLIUtils/CLI11/pull/435
@@ -35,6 +40,7 @@
 [#563]: https://github.com/CLIUtils/CLI11/pull/563
 [#565]: https://github.com/CLIUtils/CLI11/pull/565
 [#574]: https://github.com/CLIUtils/CLI11/pull/574
+[#597]: https://github.com/CLIUtils/CLI11/pull/597
 
 
 
@@ -136,6 +142,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#360]: https://github.com/CLIUtils/CLI11/pull/360
 [#362]: https://github.com/CLIUtils/CLI11/pull/362
 [#365]: https://github.com/CLIUtils/CLI11/pull/365
+[#370]: https://github.com/CLIUtils/CLI11/pull/370
 [#373]: https://github.com/CLIUtils/CLI11/pull/373
 [#374]: https://github.com/CLIUtils/CLI11/pull/374
 [#382]: https://github.com/CLIUtils/CLI11/pull/382

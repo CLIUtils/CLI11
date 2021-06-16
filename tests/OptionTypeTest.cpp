@@ -240,7 +240,7 @@ TEST_CASE_METHOD(TApp, "CharOption", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
     std::vector<int> vals{4, 5};
-    auto opt = app.add_option("--long", vals, "", true);
+    auto opt = app.add_option("--long", vals)->capture_default_str();
 
     args = {"--long", "[1,2,3]"};
 

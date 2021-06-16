@@ -611,14 +611,13 @@ class App {
               enable_if_t<!std::is_const<ConvertTo>::value, detail::enabler> = detail::dummy>
     Option *add_option(std::string option_name,
                        AssignTo &variable,  ///< The variable to set
-                       std::string option_description = "",
-                       bool defaulted = false) {
+                       std::string option_description = "") {
 
         auto fun = [&variable](const CLI::results_t &res) {  // comment for spacing
             return detail::lexical_conversion<AssignTo, ConvertTo>(res, variable);
         };
 
-        Option *opt = add_option(option_name, fun, option_description, defaulted, [&variable]() {
+        Option *opt = add_option(option_name, fun, option_description, false, [&variable]() {
             return CLI::detail::checked_to_string<AssignTo, ConvertTo>(variable);
         });
         opt->type_name(detail::type_name<ConvertTo>());

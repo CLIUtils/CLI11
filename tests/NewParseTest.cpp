@@ -35,7 +35,7 @@ TEST_CASE_METHOD(TApp, "Complex", "[newparse]") {
 
 TEST_CASE_METHOD(TApp, "ComplexOption", "[newparse]") {
     cx comp{1, 2};
-    app.add_option("-c,--complex", comp, "", true);
+    app.add_option("-c,--complex", comp)->capture_default_str();
 
     args = {"-c", "4", "3"};
 
@@ -55,7 +55,7 @@ TEST_CASE_METHOD(TApp, "ComplexOption", "[newparse]") {
 
 TEST_CASE_METHOD(TApp, "ComplexFloat", "[newparse]") {
     std::complex<float> comp{1, 2};
-    app.add_complex<std::complex<float>, float>("-c,--complex", comp, "", true);
+    app.add_complex<std::complex<float>, float>("-c,--complex", comp)->capture_default_str();
 
     args = {"-c", "4", "3"};
 
@@ -75,7 +75,7 @@ TEST_CASE_METHOD(TApp, "ComplexFloat", "[newparse]") {
 
 TEST_CASE_METHOD(TApp, "ComplexFloatOption", "[newparse]") {
     std::complex<float> comp{1, 2};
-    app.add_option("-c,--complex", comp, "", true);
+    app.add_option("-c,--complex", comp)->capture_default_str();
 
     args = {"-c", "4", "3"};
 
@@ -95,7 +95,7 @@ TEST_CASE_METHOD(TApp, "ComplexFloatOption", "[newparse]") {
 
 TEST_CASE_METHOD(TApp, "ComplexWithDelimiter", "[newparse]") {
     cx comp{1, 2};
-    app.add_complex("-c,--complex", comp, "", true)->delimiter('+');
+    app.add_complex("-c,--complex", comp)->capture_default_str()->delimiter('+');
 
     args = {"-c", "4+3i"};
 
@@ -127,7 +127,7 @@ TEST_CASE_METHOD(TApp, "ComplexWithDelimiter", "[newparse]") {
 
 TEST_CASE_METHOD(TApp, "ComplexWithDelimiterOption", "[newparse]") {
     cx comp{1, 2};
-    app.add_option("-c,--complex", comp, "", true)->delimiter('+');
+    app.add_option("-c,--complex", comp)->capture_default_str()->delimiter('+');
 
     args = {"-c", "4+3i"};
 
