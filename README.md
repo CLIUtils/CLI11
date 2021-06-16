@@ -351,8 +351,8 @@ Before parsing, you can set the following options:
     `->capture_default_str()`: Store the current value attached and display it in the help string.
 -   `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
 -   `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
--   `default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
--   `default_val(value)`: 🆕 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
+-   `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
+-   `->default_val(value)`: 🆕 Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
 -   `->option_text(string)`: Sets the text between the option name and description.
 
 
