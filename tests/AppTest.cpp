@@ -809,7 +809,7 @@ TEST_CASE_METHOD(TApp, "TakeFirstOptMulti", "[app]") {
 
 TEST_CASE_METHOD(TApp, "ComplexOptMulti", "[app]") {
     std::complex<double> val;
-    app.add_complex("--long", val)->take_first()->allow_extra_args();
+    app.add_option("--long", val)->take_first()->allow_extra_args();
 
     args = {"--long", "1", "2", "3", "4"};
 

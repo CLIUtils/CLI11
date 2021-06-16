@@ -231,8 +231,6 @@ app.add_option_function<type>(option_name,
                function <void(const type &value)>, // type can be any type supported by add_option
                help_string="")
 
-app.add_complex(... // Special case: support for complex numbers ⚠️. Complex numbers are now fully supported in the add_option so this function is redundant.
-
 // char as an option type is supported before 2.0 but in 2.0 it defaulted to allowing single non numerical characters in addition to the numeric values.
 
 // 🆕 There is a template overload which takes two template parameters the first is the type of object to assign the value to, the second is the conversion type.  The conversion type should have a known way to convert from a string, such as any of the types that work in the non-template version.  If XC is a std::pair and T is some non pair type.  Then a two argument constructor for T is called to assign the value.  For tuples or other multi element types, XC must be a single type or a tuple like object of the same size as the assignment type
