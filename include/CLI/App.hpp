@@ -732,7 +732,9 @@ class App {
     }
 
     /// Set a version flag and version display string, replace the existing one if present
-    Option *set_version_flag(std::string flag_name = "", const std::string &versionString = "") {
+    Option *set_version_flag(std::string flag_name = "",
+                             const std::string &versionString = "",
+                             const std::string &version_help = "Display program version information and exit") {
         // take flag_description by const reference otherwise add_flag tries to assign to version_description
         if(version_ptr_ != nullptr) {
             remove_option(version_ptr_);
@@ -742,17 +744,16 @@ class App {
         // Empty name will simply remove the version flag
         if(!flag_name.empty()) {
             version_ptr_ = add_flag_callback(
-                flag_name,
-                [versionString]() { throw(CLI::CallForVersion(versionString, 0)); },
-                "Display program version information and exit");
+                flag_name, [versionString]() { throw(CLI::CallForVersion(versionString, 0)); }, version_help);
             version_ptr_->configurable(false);
         }
 
         return version_ptr_;
     }
     /// Generate the version string through a callback function
-    Option *set_version_flag(std::string flag_name, std::function<std::string()> vfunc) {
-        // take flag_description by const reference otherwise add_flag tries to assign to version_description
+    Option *set_version_flag(std::string flag_name,
+                             std::function<std::string()> vfunc,
+                             const std::string &version_help = "Display program version information and exit") {
         if(version_ptr_ != nullptr) {
             remove_option(version_ptr_);
             version_ptr_ = nullptr;
@@ -761,9 +762,7 @@ class App {
         // Empty name will simply remove the version flag
         if(!flag_name.empty()) {
             version_ptr_ = add_flag_callback(
-                flag_name,
-                [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); },
-                "Display program version information and exit");
+                flag_name, [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); }, version_help);
             version_ptr_->configurable(false);
         }
 
