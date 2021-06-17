@@ -811,6 +811,18 @@ TEST_CASE_METHOD(TApp, "RequiredPosInSubcommand", "[subcom]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+TEST_CASE_METHOD(TApp, "invalidSubcommandName", "[subcom]") {
+
+    bool gotError{false};
+    try {
+        app.add_subcommand("foo/foo", "Foo a bar");
+    } catch(const CLI::IncorrectConstruction &e) {
+        gotError = true;
+        CHECK_THAT(e.what(), Contains("/"));
+    }
+    CHECK(gotError);
+}
+
 struct SubcommandProgram : public TApp {
 
     CLI::App *start{nullptr};

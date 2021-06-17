@@ -368,7 +368,20 @@ class App {
     /// Set an alias for the app
     App *alias(std::string app_name) {
         if(!detail::valid_name_string(app_name)) {
-            throw(IncorrectConstruction("alias is not a valid name string"));
+            if(app_name.empty()) {
+                throw IncorrectConstruction("Empty aliases are not allowed");
+            }
+            if(!detail::valid_first_char(app_name[0])) {
+                throw IncorrectConstruction(
+                    "Alias starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
+            }
+            for(auto c : app_name) {
+                if(!detail::valid_later_char(c)) {
+                    throw IncorrectConstruction(std::string("Alias contains invalid character ('") + c +
+                                                "'), allowed characters are "
+                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
+                }
+            }
         }
 
         if(parent_ != nullptr) {
@@ -963,7 +976,17 @@ class App {
     /// Add a subcommand. Inherits INHERITABLE and OptionDefaults, and help flag
     App *add_subcommand(std::string subcommand_name = "", std::string subcommand_description = "") {
         if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
-            throw IncorrectConstruction("subcommand name is not valid");
+            if(!detail::valid_first_char(subcommand_name[0])) {
+                throw IncorrectConstruction(
+                    "Subcommand name starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
+            }
+            for(auto c : subcommand_name) {
+                if(!detail::valid_later_char(c)) {
+                    throw IncorrectConstruction(std::string("Subcommand name contains invalid character ('") + c +
+                                                "'), allowed characters are "
+                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
+                }
+            }
         }
         CLI::App_p subcom = std::shared_ptr<App>(new App(std::move(subcommand_description), subcommand_name, this));
         return add_subcommand(std::move(subcom));
