@@ -756,7 +756,7 @@ If it is desired that multiple configuration be allowed.  Use
 app.set_config("--config")->expected(1, X);
 ```
 
-Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.
+Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.  Value strings with quote characters in it will be printed with a single quote.🚧  All other arguments will use double quote.  Empty strings will use a double quoted argument.🚧  Numerical or boolean values are not quoted. 🚧
 
 ### Inheriting defaults
 

@@ -87,6 +87,10 @@ class ConfigBase : public Config {
     char arraySeparator = ',';
     /// the character used separate the name from the value
     char valueDelimiter = '=';
+    /// the character to use around strings
+    char stringQuote = '"';
+    /// the character to use around single characters
+    char characterQuote = '\'';
 
   public:
     std::string
@@ -112,6 +116,12 @@ class ConfigBase : public Config {
     /// Specify the delimiter between a name and value
     ConfigBase *valueSeparator(char vSep) {
         valueDelimiter = vSep;
+        return this;
+    }
+    /// Specify the quote characters used around strings and characters
+    ConfigBase *quoteCharacter(char qString, char qChar) {
+        stringQuote = qString;
+        characterQuote = qChar;
         return this;
     }
 };
