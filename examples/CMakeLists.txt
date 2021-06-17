@@ -226,3 +226,8 @@ set_property(TEST retired_retired_test2 PROPERTY PASS_REGULAR_EXPRESSION "WARNIN
 set_property(TEST retired_retired_test3 PROPERTY PASS_REGULAR_EXPRESSION "WARNING.*retired")
 
 set_property(TEST retired_deprecated PROPERTY PASS_REGULAR_EXPRESSION "deprecated.*not_deprecated")
+
+#--------------------------------------------
+add_cli_exe(custom_parse custom_parse.cpp)
+add_test(NAME cp_test COMMAND custom_parse --dv 1.7)
+set_property(TEST cp_test PROPERTY PASS_REGULAR_EXPRESSION "called correct")

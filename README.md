@@ -800,7 +800,7 @@ Every `add_` option you have seen so far depends on one method that takes a lamb
 
 Other values can be added as long as they support `operator>>` (and defaults can be printed if they support `operator<<`). To add a new type, for example, provide a custom `operator>>` with an `istream` (inside the CLI namespace is fine if you don't want to interfere with an existing `operator>>`).
 
-If you wanted to extend this to support a completely new type, use a lambda or add a specialization of the `lexical_cast` function template in the namespace `CLI::detail` with the type you need to convert to. Some examples of some new parsers for `complex<double>` that support all of the features of a standard `add_options` call are in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
+If you wanted to extend this to support a completely new type, use a lambda or add a specialization of the `lexical_cast` function template in the namespace of the type you need to convert to. Some examples of some new parsers for `complex<double>` that support all of the features of a standard `add_options` call are in [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
 #### Example
 
@@ -872,6 +872,7 @@ The API is [documented here][api-docs]. Also see the [CLI11 tutorial GitBook][gi
 Several short examples of different features are included in the repository. A brief description of each is included here
 
  - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/master/examples/callback_passthrough.cpp): Example of directly passing remaining arguments through to a callback function which generates a CLI11 application based on existing arguments.
+ - [custom_parse](https://github.com/CLIUtils/CLI11/blob/master/examples/custom_parse.cpp):  Based on [Issue #566](https://github.com/CLIUtils/CLI11/issues/566), example of custom parser
  - [digit_args](https://github.com/CLIUtils/CLI11/blob/master/examples/digit_args.cpp):  Based on [Issue #123](https://github.com/CLIUtils/CLI11/issues/123), uses digit flags to pass a value
  - [enum](https://github.com/CLIUtils/CLI11/blob/master/examples/enum.cpp):  Using enumerations in an option, and the use of [CheckedTransformer](#transforming-validators)
  - [enum_ostream](https://github.com/CLIUtils/CLI11/blob/master/examples/enum_ostream.cpp):  In addition to the contents of example enum.cpp, this example shows how a custom ostream operator overrides CLI11's enum streaming.
