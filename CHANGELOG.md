@@ -23,6 +23,7 @@
 * The final "defaulted" bool has been removed, use `->capture_default_str()`
   instead. Use `app.option_defaults()->always_capture_default()` to set this for
   all future options. [#597][]
+* Use `add_option` on a complex number instead of `add_complex`, which has been removed.
 
 
 [#435]: https://github.com/CLIUtils/CLI11/pull/435

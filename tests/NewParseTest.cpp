@@ -13,49 +13,9 @@ using Catch::Matchers::Contains;
 
 using cx = std::complex<double>;
 
-TEST_CASE_METHOD(TApp, "Complex", "[newparse]") {
-    cx comp{1, 2};
-    app.add_complex("-c,--complex", comp, "", true);
-
-    args = {"-c", "4", "3"};
-
-    std::string help = app.help();
-    CHECK_THAT(help, Contains("1"));
-    CHECK_THAT(help, Contains("2"));
-    CHECK_THAT(help, Contains("COMPLEX"));
-
-    CHECK(comp.real() == Approx(1));
-    CHECK(comp.imag() == Approx(2));
-
-    run();
-
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(3));
-}
-
 TEST_CASE_METHOD(TApp, "ComplexOption", "[newparse]") {
     cx comp{1, 2};
     app.add_option("-c,--complex", comp)->capture_default_str();
-
-    args = {"-c", "4", "3"};
-
-    std::string help = app.help();
-    CHECK_THAT(help, Contains("1"));
-    CHECK_THAT(help, Contains("2"));
-    CHECK_THAT(help, Contains("COMPLEX"));
-
-    CHECK(comp.real() == Approx(1));
-    CHECK(comp.imag() == Approx(2));
-
-    run();
-
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(3));
-}
-
-TEST_CASE_METHOD(TApp, "ComplexFloat", "[newparse]") {
-    std::complex<float> comp{1, 2};
-    app.add_complex<std::complex<float>, float>("-c,--complex", comp)->capture_default_str();
 
     args = {"-c", "4", "3"};
 
@@ -93,38 +53,6 @@ TEST_CASE_METHOD(TApp, "ComplexFloatOption", "[newparse]") {
     CHECK(comp.imag() == Approx(3));
 }
 
-TEST_CASE_METHOD(TApp, "ComplexWithDelimiter", "[newparse]") {
-    cx comp{1, 2};
-    app.add_complex("-c,--complex", comp)->capture_default_str()->delimiter('+');
-
-    args = {"-c", "4+3i"};
-
-    std::string help = app.help();
-    CHECK_THAT(help, Contains("1"));
-    CHECK_THAT(help, Contains("2"));
-    CHECK_THAT(help, Contains("COMPLEX"));
-
-    CHECK(comp.real() == Approx(1));
-    CHECK(comp.imag() == Approx(2));
-
-    run();
-
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(3));
-
-    args = {"-c", "5+-3i"};
-    run();
-
-    CHECK(comp.real() == Approx(5));
-    CHECK(comp.imag() == Approx(-3));
-
-    args = {"-c", "6", "-4i"};
-    run();
-
-    CHECK(comp.real() == Approx(6));
-    CHECK(comp.imag() == Approx(-4));
-}
-
 TEST_CASE_METHOD(TApp, "ComplexWithDelimiterOption", "[newparse]") {
     cx comp{1, 2};
     app.add_option("-c,--complex", comp)->capture_default_str()->delimiter('+');
@@ -157,18 +85,6 @@ TEST_CASE_METHOD(TApp, "ComplexWithDelimiterOption", "[newparse]") {
     CHECK(comp.imag() == Approx(-4));
 }
 
-TEST_CASE_METHOD(TApp, "ComplexIgnoreI", "[newparse]") {
-    cx comp{1, 2};
-    app.add_complex("-c,--complex", comp);
-
-    args = {"-c", "4", "3i"};
-
-    run();
-
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(3));
-}
-
 TEST_CASE_METHOD(TApp, "ComplexIgnoreIOption", "[newparse]") {
     cx comp{1, 2};
     app.add_option("-c,--complex", comp);
@@ -179,40 +95,6 @@ TEST_CASE_METHOD(TApp, "ComplexIgnoreIOption", "[newparse]") {
 
     CHECK(comp.real() == Approx(4));
     CHECK(comp.imag() == Approx(3));
-}
-
-TEST_CASE_METHOD(TApp, "ComplexSingleArg", "[newparse]") {
-    cx comp{1, 2};
-    app.add_complex("-c,--complex", comp);
-
-    args = {"-c", "4"};
-    run();
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(0));
-
-    args = {"-c", "4-2i"};
-    run();
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(-2));
-    args = {"-c", "4+2i"};
-    run();
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(2));
-
-    args = {"-c", "-4+2j"};
-    run();
-    CHECK(comp.real() == Approx(-4));
-    CHECK(comp.imag() == Approx(2));
-
-    args = {"-c", "-4.2-2j"};
-    run();
-    CHECK(comp.real() == Approx(-4.2));
-    CHECK(comp.imag() == Approx(-2));
-
-    args = {"-c", "-4.2-2.7i"};
-    run();
-    CHECK(comp.real() == Approx(-4.2));
-    CHECK(comp.imag() == Approx(-2.7));
 }
 
 TEST_CASE_METHOD(TApp, "ComplexSingleArgOption", "[newparse]") {
@@ -247,29 +129,6 @@ TEST_CASE_METHOD(TApp, "ComplexSingleArgOption", "[newparse]") {
     run();
     CHECK(comp.real() == Approx(-4.2));
     CHECK(comp.imag() == Approx(-2.7));
-}
-
-TEST_CASE_METHOD(TApp, "ComplexSingleImag", "[newparse]") {
-    cx comp{1, 2};
-    app.add_complex("-c,--complex", comp);
-
-    args = {"-c", "4j"};
-    run();
-    CHECK(comp.real() == Approx(0));
-    CHECK(comp.imag() == Approx(4));
-
-    args = {"-c", "-4j"};
-    run();
-    CHECK(comp.real() == Approx(0));
-    CHECK(comp.imag() == Approx(-4));
-    args = {"-c", "-4"};
-    run();
-    CHECK(comp.real() == Approx(-4));
-    CHECK(comp.imag() == Approx(0));
-    args = {"-c", "+4"};
-    run();
-    CHECK(comp.real() == Approx(4));
-    CHECK(comp.imag() == Approx(0));
 }
 
 TEST_CASE_METHOD(TApp, "ComplexSingleImagOption", "[newparse]") {
