@@ -1888,6 +1888,27 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurable", "[config]") {
     CHECK(std::string::npos == str.find("sub2.newest=true"));
 }
 
+TEST_CASE_METHOD(TApp, "TomlOutputSubcomNonConfigurable", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other", "other_descriptor")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subcom2 = app.add_subcommand("sub2", "descriptor2");
+    subcom2->add_flag("--newest")->configurable(false);
+
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("other_descriptor"));
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("[other]"));
+    CHECK_THAT(str, Contains("newer=true"));
+    CHECK_THAT(str, !Contains("newest"));
+    CHECK_THAT(str, !Contains("descriptor2"));
+}
+
 TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurableDeep", "[config]") {
 
     app.add_flag("--simple");
