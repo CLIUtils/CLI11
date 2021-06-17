@@ -1220,6 +1220,21 @@ TEST_CASE("TVersion: callback_flag", "[help]") {
     CHECK_THAT(vers, Contains("VERSION"));
 }
 
+TEST_CASE("TVersion: help", "[help]") {
+
+    CLI::App app;
+
+    app.set_version_flag("-v,--version", "version_string", "help_for_version");
+
+    auto hvers = app.help();
+    CHECK_THAT(hvers, Contains("help_for_version"));
+
+    app.set_version_flag(
+        "-v", []() { return std::string("VERSION2 " CLI11_VERSION); }, "help_for_version2");
+    hvers = app.help();
+    CHECK_THAT(hvers, Contains("help_for_version2"));
+}
+
 TEST_CASE("TVersion: parse_throw", "[help]") {
 
     CLI::App app;

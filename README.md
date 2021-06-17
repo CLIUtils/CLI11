@@ -599,6 +599,7 @@ There are several options that are supported on the main app and subcommands and
 -   `.footer(message)`: Set text to appear at the bottom of the help string.
 -   `.footer(std::string())`: 🆕 Set a callback to generate a string that will appear at the end of the help string.
 -   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
+-   `.set_version_flag(name, versionString or callback, help_message)`: 🆕 Set the version flag name and version string or callback and optional help message, returns a pointer to the created option.
 -   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
 -   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
 -   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
