@@ -78,3 +78,31 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithLotsOfSpace", "[stringparse]") {
 
     CHECK(std::string("./") + std::string(tmpexe) == app.get_name());
 }
+
+// From Github issue #591 https://github.com/CLIUtils/CLI11/issues/591
+TEST_CASE_METHOD(TApp, "ProgNameWithSpace", "[stringparse]") {
+
+    app.add_flag("--foo");
+    CHECK_NOTHROW(app.parse("\"Foo Bar\" --foo", true));
+
+    CHECK(app["--foo"]->as<bool>());
+    CHECK(app.get_name() == "Foo Bar");
+}
+
+TEST_CASE_METHOD(TApp, "ProgNameWithSpaceEmbeddedQuote", "[stringparse]") {
+
+    app.add_flag("--foo");
+    CHECK_NOTHROW(app.parse("\"Foo\\\" Bar\" --foo", true));
+
+    CHECK(app["--foo"]->as<bool>());
+    CHECK(app.get_name() == "Foo\" Bar");
+}
+
+TEST_CASE_METHOD(TApp, "ProgNameWithSpaceSingleQuote", "[stringparse]") {
+
+    app.add_flag("--foo");
+    CHECK_NOTHROW(app.parse(R"('Foo\' Bar' --foo)", true));
+
+    CHECK(app["--foo"]->as<bool>());
+    CHECK(app.get_name() == "Foo' Bar");
+}

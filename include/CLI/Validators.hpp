@@ -1100,12 +1100,36 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
         if(esp == std::string::npos) {
             // if we have reached the end and haven't found a valid file just assume the first argument is the
             // program name
-            esp = commandline.find_first_of(' ', 1);
+            if(commandline[0] == '"' || commandline[0] == '\'' || commandline[0] == '`') {
+                bool embeddedQuote = false;
+                auto keyChar = commandline[0];
+                auto end = commandline.find_first_of(keyChar, 1);
+                while((end != std::string::npos) && (commandline[end - 1] == '\\')) {  // deal with escaped quotes
+                    end = commandline.find_first_of(keyChar, end + 1);
+                    embeddedQuote = true;
+                }
+                if(end != std::string::npos) {
+                    vals.first = commandline.substr(1, end - 1);
+                    esp = end + 1;
+                    if(embeddedQuote) {
+                        vals.first = find_and_replace(vals.first, std::string("\\") + keyChar, std::string(1, keyChar));
+                        embeddedQuote = false;
+                    }
+                } else {
+                    esp = commandline.find_first_of(' ', 1);
+                }
+            } else {
+                esp = commandline.find_first_of(' ', 1);
+            }
+
             break;
         }
     }
-    vals.first = commandline.substr(0, esp);
-    rtrim(vals.first);
+    if(vals.first.empty()) {
+        vals.first = commandline.substr(0, esp);
+        rtrim(vals.first);
+    }
+
     // strip the program name
     vals.second = (esp != std::string::npos) ? commandline.substr(esp + 1) : std::string{};
     ltrim(vals.second);
