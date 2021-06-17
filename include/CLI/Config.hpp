@@ -277,7 +277,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
-    if(write_description) {
+    if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
         out << commentLead << app->get_description() << '\n';
     }
     for(auto &group : groups) {
