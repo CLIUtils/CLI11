@@ -535,6 +535,10 @@ TEST_CASE_METHOD(TApp, "IniRequiredNoDefault", "[config]") {
     int two{0};
     app.add_option("--two", two);
     REQUIRE_THROWS_AS(run(), CLI::FileError);
+    // test to make sure help still gets called correctly
+    // Github issue #533 https://github.com/CLIUtils/CLI11/issues/553
+    args = {"--help"};
+    REQUIRE_THROWS_AS(run(), CLI::CallForHelp);
 }
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredNoDefault", "[config]") {
