@@ -113,6 +113,7 @@ class App {
 
     /// This is a function that runs when parsing has finished.
     std::function<void()> parse_complete_callback_{};
+
     /// This is a function that runs when all processing has completed
     std::function<void()> final_callback_{};
 
@@ -1963,6 +1964,7 @@ class App {
             app->_configure();
         }
     }
+
     /// Internal function to run (App) callback, bottom up
     void run_callback(bool final_mode = false, bool suppress_final_callback = false) {
         pre_callback();
@@ -1983,7 +1985,7 @@ class App {
 
         // finally run the main callback
         if(final_callback_ && (parsed_ > 0) && (!suppress_final_callback)) {
-            if(!name_.empty() || count_all() > 0) {
+            if(!name_.empty() || count_all() > 0 || parent_ == nullptr) {
                 final_callback_();
             }
         }
