@@ -1874,3 +1874,63 @@ TEST_CASE_METHOD(ManySubcommands, "defaultEnabledSubcommand", "[subcom]") {
     CHECK(sub2->get_enabled_by_default());
     CHECK(!sub2->get_disabled());
 }
+
+// #572
+TEST_CASE_METHOD(TApp, "MultiFinalCallbackCounts", "[subcom]") {
+
+    int app_compl = 0;
+    int sub_compl = 0;
+    int subsub_compl = 0;
+    int app_final = 0;
+    int sub_final = 0;
+    int subsub_final = 0;
+
+    app.parse_complete_callback([&app_compl]() { app_compl++; });
+    app.final_callback([&app_final]() { app_final++; });
+
+    auto *sub = app.add_subcommand("sub");
+
+    sub->parse_complete_callback([&sub_compl]() { sub_compl++; });
+    sub->final_callback([&sub_final]() { sub_final++; });
+
+    auto *subsub = sub->add_subcommand("subsub");
+
+    subsub->parse_complete_callback([&subsub_compl]() { subsub_compl++; });
+    subsub->final_callback([&subsub_final]() { subsub_final++; });
+
+    SECTION("No specified subcommands") {
+        args = {};
+        run();
+
+        CHECK(app_compl == 1);
+        CHECK(app_final == 1);
+        CHECK(sub_compl == 0);
+        CHECK(sub_final == 0);
+        CHECK(subsub_compl == 0);
+        CHECK(subsub_final == 0);
+    }
+
+    SECTION("One layer of subcommands") {
+        args = {"sub"};
+        run();
+
+        CHECK(app_compl == 1);
+        CHECK(app_final == 1);
+        CHECK(sub_compl == 1);
+        CHECK(sub_final == 1);
+        CHECK(subsub_compl == 0);
+        CHECK(subsub_final == 0);
+    }
+
+    SECTION("Fully specified subcommands") {
+        args = {"sub", "subsub"};
+        run();
+
+        CHECK(app_compl == 1);
+        CHECK(app_final == 1);
+        CHECK(sub_compl == 1);
+        CHECK(sub_final == 1);
+        CHECK(subsub_compl == 1);
+        CHECK(subsub_final == 1);
+    }
+}
