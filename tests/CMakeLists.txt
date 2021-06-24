@@ -70,11 +70,11 @@ target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 # that would require changing the includes. FetchContent would be better, but
 # requires newer CMake.
 
-set(url https://github.com/philsquared/Catch/releases/download/v2.13.4/catch.hpp)
+set(url https://github.com/philsquared/Catch/releases/download/v2.13.6/catch.hpp)
 file(
   DOWNLOAD ${url} "${CMAKE_CURRENT_BINARY_DIR}/catch.hpp"
   STATUS status
-  EXPECTED_HASH SHA256=6e0fa3dd160891a01c1f3b34e8bcd6e0140abe08eca022e390027f27dec2050b)
+  EXPECTED_HASH SHA256=681e7505a50887c9085539e5135794fc8f66d8e5de28eadf13a30978627b0f47)
 list(GET status 0 error)
 if(error)
   message(FATAL_ERROR "Could not download ${url}")
