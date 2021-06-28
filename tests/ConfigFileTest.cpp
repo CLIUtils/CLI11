@@ -1705,6 +1705,16 @@ TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
     CHECK(std::string::npos == loc);
 }
 
+TEST_CASE_METHOD(TApp, "TomlOutputAppMultiLineDescription", "[config]") {
+    app.description("Some short app description.\n"
+                    "That has multiple lines.");
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Some short app description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
+}
+
 TEST_CASE_METHOD(TApp, "TomlOutputMultiLineDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.\nThat has lines.";
@@ -1716,6 +1726,35 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultiLineDescription", "[config]") {
     CHECK_THAT(str, Contains("# Some short description.\n"));
     CHECK_THAT(str, Contains("# That has lines.\n"));
     CHECK_THAT(str, Contains(flag + "=false\n"));
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") {
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto og = app.add_option_group("group");
+    og->description("Option group description.\n"
+                    "That has multiple lines.");
+    og->add_flag("--" + flag, description);
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Option group description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto subcom = app.add_subcommand("subcommand");
+    subcom->configurable();
+    subcom->description("Subcommand description.\n"
+                        "That has multiple lines.");
+    subcom->add_flag("--" + flag, description);
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Subcommand description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
@@ -2109,6 +2148,17 @@ TEST_CASE_METHOD(TApp, "IniOutputHiddenOptions", "[config]") {
     CHECK(std::string::npos == loc);
 }
 
+TEST_CASE_METHOD(TApp, "IniOutputAppMultiLineDescription", "[config]") {
+    app.description("Some short app description.\n"
+                    "That has multiple lines.");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("; Some short app description.\n"));
+    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
+}
+
 TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
     std::string flag = "some_flag";
     const std::string description = "Some short description.\nThat has lines.";
@@ -2120,6 +2170,37 @@ TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
     CHECK_THAT(str, Contains("; Some short description.\n"));
     CHECK_THAT(str, Contains("; That has lines.\n"));
     CHECK_THAT(str, Contains(flag + "=false\n"));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputOptionGroupMultiLineDescription", "[config]") {
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto og = app.add_option_group("group");
+    og->description("Option group description.\n"
+                    "That has multiple lines.");
+    og->add_flag("--" + flag, description);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("; Option group description.\n"));
+    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputSubcommandMultiLineDescription", "[config]") {
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto subcom = app.add_subcommand("subcommand");
+    subcom->configurable();
+    subcom->description("Subcommand description.\n"
+                        "That has multiple lines.");
+    subcom->add_flag("--" + flag, description);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("; Subcommand description.\n"));
+    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
 }
 
 TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
