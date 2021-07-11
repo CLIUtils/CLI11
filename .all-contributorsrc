@@ -440,6 +440,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "paddy-hack",
+      "name": "Olaf Meeuwissen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6804372?v=4",
+      "profile": "https://github.com/paddy-hack",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
