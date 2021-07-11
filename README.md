@@ -967,6 +967,7 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="https://github.com/dbarowy"><img src="https://avatars3.githubusercontent.com/u/573142?v=4" width="100px;" alt=""/><br /><sub><b>Dan Barowy</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=dbarowy" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/paddy-hack"><img src="https://avatars.githubusercontent.com/u/6804372?v=4" width="100px;" alt=""/><br /><sub><b>Olaf Meeuwissen</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=paddy-hack" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/dryleev"><img src="https://avatars.githubusercontent.com/u/83670813?v=4" width="100px;" alt=""/><br /><sub><b>dryleev</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=dryleev" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/AnticliMaxtic"><img src="https://avatars.githubusercontent.com/u/43995389?v=4" width="100px;" alt=""/><br /><sub><b>Max</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=AnticliMaxtic" title="Code">💻</a></td>
   </tr>
 </table>
 
