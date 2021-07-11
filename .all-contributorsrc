@@ -467,6 +467,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "alexdewar",
+      "name": "Alex Dewar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23149834?v=4",
+      "profile": "https://profiles.sussex.ac.uk/p281168-alex-dewar/publications",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
