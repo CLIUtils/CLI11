@@ -969,6 +969,9 @@ This project was created by [Henry Schreiner](https://github.com/henryiii) and m
     <td align="center"><a href="https://github.com/dryleev"><img src="https://avatars.githubusercontent.com/u/83670813?v=4" width="100px;" alt=""/><br /><sub><b>dryleev</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=dryleev" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/AnticliMaxtic"><img src="https://avatars.githubusercontent.com/u/43995389?v=4" width="100px;" alt=""/><br /><sub><b>Max</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=AnticliMaxtic" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://profiles.sussex.ac.uk/p281168-alex-dewar/publications"><img src="https://avatars.githubusercontent.com/u/23149834?v=4" width="100px;" alt=""/><br /><sub><b>Alex Dewar</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=alexdewar" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->
