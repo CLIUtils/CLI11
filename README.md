@@ -137,7 +137,33 @@ To use, there are several methods:
 
 1.  All-in-one local header: Copy `CLI11.hpp` from the [most recent release][github releases] into your include directory, and you are set. This is combined from the source files  for every release. This includes the entire command parser library, but does not include separate utilities (like `Timer`, `AutoTimer`). The utilities are completely self contained and can be copied separately.
 2.  All-in-one global header: Like above, but copying the file to a shared folder location like `/opt/CLI11`. Then, the C++ include path has to be extended to point at this folder. With CMake, use `include_directories(/opt/CLI11)`
-3.  Local headers and target: Use `CLI/*.hpp` files. You could check out the repository as a git submodule, for example. With CMake, you can use `add_subdirectory` and the `CLI11::CLI11` interface target when linking. If not using a submodule, you must ensure that the copied files are located inside the same tree directory than your current project, to prevent an error with CMake and `add_subdirectory`.
+3.  Local headers and target: Use `CLI/*.hpp` files. You could check out the repository as a git submodule, for example. With CMake, you can use `add_subdirectory` and the `CLI11::CLI11` interface target when linking. If not using a submodule, you must ensure that the copied files are located inside the same tree directory than your current project, to prevent an error with CMake and `add_subdirectory`. An example CMake file would include:
+
+```cmake
+include(FetchContent)
+
+FetchContent_Populate(
+	cli11_proj
+	QUIET
+	GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+	GIT_TAG master
+	SOURCE_DIR     cli11_proj
+)
+
+# And now you can use it
+add_subdirectory(${cli11_proj_SOURCE_DIR} ${cli11_proj_SOURCE_DIR}/build)
+
+target_link_libraries(<your project> CLI11::CLI11)
+```
+
+And use
+
+```c++
+#include <CLI/CLI.hpp>
+```
+
+in your project.
+
 4.  Global headers: Use `CLI/*.hpp` files stored in a shared folder. You could check out the git repository in a system-wide folder, for example `/opt/`. With CMake, you could add to the include path via:
 ```bash
 if(NOT DEFINED CLI11_DIR)
