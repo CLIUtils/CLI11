@@ -1059,7 +1059,7 @@ bool lexical_cast(const std::string &input, T &output) {
     }
     // LCOV_EXCL_START
     // This version of cast is only used for odd cases in an older compilers the fail over
-    // from_stream is tested elsewhere an not relevent for coverage here
+    // from_stream is tested elsewhere an not relevant for coverage here
     return from_stream(input, output);
     // LCOV_EXCL_STOP
 }

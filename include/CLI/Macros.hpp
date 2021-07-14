@@ -8,7 +8,7 @@
 
 // [CLI11:macros_hpp:verbatim]
 
-// The following version macro is very similar to the one in PyBind11
+// The following version macro is very similar to the one in pybind11
 #if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
 #if __cplusplus >= 201402L
 #define CLI11_CPP14
