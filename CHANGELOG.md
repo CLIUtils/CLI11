@@ -19,17 +19,14 @@ testing system and single file generation system.
 * Support `->silent()` on subcommands. [#529][]
 * Add alias section to help for subcommands [#545][]
 * Allow quotes to specify a program name [#605][]
-
 * Backend: redesigned MakeSingleFiles to have a higher level of manual control, to support future features. [#546][]
 * Backend: moved testing from GTest to Catch2 [#574][]
-
 * Bugfix: avoid duplicated and missed calls to the final callback [#584][]
 * Bugfix: support embedded newlines in more places [#592][]
 * Bugfix: avoid listing helpall as a required flag [#530][]
 * Bugfix: avoid a clash with WINDOWS define [#563][]
 * Bugfix: the help flag didn't get processed when a config file was required [#606][]
 * Bugfix: fix description of non-configurable subcommands in config [#604][]
-
 * Build: support pkg-config [#523][]
 
 #### Converting from CLI11 1.9:
