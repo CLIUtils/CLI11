@@ -1,4 +1,4 @@
-## Version 2.0: Cleanup & TOML
+## Version 2.0: Simplification
 
 This version focuses on cleaning up deprecated functionality, and some minor
 default changes. The config processing is TOML compliant now. Atomics and

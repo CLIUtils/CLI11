@@ -1002,8 +1002,8 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [gitter-badge]: https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter]: https://gitter.im/CLI11gitter/Lobby
 [license-badge]: https://img.shields.io/badge/License-BSD-blue.svg
-[conan-badge]: https://api.bintray.com/packages/cliutils/CLI11/CLI11%3Acliutils/images/download.svg
-[conan-link]: https://bintray.com/cliutils/CLI11/CLI11%3Acliutils/_latestVersion
+[conan-badge]: https://img.shields.io/badge/conan-io-blue
+[conan-link]: https://conan.io/center/cli11
 [github releases]: https://github.com/CLIUtils/CLI11/releases
 [github issues]: https://github.com/CLIUtils/CLI11/issues
 [github pull requests]: https://github.com/CLIUtils/CLI11/pulls
@@ -1034,16 +1034,16 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [version 1.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-10/
 [version 1.3 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
-[wandbox-badge]: https://img.shields.io/badge/try_1.9-online-blue.svg
-[wandbox-link]: https://wandbox.org/permlink/8SirASwhbFQZyDTW
+[wandbox-badge]: https://img.shields.io/badge/try_2.0-online-blue.svg
+[wandbox-link]: https://wandbox.org/permlink/650go2SXpfdvQ7ex
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]: https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
 [diana slides]: https://indico.cern.ch/event/619465/contributions/2507949/attachments/1448567/2232649/20170424-diana-2.pdf
 [awesome c++]: https://github.com/fffaraz/awesome-cpp/blob/master/README.md#cli
 [cli]: https://codesynthesis.com/projects/cli/
 [single file libs]: https://github.com/nothings/single_file_libs/blob/master/README.md
-[codacy-badge]: https://api.codacy.com/project/badge/Grade/ac0df3aead2a4421b02070c3f324a0b9
-[codacy-link]: https://www.codacy.com/app/henryiii/CLI11?utm_source=github.com&utm_medium=referral&utm_content=CLIUtils/CLI11&utm_campaign=Badge_Grade
+[codacy-badge]: https://app.codacy.com/project/badge/Grade/2796b969c1b54321a02ad08affec0800
+[codacy-link]: https://www.codacy.com/gh/CLIUtils/CLI11/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CLIUtils/CLI11&amp;utm_campaign=Badge_Grade
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
