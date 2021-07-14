@@ -79,7 +79,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithLotsOfSpace", "[stringparse]") {
     CHECK(std::string("./") + std::string(tmpexe) == app.get_name());
 }
 
-// From Github issue #591 https://github.com/CLIUtils/CLI11/issues/591
+// From GitHub issue #591 https://github.com/CLIUtils/CLI11/issues/591
 TEST_CASE_METHOD(TApp, "ProgNameWithSpace", "[stringparse]") {
 
     app.add_flag("--foo");

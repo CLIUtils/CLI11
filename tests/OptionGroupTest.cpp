@@ -593,7 +593,7 @@ TEST_CASE_METHOD(ManyGroups, "SameSubcommand", "[optiongroup]") {
     // so when the subcommands are disabled they can have the same name
     sub1->disabled(false);
     sub2->disabled(false);
-    // if they are reenabled they are not checked for overlap on enabling so they can have the same name
+    // if they are re-enabled they are not checked for overlap on enabling so they can have the same name
     args = {"sub1", "sub1", "sub1"};
 
     run();
