@@ -40,7 +40,6 @@ repos:
   - id: cmake-format
     additional_dependencies: [pyyaml]
 
-# The original pybind11 checks for a few C++ style items
 - repo: local
   hooks:
   - id: disallow-caps
