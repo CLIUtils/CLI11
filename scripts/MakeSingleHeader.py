@@ -39,12 +39,20 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 
 class HeaderGroups(dict):
     def __init__(self, tag):
+        """
+        A dictionary that also can read headers given a tag expression.
+
+        TODO: might have gone overboard on this one, could maybe be two functions.
+        """
         self.re_matcher = re.compile(
             tag_str.format(tag=tag), re.MULTILINE | re.DOTALL | re.VERBOSE
         )
         super(HeaderGroups, self).__init__()
 
     def read_header(self, filename):
+        """
+        Read a header file in and add items to the dict, based on the item's action.
+        """
         with open(filename) as f:
             inner = f.read()
 
@@ -67,12 +75,18 @@ class HeaderGroups(dict):
                 raise RuntimeError("Action not understood, must be verbatim or set")
 
     def post_process(self):
+        """
+        Turn sets into multiple line strings.
+        """
         for key in self:
             if isinstance(self[key], set):
                 self[key] = "\n".join(self[key])
 
 
-def MakeHeader(output, main_header, files, tag, namespace, macro=None, version=None):
+def make_header(output, main_header, files, tag, namespace, macro=None, version=None):
+    """
+    Makes a single header given a main header template and a list of files.
+    """
     groups = HeaderGroups(tag)
 
     # Set tag if possible to class variable
@@ -129,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--version", help="Include this version in the generated file")
     args = parser.parse_args()
 
-    MakeHeader(
+    make_header(
         args.output,
         args.main,
         args.files,

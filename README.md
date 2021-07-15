@@ -24,38 +24,38 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 
 ## Table of Contents
 
--   [Background](#background)
-    -   [Introduction](#introduction)
-    -   [Why write another CLI parser?](#why-write-another-cli-parser)
-    -   [Other parsers](#other-parsers)
-    -   [Features not supported by this library](#features-not-supported-by-this-library)
--   [Install](#install)
--   [Usage](#usage)
-    -   [Adding options](#adding-options)
-        -   [Option types](#option-types)
-        -   [Example](#example)
-        -   [Option options](#option-options)
-        -   [Validators](#validators)
-            -   [Transforming Validators](#transforming-validators)
-            -   [Validator operations](#validator-operations)
-            -   [Custom Validators](#custom-validators)
-            -   [Querying Validators](#querying-validators)
-        -   [Getting Results](#getting-results)
-    -   [Subcommands](#subcommands)
-        -   [Subcommand options](#subcommand-options)
-        -   [Option groups](#option-groups)
-        -   [Callbacks](#callbacks)
-    -   [Configuration file](#configuration-file)
-    -   [Inheriting defaults](#inheriting-defaults)
-    -   [Formatting](#formatting)
-    -   [Subclassing](#subclassing)
-    -   [How it works](#how-it-works)
-    -   [Utilities](#utilities)
-    -   [Other libraries](#other-libraries)
--   [API](#api)
--   [Examples](#Examples)
--   [Contribute](#contribute)
--   [License](#license)
+- [Background](#background)
+    - [Introduction](#introduction)
+    - [Why write another CLI parser?](#why-write-another-cli-parser)
+    - [Other parsers](#other-parsers)
+    - [Features not supported by this library](#features-not-supported-by-this-library)
+- [Install](#install)
+- [Usage](#usage)
+    - [Adding options](#adding-options)
+        - [Option types](#option-types)
+        - [Example](#example)
+        - [Option options](#option-options)
+        - [Validators](#validators)
+            - [Transforming Validators](#transforming-validators)
+            - [Validator operations](#validator-operations)
+            - [Custom Validators](#custom-validators)
+            - [Querying Validators](#querying-validators)
+        - [Getting Results](#getting-results)
+    - [Subcommands](#subcommands)
+        - [Subcommand options](#subcommand-options)
+        - [Option groups](#option-groups)
+        - [Callbacks](#callbacks)
+    - [Configuration file](#configuration-file)
+    - [Inheriting defaults](#inheriting-defaults)
+    - [Formatting](#formatting)
+    - [Subclassing](#subclassing)
+    - [How it works](#how-it-works)
+    - [Utilities](#utilities)
+    - [Other libraries](#other-libraries)
+- [API](#api)
+- [Examples](#Examples)
+- [Contribute](#contribute)
+- [License](#license)
 
 Features that were added in the last released major version are marked with "🆕". Features only available in master are marked with "🚧".
 
@@ -73,21 +73,21 @@ You can be notified when new releases are made by subscribing to <https://github
 
 An acceptable CLI parser library should be all of the following:
 
--   Easy to include (i.e., header only, one file if possible, **no external requirements**).
--   Short, simple syntax: This is one of the main reasons to use a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
--   C++11 or better: Should work with GCC 4.8+ (default on CentOS/RHEL 7), Clang 3.4+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
--   Work on Linux, macOS, and Windows.
--   Well tested using [Travis][] (Linux) and [AppVeyor][] (Windows) or [Azure][] (all three). "Well" is defined as having good coverage measured by [CodeCov][].
--   Clear help printing.
--   Nice error messages.
--   Standard shell idioms supported naturally, like grouping flags, a positional separator, etc.
--   Easy to execute, with help, parse errors, etc. providing correct exit and details.
--   Easy to extend as part of a framework that provides "applications" to users.
--   Usable subcommand syntax, with support for multiple subcommands, nested subcommands, option groups, and optional fallthrough (explained later).
--   Ability to add a configuration file (`TOML`, `INI`, or custom format), and produce it as well.
--   Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
--   Work with standard types, simple custom types, and extensible to exotic types.
--   Permissively licensed.
+- Easy to include (i.e., header only, one file if possible, **no external requirements**).
+- Short, simple syntax: This is one of the main reasons to use a CLI parser, it should make variables from the command line nearly as easy to define as any other variables. If most of your program is hidden in CLI parsing, this is a problem for readability.
+- C++11 or better: Should work with GCC 4.8+ (default on CentOS/RHEL 7), Clang 3.4+, AppleClang 7+, NVCC 7.0+, or MSVC 2015+.
+- Work on Linux, macOS, and Windows.
+- Well tested using [Travis][] (Linux) and [AppVeyor][] (Windows) or [Azure][] (all three). "Well" is defined as having good coverage measured by [CodeCov][].
+- Clear help printing.
+- Nice error messages.
+- Standard shell idioms supported naturally, like grouping flags, a positional separator, etc.
+- Easy to execute, with help, parse errors, etc. providing correct exit and details.
+- Easy to extend as part of a framework that provides "applications" to users.
+- Usable subcommand syntax, with support for multiple subcommands, nested subcommands, option groups, and optional fallthrough (explained later).
+- Ability to add a configuration file (`TOML`, `INI`, or custom format), and produce it as well.
+- Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
+- Work with standard types, simple custom types, and extensible to exotic types.
+- Permissively licensed.
 
 ### Other parsers
 
@@ -127,10 +127,10 @@ So, this library was designed to provide a great syntax, good compiler compatibi
 
 There are some other possible "features" that are intentionally not supported by this library:
 
--   Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
--   Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
--   Autocomplete: This might eventually be added to both Plumbum and CLI11, but it is not supported yet.
--   Wide strings / unicode: Since this uses the standard library only, it might be hard to properly implement, but I would be open to suggestions in how to do this.
+- Non-standard variations on syntax, like `-long` options. This is non-standard and should be avoided, so that is enforced by this library.
+- Completion of partial options, such as Python's `argparse` supplies for incomplete arguments. It's better not to guess. Most third party command line parsers for python actually reimplement command line parsing rather than using argparse because of this perceived design flaw.
+- Autocomplete: This might eventually be added to both Plumbum and CLI11, but it is not supported yet.
+- Wide strings / unicode: Since this uses the standard library only, it might be hard to properly implement, but I would be open to suggestions in how to do this.
 
 ## Install
 
@@ -264,27 +264,33 @@ An option name must start with a alphabetic character, underscore, a number, '?'
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.
 
 The two parameter template overload can be used in cases where you want to restrict the input such as
-```
+
+```cpp
 double val
 app.add_option<double,unsigned int>("-v",val);
 ```
+
 which would first verify the input is convertible to an `unsigned int` before assigning it.  Or using some variant type
-```
+
+```cpp
 using vtype=std::variant<int, double, std::string>;
  vtype v1;
 app.add_option<vtype,std:string>("--vs",v1);
 app.add_option<vtype,int>("--vi",v1);
 app.add_option<vtype,double>("--vf",v1);
 ```
+
 otherwise the output would default to a string.  The `add_option` can be used with any integral or floating point types, enumerations, or strings.  Or any type that takes an int, double, or std\::string in an assignment operator or constructor.  If an object can take multiple varieties of those, std::string takes precedence, then double then int.    To better control which one is used or to use another type for the underlying conversions use the two parameter template to directly specify the conversion type.
 
 Types such as (std or boost) `optional<int>`, `optional<double>`, and `optional<string>` and any other wrapper types are supported directly. For purposes of CLI11 wrapper types are those which `value_type` definition.  See [CLI11 Advanced Topics/Custom Converters][] for information on how you can add your own converters for additional types.
 
 Vector types can also be used in the two parameter template overload
-```
+
+```cpp
 std::vector<double> v1;
 app.add_option<std::vector<double>,int>("--vs",v1);
 ```
+
 would load a vector of doubles but ensure all values can be represented as integers.
 
 Automatic direct capture of the default string is disabled when using the two parameter template.  Use `set_default_str(...)` or `->default_function(std::string())` to set the default string or capture function directly for these cases.
@@ -314,68 +320,67 @@ On a `C++14` compiler, you can pass a callback function directly to `.add_flag`,
 
 #### Example
 
--   `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--one`
--   `"this"` Can only be passed positionally
--   `"-a,-b,-c"` No limit to the number of non-positional option names
+- `"one,-o,--one"`: Valid as long as not a flag, would create an option that can be specified positionally, or with `-o` or `--one`
+- `"this"` Can only be passed positionally
+- `"-a,-b,-c"` No limit to the number of non-positional option names
 
 The add commands return a pointer to an internally stored `Option`.
 This option can be used directly to check for the count (`->count()`) after parsing to avoid a string based lookup.
-⚠️  Deprecated: The `add_*` commands have a final argument than can be set to true, which causes the default value to be captured and printed on the command line with the help flag. Since CLI11 1.8, you can simply add `->capture_default_str()`.
 
 #### Option options
 
 Before parsing, you can set the following options:
 
--   `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
--   `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option or subcommand.
--   `->type_name(typename)`: Set the name of an Option's type (`type_name_fn` allows a function instead)
--   `->type_size(N)`: Set the intrinsic size of an option. The parser will require multiples of this number if negative.
--   `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
--   `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
--   `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
--   `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
--   `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
--   `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
--   `->disable_flag_override()`: From the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
--   `->allow_extra_args(true/false)`: 🆕 If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
--   `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
--   `->description(str)`: Set/change the description.
--   `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
--   `->check(std::string(const std::string &), validator_name="",validator_description="")`: Define a check function.  The function should return a non empty string with the error message if the check fails
--   `->check(Validator)`: Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
--   `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
--   `->transform(Validator)`: Uses a Validator object to do the transformation see [Validators](#validators) for a description of available Validators and how to create new ones.
--   `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered.
--   `->configurable(false)`: Disable this option from being in a configuration file.
+- `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
+- `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option or subcommand.
+- `->type_name(typename)`: Set the name of an Option's type (`type_name_fn` allows a function instead)
+- `->type_size(N)`: Set the intrinsic size of an option. The parser will require multiples of this number if negative.
+- `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
+- `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
+- `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
+- `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
+- `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
+- `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
+- `->disable_flag_override()`: From the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
+- `->allow_extra_args(true/false)`: 🆕 If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
+- `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
+- `->description(str)`: Set/change the description.
+- `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
+- `->check(std::string(const std::string &), validator_name="",validator_description="")`: Define a check function.  The function should return a non empty string with the error message if the check fails
+- `->check(Validator)`: Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
+- `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
+- `->transform(Validator)`: Uses a Validator object to do the transformation see [Validators](#validators) for a description of available Validators and how to create new ones.
+- `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered.
+- `->configurable(false)`: Disable this option from being in a configuration file.
     `->capture_default_str()`: Store the current value attached and display it in the help string.
--   `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
--   `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
--   `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
--   `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
--   `->option_text(string)`: Sets the text between the option name and description.
+- `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
+- `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
+- `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
+- `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
+- `->option_text(string)`: Sets the text between the option name and description.
 
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
 On the command line, options can be given as:
 
--   `-a` (flag)
--   `-abc` (flags can be combined)
--   `-f filename` (option)
--   `-ffilename` (no space required)
--   `-abcf filename` (flags and option can be combined)
--   `--long` (long flag)
--   `--long_flag=true` (long flag with equals to override default value)
--   `--file filename` (space)
--   `--file=filename` (equals)
+- `-a` (flag)
+- `-abc` (flags can be combined)
+- `-f filename` (option)
+- `-ffilename` (no space required)
+- `-abcf filename` (flags and option can be combined)
+- `--long` (long flag)
+- `--long_flag=true` (long flag with equals to override default value)
+- `--file filename` (space)
+- `--file=filename` (equals)
 
 If `allow_windows_style_options()` is specified in the application or subcommand options can also be given as:
--   `/a` (flag)
--   `/f filename` (option)
--   `/long` (long flag)
--   `/file filename` (space)
--   `/file:filename` (colon)
--   `/long_flag:false` (long flag with : to override the default value)
+- `/a` (flag)
+- `/f filename` (option)
+- `/long` (long flag)
+- `/file filename` (space)
+- `/file:filename` (colon)
+- `/long_flag:false` (long flag with : to override the default value)
 =  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
 
 Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
@@ -393,22 +398,22 @@ Validators are structures to check or modify inputs, they can be used to verify 
 
 CLI11 has several Validators built-in that perform some common checks
 
--   `CLI::IsMember(...)`: Require an option be a member of a given set. See [Transforming Validators](#transforming-validators) for more details.
--   `CLI::Transformer(...)`: Modify the input using a map. See [Transforming Validators](#transforming-validators) for more details.
--   `CLI::CheckedTransformer(...)`: Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
--   `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
--   `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
--   `CLI::ExistingFile`: Requires that the file exists if given.
--   `CLI::ExistingDirectory`: Requires that the directory exists.
--   `CLI::ExistingPath`: Requires that the path (file or directory) exists.
--   `CLI::NonexistentPath`: Requires that the path does not exist.
--   `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
--   `CLI::Bounded(min,max)`: Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
--   `CLI::PositiveNumber`: Requires the number be greater than 0
--   `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
--   `CLI::Number`: Requires the input be a number.
--   `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
--   `CLI::TypeValidator<TYPE>`:🆕 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
+- `CLI::IsMember(...)`: Require an option be a member of a given set. See [Transforming Validators](#transforming-validators) for more details.
+- `CLI::Transformer(...)`: Modify the input using a map. See [Transforming Validators](#transforming-validators) for more details.
+- `CLI::CheckedTransformer(...)`: Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
+- `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
+- `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
+- `CLI::ExistingFile`: Requires that the file exists if given.
+- `CLI::ExistingDirectory`: Requires that the directory exists.
+- `CLI::ExistingPath`: Requires that the path (file or directory) exists.
+- `CLI::NonexistentPath`: Requires that the path does not exist.
+- `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
+- `CLI::Bounded(min,max)`: Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
+- `CLI::PositiveNumber`: Requires the number be greater than 0
+- `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
+- `CLI::Number`: Requires the input be a number.
+- `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
+- `CLI::TypeValidator<TYPE>`:🆕 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
 
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
 
@@ -433,27 +438,27 @@ will produce a check for a number less than or equal to 0.
 
 ##### Transforming Validators
 There are a few built in Validators that let you transform values if used with the `transform` function.  If they also do some checks then they can be used `check` but some may do nothing in that case.
--   `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
--   The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this Validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
+- `CLI::Bounded(min,max)` will bound values between min and max and values outside of that range are limited to min or max,  it will fail if the value cannot be converted and produce a `ValidationError`
+- The `IsMember` Validator lets you specify a set of predefined options. You can pass any container or copyable pointer (including `std::shared_ptr`) to a container to this Validator; the container just needs to be iterable and have a `::value_type`. The key type should be convertible from a string,  You can use an initializer list directly if you like. If you need to modify the set later, the pointer form lets you do that; the type message and check will correctly refer to the current version of the set.  The container passed in can be a set, vector, or a map like structure. If used in the `transform` method the output value will be the matching key as it could be modified by filters.
 After specifying a set of options, you can also specify "filter" functions of the form `T(T)`, where `T` is the type of the values. The most common choices probably will be `CLI::ignore_case` an `CLI::ignore_underscore`, and `CLI::ignore_space`.  These all work on strings but it is possible to define functions that work on other types.
 Here are some examples
 of `IsMember`:
 
--   `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
--   `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
--   `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
--   `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`, so it can be any type.
--   `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
--   The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, in which case it is transformed, or one of the expected output values, and if not will generate a `ValidationError`.  A Transformer placed using `check` will not do anything.
+- `CLI::IsMember({"choice1", "choice2"})`: Select from exact match to choices.
+- `CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore)`: Match things like `Choice_1`, too.
+- `CLI::IsMember(std::set<int>({2,3,4}))`: Most containers and types work; you just need `std::begin`, `std::end`, and `::value_type`.
+- `CLI::IsMember(std::map<std::string, TYPE>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched value with the matched key.  The value member of the map is not used in `IsMember`, so it can be any type.
+- `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`: You can modify `p` later.
+- The `Transformer` and `CheckedTransformer` Validators transform one value into another. Any container or copyable pointer (including `std::shared_ptr`) to a container that generates pairs of values can be passed to these `Validator's`; the container just needs to be iterable and have a `::value_type` that consists of pairs. The key type should be convertible from a string, and the value type should be convertible to a string  You can use an initializer list directly if you like. If you need to modify the map later, the pointer form lets you do that; the description message will correctly refer to the current version of the map.  `Transformer` does not do any checking so values not in the map are ignored.  `CheckedTransformer` takes an extra step of verifying that the value is either one of the map key values, in which case it is transformed, or one of the expected output values, and if not will generate a `ValidationError`.  A Transformer placed using `check` will not do anything.
 After specifying a map of options, you can also specify "filter" just like in `CLI::IsMember`.
 Here are some examples (`Transformer` and `CheckedTransformer` are interchangeable in the examples)
 of `Transformer`:
 
--   `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
+- `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values and produce map values.
 
--   `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`: most maplike containers work,  the `::value_type` needs to produce a pair of some kind.
--   `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.
--   `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
+- `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`: most maplike containers work,  the `::value_type` needs to produce a pair of some kind.
+- `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`: You can use maps; in `->transform()` these replace the matched key with the value.  `CheckedTransformer` also requires that the value either match one of the keys or match one of known outputs.
+- `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`: You can modify `p` later. `TransformPairs<T>` is an alias for `std::vector<std::pair<<std::string,T>>`
 
 NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a `find` function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a `find` function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
 
@@ -462,6 +467,7 @@ Validators are copyable and have a few operations that can be performed on them 
 The name of a Validator, which is useful for later reference from the `get_validator(name)` method of an `Option` can be set via `.name(validator_name)`
 The operation function of a Validator can be set via
 `.operation(std::function<std::string(std::string &>)`.  The `.active()` function can activate or deactivate a Validator from the operation.  A validator can be set to apply only to a specific element of the output.  For example in a pair option `std::pair<int, std::string>` the first element may need to be a positive integer while the second may need to be a valid file.  The `.application_index(int)` function can specify this.  It is zero based and negative indices apply to all values.
+
 ```cpp
 opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
 opt->check(CLI::Validator(CLI::ExistingFile).application_index(1));
@@ -514,19 +520,19 @@ opt->get_validator(index);
 
 Which will return a validator in the index it is applied which isn't necessarily the order in which was defined.  The pointer can be `nullptr` if an invalid index is given.
 Validators have a few functions to query the current values
--   `get_description()`: Will return a description string
--   `get_name()`: Will return the Validator name
--   `get_active()`: Will return the current active state, true if the Validator is active.
--   `get_application_index()`: Will return the current application index.
--   `get_modifying()`: Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()` method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
+- `get_description()`: Will return a description string
+- `get_name()`: Will return the Validator name
+- `get_active()`: Will return the current active state, true if the Validator is active.
+- `get_application_index()`: Will return the current application index.
+- `get_modifying()`: Will return true if the Validator is allowed to modify the input, this can be controlled via the `non_modifying()` method, though it is recommended to let `check` and `transform` option methods manipulate it if needed.
 
 #### Getting results
 
 In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
--   `results()`: Retrieves a vector of strings with all the results in the order they were given.
--   `results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
--   `Value=as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+- `results()`: Retrieves a vector of strings with all the results in the order they were given.
+- `results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+- `Value=as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -551,65 +557,66 @@ Nameless subcommands function a similarly to groups in the main `App`. See [Opti
 
 There are several options that are supported on the main app and subcommands and option_groups. These are:
 
--   `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
--   `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
--   `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
--   `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent option. Subcommands always are allowed to "fall through" as in they will first attempt to match on the current subcommand and if they fail will progressively check parents for matching subcommands.
--   `.configurable()`: Allow the subcommand to be triggered from a configuration file. By default subcommand options in a configuration file do not trigger a subcommand but will just update default values.
--   `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
--   `.disabled_by_default()`: Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
--   `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
--   `.silent()`: 🆕 Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
--   `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
--   `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
--   `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
--   `.require_option()`: Require 1 or more options or option groups be used.
--   `.require_option(N)`: Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
--   `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
--   `.require_subcommand()`: Require 1 or more subcommands.
--   `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
--   `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
--   `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
--   `.add_subcommand(shared_ptr<App>)`: Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
--   `.remove_subcommand(App)`: Remove a subcommand from the app or subcommand.
--   `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
--   `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
--   `.add_option_group(name="", description="")`: Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.
--   `.get_parent()`: Get the parent App or `nullptr` if called on master App.
--   `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
--   `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
--   `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
--   `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
--   `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
--   `.description(str)`: Set/change the description.
--   `.get_description()`: Access the description.
--   `.alias(str)`: set an alias for the subcommand, this allows subcommands to be called by more than one name.
--   `.parsed()`: True if this subcommand was given on the command line.
--   `.count()`: Returns the number of times the subcommand was called.
--   `.count(option_name)`: Returns the number of times a particular option was called.
--   `.count_all()`: Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
--   `.name(name)`: Add or change the name.
--   `.callback(void() function)`: Set the callback for an app. Either sets the `pre_parse_callback` or the `final_callback` depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.parse_complete_callback(void() function)`: Set the callback that runs at the completion of parsing. For subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.final_callback(void() function)`: Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
--   `.immediate_callback()`: Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
--   `.pre_parse_callback(void(std::size_t) function)`: Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
--   `.allow_extras()`: Do not throw an error if extra arguments are left over.
--   `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
--   `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
--   `.footer(message)`: Set text to appear at the bottom of the help string.
--   `.footer(std::string())`: Set a callback to generate a string that will appear at the end of the help string.
--   `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
--   `.set_version_flag(name, versionString or callback, help_message)`: Set the version flag name and version string or callback and optional help message, returns a pointer to the created option.
--   `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
--   `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
--   `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
--   `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
+- `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
+- `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
+- `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
+- `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent option. Subcommands always are allowed to "fall through" as in they will first attempt to match on the current subcommand and if they fail will progressively check parents for matching subcommands.
+- `.configurable()`: Allow the subcommand to be triggered from a configuration file. By default subcommand options in a configuration file do not trigger a subcommand but will just update default values.
+- `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
+- `.disabled_by_default()`: Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
+- `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
+- `.silent()`: 🆕 Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
+- `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
+- `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
+- `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
+- `.require_option()`: Require 1 or more options or option groups be used.
+- `.require_option(N)`: Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
+- `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
+- `.require_subcommand()`: Require 1 or more subcommands.
+- `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
+- `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
+- `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
+- `.add_subcommand(shared_ptr<App>)`: Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
+- `.remove_subcommand(App)`: Remove a subcommand from the app or subcommand.
+- `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
+- `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
+- `.add_option_group(name="", description="")`: Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.
+- `.get_parent()`: Get the parent App or `nullptr` if called on master App.
+- `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
+- `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
+- `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
+- `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
+- `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
+- `.description(str)`: Set/change the description.
+- `.get_description()`: Access the description.
+- `.alias(str)`: set an alias for the subcommand, this allows subcommands to be called by more than one name.
+- `.parsed()`: True if this subcommand was given on the command line.
+- `.count()`: Returns the number of times the subcommand was called.
+- `.count(option_name)`: Returns the number of times a particular option was called.
+- `.count_all()`: Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
+- `.name(name)`: Add or change the name.
+- `.callback(void() function)`: Set the callback for an app. Either sets the `pre_parse_callback` or the `final_callback` depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
+- `.parse_complete_callback(void() function)`: Set the callback that runs at the completion of parsing. For subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
+- `.final_callback(void() function)`: Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
+- `.immediate_callback()`: Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
+- `.pre_parse_callback(void(std::size_t) function)`: Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
+- `.allow_extras()`: Do not throw an error if extra arguments are left over.
+- `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
+- `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
+- `.footer(message)`: Set text to appear at the bottom of the help string.
+- `.footer(std::string())`: Set a callback to generate a string that will appear at the end of the help string.
+- `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
+- `.set_version_flag(name, versionString or callback, help_message)`: Set the version flag name and version string or callback and optional help message, returns a pointer to the created option.
+- `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
+- `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
+- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
+- `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
 
 #### Callbacks
+
 A subcommand has three optional callbacks that are executed at different stages of processing.  The `preparse_callback` is executed once after the first argument of a subcommand or application is processed and gives an argument for the number of remaining arguments to process.  For the main app the first argument is considered the program name,  for subcommands the first argument is the subcommand name.  For Option groups and nameless subcommands the first argument is after the first argument or subcommand is processed from that group.
 The second callback is executed after parsing.  This is known as the `parse_complete_callback`. For subcommands this is executed immediately after parsing and can be executed multiple times if a subcommand is called multiple times.    On the main app this callback is executed after all the `parse_complete_callback`s for the subcommands are executed but prior to any `final_callback` calls in the subcommand or option groups. If the main app or subcommand has a config file, no data from the config file will be reflected in `parse_complete_callback` on named subcommands.  For `option_group`s the `parse_complete_callback` is executed prior to the `parse_complete_callback` on the main app but after the `config_file` is loaded (if specified).  The `final_callback` is executed after all processing is complete.  After the `parse_complete_callback` is executed on the main app, the used subcommand `final_callback` are executed followed by the "final callback" for option groups.  The last thing to execute is the `final_callback` for the `main_app`.
 For example say an application was set up like
@@ -627,20 +634,21 @@ app.preparse_callback( pa);
 
 Then the command line is given as
 
-```
+```bash
 program --opt1 opt1_val  sub1 --sub1opt --sub1optb val sub2 --sub2opt sub1 --sub1opt2 sub2 --sub2opt2 val
 ```
 
--   pa will be called prior to parsing any values with an argument of 13.
--   pc1 will be called immediately after processing the sub1 command with a value of 10.
--   c1 will be called when the `sub2` command is encountered.
--   pc2 will be called with value of 6 after the sub2 command is encountered.
--   c1 will be called again after the second sub2 command is encountered.
--   ac1 will be called after processing of all arguments
--   c2 will be called once after processing all arguments.
--   ac2 will be called last after completing  all lower level callbacks have been executed.
+- `pa` will be called prior to parsing any values with an argument of 13.
+- `pc1` will be called immediately after processing the `sub1` command with a value of 10.
+- `c1` will be called when the `sub2` command is encountered.
+- `pc2` will be called with value of 6 after the `sub2` command is encountered.
+- `c1` will be called again after the second `sub2` command is encountered.
+- `ac1` will be called after processing of all arguments
+- `c2` will be called once after processing all arguments.
+- `ac2` will be called last after completing  all lower level callbacks have been executed.
 
 A subcommand is considered terminated when one of the following conditions are met.
+
 1. There are no more arguments to process
 2. Another subcommand is encountered that would not fit in an optional slot of the subcommand
 3. The `positional_mark` (`--`) is encountered and there are no available positional slots in the subcommand.

@@ -123,4 +123,4 @@ Flag plain: 1
 ```
 
 
-[^1] It will not inherit this from the parent defaults, since this is often useful even if you don't want all options to allow multiple passed options.
+[^1]: It will not inherit this from the parent defaults, since this is often useful even if you don't want all options to allow multiple passed options.

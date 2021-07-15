@@ -4,7 +4,7 @@ echo -en "travis_fold:start:script.build\\r"
 echo "Building..."
 set -evx
 
-cd ${TRAVIS_BUILD_DIR}
+cd "${TRAVIS_BUILD_DIR}"
 mkdir -p build
 cd build
 cmake .. -DCLI11_SINGLE_FILE_TESTS=OFF -DCLI11_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Coverage

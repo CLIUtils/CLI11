@@ -176,6 +176,6 @@ For custom configuration files this behavior can be triggered by specifying the 
 The config file input works with any form of the option given:  Long, short, positional, or the environment variable name.  When generating a config file it will create a name in following priority.
 
 1.   First long name
-1.   Positional name
-1.   First short name
-1.   Environment name
+2.   Positional name
+3.   First short name
+4.   Environment name
