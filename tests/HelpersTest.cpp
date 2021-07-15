@@ -997,7 +997,12 @@ TEST_CASE("Types: TypeName", "[helpers]") {
     std::string umapName = CLI::detail::type_name<std::unordered_map<int, std::tuple<std::string, double>>>();
     CHECK(umapName == "[INT,[TEXT,FLOAT]]");
 
+    // On older compilers, this may show up as other/TEXT
     vclass = CLI::detail::classify_object<std::atomic<int>>::value;
+    CHECK((CLI::detail::object_category::wrapper_value == vclass || CLI::detail::object_category::other == vclass));
+
+    std::string atomic_name = CLI::detail::type_name<std::atomic<int>>();
+    CHECK((atomic_name == "INT" || atomic_name == "TEXT"));
 }
 
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
@@ -1128,8 +1133,8 @@ TEST_CASE("Types: LexicalConversionDouble", "[helpers]") {
     CHECK((float)x == Approx((float)9.12));
 
     CLI::results_t bad_input = {"hello"};
-    res = CLI::detail::lexical_conversion<long double, double>(input, x);
-    CHECK(res);
+    res = CLI::detail::lexical_conversion<long double, double>(bad_input, x);
+    CHECK_FALSE(res);
 }
 
 TEST_CASE("Types: LexicalConversionDoubleTuple", "[helpers]") {

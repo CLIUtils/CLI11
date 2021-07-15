@@ -1933,7 +1933,6 @@ TEST_CASE_METHOD(TApp, "AllowExtrasArgModify", "[app]") {
     app.allow_extras();
     app.add_option("-f", v2);
     args = {"27", "-f", "45", "-x"};
-    auto cargs = args;
     app.parse(args);
     CHECK(std::vector<std::string>({"45", "-x"}) == args);
 
