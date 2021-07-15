@@ -173,28 +173,28 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 
 Set handling has been completely replaced by a new backend that works as a Validator or Transformer. This provides a single interface instead of the 16 different functions in App. It also allows ordered collections to be used, custom functions for filtering, and better help and error messages. You can also use a collection of pairs (like `std::map`) to transform the match into an output. Also new are inverted flags, which can cancel or reduce the count of flags, and can also support general flag types. A new `add_option_fn` lets you more easily program CLI11 options with the types you choose. Vector options now support a custom separator. Apps can now be composed with unnamed subcommand support. The final bool "defaults" flag when creating options has been replaced by `->capture_default_str()` (ending an old limitation in construction made this possible); the old method is still available but may be removed in future versions.
 
-* Replaced default help capture: `.add_option("name", value, "", True)` becomes `.add_option("name", value)->capture_default_str()` [#242]
-* Added `.always_capture_default()` [#242]
-* New `CLI::IsMember` validator replaces set validation [#222]
-* IsMember also supports container of pairs, transform allows modification of result [#228]
-* Added new Transformers, `CLI::AsNumberWithUnit` and `CLI::AsSizeValue` [#253]
-* Much more powerful flags with different values [#211], general types [#235]
-* `add_option` now supports bool due to unified bool handling [#211]
-* Support for composable unnamed subcommands [#216]
-* Reparsing is better supported with `.remaining_for_passthrough()` [#265]
-* Custom vector separator using `->delimiter(char)` [#209], [#221], [#240]
-* Validators added for IP4 addresses and positive numbers [#210] and numbers [#262]
-* Minimum required Boost for optional Optionals has been corrected to 1.61 [#226]
-* Positionals can stop options from being parsed with `app.positionals_at_end()` [#223]
-* Added `validate_positionals` [#262]
-* Positional parsing is much more powerful [#251], duplicates supported []#247]
-* Validators can be negated with `!` [#230], and now handle tname functions [#228]
-* Better enum support and streaming helper [#233] and [#228]
-* Cleanup for shadow warnings [#232]
-* Better alignment on multiline descriptions [#269]
-* Better support for aarch64 [#266]
-* Respect `BUILD_TESTING` only if CLI11 is the main project; otherwise, `CLI11_TESTING` must be used [#277]
-* Drop auto-detection of experimental optional and boost::optional; must be enabled explicitly (too fragile) [#277] [#279]
+* Replaced default help capture: `.add_option("name", value, "", True)` becomes `.add_option("name", value)->capture_default_str()` [#242][]
+* Added `.always_capture_default()` [#242][]
+* New `CLI::IsMember` validator replaces set validation [#222][]
+* `IsMember` also supports container of pairs, transform allows modification of result [#228][]
+* Added new Transformers, `CLI::AsNumberWithUnit` and `CLI::AsSizeValue` [#253][]
+* Much more powerful flags with different values [#211][], general types [#235][]
+* `add_option` now supports bool due to unified bool handling [#211][]
+* Support for composable unnamed subcommands [#216][]
+* Reparsing is better supported with `.remaining_for_passthrough()` [#265][]
+* Custom vector separator using `->delimiter(char)` [#209][], [#221][], [#240][]
+* Validators added for IP4 addresses and positive numbers [#210] and numbers [#262][]
+* Minimum required Boost for optional Optionals has been corrected to 1.61 [#226][]
+* Positionals can stop options from being parsed with `app.positionals_at_end()` [#223][]
+* Added `validate_positionals` [#262][]
+* Positional parsing is much more powerful [#251][], duplicates supported [#247][]
+* Validators can be negated with `!` [#230][], and now handle tname functions [#228][]
+* Better enum support and streaming helper [#233][] and [#228][]
+* Cleanup for shadow warnings [#232][]
+* Better alignment on multiline descriptions [#269][]
+* Better support for aarch64 [#266][]
+* Respect `BUILD_TESTING` only if CLI11 is the main project; otherwise, `CLI11_TESTING` must be used [#277][]
+* Drop auto-detection of experimental optional and boost::optional; must be enabled explicitly (too fragile) [#277][] [#279][]
 
 > ### Converting from CLI11 1.7:
 >
@@ -238,9 +238,9 @@ Set handling has been completely replaced by a new backend that works as a Valid
 This version provides a quick patch for a (correct) warning from GCC 8 for the windows options code.
 
 
-* Fix for Windows style option parsing [#201]
-* Improve `add_subcommand` when throwing an exception [#204]
-* Better metadata for Conan package [#202]
+* Fix for Windows style option parsing [#201][]
+* Improve `add_subcommand` when throwing an exception [#204][]
+* Better metadata for Conan package [#202][]
 
 [#201]: https://github.com/CLIUtils/CLI11/pull/201
 [#202]: https://github.com/CLIUtils/CLI11/pull/202
@@ -251,20 +251,20 @@ This version provides a quick patch for a (correct) warning from GCC 8 for the w
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
 Passing the same subcommand multiple times is better supported. Several new features were added as well, including Windows style option support, parsing strings directly, and ignoring underscores in names. Adding a set that you plan to change later must now be done with `add_mutable_set`.
 
-* Support Windows style options with `->allow_windows_style_options`. [#187] On by default on Windows. [#190]
-* Added `parse(string)` to split up and parse a command-line style string directly. [#186]
-* Added `ignore_underscore` and related functions, to ignore underscores when matching names. [#185]
-* The default INI Config will now add quotes to strings with spaces [#195]
-* The default message now will mention the help-all flag also if present [#197]
-* Added `->description` to set Option descriptions [#199]
-* Mutating sets (introduced in Version 1.6) now have a clear add method, `add_mutable_set*`, since the set reference should not expire [#200]
-* Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179]
-* Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179]
-* Calling parse multiple times is now officially supported without `clear` (automatic). [#179]
-* Dropped the mostly undocumented `short_circuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179]
-* Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined [#183]
-* Cleanup warnings [#191]
-* Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192]
+* Support Windows style options with `->allow_windows_style_options`. [#187][] On by default on Windows. [#190][]
+* Added `parse(string)` to split up and parse a command-line style string directly. [#186][]
+* Added `ignore_underscore` and related functions, to ignore underscores when matching names. [#185][]
+* The default INI Config will now add quotes to strings with spaces [#195][]
+* The default message now will mention the help-all flag also if present [#197][]
+* Added `->description` to set Option descriptions [#199][]
+* Mutating sets (introduced in Version 1.6) now have a clear add method, `add_mutable_set*`, since the set reference should not expire [#200][]
+* Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179][]
+* Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179][]
+* Calling parse multiple times is now officially supported without `clear` (automatic). [#179][]
+* Dropped the mostly undocumented `short_circuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179][]
+* Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined [#183][]
+* Cleanup warnings [#191][]
+* Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192][]
 
 > ### Converting from CLI11 1.6:
 >
@@ -289,17 +289,17 @@ Passing the same subcommand multiple times is better supported. Several new feat
 
 This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7. Several smaller fixes.
 
-* Fixed help-all formatting [#163]
+* Fixed help-all formatting [#163][]
     * Printing help-all on nested command now fixed (App)
     * Missing space after help-all restored (Default formatter)
     * More detail printed on help all (Default formatter)
     * Help-all subcommands get indented with inner blank lines removed (Default formatter)
     * `detail::find_and_replace` added to utilities
-* Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156]
-* Fixed warning about local variable hiding class member with MSVC [#157]
-* Fixed compile error with default settings on Clang 7 and libc++ [#158]
-* Fixed special case of `--help` on subcommands (general fix planned for 1.7) [#168]
-* Removing an option with links  [#179]
+* Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156][]
+* Fixed warning about local variable hiding class member with MSVC [#157][]
+* Fixed compile error with default settings on Clang 7 and libc++ [#158][]
+* Fixed special case of `--help` on subcommands (general fix planned for 1.7) [#168][]
+* Removing an option with links  [#179][]
 
 [#156]: https://github.com/CLIUtils/CLI11/issues/156
 [#157]: https://github.com/CLIUtils/CLI11/issues/157
@@ -315,9 +315,9 @@ This version provides a few fixes for special cases, such as mixing with `Window
 for systems like Hunter. The one new feature is the ability to produce "branded" single file output for
 providing custom namespaces or custom macro names.
 
-* Added fix and test for including Windows.h [#145]
-* No longer build single file by default if main project, supports systems stuck on Python 2.6 [#149], [#151]
-* Branding support for single file output [#150]
+* Added fix and test for including Windows.h [#145][]
+* No longer build single file by default if main project, supports systems stuck on Python 2.6 [#149][], [#151][]
+* Branding support for single file output [#150][]
 
 [#145]: https://github.com/CLIUtils/CLI11/pull/145
 [#149]: https://github.com/CLIUtils/CLI11/pull/149
@@ -326,7 +326,7 @@ providing custom namespaces or custom macro names.
 
 ## Version 1.6: Formatting help
 
-Added a new formatting system [#109]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating most formatting code.
+Added a new formatting system [#109][]. You can now set the formatter on Apps. This has also simplified the internals of Apps and Options a bit by separating most formatting code.
 
 * Added `CLI::Formatter` and `formatter` slot for apps, inherited.
 * `FormatterBase` is the minimum required.
@@ -342,10 +342,10 @@ Changes to the help system (most normal users will not notice this):
 * Protected function `_has_help_positional` removed.
 * `format_help` can now be chained.
 * Added getters for the missing parts of options (help no longer uses any private parts).
-* Help flags now use new `short_circuit` property to simplify parsing. [#121]
+* Help flags now use new `short_circuit` property to simplify parsing. [#121][]
 
 
-New for Config file reading and writing [#121]:
+New for Config file reading and writing [#121][]:
 
 * Overridable, bidirectional Config.
 * ConfigINI provided and used by default.
@@ -356,7 +356,7 @@ New for Config file reading and writing [#121]:
 * Added an example of a custom config format using [nlohmann/json]. [#138]
 
 
-Validators are now much more powerful [#118], all built in validators upgraded to the new form:
+Validators are now much more powerful [#118][], all built in validators upgraded to the new form:
 
 * A subclass of `CLI::Validator` is now also accepted.
 * They now can set the type name to things like `PATH` and `INT in [1-4]`.
@@ -365,29 +365,29 @@ Validators are now much more powerful [#118], all built in validators upgraded t
 
 Other changes:
 
-* Fixing `parse(args)`'s `args` setting and ordering after parse. [#141]
-* Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`. [#136]
-* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`. [#136]
-* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`. [#136]
-* Fixed support `N<-1` for `type_size`. [#140]
-* Added `->each()` to make adding custom callbacks easier. [#126]
-* Allow empty options `add_option("-n",{})` to be edited later with `each` [#142]
+* Fixing `parse(args)`'s `args` setting and ordering after parse. [#141][]
+* Replaced `set_custom_option` with `type_name` and `type_size` instead of `set_custom_option`. Methods return `this`. [#136][]
+* Dropped `set_` on Option's `type_name`, `default_str`, and `default_val`. [#136][]
+* Removed `set_` from App's `failure_message`, `footer`, `callback`, and `name`. [#136][]
+* Fixed support `N<-1` for `type_size`. [#140][]
+* Added `->each()` to make adding custom callbacks easier. [#126][]
+* Allow empty options `add_option("-n",{})` to be edited later with `each` [#142][]
 * Added filter argument to `get_subcommands`, `get_options`; use empty filter `{}` to avoid filtering.
 * Added `get_groups()` to get groups.
-* Better support for manual options with `get_option`, `set_results`, and `empty`. [#119]
-* `lname` and `sname` have getters, added `const get_parent`. [#120]
-* Using `add_set` will now capture L-values for sets, allowing further modification. [#113]
+* Better support for manual options with `get_option`, `set_results`, and `empty`. [#119][]
+* `lname` and `sname` have getters, added `const get_parent`. [#120][]
+* Using `add_set` will now capture L-values for sets, allowing further modification. [#113][]
 * Dropped duplicate way to run `get_type_name` (`get_typeval`).
-* Removed `requires` in favor of `needs` (deprecated in last version). [#112]
-* Const added to argv. [#126]
+* Removed `requires` in favor of `needs` (deprecated in last version). [#112][]
+* Const added to argv. [#126][]
 
 Backend and testing changes:
 
-* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116]
-* Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141]
-* Better CMake policy handling. [#110]
-* Includes are properly sorted. [#120]
-* Testing (only) now uses submodules. [#111]
+* Internally, `type_name` is now a lambda function; for sets, this reads the set live. [#116][]
+* Cleaner tests without `app.reset()` (and `reset` is now `clear`). [#141][]
+* Better CMake policy handling. [#110][]
+* Includes are properly sorted. [#120][]
+* Testing (only) now uses submodules. [#111][]
 
 [#109]: https://github.com/CLIUtils/CLI11/pull/109
 [#110]: https://github.com/CLIUtils/CLI11/pull/110
@@ -422,13 +422,13 @@ This is a quick patch release that makes LICENSE part of the single header file,
 
 This patch release adds better access to the App programmatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
 
-* Make mixing unlimited positionals and options more intuitive [#102]
-* Add missing getters `get_options` and `get_description` to App [#105]
-* The app name now can be set, and will override the auto name if present [#105]
-* Add `(REQUIRED)` for required options [#104]
-* Print simple name for Needs/Excludes [#104]
-* Use Needs instead of Requires in help print [#104]
-* Groups now are listed in the original definition order [#106]
+* Make mixing unlimited positionals and options more intuitive [#102][]
+* Add missing getters `get_options` and `get_description` to App [#105][]
+* The app name now can be set, and will override the auto name if present [#105][]
+* Add `(REQUIRED)` for required options [#104][]
+* Print simple name for Needs/Excludes [#104][]
+* Use Needs instead of Requires in help print [#104][]
+* Groups now are listed in the original definition order [#106][]
 
 [#102]: https://github.com/CLIUtils/CLI11/issues/102
 [#104]: https://github.com/CLIUtils/CLI11/pull/104
@@ -442,21 +442,21 @@ This version introduced support for optionals, along with clarification and exam
 
 Note: This is the final release with `requires`, please switch to `needs`.
 
-* Fix unlimited short options eating two values before checking for positionals when no space present [#90]
-* Symmetric exclude text when excluding options, exclude can be called multiple times [#64]
-* Support for `std::optional`, `std::experimental::optional`, and `boost::optional` added if `__has_include` is supported [#95]
-* All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95]
-* The internal stream was not being cleared before use in some cases. Fixed. [#95]
-* Using an enum now requires explicit conversion overload [#97]
-* The separator `--` now is removed when it ends unlimited arguments [#100]
+* Fix unlimited short options eating two values before checking for positionals when no space present [#90][]
+* Symmetric exclude text when excluding options, exclude can be called multiple times [#64][]
+* Support for `std::optional`, `std::experimental::optional`, and `boost::optional` added if `__has_include` is supported [#95][]
+* All macros/CMake variables now start with `CLI11_` instead of just `CLI_` [#95][]
+* The internal stream was not being cleared before use in some cases. Fixed. [#95][]
+* Using an enum now requires explicit conversion overload [#97][]
+* The separator `--` now is removed when it ends unlimited arguments [#100][]
 
 Other, non-user facing changes:
 
-* Added `Macros.hpp` with better C++ mode discovery [#95]
+* Added `Macros.hpp` with better C++ mode discovery [#95][]
 * Deprecated macros added for all platforms
-* C++17 is now tested on supported platforms [#95]
-* Informational printout now added to CTest [#95]
-* Better single file generation [#95]
+* C++17 is now tested on supported platforms [#95][]
+* Informational printout now added to CTest [#95][]
+* Better single file generation [#95][]
 * Added support for GTest on MSVC 2017 (but not in C++17 mode, will need next version of GTest)
 * Types now have a specific size, separate from the expected number - cleaner and more powerful internally [#92]
 * Examples now run as part of testing [#99]
@@ -474,17 +474,17 @@ Other, non-user facing changes:
 
 This version adds lots of smaller fixes and additions after the refactor in version 1.3. More ways to download and use CLI11 in CMake have been added. INI files have improved support.
 
-* Lexical cast is now more strict than before [#68] and fails on overflow [#84]
+* Lexical cast is now more strict than before [#68] and fails on overflow [#84][]
 * Added `get_parent()` to access the parent from a subcommand
-* Added `ExistingPath` validator  [#73]
-* `app.allow_ini_extras()` added to allow extras in INI files [#70]
+* Added `ExistingPath` validator  [#73][]
+* `app.allow_ini_extras()` added to allow extras in INI files [#70][]
 * Multiline INI comments now supported
-* Descriptions can now be written with `config_to_str` [#66]
-* Double printing of error message fixed [#77]
-* Renamed `requires` to `needs` to avoid C++20 keyword [#75], [#82]
-* MakeSingleHeader now works if outside of git [#78]
-* Adding install support for CMake [#79], improved support for `find_package` [#83], [#84]
-* Added support for Conan.io [#83]
+* Descriptions can now be written with `config_to_str` [#66][]
+* Double printing of error message fixed [#77][]
+* Renamed `requires` to `needs` to avoid C++20 keyword [#75][], [#82][]
+* MakeSingleHeader now works if outside of git [#78][]
+* Adding install support for CMake [#79][], improved support for `find_package` [#83][], [#84][]
+* Added support for Conan.io [#83][]
 
 [#70]: https://github.com/CLIUtils/CLI11/issues/70
 [#75]: https://github.com/CLIUtils/CLI11/issues/75
