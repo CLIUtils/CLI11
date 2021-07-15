@@ -13,7 +13,8 @@
 [![Latest release][releases-badge]][github releases]
 [![DOI][doi-badge]][doi-link]
 [![Conan.io][conan-badge]][conan-link]
-[![Try CLI11 1.9 online][wandbox-badge]][wandbox-link]
+[![Conda Version][conda-badge]][conda-link]
+[![Try CLI11 2.0 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) •
 [Documentation][gitbook] •
@@ -1004,6 +1005,8 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [license-badge]: https://img.shields.io/badge/License-BSD-blue.svg
 [conan-badge]: https://img.shields.io/badge/conan-io-blue
 [conan-link]: https://conan.io/center/cli11
+[conda-badge]: https://img.shields.io/conda/vn/conda-forge/cli11.svg
+[conda-link]: https://github.com/conda-forge/cli11-feedstock
 [github releases]: https://github.com/CLIUtils/CLI11/releases
 [github issues]: https://github.com/CLIUtils/CLI11/issues
 [github pull requests]: https://github.com/CLIUtils/CLI11/pulls
