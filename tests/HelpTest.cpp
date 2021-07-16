@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1155,6 +1155,7 @@ TEST_CASE("THelp: ChangingDefaults", "[help]") {
     std::vector<int> x = {1, 2};
     CLI::Option *opt = app.add_option("-q,--quick", x);
     x = {3, 4};
+    CHECK(x[0] == 3);
 
     opt->capture_default_str();
 
@@ -1162,6 +1163,7 @@ TEST_CASE("THelp: ChangingDefaults", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("INT=[3,4] ..."));
+    CHECK(x[0] == 5);
 }
 
 TEST_CASE("THelp: ChangingDefaultsWithAutoCapture", "[help]") {
@@ -1170,6 +1172,7 @@ TEST_CASE("THelp: ChangingDefaultsWithAutoCapture", "[help]") {
     app.option_defaults()->always_capture_default();
 
     std::vector<int> x = {1, 2};
+    CHECK(x[0] == 1);
     app.add_option("-q,--quick", x);
     x = {3, 4};
 

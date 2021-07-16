@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1113,7 +1113,6 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
                     esp = end + 1;
                     if(embeddedQuote) {
                         vals.first = find_and_replace(vals.first, std::string("\\") + keyChar, std::string(1, keyChar));
-                        embeddedQuote = false;
                     }
                 } else {
                     esp = commandline.find_first_of(' ', 1);

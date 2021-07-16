@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2020, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1763,7 +1763,7 @@ class App {
         if(name_.empty()) {
             return std::string("[Option Group: ") + get_group() + "]";
         }
-        if(aliases_.empty() || !with_aliases || aliases_.empty()) {
+        if(aliases_.empty() || !with_aliases) {
             return name_;
         }
         std::string dispname = name_;
