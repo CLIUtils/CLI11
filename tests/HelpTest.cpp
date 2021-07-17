@@ -1175,6 +1175,7 @@ TEST_CASE("THelp: ChangingDefaultsWithAutoCapture", "[help]") {
     CHECK(x[0] == 1);
     app.add_option("-q,--quick", x);
     x = {3, 4};
+    CHECK(x[0] == 3);
 
     std::string help = app.help();
 

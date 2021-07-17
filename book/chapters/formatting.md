@@ -41,7 +41,7 @@ Look at the class definitions in `FormatterFwd.hpp` or the method definitions in
 
 This is a normal printout, with `<>` indicating the methods used to produce each line.
 
-```
+```text
 <make_description(app)>
 <make_usage(app)>
 <make_positionals(app)>

@@ -72,23 +72,28 @@ Vectors will be replaced by the parsed content if the option is given on the com
 
 A definition of a container for purposes of CLI11 is a type with a `end()`, `insert(...)`, `clear()` and `value_type` definitions.  This includes `vector`, `set`, `deque`, `list`, `forward_iist`, `map`, `unordered_map` and a few others from the standard library, and many other containers from the boost library.
 
-### containers of containers
+### Containers of containers
 Containers of containers are also supported.
+
 ```cpp
 std::vector<std::vector<int>> int_vec;
 app.add_option("--vec", int_vec, "My vector of vectors option");
 ```
+
 CLI11 inserts a separator sequence at the start of each argument call to separate the vectors.  So unless the separators are injected as part of the command line each call of the option on the command line will result in a separate element of the outer vector.  This can be manually controlled via `inject_separator(true|false)` but in nearly all cases this should be left to the defaults.  To insert of a separator from the command line add a `%%` where the separation should occur.
-```
+
+```bash
 cmd --vec_of_vec 1 2 3 4 %% 1 2
 ```
 would then result in a container of size 2 with the first element containing 4 values and the second 2.
 
 This separator is also the only way to get values into something like
+
 ```cpp
 std::pair<std::vector<int>,std::vector<int>> two_vecs;
 app.add_option("--vec", two_vecs, "pair of vectors");
 ```
+
 without calling the argument twice.
 
 Further levels of nesting containers should compile but intermediate layers will only have a single element in the container, so is probably not that useful.
