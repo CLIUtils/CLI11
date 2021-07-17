@@ -1145,8 +1145,8 @@ TEST_CASE("Types: LexicalConversionDoubleTuple", "[helpers]") {
     CHECK(std::get<0>(x) == Approx(9.12));
 
     CLI::results_t bad_input = {"hello"};
-    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    CHECK(res);
+    res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(bad_input, x);
+    CHECK_FALSE(res);
 }
 
 TEST_CASE("Types: LexicalConversionVectorDouble", "[helpers]") {

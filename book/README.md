@@ -51,16 +51,16 @@ You can use subcommands, as well. Subcommands support callback lambda functions 
 
 Reading/producing `.ini` files for configuration is also supported, as is using environment variables as input. The base `App` can be subclassed and customized for use in a toolkit (like [GooFit][]). All the standard shell idioms, like `--`, work as well.
 
-CLI11 was developed at the [University of Cincinnati] in support of the [GooFit][] library under [NSF Award 1414736][NSF 1414736]. It was featured in a [DIANA/HEP] meeting at CERN. Please give it a try! Feedback is always welcome.
+CLI11 was developed at the [University of Cincinnati] in support of the [GooFit][] library under [NSF Award 1414736][NSF 1414736]. It was featured in a [DIANA/HEP][] meeting at CERN. Please give it a try! Feedback is always welcome.
 
-[GooFit]: https://github.com/GooFit/GooFit
-[DIANA/HEP]: http://diana-hep.org
-[CLI11]: https://github.com/CLIUtils/CLI11
-[CLI11Tutorial]: https://cliutils.github.io/CLI11/book
+[goofit]: https://github.com/GooFit/GooFit
+[diana/hep]: http://diana-hep.org
+[cli11]: https://github.com/CLIUtils/CLI11
+[cli11tutoriaL]: https://cliutils.github.io/CLI11/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
-[API docs]: https://cliutils.github.io/CLI11
-[README]: https://github.com/CLIUtils/CLI11/blob/master/README.md
-[NSF 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
-[University of Cincinnati]: http://www.uc.edu
-[Plumbum]: http://plumbum.readthedocs.io/en/latest/
-[Click]: https://click.palletsprojects.com/
+[api docs]: https://cliutils.github.io/CLI11
+[readme]: https://github.com/CLIUtils/CLI11/blob/master/README.md
+[nsf 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
+[university of cincinnati]: http://www.uc.edu
+[plumbum]: http://plumbum.readthedocs.io/en/latest/
+[click]: https://click.palletsprojects.com/

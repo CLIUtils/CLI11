@@ -12,7 +12,7 @@ Make sure any new functions you add are are:
 
 In general, make sure the addition is well thought out and does not increase the complexity of CLI11 needlessly.
 
-## Things you should know:
+## Things you should know
 
 * Once you make the PR, tests will run to make sure your code works on all supported platforms
 * The test coverage is also measured, and that should remain 100%
@@ -31,7 +31,7 @@ python3 -m pip install pre-commit
 
 Then, you can run it on the items you've added to your staging area, or all files:
 
-```
+```bash
 pre-commit run
 # OR
 pre-commit run --all-files
@@ -75,8 +75,8 @@ Steps:
 * Update changelog if needed
 * Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
 * Find and replace in README:
-    * Replace " 🆕" and "🆕 " with "" (ignores the description line)
-    * Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
-    * Replace "🚧" with "🆕" (manually ignore the description line)
+  * Replace " 🆕" and "🆕 " with "" (ignores the description line)
+  * Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
+  * Replace "🚧" with "🆕" (manually ignore the description line)
 * Make a release in the GitHub UI, use a name such as "Version X.Y(.Z): Title"
 * Currently, the release action wipes the title after you release, so remember to edit the title back to the original name after the `CLI11.hpp` file gets uploaded.
