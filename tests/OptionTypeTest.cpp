@@ -269,6 +269,19 @@ TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
     CHECK(std::vector<int>({5}) == res);
 }
 
+TEST_CASE_METHOD(TApp, "mapInput", "[optiontype]") {
+    std::map<int,std::string> vals{};
+    auto opt = app.add_option("--long", vals);
+
+    args = {"--user", "5", "test"};
+
+    run();
+
+    CHECK(vals.at(5) == "test");
+
+    
+}
+
 TEST_CASE_METHOD(TApp, "CallbackBoolFlags", "[optiontype]") {
 
     bool value{false};
