@@ -55,7 +55,7 @@ CLI11 was developed at the [University of Cincinnati][] in support of the [GooFi
 
 [goofit]: https://github.com/GooFit/GooFit
 [diana/hep]: https://diana-hep.org
-[cli11tutoriaL]: https://cliutils.github.io/CLI11/book
+[cli11tutorial]: https://cliutils.github.io/CLI11/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
 [api docs]: https://cliutils.github.io/CLI11
 [readme]: https://github.com/CLIUtils/CLI11/blob/master/README.md

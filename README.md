@@ -401,22 +401,22 @@ Validators are structures to check or modify inputs, they can be used to verify 
 
 CLI11 has several Validators built-in that perform some common checks
 
-- `CLI::IsMember(...)`: Require an option be a member of a given set. See [Transforming Validators](#transforming-validators) for more details.
-- `CLI::Transformer(...)`: Modify the input using a map. See [Transforming Validators](#transforming-validators) for more details.
-- `CLI::CheckedTransformer(...)`: Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
-- `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
-- `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
-- `CLI::ExistingFile`: Requires that the file exists if given.
-- `CLI::ExistingDirectory`: Requires that the directory exists.
-- `CLI::ExistingPath`: Requires that the path (file or directory) exists.
-- `CLI::NonexistentPath`: Requires that the path does not exist.
-- `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
-- `CLI::Bounded(min,max)`: Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
-- `CLI::PositiveNumber`: Requires the number be greater than 0
-- `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
-- `CLI::Number`: Requires the input be a number.
-- `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
-- `CLI::TypeValidator<TYPE>`:🆕 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
+* `CLI::IsMember(...)`: Require an option be a member of a given set. See [Transforming Validators](#transforming-validators) for more details.
+* `CLI::Transformer(...)`: Modify the input using a map. See [Transforming Validators](#transforming-validators) for more details.
+* `CLI::CheckedTransformer(...)`: Modify the input using a map, and require that the input is either in the set or already one of the outputs of the set. See [Transforming Validators](#transforming-validators) for more details.
+* `CLI::AsNumberWithUnit(...)`: Modify the `<NUMBER> <UNIT>` pair by matching the unit and multiplying the number by the corresponding factor. It can be used as a base for transformers, that accept things like size values (`1 KB`) or durations (`0.33 ms`).
+* `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`, `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3 or 2^10.
+* `CLI::ExistingFile`: Requires that the file exists if given.
+* `CLI::ExistingDirectory`: Requires that the directory exists.
+* `CLI::ExistingPath`: Requires that the path (file or directory) exists.
+* `CLI::NonexistentPath`: Requires that the path does not exist.
+* `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
+* `CLI::Bounded(min,max)`: Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
+* `CLI::PositiveNumber`: Requires the number be greater than 0
+* `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
+* `CLI::Number`: Requires the input be a number.
+* `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
+* `CLI::TypeValidator<TYPE>`:🆕 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
 
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
 
@@ -536,9 +536,9 @@ Validators have a few functions to query the current values:
 
 In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
-- `results()`: Retrieves a vector of strings with all the results in the order they were given.
-- `results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-- `Value=as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+* `results()`: Retrieves a vector of strings with all the results in the order they were given.
+* `results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+* `Value=as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
@@ -563,60 +563,60 @@ Nameless subcommands function a similarly to groups in the main `App`. See [Opti
 
 There are several options that are supported on the main app and subcommands and option_groups. These are:
 
-- `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
-- `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
-- `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
-- `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent option. Subcommands always are allowed to "fall through" as in they will first attempt to match on the current subcommand and if they fail will progressively check parents for matching subcommands.
-- `.configurable()`: Allow the subcommand to be triggered from a configuration file. By default subcommand options in a configuration file do not trigger a subcommand but will just update default values.
-- `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
-- `.disabled_by_default()`: Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
-- `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
-- `.silent()`: 🆕 Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
-- `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
-- `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
-- `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
-- `.require_option()`: Require 1 or more options or option groups be used.
-- `.require_option(N)`: Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
-- `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
-- `.require_subcommand()`: Require 1 or more subcommands.
-- `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
-- `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
-- `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
-- `.add_subcommand(shared_ptr<App>)`: Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
-- `.remove_subcommand(App)`: Remove a subcommand from the app or subcommand.
-- `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
-- `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
-- `.add_option_group(name="", description="")`: Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.
-- `.get_parent()`: Get the parent App or `nullptr` if called on master App.
-- `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
-- `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
-- `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
-- `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
-- `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
-- `.description(str)`: Set/change the description.
-- `.get_description()`: Access the description.
-- `.alias(str)`: set an alias for the subcommand, this allows subcommands to be called by more than one name.
-- `.parsed()`: True if this subcommand was given on the command line.
-- `.count()`: Returns the number of times the subcommand was called.
-- `.count(option_name)`: Returns the number of times a particular option was called.
-- `.count_all()`: Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
-- `.name(name)`: Add or change the name.
-- `.callback(void() function)`: Set the callback for an app. Either sets the `pre_parse_callback` or the `final_callback` depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
-- `.parse_complete_callback(void() function)`: Set the callback that runs at the completion of parsing. For subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
-- `.final_callback(void() function)`: Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
-- `.immediate_callback()`: Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
-- `.pre_parse_callback(void(std::size_t) function)`: Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
-- `.allow_extras()`: Do not throw an error if extra arguments are left over.
-- `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
-- `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
-- `.footer(message)`: Set text to appear at the bottom of the help string.
-- `.footer(std::string())`: Set a callback to generate a string that will appear at the end of the help string.
-- `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
-- `.set_version_flag(name, versionString or callback, help_message)`: Set the version flag name and version string or callback and optional help message, returns a pointer to the created option.
-- `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
-- `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
-- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
-- `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
+* `.ignore_case()`: Ignore the case of this subcommand. Inherited by added subcommands, so is usually used on the main `App`.
+* `.ignore_underscore()`: Ignore any underscores in the subcommand name. Inherited by added subcommands, so is usually used on the main `App`.
+* `.allow_windows_style_options()`: Allow command line options to be parsed in the form of `/s /long /file:file_name.ext`  This option does not change how options are specified in the `add_option` calls or the ability to process options in the form of `-s --long --file=file_name.ext`.
+* `.fallthrough()`: Allow extra unmatched options and positionals to "fall through" and be matched on a parent option. Subcommands always are allowed to "fall through" as in they will first attempt to match on the current subcommand and if they fail will progressively check parents for matching subcommands.
+* `.configurable()`: Allow the subcommand to be triggered from a configuration file. By default subcommand options in a configuration file do not trigger a subcommand but will just update default values.
+* `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
+* `.disabled_by_default()`: Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
+* `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
+* `.silent()`: 🆕 Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
+* `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
+* `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
+* `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
+* `.require_option()`: Require 1 or more options or option groups be used.
+* `.require_option(N)`: Require `N` options or option groups, if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
+* `.require_option(min, max)`: Explicitly set min and max allowed options or option groups. Setting `max` to 0 implies unlimited options.
+* `.require_subcommand()`: Require 1 or more subcommands.
+* `.require_subcommand(N)`: Require `N` subcommands if `N>0`, or up to `N` if `N<0`. `N=0` resets to the default to 0 or more.
+* `.require_subcommand(min, max)`: Explicitly set min and max allowed subcommands. Setting `max` to 0 is unlimited.
+* `.add_subcommand(name="", description="")`: Add a subcommand, returns a pointer to the internally stored subcommand.
+* `.add_subcommand(shared_ptr<App>)`: Add a subcommand by shared_ptr, returns a pointer to the internally stored subcommand.
+* `.remove_subcommand(App)`: Remove a subcommand from the app or subcommand.
+* `.got_subcommand(App_or_name)`: Check to see if a subcommand was received on the command line.
+* `.get_subcommands(filter)`: The list of subcommands that match a particular filter function.
+* `.add_option_group(name="", description="")`: Add an [option group](#option-groups) to an App,  an option group is specialized subcommand intended for containing groups of options or other groups for controlling how options interact.
+* `.get_parent()`: Get the parent App or `nullptr` if called on master App.
+* `.get_option(name)`: Get an option pointer by option name will throw if the specified option is not available,  nameless subcommands are also searched
+* `.get_option_no_throw(name)`: Get an option pointer by option name. This function will return a `nullptr` instead of throwing if the option is not available.
+* `.get_options(filter)`: Get the list of all defined option pointers (useful for processing the app for custom output formats).
+* `.parse_order()`: Get the list of option pointers in the order they were parsed (including duplicates).
+* `.formatter(fmt)`: Set a formatter, with signature `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more details.
+* `.description(str)`: Set/change the description.
+* `.get_description()`: Access the description.
+* `.alias(str)`: set an alias for the subcommand, this allows subcommands to be called by more than one name.
+* `.parsed()`: True if this subcommand was given on the command line.
+* `.count()`: Returns the number of times the subcommand was called.
+* `.count(option_name)`: Returns the number of times a particular option was called.
+* `.count_all()`: Returns the total number of arguments a particular subcommand processed, on the master App it returns the total number of processed commands.
+* `.name(name)`: Add or change the name.
+* `.callback(void() function)`: Set the callback for an app. Either sets the `pre_parse_callback` or the `final_callback` depending on the value of `immediate_callback`. See [Subcommand callbacks](#callbacks) for some additional details.
+* `.parse_complete_callback(void() function)`: Set the callback that runs at the completion of parsing. For subcommands this is executed at the completion of the single subcommand and can be executed multiple times. See [Subcommand callbacks](#callbacks) for some additional details.
+* `.final_callback(void() function)`: Set the callback that runs at the end of all processing. This is the last thing that is executed before returning. See [Subcommand callbacks](#callbacks) for some additional details.
+* `.immediate_callback()`: Specifies whether the callback for a subcommand should be run as a `parse_complete_callback`(true) or `final_callback`(false). When used on the main app it will execute the main app callback prior to the callbacks for a subcommand if they do not also have the `immediate_callback` flag set. It is preferable to use the `parse_complete_callback` or `final_callback` directly instead of the `callback` and `immediate_callback` if one wishes to control the ordering and timing of callback.  Though `immediate_callback` can be used to swap them if that is needed.
+* `.pre_parse_callback(void(std::size_t) function)`: Set a callback that executes after the first argument of an application is processed.  See [Subcommand callbacks](#callbacks) for some additional details.
+* `.allow_extras()`: Do not throw an error if extra arguments are left over.
+* `.positionals_at_end()`: Specify that positional arguments occur as the last arguments and throw an error if an unexpected positional is encountered.
+* `.prefix_command()`: Like `allow_extras`, but stop immediately on the first unrecognized item. It is ideal for allowing your app or subcommand to be a "prefix" to calling another app.
+* `.footer(message)`: Set text to appear at the bottom of the help string.
+* `.footer(std::string())`: Set a callback to generate a string that will appear at the end of the help string.
+* `.set_help_flag(name, message)`: Set the help flag name and message, returns a pointer to the created option.
+* `.set_version_flag(name, versionString or callback, help_message)`: Set the version flag name and version string or callback and optional help message, returns a pointer to the created option.
+* `.set_help_all_flag(name, message)`: Set the help all flag name and message, returns a pointer to the created option. Expands subcommands.
+* `.failure_message(func)`: Set the failure message function. Two provided: `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
+* `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""` will be hide the subcommand.
+* `[option_name]`: retrieve a const pointer to an option given by `option_name` for Example `app["--flag1"]` will get a pointer to the option for the "--flag1" value,  `app["--flag1"]->as<bool>()` will get the results of the command line for a flag. The operation will throw an exception if the option name is not valid.
 
 > Note: if you have a fixed number of required positional options, that will match before subcommand names. `{}` is an empty filter function, and any positional argument will match before repeated subcommand names.
 
