@@ -1,8 +1,11 @@
+# Contributing
+
 Thanks for considering to write a Pull Request (PR) for CLI11! Here are a few guidelines to get you started:
 
 Make sure you are comfortable with the license; all contributions are licensed under the original license.
 
 ## Adding functionality
+
 Make sure any new functions you add are are:
 
 * Documented by `///` documentation for Doxygen
@@ -20,10 +23,9 @@ In general, make sure the addition is well thought out and does not increase the
 * Everything must pass clang-tidy as well, run with `-DCLI11_CLANG_TIDY=ON` (if you set `-DCLI11_CLANG_TIDY_OPTIONS="-fix"`, make sure you use a single threaded build process, or just build one example target).
 * Your changes must also conform to most of the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) rules checked by [cpplint](https://github.com/cpplint/cpplint). For unused cpplint filters and justifications, see [CPPLINT.cfg](/CPPLINT.cfg).
 
-
 ## Pre-commit
 
-Format is handled by pre-commit. You should install it:
+Format is handled by pre-commit. You should install it (or use [pipx](https://pypa.github.io/pipx/)):
 
 ```bash
 python3 -m pip install pre-commit
@@ -36,7 +38,6 @@ pre-commit run
 # OR
 pre-commit run --all-files
 ```
-
 
 And, if you want to always use it, you can install it as a git hook (hence the name, pre-commit):
 
@@ -72,6 +73,7 @@ yarn all-contributors add username code,bug
 Remember to replace the emoji in the readme, being careful not to replace the ones in all-contributors if any overlap.
 
 Steps:
+
 * Update changelog if needed
 * Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
 * Find and replace in README:

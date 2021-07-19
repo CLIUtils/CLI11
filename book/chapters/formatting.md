@@ -4,12 +4,11 @@
 New in CLI11 1.6
 {% endhint %}
 
-##  Customizing an existing formatter
+## Customizing an existing formatter
 
 In CLI11, you can control the output of the help printout in full or in part. The default formatter was written in such a way as to be customizable. You can use `app.get_formatter()` to get the current formatter. The formatter you set will be inherited by subcommands that are created after you set the formatter.
 
 There are several configuration options that you can set:
-
 
 | Set method | Description | Availability |
 |------------|-------------|--------------|
@@ -60,7 +59,7 @@ This is a normal printout, with `<>` indicating the methods used to produce each
 
 The `make_groups` print the group name then call `make_option(o)` on the options listed in that group. The normal printout for an option looks like this:
 
-```
+```text
         make_option_opts(o)
             ┌───┴────┐
  -n,--name  (REQUIRED)      This is a description

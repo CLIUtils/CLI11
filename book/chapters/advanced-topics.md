@@ -1,6 +1,5 @@
 # Advanced topics
 
-
 ## Environment variables
 
 Environment variables can be used to fill in the value of an option:
@@ -9,6 +8,7 @@ Environment variables can be used to fill in the value of an option:
 std::string opt;
 app.add_option("--my_option", opt)->envname("MY_OPTION");
 ```
+
 If not given on the command line, the environment variable will be checked and read from if it exists. All the standard tools, like default and required, work as expected.
 If passed on the command line, this will ignore the environment variable.
 
@@ -55,7 +55,7 @@ add_option(CLI::App &app, std::string name, cx &variable, std::string descriptio
 
 Then you could use it like this:
 
-```
+```cpp
 std::complex<double> comp{0, 0};
 add_option(app, "-c,--complex", comp);
 ```
@@ -89,7 +89,6 @@ template <typename T> std::istringstream &operator>>(std::istringstream &in, boo
 
 This is an example of how to use the system only; if you are just looking for a way to activate `boost::optional` support on older compilers, you should define `CLI11_BOOST_OPTIONAL` before including a CLI11 file, you'll get the `boost::optional` support.
 
-
 ## Custom converters and type names: std::chrono example
 
 An example of adding a custom converter and typename for `std::chrono` follows:
@@ -97,40 +96,40 @@ An example of adding a custom converter and typename for `std::chrono` follows:
 ```cpp
 namespace CLI
 {
-	template <typename T, typename R>
-	std::istringstream &operator>>(std::istringstream &in, std::chrono::duration<T,R> &val)
-	{
-		T v;
-		in >> v;
-		val = std::chrono::duration<T,R>(v);
-		return in;
-	}
+    template <typename T, typename R>
+    std::istringstream &operator>>(std::istringstream &in, std::chrono::duration<T,R> &val)
+    {
+        T v;
+        in >> v;
+        val = std::chrono::duration<T,R>(v);
+        return in;
+    }
 
-	template <typename T, typename R>
-	std::stringstream &operator<<(std::stringstream &in, std::chrono::duration<T,R> &val)
-	{
-		in << val.count();
-		return in;
-	}
+    template <typename T, typename R>
+    std::stringstream &operator<<(std::stringstream &in, std::chrono::duration<T,R> &val)
+    {
+        in << val.count();
+        return in;
+    }
  }
 
 #include <CLI/CLI.hpp>
 
 namespace CLI
 {
-	namespace detail
-	{
-		template <>
-		constexpr const char *type_name<std::chrono::hours>()
-		{
-			return "TIME [H]";
-		}
+    namespace detail
+    {
+        template <>
+        constexpr const char *type_name<std::chrono::hours>()
+        {
+            return "TIME [H]";
+        }
 
-		template <>
-		constexpr const char *type_name<std::chrono::minutes>()
-		{
-			return "TIME [MIN]";
-		}
+        template <>
+        constexpr const char *type_name<std::chrono::minutes>()
+        {
+            return "TIME [MIN]";
+        }
         }
 }
 ```

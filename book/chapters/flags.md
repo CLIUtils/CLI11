@@ -13,7 +13,6 @@ app.add_flag("-f", my_flag, "Optional description");
 
 This will bind the flag `-f` to the boolean `my_flag`. After the parsing step, `my_flag` will be `false` if the flag was not found on the command line, or `true` if it was. By default, it will be allowed any number of times, but if you explicitly[^1] request `->take_last(false)`, it will only be allowed once; passing something like `./my_app -f -f` or `./my_app -ff` will throw a `ParseError` with a nice help description.
 
-
 ## Integer flags
 
 If you want to allow multiple flags, simply use any integer-like instead of a bool:
@@ -70,7 +69,6 @@ auto callback = [](int count){std::cout << "This was called " << count << " time
 app.add_flag_function("-c", callback, "Optional description");
 ```
 
-
 ## Aliases
 
 The name string, the first item of every `add_` method, can contain as many short and long names as you want, separated by commas. For example, `"-a,--alpha,-b,--beta"` would allow any of those to be recognized on the command line. If you use the same name twice, or if you use the same name in multiple flags, CLI11 will immediately throw a `CLI::ConstructionError` describing your problem (it will not wait until the parsing step).
@@ -121,6 +119,5 @@ Bool flag passed
 Flag int: 3
 Flag plain: 1
 ```
-
 
 [^1]: It will not inherit this from the parent defaults, since this is often useful even if you don't want all options to allow multiple passed options.

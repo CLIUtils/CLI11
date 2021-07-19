@@ -49,7 +49,6 @@ The built-in validators for CLI11 are:
 | `NonexistentPath`   | Check for an non-existing path |
 | `Range(min=0, max)` |  Produce a range (factory). Min and max are inclusive. |
 
-
 And, the protected members that you can set when you make your own are:
 
 | Type | Member | Description |

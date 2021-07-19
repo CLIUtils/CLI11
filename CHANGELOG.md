@@ -1,7 +1,4 @@
-### Version 2.0.1: Single header fix
-
-The single header file was missing the include guard. #620
-
+# Changelog
 
 ## Version 2.0: Simplification
 
@@ -14,9 +11,9 @@ release contains a lot of backend cleanup, including a complete overhaul of the
 testing system and single file generation system.
 
 * Built-in config format is TOML compliant now [#435][]
-    * Support multiline TOML [#528][]
-    * Support for configurable quotes [#599][]
-    * Support short/positional options in config mode [#443][]
+  * Support multiline TOML [#528][]
+  * Support for configurable quotes [#599][]
+  * Support short/positional options in config mode [#443][]
 * More powerful containers, support for `%%` separator [#423][]
 * Support atomic types [#520][] and complex types natively [#423][]
 * Add a type validator `CLI::TypeValidator<TYPE>` [#526][]
@@ -34,14 +31,13 @@ testing system and single file generation system.
 * Bugfix: fix description of non-configurable subcommands in config [#604][]
 * Build: support pkg-config [#523][]
 
-#### Converting from CLI11 1.9:
-
-* Removed deprecated set commands, use validators instead. [#565][]
-* The final "defaulted" bool has been removed, use `->capture_default_str()`
-  instead. Use `app.option_defaults()->always_capture_default()` to set this for
-  all future options. [#597][]
-* Use `add_option` on a complex number instead of `add_complex`, which has been removed.
-
+> ### Converting from CLI11 1.9
+>
+> * Removed deprecated set commands, use validators instead. [#565][]
+> * The final "defaulted" bool has been removed, use `->capture_default_str()`
+>   instead. Use `app.option_defaults()->always_capture_default()` to set this for
+>   all future options. [#597][]
+> * Use `add_option` on a complex number instead of `add_complex`, which has been removed.
 
 [#423]: https://github.com/CLIUtils/CLI11/pull/423
 [#435]: https://github.com/CLIUtils/CLI11/pull/435
@@ -67,27 +63,11 @@ testing system and single file generation system.
 [#605]: https://github.com/CLIUtils/CLI11/pull/605
 [#606]: https://github.com/CLIUtils/CLI11/pull/606
 
+### Version 2.0.1: Single header fix
 
-### Version 1.9.1: Backporting fixes
+The single header file was missing the include guard. [#620][]
 
-This is a patch version that backports fixes from the development of 2.0.
-
-* Support relative inclusion [#475][]
-* Fix cases where spaces in paths could break CMake support [#471][]
-* Fix an issue with string conversion [#421][]
-* Cross-compiling improvement for Conan.io [#430][]
-* Fix option group default propagation [#450][]
-* Fix for C++20 [#459][]
-* Support compiling with RTTI off [#461][]
-
-[#421]: https://github.com/CLIUtils/CLI11/pull/421
-[#430]: https://github.com/CLIUtils/CLI11/pull/430
-[#450]: https://github.com/CLIUtils/CLI11/pull/450
-[#459]: https://github.com/CLIUtils/CLI11/pull/459
-[#461]: https://github.com/CLIUtils/CLI11/pull/461
-[#471]: https://github.com/CLIUtils/CLI11/pull/471
-[#475]: https://github.com/CLIUtils/CLI11/pull/475
-
+[#620]: https://github.com/CLIUtils/CLI11/pull/620
 
 ## Version 1.9: Config files and cleanup
 
@@ -127,11 +107,11 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 * Build: GCC 4.7 is no longer supported, due mostly to GoogleTest. GCC 4.8+ is now required. [#160][]
 * Build: Restructured significant portions of CMake build system [#394][]
 
-> ### Converting from CLI11 1.8:
+> ### Converting from CLI11 1.8
 >
 > * Some deprecated methods dropped
->     - `add_set*` should be replaced with `->check`/`->transform` and `CLI::IsMember` since 1.8
->     - `get_defaultval` was replaced by `get_default_str`  in 1.8
+>   * `add_set*` should be replaced with `->check`/`->transform` and `CLI::IsMember` since 1.8
+>   * `get_defaultval` was replaced by `get_default_str`  in 1.8
 > * The true/false 4th argument to `add_option` is expected to be removed in 2.0, use `->capture_default_str()` since 1.8
 
 [#160]: https://github.com/CLIUtils/CLI11/pull/160
@@ -147,7 +127,6 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#307]: https://github.com/CLIUtils/CLI11/pull/307
 [#309]: https://github.com/CLIUtils/CLI11/pull/309
 [#310]: https://github.com/CLIUtils/CLI11/pull/310
-[#312]: https://github.com/CLIUtils/CLI11/pull/312
 [#313]: https://github.com/CLIUtils/CLI11/pull/313
 [#317]: https://github.com/CLIUtils/CLI11/pull/317
 [#318]: https://github.com/CLIUtils/CLI11/pull/318
@@ -155,6 +134,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#325]: https://github.com/CLIUtils/CLI11/pull/325
 [#333]: https://github.com/CLIUtils/CLI11/pull/333
 [#336]: https://github.com/CLIUtils/CLI11/pull/336
+[#341]: https://github.com/CLIUtils/CLI11/pull/341
 [#342]: https://github.com/CLIUtils/CLI11/pull/342
 [#348]: https://github.com/CLIUtils/CLI11/pull/348
 [#349]: https://github.com/CLIUtils/CLI11/pull/349
@@ -173,6 +153,25 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#394]: https://github.com/CLIUtils/CLI11/pull/394
 [#400]: https://github.com/CLIUtils/CLI11/pull/400
 
+### Version 1.9.1: Backporting fixes
+
+This is a patch version that backports fixes from the development of 2.0.
+
+* Support relative inclusion [#475][]
+* Fix cases where spaces in paths could break CMake support [#471][]
+* Fix an issue with string conversion [#421][]
+* Cross-compiling improvement for Conan.io [#430][]
+* Fix option group default propagation [#450][]
+* Fix for C++20 [#459][]
+* Support compiling with RTTI off [#461][]
+
+[#421]: https://github.com/CLIUtils/CLI11/pull/421
+[#430]: https://github.com/CLIUtils/CLI11/pull/430
+[#450]: https://github.com/CLIUtils/CLI11/pull/450
+[#459]: https://github.com/CLIUtils/CLI11/pull/459
+[#461]: https://github.com/CLIUtils/CLI11/pull/461
+[#471]: https://github.com/CLIUtils/CLI11/pull/471
+[#475]: https://github.com/CLIUtils/CLI11/pull/475
 
 ## Version 1.8: Transformers, default strings, and flags
 
@@ -201,7 +200,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 * Respect `BUILD_TESTING` only if CLI11 is the main project; otherwise, `CLI11_TESTING` must be used [#277][]
 * Drop auto-detection of experimental optional and boost::optional; must be enabled explicitly (too fragile) [#277][] [#279][]
 
-> ### Converting from CLI11 1.7:
+> ### Converting from CLI11 1.7
 >
 > * `.add_option(..., true)` should be replaced by `.add_option(...)->capture_default_str()` or `app.option_defaults()->always_capture_default()` can be used
 > * `app.add_set("--name", value, {"choice1", "choice2"})` should become `app.add_option("--name", value)->check(CLI::IsMember({"choice1", "choice2"}))`
@@ -237,20 +236,6 @@ Set handling has been completely replaced by a new backend that works as a Valid
 [#277]: https://github.com/CLIUtils/CLI11/pull/277
 [#279]: https://github.com/CLIUtils/CLI11/pull/279
 
-
-## Version 1.7.1: Quick patch
-
-This version provides a quick patch for a (correct) warning from GCC 8 for the windows options code.
-
-
-* Fix for Windows style option parsing [#201][]
-* Improve `add_subcommand` when throwing an exception [#204][]
-* Better metadata for Conan package [#202][]
-
-[#201]: https://github.com/CLIUtils/CLI11/pull/201
-[#202]: https://github.com/CLIUtils/CLI11/pull/202
-[#204]: https://github.com/CLIUtils/CLI11/pull/204
-
 ## Version 1.7: Parse breakup
 
 The parsing procedure now maps much more sensibly to complex, nested subcommand structures. Each phase of the parsing happens on all subcommands before moving on with the next phase of the parse. This allows several features, like required environment variables, to work properly even through subcommand boundaries.
@@ -271,7 +256,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * Cleanup warnings [#191][]
 * Remove deprecated names: `set_footer`, `set_name`, `set_callback`, and `set_type_name`. Use without the `set_` instead. [#192][]
 
-> ### Converting from CLI11 1.6:
+> ### Converting from CLI11 1.6
 >
 > * `->short_circuit()` is no longer needed, just remove it if you were using it - raising an exception will happen in the proper place now without it.
 > * `->add_set*` becomes `->add_mutable_set*` if you were using the editable set feature
@@ -290,44 +275,17 @@ Passing the same subcommand multiple times is better supported. Several new feat
 [#199]: https://github.com/CLIUtils/CLI11/pull/199
 [#200]: https://github.com/CLIUtils/CLI11/pull/200
 
-## Version 1.6.2: Help-all
+### Version 1.7.1: Quick patch
 
-This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7. Several smaller fixes.
+This version provides a quick patch for a (correct) warning from GCC 8 for the windows options code.
 
-* Fixed help-all formatting [#163][]
-    * Printing help-all on nested command now fixed (App)
-    * Missing space after help-all restored (Default formatter)
-    * More detail printed on help all (Default formatter)
-    * Help-all subcommands get indented with inner blank lines removed (Default formatter)
-    * `detail::find_and_replace` added to utilities
-* Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156][]
-* Fixed warning about local variable hiding class member with MSVC [#157][]
-* Fixed compile error with default settings on Clang 7 and libc++ [#158][]
-* Fixed special case of `--help` on subcommands (general fix planned for 1.7) [#168][]
-* Removing an option with links  [#179][]
+* Fix for Windows style option parsing [#201][]
+* Improve `add_subcommand` when throwing an exception [#204][]
+* Better metadata for Conan package [#202][]
 
-[#156]: https://github.com/CLIUtils/CLI11/issues/156
-[#157]: https://github.com/CLIUtils/CLI11/issues/157
-[#158]: https://github.com/CLIUtils/CLI11/issues/158
-[#163]: https://github.com/CLIUtils/CLI11/pull/163
-[#168]: https://github.com/CLIUtils/CLI11/issues/168
-[#179]: https://github.com/CLIUtils/CLI11/pull/179
-
-
-## Version 1.6.1: Platform fixes
-
-This version provides a few fixes for special cases, such as mixing with `Windows.h` and better defaults
-for systems like Hunter. The one new feature is the ability to produce "branded" single file output for
-providing custom namespaces or custom macro names.
-
-* Added fix and test for including Windows.h [#145][]
-* No longer build single file by default if main project, supports systems stuck on Python 2.6 [#149][], [#151][]
-* Branding support for single file output [#150][]
-
-[#145]: https://github.com/CLIUtils/CLI11/pull/145
-[#149]: https://github.com/CLIUtils/CLI11/pull/149
-[#150]: https://github.com/CLIUtils/CLI11/pull/150
-[#151]: https://github.com/CLIUtils/CLI11/pull/151
+[#201]: https://github.com/CLIUtils/CLI11/pull/201
+[#202]: https://github.com/CLIUtils/CLI11/pull/202
+[#204]: https://github.com/CLIUtils/CLI11/pull/204
 
 ## Version 1.6: Formatting help
 
@@ -349,7 +307,6 @@ Changes to the help system (most normal users will not notice this):
 * Added getters for the missing parts of options (help no longer uses any private parts).
 * Help flags now use new `short_circuit` property to simplify parsing. [#121][]
 
-
 New for Config file reading and writing [#121][]:
 
 * Overridable, bidirectional Config.
@@ -359,7 +316,6 @@ New for Config file reading and writing [#121][]:
 * Dropped prefix argument from `config_to_str`.
 * Added `ConfigItem`.
 * Added an example of a custom config format using [nlohmann/json]. [#138]
-
 
 Validators are now much more powerful [#118][], all built in validators upgraded to the new form:
 
@@ -413,33 +369,43 @@ Backend and testing changes:
 
 [nlohmann/json]: https://github.com/nlohmann/json
 
-### Version 1.5.4: Optionals
-This version fixes the optional search in the single file version; some macros were not yet defined when it did the search. You can define the `CLI11_*_OPTIONAL` macros to 0 if needed to eliminate the search.
+### Version 1.6.1: Platform fixes
 
-### Version 1.5.3: Compiler compatibility
-This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
+This version provides a few fixes for special cases, such as mixing with `Windows.h` and better defaults
+for systems like Hunter. The one new feature is the ability to produce "branded" single file output for
+providing custom namespaces or custom macro names.
 
-### Version 1.5.2: LICENSE in single header mode
+* Added fix and test for including Windows.h [#145][]
+* No longer build single file by default if main project, supports systems stuck on Python 2.6 [#149][], [#151][]
+* Branding support for single file output [#150][]
 
-This is a quick patch release that makes LICENSE part of the single header file, making it easier to include. Minor cleanup from codacy. No significant code changes from 1.5.1.
+[#145]: https://github.com/CLIUtils/CLI11/pull/145
+[#149]: https://github.com/CLIUtils/CLI11/pull/149
+[#150]: https://github.com/CLIUtils/CLI11/pull/150
+[#151]: https://github.com/CLIUtils/CLI11/pull/151
 
-### Version 1.5.1: Access
+### Version 1.6.2: Help-all
 
-This patch release adds better access to the App programmatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
+This version fixes some formatting bugs with help-all. It also adds fixes for several warnings, including an experimental optional error on Clang 7. Several smaller fixes.
 
-* Make mixing unlimited positionals and options more intuitive [#102][]
-* Add missing getters `get_options` and `get_description` to App [#105][]
-* The app name now can be set, and will override the auto name if present [#105][]
-* Add `(REQUIRED)` for required options [#104][]
-* Print simple name for Needs/Excludes [#104][]
-* Use Needs instead of Requires in help print [#104][]
-* Groups now are listed in the original definition order [#106][]
+* Fixed help-all formatting [#163][]
+  * Printing help-all on nested command now fixed (App)
+  * Missing space after help-all restored (Default formatter)
+  * More detail printed on help all (Default formatter)
+  * Help-all subcommands get indented with inner blank lines removed (Default formatter)
+  * `detail::find_and_replace` added to utilities
+* Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156][]
+* Fixed warning about local variable hiding class member with MSVC [#157][]
+* Fixed compile error with default settings on Clang 7 and libc++ [#158][]
+* Fixed special case of `--help` on subcommands (general fix planned for 1.7) [#168][]
+* Removing an option with links  [#179][]
 
-[#102]: https://github.com/CLIUtils/CLI11/issues/102
-[#104]: https://github.com/CLIUtils/CLI11/pull/104
-[#105]: https://github.com/CLIUtils/CLI11/pull/105
-[#106]: https://github.com/CLIUtils/CLI11/pull/106
-
+[#156]: https://github.com/CLIUtils/CLI11/issues/156
+[#157]: https://github.com/CLIUtils/CLI11/issues/157
+[#158]: https://github.com/CLIUtils/CLI11/issues/158
+[#163]: https://github.com/CLIUtils/CLI11/pull/163
+[#168]: https://github.com/CLIUtils/CLI11/issues/168
+[#179]: https://github.com/CLIUtils/CLI11/pull/179
 
 ## Version 1.5: Optionals
 
@@ -474,6 +440,34 @@ Other, non-user facing changes:
 [#99]: https://github.com/CLIUtils/CLI11/pull/99
 [#100]: https://github.com/CLIUtils/CLI11/pull/100
 
+### Version 1.5.1: Access
+
+This patch release adds better access to the App programmatically, to assist with writing custom converters to other formats. It also improves the help output, and uses a new feature in CLI11 1.5 to fix an old "quirk" in the way unlimited options and positionals interact.
+
+* Make mixing unlimited positionals and options more intuitive [#102][]
+* Add missing getters `get_options` and `get_description` to App [#105][]
+* The app name now can be set, and will override the auto name if present [#105][]
+* Add `(REQUIRED)` for required options [#104][]
+* Print simple name for Needs/Excludes [#104][]
+* Use Needs instead of Requires in help print [#104][]
+* Groups now are listed in the original definition order [#106][]
+
+[#102]: https://github.com/CLIUtils/CLI11/issues/102
+[#104]: https://github.com/CLIUtils/CLI11/pull/104
+[#105]: https://github.com/CLIUtils/CLI11/pull/105
+[#106]: https://github.com/CLIUtils/CLI11/pull/106
+
+### Version 1.5.2: LICENSE in single header mode
+
+This is a quick patch release that makes LICENSE part of the single header file, making it easier to include. Minor cleanup from codacy. No significant code changes from 1.5.1.
+
+### Version 1.5.3: Compiler compatibility
+
+This version fixes older AppleClang compilers by removing the optimization for casting. The minimum version of Boost Optional supported has been clarified to be 1.58. CUDA 7.0 NVCC is now supported.
+
+### Version 1.5.4: Optionals
+
+This version fixes the optional search in the single file version; some macros were not yet defined when it did the search. You can define the `CLI11_*_OPTIONAL` macros to 0 if needed to eliminate the search.
 
 ## Version 1.4: More feedback
 
@@ -539,7 +533,7 @@ favorite CLI programs. Error messages and help messages are better and more flex
 * Single internal arg parse function [#56](https://github.com/CLIUtils/CLI11/pull/56)
 * Allow options to be disabled from INI file, rename `add_config` to `set_config` [#60](https://github.com/CLIUtils/CLI11/pull/60)
 
-> ### Converting from CLI11 1.2:
+> ### Converting from CLI11 1.2
 >
 > * `app.parse` no longer returns a vector. Instead, use `app.remaining(true)`.
 > * `"hidden"` is no longer a special group name, instead use `""`
