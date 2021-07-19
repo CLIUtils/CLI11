@@ -1,6 +1,6 @@
 # CLI11: An introduction
 
-This gitbook is designed to provide an introduction to using the CLI11 library to write your own command line programs. The library is designed to be clean, intuitive, but powerful. There are no requirements beyond C++11 support (and even `<regex>` support not required). It works on Mac, Linux, and Windows, and has 100% test coverage on all three systems. You can simply drop in a single header file (`CLI11.hpp` available in [releases]) to use CLI11 in your own application. Other ways to integrate it into a build system are listed in the [README][].
+This gitbook is designed to provide an introduction to using the CLI11 library to write your own command line programs. The library is designed to be clean, intuitive, but powerful. There are no requirements beyond C++11 support (and even `<regex>` support not required). It works on Mac, Linux, and Windows, and has 100% test coverage on all three systems. You can simply drop in a single header file (`CLI11.hpp` available in [releases][]) to use CLI11 in your own application. Other ways to integrate it into a build system are listed in the [README][].
 
 The library was inspired the Python libraries [Plumbum][] and [Click][], and incorporates many of their user friendly features. The library is extensively documented, with a [friendly introduction][README], this tutorial book, and more technical [API docs][].
 
@@ -51,16 +51,15 @@ You can use subcommands, as well. Subcommands support callback lambda functions 
 
 Reading/producing `.ini` files for configuration is also supported, as is using environment variables as input. The base `App` can be subclassed and customized for use in a toolkit (like [GooFit][]). All the standard shell idioms, like `--`, work as well.
 
-CLI11 was developed at the [University of Cincinnati] in support of the [GooFit][] library under [NSF Award 1414736][NSF 1414736]. It was featured in a [DIANA/HEP][] meeting at CERN. Please give it a try! Feedback is always welcome.
+CLI11 was developed at the [University of Cincinnati][] in support of the [GooFit][] library under [NSF Award 1414736][NSF 1414736]. It was featured in a [DIANA/HEP][] meeting at CERN. Please give it a try! Feedback is always welcome.
 
 [goofit]: https://github.com/GooFit/GooFit
-[diana/hep]: http://diana-hep.org
-[cli11]: https://github.com/CLIUtils/CLI11
+[diana/hep]: https://diana-hep.org
 [cli11tutoriaL]: https://cliutils.github.io/CLI11/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
 [api docs]: https://cliutils.github.io/CLI11
 [readme]: https://github.com/CLIUtils/CLI11/blob/master/README.md
 [nsf 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
-[university of cincinnati]: http://www.uc.edu
-[plumbum]: http://plumbum.readthedocs.io/en/latest/
-[click]: https://click.palletsprojects.com/
+[university of cincinnati]: https://www.uc.edu
+[plumbum]: https://plumbum.readthedocs.io/en/latest/
+[click]: https://click.palletsprojects.com
