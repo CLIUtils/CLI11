@@ -149,6 +149,7 @@ configuration options were added to facilitate a wider variety of apps.  GCC
 [#373]: https://github.com/CLIUtils/CLI11/pull/373
 [#374]: https://github.com/CLIUtils/CLI11/pull/374
 [#382]: https://github.com/CLIUtils/CLI11/pull/382
+[#387]: https://github.com/CLIUtils/CLI11/pull/387
 [#390]: https://github.com/CLIUtils/CLI11/pull/390
 [#394]: https://github.com/CLIUtils/CLI11/pull/394
 [#400]: https://github.com/CLIUtils/CLI11/pull/400
@@ -187,7 +188,7 @@ Set handling has been completely replaced by a new backend that works as a Valid
 * Support for composable unnamed subcommands [#216][]
 * Reparsing is better supported with `.remaining_for_passthrough()` [#265][]
 * Custom vector separator using `->delimiter(char)` [#209][], [#221][], [#240][]
-* Validators added for IP4 addresses and positive numbers [#210] and numbers [#262][]
+* Validators added for IP4 addresses and positive numbers [#210][] and numbers [#262][]
 * Minimum required Boost for optional Optionals has been corrected to 1.61 [#226][]
 * Positionals can stop options from being parsed with `app.positionals_at_end()` [#223][]
 * Added `validate_positionals` [#262][]
@@ -248,9 +249,9 @@ Passing the same subcommand multiple times is better supported. Several new feat
 * The default message now will mention the help-all flag also if present [#197][]
 * Added `->description` to set Option descriptions [#199][]
 * Mutating sets (introduced in Version 1.6) now have a clear add method, `add_mutable_set*`, since the set reference should not expire [#200][]
-* Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#179][]
-* Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#179][]
-* Calling parse multiple times is now officially supported without `clear` (automatic). [#179][]
+* Subcommands now track how many times they were parsed in a parsing process. `count()` with no arguments will return the number of times a subcommand was encountered. [#178][]
+* Parsing is now done in phases: `shortcurcuits`, `ini`, `env`, `callbacks`, and `requirements`; all subcommands complete a phase before moving on. [#178][]
+* Calling parse multiple times is now officially supported without `clear` (automatic). [#178][]
 * Dropped the mostly undocumented `short_circuit` property, as help flag parsing is a bit more complex, and the default callback behavior of options now works properly. [#179][]
 * Use the standard `BUILD_TESTING` over `CLI11_TESTING` if defined [#183][]
 * Cleanup warnings [#191][]
@@ -262,7 +263,7 @@ Passing the same subcommand multiple times is better supported. Several new feat
 > * `->add_set*` becomes `->add_mutable_set*` if you were using the editable set feature
 > * `footer`, `name`, `callback`, and `type_name` must be used instead of the `set_*` versions (deprecated previously).
 
-[#179]: https://github.com/CLIUtils/CLI11/pull/179
+[#178]: https://github.com/CLIUtils/CLI11/pull/178
 [#183]: https://github.com/CLIUtils/CLI11/pull/183
 [#185]: https://github.com/CLIUtils/CLI11/pull/185
 [#186]: https://github.com/CLIUtils/CLI11/pull/186
@@ -315,7 +316,7 @@ New for Config file reading and writing [#121][]:
 * Has `config_formatter()` and `get_config_formatter()`.
 * Dropped prefix argument from `config_to_str`.
 * Added `ConfigItem`.
-* Added an example of a custom config format using [nlohmann/json]. [#138]
+* Added an example of a custom config format using [nlohmann/json][]. [#138][]
 
 Validators are now much more powerful [#118][], all built in validators upgraded to the new form:
 
@@ -361,7 +362,7 @@ Backend and testing changes:
 [#120]: https://github.com/CLIUtils/CLI11/pull/120
 [#121]: https://github.com/CLIUtils/CLI11/pull/121
 [#126]: https://github.com/CLIUtils/CLI11/pull/126
-[#127]: https://github.com/CLIUtils/CLI11/pull/127
+[#136]: https://github.com/CLIUtils/CLI11/pull/136
 [#138]: https://github.com/CLIUtils/CLI11/pull/138
 [#140]: https://github.com/CLIUtils/CLI11/pull/140
 [#141]: https://github.com/CLIUtils/CLI11/pull/141
@@ -429,8 +430,8 @@ Other, non-user facing changes:
 * Informational printout now added to CTest [#95][]
 * Better single file generation [#95][]
 * Added support for GTest on MSVC 2017 (but not in C++17 mode, will need next version of GTest)
-* Types now have a specific size, separate from the expected number - cleaner and more powerful internally [#92]
-* Examples now run as part of testing [#99]
+* Types now have a specific size, separate from the expected number - cleaner and more powerful internally [#92][]
+* Examples now run as part of testing [#99][]
 
 [#64]: https://github.com/CLIUtils/CLI11/issues/64
 [#90]: https://github.com/CLIUtils/CLI11/issues/90
@@ -473,7 +474,7 @@ This version fixes the optional search in the single file version; some macros w
 
 This version adds lots of smaller fixes and additions after the refactor in version 1.3. More ways to download and use CLI11 in CMake have been added. INI files have improved support.
 
-* Lexical cast is now more strict than before [#68] and fails on overflow [#84][]
+* Lexical cast is now more strict than before [#68][] and fails on overflow [#84][]
 * Added `get_parent()` to access the parent from a subcommand
 * Added `ExistingPath` validator  [#73][]
 * `app.allow_ini_extras()` added to allow extras in INI files [#70][]

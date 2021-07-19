@@ -355,7 +355,7 @@ Before parsing, you can set the following options:
 * `->transform(Validator)`: Uses a Validator object to do the transformation see [Validators](#validators) for a description of available Validators and how to create new ones.
 * `->each(void(const std::string &)>`: Run this function on each value received, as it is received. It should throw a `ValidationError` if an error is encountered.
 * `->configurable(false)`: Disable this option from being in a configuration file.
-*   `->capture_default_str()`: Store the current value attached and display it in the help string.
+* `->capture_default_str()`: Store the current value attached and display it in the help string.
 * `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
 * `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
 * `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
@@ -384,7 +384,7 @@ If `allow_windows_style_options()` is specified in the application or subcommand
 * `/file filename` (space)
 * `/file:filename` (colon)
 * `/long_flag:false` (long flag with : to override the default value)
-  *  Windows style options do not allow combining short options or values not separated from the short option like with `-` options
+  * Windows style options do not allow combining short options or values not separated from the short option like with `-` options
 
 Long flag options may be given with an `=<value>` to allow specifying a false value, or some other value to the flag. See [config files](#configuration-file) for details on the values supported.  NOTE: only the `=` or `:` for windows-style options may be used for this, using a space will result in the argument being interpreted as a positional argument.  This syntax can override the default values, and can be disabled by using `disable_flag_override()`.
 
@@ -729,7 +729,7 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML] format by default 🆕, though the default reader can also accept files in INI format as well. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML][] format by default 🆕, though the default reader can also accept files in INI format as well. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #
@@ -1064,3 +1064,4 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
+[toml]: https://toml.io
