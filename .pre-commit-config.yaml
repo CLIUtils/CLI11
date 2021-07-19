@@ -1,5 +1,6 @@
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
+  autofix_commit_msg: "style: pre-commit.ci fixes"
   skip:
     - docker-clang-format
 
@@ -39,6 +40,12 @@ repos:
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml]
+
+- repo: https://github.com/markdownlint/markdownlint
+  rev: v0.11.0
+  hooks:
+  - id: markdownlint
+    args: ["--style=scripts/mdlint_style.rb"]
 
 - repo: local
   hooks:

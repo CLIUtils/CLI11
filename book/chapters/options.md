@@ -1,8 +1,8 @@
 # Options
 
 ## Simple options
-The most versatile addition to a command line program is a option. This is like a flag, but it takes an argument. CLI11 handles all the details for many types of options for you, based on their type. To add an option:
 
+The most versatile addition to a command line program is a option. This is like a flag, but it takes an argument. CLI11 handles all the details for many types of options for you, based on their type. To add an option:
 
 ```cpp
 int int_option{0};
@@ -73,6 +73,7 @@ Vectors will be replaced by the parsed content if the option is given on the com
 A definition of a container for purposes of CLI11 is a type with a `end()`, `insert(...)`, `clear()` and `value_type` definitions.  This includes `vector`, `set`, `deque`, `list`, `forward_iist`, `map`, `unordered_map` and a few others from the standard library, and many other containers from the boost library.
 
 ### Containers of containers
+
 Containers of containers are also supported.
 
 ```cpp
@@ -85,6 +86,7 @@ CLI11 inserts a separator sequence at the start of each argument call to separat
 ```bash
 cmd --vec_of_vec 1 2 3 4 %% 1 2
 ```
+
 would then result in a container of size 2 with the first element containing 4 values and the second 2.
 
 This separator is also the only way to get values into something like
@@ -99,7 +101,9 @@ without calling the argument twice.
 Further levels of nesting containers should compile but intermediate layers will only have a single element in the container, so is probably not that useful.
 
 ### Nested types
-Types can be nested For example
+
+Types can be nested. For example:
+
 ```cpp
 std::map<int, std::pair<int,std::string>> map;
 app.add_option("--dict", map, "map of pairs");
@@ -111,6 +115,7 @@ will require 3 arguments for each invocation, and multiple sets of 3 arguments c
 std::map<int, std::pair<int,std::vector<std::string>>> map;
 app.add_option("--dict", map, "map of pairs");
 ```
+
 will result in a requirement for 2 integers on each invocation and absorb an unlimited number of strings including 0.
 
 ## Option modifiers
@@ -166,19 +171,19 @@ if(* opt)
 
 One of CLI11's systems to allow customizability without high levels of verbosity is the inheritance system. You can set default values on the parent `App`, and all options and subcommands created from it remember the default values at the point of creation. The default value for Options, specifically, are accessible through the `option_defaults()` method. There are a number of settings that can be set and inherited:
 
-*   `group`: The group name starts as "Options"
-*   `required`: If the option must be given. Defaults to `false`. Is ignored for flags.
-*   `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` regardless of the default, so that multiple bool flags does not cause an error. But you can override that flag by flag.
-*   `ignore_case`: Allow any mixture of cases for the option or flag name
-*   `ignore_underscore`: Allow any number of underscores in the option or flag name
-*   `configurable`:  Specify whether an option can be configured through a config file
-*   `disable_flag_override`:  do not allow flag values to be overridden on the command line
-*   `always_capture_default`:  specify that the default values should be automatically captured.
-*   `delimiter`:  A delimiter to use for capturing multiple values in a single command line string (e.g. --flag="flag,-flag2,flag3")
+* `group`: The group name starts as "Options"
+* `required`: If the option must be given. Defaults to `false`. Is ignored for flags.
+* `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` regardless of the default, so that multiple bool flags does not cause an error. But you can override that flag by flag.
+* `ignore_case`: Allow any mixture of cases for the option or flag name
+* `ignore_underscore`: Allow any number of underscores in the option or flag name
+* `configurable`:  Specify whether an option can be configured through a config file
+* `disable_flag_override`:  do not allow flag values to be overridden on the command line
+* `always_capture_default`:  specify that the default values should be automatically captured.
+* `delimiter`:  A delimiter to use for capturing multiple values in a single command line string (e.g. --flag="flag,-flag2,flag3")
 
 An example of usage:
 
-```
+```cpp
 app.option_defaults()->ignore_case()->group("Required");
 
 app.add_flag("--CaSeLeSs");
@@ -187,17 +192,16 @@ app.get_group() // is "Required"
 
 Groups are mostly for visual organization, but an empty string for a group name will hide the option.
 
-
 ### Windows style options
 
 You can also set the app setting `app->allow_windows_style_options()` to allow windows style options to also be recognized on the command line:
 
-*   `/a` (flag)
-*   `/f filename` (option)
-*   `/long` (long flag)
-*   `/file filename` (space)
-*   `/file:filename` (colon)
-*   `/long_flag:false` (long flag with : to override the default value)
+* `/a` (flag)
+* `/f filename` (option)
+* `/long` (long flag)
+* `/file filename` (space)
+* `/file:filename` (colon)
+* `/long_flag:false` (long flag with : to override the default value)
 
 Windows style options do not allow combining short options or values not separated from the short option like with `-` options. You still specify option names in the same manner as on Linux with single and double dashes when you use the `add_*` functions, and the Linux style on the command line will still work. If a long and a short option share the same name, the option will match on the first one defined.
 
@@ -205,15 +209,19 @@ Windows style options do not allow combining short options or values not separat
 
 How an option and its arguments are parsed depends on a set of controls that are part of the option structure.  In most circumstances these controls are set automatically based on the type or function used to create the option and the type the arguments are parsed into.  The variables define the size of the underlying type (essentially how many strings make up the type), the expected size (how many groups are expected) and a flag indicating if multiple groups are allowed with a single option.  And these interact with the `multi_option_policy` when it comes time to parse.
 
-### examples
-How options manage this is best illustrated through some examples
+### Examples
+
+How options manage this is best illustrated through some examples.
+
 ```cpp
 std::string val;
 app.add_option("--opt",val,"description");
 ```
+
 creates an option that assigns a value to a `std::string`  When this option is constructed it sets a type_size min and max of 1.  Meaning that the assignment uses a single string.  The Expected size is also set to 1 by default, and `allow_extra_args` is set to false. meaning that each time this option is called 1 argument is expected.  This would also be the case if val were a `double`, `int` or any other single argument types.
 
 now for example
+
 ```cpp
 std::pair<int, std::string> val;
 app.add_option("--opt",val,"description");
@@ -232,6 +240,7 @@ detects a type size of 1, since the underlying element type is a single string, 
 std::vector<std::tuple<int, double, std::string>> val;
 app.add_option("--opt",val,"description");
 ```
+
 gets into the complicated cases where the type size is now 3.  and the expected max is set to a large number and `allow_extra_args` is set to true.  In this case at least 3 arguments are required to follow the option,  and subsequent groups must come in groups of three, otherwise an error will result.
 
 ```cpp
@@ -248,11 +257,11 @@ app.add_option("--opt",val,"description");
 
 triggers the complex number type which has a min of 1 and max of 2,  so 1 or 2 strings can be passed.  Complex number conversion supports arguments of the form "1+2j" or "1","2", or "1" "2i".  The imaginary number symbols `i` and `j` are interchangeable in this context.
 
-
 ```cpp
 std::vector<std::vector<int>> val;
 app.add_option("--opt",val,"description");
 ```
+
 has a type size of 1 to (1<<30).
 
 ### Customization
@@ -264,10 +273,13 @@ std::string val;
 auto opt=app.add_flag("--opt{vvv}",val,"description");
 opt->expected(0,1);
 ```
+
 will create a hybrid option, that can exist on its own in which case the value "vvv" is used or if a value is given that value will be used.
 
-There are some additional options that can be specified to modify an option for specific cases
--   `->run_callback_for_default()` will specify that the callback should be executed when a default_val is set. This is set automatically when appropriate though it can be turned on or off and any user specified callback for an option will be executed when the default value for an option is set.
+There are some additional options that can be specified to modify an option for specific cases:
+
+* `->run_callback_for_default()` will specify that the callback should be executed when a default_val is set. This is set automatically when appropriate though it can be turned on or off and any user specified callback for an option will be executed when the default value for an option is set.
 
 ## Unusual circumstances
+
 There are a few cases where some things break down in the type system managing options and definitions.  Using the `add_option` method defines a lambda function to extract a default value if required.  In most cases this either straightforward or a failure is detected automatically and handled.  But in a few cases a streaming template is available that several layers down may not actually be defined.  The conditions in CLI11 cannot detect this circumstance automatically and will result in compile error.  One specific known case is `boost::optional` if the boost optional_io header is included.  This header defines a template for all boost optional values even if they do no actually have a streaming operator.  For example `boost::optional<std::vector>` does not have a streaming operator but one is detected since it is part of a template.  For these cases a secondary method `app->add_option_no_stream(...)` is provided that bypasses this operation completely and should compile in these cases.

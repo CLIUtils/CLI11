@@ -53,6 +53,7 @@ Each App has controls to set the number of subcommands you expect. This is contr
 ```cpp
 app.require_subcommand(/* min */ 0, /* max */ 1);
 ```
+
 If you set the max to 0, CLI11 will allow an unlimited number of subcommands. After the (non-unlimited) maximum
 is reached, CLI11 will stop trying to match subcommands. So the if you pass "`one two`" to a command, and both `one`
 and `two` are subcommands, it will depend on the maximum number as to whether the "`two`" is a subcommand or an argument to the

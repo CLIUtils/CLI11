@@ -14,7 +14,6 @@ The main classes are:
 |CLI::Timer     | A timer class, only in CLI/Timer.hpp (not in `CLI11.hpp`) |
 |CLI::AutoTimer | A timer that prints on deletion     |
 
-
 Groups of related topics:
 
 | Name                 | Description                                    |
