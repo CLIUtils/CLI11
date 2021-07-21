@@ -815,10 +815,10 @@ TEST_CASE_METHOD(TApp, "invalidSubcommandName", "[subcom]") {
 
     bool gotError{false};
     try {
-        app.add_subcommand("foo/foo", "Foo a bar");
+        app.add_subcommand("!foo/foo", "Foo a bar");
     } catch(const CLI::IncorrectConstruction &e) {
         gotError = true;
-        CHECK_THAT(e.what(), Contains("/"));
+        CHECK_THAT(e.what(), Contains("!"));
     }
     CHECK(gotError);
 }
@@ -1668,7 +1668,7 @@ TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
 
     CHECK_THROWS_AS(sub2->alias("this is a not a valid alias"), CLI::IncorrectConstruction);
     CHECK_THROWS_AS(sub2->alias("-alias"), CLI::IncorrectConstruction);
-    CHECK_THROWS_AS(sub2->alias("alia$"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(sub2->alias("alia{}"), CLI::IncorrectConstruction);
 
     CHECK_THROWS_AS(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
                     CLI::IncorrectConstruction);

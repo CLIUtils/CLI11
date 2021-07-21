@@ -271,9 +271,9 @@ TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "mapInput", "[optiontype]") {
     std::map<int,std::string> vals{};
-    auto opt = app.add_option("--long", vals);
+    app.add_option("--long", vals);
 
-    args = {"--user", "5", "test"};
+    args = {"--long", "5", "test"};
 
     run();
 

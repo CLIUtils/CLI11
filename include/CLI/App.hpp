@@ -368,23 +368,9 @@ class App {
 
     /// Set an alias for the app
     App *alias(std::string app_name) {
-        if(!detail::valid_name_string(app_name)) {
-            if(app_name.empty()) {
-                throw IncorrectConstruction("Empty aliases are not allowed");
-            }
-            if(!detail::valid_first_char(app_name[0])) {
-                throw IncorrectConstruction(
-                    "Alias starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
-            }
-            for(auto c : app_name) {
-                if(!detail::valid_later_char(c)) {
-                    throw IncorrectConstruction(std::string("Alias contains invalid character ('") + c +
-                                                "'), allowed characters are "
-                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
-                }
-            }
+        if(app_name.empty()) {
+            throw IncorrectConstruction("Empty aliases are not allowed");
         }
-
         if(parent_ != nullptr) {
             aliases_.push_back(app_name);
             auto &res = _compare_subcommand_names(*this, *_get_fallthrough_parent());
@@ -978,13 +964,13 @@ class App {
         if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
             if(!detail::valid_first_char(subcommand_name[0])) {
                 throw IncorrectConstruction(
-                    "Subcommand name starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
+                    "Subcommand name starts with invalid character, '!' and'-' are not allowed");
             }
             for(auto c : subcommand_name) {
                 if(!detail::valid_later_char(c)) {
                     throw IncorrectConstruction(std::string("Subcommand name contains invalid character ('") + c +
-                                                "'), allowed characters are "
-                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
+                                                "'), all characters are allowed except"
+                                                "'=',':','{','}', and ' '");
                 }
             }
         }
