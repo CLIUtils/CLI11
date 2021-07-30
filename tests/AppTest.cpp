@@ -131,7 +131,7 @@ TEST_CASE_METHOD(TApp, "StrangeFlagNames", "[app]") {
     app.add_flag("-=");
     app.add_flag("--t\tt");
     app.add_flag("-{");
-    CHECK_THROWS_AS(app.add_flag("--t t"), CLI::ConstructionError); 
+    CHECK_THROWS_AS(app.add_flag("--t t"), CLI::ConstructionError);
     args = {"-=", "--t\tt"};
     run();
     CHECK(app.count("-=") == 1u);
@@ -597,14 +597,14 @@ TEST_CASE_METHOD(TApp, "StrangeOptionNames", "[app]") {
     app.add_option("-:");
     app.add_option("--t\tt");
     app.add_option("--{}");
+    app.add_option("--:)");
     CHECK_THROWS_AS(app.add_option("--t t"), CLI::ConstructionError);
-    args = {"-:)", "--{}","5"};
+    args = {"-:)", "--{}", "5"};
     run();
     CHECK(app.count("-:") == 1u);
     CHECK(app.count("--{}") == 1u);
-    CHECK(app["-:"]->as<char>()== ')');
+    CHECK(app["-:"]->as<char>() == ')');
     CHECK(app["--{}"]->as<int>() == 5);
-
 }
 
 TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {

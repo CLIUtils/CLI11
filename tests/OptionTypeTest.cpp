@@ -270,7 +270,7 @@ TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "mapInput", "[optiontype]") {
-    std::map<int,std::string> vals{};
+    std::map<int, std::string> vals{};
     app.add_option("--long", vals);
 
     args = {"--long", "5", "test"};
@@ -278,8 +278,6 @@ TEST_CASE_METHOD(TApp, "mapInput", "[optiontype]") {
     run();
 
     CHECK(vals.at(5) == "test");
-
-    
 }
 
 TEST_CASE_METHOD(TApp, "CallbackBoolFlags", "[optiontype]") {

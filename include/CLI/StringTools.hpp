@@ -221,7 +221,8 @@ template <typename T> bool valid_first_char(T c) { return ((c != '-') && (c != '
 /// Verify following characters of an option
 template <typename T> bool valid_later_char(T c) {
     // = and : are value separators, { has special meaning for option defaults,
-    // and \n would just be annoying to deal with in many places allowing space here has too much potential for inadvertant entry errors and bugs
+    // and \n would just be annoying to deal with in many places allowing space here has too much potential for
+    // inadvertant entry errors and bugs
     return ((c != '=') && (c != ':') && (c != '{') && (c != ' ') && c != '\n');
 }
 
@@ -231,10 +232,16 @@ inline bool valid_name_string(const std::string &str) {
         return false;
     }
     auto e = str.end();
-    for(auto c = str.begin() + 1;c!=e;++c)
+    for(auto c = str.begin() + 1; c != e; ++c)
         if(!valid_later_char(*c))
             return false;
     return true;
+}
+
+/// Verify an app name
+inline bool valid_alias_name_string(const std::string &str) {
+    static const std::string badChars(std::string("\n") + '\0');
+    return (str.find_first_of(badChars) == std::string::npos);
 }
 
 /// check if a string is a container segment separator (empty or "%%")
@@ -277,11 +284,11 @@ inline std::string find_and_replace(std::string str, std::string from, std::stri
 
 /// check if the flag definitions has possible false flags
 inline bool has_default_flag_values(const std::string &flags) {
-    return (flags.find_first_of("{!",2) != std::string::npos);
+    return (flags.find_first_of("{!") != std::string::npos);
 }
 
 inline void remove_default_flag_values(std::string &flags) {
-    auto loc = flags.find_first_of('{',2);
+    auto loc = flags.find_first_of('{', 2);
     while(loc != std::string::npos) {
         auto finish = flags.find_first_of("},", loc + 1);
         if((finish != std::string::npos) && (flags[finish] == '}')) {

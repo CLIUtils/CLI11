@@ -1666,9 +1666,8 @@ TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
     auto sub1 = app.add_subcommand("sub1");
     auto sub2 = app.add_subcommand("sub2");
 
-    CHECK_THROWS_AS(sub2->alias("this is a not a valid alias"), CLI::IncorrectConstruction);
-    CHECK_THROWS_AS(sub2->alias("-alias"), CLI::IncorrectConstruction);
-    CHECK_THROWS_AS(sub2->alias("alia{}"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(sub2->alias("this is a not\n a valid alias"), CLI::IncorrectConstruction);
+    CHECK_NOTHROW(sub2->alias("-alias"));
 
     CHECK_THROWS_AS(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
                     CLI::IncorrectConstruction);
