@@ -1645,6 +1645,28 @@ TEST_CASE_METHOD(TApp, "OptionGroupAlias", "[subcom]") {
     CHECK(-3 == val);
 }
 
+TEST_CASE_METHOD(TApp, "OptionGroupAliasWithSpaces", "[subcom]") {
+    double val{0.0};
+    auto sub = app.add_option_group("sub1");
+    sub->alias("sub2 bb");
+    sub->alias("sub3/b");
+    sub->add_option("-v,--value", val);
+    args = {"sub1", "-v", "-3"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"sub2 bb", "--value", "-5"};
+    run();
+    CHECK(-5.0 == val);
+
+    args = {"sub3/b", "-v", "7"};
+    run();
+    CHECK(7 == val);
+
+    args = {"-v", "-3"};
+    run();
+    CHECK(-3 == val);
+}
+
 TEST_CASE_METHOD(TApp, "subcommand_help", "[subcom]") {
     auto sub1 = app.add_subcommand("help")->silent();
     bool flag{false};
@@ -1667,7 +1689,7 @@ TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
     auto sub2 = app.add_subcommand("sub2");
 
     CHECK_THROWS_AS(sub2->alias("this is a not\n a valid alias"), CLI::IncorrectConstruction);
-    CHECK_NOTHROW(sub2->alias("-alias"));
+    CHECK_NOTHROW(sub2->alias("-alias"));  // this is allowed but would be unusable on command line parsers
 
     CHECK_THROWS_AS(app.add_subcommand("--bad_subcommand_name", "documenting the bad subcommand"),
                     CLI::IncorrectConstruction);

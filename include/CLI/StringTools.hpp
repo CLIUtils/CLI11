@@ -222,7 +222,7 @@ template <typename T> bool valid_first_char(T c) { return ((c != '-') && (c != '
 template <typename T> bool valid_later_char(T c) {
     // = and : are value separators, { has special meaning for option defaults,
     // and \n would just be annoying to deal with in many places allowing space here has too much potential for
-    // inadvertant entry errors and bugs
+    // inadvertent entry errors and bugs
     return ((c != '=') && (c != ':') && (c != '{') && (c != ' ') && c != '\n');
 }
 
