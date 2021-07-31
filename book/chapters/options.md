@@ -129,8 +129,8 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->expected(Nmin,Nmax)` | Take between `Nmin` and `Nmax` values. |
 | `->type_size(N)` | specify that each block of values would consist of N elements |
 | `->type_size(Nmin,Nmax)` | specify that each block of values would consist of between Nmin and Nmax elements |
-| `->needs(opt)` | This option requires another option to also be present, opt is an `Option` pointer. |
-| `->excludes(opt)` | This option cannot be given with `opt` present, opt is an `Option` pointer. |
+| `->needs(opt)` | This option requires another option to also be present, opt is an `Option` pointer or a string with the name of the option.  Can be removed with `->remove_needs(opt)` |
+| `->excludes(opt)` | This option cannot be given with `opt` present, opt is an `Option` pointer or a string with the name of the option.  Can be removed with `->remove_excludes(opt)` |
 | `->envname(name)` | Gets the value from the environment if present and not passed on the command line. |
 | `->group(name)` | The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print. |
 | `->description(string)` | Set/change the description |
@@ -149,8 +149,12 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->transform(Validator)` | Run a transforming validator on each value passed. See [Validators](./validators.md) for more info |
 | `->each(void(std::string))` | Run a function on each parsed value, *in order*. |
 | `->default_str(string)` | set a default string for use in the help and as a default value if no arguments are passed and a value is requested |
-| `->default_function(string())` | Advanced: Change the function that `capture_default_str()` uses. |
+| `->default_function(std::string())` | Advanced: Change the function that `capture_default_str()` uses. |
 | `->default_val(value)` | Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). |
+| `->capture_default_str()` | Store the current value attached and display it in the help string. |
+| `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
+| `->run_callback_for_default()` | Force the option callback to be executed or the variable set regardless of whether the option was passed or not. Can be used to force an output variable to be set to the default_str.  |
+| `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
 

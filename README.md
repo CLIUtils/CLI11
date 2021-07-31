@@ -336,10 +336,12 @@ Before parsing, you can set the following options:
 
 * `->required()`: The program will quit if this option is not present. This is `mandatory` in Plumbum, but required options seems to be a more standard term. For compatibility, `->mandatory()` also works.
 * `->expected(N)`: Take `N` values instead of as many as possible, only for vector args. If negative, require at least `-N`; end with `--` or another recognized option or subcommand.
+* `->expected(MIN,MAX)`: Set a range of expected values to accompany an option.  `expected(0,1)` is the equivalent of making a flag.  
 * `->type_name(typename)`: Set the name of an Option's type (`type_name_fn` allows a function instead)
-* `->type_size(N)`: Set the intrinsic size of an option. The parser will require multiples of this number if negative.
-* `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer.
-* `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.
+* `->type_size(N)`: Set the intrinsic size of an option value. The parser will require multiples of this number if negative. Most of the time this is detected automatically though can be modified for specific use cases.  
+* `->type_size(MIN,MAX)`: Set the intrinsic size of an option to a range.
+* `->needs(opt)`: This option requires another option to also be present, opt is an `Option` pointer. Options can be removed from the `needs` with `remove_needs(opt)`. The option can also be specified with a string containing the name of the option
+* `->excludes(opt)`: This option cannot be given with `opt` present, opt is an `Option` pointer.  Can also be given as a string containing the name of the option.  Options can be removed from the excludes list with `->remove_excludes(opt)`
 * `->envname(name)`: Gets the value from the environment if present and not passed on the command line.
 * `->group(name)`: The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `""` will not show up in the help print (hidden).
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
@@ -348,7 +350,7 @@ Before parsing, you can set the following options:
 * `->allow_extra_args(true/false)`: 🆕 If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
 * `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 * `->description(str)`: Set/change the description.
-* `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy).
+* `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy). `->join(delim)` can also be used to join with a specific delimiter. This equivalent to calling `->delimiter(delim)` and `->join()`
 * `->check(std::string(const std::string &), validator_name="",validator_description="")`: Define a check function.  The function should return a non empty string with the error message if the check fails
 * `->check(Validator)`: Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
 * `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.
@@ -360,6 +362,7 @@ Before parsing, you can set the following options:
 * `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
 * `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
 * `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
+* `->run_callback_for_default()`: This will force the option callback to be executed or the variable set regardless of whether the option was passed or not. Can be used to force an output variable to be set to the default_str.  
 * `->option_text(string)`: Sets the text between the option name and description.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
