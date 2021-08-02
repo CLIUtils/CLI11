@@ -55,7 +55,7 @@ std::string help(const App *app, const Error &e);
 
 /// enumeration of modes of how to deal with extras in config files
 
-enum class config_extras_mode : char { error = 0, ignore, capture };
+enum class config_extras_mode : char { error = 0, ignore, ignore_all, capture };
 
 class App;
 
@@ -1301,6 +1301,16 @@ class App {
         run_callback();
     }
 
+    void parse_from_stream(std::istream &input) {
+        if(parsed_ == 0) {
+            _validate();
+            _configure();
+            // set the parent as nullptr as this object should be the top now
+        }
+
+        _parse_stream(input);
+        run_callback();
+    }
     /// Provide a function to print a help message. The function gets access to the App pointer and error.
     void failure_message(std::function<std::string(const App *, const Error &e)> function) {
         failure_message_ = function;
@@ -2360,6 +2370,18 @@ class App {
         _process_extras();
     }
 
+    /// Internal function to parse a stream
+    void _parse_stream(std::istream &input) {
+        auto values = config_formatter_->from_config(input);
+        _parse_config(values);
+        increment_parsed();
+        _trigger_pre_parse(values.size());
+        _process();
+
+        // Throw error if any items are left over (depending on settings)
+        _process_extras();
+    }
+
     /// Parse one config param, return false if not found in any subcommand, remove if it is
     ///
     /// If this has more than one dot.separated.name, go into the subcommand matching it
@@ -2420,8 +2442,12 @@ class App {
             return false;
         }
 
-        if(!op->get_configurable())
+        if(!op->get_configurable()) {
+            if(get_allow_config_extras() == config_extras_mode::ignore_all) {
+                return false;
+            }
             throw ConfigError::NotConfigurable(item.fullname());
+        }
 
         if(op->empty()) {
             // Flag parsing

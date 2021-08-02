@@ -217,6 +217,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         if(pos != std::string::npos) {
             name = detail::trim_copy(line.substr(0, pos));
             std::string item = detail::trim_copy(line.substr(pos + 1));
+            auto cloc = item.find(commentChar);
+            if(cloc != std::string::npos) {
+                item.erase(cloc, std::string::npos);
+                detail::trim(item);
+            }
             if(item.size() > 1 && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
@@ -232,6 +237,12 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             }
         } else {
             name = detail::trim_copy(line);
+            auto cloc = name.find(commentChar);
+            if(cloc != std::string::npos) {
+                name.erase(cloc, std::string::npos);
+                detail::trim(name);
+            }
+
             items_buffer = {"true"};
         }
         if(name.find('.') == std::string::npos) {
@@ -243,7 +254,15 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         }
 
         std::vector<std::string> parents = detail::generate_parents(section, name);
-
+        if(parents.size() > maxLayers_) {
+            continue;
+        }
+        if(!configSection.empty()) {
+            if(parents.empty() || parents.front() != configSection) {
+                continue;
+            }
+            parents.erase(parents.begin());
+        }
         if(!output.empty() && name == output.back().name && parents == output.back().parents) {
             output.back().inputs.insert(output.back().inputs.end(), items_buffer.begin(), items_buffer.end());
         } else {

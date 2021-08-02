@@ -1111,6 +1111,30 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
     CHECK(0U == subcom2->count());
 }
 
+TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
+
+    TempFile tmpini{ "TestIniTmp.ini" };
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config");
+
+    {
+        std::ofstream out{ tmpini };
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[config]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int val{ 0 };
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2==val);
+    
+}
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
