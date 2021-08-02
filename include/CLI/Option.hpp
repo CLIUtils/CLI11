@@ -337,6 +337,10 @@ class Option : public OptionBase<Option> {
     bool run_callback_for_default_{false};
     /// flag indicating a separator needs to be injected after each argument call
     bool inject_separator_{false};
+    /// flag indicating tha the option should trigger the callback on each result when loaded
+    bool trigger_on_result_{false};
+    /// flag indicating tha the option should force the callback regardless if any results present
+    bool force_callback_{false};
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -358,8 +362,8 @@ class Option : public OptionBase<Option> {
     /// True if the option was not passed
     bool empty() const { return results_.empty(); }
 
-    /// This class is true if option is passed.
-    explicit operator bool() const { return !empty(); }
+    /// This bool operator returns true if any arguments were passed or the option callback is forced
+    explicit operator bool() const { return !empty() || force_callback_; }
 
     /// Clear the parsed results (mostly for testing)
     void clear() {
@@ -420,6 +424,21 @@ class Option : public OptionBase<Option> {
     }
     /// Get the current value of allow extra args
     bool get_allow_extra_args() const { return allow_extra_args_; }
+    /// Set the value of trigger_on_parse which specifies that the option callback should be triggered on every parse
+    Option *trigger_on_parse(bool value = true) {
+        trigger_on_result_ = value;
+        return this;
+    }
+    /// The status of trigger on parse
+    bool get_trigger_on_parse() const { return trigger_on_result_; }
+
+    /// Set the value of force_callback
+    Option *force_callback(bool value = true) {
+        force_callback_ = value;
+        return this;
+    }
+    /// The status of force_callback
+    bool get_force_callback() const { return force_callback_; }
 
     /// Set the value of run_callback_for_default which controls whether the callback function should be called to set
     /// the default This is controlled automatically but could be manipulated by the user.
@@ -818,7 +837,9 @@ class Option : public OptionBase<Option> {
 
     /// Process the callback
     void run_callback() {
-
+        if(force_callback_ && results_.empty()) {
+            add_result(default_str_);
+        }
         if(current_option_state_ == option_state::parsing) {
             _validate_results(results_);
             current_option_state_ = option_state::validated;
@@ -960,8 +981,11 @@ class Option : public OptionBase<Option> {
 
     /// Puts a result at the end
     Option *add_result(std::string s) {
-        _add_result(std::move(s), results_);
+        auto results_added = _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
+        if(trigger_on_result_ && results_added > 0) {
+            run_callback();
+        }
         return this;
     }
 
@@ -969,6 +993,9 @@ class Option : public OptionBase<Option> {
     Option *add_result(std::string s, int &results_added) {
         results_added = _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
+        if(trigger_on_result_ && results_added > 0) {
+            run_callback();
+        }
         return this;
     }
 
@@ -1136,7 +1163,7 @@ class Option : public OptionBase<Option> {
         results_.clear();
         try {
             add_result(val_str);
-            if(run_callback_for_default_) {
+            if(run_callback_for_default_ && !trigger_on_result_) {
                 run_callback();  // run callback sets the state we need to reset it again
                 current_option_state_ = option_state::parsing;
             } else {

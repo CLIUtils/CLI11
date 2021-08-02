@@ -2254,3 +2254,32 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse5", "[app]") {
     run();
     CHECK(std::vector<std::string>({"this", "is", "a", "test"}) == bar);
 }
+
+// #218
+TEST_CASE_METHOD(TApp, "logFormSingleDash", "[app]") {
+    bool verbose{false};
+    bool veryverbose{false};
+    bool veryveryverbose{false};
+    app.name("testargs");
+    app.allow_extras();
+    args = {"-v", "-vv", "-vvv"};
+    app.final_callback([&]() {
+        auto rem = app.remaining();
+        for(auto &arg : rem) {
+            if(arg == "-v") {
+                verbose = true;
+            }
+            if(arg == "-vv") {
+                veryverbose = true;
+            }
+            if(arg == "-vvv") {
+                veryveryverbose = true;
+            }
+        }
+    });
+    run();
+    CHECK(app.remaining().size()==3U);
+    CHECK(verbose);
+    CHECK(veryverbose);
+    CHECK(veryveryverbose);
+}
