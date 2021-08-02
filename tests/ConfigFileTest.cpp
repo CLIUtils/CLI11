@@ -1133,7 +1133,7 @@ TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
     run();
 
     CHECK(2==val);
-    
+
 }
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
