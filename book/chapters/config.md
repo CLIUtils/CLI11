@@ -211,7 +211,7 @@ The parser can handle these structures with only a minor tweak
 ```cpp
 app.get_config_formatter_base()->valueSeparator(':');
 ```
-The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.  
+The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.
 
 
 ## Triggering Subcommands
@@ -222,7 +222,7 @@ For custom configuration files this behavior can be triggered by specifying the 
 
 ## Stream parsing
 
-In addition to the regular parse functions a `parse_from_stream(std::istream &input)` is available to directly parse a stream operator.  For example to process some arguments in an already open file stream.  The stream is fed directly in the config parser so bypasses the normal command line parsing.  
+In addition to the regular parse functions a `parse_from_stream(std::istream &input)` is available to directly parse a stream operator.  For example to process some arguments in an already open file stream.  The stream is fed directly in the config parser so bypasses the normal command line parsing.
 
 ## Implementation Notes
 
