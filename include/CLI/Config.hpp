@@ -94,17 +94,17 @@ inline std::string ini_join(const std::vector<std::string> &args,
     return joined;
 }
 
-inline std::vector<std::string> generate_parents(const std::string &section, std::string &name) {
+inline std::vector<std::string> generate_parents(const std::string &section, std::string &name, char parentSeparator) {
     std::vector<std::string> parents;
     if(detail::to_lower(section) != "default") {
-        if(section.find('.') != std::string::npos) {
-            parents = detail::split(section, '.');
+        if(section.find(parentSeparator) != std::string::npos) {
+            parents = detail::split(section, parentSeparator);
         } else {
             parents = {section};
         }
     }
     if(name.find('.') != std::string::npos) {
-        std::vector<std::string> plist = detail::split(name, '.');
+        std::vector<std::string> plist = detail::split(name, parentSeparator);
         name = plist.back();
         detail::remove_quotes(name);
         plist.pop_back();
@@ -119,10 +119,10 @@ inline std::vector<std::string> generate_parents(const std::string &section, std
 }
 
 /// assuming non default segments do a check on the close and open of the segments in a configItem structure
-inline void checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentSection) {
+inline void checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentSection, char parentSeparator) {
 
     std::string estring;
-    auto parents = detail::generate_parents(currentSection, estring);
+    auto parents = detail::generate_parents(currentSection, estring,parentSeparator);
     if(!output.empty() && output.back().name == "--") {
         std::size_t msize = (parents.size() > 1U) ? parents.size() : 2;
         while(output.back().parents.size() >= msize) {
@@ -189,7 +189,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             if(section != "default") {
                 // insert a section end which is just an empty items_buffer
                 output.emplace_back();
-                output.back().parents = detail::generate_parents(section, name);
+                output.back().parents = detail::generate_parents(section, name,parentSeparatorChar);
                 output.back().name = "--";
             }
             section = line.substr(1, len - 2);
@@ -200,7 +200,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             if(detail::to_lower(section) == "default") {
                 section = "default";
             } else {
-                detail::checkParentSegments(output, section);
+                detail::checkParentSegments(output, section,parentSeparatorChar);
             }
             continue;
         }
@@ -253,8 +253,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             detail::remove_quotes(it);
         }
 
-        std::vector<std::string> parents = detail::generate_parents(section, name);
-        if(parents.size() > maxLayers_) {
+        std::vector<std::string> parents = detail::generate_parents(section, name,parentSeparatorChar);
+        if(parents.size() > maximumLayers) {
             continue;
         }
         if(!configSection.empty()) {
@@ -276,7 +276,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         // insert a section end which is just an empty items_buffer
         std::string ename;
         output.emplace_back();
-        output.back().parents = detail::generate_parents(section, ename);
+        output.back().parents = detail::generate_parents(section, ename,parentSeparatorChar);
         output.back().name = "--";
         while(output.back().parents.size() > 1) {
             output.push_back(output.back());

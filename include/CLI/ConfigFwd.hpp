@@ -92,7 +92,9 @@ class ConfigBase : public Config {
     /// the character to use around single characters
     char characterQuote = '\'';
     /// the maximum number of layers to allow
-    uint8_t maxLayers_{255};
+    uint8_t maximumLayers{255};
+    /// the separator used to separator parent layers
+    char parentSeparatorChar{'.'};
     /// Specify the configuration index to use for arrayed sections
     uint16_t configIndex{0};
     /// Specify the configuration section that should be used
@@ -132,7 +134,12 @@ class ConfigBase : public Config {
     }
     /// Specify the maximum number of parents
     ConfigBase *maxLayers(uint8_t layers) {
-        maxLayers_ = layers;
+        maximumLayers = layers;
+        return this;
+    }
+    /// Specify the separator to use for parent layers
+    ConfigBase *parentSeparator(char sep) {
+        parentSeparatorChar = sep;
         return this;
     }
     /// get a reference to the configuration section
@@ -144,6 +151,8 @@ class ConfigBase : public Config {
         configSection = sectionName;
         return this;
     }
+    // The section index is more for extended parsers like JSON,  it is does not have
+    // an effect on the current TOML/INI parser
 
     /// get a reference to the configuration index
     uint16_t& indexRef() { return configIndex; }
