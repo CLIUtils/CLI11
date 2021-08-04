@@ -98,7 +98,7 @@ class ConfigBase : public Config {
     /// Specify the configuration index to use for arrayed sections
     int16_t configIndex{-1};
     /// Specify the configuration section that should be used
-    std::string configSection;
+    std::string configSection{};
 
   public:
     std::string
@@ -145,7 +145,7 @@ class ConfigBase : public Config {
     /// get a reference to the configuration section
     std::string &sectionRef() { return configSection; }
     /// get the section
-    const std::string& section() const { return configSection; }
+    const std::string &section() const { return configSection; }
     /// specify a particular section of the configuration file to use
     ConfigBase *section(const std::string &sectionName) {
         configSection = sectionName;
@@ -153,7 +153,7 @@ class ConfigBase : public Config {
     }
 
     /// get a reference to the configuration index
-    int16_t& indexRef() { return configIndex; }
+    int16_t &indexRef() { return configIndex; }
     /// get the section index
     int16_t index() const { return configIndex; }
     /// specify a particular index in the section to use (-1) for all sections to use
