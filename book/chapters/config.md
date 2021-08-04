@@ -39,6 +39,12 @@ app.allow_config_extras(CLI::config_extras_mode::error);
 
 is equivalent to `app.allow_config_extras(false);`
 
+```cpp
+app.allow_config_extras(CLI::config_extras_mode::ignore_all);
+```
+
+will completely ignore any mismatches, extras, or other issues with the config file
+
 ### Getting the used configuration file name
 
 If it is needed to get the configuration file name used this can be obtained via
@@ -118,7 +124,7 @@ if a prefix is needed to print before the options, for example to print a config
 
 ### Customization of configure file output
 
-The default config parser/generator has some customization points that allow variations on the TOML format.  The default formatter has a base configuration that matches the TOML format.  It defines 5 characters that define how different aspects of the configuration are handled
+The default config parser/generator has some customization points that allow variations on the TOML format.  The default formatter has a base configuration that matches the TOML format.  It defines 5 characters that define how different aspects of the configuration are handled.  You must use `get_config_formatter_base()` to have access to these fields
 
 ```cpp
 /// the character used for comments
@@ -131,6 +137,18 @@ char arrayEnd = ']';
 char arraySeparator = ',';
 /// the character used separate the name from the value
 char valueDelimiter = '=';
+/// the character to use around strings
+char stringQuote = '"';
+/// the character to use around single characters
+char characterQuote = '\'';
+/// the maximum number of layers to allow
+uint8_t maximumLayers{255};
+/// the separator used to separator parent layers
+char parentSeparatorChar{'.'};
+/// Specify the configuration index to use for arrayed sections
+uint16_t configIndex{0};
+/// Specify the configuration section that should be used
+std::string configSection;
 ```
 
 These can be modified via setter functions
@@ -139,6 +157,12 @@ These can be modified via setter functions
 * `ConfigBase *arrayBounds(char aStart, char aEnd)`: Specify the start and end characters for an array
 * `ConfigBase *arrayDelimiter(char aSep)`: Specify the delimiter character for an array
 * `ConfigBase *valueSeparator(char vSep)`: Specify the delimiter between a name and value
+* `ConfigBase *quoteCharacter(char qString, char qChar)` :specify the characters to use around strings and single characters
+* `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent layers to process. This is useful to limit processing for larger config files
+* `ConfigBase *parentSeparator(char sep)` : specify the character to separate parent layers from options
+* `ConfigBase *section(const std::string &sectionName)` : specify the section name to use to get the option values, only this section will be processed
+* `ConfigBase *index(uint16_t sectionIndex)` : specify an index section to use for processing if multiple TOML sections of the same name are present `[[section]]`
+
 
 For example, to specify reading a configure file that used `:` to separate name and values:
 
@@ -174,15 +198,35 @@ app.config_formatter(std::make_shared<NewConfig>());
 
 See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp) for a complete JSON config example.
 
+#### Trivial JSON configuration example
+
+```JSON
+{
+	"test": 56,
+	"testb": "test",
+	"flag": true
+}
+```
+The parser can handle these structures with only a minor tweak
+```cpp
+app.get_config_formatter_base()->valueSeparator(':');
+```
+The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.  
+
+
 ## Triggering Subcommands
 
 Configuration files can be used to trigger subcommands if a subcommand is set to configure.  By default configuration file just set the default values of a subcommand.  But if the `configure()` option is set on a subcommand then the if the subcommand is utilized via a `[subname]` block in the configuration file it will act as if it were called from the command line.  Subsubcommands can be triggered via `[subname.subsubname]`.  Using the `[[subname]]` will be as if the subcommand were triggered multiple times from the command line.  This functionality can allow the configuration file to act as a scripting file.
 
 For custom configuration files this behavior can be triggered by specifying the parent subcommands in the structure and `++` as the name to open a new subcommand scope and `--` to close it.  These names trigger the different callbacks of configurable subcommands.
 
+## Stream parsing
+
+In addition to the regular parse functions a `parse_from_stream(std::istream &input)` is available to directly parse a stream operator.  For example to process some arguments in an already open file stream.  The stream is fed directly in the config parser so bypasses the normal command line parsing.  
+
 ## Implementation Notes
 
-The config file input works with any form of the option given:  Long, short, positional, or the environment variable name.  When generating a config file it will create a name in following priority.
+The config file input works with any form of the option given:  Long, short, positional, or the environment variable name.  When generating a config file it will create an option name in following priority.
 
 1. First long name
 2. Positional name

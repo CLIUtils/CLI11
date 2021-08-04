@@ -96,7 +96,7 @@ class ConfigBase : public Config {
     /// the separator used to separator parent layers
     char parentSeparatorChar{'.'};
     /// Specify the configuration index to use for arrayed sections
-    uint16_t configIndex{0};
+    int16_t configIndex{-1};
     /// Specify the configuration section that should be used
     std::string configSection;
 
@@ -151,15 +151,13 @@ class ConfigBase : public Config {
         configSection = sectionName;
         return this;
     }
-    // The section index is more for extended parsers like JSON,  it is does not have
-    // an effect on the current TOML/INI parser
 
     /// get a reference to the configuration index
-    uint16_t& indexRef() { return configIndex; }
+    int16_t& indexRef() { return configIndex; }
     /// get the section index
-    uint16_t index() const { return configIndex; }
-    /// specify a particular index in the section to use
-    ConfigBase *index(uint16_t sectionIndex) {
+    int16_t index() const { return configIndex; }
+    /// specify a particular index in the section to use (-1) for all sections to use
+    ConfigBase *index(int16_t sectionIndex) {
         configIndex = sectionIndex;
         return this;
     }

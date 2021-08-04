@@ -1287,6 +1287,108 @@ TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
     CHECK(2==val);
 
 }
+
+TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config");
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[config]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2 == val);
+}
+
+TEST_CASE_METHOD(TApp, "jsonLikeParsing", "[config]") {
+
+    TempFile tmpjson{"TestJsonTmp.json"};
+
+    app.set_config("--config", tmpjson);
+    app.get_config_formatter_base()->valueSeparator(':');
+
+    {
+        std::ofstream out{tmpjson};
+        out << "{" << std::endl;
+        out << "\"val\":1," << std::endl;
+        out << "\"val2\":\"test\"," << std::endl;
+        out << "\"flag\":true" << std::endl;
+        out << "}" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+    std::string val2{0};
+    app.add_option("--val2", val2);
+
+    bool flag{false};
+    app.add_flag("--flag", flag);
+
+    run();
+
+    CHECK(1 == val);
+    CHECK(val2 == "test");
+    CHECK(flag);
+}
+
+TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
+
+    TempFile tmpini{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config")->index(0);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=4" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=6" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2 == val);
+
+    auto &index=app.get_config_formatter_base()->indexRef();
+    index = 1;
+    run();
+
+    CHECK(4 == val);
+
+    index = -1;
+    run();
+    //Take the first section in this case
+    CHECK(2 == val);
+    index = 2;
+    run();
+
+    CHECK(6 == val);
+}
+
+
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -2484,6 +2586,21 @@ TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
     CHECK_THAT(str, Contains("other.newer=true"));
 }
 
+TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    app.get_config_formatter_base()->parentSeparator(':');
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other:newer=true"));
+}
+
 TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
@@ -2515,6 +2632,24 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
     CHECK_THAT(str, Contains("simple=true"));
     CHECK_THAT(str, Contains("other.newer=true"));
     CHECK_THAT(str, Contains("other.sub2.newest=true"));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    app.get_config_formatter_base()->parentSeparator('|');
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other|newer=true"));
+    CHECK_THAT(str, Contains("other|sub2|newest=true"));
 }
 
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
