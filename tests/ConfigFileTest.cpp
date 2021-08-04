@@ -1111,6 +1111,39 @@ TEST_CASE_METHOD(TApp, "IniLayered", "[config]") {
     CHECK(!*subcom);
 }
 
+TEST_CASE_METHOD(TApp, "IniLayeredStream", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+    auto subsubcom = subcom->add_subcommand("subsubcom");
+    subsubcom->add_option("--val", three);
+
+    std::ifstream in{tmpini};
+    app.parse_from_stream(in);
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
+}
+
 TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
