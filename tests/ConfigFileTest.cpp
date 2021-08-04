@@ -208,7 +208,6 @@ TEST_CASE("StringBased: Spaces", "[config]") {
     CHECK(output.at(1).inputs.at(0) == "four");
 }
 
-
 TEST_CASE("StringBased: Sections", "[config]") {
     std::stringstream ofile;
 
@@ -799,7 +798,6 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-
 TEST_CASE_METHOD(TApp, "IniInlineComment", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -885,29 +883,27 @@ TEST_CASE_METHOD(TApp, "TomlInlineComment", "[config]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
-
 TEST_CASE_METHOD(TApp, "ConfigModifiers", "[config]") {
-
 
     app.set_config("--config", "test.ini", "", true);
 
-   auto cfgptr = app.get_config_formatter_base();
+    auto cfgptr = app.get_config_formatter_base();
 
-   cfgptr->section("test");
-   CHECK(cfgptr->section()=="test");
+    cfgptr->section("test");
+    CHECK(cfgptr->section() == "test");
 
-   CHECK(cfgptr->sectionRef() == "test");
-   auto &sref = cfgptr->sectionRef();
-   sref= "this";
-   CHECK(cfgptr->section() == "this");
+    CHECK(cfgptr->sectionRef() == "test");
+    auto &sref = cfgptr->sectionRef();
+    sref = "this";
+    CHECK(cfgptr->section() == "this");
 
     cfgptr->index(5);
-   CHECK(cfgptr->index() == 5);
+    CHECK(cfgptr->index() == 5);
 
-   CHECK(cfgptr->indexRef() == 5);
-   auto &iref = cfgptr->indexRef();
-   iref = 7;
-   CHECK(cfgptr->index() == 7);
+    CHECK(cfgptr->indexRef() == 5);
+    auto &iref = cfgptr->indexRef();
+    iref = 7;
+    CHECK(cfgptr->index() == 7);
 }
 
 TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
@@ -1152,7 +1148,6 @@ TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
     app.get_config_formatter_base()->maxLayers(1);
     run();
     CHECK(three == 0);
-
 }
 
 TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
@@ -1265,13 +1260,13 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
 
 TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
 
-    TempFile tmpini{ "TestIniTmp.ini" };
+    TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
     app.get_config_formatter_base()->section("config");
 
     {
-        std::ofstream out{ tmpini };
+        std::ofstream out{tmpini};
         out << "[config]" << std::endl;
         out << "val=2" << std::endl;
         out << "subsubcom.val=3" << std::endl;
@@ -1279,13 +1274,12 @@ TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
         out << "val=1" << std::endl;
     }
 
-    int val{ 0 };
+    int val{0};
     app.add_option("--val", val);
 
     run();
 
-    CHECK(2==val);
-
+    CHECK(2 == val);
 }
 
 TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
@@ -1372,7 +1366,7 @@ TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
 
     CHECK(2 == val);
 
-    auto &index=app.get_config_formatter_base()->indexRef();
+    auto &index = app.get_config_formatter_base()->indexRef();
     index = 1;
     run();
 
@@ -1380,14 +1374,13 @@ TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
 
     index = -1;
     run();
-    //Take the first section in this case
+    // Take the first section in this case
     CHECK(2 == val);
     index = 2;
     run();
 
     CHECK(6 == val);
 }
-
 
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 

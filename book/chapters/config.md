@@ -163,7 +163,6 @@ These can be modified via setter functions
 * `ConfigBase *section(const std::string &sectionName)` : specify the section name to use to get the option values, only this section will be processed
 * `ConfigBase *index(uint16_t sectionIndex)` : specify an index section to use for processing if multiple TOML sections of the same name are present `[[section]]`
 
-
 For example, to specify reading a configure file that used `:` to separate name and values:
 
 ```cpp
@@ -198,21 +197,23 @@ app.config_formatter(std::make_shared<NewConfig>());
 
 See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp) for a complete JSON config example.
 
-#### Trivial JSON configuration example
+### Trivial JSON configuration example
 
 ```JSON
 {
-	"test": 56,
-	"testb": "test",
-	"flag": true
+   "test": 56,
+   "testb": "test",
+   "flag": true
 }
 ```
+
 The parser can handle these structures with only a minor tweak
+
 ```cpp
 app.get_config_formatter_base()->valueSeparator(':');
 ```
-The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.
 
+The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.
 
 ## Triggering Subcommands
 

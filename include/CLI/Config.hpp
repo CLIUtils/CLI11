@@ -171,7 +171,7 @@ checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentS
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
-    std::string section = "default";
+    std::string currentSection = "default";
     std::string previousSection = "default";
     std::vector<ConfigItem> output;
     bool isDefaultArray = (arrayStart == '[' && arrayEnd == ']' && arraySeparator == ',');
@@ -192,28 +192,28 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             continue;
         }
         if(line.front() == '[' && line.back() == ']') {
-            if(section != "default") {
+            if(currentSection != "default") {
                 // insert a section end which is just an empty items_buffer
                 output.emplace_back();
-                output.back().parents = detail::generate_parents(section, name, parentSeparatorChar);
+                output.back().parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
                 output.back().name = "--";
             }
-            section = line.substr(1, len - 2);
+            currentSection = line.substr(1, len - 2);
             // deal with double brackets for TOML
-            if(section.size() > 1 && section.front() == '[' && section.back() == ']') {
-                section = section.substr(1, section.size() - 2);
+            if(currentSection.size() > 1 && currentSection.front() == '[' && currentSection.back() == ']') {
+                currentSection = currentSection.substr(1, currentSection.size() - 2);
             }
-            if(detail::to_lower(section) == "default") {
-                section = "default";
+            if(detail::to_lower(currentSection) == "default") {
+                currentSection = "default";
             } else {
-                detail::checkParentSegments(output, section, parentSeparatorChar);
+                detail::checkParentSegments(output, currentSection, parentSeparatorChar);
             }
             inSection = false;
-            if(section == previousSection) {
+            if(currentSection == previousSection) {
                 ++currentSectionIndex;
             } else {
                 currentSectionIndex = 0;
-                previousSection = section;
+                previousSection = currentSection;
             }
             continue;
         }
@@ -264,7 +264,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             detail::remove_quotes(it);
         }
 
-        std::vector<std::string> parents = detail::generate_parents(section, name, parentSeparatorChar);
+        std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
         if(parents.size() > maximumLayers) {
             continue;
         }
@@ -287,11 +287,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             output.back().inputs = std::move(items_buffer);
         }
     }
-    if(section != "default") {
+    if(currentSection != "default") {
         // insert a section end which is just an empty items_buffer
         std::string ename;
         output.emplace_back();
-        output.back().parents = detail::generate_parents(section, ename, parentSeparatorChar);
+        output.back().parents = detail::generate_parents(currentSection, ename, parentSeparatorChar);
         output.back().name = "--";
         while(output.back().parents.size() > 1) {
             output.push_back(output.back());
