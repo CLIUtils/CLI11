@@ -26,7 +26,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 | complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2" |
 | enumeration | any enum or enum class type is supported through conversion from the underlying type(typically int, though it can be specified otherwise) |
 | container-like | a container(like vector) of any available types including other containers |
-| wrapper | any other object with a `value_type` static definition where the type specified by `value_type` is one of type in this list |
+| wrapper | any other object with a `value_type` static definition where the type specified by `value_type` is one of the types in this list |
 | tuple | a tuple, pair, or array, or other type with a tuple size and tuple_type operations defined and the members being a type contained in this list |
 | function | A function that takes an array of strings and returns a string that describes the conversion failure or empty for success. May be the empty function. (`{}`) |
 | streamable | any other type with a `<<` operator will also work |
@@ -153,7 +153,9 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->default_val(value)` | Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). |
 | `->capture_default_str()` | Store the current value attached and display it in the help string. |
 | `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
-| `->run_callback_for_default()` | Force the option callback to be executed or the variable set regardless of whether the option was passed or not. Can be used to force an output variable to be set to the default_str.  |
+| `->run_callback_for_default()` | Force the option callback to be executed or the variable set when the `default_val` is used.  |
+| `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available. |
+|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing the callback can potentially be executed multiple times.|
 | `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
