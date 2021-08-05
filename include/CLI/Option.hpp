@@ -337,9 +337,9 @@ class Option : public OptionBase<Option> {
     bool run_callback_for_default_{false};
     /// flag indicating a separator needs to be injected after each argument call
     bool inject_separator_{false};
-    /// flag indicating tha the option should trigger the callback on each result when loaded
+    /// flag indicating that the option should trigger the validation and callback chain on each result when loaded
     bool trigger_on_result_{false};
-    /// flag indicating tha the option should force the callback regardless if any results present
+    /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
     ///@}
 
@@ -981,11 +981,8 @@ class Option : public OptionBase<Option> {
 
     /// Puts a result at the end
     Option *add_result(std::string s) {
-        auto results_added = _add_result(std::move(s), results_);
+        _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
-        if(trigger_on_result_ && results_added > 0) {
-            run_callback();
-        }
         return this;
     }
 
@@ -993,9 +990,6 @@ class Option : public OptionBase<Option> {
     Option *add_result(std::string s, int &results_added) {
         results_added = _add_result(std::move(s), results_);
         current_option_state_ = option_state::parsing;
-        if(trigger_on_result_ && results_added > 0) {
-            run_callback();
-        }
         return this;
     }
 

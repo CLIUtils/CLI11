@@ -2739,6 +2739,9 @@ class App {
                 op->add_result(std::string{});
             }
         }
+        if(op->get_trigger_on_parse() && op->current_option_state_==Option::option_state::callback_run) {
+            op->clear();
+        }
         int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
         int max_num = op->get_items_expected_max();
         // check container like options to limit the argument size to a single type if the allow_extra_flags argument is
@@ -2811,7 +2814,9 @@ class App {
         if(min_num > 0 && op->get_type_size_max() != min_num && (collected % op->get_type_size_max()) != 0) {
             op->add_result(std::string{});
         }
-
+        if(op->get_trigger_on_parse()) {
+            op->run_callback();
+        }
         if(!rest.empty()) {
             rest = "-" + rest;
             args.push_back(rest);

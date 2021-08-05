@@ -933,6 +933,18 @@ TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {
     CHECK(3 == cnt);
 }
 
+TEST_CASE_METHOD(TApp, "OnParseCallVector", "[optiontype]") {
+
+    std::vector<std::string> vec;
+
+    auto *opt = app.add_option("-c",
+                               vec)
+                    ->trigger_on_parse();
+    args = {"-c", "1", "2", "3", "-c", "2", "-c", "3", "4", "5"};
+    run();
+    CHECK(vec.size() == 3U);
+}
+
 TEST_CASE_METHOD(TApp, "force_callback", "[optiontype]") {
 
     int cnt{0};

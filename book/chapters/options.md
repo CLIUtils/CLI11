@@ -20,7 +20,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 
 | Type        | CLI11 |
 |-------------|-------|
-| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number |
+| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number.  Accepts common numerical strings like `0xFF` as well as octal, and decimal |
 | string-like | std\::string, or anything that can be constructed from or assigned a std\::string |
 | char | For a single char, single string values are accepted, otherwise longer strings are treated as integral values and a conversion is attempted |
 | complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2" |
@@ -155,7 +155,7 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
 | `->run_callback_for_default()` | Force the option callback to be executed or the variable set when the `default_val` is used.  |
 | `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available, if no default is given the callback will be executed with an empty string as an argument, which will translate to a default initialized value, which can be compiler dependent |
-|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check|
+|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check. Or potentially if a vector input is given multiple times as it will clear the results when a repeat option is given via command line.  It will trigger the callbacks once per option call on the command line|
 | `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
