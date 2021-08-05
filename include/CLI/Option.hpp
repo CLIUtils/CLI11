@@ -685,7 +685,7 @@ class Option : public OptionBase<Option> {
     /// The maximum number of arguments the option expects
     int get_type_size_max() const { return type_size_max_; }
 
-    /// The number of arguments the option expects
+    /// return the inject_separator flag
     int get_inject_separator() const { return inject_separator_; }
 
     /// The environment variable associated to this value
@@ -1001,10 +1001,10 @@ class Option : public OptionBase<Option> {
 
     /// Puts a result at the end
     Option *add_result(std::vector<std::string> s) {
+        current_option_state_ = option_state::parsing;
         for(auto &str : s) {
             _add_result(std::move(str), results_);
         }
-        current_option_state_ = option_state::parsing;
         return this;
     }
 
@@ -1163,6 +1163,7 @@ class Option : public OptionBase<Option> {
         results_.clear();
         try {
             add_result(val_str);
+            // if trigger_on_result_ is set the callback already ran
             if(run_callback_for_default_ && !trigger_on_result_) {
                 run_callback();  // run callback sets the state we need to reset it again
                 current_option_state_ = option_state::parsing;

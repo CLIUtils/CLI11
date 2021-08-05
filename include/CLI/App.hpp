@@ -2083,7 +2083,7 @@ class App {
         }
 
         for(const Option_p &opt : options_) {
-            if(opt->count() > 0 && !opt->get_callback_run()) {
+            if((*opt) && !opt->get_callback_run()) {
                 opt->run_callback();
             }
         }

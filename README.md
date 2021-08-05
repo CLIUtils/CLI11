@@ -360,10 +360,12 @@ Before parsing, you can set the following options:
 * `->capture_default_str()`: Store the current value attached and display it in the help string.
 * `->default_function(std::string())`: Advanced: Change the function that `capture_default_str()` uses.
 * `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
-* `->default_str(string)`:  Set the default string directly.  This string will also be used as a default value if no arguments are passed and the value is requested.
-* `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator).
-* `->run_callback_for_default()`: This will force the option callback to be executed or the variable set regardless of whether the option was passed or not. Can be used to force an output variable to be set to the default_str.
+* `->default_str(string)`:  Set the default string directly (NO VALIDATION OR CALLBACKS).  This string will also be used as a default value if no arguments are passed and the value is requested.
+* `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). The callback may be triggered if the `run_callback_for_default` is set.
+* `->run_callback_for_default()`: This will force the option callback to be executed or the variable set when the default_val is set.
 * `->option_text(string)`: Sets the text between the option name and description.
+* `->force_callback()`:  Causes the option callback or value set to be triggered even if the option was not present in parsing.
+* `->trigger_on_parse()`:  if set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.   
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 

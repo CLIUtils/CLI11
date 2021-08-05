@@ -154,8 +154,8 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->capture_default_str()` | Store the current value attached and display it in the help string. |
 | `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
 | `->run_callback_for_default()` | Force the option callback to be executed or the variable set when the `default_val` is used.  |
-| `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available. |
-|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing the callback can potentially be executed multiple times.|
+| `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available, if no default is given the callback will be executed with an empty string as an argument, which will translate to a default initialized value, which can be compiler dependent |
+|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check|
 | `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
