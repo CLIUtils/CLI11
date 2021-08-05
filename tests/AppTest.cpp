@@ -2278,7 +2278,7 @@ TEST_CASE_METHOD(TApp, "logFormSingleDash", "[app]") {
         }
     });
     run();
-    CHECK(app.remaining().size()==3U);
+    CHECK(app.remaining().size() == 3U);
     CHECK(verbose);
     CHECK(veryverbose);
     CHECK(veryveryverbose);

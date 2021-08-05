@@ -914,7 +914,6 @@ TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
     CHECK(2U == extras.size());
 }
 
-
 TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {
 
     int cnt{0};
@@ -924,7 +923,7 @@ TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {
                                    ++cnt;
                                    return true;
                                })
-                    ->expected(1,20)
+                    ->expected(1, 20)
                     ->trigger_on_parse();
     std::vector<std::string> extras;
     app.add_option("args", extras);
@@ -967,7 +966,6 @@ TEST_CASE_METHOD(TApp, "force_callback2", "[optiontype]") {
     run();
     CHECK(5 == cnt);
 }
-
 
 TEST_CASE_METHOD(TApp, "force_callback3", "[optiontype]") {
 
