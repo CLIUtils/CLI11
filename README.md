@@ -541,9 +541,9 @@ Validators have a few functions to query the current values:
 
 In most cases, the fastest and easiest way is to return the results through a callback or variable specified in one of the `add_*` functions.  But there are situations where this is not possible or desired.  For these cases the results may be obtained through one of the following functions. Please note that these functions will do any type conversions and processing during the call so should not used in performance critical code:
 
-* `results()`: Retrieves a vector of strings with all the results in the order they were given.
-* `results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
-* `Value=as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
+* `->results()`: Retrieves a vector of strings with all the results in the order they were given.
+* `->results(variable_to_bind_to)`: Gets the results according to the MultiOptionPolicy and converts them just like the `add_option_function` with a variable.
+* `Value=opt->as<type>()`: Returns the result or default value directly as the specified type if possible, can be vector to return all results, and a non-vector to get the result according to the MultiOptionPolicy in place.
 
 ### Subcommands
 
