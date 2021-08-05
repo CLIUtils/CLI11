@@ -365,7 +365,7 @@ Before parsing, you can set the following options:
 * `->run_callback_for_default()`: This will force the option callback to be executed or the variable set when the default_val is set.
 * `->option_text(string)`: Sets the text between the option name and description.
 * `->force_callback()`:  Causes the option callback or value set to be triggered even if the option was not present in parsing.
-* `->trigger_on_parse()`:  if set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.   
+* `->trigger_on_parse()`:  if set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
