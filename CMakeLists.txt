@@ -156,7 +156,7 @@ target_include_directories(CLI11 INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOU
 
 # To see in IDE, headers must be listed for target
 set(header-patterns "${PROJECT_SOURCE_DIR}/include/CLI/*")
-if(NOT CMAKE_VERSION VERSION_LESS 3.12)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT CMAKE_VERSION VERSION_LESS 3.12)
   list(INSERT header-patterns 0 CONFIGURE_DEPENDS)
 endif()
 
