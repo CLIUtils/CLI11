@@ -26,7 +26,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 | complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2" |
 | enumeration | any enum or enum class type is supported through conversion from the underlying type(typically int, though it can be specified otherwise) |
 | container-like | a container(like vector) of any available types including other containers |
-| wrapper | any other object with a `value_type` static definition where the type specified by `value_type` is one of the type in this list, including std::atomic<>|
+| wrapper | any other object with a `value_type` static definition where the type specified by `value_type` is one of the type in this list, including `std::atomic<>` |
 | tuple | a tuple, pair, or array, or other type with a tuple size and tuple_type operations defined and the members being a type contained in this list |
 | function | A function that takes an array of strings and returns a string that describes the conversion failure or empty for success. May be the empty function. (`{}`) |
 | streamable | any other type with a `<<` operator will also work |

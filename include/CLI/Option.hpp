@@ -95,7 +95,7 @@ template <typename CRTP> class OptionBase {
     /// Changes the group membership
     CRTP *group(const std::string &name) {
         if(!detail::valid_alias_name_string(name)) {
-            throw IncorrectConstruction("group names may not contain newlines or null characters");
+            throw IncorrectConstruction("Group names may not contain newlines or null characters");
         }
         group_ = name;
         return static_cast<CRTP *>(this);

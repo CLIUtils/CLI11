@@ -967,7 +967,7 @@ class App {
         if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
             if(!detail::valid_first_char(subcommand_name[0])) {
                 throw IncorrectConstruction(
-                    "Subcommand name starts with invalid character, '!' and'-' are not allowed");
+                    "Subcommand name starts with invalid character, '!' and '-' are not allowed");
             }
             for(auto c : subcommand_name) {
                 if(!detail::valid_later_char(c)) {
