@@ -197,14 +197,14 @@ if(CLI11_INSTALL)
 
   # Make version available in the install
   install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-          DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 
   # Install the export target as a file
   install(
     EXPORT CLI11Targets
     FILE CLI11Config.cmake
     NAMESPACE CLI11::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 
   # Use find_package on the installed package
   export(
