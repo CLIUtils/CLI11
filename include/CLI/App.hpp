@@ -368,23 +368,9 @@ class App {
 
     /// Set an alias for the app
     App *alias(std::string app_name) {
-        if(!detail::valid_name_string(app_name)) {
-            if(app_name.empty()) {
-                throw IncorrectConstruction("Empty aliases are not allowed");
-            }
-            if(!detail::valid_first_char(app_name[0])) {
-                throw IncorrectConstruction(
-                    "Alias starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
-            }
-            for(auto c : app_name) {
-                if(!detail::valid_later_char(c)) {
-                    throw IncorrectConstruction(std::string("Alias contains invalid character ('") + c +
-                                                "'), allowed characters are "
-                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
-                }
-            }
+        if(app_name.empty() || !detail::valid_alias_name_string(app_name)) {
+            throw IncorrectConstruction("Aliases may not be empty or contain newlines or null characters");
         }
-
         if(parent_ != nullptr) {
             aliases_.push_back(app_name);
             auto &res = _compare_subcommand_names(*this, *_get_fallthrough_parent());
@@ -961,6 +947,9 @@ class App {
     /// creates an option group as part of the given app
     template <typename T = Option_group>
     T *add_option_group(std::string group_name, std::string group_description = "") {
+        if(!detail::valid_alias_name_string(group_name)) {
+            throw IncorrectConstruction("option group names may not contain newlines or null characters");
+        }
         auto option_group = std::make_shared<T>(std::move(group_description), group_name, this);
         auto ptr = option_group.get();
         // move to App_p for overload resolution on older gcc versions
@@ -978,13 +967,13 @@ class App {
         if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
             if(!detail::valid_first_char(subcommand_name[0])) {
                 throw IncorrectConstruction(
-                    "Subcommand name starts with invalid character, allowed characters are [a-zA-z0-9]+'_','?','@' ");
+                    "Subcommand name starts with invalid character, '!' and '-' are not allowed");
             }
             for(auto c : subcommand_name) {
                 if(!detail::valid_later_char(c)) {
                     throw IncorrectConstruction(std::string("Subcommand name contains invalid character ('") + c +
-                                                "'), allowed characters are "
-                                                "[a-zA-z0-9]+'_','?','@','.','-' ");
+                                                "'), all characters are allowed except"
+                                                "'=',':','{','}', and ' '");
                 }
             }
         }

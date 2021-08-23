@@ -157,6 +157,22 @@ inline std::string &remove_quotes(std::string &str) {
     return str;
 }
 
+/// Add a leader to the beginning of all new lines (nothing is added
+/// at the start of the first line). `"; "` would be for ini files
+///
+/// Can't use Regex, or this would be a subs.
+inline std::string fix_newlines(const std::string &leader, std::string input) {
+    std::string::size_type n = 0;
+    while(n != std::string::npos && n < input.size()) {
+        n = input.find('\n', n);
+        if(n != std::string::npos) {
+            input = input.substr(0, n + 1) + leader + input.substr(n + 1);
+            n += leader.size();
+        }
+    }
+    return input;
+}
+
 /// Make a copy of the string and then trim it, any filter string can be used (any char in string is filtered)
 inline std::string trim_copy(const std::string &str, const std::string &filter) {
     std::string s = str;
@@ -191,7 +207,7 @@ inline std::ostream &format_aliases(std::ostream &out, const std::vector<std::st
             } else {
                 front = false;
             }
-            out << alias;
+            out << detail::fix_newlines("              ", alias);
         }
         out << "\n";
     }
@@ -199,21 +215,33 @@ inline std::ostream &format_aliases(std::ostream &out, const std::vector<std::st
 }
 
 /// Verify the first character of an option
-template <typename T> bool valid_first_char(T c) {
-    return std::isalnum(c, std::locale()) || c == '_' || c == '?' || c == '@';
-}
+/// - is a trigger character, ! has special meaning and new lines would just be annoying to deal with
+template <typename T> bool valid_first_char(T c) { return ((c != '-') && (c != '!') && (c != ' ') && c != '\n'); }
 
 /// Verify following characters of an option
-template <typename T> bool valid_later_char(T c) { return valid_first_char(c) || c == '.' || c == '-'; }
+template <typename T> bool valid_later_char(T c) {
+    // = and : are value separators, { has special meaning for option defaults,
+    // and \n would just be annoying to deal with in many places allowing space here has too much potential for
+    // inadvertent entry errors and bugs
+    return ((c != '=') && (c != ':') && (c != '{') && (c != ' ') && c != '\n');
+}
 
-/// Verify an option name
+/// Verify an option/subcommand name
 inline bool valid_name_string(const std::string &str) {
-    if(str.empty() || !valid_first_char(str[0]))
+    if(str.empty() || !valid_first_char(str[0])) {
         return false;
-    for(auto c : str.substr(1))
-        if(!valid_later_char(c))
+    }
+    auto e = str.end();
+    for(auto c = str.begin() + 1; c != e; ++c)
+        if(!valid_later_char(*c))
             return false;
     return true;
+}
+
+/// Verify an app name
+inline bool valid_alias_name_string(const std::string &str) {
+    static const std::string badChars(std::string("\n") + '\0');
+    return (str.find_first_of(badChars) == std::string::npos);
 }
 
 /// check if a string is a container segment separator (empty or "%%")
@@ -260,7 +288,7 @@ inline bool has_default_flag_values(const std::string &flags) {
 }
 
 inline void remove_default_flag_values(std::string &flags) {
-    auto loc = flags.find_first_of('{');
+    auto loc = flags.find_first_of('{', 2);
     while(loc != std::string::npos) {
         auto finish = flags.find_first_of("},", loc + 1);
         if((finish != std::string::npos) && (flags[finish] == '}')) {
@@ -365,22 +393,6 @@ inline std::vector<std::string> split_up(std::string str, char delimiter = '\0')
         trim(str);
     }
     return output;
-}
-
-/// Add a leader to the beginning of all new lines (nothing is added
-/// at the start of the first line). `"; "` would be for ini files
-///
-/// Can't use Regex, or this would be a subs.
-inline std::string fix_newlines(const std::string &leader, std::string input) {
-    std::string::size_type n = 0;
-    while(n != std::string::npos && n < input.size()) {
-        n = input.find('\n', n);
-        if(n != std::string::npos) {
-            input = input.substr(0, n + 1) + leader + input.substr(n + 1);
-            n += leader.size();
-        }
-    }
-    return input;
 }
 
 /// This function detects an equal or colon followed by an escaped quote after an argument
