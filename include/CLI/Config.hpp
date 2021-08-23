@@ -94,17 +94,17 @@ inline std::string ini_join(const std::vector<std::string> &args,
     return joined;
 }
 
-inline std::vector<std::string> generate_parents(const std::string &section, std::string &name) {
+inline std::vector<std::string> generate_parents(const std::string &section, std::string &name, char parentSeparator) {
     std::vector<std::string> parents;
     if(detail::to_lower(section) != "default") {
-        if(section.find('.') != std::string::npos) {
-            parents = detail::split(section, '.');
+        if(section.find(parentSeparator) != std::string::npos) {
+            parents = detail::split(section, parentSeparator);
         } else {
             parents = {section};
         }
     }
-    if(name.find('.') != std::string::npos) {
-        std::vector<std::string> plist = detail::split(name, '.');
+    if(name.find(parentSeparator) != std::string::npos) {
+        std::vector<std::string> plist = detail::split(name, parentSeparator);
         name = plist.back();
         detail::remove_quotes(name);
         plist.pop_back();
@@ -119,10 +119,11 @@ inline std::vector<std::string> generate_parents(const std::string &section, std
 }
 
 /// assuming non default segments do a check on the close and open of the segments in a configItem structure
-inline void checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentSection) {
+inline void
+checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentSection, char parentSeparator) {
 
     std::string estring;
-    auto parents = detail::generate_parents(currentSection, estring);
+    auto parents = detail::generate_parents(currentSection, estring, parentSeparator);
     if(!output.empty() && output.back().name == "--") {
         std::size_t msize = (parents.size() > 1U) ? parents.size() : 2;
         while(output.back().parents.size() >= msize) {
@@ -170,43 +171,53 @@ inline void checkParentSegments(std::vector<ConfigItem> &output, const std::stri
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
-    std::string section = "default";
-
+    std::string currentSection = "default";
+    std::string previousSection = "default";
     std::vector<ConfigItem> output;
     bool isDefaultArray = (arrayStart == '[' && arrayEnd == ']' && arraySeparator == ',');
     bool isINIArray = (arrayStart == '\0' || arrayStart == ' ') && arrayStart == arrayEnd;
+    bool inSection{false};
     char aStart = (isINIArray) ? '[' : arrayStart;
     char aEnd = (isINIArray) ? ']' : arrayEnd;
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
-
+    int currentSectionIndex{0};
     while(getline(input, line)) {
         std::vector<std::string> items_buffer;
         std::string name;
 
         detail::trim(line);
         std::size_t len = line.length();
-        if(len > 1 && line.front() == '[' && line.back() == ']') {
-            if(section != "default") {
+        // lines have to be at least 3 characters to have any meaning to CLI just skip the rest
+        if(len < 3) {
+            continue;
+        }
+        if(line.front() == '[' && line.back() == ']') {
+            if(currentSection != "default") {
                 // insert a section end which is just an empty items_buffer
                 output.emplace_back();
-                output.back().parents = detail::generate_parents(section, name);
+                output.back().parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
                 output.back().name = "--";
             }
-            section = line.substr(1, len - 2);
+            currentSection = line.substr(1, len - 2);
             // deal with double brackets for TOML
-            if(section.size() > 1 && section.front() == '[' && section.back() == ']') {
-                section = section.substr(1, section.size() - 2);
+            if(currentSection.size() > 1 && currentSection.front() == '[' && currentSection.back() == ']') {
+                currentSection = currentSection.substr(1, currentSection.size() - 2);
             }
-            if(detail::to_lower(section) == "default") {
-                section = "default";
+            if(detail::to_lower(currentSection) == "default") {
+                currentSection = "default";
             } else {
-                detail::checkParentSegments(output, section);
+                detail::checkParentSegments(output, currentSection, parentSeparatorChar);
+            }
+            inSection = false;
+            if(currentSection == previousSection) {
+                ++currentSectionIndex;
+            } else {
+                currentSectionIndex = 0;
+                previousSection = currentSection;
             }
             continue;
         }
-        if(len == 0) {
-            continue;
-        }
+
         // comment lines
         if(line.front() == ';' || line.front() == '#' || line.front() == commentChar) {
             continue;
@@ -217,6 +228,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         if(pos != std::string::npos) {
             name = detail::trim_copy(line.substr(0, pos));
             std::string item = detail::trim_copy(line.substr(pos + 1));
+            auto cloc = item.find(commentChar);
+            if(cloc != std::string::npos) {
+                item.erase(cloc, std::string::npos);
+                detail::trim(item);
+            }
             if(item.size() > 1 && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
@@ -232,9 +248,15 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             }
         } else {
             name = detail::trim_copy(line);
+            auto cloc = name.find(commentChar);
+            if(cloc != std::string::npos) {
+                name.erase(cloc, std::string::npos);
+                detail::trim(name);
+            }
+
             items_buffer = {"true"};
         }
-        if(name.find('.') == std::string::npos) {
+        if(name.find(parentSeparatorChar) == std::string::npos) {
             detail::remove_quotes(name);
         }
         // clean up quotes on the items
@@ -242,8 +264,20 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             detail::remove_quotes(it);
         }
 
-        std::vector<std::string> parents = detail::generate_parents(section, name);
-
+        std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
+        if(parents.size() > maximumLayers) {
+            continue;
+        }
+        if(!configSection.empty() && !inSection) {
+            if(parents.empty() || parents.front() != configSection) {
+                continue;
+            }
+            if(configIndex >= 0 && currentSectionIndex != configIndex) {
+                continue;
+            }
+            parents.erase(parents.begin());
+            inSection = true;
+        }
         if(!output.empty() && name == output.back().name && parents == output.back().parents) {
             output.back().inputs.insert(output.back().inputs.end(), items_buffer.begin(), items_buffer.end());
         } else {
@@ -253,11 +287,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             output.back().inputs = std::move(items_buffer);
         }
     }
-    if(section != "default") {
+    if(currentSection != "default") {
         // insert a section end which is just an empty items_buffer
         std::string ename;
         output.emplace_back();
-        output.back().parents = detail::generate_parents(section, ename);
+        output.back().parents = detail::generate_parents(currentSection, ename, parentSeparatorChar);
         output.back().name = "--";
         while(output.back().parents.size() > 1) {
             output.push_back(output.back());
@@ -339,17 +373,18 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 if(!prefix.empty() || app->get_parent() == nullptr) {
                     out << '[' << prefix << subcom->get_name() << "]\n";
                 } else {
-                    std::string subname = app->get_name() + "." + subcom->get_name();
+                    std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
                     auto p = app->get_parent();
                     while(p->get_parent() != nullptr) {
-                        subname = p->get_name() + "." + subname;
+                        subname = p->get_name() + parentSeparatorChar + subname;
                         p = p->get_parent();
                     }
                     out << '[' << subname << "]\n";
                 }
                 out << to_config(subcom, default_also, write_description, "");
             } else {
-                out << to_config(subcom, default_also, write_description, prefix + subcom->get_name() + ".");
+                out << to_config(
+                    subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
             }
         }
     }

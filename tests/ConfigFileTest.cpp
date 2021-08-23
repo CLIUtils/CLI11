@@ -798,6 +798,114 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+TEST_CASE_METHOD(TApp, "IniInlineComment", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini, "", true);
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99 ; this is a two" << std::endl;
+        out << "three=3; this is a three" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one)->required();
+    app.add_option("--two", two)->required();
+    app.add_option("--three", three)->required();
+
+    args = {"--one=1"};
+
+    run();
+    CHECK(1 == one);
+    CHECK(99 == two);
+    CHECK(3 == three);
+
+    one = two = three = 0;
+    args = {"--one=1", "--two=2"};
+
+    CHECK_NOTHROW(run());
+    CHECK(1 == one);
+    CHECK(2 == two);
+    CHECK(3 == three);
+
+    args = {};
+
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+
+    args = {"--two=2"};
+
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+}
+
+TEST_CASE_METHOD(TApp, "TomlInlineComment", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini, "", true);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99 # this is a two" << std::endl;
+        out << "three=3# this is a three" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one)->required();
+    app.add_option("--two", two)->required();
+    app.add_option("--three", three)->required();
+
+    args = {"--one=1"};
+
+    run();
+    CHECK(1 == one);
+    CHECK(99 == two);
+    CHECK(3 == three);
+
+    one = two = three = 0;
+    args = {"--one=1", "--two=2"};
+
+    CHECK_NOTHROW(run());
+    CHECK(1 == one);
+    CHECK(2 == two);
+    CHECK(3 == three);
+
+    args = {};
+
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+
+    args = {"--two=2"};
+
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+}
+
+TEST_CASE_METHOD(TApp, "ConfigModifiers", "[config]") {
+
+    app.set_config("--config", "test.ini", "", true);
+
+    auto cfgptr = app.get_config_formatter_base();
+
+    cfgptr->section("test");
+    CHECK(cfgptr->section() == "test");
+
+    CHECK(cfgptr->sectionRef() == "test");
+    auto &sref = cfgptr->sectionRef();
+    sref = "this";
+    CHECK(cfgptr->section() == "this");
+
+    cfgptr->index(5);
+    CHECK(cfgptr->index() == 5);
+
+    CHECK(cfgptr->indexRef() == 5);
+    auto &iref = cfgptr->indexRef();
+    iref = 7;
+    CHECK(cfgptr->index() == 7);
+}
+
 TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -1003,6 +1111,39 @@ TEST_CASE_METHOD(TApp, "IniLayered", "[config]") {
     CHECK(!*subcom);
 }
 
+TEST_CASE_METHOD(TApp, "IniLayeredStream", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+    auto subsubcom = subcom->add_subcommand("subsubcom");
+    subsubcom->add_option("--val", three);
+
+    std::ifstream in{tmpini};
+    app.parse_from_stream(in);
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
+}
+
 TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -1019,6 +1160,45 @@ TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
         out << "val=3" << std::endl;
     }
 
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+    auto subsubcom = subcom->add_subcommand("subsubcom");
+    subsubcom->add_option("--val", three);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
+
+    three = 0;
+    // check maxlayers
+    app.get_config_formatter_base()->maxLayers(1);
+    run();
+    CHECK(three == 0);
+}
+
+TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "[subcom|subsubcom]" << std::endl;
+        out << "val=3" << std::endl;
+    }
+    app.get_config_formatter_base()->parentSeparator('|');
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
     auto subcom = app.add_subcommand("subcom");
@@ -1109,6 +1289,130 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
     CHECK(2U == parse_c[0]);
 
     CHECK(0U == subcom2->count());
+}
+
+TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config");
+
+    {
+        std::ofstream out{tmpini};
+        out << "[config]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2 == val);
+}
+
+TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config");
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[config]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2 == val);
+}
+
+TEST_CASE_METHOD(TApp, "jsonLikeParsing", "[config]") {
+
+    TempFile tmpjson{"TestJsonTmp.json"};
+
+    app.set_config("--config", tmpjson);
+    app.get_config_formatter_base()->valueSeparator(':');
+
+    {
+        std::ofstream out{tmpjson};
+        out << "{" << std::endl;
+        out << "\"val\":1," << std::endl;
+        out << "\"val2\":\"test\"," << std::endl;
+        out << "\"flag\":true" << std::endl;
+        out << "}" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+    std::string val2{0};
+    app.add_option("--val2", val2);
+
+    bool flag{false};
+    app.add_flag("--flag", flag);
+
+    run();
+
+    CHECK(1 == val);
+    CHECK(val2 == "test");
+    CHECK(flag);
+}
+
+TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
+
+    TempFile tmpini{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmpini);
+    app.get_config_formatter_base()->section("config")->index(0);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=2" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=4" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+        out << "[[config]]" << std::endl;
+        out << "val=6" << std::endl;
+        out << "subsubcom.val=3" << std::endl;
+    }
+
+    int val{0};
+    app.add_option("--val", val);
+
+    run();
+
+    CHECK(2 == val);
+
+    auto &index = app.get_config_formatter_base()->indexRef();
+    index = 1;
+    run();
+
+    CHECK(4 == val);
+
+    index = -1;
+    run();
+    // Take the first section in this case
+    CHECK(2 == val);
+    index = 2;
+    run();
+
+    CHECK(6 == val);
 }
 
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
@@ -2308,6 +2612,21 @@ TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
     CHECK_THAT(str, Contains("other.newer=true"));
 }
 
+TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    app.get_config_formatter_base()->parentSeparator(':');
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other:newer=true"));
+}
+
 TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
@@ -2339,6 +2658,24 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
     CHECK_THAT(str, Contains("simple=true"));
     CHECK_THAT(str, Contains("other.newer=true"));
     CHECK_THAT(str, Contains("other.sub2.newest=true"));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    app.get_config_formatter_base()->parentSeparator('|');
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple=true"));
+    CHECK_THAT(str, Contains("other|newer=true"));
+    CHECK_THAT(str, Contains("other|sub2|newest=true"));
 }
 
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
