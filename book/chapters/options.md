@@ -20,7 +20,7 @@ You can use any C++ int-like type, not just `int`. CLI11 understands the followi
 
 | Type        | CLI11 |
 |-------------|-------|
-| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number |
+| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number.  Accepts common numerical strings like `0xFF` as well as octal, and decimal |
 | string-like | std\::string, or anything that can be constructed from or assigned a std\::string |
 | char | For a single char, single string values are accepted, otherwise longer strings are treated as integral values and a conversion is attempted |
 | complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2" |
@@ -129,8 +129,8 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->expected(Nmin,Nmax)` | Take between `Nmin` and `Nmax` values. |
 | `->type_size(N)` | specify that each block of values would consist of N elements |
 | `->type_size(Nmin,Nmax)` | specify that each block of values would consist of between Nmin and Nmax elements |
-| `->needs(opt)` | This option requires another option to also be present, opt is an `Option` pointer. |
-| `->excludes(opt)` | This option cannot be given with `opt` present, opt is an `Option` pointer. |
+| `->needs(opt)` | This option requires another option to also be present, opt is an `Option` pointer or a string with the name of the option.  Can be removed with `->remove_needs(opt)` |
+| `->excludes(opt)` | This option cannot be given with `opt` present, opt is an `Option` pointer or a string with the name of the option.  Can be removed with `->remove_excludes(opt)` |
 | `->envname(name)` | Gets the value from the environment if present and not passed on the command line. |
 | `->group(name)` | The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print. |
 | `->description(string)` | Set/change the description |
@@ -149,8 +149,14 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->transform(Validator)` | Run a transforming validator on each value passed. See [Validators](./validators.md) for more info |
 | `->each(void(std::string))` | Run a function on each parsed value, *in order*. |
 | `->default_str(string)` | set a default string for use in the help and as a default value if no arguments are passed and a value is requested |
-| `->default_function(string())` | Advanced: Change the function that `capture_default_str()` uses. |
+| `->default_function(std::string())` | Advanced: Change the function that `capture_default_str()` uses. |
 | `->default_val(value)` | Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). |
+| `->capture_default_str()` | Store the current value attached and display it in the help string. |
+| `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
+| `->run_callback_for_default()` | Force the option callback to be executed or the variable set when the `default_val` is used.  |
+| `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available, if no default is given the callback will be executed with an empty string as an argument, which will translate to a default initialized value, which can be compiler dependent |
+|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check. Or potentially if a vector input is given multiple times as it will clear the results when a repeat option is given via command line.  It will trigger the callbacks once per option call on the command line|
+| `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
 
