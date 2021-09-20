@@ -229,7 +229,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="")
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, char(see note)🆕, int, float, vector, enum, std::atomic 🆕, or string-like, or anything with a defined conversion from a string or that takes an int, double, or string in a constructor. Also allowed are tuples, std::array or std::pair. Also supported are complex numbers🆕, wrapper types🆕, and containers besides vector🆕 of any other supported type.
+               variable_to_bind_to, // bool, char(see note), int, float, vector, enum, std::atomic, or string-like, or anything with a defined conversion from a string or that takes an int, double, or string in a constructor. Also allowed are tuples, std::array or std::pair. Also supported are complex numbers, wrapper types, and containers besides vectorof any other supported type.
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -248,7 +248,7 @@ app.add_flag(option_name,
              help_string="")
 
 app.add_flag(option_name,
-             variable_to_bind_to, // bool, int, float, complex, containers, enum, std::atomic 🆕, or string-like, or any singular object with a defined conversion from a string like add_option
+             variable_to_bind_to, // bool, int, float, complex, containers, enum, std::atomic, or string-like, or any singular object with a defined conversion from a string like add_option
              help_string="")
 
 app.add_flag_function(option_name,
@@ -263,7 +263,7 @@ App* subcom = app.add_subcommand(name, description);
 Option_group *app.add_option_group(name,description);
 ```
 
-An option name may start with any character except ('-', ' ', '\n', and '!') 🚧. For long options, after the first character all characters are allowed except ('=',':','{',' ', '\n')🚧. For the `add_flag*` functions '{' and '!' have special meaning which is why they are not allowed. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on the help line for its positional form.
+An option name may start with any character except ('-', ' ', '\n', and '!') 🆕. For long options, after the first character all characters are allowed except ('=',':','{',' ', '\n')🆕. For the `add_flag*` functions '{' and '!' have special meaning which is why they are not allowed. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on the help line for its positional form.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.
 
@@ -317,7 +317,7 @@ The default value can be any value. For example if you wished to define a numeri
 app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag")
 ```
 
-using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
+Using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
 
 On a `C++14` compiler, you can pass a callback function directly to `.add_flag`, while in C++11 mode you'll need to use `.add_flag_function` if you want a callback function. The function will be given the number of times the flag was passed. You can throw a relevant `CLI::ParseError` to signal a failure.
 
@@ -347,7 +347,7 @@ Before parsing, you can set the following options:
 * `->ignore_case()`: Ignore the case on the command line (also works on subcommands, does not affect arguments).
 * `->ignore_underscore()`: Ignore any underscores in the options names (also works on subcommands, does not affect arguments). For example "option_one" will match with "optionone".  This does not apply to short form options since they only have one character
 * `->disable_flag_override()`: From the command line long form flag options can be assigned a value on the command line using the `=` notation `--flag=value`. If this behavior is not desired, the `disable_flag_override()` disables it and will generate an exception if it is done on the command line.  The `=` does not work with short form flag options.
-* `->allow_extra_args(true/false)`: 🆕 If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
+* `->allow_extra_args(true/false)`: If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
 * `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 * `->description(str)`: Set/change the description.
 * `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy). `->join(delim)` can also be used to join with a specific delimiter. This equivalent to calling `->delimiter(delim)` and `->join()`
@@ -362,10 +362,10 @@ Before parsing, you can set the following options:
 * `->always_capture_default()`: Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`.
 * `->default_str(string)`:  Set the default string directly (NO VALIDATION OR CALLBACKS).  This string will also be used as a default value if no arguments are passed and the value is requested.
 * `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). The callback may be triggered if the `run_callback_for_default` is set.
-* `->run_callback_for_default()`: This will force the option callback to be executed or the variable set when the default_val is set.
+* `->run_callback_for_default()`: This will force the option callback to be executed or the variable set when the `default_val` is set.
 * `->option_text(string)`: Sets the text between the option name and description.
-* `->force_callback()`:  Causes the option callback or value set to be triggered even if the option was not present in parsing.
-* `->trigger_on_parse()`:  if set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.
+* `->force_callback()`: 🚧 Causes the option callback or value set to be triggered even if the option was not present in parsing.
+* `->trigger_on_parse()`: 🚧 If set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
@@ -421,7 +421,7 @@ CLI11 has several Validators built-in that perform some common checks
 * `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
 * `CLI::Number`: Requires the input be a number.
 * `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g. `'255.255.255.255'`, `'10.1.1.7'`.
-* `CLI::TypeValidator<TYPE>`:🆕 Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
+* `CLI::TypeValidator<TYPE>`:Requires that the option be convertible to the specified type e.g.  `CLI::TypeValidator<unsigned int>()` would require that the input be convertible to an `unsigned int` regardless of the end conversion.
 
 These Validators can be used by simply passing the name into the `check` or `transform` methods on an option
 
@@ -576,7 +576,7 @@ There are several options that are supported on the main app and subcommands and
 * `.disable()`: Specify that the subcommand is disabled, if given with a bool value it will enable or disable the subcommand or option group.
 * `.disabled_by_default()`: Specify that at the start of parsing the subcommand/option_group should be disabled. This is useful for allowing some Subcommands to trigger others.
 * `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
-* `.silent()`: 🆕 Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
+* `.silent()`: Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
 * `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
 * `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
 * `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
@@ -673,7 +673,7 @@ The subcommand method
 .add_option_group(name,description)
 ```
 
-Will create an option group, and return a pointer to it. The argument for `description` is optional and can be omitted.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through.  The name given in an option group must not contain newlines or null characters.🚧
+Will create an option group, and return a pointer to it. The argument for `description` is optional and can be omitted.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/master/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through.  The name given in an option group must not contain newlines or null characters.🆕
 
 ```cpp
 ogroup->add_option(option_pointer);
@@ -734,7 +734,7 @@ app.set_config(option_name="",
                required=false)
 ```
 
-If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML][] format by default 🆕, though the default reader can also accept files in INI format as well. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file:
+If this is called with no arguments, it will remove the configuration file option (like `set_help_flag`). Setting a configuration option is special. If it is present, it will be read along with the normal command line arguments. The file will be read if it exists, and does not throw an error unless `required` is `true`. Configuration files are in [TOML][] format by default, though the default reader can also accept files in INI format as well. It should be noted that CLI11 does not contain a full TOML parser but can read strings from most TOML file and run them through the CLI11 parser. Other formats can be added by an adept user, some variations are available through customization points in the default formatter. An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #
@@ -779,7 +779,7 @@ If it is desired that multiple configuration be allowed.  Use
 app.set_config("--config")->expected(1, X);
 ```
 
-Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.  Value strings with quote characters in it will be printed with a single quote.🆕  All other arguments will use double quote.  Empty strings will use a double quoted argument.🆕  Numerical or boolean values are not quoted. 🆕
+Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.  Value strings with quote characters in it will be printed with a single quote. All other arguments will use double quote.  Empty strings will use a double quoted argument. Numerical or boolean values are not quoted.
 
 ### Inheriting defaults
 
