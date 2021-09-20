@@ -155,13 +155,14 @@ TEST_CASE("String: InvalidName", "[helpers]") {
     CHECK(CLI::detail::valid_name_string("valid"));
     CHECK_FALSE(CLI::detail::valid_name_string("-invalid"));
     CHECK(CLI::detail::valid_name_string("va-li-d"));
-    CHECK_FALSE(CLI::detail::valid_name_string("vali&d"));
+    CHECK_FALSE(CLI::detail::valid_name_string("valid{}"));
     CHECK(CLI::detail::valid_name_string("_valid"));
-    CHECK_FALSE(CLI::detail::valid_name_string("/valid"));
+    CHECK(CLI::detail::valid_name_string("/valid"));
     CHECK(CLI::detail::valid_name_string("vali?d"));
     CHECK(CLI::detail::valid_name_string("@@@@"));
     CHECK(CLI::detail::valid_name_string("b@d2?"));
     CHECK(CLI::detail::valid_name_string("2vali?d"));
+    CHECK_FALSE(CLI::detail::valid_name_string("!valid"));
 }
 
 TEST_CASE("StringTools: Modify", "[helpers]") {

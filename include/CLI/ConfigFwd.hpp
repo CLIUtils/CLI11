@@ -91,6 +91,14 @@ class ConfigBase : public Config {
     char stringQuote = '"';
     /// the character to use around single characters
     char characterQuote = '\'';
+    /// the maximum number of layers to allow
+    uint8_t maximumLayers{255};
+    /// the separator used to separator parent layers
+    char parentSeparatorChar{'.'};
+    /// Specify the configuration index to use for arrayed sections
+    int16_t configIndex{-1};
+    /// Specify the configuration section that should be used
+    std::string configSection{};
 
   public:
     std::string
@@ -122,6 +130,35 @@ class ConfigBase : public Config {
     ConfigBase *quoteCharacter(char qString, char qChar) {
         stringQuote = qString;
         characterQuote = qChar;
+        return this;
+    }
+    /// Specify the maximum number of parents
+    ConfigBase *maxLayers(uint8_t layers) {
+        maximumLayers = layers;
+        return this;
+    }
+    /// Specify the separator to use for parent layers
+    ConfigBase *parentSeparator(char sep) {
+        parentSeparatorChar = sep;
+        return this;
+    }
+    /// get a reference to the configuration section
+    std::string &sectionRef() { return configSection; }
+    /// get the section
+    const std::string &section() const { return configSection; }
+    /// specify a particular section of the configuration file to use
+    ConfigBase *section(const std::string &sectionName) {
+        configSection = sectionName;
+        return this;
+    }
+
+    /// get a reference to the configuration index
+    int16_t &indexRef() { return configIndex; }
+    /// get the section index
+    int16_t index() const { return configIndex; }
+    /// specify a particular index in the section to use (-1) for all sections to use
+    ConfigBase *index(int16_t sectionIndex) {
+        configIndex = sectionIndex;
         return this;
     }
 };

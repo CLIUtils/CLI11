@@ -156,7 +156,7 @@ target_include_directories(CLI11 INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOU
 
 # To see in IDE, headers must be listed for target
 set(header-patterns "${PROJECT_SOURCE_DIR}/include/CLI/*")
-if(NOT CMAKE_VERSION VERSION_LESS 3.12)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT CMAKE_VERSION VERSION_LESS 3.12)
   list(INSERT header-patterns 0 CONFIGURE_DEPENDS)
 endif()
 
@@ -197,14 +197,14 @@ if(CLI11_INSTALL)
 
   # Make version available in the install
   install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake"
-          DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
+          DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 
   # Install the export target as a file
   install(
     EXPORT CLI11Targets
     FILE CLI11Config.cmake
     NAMESPACE CLI11::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CLI11")
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 
   # Use find_package on the installed package
   export(

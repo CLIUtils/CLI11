@@ -127,6 +127,17 @@ TEST_CASE_METHOD(TApp, "DashedOptionsSingleString", "[app]") {
     CHECK(app.count("--that") == 2u);
 }
 
+TEST_CASE_METHOD(TApp, "StrangeFlagNames", "[app]") {
+    app.add_flag("-=");
+    app.add_flag("--t\tt");
+    app.add_flag("-{");
+    CHECK_THROWS_AS(app.add_flag("--t t"), CLI::ConstructionError);
+    args = {"-=", "--t\tt"};
+    run();
+    CHECK(app.count("-=") == 1u);
+    CHECK(app.count("--t\tt") == 1u);
+}
+
 TEST_CASE_METHOD(TApp, "RequireOptionsError", "[app]") {
     using Catch::Matchers::Contains;
 
@@ -580,6 +591,20 @@ TEST_CASE_METHOD(TApp, "SingleArgVector", "[app]") {
     CHECK(channels.size() == 3u);
     CHECK(iargs.size() == 4u);
     CHECK("happy" == path);
+}
+
+TEST_CASE_METHOD(TApp, "StrangeOptionNames", "[app]") {
+    app.add_option("-:");
+    app.add_option("--t\tt");
+    app.add_option("--{}");
+    app.add_option("--:)");
+    CHECK_THROWS_AS(app.add_option("--t t"), CLI::ConstructionError);
+    args = {"-:)", "--{}", "5"};
+    run();
+    CHECK(app.count("-:") == 1u);
+    CHECK(app.count("--{}") == 1u);
+    CHECK(app["-:"]->as<char>() == ')');
+    CHECK(app["--{}"]->as<int>() == 5);
 }
 
 TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {
