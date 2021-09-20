@@ -7,11 +7,11 @@ a wider variety of characters than before, even spaces can be used (use quotes
 to include a space in most shells). The default configuration parser was
 improved, allowing your configuration to sit in a larger file. And option
 callbacks have a few new settings, allowing them to be run even if the option
-is not passed.
+is not passed, or every time the option is parsed.
 
 * Option/subcommand name restrictions have been relaxed. Most characters are now allowed. [#627][]
 * The config parser can accept streams, specify a specific section, and inline comment characters are supported [#630][]
-* `force_callback` & `trigger_on_parse` added, allowing a callback to always run on parse even if not present [#631][]
+* `force_callback` & `trigger_on_parse` added, allowing a callback to always run on parse even if not present or every time the option is parsed[#631][]
 * Bugfix(cmake): Only add `CONFIGURE_DEPENDS` if CLI11 is the main project [#633][]
 * Bugfix(cmake): Ensure the cmake/pkg-config files install to a arch independent path [#635][]
 * Bugfix: The single header file generation was missing the include guard. [#620][]
