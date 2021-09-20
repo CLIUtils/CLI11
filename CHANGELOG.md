@@ -1,5 +1,28 @@
 # Changelog
 
+## Version 2.1: Names and callbacks
+
+The name restrictions for options and subcommands are now much looser, allowing
+a wider variety of characters than before, even spaces can be used (use quotes
+to include a space in most shells). The default configuration parser was
+improved, allowing your configuration to sit in a larger file. And option
+callbacks have a few new settings, allowing them to be run even if the option
+is not passed.
+
+* Option/subcommand name restrictions have been relaxed. Most characters are now allowed. [#627][]
+* The config parser can accept streams, specify a specific section, and inline comment characters are supported [#630][]
+* `force_callback` & `trigger_on_parse` added, allowing a callback to always run on parse even if not present [#631][]
+* Bugfix(cmake): Only add `CONFIGURE_DEPENDS` if CLI11 is the main project [#633][]
+* Bugfix(cmake): Ensure the cmake/pkg-config files install to a arch independent path [#635][]
+* Bugfix: The single header file generation was missing the include guard. [#620][]
+
+[#620]: https://github.com/CLIUtils/CLI11/pull/620
+[#627]: https://github.com/CLIUtils/CLI11/pull/627
+[#630]: https://github.com/CLIUtils/CLI11/pull/630
+[#631]: https://github.com/CLIUtils/CLI11/pull/631
+[#633]: https://github.com/CLIUtils/CLI11/pull/633
+[#635]: https://github.com/CLIUtils/CLI11/pull/635
+
 ## Version 2.0: Simplification
 
 This version focuses on cleaning up deprecated functionality, and some minor
@@ -62,12 +85,6 @@ testing system and single file generation system.
 [#604]: https://github.com/CLIUtils/CLI11/pull/604
 [#605]: https://github.com/CLIUtils/CLI11/pull/605
 [#606]: https://github.com/CLIUtils/CLI11/pull/606
-
-### Version 2.0.1: Single header fix
-
-The single header file was missing the include guard. [#620][]
-
-[#620]: https://github.com/CLIUtils/CLI11/pull/620
 
 ## Version 1.9: Config files and cleanup
 
