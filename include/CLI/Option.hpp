@@ -685,7 +685,7 @@ class Option : public OptionBase<Option> {
     /// The maximum number of arguments the option expects
     int get_type_size_max() const { return type_size_max_; }
 
-    /// return the inject_separator flag
+    /// Return the inject_separator flag
     int get_inject_separator() const { return inject_separator_; }
 
     /// The environment variable associated to this value
