@@ -467,35 +467,35 @@ class Range : public Validator {
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
     /// needed to provide nice syntax for Range(a,b).
     template <typename T>
-    Range(T min, T max, const std::string &validator_name = std::string{}) : Validator(validator_name) {
+    Range(T min_val, T max_val, const std::string &validator_name = std::string{}) : Validator(validator_name) {
         if(validator_name.empty()) {
             std::stringstream out;
-            out << detail::type_name<T>() << " in [" << min << " - " << max << "]";
+            out << detail::type_name<T>() << " in [" << min_val << " - " << max_val << "]";
             description(out.str());
         }
 
-        func_ = [min, max](std::string &input) {
+        func_ = [min_val, max_val](std::string &input) {
             T val;
             bool converted = detail::lexical_cast(input, val);
-            if((!converted) || (val < min || val > max))
-                return std::string("Value ") + input + " not in range " + std::to_string(min) + " to " +
-                       std::to_string(max);
+            if((!converted) || (val < min_val || val > max_val))
+                return std::string("Value ") + input + " not in range " + std::to_string(min_val) + " to " +
+                       std::to_string(max_val);
 
-            return std::string();
+            return std::string{};
         };
     }
 
     /// Range of one value is 0 to value
     template <typename T>
-    explicit Range(T max, const std::string &validator_name = std::string{})
-        : Range(static_cast<T>(0), max, validator_name) {}
+    explicit Range(T max_val, const std::string &validator_name = std::string{})
+        : Range(static_cast<T>(0), max_val, validator_name) {}
 };
 
 /// Check for a non negative number
-const Range NonNegativeNumber(std::numeric_limits<double>::max(), "NONNEGATIVE");
+const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
 /// Check for a positive valued number (val>0.0), min() her is the smallest positive number
-const Range PositiveNumber(std::numeric_limits<double>::min(), std::numeric_limits<double>::max(), "POSITIVE");
+const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 /// Produce a bounded range (factory). Min and max are inclusive.
 class Bound : public Validator {
@@ -504,28 +504,28 @@ class Bound : public Validator {
     ///
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
     /// needed to provide nice syntax for Range(a,b).
-    template <typename T> Bound(T min, T max) {
+    template <typename T> Bound(T min_val, T max_val) {
         std::stringstream out;
-        out << detail::type_name<T>() << " bounded to [" << min << " - " << max << "]";
+        out << detail::type_name<T>() << " bounded to [" << min_val << " - " << max_val << "]";
         description(out.str());
 
-        func_ = [min, max](std::string &input) {
+        func_ = [min_val, max_val](std::string &input) {
             T val;
             bool converted = detail::lexical_cast(input, val);
             if(!converted) {
                 return std::string("Value ") + input + " could not be converted";
             }
-            if(val < min)
-                input = detail::to_string(min);
-            else if(val > max)
-                input = detail::to_string(max);
+            if(val < min_val)
+                input = detail::to_string(min_val);
+            else if(val > max_val)
+                input = detail::to_string(max_val);
 
             return std::string{};
         };
     }
 
     /// Range of one value is 0 to value
-    template <typename T> explicit Bound(T max) : Bound(static_cast<T>(0), max) {}
+    template <typename T> explicit Bound(T max_val) : Bound(static_cast<T>(0), max_val) {}
 };
 
 namespace detail {
