@@ -25,7 +25,7 @@ is not passed, or every time the option is parsed.
 
 ### Version 2.1.1: Quick Windows fix
 
-* A collison with `min`/`max` macros on Windows has been fixed. [#642][]
+* A collision with `min`/`max` macros on Windows has been fixed. [#642][]
 
 [#642]: https://github.com/CLIUtils/CLI11/pull/642
 
