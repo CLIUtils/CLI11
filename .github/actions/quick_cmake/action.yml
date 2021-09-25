@@ -5,14 +5,21 @@ inputs:
     description: 'Other arguments'
     required: false
     default: ''
+  cmake-version:
+    description: 'The CMake version to run'
+    required: true
 
 runs:
   using: composite
   steps:
+    - name: CMake ${{ inputs.cmake-version }}
+      uses: jwlawson/actions-setup-cmake@v1.11
+      with:
+        cmake-version: "${{ inputs.cmake-version }}"
     - run: |
         mkdir -p build-tmp
         touch build-tmp/tmp
         rm -r build-tmp/*
-        (cd build-tmp && cmake .. ${{ inputs.args}})
+        (cd build-tmp && cmake .. ${{ inputs.args }})
         rm -r build-tmp
       shell: bash

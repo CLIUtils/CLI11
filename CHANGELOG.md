@@ -23,6 +23,12 @@ is not passed, or every time the option is parsed.
 [#633]: https://github.com/CLIUtils/CLI11/pull/633
 [#635]: https://github.com/CLIUtils/CLI11/pull/635
 
+### Version 2.1.1: Quick Windows fix
+
+* A collision with `min`/`max` macros on Windows has been fixed. [#642][]
+
+[#642]: https://github.com/CLIUtils/CLI11/pull/642
+
 ## Version 2.0: Simplification
 
 This version focuses on cleaning up deprecated functionality, and some minor
