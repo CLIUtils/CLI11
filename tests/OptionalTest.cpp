@@ -258,11 +258,13 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVector", "[optional]") {
            "-v,--vec", [&opt](const std::vector<int> &v) { opt = v; }, "some vector")
         ->expected(3);
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
 
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -272,14 +274,17 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmpty", "[optional]") {
     app.add_option<decltype(opt), std::vector<int>>("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    CHECK(!opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -289,14 +294,17 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmptyDirect", "[optional]") {
     app.add_option_no_stream("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    CHECK(!opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }

@@ -27,12 +27,33 @@ jobs:
         submodules: true
     - name: Add wget
       run: apt-get update && apt-get install -y wget
-    - name: Setup cmake
+    - name: Get cmake
       uses: jwlawson/actions-setup-cmake@v1.11
     - name: Configure
       run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
     - name: Build
       run: cmake --build build -j2
+
+
+  boost-build:
+    name: Boost build
+    runs-on: ubuntu-latest
+    container: zouzias/boost:1.76.0
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Add deps
+      run: apt-get update && apt-get install make
+    - name: Get CMake
+      uses: jwlawson/actions-setup-cmake@v1.11
+    - name: Configure
+      run: cmake -S . -B build -DCLI11_BOOST=ON
+    - name: Build
+      run: cmake --build build -j2
+    - name: Run tests
+      run: ctest --output-on-failure
+      working-directory: build
 
   cmake-config:
     name: CMake config check
