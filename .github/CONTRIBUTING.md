@@ -76,9 +76,8 @@ Steps:
 
 * Update changelog if needed
 * Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
-* Find and replace in README:
+* Find and replace in README (new minor/major release only):
   * Replace " 🆕" and "🆕 " with "" (ignores the description line)
   * Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
   * Replace "🚧" with "🆕" (manually ignore the description line)
 * Make a release in the GitHub UI, use a name such as "Version X.Y(.Z): Title"
-* Currently, the release action wipes the title after you release, so remember to edit the title back to the original name after the `CLI11.hpp` file gets uploaded.
