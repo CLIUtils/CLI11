@@ -11,7 +11,7 @@ is not passed, or every time the option is parsed.
 
 * Option/subcommand name restrictions have been relaxed. Most characters are now allowed. [#627][]
 * The config parser can accept streams, specify a specific section, and inline comment characters are supported [#630][]
-* `force_callback` & `trigger_on_parse` added, allowing a callback to always run on parse even if not present or every time the option is parsed[#631][]
+* `force_callback` & `trigger_on_parse` added, allowing a callback to always run on parse even if not present or every time the option is parsed [#631][]
 * Bugfix(cmake): Only add `CONFIGURE_DEPENDS` if CLI11 is the main project [#633][]
 * Bugfix(cmake): Ensure the cmake/pkg-config files install to a arch independent path [#635][]
 * Bugfix: The single header file generation was missing the include guard. [#620][]
@@ -26,8 +26,12 @@ is not passed, or every time the option is parsed.
 ### Version 2.1.1: Quick Windows fix
 
 * A collision with `min`/`max` macros on Windows has been fixed. [#642][]
+* Tests pass with Boost again [#646][]
+* Running the pre-commit hooks in development no longer requires docker for clang-format [#647][]
 
 [#642]: https://github.com/CLIUtils/CLI11/pull/642
+[#646]: https://github.com/CLIUtils/CLI11/pull/646
+[#647]: https://github.com/CLIUtils/CLI11/pull/647
 
 ## Version 2.0: Simplification
 
