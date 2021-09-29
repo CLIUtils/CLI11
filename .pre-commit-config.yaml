@@ -1,8 +1,6 @@
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"
-  skip:
-    - docker-clang-format
 
 
 repos:
@@ -23,17 +21,10 @@ repos:
   - id: mixed-line-ending
   - id: trailing-whitespace
 
-- repo: local
+- repo: https://github.com/ssciwr/clang-format-hook
+  rev: v12.0.1
   hooks:
-  - id: docker-clang-format
-    name: Docker Clang Format
-    language: docker_image
-    types:
-    - c++
-    entry: unibeautify/clang-format:latest
-    args:
-    - -style=file
-    - -i
+   - id: clang-format
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13

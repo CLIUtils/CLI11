@@ -3169,25 +3169,25 @@ struct AppFriend {
 #ifdef CLI11_CPP14
 
     /// Wrap _parse_short, perfectly forward arguments and return
-    template <typename... Args> static decltype(auto) parse_arg(App *app, Args &&... args) {
+    template <typename... Args> static decltype(auto) parse_arg(App *app, Args &&...args) {
         return app->_parse_arg(std::forward<Args>(args)...);
     }
 
     /// Wrap _parse_subcommand, perfectly forward arguments and return
-    template <typename... Args> static decltype(auto) parse_subcommand(App *app, Args &&... args) {
+    template <typename... Args> static decltype(auto) parse_subcommand(App *app, Args &&...args) {
         return app->_parse_subcommand(std::forward<Args>(args)...);
     }
 #else
     /// Wrap _parse_short, perfectly forward arguments and return
     template <typename... Args>
-    static auto parse_arg(App *app, Args &&... args) ->
+    static auto parse_arg(App *app, Args &&...args) ->
         typename std::result_of<decltype (&App::_parse_arg)(App, Args...)>::type {
         return app->_parse_arg(std::forward<Args>(args)...);
     }
 
     /// Wrap _parse_subcommand, perfectly forward arguments and return
     template <typename... Args>
-    static auto parse_subcommand(App *app, Args &&... args) ->
+    static auto parse_subcommand(App *app, Args &&...args) ->
         typename std::result_of<decltype (&App::_parse_subcommand)(App, Args...)>::type {
         return app->_parse_subcommand(std::forward<Args>(args)...);
     }
