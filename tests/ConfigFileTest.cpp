@@ -1014,16 +1014,22 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
         std::ofstream out{tmptoml};
         out << "#this is a comment line\n";
         out << "[default]\n";
+        out << "zero=[]\n";
+        out << "one=[\"1\"]\n";
         out << "two=[\"2\",\"3\"]\n";
         out << "three=[\"1\",\"2\",\"3\"]\n";
     }
 
-    std::vector<std::string> two, three;
+    std::vector<std::string> zero, one, two, three;
+    app.add_option("--zero", zero)->required();
+    app.add_option("--one", one)->required();
     app.add_option("--two", two)->required();
     app.add_option("--three", three)->required();
 
     run();
 
+    CHECK(zero == std::vector<std::string>({}));
+    CHECK(one == std::vector<std::string>({"1"}));
     CHECK(two == std::vector<std::string>({"2", "3"}));
     CHECK(three == std::vector<std::string>({"1", "2", "3"}));
 }
@@ -1038,16 +1044,22 @@ TEST_CASE_METHOD(TApp, "IniVectorCsep", "[config]") {
         std::ofstream out{tmpini};
         out << "#this is a comment line\n";
         out << "[default]\n";
+        out << "zero=[]\n";
+        out << "one=[1]\n";
         out << "two=[2,3]\n";
         out << "three=1,2,3\n";
     }
 
-    std::vector<int> two, three;
+    std::vector<int> zero, one, two, three;
+    app.add_option("--zero", three)->required();
+    app.add_option("--one", three)->required();
     app.add_option("--two", two)->expected(2)->required();
     app.add_option("--three", three)->required();
 
     run();
 
+    CHECK(zero == std::vector<int>({}));
+    CHECK(one == std::vector<int>({1}));
     CHECK(two == std::vector<int>({2, 3}));
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
