@@ -22,7 +22,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/ssciwr/clang-format-hook
-  rev: v12.0.1
+  rev: v13.0.0
   hooks:
    - id: clang-format
 
