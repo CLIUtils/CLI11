@@ -1021,7 +1021,7 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
     }
 
     std::vector<std::string> zero, one, two, three;
-    app.add_option("--zero", zero)->required();
+    app.add_option("--zero", zero)->required()->expected(0,99);
     app.add_option("--one", one)->required();
     app.add_option("--two", two)->required();
     app.add_option("--three", three)->required();
@@ -1051,7 +1051,7 @@ TEST_CASE_METHOD(TApp, "IniVectorCsep", "[config]") {
     }
 
     std::vector<int> zero, one, two, three;
-    app.add_option("--zero", zero)->required();
+    app.add_option("--zero", zero)->required()->expected(0,99);
     app.add_option("--one", one)->required();
     app.add_option("--two", two)->expected(2)->required();
     app.add_option("--three", three)->required();
