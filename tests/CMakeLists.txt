@@ -63,23 +63,33 @@ endif()
 
 set(CLI11_MULTIONLY_TESTS TimerTest)
 
-add_library(catch_main main.cpp)
+add_library(catch_main main.cpp catch.hpp)
 target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Currently a required download; could be make to look for existing Catch2, but
-# that would require changing the includes. FetchContent would be better, but
-# requires newer CMake.
+find_package(Catch2 CONFIG)
 
-set(url https://github.com/philsquared/Catch/releases/download/v2.13.6/catch.hpp)
-file(
-  DOWNLOAD ${url} "${CMAKE_CURRENT_BINARY_DIR}/catch.hpp"
-  STATUS status
-  EXPECTED_HASH SHA256=681e7505a50887c9085539e5135794fc8f66d8e5de28eadf13a30978627b0f47)
-list(GET status 0 error)
-if(error)
-  message(FATAL_ERROR "Could not download ${url}")
+if(Catch2_FOUND)
+  if(NOT TARGET Catch2::Catch2)
+    message(FATAL_ERROR "Found Catch2 at ${Catch2_DIR} but targets are missing.")
+  endif()
+  message(STATUS "Found Catch2")
+  target_link_libraries(catch_main PUBLIC Catch2::Catch2)
+else()
+  message(STATUS "Downloading Catch2")
+
+  # FetchContent would be better, but requires newer CMake.
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/catch2")
+  set(url https://github.com/philsquared/Catch/releases/download/v2.13.7/catch.hpp)
+  file(
+    DOWNLOAD ${url} "${CMAKE_CURRENT_BINARY_DIR}/catch2/catch.hpp"
+    STATUS status
+    EXPECTED_HASH SHA256=ea379c4a3cb5799027b1eb451163dff065a3d641aaba23bf4e24ee6b536bd9bc)
+  list(GET status 0 error)
+  if(error)
+    message(FATAL_ERROR "Could not download ${url}, and Catch2 not found on your system.")
+  endif()
+  target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
-target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Target must already exist
 macro(add_catch_test TESTNAME)
@@ -174,8 +184,6 @@ file(WRITE "${PROJECT_BINARY_DIR}/CTestCustom.cmake"
 target_compile_definitions(informational PRIVATE ${boost-optional-def})
 target_compile_definitions(OptionalTest PRIVATE ${boost-optional-def})
 
-message(STATUS "Boost libs=${Boost_INCLUDE_DIRS}")
-
 if(TARGET Boost::boost)
   message(STATUS "including boost target")
   target_link_libraries(informational PRIVATE Boost::boost)
@@ -185,6 +193,7 @@ if(TARGET Boost::boost)
     target_link_libraries(OptionalTest_Single PRIVATE Boost::boost)
     target_link_libraries(BoostOptionTypeTest_Single PRIVATE Boost::boost)
   endif()
+  message(STATUS "Boost libs=${Boost_INCLUDE_DIRS}")
 elseif(BOOST_FOUND)
   message(STATUS "no boost target")
   target_include_directories(informational PRIVATE ${Boost_INCLUDE_DIRS})
@@ -194,6 +203,9 @@ elseif(BOOST_FOUND)
     target_include_directories(OptionalTest_Single PRIVATE ${Boost_INCLUDE_DIRS})
     target_include_directories(BoostOptionTypeTest_Single PRIVATE ${Boost_INCLUDE_DIRS})
   endif()
+  message(STATUS "Boost libs=${Boost_INCLUDE_DIRS}")
+else()
+  message(STATUS "Boost not found, not adding boost tests")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
