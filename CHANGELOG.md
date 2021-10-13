@@ -1,5 +1,11 @@
 # Changelog
 
+## WIP
+
+* Support compiling the tests with an external copy of Catch2. [#653][]
+
+[#653]: https://github.com/CLIUtils/CLI11/pull/653
+
 ## Version 2.1: Names and callbacks
 
 The name restrictions for options and subcommands are now much looser, allowing
