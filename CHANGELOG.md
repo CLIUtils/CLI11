@@ -2,9 +2,12 @@
 
 ## WIP
 
-* Support compiling the tests with an external copy of Catch2. [#653][]
+* Bugfix(cmake): Enforce at least C++11 when using CMake target [#656][]
+* Build: Don't run doxygen and CTest includes if a submodule [#653][]
+* Build: Support compiling the tests with an external copy of Catch2 [#653][]
 
 [#653]: https://github.com/CLIUtils/CLI11/pull/653
+[#656]: https://github.com/CLIUtils/CLI11/pull/656
 
 ## Version 2.1: Names and callbacks
 
