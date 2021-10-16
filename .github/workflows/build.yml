@@ -3,12 +3,11 @@ on:
   push:
     branches:
       - master
+      - main
       - v*
     tags:
       - "*"
   pull_request:
-    branches:
-      - master
 
 jobs:
   single-header:

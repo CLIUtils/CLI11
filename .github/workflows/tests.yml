@@ -3,10 +3,9 @@ on:
   push:
     branches:
       - master
+      - main
       - v*
   pull_request:
-    branches:
-      - master
 
 jobs:
   cuda-build:
@@ -159,5 +158,12 @@ jobs:
       uses: ./.github/actions/quick_cmake
       with:
         cmake-version: "3.21"
+        args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+      if: success() || failure()
+
+    - name: Check CMake 3.22 (full)
+      uses: ./.github/actions/quick_cmake
+      with:
+        cmake-version: "3.22"
         args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
       if: success() || failure()
