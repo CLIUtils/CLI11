@@ -4,11 +4,11 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- master
+- main
 - 'v*'
 
 pr:
-- master
+- main
 - 'v*'
 
 variables:

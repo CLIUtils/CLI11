@@ -16,7 +16,7 @@ All that's need now is the parse call. We'll print a little message after the co
 
 [include:"Parse"](../code/geet.cpp)
 
-[Source code](https://github.com/CLIUtils/CLI11/tree/master/book/code/geet.cpp)
+[Source code](https://github.com/CLIUtils/CLI11/tree/main/book/code/geet.cpp)
 
 If you compile and run:
 

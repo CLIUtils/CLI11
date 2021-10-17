@@ -6,7 +6,7 @@ dist: trusty
 # Include tags starting with v and a digit
 branches:
   only:
-  - master
+  - main
   - /^v\d/
 
 cache:
@@ -104,7 +104,7 @@ deploy:
   keep_history: false
   local_dir: ${TRAVIS_BUILD_DIR}/html
   on:
-    branch: master
+    branch: main
     condition: "$DEPLOY_MAT = yes"
 
 notifications:

@@ -195,7 +195,7 @@ Finally, set your new class as new config formatter:
 app.config_formatter(std::make_shared<NewConfig>());
 ```
 
-See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/master/examples/json.cpp) for a complete JSON config example.
+See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/main/examples/json.cpp) for a complete JSON config example.
 
 ### Trivial JSON configuration example
 
