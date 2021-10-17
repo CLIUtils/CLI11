@@ -1739,10 +1739,10 @@ class App {
     /// Get a pointer to the version option. (const)
     const Option *get_version_ptr() const { return version_ptr_; }
 
-    /// Get the parent of this subcommand (or nullptr if master app)
+    /// Get the parent of this subcommand (or nullptr if main app)
     App *get_parent() { return parent_; }
 
-    /// Get the parent of this subcommand (or nullptr if master app) (const version)
+    /// Get the parent of this subcommand (or nullptr if main app) (const version)
     const App *get_parent() const { return parent_; }
 
     /// Get the name of the current app
@@ -2456,7 +2456,7 @@ class App {
     }
 
     /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing
-    /// from master return false if the parse has failed and needs to return to parent
+    /// from main return false if the parse has failed and needs to return to parent
     bool _parse_single(std::vector<std::string> &args, bool &positional_only) {
         bool retval = true;
         detail::Classifier classifier = positional_only ? detail::Classifier::NONE : _recognize(args.back());
@@ -2731,7 +2731,7 @@ class App {
                     }
                 }
             }
-            // If a subcommand, try the master command
+            // If a subcommand, try the main command
             if(parent_ != nullptr && fallthrough_)
                 return _get_fallthrough_parent()->_parse_arg(args, current_type);
             // don't capture missing if this is a nameless subcommand

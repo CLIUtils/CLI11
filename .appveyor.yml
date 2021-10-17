@@ -2,7 +2,7 @@ version: 2.1.1.{build}
 
 branches:
   only:
-    - master
+    - main
     - v1
 
 install:

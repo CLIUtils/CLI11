@@ -28,7 +28,7 @@ Like any good command line application, help is provided. This program can be im
 
 [include](code/intro.cpp)
 
-[Source code](https://github.com/CLIUtils/CLI11/blob/master/book/code/intro.cpp)
+[Source code](https://github.com/CLIUtils/CLI11/blob/main/book/code/intro.cpp)
 
 Unlike some other libraries, this is enough to exit correctly and cleanly if help is requested or if incorrect arguments are passed. You can try this example out for yourself. To compile with GCC:
 
@@ -58,7 +58,7 @@ CLI11 was developed at the [University of Cincinnati][] in support of the [GooFi
 [cli11tutorial]: https://cliutils.github.io/CLI11/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
 [api docs]: https://cliutils.github.io/CLI11
-[readme]: https://github.com/CLIUtils/CLI11/blob/master/README.md
+[readme]: https://github.com/CLIUtils/CLI11/blob/main/README.md
 [nsf 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: https://www.uc.edu
 [plumbum]: https://plumbum.readthedocs.io/en/latest/

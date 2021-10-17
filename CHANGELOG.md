@@ -2,6 +2,7 @@
 
 ## WIP
 
+* Use `main` for the main branch of the repository [#657][]
 * Bugfix(cmake): Enforce at least C++11 when using CMake target [#656][]
 * Build: Don't run doxygen and CTest includes if a submodule [#656][]
 * Build: Avoid a warning on CMake 3.22 [#656][]
@@ -9,6 +10,7 @@
 
 [#653]: https://github.com/CLIUtils/CLI11/pull/653
 [#656]: https://github.com/CLIUtils/CLI11/pull/656
+[#657]: https://github.com/CLIUtils/CLI11/pull/657
 
 ## Version 2.1: Names and callbacks
 
@@ -624,7 +626,7 @@ This release focused on cleaning up the most exotic compiler warnings, fixing a 
 
 ## Version 0.8: CLIUtils
 
-This release moved the repository to the CLIUtils master organization.
+This release moved the repository to the CLIUtils main organization.
 
 * Moved to CLIUtils on GitHub
 * Fixed docs build and a few links
@@ -659,7 +661,7 @@ Lots of cleanup and docs additions made it into this release. Parsing is simpler
 * `->ignore_case()` added to subcommands, options, and `add_set_ignore_case`. Subcommands inherit setting from parent App on creation.
 * Subcommands now can be "chained", that is, left over arguments can now include subcommands that then get parsed. Subcommands are now a list (`get_subcommands`). Added `got_subcommand(App_or_name)` to check for subcommands.
 * Added `.allow_extras()` to disable error on failure. Parse returns a vector of leftover options. Renamed error to `ExtrasError`, and now triggers on extra options too.
-* Added `require_subcommand` to `App`, to simplify forcing subcommands. Do **not** do `add_subcommand()->require_subcommand`, since that is the subcommand, not the master `App`.
+* Added `require_subcommand` to `App`, to simplify forcing subcommands. Do **not** do `add_subcommand()->require_subcommand`, since that is the subcommand, not the main `App`.
 * Added printout of ini file text given parsed options, skips flags.
 * Support for quotes and spaces in ini files
 * Fixes to allow support for Windows (added Appveyor) (Uses `-`, not `/` syntax)
