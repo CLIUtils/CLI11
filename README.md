@@ -4,6 +4,7 @@
 
 [![Build Status Azure][azure-badge]][azure]
 [![Actions Status][actions-badge]][actions-link]
+[![Build Status AppVeyor][appveyor-badge]][appveyor]
 [![Code Coverage][codecov-badge]][codecov]
 [![Codacy Badge][codacy-badge]][codacy-link]
 [![License: BSD][license-badge]](./LICENSE)
@@ -1024,6 +1025,8 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [azure]: https://dev.azure.com/CLIUtils/CLI11
 [actions-link]: https://github.com/CLIUtils/CLI11/actions
 [actions-badge]: https://github.com/CLIUtils/CLI11/actions/workflows/tests.yml/badge.svg
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/82niaxpaa28dwbms/branch/main?svg=true
+[appveyor]: https://ci.appveyor.com/project/HenrySchreiner/cli11
 [repology-badge]: https://repology.org/badge/latest-versions/cli11.svg
 [repology]: https://repology.org/project/cli11/versions
 [codecov-badge]: https://codecov.io/gh/CLIUtils/CLI11/branch/main/graph/badge.svg
