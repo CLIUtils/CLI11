@@ -1029,7 +1029,7 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [appveyor]: https://ci.appveyor.com/project/HenrySchreiner/cli11
 [repology-badge]: https://repology.org/badge/latest-versions/cli11.svg
 [repology]: https://repology.org/project/cli11/versions
-[codecov-badge]: https://codecov.io/gh/CLIUtils/CLI11/branch/main/graph/badge.svg
+[codecov-badge]: https://codecov.io/gh/CLIUtils/CLI11/branch/main/graph/badge.svg?token=2O4wfs8NJO
 [codecov]: https://codecov.io/gh/CLIUtils/CLI11
 [gitter-badge]: https://badges.gitter.im/CLI11gitter/Lobby.svg
 [gitter]: https://gitter.im/CLI11gitter/Lobby
