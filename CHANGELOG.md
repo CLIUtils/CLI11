@@ -1,17 +1,5 @@
 # Changelog
 
-## WIP
-
-* Use `main` for the main branch of the repository [#657][]
-* Bugfix(cmake): Enforce at least C++11 when using CMake target [#656][]
-* Build: Don't run doxygen and CTest includes if a submodule [#656][]
-* Build: Avoid a warning on CMake 3.22 [#656][]
-* Build: Support compiling the tests with an external copy of Catch2 [#653][]
-
-[#653]: https://github.com/CLIUtils/CLI11/pull/653
-[#656]: https://github.com/CLIUtils/CLI11/pull/656
-[#657]: https://github.com/CLIUtils/CLI11/pull/657
-
 ## Version 2.1: Names and callbacks
 
 The name restrictions for options and subcommands are now much looser, allowing
@@ -44,6 +32,18 @@ is not passed, or every time the option is parsed.
 [#642]: https://github.com/CLIUtils/CLI11/pull/642
 [#646]: https://github.com/CLIUtils/CLI11/pull/646
 [#647]: https://github.com/CLIUtils/CLI11/pull/647
+
+## Version 2.1.2: Better subproject builds
+
+* Use `main` for the main branch of the repository [#657][]
+* Bugfix(cmake): Enforce at least C++11 when using CMake target [#656][]
+* Build: Don't run doxygen and CTest includes if a submodule [#656][]
+* Build: Avoid a warning on CMake 3.22 [#656][]
+* Build: Support compiling the tests with an external copy of Catch2 [#653][]
+
+[#653]: https://github.com/CLIUtils/CLI11/pull/653
+[#656]: https://github.com/CLIUtils/CLI11/pull/656
+[#657]: https://github.com/CLIUtils/CLI11/pull/657
 
 ## Version 2.0: Simplification
 
