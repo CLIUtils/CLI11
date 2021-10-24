@@ -2451,13 +2451,14 @@ class App {
         }
 
         if(op->empty()) {
-            // Flag parsing
+            
             if(op->get_expected_min() == 0) {
+                // Flag parsing
                 auto res = config_formatter_->to_flag(item);
                 res = op->get_flag_value(item.name, res);
 
                 op->add_result(res);
-
+                
             } else {
                 op->add_result(item.inputs);
                 op->run_callback();
