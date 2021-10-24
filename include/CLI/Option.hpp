@@ -1295,7 +1295,6 @@ class Option : public OptionBase<Option> {
         } else if(res.size() == 1 && res[0] == "{}" && get_items_expected_min() > 0) {
             res.push_back("%%");
         }
-        
     }
 
     // Run a result through the Validators

@@ -1021,8 +1021,8 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
         out << "two=[\"2\",\"3\"]\n";
         out << "three=[\"1\",\"2\",\"3\"]\n";
     }
-    
-    std::vector<std::string> nzero,zero1,zero2,one, two, three;
+
+    std::vector<std::string> nzero, zero1, zero2, one, two, three;
     app.add_option("--zero1", zero1)->required()->expected(0, 99)->default_str("{}");
     app.add_option("--zero2", zero2)->required()->expected(0, 99)->default_val(std::vector<std::string>{});
     app.add_option("--nzero", nzero)->required();
@@ -1057,7 +1057,7 @@ TEST_CASE_METHOD(TApp, "IniVectorCsep", "[config]") {
         out << "three=1,2,3\n";
     }
 
-    std::vector<int> zero1,zero2, one, two, three;
+    std::vector<int> zero1, zero2, one, two, three;
     app.add_option("--zero1", zero1)->required()->expected(0, 99)->default_str("{}");
     app.add_option("--zero2", zero2)->required()->expected(0, 99)->default_val(std::vector<int>{});
     app.add_option("--one", one)->required();
