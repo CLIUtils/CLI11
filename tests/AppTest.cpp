@@ -939,6 +939,35 @@ TEST_CASE_METHOD(TApp, "RequiredOptsDouble", "[app]") {
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
 }
 
+TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
+
+    std::vector<std::string> strs;
+    std::vector<std::string> strs2;
+    auto opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
+    app.add_option("--str2", strs2);
+    args = {"--str"};
+
+    CHECK_NOTHROW(run());
+    CHECK(std::vector<std::string>({""}) == strs);
+    args = {"--str", "one", "two"};
+
+    run();
+
+    CHECK(std::vector<std::string>({"one", "two"}) == strs);
+
+    args = {"--str", "{}", "--str2", "{}"};
+
+    run();
+
+    CHECK(std::vector<std::string>{} == strs);
+    CHECK(std::vector<std::string>{"{}"} == strs2);
+    opt1->default_str("{}");
+    args = {"--str"};
+
+    CHECK_NOTHROW(run());
+    CHECK(std::vector<std::string>{} == strs);
+}
+
 TEST_CASE_METHOD(TApp, "RequiredOptsDoubleShort", "[app]") {
 
     std::vector<std::string> strs;
