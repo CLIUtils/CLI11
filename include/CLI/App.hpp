@@ -2825,7 +2825,7 @@ class App {
             }
         }
         // if we only partially completed a type then add an empty string if allowed for later processing
-        if(min_num > 0  && (collected % op->get_type_size_max()) != 0) {
+        if(min_num > 0 && (collected % op->get_type_size_max()) != 0) {
             if(op->get_type_size_max() != op->get_type_size_min()) {
                 op->add_result(std::string{});
             } else {
