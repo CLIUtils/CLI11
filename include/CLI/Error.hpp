@@ -277,6 +277,10 @@ class ArgumentMismatch : public ParseError {
     static ArgumentMismatch FlagOverride(std::string name) {
         return ArgumentMismatch(name + " was given a disallowed flag override");
     }
+    static ArgumentMismatch PartialType(std::string name, int num, std::string type) {
+        return ArgumentMismatch(name + ": " + type + " only partially specified: " + std::to_string(num) +
+                                " required for each element");
+    }
 };
 
 /// Thrown when a requires option is missing
