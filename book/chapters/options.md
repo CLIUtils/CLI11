@@ -72,6 +72,38 @@ Vectors will be replaced by the parsed content if the option is given on the com
 
 A definition of a container for purposes of CLI11 is a type with a `end()`, `insert(...)`, `clear()` and `value_type` definitions.  This includes `vector`, `set`, `deque`, `list`, `forward_iist`, `map`, `unordered_map` and a few others from the standard library, and many other containers from the boost library.
 
+### Empty containers
+
+By default a container will never return an empty container.  If it is desired to allow an empty container to be returned, then the option must be modified with a 0 as the minimum expected value
+
+```cpp
+std::vector<int> int_vec;
+app.add_option("--vec", int_vec, "Empty vector allowed")->expected(0,-1);
+```
+
+An empty vector can than be specified on the command line as `--vec {}`
+
+To allow an empty vector from config file, the default must be set in addition to the above modification.
+
+```cpp
+std::vector<int> int_vec;
+app.add_option("--vec", int_vec, "Empty vector allowed")->expected(0,-1)->default_str("{}");
+```
+
+Then in the file
+
+```toml
+vec={}
+```
+
+or
+
+```toml
+vec=[]
+```
+
+will generate an empty vector in `int_vec`.
+
 ### Containers of containers
 
 Containers of containers are also supported.

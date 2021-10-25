@@ -798,6 +798,8 @@ app.set_config("--config")->expected(1, X);
 
 Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.  Value strings with quote characters in it will be printed with a single quote. All other arguments will use double quote.  Empty strings will use a double quoted argument. Numerical or boolean values are not quoted.
 
+For options or flags which allow 0 arguments to be passed using an empty string in the config file, `{}`, or `[]` will convert the result to the default value specified via `default_str` or `default_val` on the option 🚧.  If no user specified default is given the result is an empty string or the converted value of an empty string.
+
 NOTE:  Transforms and checks can be used with the option pointer returned from set_config like any other option to validate the input if needed.  It can also be used with the built in transform `CLI::FileOnDefaultPath` to look in a default path as well as the current one.  For example
 
 ```cpp
