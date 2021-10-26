@@ -2308,3 +2308,11 @@ TEST_CASE_METHOD(TApp, "logFormSingleDash", "[app]") {
     CHECK(veryverbose);
     CHECK(veryveryverbose);
 }
+
+TEST_CASE("C20_compile", "simple") {
+    auto app = CLI::App{"test"};
+    auto flag = app.add_flag("--flag", "desc");
+
+    app.parse("--flag");
+    CHECK(static_cast<bool>(flag));
+}
