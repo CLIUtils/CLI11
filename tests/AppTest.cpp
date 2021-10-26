@@ -2314,5 +2314,5 @@ TEST_CASE("C20_compile", "simple") {
     auto flag = app.add_flag("--flag", "desc");
 
     app.parse("--flag");
-    CHECK(static_cast<bool>(flag));
+    CHECK_FALSE(flag->empty());
 }
