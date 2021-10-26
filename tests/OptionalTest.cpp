@@ -239,6 +239,7 @@ TEST_CASE_METHOD(TApp, "BoostOptionalEnumTest", "[optional]") {
     auto dstring = optptr->get_default_str();
     CHECK(dstring.empty());
     run();
+    auto checkOpt = static_cast<bool>(opt);
     CHECK_FALSE(checkOpt);
 
     args = {"-v", "3"};
