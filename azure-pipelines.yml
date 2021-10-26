@@ -102,6 +102,9 @@ jobs:
       gcc9:
         containerImage: gcc:9
         cli11.std: 17
+      gcc11:
+        containerImage: gcc:11
+        cli11.std: 20
       gcc8:
         containerImage: gcc:8
         cli11.std: 17
