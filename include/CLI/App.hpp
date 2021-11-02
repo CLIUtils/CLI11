@@ -2825,10 +2825,13 @@ class App {
                 parse_order_.push_back(op.get());
             }
         }
-
-        // if we only partially completed a type then add an empty string for later processing
-        if(min_num > 0 && op->get_type_size_max() != min_num && (collected % op->get_type_size_max()) != 0) {
-            op->add_result(std::string{});
+        // if we only partially completed a type then add an empty string if allowed for later processing
+        if(min_num > 0 && (collected % op->get_type_size_max()) != 0) {
+            if(op->get_type_size_max() != op->get_type_size_min()) {
+                op->add_result(std::string{});
+            } else {
+                throw ArgumentMismatch::PartialType(op->get_name(), op->get_type_size_min(), op->get_type_name());
+            }
         }
         if(op->get_trigger_on_parse()) {
             op->run_callback();

@@ -2103,6 +2103,19 @@ TEST_CASE_METHOD(TApp, "TomlOutputVector", "[config]") {
     CHECK(str == "vector=[1, 2, 3]\n");
 }
 
+TEST_CASE_METHOD(TApp, "TomlOutputTuple", "[config]") {
+
+    std::tuple<double, double, double, double> t;
+    app.add_option("--tuple", t);
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+    args = {"--tuple", "1", "2", "3", "4"};
+
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK(str == "tuple=[1, 2, 3, 4]\n");
+}
+
 TEST_CASE_METHOD(TApp, "ConfigOutputVectorCustom", "[config]") {
 
     std::vector<int> v;

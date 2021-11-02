@@ -554,6 +554,27 @@ TEST_CASE_METHOD(TApp, "vectorPairFail", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
+TEST_CASE_METHOD(TApp, "vectorPairFail2", "[optiontype]") {
+
+    std::vector<std::pair<int, int>> custom_opt;
+
+    auto opt = app.add_option("--pairs", custom_opt);
+
+    args = {"--pairs", "1", "2", "3", "4"};
+
+    run();
+    CHECK(custom_opt.size() == 2U);
+
+    args = {"--pairs", "1", "2", "3"};
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+    // now change the type size to explicitly allow 1 or 2
+    opt->type_size(1, 2);
+
+    run();
+    CHECK(custom_opt.size() == 2U);
+}
+
 TEST_CASE_METHOD(TApp, "vectorPairTypeRange", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
