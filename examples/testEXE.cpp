@@ -1,43 +1,26 @@
-#include "CLI/App.hpp"
-#include "CLI/Config.hpp"
-#include "CLI/Formatter.hpp"
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
 
+// Code modified from https://github.com/CLIUtils/CLI11/issues/559
+
+#include <CLI/CLI.hpp>
 #include <iostream>
-#include <map>
-
-enum Level {
-    LL_SHUTDOWN = 0,
-    LL_CRITICAL = 1,
-    LL_ERROR_MAPPING = 2,
-    LL_ERROR = 3,
-    LL_WARNING = 4,
-    LL_INFO = 5,
-    LL_DEBUG_NORMAL = 6,
-    LL_DEBUG_DETAIL = 7,
-};
-
-std::map<std::string, Level> LogLevelMap({{"error", LL_ERROR},
-                                          {"warning", LL_WARNING},
-                                          {"info", LL_INFO},
-                                          {"debug", LL_DEBUG_NORMAL},
-                                          {"trace", LL_DEBUG_DETAIL}});
+#include <string>
 
 int main(int argc, const char *argv[]) {
 
-    Level logLevel;
-    int version;
+    int logLevel{0};
+    CLI::App app{"Test App"};
 
-    CLI::App app{"Hello App"};
+    app.add_option("-v", logLevel, "level");
 
-    app.add_option("-v,--verbosity", logLevel, "Log/Verbosity level")
-        ->transform(CLI::CheckedTransformer(LogLevelMap))
-        ->default_val(LL_INFO);
-
-    auto subcom = app.add_subcommand("subcom", "test subocmmand")->fallthrough();
-    // subcom->add_option_group("Group");
-    subcom->preparse_callback([&app, &version](size_t) { app.get_subcommand("subcom")->add_option_group("Group"); });
+    auto subcom = app.add_subcommand("sub", "")->fallthrough();
+    subcom->preparse_callback([&app](size_t) { app.get_subcommand("sub")->add_option_group("group"); });
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "Log Level: " << logLevel << std::endl;
+    std::cout << "level: " << logLevel << std::endl;
 }

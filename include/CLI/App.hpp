@@ -2741,7 +2741,7 @@ class App {
             // If a subcommand, try the main command
             if(parent_ != nullptr && fallthrough_)
                 return _get_fallthrough_parent()->_parse_arg(args, current_type);
-            
+
             // Otherwise, add to missing
             args.pop_back();
             _move_to_missing(current_type, current);
