@@ -893,6 +893,14 @@ TEST_CASE("THelp: CheckEmptyTypeName", "[help]") {
     CHECK(name.empty());
 }
 
+TEST_CASE("THelp: FlagDefaults", "[help]") {
+    CLI::App app;
+
+    app.add_flag("-t,--not{false}");
+    auto str = app.help();
+    CHECK_THAT(str, Contains("--not{false}"));
+}
+
 TEST_CASE("THelp: AccessDescription", "[help]") {
     CLI::App app{"My description goes here"};
 

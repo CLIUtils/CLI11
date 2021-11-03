@@ -102,6 +102,7 @@ jobs:
       gcc9:
         containerImage: gcc:9
         cli11.std: 17
+        cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
       gcc11:
         containerImage: gcc:11
         cli11.std: 20

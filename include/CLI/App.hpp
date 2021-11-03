@@ -1213,8 +1213,8 @@ class App {
         }
 
         std::vector<std::string> args;
-        args.reserve(static_cast<std::size_t>(argc) - 1);
-        for(int i = argc - 1; i > 0; i--)
+        args.reserve(static_cast<std::size_t>(argc) - 1U);
+        for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
             args.emplace_back(argv[i]);
         parse(std::move(args));
     }

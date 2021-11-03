@@ -1216,6 +1216,30 @@ TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
     CHECK(!*subcom);
 }
 
+TEST_CASE_METHOD(TApp, "IniLayeredOptionGroupAlias", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[ogroup]" << std::endl;
+        out << "val2=2" << std::endl;
+    }
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_option_group("ogroup")->alias("ogroup");
+    subcom->add_option("--val2", two);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+}
+
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurable", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
