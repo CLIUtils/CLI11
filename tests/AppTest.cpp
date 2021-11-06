@@ -1476,6 +1476,34 @@ TEST_CASE_METHOD(TApp, "BigPositional", "[app]") {
     CHECK(vec == args);
 }
 
+TEST_CASE_METHOD(TApp, "VectorArgAndPositional", "[app]") {
+    std::vector<std::string> vec;
+    std::vector<int> ivec;
+    app.add_option("pos", vec);
+    app.add_option("--args", ivec)->check(CLI::Number);
+    app.validate_optional_arguments();
+    args = {"one"};
+
+    run();
+    CHECK(vec == args);
+
+    args = {"--args", "1", "2"};
+
+    run();
+    CHECK(ivec.size()==2);
+    vec.clear();
+    ivec.clear();
+
+    args = {"--args","1","2","one", "two"};
+    run();
+
+    CHECK(vec.size()==2);
+    CHECK(ivec.size() == 2);
+
+    app.validate_optional_arguments(false);
+    CHECK_THROWS(run());
+}
+
 TEST_CASE_METHOD(TApp, "Reset", "[app]") {
 
     app.add_flag("--simple");
