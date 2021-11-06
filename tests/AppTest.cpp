@@ -1490,14 +1490,14 @@ TEST_CASE_METHOD(TApp, "VectorArgAndPositional", "[app]") {
     args = {"--args", "1", "2"};
 
     run();
-    CHECK(ivec.size()==2);
+    CHECK(ivec.size() == 2);
     vec.clear();
     ivec.clear();
 
-    args = {"--args","1","2","one", "two"};
+    args = {"--args", "1", "2", "one", "two"};
     run();
 
-    CHECK(vec.size()==2);
+    CHECK(vec.size() == 2);
     CHECK(ivec.size() == 2);
 
     app.validate_optional_arguments(false);

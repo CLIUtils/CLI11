@@ -1727,7 +1727,7 @@ class App {
     bool get_validate_positionals() const { return validate_positionals_; }
     /// Get the status of validating optional vector arguments
     bool get_validate_optional_arguments() const { return validate_optional_arguments_; }
-    
+
     /// Get the status of allow extras
     config_extras_mode get_allow_config_extras() const { return allow_config_extras_; }
 
