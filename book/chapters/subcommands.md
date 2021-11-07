@@ -133,7 +133,6 @@ This would allow calling help such as:
 
 Some arguments supplied on the command line may be legitamately applied to more than 1 positional argument.  In this context enabling `positional_validation` on the application or subcommand will check any validators before applying the command line argument to the positional option.  It is not an error to fail validation in this context, positional arguments not matching any validators will go into the `extra_args` field which may generate an error depending on settings.
 
-
 ### Optional Argument Validation
 
 Similar to positional validation, there are occasional contexts in which case it might be ambiguous whether an argument should be applied to an option or a positional option.

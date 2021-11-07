@@ -288,7 +288,7 @@ There are some additional options that can be specified to modify an option for 
 
 * `->force_callback()` will for the callback/value assignment to run at the conclusion of parsing regardless of whether the option was supplied or not.  This can be used to force the default or execute some code.
 
-* `->trigger_on_parse()` will trigger the callback or value assignement each time the argument is passed.  The value is reset if the option is supplied multiple times.
+* `->trigger_on_parse()` will trigger the callback or value assignment each time the argument is passed.  The value is reset if the option is supplied multiple times.
 
 ## Unusual circumstances
 
