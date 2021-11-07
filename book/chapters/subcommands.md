@@ -147,4 +147,3 @@ Similar to positional validation, there are occasional contexts in which case it
 ```
 
 In this case a sequence of integers is expected for the argument and remaining strings go to the positional string vector.  Without the `validate_optional_arguments()` active it would be impossible get any later arguments into the positional if the `--args` option is used.  The validator in this context is used to make sure the optional arguments match with what the argument is expecting and if not the `-args` option is closed, and remaining arguments fall into the positional.
-
