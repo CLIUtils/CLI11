@@ -20,7 +20,7 @@ Obviously, you can't access `T` after the `add_` method is over, so it stores th
 
 Parsing follows the following procedure:
 
-1. `_validate`: Make sure the defined options are self consistent.
+1. `_validate`: Make sure the defined options and subcommands are self consistent.
 2. `_parse`: Main parsing routine. See below.
 3. `_run_callback`: Run an App callback if present.
 
