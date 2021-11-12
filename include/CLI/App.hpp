@@ -1945,7 +1945,10 @@ class App {
         }
         // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
-            subc->run_callback(true, suppress_final_callback);
+            if (subc->parent_ == this)
+            {
+                subc->run_callback(true, suppress_final_callback);
+            }
         }
         // now run callbacks for option_groups
         for(auto &subc : subcommands_) {
