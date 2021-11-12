@@ -1945,8 +1945,7 @@ class App {
         }
         // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
-            if (subc->parent_ == this)
-            {
+            if(subc->parent_ == this) {
                 subc->run_callback(true, suppress_final_callback);
             }
         }
