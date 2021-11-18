@@ -247,3 +247,8 @@ set_property(TEST retired_deprecated PROPERTY PASS_REGULAR_EXPRESSION "deprecate
 add_cli_exe(custom_parse custom_parse.cpp)
 add_test(NAME cp_test COMMAND custom_parse --dv 1.7)
 set_property(TEST cp_test PROPERTY PASS_REGULAR_EXPRESSION "called correct")
+
+#------------------------------------------------
+# This executable is for manual testing and is expected to change regularly
+
+add_cli_exe(tester testEXE.cpp)
