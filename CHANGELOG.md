@@ -45,6 +45,16 @@ is not passed, or every time the option is parsed.
 [#656]: https://github.com/CLIUtils/CLI11/pull/656
 [#657]: https://github.com/CLIUtils/CLI11/pull/657
 
+## Version 2.1.3: Bug Fixes and Tweaks
+
+* Change the way the default value is displayed in the included help text generation from `=XXXXX` to `[XXXXX]` to clean up some situations in which the text looked awkward and unclear [#666][]
+* Fix a bug where a subcommand callback could be executed multiple times if it was a member of an option group [#666][]
+* Fix an issue where the detection of RTTI being disabled on certain visual studio platforms did not disable the use of dynamic cast calls [#666][]
+* Add additional tests concerning the use of aliases for option groups in config files [#666][]
+* Resolve strict-overflow warning on some GCC compilers [#666][]
+
+[#666]: https://github.com/CLIUtils/CLI11/pull/666
+
 ## Version 2.0: Simplification
 
 This version focuses on cleaning up deprecated functionality, and some minor
