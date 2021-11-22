@@ -1213,8 +1213,8 @@ class App {
         }
 
         std::vector<std::string> args;
-        args.reserve(static_cast<std::size_t>(argc) - 1);
-        for(int i = argc - 1; i > 0; i--)
+        args.reserve(static_cast<std::size_t>(argc) - 1U);
+        for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
             args.emplace_back(argv[i]);
         parse(std::move(args));
     }
@@ -1543,7 +1543,7 @@ class App {
     /// Access the config formatter as a configBase pointer
     std::shared_ptr<ConfigBase> get_config_formatter_base() const {
         // This is safer as a dynamic_cast if we have RTTI, as Config -> ConfigBase
-#if defined(__cpp_rtti) || (defined(__GXX_RTTI) && __GXX_RTTI) || (defined(_HAS_STATIC_RTTI) && (_HAS_STATIC_RTTI == 0))
+#if CLI11_USE_STATIC_RTTI == 0
         return std::dynamic_pointer_cast<ConfigBase>(config_formatter_);
 #else
         return std::static_pointer_cast<ConfigBase>(config_formatter_);
@@ -1945,7 +1945,9 @@ class App {
         }
         // run the callbacks for the received subcommands
         for(App *subc : get_subcommands()) {
-            subc->run_callback(true, suppress_final_callback);
+            if(subc->parent_ == this) {
+                subc->run_callback(true, suppress_final_callback);
+            }
         }
         // now run callbacks for option_groups
         for(auto &subc : subcommands_) {

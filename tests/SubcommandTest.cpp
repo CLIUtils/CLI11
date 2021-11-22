@@ -1955,3 +1955,16 @@ TEST_CASE_METHOD(TApp, "MultiFinalCallbackCounts", "[subcom]") {
         CHECK(subsub_final == 1);
     }
 }
+
+// From gitter issue
+TEST_CASE_METHOD(TApp, "SubcommandInOptionGroupCallbackCount", "[subcom]") {
+
+    int subcount{0};
+    auto group1 = app.add_option_group("FirstGroup");
+
+    group1->add_subcommand("g1c1")->callback([&subcount]() { ++subcount; });
+
+    args = {"g1c1"};
+    run();
+    CHECK(subcount == 1);
+}

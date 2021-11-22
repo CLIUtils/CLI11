@@ -289,7 +289,8 @@ TEST_CASE("THelp: VectorOpts", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("INT=[1,2] ..."));
+    CHECK_THAT(help, Contains("[1,2]"));
+    CHECK_THAT(help, Contains(" ..."));
 }
 
 TEST_CASE("THelp: MultiPosOpts", "[help]") {
@@ -394,18 +395,18 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("=12"));
+    CHECK_THAT(help, Contains("[12]"));
     CHECK_THAT(help, Contains("BIGGLES"));
 
     op1->default_val("14");
     CHECK(14 == x);
     help = app.help();
-    CHECK_THAT(help, Contains("=14"));
+    CHECK_THAT(help, Contains("[14]"));
 
     op1->default_val(12);
     CHECK(12 == x);
     help = app.help();
-    CHECK_THAT(help, Contains("=12"));
+    CHECK_THAT(help, Contains("[12]"));
 
     CHECK(op1->get_run_callback_for_default());
     op1->run_callback_for_default(false);
@@ -415,7 +416,7 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
     // x should not be modified in this case
     CHECK(12 == x);
     help = app.help();
-    CHECK_THAT(help, Contains("=18"));
+    CHECK_THAT(help, Contains("[18]"));
 }
 
 TEST_CASE("THelp: ManualSetterOverFunction", "[help]") {
@@ -432,7 +433,7 @@ TEST_CASE("THelp: ManualSetterOverFunction", "[help]") {
     CHECK(1 == x);
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("=12"));
+    CHECK_THAT(help, Contains("[12]"));
     CHECK_THAT(help, Contains("BIGGLES"));
     CHECK_THAT(help, Contains("QUIGGLES"));
     CHECK_THAT(help, Contains("{1,2}"));
@@ -518,7 +519,7 @@ TEST_CASE("THelp: IntDefaults", "[help]") {
     CHECK_THAT(help, Contains("--one"));
     CHECK_THAT(help, Contains("--set"));
     CHECK_THAT(help, Contains("1"));
-    CHECK_THAT(help, Contains("=2"));
+    CHECK_THAT(help, Contains("[2]"));
     CHECK_THAT(help, Contains("2,3,4"));
 }
 
@@ -532,7 +533,7 @@ TEST_CASE("THelp: SetLower", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("--set"));
-    CHECK_THAT(help, Contains("=One"));
+    CHECK_THAT(help, Contains("[One]"));
     CHECK_THAT(help, Contains("oNe"));
     CHECK_THAT(help, Contains("twO"));
     CHECK_THAT(help, Contains("THREE"));
@@ -893,6 +894,14 @@ TEST_CASE("THelp: CheckEmptyTypeName", "[help]") {
     CHECK(name.empty());
 }
 
+TEST_CASE("THelp: FlagDefaults", "[help]") {
+    CLI::App app;
+
+    app.add_flag("-t,--not{false}")->default_str("false");
+    auto str = app.help();
+    CHECK_THAT(str, Contains("--not{false}"));
+}
+
 TEST_CASE("THelp: AccessDescription", "[help]") {
     CLI::App app{"My description goes here"};
 
@@ -1162,7 +1171,9 @@ TEST_CASE("THelp: ChangingDefaults", "[help]") {
     x = {5, 6};
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("INT=[3,4] ..."));
+    CHECK_THAT(help, Contains("[[3,4]]"));
+    CHECK_THAT(help, Contains("..."));
+    CHECK_THAT(help, Contains("INT"));
     CHECK(x[0] == 5);
 }
 
@@ -1179,7 +1190,8 @@ TEST_CASE("THelp: ChangingDefaultsWithAutoCapture", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("INT=[1,2] ..."));
+    CHECK_THAT(help, Contains("[[1,2]]"));
+    CHECK_THAT(help, Contains("..."));
 }
 
 TEST_CASE("THelp: FunctionDefaultString", "[help]") {
@@ -1194,7 +1206,7 @@ TEST_CASE("THelp: FunctionDefaultString", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("INT=Powerful"));
+    CHECK_THAT(help, Contains("[Powerful]"));
 }
 
 TEST_CASE("TVersion: simple_flag", "[help]") {

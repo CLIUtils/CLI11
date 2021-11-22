@@ -249,7 +249,7 @@ inline std::string Formatter::make_option_opts(const Option *opt) const {
             if(!opt->get_type_name().empty())
                 out << " " << get_label(opt->get_type_name());
             if(!opt->get_default_str().empty())
-                out << "=" << opt->get_default_str();
+                out << " [" << opt->get_default_str() << "] ";
             if(opt->get_expected_max() == detail::expected_max_vector_size)
                 out << " ...";
             else if(opt->get_expected_min() > 1)
