@@ -2252,26 +2252,23 @@ class App {
 
     /// Process callbacks and such.
     void _process() {
-        CLI::FileError fe("ne");
-        bool caught_error{false};
         try {
             // the config file might generate a FileError but that should not be processed until later in the process
             // to allow for help, version and other errors to generate first.
             _process_config_file();
+            
             // process env shouldn't throw but no reason to process it if config generated an error
             _process_env();
         } catch(const CLI::FileError &fe2) {
-            fe = fe2;
-            caught_error = true;
+            // callbacks and help_flags can generate exceptions which should take priority
+            // over the config file error if one exists.
+            _process_callbacks();
+            _process_help_flags();
+            throw;
         }
-        // callbacks and help_flags can generate exceptions which should take priority over the config file error if one
-        // exists
+
         _process_callbacks();
         _process_help_flags();
-
-        if(caught_error) {
-            throw CLI::FileError(std::move(fe));
-        }
 
         _process_requirements();
     }
