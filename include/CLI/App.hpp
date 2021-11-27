@@ -2256,7 +2256,7 @@ class App {
             // the config file might generate a FileError but that should not be processed until later in the process
             // to allow for help, version and other errors to generate first.
             _process_config_file();
-            
+
             // process env shouldn't throw but no reason to process it if config generated an error
             _process_env();
         } catch(const CLI::FileError &fe2) {
