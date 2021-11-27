@@ -2259,7 +2259,7 @@ class App {
 
             // process env shouldn't throw but no reason to process it if config generated an error
             _process_env();
-        } catch(const CLI::FileError &fe2) {
+        } catch(const CLI::FileError &) {
             // callbacks and help_flags can generate exceptions which should take priority
             // over the config file error if one exists.
             _process_callbacks();
