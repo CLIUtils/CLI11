@@ -257,6 +257,10 @@ class App {
     /// Pointer to the config option
     Option *config_ptr_{nullptr};
 
+    /// base folder to search config for
+    /// when it is empty, search only from config_ptr_->default_str();
+    std::string default_config_folder_ = "";
+
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<Config> config_formatter_{new ConfigTOML()};
 
@@ -900,6 +904,7 @@ class App {
     Option *set_config(std::string option_name = "",
                        std::string default_filename = "",
                        const std::string &help_message = "Read an ini file",
+                       const std::string & default_config_root_folder = "",
                        bool config_required = false) {
 
         // Remove existing config if present
@@ -907,6 +912,9 @@ class App {
             remove_option(config_ptr_);
             config_ptr_ = nullptr;  // need to remove the config_ptr completely
         }
+        
+        // Set the default config folder
+        default_config_folder_ = default_config_root_folder;
 
         // Only add config if option passed
         if(!option_name.empty()) {
@@ -2018,8 +2026,19 @@ class App {
                 return;
             }
             for(auto rit = config_files.rbegin(); rit != config_files.rend(); ++rit) {
-                const auto &config_file = *rit;
+                std::string config_file = *rit;
                 auto path_result = detail::check_path(config_file.c_str());
+                if (path_result == detail::path_type::nonexistent && !default_config_folder_.empty()) {
+                    // Try to find the config file from its name in default config folder
+                    std::string config_file_path = default_config_folder_;
+                    if (default_config_folder_.back() != '/' && default_config_folder_.back() != '\\') {
+                        // Add folder separator
+                        config_file_path += '/';
+                    }
+                    config_file_path += config_file;
+                    path_result = detail::check_path(config_file_path.c_str());
+                    config_file = config_file_path;
+                }
                 if(path_result == detail::path_type::file) {
                     try {
                         std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
