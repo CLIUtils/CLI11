@@ -931,6 +931,14 @@ class App {
         return config_ptr_;
     }
 
+    Option *set_config(std::string option_name = "",
+                       std::string default_filename = "",
+                       const std::string &help_message = "Read an ini file",
+                       bool config_required = false) {
+
+        return set_config(option_name, default_filename, help_message, "", config_required);
+    }
+
     /// Removes an option from the App. Takes an option pointer. Returns true if found and removed.
     bool remove_option(Option *opt) {
         // Make sure no links exist
