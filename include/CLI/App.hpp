@@ -901,10 +901,10 @@ class App {
 #endif
 
     /// Set a configuration ini file option, or clear it if no name passed
-    Option *set_config(std::string option_name = "",
-                       std::string default_filename = "",
-                       const std::string &help_message = "Read an ini file",
-                       const std::string &default_config_root_folder = "",
+    Option *set_config(std::string option_name,
+                       std::string default_filename,
+                       const std::string &help_message,
+                       const std::string &default_config_root_folder,
                        bool config_required = false) {
 
         // Remove existing config if present
