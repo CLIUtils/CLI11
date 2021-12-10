@@ -118,8 +118,9 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
     }
 
     // Add a marker if subcommands are expected or optional
-    if(!app->get_subcommands(
-               [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty()) && (!subc->get_silent())); })
+    if(!app->get_subcommands([](const CLI::App *subc) {
+               return ((!subc->get_disabled()) && (!subc->get_name().empty()) && (!subc->get_silent()));
+           })
             .empty()) {
         out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
