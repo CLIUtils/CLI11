@@ -126,3 +126,5 @@ This would allow calling help such as:
 ./app help
 ./app help sub1
 ```
+
+Silent subcommands also don't appear in the help text.

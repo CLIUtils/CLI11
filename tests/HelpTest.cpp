@@ -1273,3 +1273,27 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
         CHECK(1U == cptr->count());
     }
 }
+
+TEST_CASE("Silent removes command from help", "[help]") {
+
+    CLI::App app;
+
+    app.add_subcommand("test")->silent();
+    auto help = app.help();
+    CHECK_THAT(help, !Contains("test"));
+    // If all subcommands are silent, don't show any
+    CHECK_THAT(help, !Contains("Subcommands"));
+}
+
+TEST_CASE("Silent removes only silent commands", "[help]") {
+
+    CLI::App app;
+
+    app.add_subcommand("foo")->silent();
+    app.add_subcommand("bar");
+    auto help = app.help();
+    CHECK_THAT(help, !Contains("foo"));
+    CHECK_THAT(help, Contains("bar"));
+
+    CHECK_THAT(help, Contains("Subcommands"));
+}

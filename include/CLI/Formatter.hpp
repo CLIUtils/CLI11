@@ -119,7 +119,7 @@ inline std::string Formatter::make_usage(const App *app, std::string name) const
 
     // Add a marker if subcommands are expected or optional
     if(!app->get_subcommands(
-               [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
+               [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty()) && (!subc->get_silent())); })
             .empty()) {
         out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
@@ -188,12 +188,16 @@ inline std::string Formatter::make_subcommands(const App *app, AppFormatMode mod
 
     // For each group, filter out and print subcommands
     for(const std::string &group : subcmd_groups_seen) {
+        std::vector<const App *> subcommands_group = app->get_subcommands([&group](const App *sub_app) {
+            return detail::to_lower(sub_app->get_group()) == detail::to_lower(group) && !sub_app->get_silent() &&
+                   !sub_app->get_name().empty();
+        });
+
+        if(subcommands_group.empty())
+            continue;
+
         out << "\n" << group << ":\n";
-        std::vector<const App *> subcommands_group = app->get_subcommands(
-            [&group](const App *sub_app) { return detail::to_lower(sub_app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
-            if(new_com->get_name().empty())
-                continue;
             if(mode != AppFormatMode::All) {
                 out << make_subcommand(new_com);
             } else {
