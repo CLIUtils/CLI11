@@ -1869,12 +1869,10 @@ TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
         // this should throw
         run();
         CHECK(false);
-    }
-    catch(const CLI::ValidationError &e) {
+    } catch(const CLI::ValidationError &e) {
         std::string emess = e.what();
         CHECK(emess.size() < 40U);
     }
-    
 }
 
 TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
