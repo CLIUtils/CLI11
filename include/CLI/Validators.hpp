@@ -483,7 +483,7 @@ class Range : public Validator {
             if((!converted) || (val < min_val || val > max_val)) {
                 std::stringstream out;
                 out << "Value " << input << " not in range [";
-                out << min_val << " - " << max_val<<"]";
+                out << min_val << " - " << max_val << "]";
                 return out.str();
             }
             return std::string{};
