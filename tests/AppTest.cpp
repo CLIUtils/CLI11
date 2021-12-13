@@ -1858,6 +1858,25 @@ TEST_CASE_METHOD(TApp, "RangeDouble", "[app]") {
     run();
 }
 
+TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
+
+    std::string res;
+    /// Note that this must be a double in Range, too
+    app.add_option("--one", res)->check(CLI::NonNegativeNumber);
+
+    args = {"--one=crazy"};
+    try {
+        // this should throw
+        run();
+        CHECK(false);
+    }
+    catch(const CLI::ValidationError &e) {
+        std::string emess = e.what();
+        CHECK(emess.size() < 40U);
+    }
+    
+}
+
 TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
 
     /// Note that this must be a double in Range, too
