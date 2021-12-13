@@ -1871,7 +1871,7 @@ TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
         CHECK(false);
     } catch(const CLI::ValidationError &e) {
         std::string emess = e.what();
-        CHECK(emess.size() < 40U);
+        CHECK(emess.size() < 70U);
     }
 }
 
