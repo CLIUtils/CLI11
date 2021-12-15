@@ -28,4 +28,4 @@ You'll see it behaves pretty much like `git`.
 
 ## Multi-file App parse code
 
-This example could be made much nicer if it was split into files, one per subcommand. If you simply use shared pointers instead of raw values in the lambda capture, you can tie the lifetime to the lambda function lifetime.  CLI11 has a multifile example in its example folder.
+This example could be made much nicer if it was split into files, one per subcommand. If you simply use shared pointers instead of raw values in the lambda capture, you can tie the lifetime to the lambda function lifetime.  CLI11 has a [multifile example](https://github.com/CLIUtils/CLI11/tree/main/examples/subcom_in_files) in its example folder.
