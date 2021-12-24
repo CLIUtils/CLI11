@@ -33,10 +33,10 @@ int main(int argc, char **argv) {
     CLI11_PARSE(app, argc, argv);
 
     std::string format_type = (csv) ? std::string("CSV") : ((human) ? "human readable" : "binary");
-    std::cout << "Selected  " << format_type << "format" << std::endl;
-    if(fileLoc.empty()) {
+    std::cout << "Selected " << format_type << " format" << std::endl;
+    if(!fileLoc.empty()) {
         std::cout << " sent to file " << fileLoc << std::endl;
-    } else if(networkAddress.empty()) {
+    } else if(!networkAddress.empty()) {
         std::cout << " sent over network to " << networkAddress << std::endl;
     } else {
         std::cout << " sent to std::cout" << std::endl;
