@@ -480,10 +480,12 @@ class Range : public Validator {
         func_ = [min_val, max_val](std::string &input) {
             T val;
             bool converted = detail::lexical_cast(input, val);
-            if((!converted) || (val < min_val || val > max_val))
-                return std::string("Value ") + input + " not in range " + std::to_string(min_val) + " to " +
-                       std::to_string(max_val);
-
+            if((!converted) || (val < min_val || val > max_val)) {
+                std::stringstream out;
+                out << "Value " << input << " not in range [";
+                out << min_val << " - " << max_val << "]";
+                return out.str();
+            }
             return std::string{};
         };
     }
