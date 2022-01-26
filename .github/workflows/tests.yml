@@ -18,7 +18,7 @@ jobs:
     - name: Add wget
       run: apt-get update && apt-get install -y wget
     - name: Get cmake
-      uses: jwlawson/actions-setup-cmake@v1.11
+      uses: jwlawson/actions-setup-cmake@v1.12
     - name: Configure
       run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
     - name: Build
@@ -36,7 +36,7 @@ jobs:
     - name: Add deps
       run: apt-get update && apt-get install make
     - name: Get CMake
-      uses: jwlawson/actions-setup-cmake@v1.11
+      uses: jwlawson/actions-setup-cmake@v1.12
     - name: Configure
       run: cmake -S . -B build -DCLI11_BOOST=ON
     - name: Build
