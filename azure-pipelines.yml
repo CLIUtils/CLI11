@@ -84,6 +84,7 @@ jobs:
       inputs:
         versionSpec: '3.7'
     - script: python3 -m pip install meson ninja
+    - script: mkdir tests/mesonTest/subprojects
     - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
     - script: meson build
       displayName: Run meson to generate build
