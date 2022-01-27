@@ -811,7 +811,15 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     char *val = nullptr;
     std::int64_t output_ll = std::strtoll(input.c_str(), &val, 0);
     output = static_cast<T>(output_ll);
-    return val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll;
+    if(val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll) {
+        return true;
+    }
+    if(input == "true") {
+        // this is to deal with a few oddities with flags and wrapper int types
+        output = static_cast<T>(1);
+        return true;
+    }
+    return false;
 }
 
 /// Convert a flag into an integer value  typically binary flags

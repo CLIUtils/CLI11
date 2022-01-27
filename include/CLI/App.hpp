@@ -809,14 +809,13 @@ class App {
 
     /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
     /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
-    template <
-        typename T,
-        enable_if_t<std::is_constructible<T, std::int64_t>::value && !std::is_const<T>::value && !is_bool<T>::value,
-                    detail::enabler> = detail::dummy>
-    Option *add_flag(std::string flag_name,
+    template <typename T,
+              enable_if_t<std::is_constructible<T, std::int64_t>::value && !std::is_const<T>::value &&
+                              !is_bool<T>::value,
+                          detail::enabler> = detail::dummy>
+    Option *add_counting_flag(std::string flag_name,
                      T &flag_count,  ///< A variable holding the count
                      std::string flag_description = "") {
-        flag_count = 0;
         CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
             try {
                 detail::sum_flag_vector(res, flag_count);
@@ -826,14 +825,39 @@ class App {
             return true;
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
-            ->multi_option_policy(MultiOptionPolicy::TakeAll);
+            ->multi_option_policy(MultiOptionPolicy::TakeAll)
+            ->default_str("0")
+            ->force_callback();
+    }
+
+    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
+    /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
+    template <
+        typename T,
+        enable_if_t<std::is_constructible<T, std::int64_t>::value && !std::is_const<T>::value && !is_bool<T>::value && !detail::is_wrapper<T>::value,
+                    detail::enabler> = detail::dummy>
+    Option *add_flag(std::string flag_name,
+                     T &flag_count,  ///< A variable holding the count
+                     std::string flag_description = "") {
+        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
+            try {
+                detail::sum_flag_vector(res, flag_count);
+            } catch(const std::invalid_argument &) {
+                return false;
+            }
+            return true;
+        };
+        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
+            ->multi_option_policy(MultiOptionPolicy::TakeAll)
+            ->default_str("0")
+            ->force_callback();
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
     /// that can be converted from a string
     template <typename T,
               enable_if_t<!detail::is_mutable_container<T>::value && !std::is_const<T>::value &&
-                              (!std::is_constructible<T, std::int64_t>::value || is_bool<T>::value) &&
+                              (!std::is_constructible<T, std::int64_t>::value || is_bool<T>::value|| detail::is_wrapper<T>::value) &&
                               !std::is_constructible<std::function<void(int)>, T>::value,
                           detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,

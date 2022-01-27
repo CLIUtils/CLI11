@@ -146,7 +146,7 @@ TEST_CASE_METHOD(TApp, "atomic_bool_flags", "[optiontype]") {
     std::atomic<int> iflag{0};
 
     app.add_flag("-b", bflag);
-    app.add_flag("-i,--int", iflag);
+    app.add_counting_flag("-i,--int", iflag);
 
     args = {"-b", "-i"};
     run();
