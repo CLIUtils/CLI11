@@ -84,8 +84,11 @@ jobs:
       inputs:
         versionSpec: '3.7'
     - script: python3 -m pip install meson ninja
+      displayName: install meson
     - script: mkdir tests/mesonTest/subprojects
+      displayName: generate test directories
     - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
+      displayName: generate CLI11 symlink
     - script: meson build
       displayName: Run meson to generate build
       workingDirectory: tests/mesonTest
@@ -93,6 +96,8 @@ jobs:
       displayName: Build with Ninja
     - script: ./tests/mesonTest/build/main --help
       displayName: Run help
+    - script: rm -rf tests/mesonTest/subprojects
+      displayName: remove symlinks
 
 - job: Docker
   variables:
