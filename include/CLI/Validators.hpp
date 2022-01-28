@@ -465,7 +465,7 @@ const TypeValidator<double> Number("NUMBER");
 /// Modify a path if the file is a particular default location
 class FileOnDefaultPath : public Validator {
   public:
-    FileOnDefaultPath(std::string default_path) : Validator("FILE") {
+    explicit FileOnDefaultPath(std::string default_path) : Validator("FILE") {
         func_ = [default_path](std::string &filename) {
             auto path_result = detail::check_path(filename.c_str());
             if(path_result == detail::path_type::nonexistent) {
