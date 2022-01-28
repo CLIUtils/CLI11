@@ -85,6 +85,8 @@ The following values are inherited when you add a new subcommand. This happens a
 * Fallthrough
 * Group name
 * Max required subcommands
+* validate positional arguments
+* validate optional arguments
 
 ## Special modes
 
@@ -126,3 +128,21 @@ This would allow calling help such as:
 ./app help
 ./app help sub1
 ```
+
+### Positional Validation
+
+Some arguments supplied on the command line may be legitamately applied to more than 1 positional argument.  In this context enabling `positional_validation` on the application or subcommand will check any validators before applying the command line argument to the positional option.  It is not an error to fail validation in this context, positional arguments not matching any validators will go into the `extra_args` field which may generate an error depending on settings.
+
+### Optional Argument Validation
+
+Similar to positional validation, there are occasional contexts in which case it might be ambiguous whether an argument should be applied to an option or a positional option.
+
+```c++
+    std::vector<std::string> vec;
+    std::vector<int> ivec;
+    app.add_option("pos", vec);
+    app.add_option("--args", ivec)->check(CLI::Number);
+    app.validate_optional_arguments();
+```
+
+In this case a sequence of integers is expected for the argument and remaining strings go to the positional string vector.  Without the `validate_optional_arguments()` active it would be impossible get any later arguments into the positional if the `--args` option is used.  The validator in this context is used to make sure the optional arguments match with what the argument is expecting and if not the `-args` option is closed, and remaining arguments fall into the positional.

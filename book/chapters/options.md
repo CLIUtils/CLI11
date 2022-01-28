@@ -155,7 +155,7 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->always_capture_default()` | Always run `capture_default_str()` when creating new options. Only useful on an App's `option_defaults`. |
 | `->run_callback_for_default()` | Force the option callback to be executed or the variable set when the `default_val` is used.  |
 | `->force_callback()` | Force the option callback to be executed regardless of whether the option was used or not.  Will use the default_str if available, if no default is given the callback will be executed with an empty string as an argument, which will translate to a default initialized value, which can be compiler dependent |
-|`->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check. Or potentially if a vector input is given multiple times as it will clear the results when a repeat option is given via command line.  It will trigger the callbacks once per option call on the command line|
+| `->trigger_on_parse()` | Have the option callback be triggered when the value is parsed vs. at the end of all parsing, the option callback can potentially be executed multiple times.  Generally only useful if you have a user defined callback or validation check. Or potentially if a vector input is given multiple times as it will clear the results when a repeat option is given via command line.  It will trigger the callbacks once per option call on the command line|
 | `->option_text(string)` | Sets the text between the option name and description. |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback function of the form `bool function(std::string)` that runs on every value that the option receives, and returns a value that tells CLI11 whether the check passed or failed.
@@ -285,6 +285,10 @@ will create a hybrid option, that can exist on its own in which case the value "
 There are some additional options that can be specified to modify an option for specific cases:
 
 * `->run_callback_for_default()` will specify that the callback should be executed when a default_val is set. This is set automatically when appropriate though it can be turned on or off and any user specified callback for an option will be executed when the default value for an option is set.
+
+* `->force_callback()` will for the callback/value assignment to run at the conclusion of parsing regardless of whether the option was supplied or not.  This can be used to force the default or execute some code.
+
+* `->trigger_on_parse()` will trigger the callback or value assignment each time the argument is passed.  The value is reset if the option is supplied multiple times.
 
 ## Unusual circumstances
 

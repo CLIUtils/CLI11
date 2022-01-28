@@ -222,6 +222,9 @@ class App {
     /// If set to true positional options are validated before assigning INHERITABLE
     bool validate_positionals_{false};
 
+    /// If set to true optional vector arguments are validated before assigning INHERITABLE
+    bool validate_optional_arguments_{false};
+
     /// indicator that the subcommand is silent and won't show up in subcommands list
     /// This is potentially useful as a modifier subcommand
     bool silent_{false};
@@ -286,6 +289,7 @@ class App {
             ignore_underscore_ = parent_->ignore_underscore_;
             fallthrough_ = parent_->fallthrough_;
             validate_positionals_ = parent_->validate_positionals_;
+            validate_optional_arguments_ = parent_->validate_optional_arguments_;
             configurable_ = parent_->configurable_;
             allow_windows_style_options_ = parent_->allow_windows_style_options_;
             group_ = parent_->group_;
@@ -447,6 +451,12 @@ class App {
     /// Set the subcommand to validate positional arguments before assigning
     App *validate_positionals(bool validate = true) {
         validate_positionals_ = validate;
+        return this;
+    }
+
+    /// Set the subcommand to validate optional vector arguments before assigning
+    App *validate_optional_arguments(bool validate = true) {
+        validate_optional_arguments_ = validate;
         return this;
     }
 
@@ -1715,6 +1725,8 @@ class App {
     bool get_enabled_by_default() const { return (default_startup == startup_mode::enabled); }
     /// Get the status of validating positionals
     bool get_validate_positionals() const { return validate_positionals_; }
+    /// Get the status of validating optional vector arguments
+    bool get_validate_optional_arguments() const { return validate_optional_arguments_; }
 
     /// Get the status of allow extras
     config_extras_mode get_allow_config_extras() const { return allow_config_extras_; }
@@ -2801,6 +2813,7 @@ class App {
             throw ArgumentMismatch::TypedAtLeast(op->get_name(), min_num, op->get_type_name());
         }
 
+        // now check for optional arguments
         if(max_num > collected || op->get_allow_extra_args()) {  // we allow optional arguments
             auto remreqpos = _count_remaining_positionals(true);
             // we have met the minimum now optionally check up to the maximum
@@ -2810,7 +2823,13 @@ class App {
                 if(remreqpos >= args.size()) {
                     break;
                 }
-
+                if(validate_optional_arguments_) {
+                    std::string optarg = args.back();
+                    optarg = op->_validate(optarg, 0);
+                    if(!optarg.empty()) {
+                        break;
+                    }
+                }
                 op->add_result(args.back(), result_count);
                 parse_order_.push_back(op.get());
                 args.pop_back();
