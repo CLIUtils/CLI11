@@ -298,7 +298,6 @@ TEST_CASE("Validators: FileNotExists", "[helpers]") {
     CHECK(CLI::NonexistentPath(myfile).empty());
 }
 
-
 TEST_CASE("Validators: FilePathModifier", "[helpers]") {
     std::string myfile{"../TestFileNotUsed_1.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
