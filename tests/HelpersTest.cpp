@@ -298,6 +298,22 @@ TEST_CASE("Validators: FileNotExists", "[helpers]") {
     CHECK(CLI::NonexistentPath(myfile).empty());
 }
 
+
+TEST_CASE("Validators: FilePathModifier", "[helpers]") {
+    std::string myfile{"../TestFileNotUsed_1.txt"};
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
+    std::string filename = "TestFileNotUsed_1.txt";
+    CLI::FileOnDefaultPath defPath("../");
+    CHECK(defPath(filename).empty());
+    CHECK(filename == myfile);
+    std::string filename2 = "nonexistingfile.csv";
+    CHECK_FALSE(defPath(filename2).empty());
+    CHECK(defPath(filename).empty());
+    std::remove(myfile.c_str());
+    CHECK_FALSE(defPath(myfile).empty());
+}
+
 TEST_CASE("Validators: FileIsDir", "[helpers]") {
     std::string mydir{"../tests"};
     CHECK("" != CLI::ExistingFile(mydir));
