@@ -82,8 +82,13 @@ jobs:
   steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.6'
+        versionSpec: '3.7'
     - script: python3 -m pip install meson ninja
+      displayName: install meson
+    - script: mkdir tests/mesonTest/subprojects
+      displayName: generate test directories
+    - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
+      displayName: generate CLI11 symlink
     - script: meson build
       displayName: Run meson to generate build
       workingDirectory: tests/mesonTest
