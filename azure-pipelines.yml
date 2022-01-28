@@ -96,8 +96,6 @@ jobs:
       displayName: Build with Ninja
     - script: ./tests/mesonTest/build/main --help
       displayName: Run help
-    - script: rm -rf tests/mesonTest/subprojects
-      displayName: remove symlinks
 
 - job: Docker
   variables:
