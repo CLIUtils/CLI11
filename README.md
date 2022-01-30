@@ -801,7 +801,7 @@ Where X is some positive number and will allow up to `X` configuration files to 
 NOTE:  Transforms and checks can be used with the option pointer returned from set_config like any other option to validate the input if needed.  It can also be used with the built in transform `CLI::FileOnDefaultPath` to look in a default path as well as the current one.  For example
 
 ```cpp
-app.set_config("--config")->transform(CLI::FileOnDefaultPath("/to/default/path/"));  
+app.set_config("--config")->transform(CLI::FileOnDefaultPath("/to/default/path/"));
 ```
 See [Transforming Validators](#transforming-validators) for additional details on this validator.
 

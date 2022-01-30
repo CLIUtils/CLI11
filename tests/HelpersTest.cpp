@@ -308,13 +308,13 @@ TEST_CASE("Validators: FilePathModifier", "[helpers]") {
     CHECK(filename == myfile);
     std::string filename2 = "nonexistingfile.csv";
     CHECK_FALSE(defPath(filename2).empty());
-    //check it didn't modify the string
+    // check it didn't modify the string
     CHECK(filename2 == "nonexistingfile.csv");
     CHECK(defPath(filename).empty());
     std::remove(myfile.c_str());
     CHECK_FALSE(defPath(myfile).empty());
     // now test the no error version
-    CLI::FileOnDefaultPath defPathNoFail("../",false);
+    CLI::FileOnDefaultPath defPathNoFail("../", false);
     CHECK(defPathNoFail(filename2).empty());
     CHECK(filename2 == "nonexistingfile.csv");
 }

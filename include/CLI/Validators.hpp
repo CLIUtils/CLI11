@@ -466,8 +466,8 @@ const TypeValidator<double> Number("NUMBER");
 /// with the error return optionally disabled
 class FileOnDefaultPath : public Validator {
   public:
-    explicit FileOnDefaultPath(std::string default_path, bool enableErrorReturn=true) : Validator("FILE") {
-        func_ = [default_path,enableErrorReturn](std::string &filename) {
+    explicit FileOnDefaultPath(std::string default_path, bool enableErrorReturn = true) : Validator("FILE") {
+        func_ = [default_path, enableErrorReturn](std::string &filename) {
             auto path_result = detail::check_path(filename.c_str());
             if(path_result == detail::path_type::nonexistent) {
                 std::string test_file_path = default_path;
@@ -480,11 +480,9 @@ class FileOnDefaultPath : public Validator {
                 if(path_result == detail::path_type::file) {
                     filename = test_file_path;
                 } else {
-                    if (enableErrorReturn)
-                    {
+                    if(enableErrorReturn) {
                         return "File does not exist: " + filename;
                     }
-                    
                 }
             }
             return std::string{};

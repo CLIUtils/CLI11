@@ -1731,7 +1731,9 @@ TEST_CASE_METHOD(TApp, "IniMultipleDefaultPath", "[config]") {
 
     int key{0};
     app.add_option("--flag,-f", key);
-    auto* cfgOption=app.set_config("--config", "doesnotexist.ini")->transform(CLI::FileOnDefaultPath("../"))->transform(CLI::FileOnDefaultPath("../other",false));
+    auto *cfgOption = app.set_config("--config", "doesnotexist.ini")
+                          ->transform(CLI::FileOnDefaultPath("../"))
+                          ->transform(CLI::FileOnDefaultPath("../other", false));
 
     {
         std::ofstream out{tmpini};

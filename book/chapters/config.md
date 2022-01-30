@@ -18,7 +18,7 @@ This will allow specified files to either exist as given or on a specified defau
 app.set_config("--config")->transform(CLI::FileOnDefaultPath("/default_path/"))->transform(CLI::FileOnDefaultPath("/default_path2/",false));
 ```
 
-Multiple default paths can be specified through this mechanism.  The last transform given is executed first so the error return must be disabled so it can be chained to the first.  
+Multiple default paths can be specified through this mechanism.  The last transform given is executed first so the error return must be disabled so it can be chained to the first.
 
 ### Extra fields
 
