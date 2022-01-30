@@ -1714,7 +1714,7 @@ TEST_CASE_METHOD(TApp, "IniDefaultPath", "[config]") {
 
     int key{0};
     app.add_option("--flag,-f", key);
-    app.set_config("--config", tmpini)->transform(CLI::FileOnDefaultPath("../"));
+    app.set_config("--config", "TestIniTmp.ini")->transform(CLI::FileOnDefaultPath("../"));
 
     {
         std::ofstream out{tmpini};
@@ -1723,6 +1723,25 @@ TEST_CASE_METHOD(TApp, "IniDefaultPath", "[config]") {
 
     REQUIRE_NOTHROW(run());
     CHECK(3 == key);
+}
+
+TEST_CASE_METHOD(TApp, "IniMultipleDefaultPath", "[config]") {
+
+    TempFile tmpini{"../TestIniTmp.ini"};
+
+    int key{0};
+    app.add_option("--flag,-f", key);
+    auto* cfgOption=app.set_config("--config", "doesnotexist.ini")->transform(CLI::FileOnDefaultPath("../"))->transform(CLI::FileOnDefaultPath("../other",false));
+
+    {
+        std::ofstream out{tmpini};
+        out << "f=3" << std::endl;
+    }
+
+    args = {"--config", "TestIniTmp.ini"};
+    REQUIRE_NOTHROW(run());
+    CHECK(3 == key);
+    CHECK(cfgOption->as<std::string>() == "../TestIniTmp.ini");
 }
 
 TEST_CASE_METHOD(TApp, "IniPositional", "[config]") {
