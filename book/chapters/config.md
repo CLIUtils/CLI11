@@ -4,6 +4,29 @@
 
 You can tell your app to allow configure files with `set_config("--config")`. There are arguments: the first is the option name. If empty, it will clear the config flag. The second item is the default file name. If that is specified, the config will try to read that file. The third item is the help string, with a reasonable default, and the final argument is a boolean (default: false) that indicates that the configuration file is required and an error will be thrown if the file is not found and this is set to true.
 
+### Adding a default path
+
+if it is desired that config files be searched for a in a default path the `CLI::FileOnDefaultPath` transform can be used.
+
+```cpp
+app.set_config("--config")->transform(CLI::FileOnDefaultPath("/default_path/"));
+```
+
+This will allow specified files to either exist as given or on a specified default path.
+
+```cpp
+app.set_config("--config")
+    ->transform(CLI::FileOnDefaultPath("/default_path/"))
+    ->transform(CLI::FileOnDefaultPath("/default_path2/",false));
+```
+
+Multiple default paths can be specified through this mechanism.  The last transform given is executed first so the error return must be disabled so it can be chained to the first. The same effect can be achieved though the or(`|`) operation with validators
+
+```cpp
+app.set_config("--config")
+    ->transform(CLI::FileOnDefaultPath("/default_path2/") | CLI::FileOnDefaultPath("/default_path/"));
+```
+
 ### Extra fields
 
 Sometimes configuration files are used for multiple purposes so CLI11 allows options on how to deal with extra fields

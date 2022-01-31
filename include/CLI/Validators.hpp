@@ -462,6 +462,34 @@ template <typename DesiredType> class TypeValidator : public Validator {
 /// Check for a number
 const TypeValidator<double> Number("NUMBER");
 
+/// Modify a path if the file is a particular default location, can be used as Check or transform
+/// with the error return optionally disabled
+class FileOnDefaultPath : public Validator {
+  public:
+    explicit FileOnDefaultPath(std::string default_path, bool enableErrorReturn = true) : Validator("FILE") {
+        func_ = [default_path, enableErrorReturn](std::string &filename) {
+            auto path_result = detail::check_path(filename.c_str());
+            if(path_result == detail::path_type::nonexistent) {
+                std::string test_file_path = default_path;
+                if(default_path.back() != '/' && default_path.back() != '\\') {
+                    // Add folder separator
+                    test_file_path += '/';
+                }
+                test_file_path.append(filename);
+                path_result = detail::check_path(test_file_path.c_str());
+                if(path_result == detail::path_type::file) {
+                    filename = test_file_path;
+                } else {
+                    if(enableErrorReturn) {
+                        return "File does not exist: " + filename;
+                    }
+                }
+            }
+            return std::string{};
+        };
+    }
+};
+
 /// Produce a range (factory). Min and max are inclusive.
 class Range : public Validator {
   public:
