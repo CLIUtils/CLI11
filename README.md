@@ -803,6 +803,7 @@ NOTE:  Transforms and checks can be used with the option pointer returned from s
 ```cpp
 app.set_config("--config")->transform(CLI::FileOnDefaultPath("/to/default/path/"));
 ```
+
 See [Transforming Validators](#transforming-validators) for additional details on this validator.
 
 ### Inheriting defaults
