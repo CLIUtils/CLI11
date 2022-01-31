@@ -20,7 +20,12 @@ app.set_config("--config")
     ->transform(CLI::FileOnDefaultPath("/default_path2/",false));
 ```
 
-Multiple default paths can be specified through this mechanism.  The last transform given is executed first so the error return must be disabled so it can be chained to the first.
+Multiple default paths can be specified through this mechanism.  The last transform given is executed first so the error return must be disabled so it can be chained to the first. The same effect can be achieved though the or(`|`) operation with validators
+
+```cpp
+app.set_config("--config")
+    ->transform(CLI::FileOnDefaultPath("/default_path2/") | CLI::FileOnDefaultPath("/default_path/"));
+```
 
 ### Extra fields
 
