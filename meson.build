@@ -1,5 +1,5 @@
 project('CLI11', ['cpp'],
-  version         : run_command(find_program('scripts/ExtractVersion.py')).stdout().strip(),
+  version         : run_command(find_program('scripts/ExtractVersion.py'), check: true).stdout().strip(),
   default_options : ['cpp_std=c++11', 'warning_level=3']
 )
 
