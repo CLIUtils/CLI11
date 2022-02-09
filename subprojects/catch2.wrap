@@ -9,4 +9,3 @@ patch_hash = 2f7369645d747e5bd866317ac1dd4c3d04dc97d3aad4fc6b864bdf75d3b57158
 
 [provide]
 catch2 = catch2_dep
-
