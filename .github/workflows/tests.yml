@@ -13,14 +13,16 @@ jobs:
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
     - uses: actions/checkout@v1
-      with:
-        submodules: true
+
     - name: Add wget
       run: apt-get update && apt-get install -y wget
+
     - name: Get cmake
       uses: jwlawson/actions-setup-cmake@v1.12
+
     - name: Configure
       run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+
     - name: Build
       run: cmake --build build -j2
 
@@ -31,19 +33,23 @@ jobs:
     container: zouzias/boost:1.76.0
     steps:
     - uses: actions/checkout@v1
-      with:
-        submodules: true
+
     - name: Add deps
       run: apt-get update && apt-get install make
+
     - name: Get CMake
       uses: jwlawson/actions-setup-cmake@v1.12
+
     - name: Configure
       run: cmake -S . -B build -DCLI11_BOOST=ON
+
     - name: Build
       run: cmake --build build -j2
+
     - name: Run tests
       run: ctest --output-on-failure
       working-directory: build
+
 
   meson-build:
     name: Meson build
@@ -61,6 +67,26 @@ jobs:
 
     - name: Build
       run: meson compile -C build-meson
+
+
+  msvc-2015:
+    name: MSVC 2015 test
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        toolset: "14.0"
+
+    - name: Configure
+      run: pipx run cmake -S . -B build
+
+    - name: Build
+      run: pipx run cmake --build build -j2
+
+    - name: Test
+      run: pipx run cmake --build -t test
 
 
   cmake-config:
