@@ -77,7 +77,7 @@ jobs:
 
     - uses: ilammy/msvc-dev-cmd@v1
       with:
-        toolset: "14.0"
+        toolset: "15.0"
 
     - name: Configure
       run: pipx run cmake -S . -B build
