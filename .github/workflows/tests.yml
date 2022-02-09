@@ -76,7 +76,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure
-      run: pipx run cmake -S . -B build -G "Visual Studio 15 2017" -A x64
+      run: pipx run cmake -S . -B build -G "Visual Studio 14 2015" -A x64
 
     - name: Build
       run: pipx run cmake --build build -j2
