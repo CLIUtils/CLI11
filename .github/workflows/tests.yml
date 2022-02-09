@@ -45,6 +45,22 @@ jobs:
       run: ctest --output-on-failure
       working-directory: build
 
+  meson-tests:
+    name: Meson tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Configure
+      run: pipx run meson setup build-meson . -Dtests=true
+
+    - name: Build
+      run: pipx run meson compile
+      working-directory: build-meson
+
+
   cmake-config:
     name: CMake config check
     runs-on: ubuntu-latest
