@@ -53,11 +53,17 @@ jobs:
       with:
         submodules: true
 
+
+    - name: Prepare commands
+      run: |
+        pipx install meson
+        pipx install ninja
+
     - name: Configure
-      run: pipx run meson setup build-meson . -Dtests=true
+      run: meson setup build-meson . -Dtests=true
 
     - name: Build
-      run: pipx run meson compile
+      run: meson compile
       working-directory: build-meson
 
 
