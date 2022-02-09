@@ -86,7 +86,7 @@ jobs:
       run: pipx run cmake --build build -j2
 
     - name: Test
-      run: pipx run cmake --build -t test
+      run: pipx run cmake --build build -t test
 
 
   cmake-config:
