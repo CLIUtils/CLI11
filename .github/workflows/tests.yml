@@ -70,17 +70,13 @@ jobs:
 
 
   msvc-2015:
-    name: MSVC 2015 test
+    name: MSVC 2017 test
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        toolset: "15"
-
     - name: Configure
-      run: pipx run cmake -S . -B build
+      run: pipx run cmake -S . -B build -G "Visual Studio 15 2017" -A x64
 
     - name: Build
       run: pipx run cmake --build build -j2
