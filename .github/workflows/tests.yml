@@ -45,14 +45,11 @@ jobs:
       run: ctest --output-on-failure
       working-directory: build
 
-  meson-tests:
-    name: Meson tests
+  meson-build:
+    name: Meson build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: true
-
 
     - name: Prepare commands
       run: |
@@ -63,8 +60,7 @@ jobs:
       run: meson setup build-meson . -Dtests=true
 
     - name: Build
-      run: meson compile
-      working-directory: build-meson
+      run: meson compile -C build-meson
 
 
   cmake-config:
