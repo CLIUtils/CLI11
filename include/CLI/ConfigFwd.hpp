@@ -58,6 +58,9 @@ class Config {
         if(item.inputs.size() == 1) {
             return item.inputs.at(0);
         }
+        if(item.inputs.empty()) {
+            return "{}";
+        }
         throw ConversionError::TooManyInputsFlag(item.fullname());
     }
 

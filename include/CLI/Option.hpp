@@ -1162,7 +1162,7 @@ class Option : public OptionBase<Option> {
             add_result(val_str);
             // if trigger_on_result_ is set the callback already ran
             if(run_callback_for_default_ && !trigger_on_result_) {
-                run_callback();  // run callback sets the state we need to reset it again
+                run_callback();  // run callback sets the state, we need to reset it again
                 current_option_state_ = option_state::parsing;
             } else {
                 _validate_results(results_);
@@ -1284,6 +1284,16 @@ class Option : public OptionBase<Option> {
             }
             break;
         }
+        }
+        // this check is to allow an empty vector in certain circumstances but not if expected is not zero.
+        // {} is the indicator for a an empty container
+        if(res.empty()) {
+            if(original.size() == 1 && original[0] == "{}" && get_items_expected_min() > 0) {
+                res.push_back("{}");
+                res.push_back("%%");
+            }
+        } else if(res.size() == 1 && res[0] == "{}" && get_items_expected_min() > 0) {
+            res.push_back("%%");
         }
     }
 

@@ -304,9 +304,12 @@ template <typename T,
                           is_readable_container<T>::value,
                       detail::enabler> = detail::dummy>
 std::string to_string(T &&variable) {
-    std::vector<std::string> defaults;
     auto cval = variable.begin();
     auto end = variable.end();
+    if(cval == end) {
+        return std::string("{}");
+    }
+    std::vector<std::string> defaults;
     while(cval != end) {
         defaults.emplace_back(CLI::detail::to_string(*cval));
         ++cval;
@@ -1208,6 +1211,13 @@ template <class AssignTo,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
     output.erase(output.begin(), output.end());
+    if(strings.size() == 1 && strings[0] == "{}") {
+        return true;
+    }
+    bool skip_remaining = false;
+    if(strings.size() == 2 && strings[0] == "{}" && is_separator(strings[1])) {
+        skip_remaining = true;
+    }
     for(const auto &elem : strings) {
         typename AssignTo::value_type out;
         bool retval = lexical_assign<typename AssignTo::value_type, typename ConvertTo::value_type>(elem, out);
@@ -1215,6 +1225,9 @@ bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &outp
             return false;
         }
         output.insert(output.end(), std::move(out));
+        if(skip_remaining) {
+            break;
+        }
     }
     return (!output.empty());
 }
