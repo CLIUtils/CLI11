@@ -70,19 +70,19 @@ jobs:
 
 
   msvc-2015:
-    name: MSVC 2017 test
+    name: MSVC 2015 test
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
 
     - name: Configure
-      run: pipx run cmake -S . -B build -G "Visual Studio 14 2015" -A x64
+      run: cmake -S . -B build -G "Visual Studio 14 2015" -A x64
 
     - name: Build
-      run: pipx run cmake --build build -j2
+      run: cmake --build build -j2 --config=Release
 
     - name: Test
-      run: pipx run cmake --build build -t test
+      run: cmake --build build -t test --config=Release
 
 
   cmake-config:
