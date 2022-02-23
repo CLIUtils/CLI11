@@ -22,9 +22,10 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v13.0.0
+  rev: v13.0.1
   hooks:
    - id: clang-format
+     types_or: [c++, c, cuda]
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13
