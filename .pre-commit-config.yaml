@@ -26,7 +26,6 @@ repos:
   hooks:
    - id: clang-format
      types_or: [c++, c, cuda]
-     types_or: [c++, c, cuda]
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13
