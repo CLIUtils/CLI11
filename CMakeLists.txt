@@ -143,6 +143,9 @@ target_compile_options(
   CLI11_warnings
   INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>
             $<$<CXX_COMPILER_ID:MSVC>:/W4
+            /Wall
+            /wd4514
+            /wd4571
             $<$<BOOL:${CLI11_WARNINGS_AS_ERRORS}>:/WX>>
             $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:${unix-warnings}
             $<$<BOOL:${CLI11_WARNINGS_AS_ERRORS}>:-Werror>>)
