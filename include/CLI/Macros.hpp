@@ -26,7 +26,7 @@
 #define CLI11_CPP14
 #if _MSVC_LANG > 201402L && _MSC_VER >= 1910
 #define CLI11_CPP17
-#if __MSVC_LANG > 201703L && _MSC_VER >= 1910
+#if _MSVC_LANG > 201703L && _MSC_VER >= 1910
 #define CLI11_CPP20
 #endif
 #endif
