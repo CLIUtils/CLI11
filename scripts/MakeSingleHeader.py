@@ -115,6 +115,9 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
         print("Converting macros", before, "->", after)
         single_header.replace(before, after)
 
+    new_namespace = namespace + "::"
+    single_header = re.sub(r"\bCLI::\b", new_namespace, single_header)
+
     if output is not None:
         with open(output, "w") as f:
             f.write(single_header)
