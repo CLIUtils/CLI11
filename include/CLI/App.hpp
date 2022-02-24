@@ -61,6 +61,25 @@ class App;
 
 using App_p = std::shared_ptr<App>;
 
+namespace detail {
+/// helper functions for adding in appropriate flag modifiers for add_flag
+
+template <typename T,
+          enable_if_t<!std::is_integral<T>::value || (sizeof(T)<=1U), detail::enabler> =
+              detail::dummy>
+    Option *default_flag_modifiers(Option *opt) {
+    return opt->always_capture_default();
+}
+
+/// summing modifiers
+template <typename T, enable_if_t<std::is_integral<T>::value && (sizeof(T) > 1U), detail::enabler> =
+              detail::dummy>
+Option *default_flag_modifiers(Option *opt) {
+    return opt->multi_option_policy(MultiOptionPolicy::Sum)->default_str("0")->force_callback();
+}
+
+}  // namespace detail
+
 class Option_group;
 /// Creates a command line program, with very few defaults.
 /** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
@@ -807,67 +826,22 @@ class App {
         return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
     }
 
-    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
-    /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
-    template <typename T,
-              enable_if_t<std::is_constructible<T, std::int64_t>::value && !std::is_const<T>::value &&
-                              !is_bool<T>::value,
-                          detail::enabler> = detail::dummy>
-    Option *add_counting_flag(std::string flag_name,
-                     T &flag_count,  ///< A variable holding the count
-                     std::string flag_description = "") {
-        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
-            try {
-                detail::sum_flag_vector(res, flag_count);
-            } catch(const std::invalid_argument &) {
-                return false;
-            }
-            return true;
-        };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
-            ->multi_option_policy(MultiOptionPolicy::TakeAll)
-            ->default_str("0")
-            ->force_callback();
-    }
-
-    /// Add option for flag with integer result - defaults to allowing multiple passings, but can be forced to one
-    /// if `multi_option_policy(CLI::MultiOptionPolicy::Throw)` is used.
-    template <
-        typename T,
-        enable_if_t<std::is_constructible<T, std::int64_t>::value && !std::is_const<T>::value && !is_bool<T>::value && !detail::is_wrapper<T>::value,
-                    detail::enabler> = detail::dummy>
-    Option *add_flag(std::string flag_name,
-                     T &flag_count,  ///< A variable holding the count
-                     std::string flag_description = "") {
-        CLI::callback_t fun = [&flag_count](const CLI::results_t &res) {
-            try {
-                detail::sum_flag_vector(res, flag_count);
-            } catch(const std::invalid_argument &) {
-                return false;
-            }
-            return true;
-        };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
-            ->multi_option_policy(MultiOptionPolicy::TakeAll)
-            ->default_str("0")
-            ->force_callback();
-    }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
     /// that can be converted from a string
     template <typename T,
               enable_if_t<!detail::is_mutable_container<T>::value && !std::is_const<T>::value &&
-                              (!std::is_constructible<T, std::int64_t>::value || is_bool<T>::value|| detail::is_wrapper<T>::value) &&
                               !std::is_constructible<std::function<void(int)>, T>::value,
                           detail::enabler> = detail::dummy>
     Option *add_flag(std::string flag_name,
-                     T &flag_result,  ///< A variable holding true if passed
+                     T &flag_result,  ///< A variable holding the flag result
                      std::string flag_description = "") {
 
         CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
             return CLI::detail::lexical_cast(res[0], flag_result);
         };
-        return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))->run_callback_for_default();
+        auto *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
+        return detail::default_flag_modifiers<T>(opt);
     }
 
     /// Vector version to capture multiple flags.
@@ -3246,6 +3220,8 @@ struct AppFriend {
     static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
 };
 }  // namespace detail
+
+
 
 // [CLI11:app_hpp:end]
 }  // namespace CLI
