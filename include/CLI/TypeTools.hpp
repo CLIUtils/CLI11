@@ -1543,9 +1543,9 @@ inline std::string sum_string_vector(const std::vector<std::string> &values) {
     } else {
         if(val <= std::numeric_limits<std::int64_t>::min() || val >= std::numeric_limits<std::int64_t>::max() ||
            val == static_cast<std::int64_t>(val)) {
-            output=detail::value_string(static_cast<int64_t>(val));
+            output = detail::value_string(static_cast<int64_t>(val));
         } else {
-            output=detail::value_string(val);
+            output = detail::value_string(val);
         }
     }
     return output;
