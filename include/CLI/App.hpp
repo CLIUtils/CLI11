@@ -882,13 +882,13 @@ class App {
                               std::string flag_description = "") {
 
         CLI::callback_t fun = [function](const CLI::results_t &res) {
-            std::int64_t flag_count = 0;
-            detail::sum_flag_vector(res, flag_count);
+            std::int64_t flag_count{0};
+            CLI::detail::lexical_cast(res[0], flag_count);
             function(flag_count);
             return true;
         };
         return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
-            ->multi_option_policy(MultiOptionPolicy::TakeAll);
+            ->multi_option_policy(MultiOptionPolicy::Sum);
     }
 
 #ifdef CLI11_CPP14

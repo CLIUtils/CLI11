@@ -1267,36 +1267,9 @@ class Option : public OptionBase<Option> {
                 res.push_back(detail::join(original, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
             }
             break;
-        case MultiOptionPolicy::Sum: {
-
-            double val{0.0};
-            bool fail{false};
-            for(const auto &arg : results_) {
-                double tv{0.0};
-                auto comp = detail::lexical_cast<double>(arg, tv);
-                if(!comp) {
-                    try {
-                        tv = static_cast<double>(detail::to_flag_value(arg));
-                    } catch(const std::exception &) {
-                        fail = true;
-                        break;
-                    }
-                }
-                val += tv;
-            }
-            if(fail) {
-                res.push_back("");
-                for(const auto &arg : results_) {
-                    res[0].append(arg);
-                }
-            } else {
-                if(val <= LLONG_MIN || val >= LLONG_MAX || val == (std::int64_t)val) {
-                    res.push_back(detail::value_string(static_cast<int64_t>(val)));
-                } else {
-                    res.push_back(detail::value_string(val));
-                }
-            }
-        } break;
+        case MultiOptionPolicy::Sum:
+            res.push_back(detail::sum_string_vector(original));
+            break;
         case MultiOptionPolicy::Throw:
         default: {
             auto num_min = static_cast<std::size_t>(get_items_expected_min());
