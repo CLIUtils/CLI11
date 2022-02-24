@@ -143,7 +143,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalbool", "[optional]") {
     CHECK(opt);
     CHECK(*opt);
 
-     args = {"--no-opt"};
+    args = {"--no-opt"};
     run();
     CHECK(opt);
     CHECK_FALSE(*opt);

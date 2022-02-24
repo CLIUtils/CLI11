@@ -64,16 +64,13 @@ using App_p = std::shared_ptr<App>;
 namespace detail {
 /// helper functions for adding in appropriate flag modifiers for add_flag
 
-template <typename T,
-          enable_if_t<!std::is_integral<T>::value || (sizeof(T)<=1U), detail::enabler> =
-              detail::dummy>
-    Option *default_flag_modifiers(Option *opt) {
+template <typename T, enable_if_t<!std::is_integral<T>::value || (sizeof(T) <= 1U), detail::enabler> = detail::dummy>
+Option *default_flag_modifiers(Option *opt) {
     return opt->always_capture_default();
 }
 
 /// summing modifiers
-template <typename T, enable_if_t<std::is_integral<T>::value && (sizeof(T) > 1U), detail::enabler> =
-              detail::dummy>
+template <typename T, enable_if_t<std::is_integral<T>::value && (sizeof(T) > 1U), detail::enabler> = detail::dummy>
 Option *default_flag_modifiers(Option *opt) {
     return opt->multi_option_policy(MultiOptionPolicy::Sum)->default_str("0")->force_callback();
 }
@@ -825,7 +822,6 @@ class App {
     Option *add_flag(std::string flag_name, T &flag_description) {
         return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
     }
-
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
     /// that can be converted from a string
@@ -3220,8 +3216,6 @@ struct AppFriend {
     static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
 };
 }  // namespace detail
-
-
 
 // [CLI11:app_hpp:end]
 }  // namespace CLI
