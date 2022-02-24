@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <limits>
 // [CLI11:public_includes:end]
 
 #include "StringTools.hpp"
