@@ -527,7 +527,7 @@ TEST_CASE_METHOD(TApp, "floatPair", "[optiontype]") {
     auto *opt = app.add_option("--fp", custom_opt)->delimiter(',');
     opt->default_str("3.4,2.7");
 
-    args = {"--fp","12", "1.5"};
+    args = {"--fp", "12", "1.5"};
 
     run();
     CHECK(12.0f == Approx(custom_opt.first));
@@ -996,7 +996,7 @@ TEST_CASE_METHOD(TApp, "OnParseCallPositional", "[optiontype]") {
                                })
                     ->trigger_on_parse()
                     ->allow_extra_args();
-    args = { "1", "2", "3"};
+    args = {"1", "2", "3"};
     CHECK(opt->get_trigger_on_parse());
     run();
     CHECK(3 == cnt);

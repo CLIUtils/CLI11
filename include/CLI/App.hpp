@@ -2558,7 +2558,7 @@ class App {
                                     continue;
                                 }
                             }
-                            
+
                             parse_order_.push_back(opt.get());
                             /// if we require a separator add it here
                             if(opt->get_inject_separator()) {
@@ -2568,7 +2568,7 @@ class App {
                             }
                             if(opt->get_trigger_on_parse() &&
                                opt->current_option_state_ == Option::option_state::callback_run) {
-                               opt->clear();
+                                opt->clear();
                             }
                             opt->add_result(positional);
                             if(opt->get_trigger_on_parse()) {
