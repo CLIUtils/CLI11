@@ -2558,8 +2558,22 @@ class App {
                                     continue;
                                 }
                             }
-                            opt->add_result(positional);
+                            
                             parse_order_.push_back(opt.get());
+                            /// if we require a separator add it here
+                            if(opt->get_inject_separator()) {
+                                if(!opt->results().empty() && !opt->results().back().empty()) {
+                                    opt->add_result(std::string{});
+                                }
+                            }
+                            if(opt->get_trigger_on_parse() &&
+                               opt->current_option_state_ == Option::option_state::callback_run) {
+                               opt->clear();
+                            }
+                            opt->add_result(positional);
+                            if(opt->get_trigger_on_parse()) {
+                                opt->run_callback();
+                            }
                             args.pop_back();
                             return true;
                         }
@@ -2578,7 +2592,18 @@ class App {
                         continue;
                     }
                 }
+                if(opt->get_inject_separator()) {
+                    if(!opt->results().empty() && !opt->results().back().empty()) {
+                        opt->add_result(std::string{});
+                    }
+                }
+                if(opt->get_trigger_on_parse() && opt->current_option_state_ == Option::option_state::callback_run) {
+                    opt->clear();
+                }
                 opt->add_result(positional);
+                if(opt->get_trigger_on_parse()) {
+                    opt->run_callback();
+                }
                 parse_order_.push_back(opt.get());
                 args.pop_back();
                 return true;
