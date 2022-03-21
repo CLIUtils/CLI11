@@ -76,7 +76,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure
-      run: cmake -S . -B build -G "Visual Studio 14 2015" -A x64
+      run: cmake -S . -B build -G "Visual Studio 14 2015"
 
     - name: Build
       run: cmake --build build -j2 --config=Release
