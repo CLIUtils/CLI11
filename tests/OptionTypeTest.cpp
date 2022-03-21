@@ -519,6 +519,26 @@ TEST_CASE_METHOD(TApp, "CustomDoubleOptionAlt", "[optiontype]") {
     CHECK(1.5 == Approx(custom_opt.second));
 }
 
+// now with tuple support this is possible
+TEST_CASE_METHOD(TApp, "floatPair", "[optiontype]") {
+
+    std::pair<float, float> custom_opt;
+
+    auto *opt = app.add_option("--fp", custom_opt)->delimiter(',');
+    opt->default_str("3.4,2.7");
+
+    args = {"--fp", "12", "1.5"};
+
+    run();
+    CHECK(12.0f == Approx(custom_opt.first));
+    CHECK(1.5f == Approx(custom_opt.second));
+    args = {};
+    opt->force_callback();
+    run();
+    CHECK(3.4f == Approx(custom_opt.first));
+    CHECK(2.7f == Approx(custom_opt.second));
+}
+
 // now with independent type sizes and expected this is possible
 TEST_CASE_METHOD(TApp, "vectorPair", "[optiontype]") {
 
@@ -960,6 +980,23 @@ TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {
     std::vector<std::string> extras;
     app.add_option("args", extras);
     args = {"-c", "1", "-c", "2", "-c", "3"};
+    CHECK(opt->get_trigger_on_parse());
+    run();
+    CHECK(3 == cnt);
+}
+
+TEST_CASE_METHOD(TApp, "OnParseCallPositional", "[optiontype]") {
+
+    int cnt{0};
+
+    auto *opt = app.add_option("pos",
+                               [&cnt](const CLI::results_t &) {
+                                   ++cnt;
+                                   return true;
+                               })
+                    ->trigger_on_parse()
+                    ->allow_extra_args();
+    args = {"1", "2", "3"};
     CHECK(opt->get_trigger_on_parse());
     run();
     CHECK(3 == cnt);
