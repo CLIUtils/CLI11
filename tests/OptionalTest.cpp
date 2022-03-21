@@ -130,6 +130,27 @@ TEST_CASE_METHOD(TApp, "StdOptionalUint", "[optional]") {
                   CLI::detail::object_category::wrapper_value);
 }
 
+TEST_CASE_METHOD(TApp, "StdOptionalbool", "[optional]") {
+    std::optional<bool> opt{};
+    CHECK(!opt);
+    app.add_flag("--opt,!--no-opt", opt);
+    CHECK(!opt);
+    run();
+    CHECK(!opt);
+
+    args = {"--opt"};
+    run();
+    CHECK(opt);
+    CHECK(*opt);
+
+    args = {"--no-opt"};
+    run();
+    CHECK(opt);
+    CHECK_FALSE(*opt);
+    static_assert(CLI::detail::classify_object<std::optional<bool>>::value ==
+                  CLI::detail::object_category::wrapper_value);
+}
+
 #ifdef _MSC_VER
 #pragma warning(default : 4244)
 #endif

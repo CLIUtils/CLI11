@@ -212,7 +212,7 @@ TEST_CASE_METHOD(TApp, "OneFlagRefValueFalse", "[app]") {
     run();
     CHECK(app.count("-c") == 1u);
     CHECK(app.count("--count") == 1u);
-    CHECK(ref == -1);
+    CHECK(ref == 0);
 
     args = {"--count=happy"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -772,6 +772,42 @@ TEST_CASE_METHOD(TApp, "JoinOpt", "[app]") {
     run();
 
     CHECK("one\ntwo" == str);
+}
+
+TEST_CASE_METHOD(TApp, "SumOpt", "[app]") {
+
+    int val;
+    app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=1", "--val=4"};
+
+    run();
+
+    CHECK(5 == val);
+}
+
+TEST_CASE_METHOD(TApp, "SumOptFloat", "[app]") {
+
+    double val;
+    app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=1.3", "--val=-0.7"};
+
+    run();
+
+    CHECK(0.6 == val);
+}
+
+TEST_CASE_METHOD(TApp, "SumOptString", "[app]") {
+
+    std::string val;
+    app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=i", "--val=2"};
+
+    run();
+
+    CHECK("i2" == val);
 }
 
 TEST_CASE_METHOD(TApp, "JoinOpt2", "[app]") {

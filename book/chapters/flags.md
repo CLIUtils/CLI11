@@ -15,7 +15,7 @@ This will bind the flag `-f` to the boolean `my_flag`. After the parsing step, `
 
 ## Integer flags
 
-If you want to allow multiple flags, simply use any integer-like instead of a bool:
+If you want to allow multiple flags and count their value, simply use any integral variables instead of a bool:
 
 ```cpp
 int my_flag{0};
@@ -23,6 +23,8 @@ app.add_flag("-f", my_flag, "Optional description");
 ```
 
 After the parsing step, `my_flag` will contain the number of times this flag was found on the command line, including 0 if not found.
+
+This behavior can also be controlled manually via `->multi_option_policy(CLI::MultiOptionPolicy::Sum)` as of version 2.2.
 
 ## Arbitrary type flags
 

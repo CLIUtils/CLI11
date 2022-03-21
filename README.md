@@ -242,7 +242,7 @@ While all options internally are the same type, there are several ways to add an
 app.add_option(option_name, help_str="")
 
 app.add_option(option_name,
-               variable_to_bind_to, // bool, char(see note), int, float, vector, enum, std::atomic, or string-like, or anything with a defined conversion from a string or that takes an int, double, or string in a constructor. Also allowed are tuples, std::array or std::pair. Also supported are complex numbers, wrapper types, and containers besides vectorof any other supported type.
+               variable_to_bind_to, // bool, char(see note), int, float, vector, enum, std::atomic, or string-like, or anything with a defined conversion from a string or that takes an int, double, or string in a constructor. Also allowed are tuples, std::array or std::pair. Also supported are complex numbers, wrapper types, and containers besides vectors of any other supported type.
                help_string="")
 
 app.add_option_function<type>(option_name,
@@ -363,7 +363,7 @@ Before parsing, you can set the following options:
 * `->allow_extra_args(true/false)`: If set to true the option will take an unlimited number of arguments like a vector, if false it will limit the number of arguments to the size of the type used in the option.  Default value depends on the nature of the type use, containers default to true, others default to false.
 * `->delimiter(char)`: Allows specification of a custom delimiter for separating single arguments into vector arguments, for example specifying `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3 elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a vector value.
 * `->description(str)`: Set/change the description.
-* `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy). `->join(delim)` can also be used to join with a specific delimiter. This equivalent to calling `->delimiter(delim)` and `->join()`
+* `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`, and `->join()`. This will only affect options expecting 1 argument or bool flags (which do not inherit their default but always start with a specific policy). `->join(delim)` can also be used to join with a specific delimiter. This equivalent to calling `->delimiter(delim)` and `->join()`.  Valid values are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::TakeLast`, `CLI::MultiOptionPolicy::TakeFirst`, `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`, and `CLI::MultiOptionPolicy::Sum` 🚧.
 * `->check(std::string(const std::string &), validator_name="",validator_description="")`: Define a check function.  The function should return a non empty string with the error message if the check fails
 * `->check(Validator)`: Use a Validator object to do the check see [Validators](#validators) for a description of available Validators and how to create new ones.
 * `->transform(std::string(std::string &), validator_name="",validator_description=")`: Converts the input string into the output string, in-place in the parsed options.

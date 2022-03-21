@@ -171,7 +171,7 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->allow_extra_args()` | Allow extra argument values to be included when an option is passed. Enabled by default for vector options. |
 | `->disable_flag_override()` | specify that flag options cannot be overridden on the command line use `=<newval>` |
 | `->delimiter('<CH>')` | specify a character that can be used to separate elements in a command line argument, default is <none>, common values are ',', and ';' |
-| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, and `Join` are also available. See the next four lines for shortcuts to set this more easily. |
+| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily. |
 | `->take_last()` | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`. |
 | `->take_first()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst)` |
 | `->take_all()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)` |
@@ -211,7 +211,7 @@ One of CLI11's systems to allow customizability without high levels of verbosity
 
 * `group`: The group name starts as "Options"
 * `required`: If the option must be given. Defaults to `false`. Is ignored for flags.
-* `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` regardless of the default, so that multiple bool flags does not cause an error. But you can override that flag by flag.
+* `multi_option_policy`: What to do if several copies of an option are passed and one value is expected. Defaults to `CLI::MultiOptionPolicy::Throw`. This is also used for bool flags, but they always are created with the value `CLI::MultiOptionPolicy::TakeLast` or `CLI::MultiOptionPolicy::Sum` regardless of the default, so that multiple bool flags does not cause an error. But you can override that setting by calling the `multi_option_policy` directly.
 * `ignore_case`: Allow any mixture of cases for the option or flag name
 * `ignore_underscore`: Allow any number of underscores in the option or flag name
 * `configurable`:  Specify whether an option can be configured through a config file

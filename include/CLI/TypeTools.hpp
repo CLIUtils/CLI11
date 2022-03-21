@@ -9,6 +9,7 @@
 // [CLI11:public_includes:set]
 #include <cstdint>
 #include <exception>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -799,7 +800,16 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     char *val = nullptr;
     std::uint64_t output_ll = std::strtoull(input.c_str(), &val, 0);
     output = static_cast<T>(output_ll);
-    return val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll;
+    if(val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll) {
+        return true;
+    }
+    val = nullptr;
+    std::int64_t output_sll = std::strtoll(input.c_str(), &val, 0);
+    if(val == (input.c_str() + input.size())) {
+        output = (output_sll < 0) ? static_cast<T>(0) : static_cast<T>(output_sll);
+        return (static_cast<std::int64_t>(output) == output_sll);
+    }
+    return false;
 }
 
 /// Convert to a signed integral
@@ -811,7 +821,15 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     char *val = nullptr;
     std::int64_t output_ll = std::strtoll(input.c_str(), &val, 0);
     output = static_cast<T>(output_ll);
-    return val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll;
+    if(val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll) {
+        return true;
+    }
+    if(input == "true") {
+        // this is to deal with a few oddities with flags and wrapper int types
+        output = static_cast<T>(1);
+        return true;
+    }
+    return false;
 }
 
 /// Convert a flag into an integer value  typically binary flags
@@ -1501,60 +1519,39 @@ bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &outpu
     return false;
 }
 
-/// Sum a vector of flag representations
-/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
-/// by
-/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
-/// common true and false strings then uses stoll to convert the rest for summing
-template <typename T, enable_if_t<std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
-void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
-    std::int64_t count{0};
-    for(auto &flag : flags) {
-        count += detail::to_flag_value(flag);
+/// Sum a vector of strings
+inline std::string sum_string_vector(const std::vector<std::string> &values) {
+    double val{0.0};
+    bool fail{false};
+    std::string output;
+    for(const auto &arg : values) {
+        double tv{0.0};
+        auto comp = detail::lexical_cast<double>(arg, tv);
+        if(!comp) {
+            try {
+                tv = static_cast<double>(detail::to_flag_value(arg));
+            } catch(const std::exception &) {
+                fail = true;
+                break;
+            }
+        }
+        val += tv;
     }
-    output = (count > 0) ? static_cast<T>(count) : T{0};
-}
-
-/// Sum a vector of flag representations
-/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
-/// by
-/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
-/// common true and false strings then uses stoll to convert the rest for summing
-template <typename T, enable_if_t<std::is_signed<T>::value, detail::enabler> = detail::dummy>
-void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
-    std::int64_t count{0};
-    for(auto &flag : flags) {
-        count += detail::to_flag_value(flag);
+    if(fail) {
+        for(const auto &arg : values) {
+            output.append(arg);
+        }
+    } else {
+        if(val <= static_cast<double>(std::numeric_limits<std::int64_t>::min()) ||
+           val >= static_cast<double>(std::numeric_limits<std::int64_t>::max()) ||
+           val == static_cast<std::int64_t>(val)) {
+            output = detail::value_string(static_cast<int64_t>(val));
+        } else {
+            output = detail::value_string(val);
+        }
     }
-    output = static_cast<T>(count);
+    return output;
 }
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4800)
-#endif
-// with Atomic<XX> this could produce a warning due to the conversion but if atomic gets here it is an old style so will
-// most likely still work
-
-/// Sum a vector of flag representations
-/// The flag vector produces a series of strings in a vector,  simple true is represented by a "1",  simple false is
-/// by
-/// "-1" an if numbers are passed by some fashion they are captured as well so the function just checks for the most
-/// common true and false strings then uses stoll to convert the rest for summing
-template <typename T,
-          enable_if_t<!std::is_signed<T>::value && !std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
-void sum_flag_vector(const std::vector<std::string> &flags, T &output) {
-    std::int64_t count{0};
-    for(auto &flag : flags) {
-        count += detail::to_flag_value(flag);
-    }
-    std::string out = detail::to_string(count);
-    lexical_cast(out, output);
-}
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 }  // namespace detail
 // [CLI11:type_tools_hpp:end]
