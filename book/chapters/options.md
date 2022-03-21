@@ -171,7 +171,7 @@ When you call `add_option`, you get a pointer to the added option. You can use t
 | `->allow_extra_args()` | Allow extra argument values to be included when an option is passed. Enabled by default for vector options. |
 | `->disable_flag_override()` | specify that flag options cannot be overridden on the command line use `=<newval>` |
 | `->delimiter('<CH>')` | specify a character that can be used to separate elements in a command line argument, default is <none>, common values are ',', and ';' |
-| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, `Sum` are also available. See the next four lines for shortcuts to set this more easily. |
+| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily. |
 | `->take_last()` | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`. |
 | `->take_first()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst)` |
 | `->take_all()` | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)` |
