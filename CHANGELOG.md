@@ -3,11 +3,11 @@
 ## Version 2.2: Option Flexibility
 
 A number of bug fixes and code cleanup for various build configurations.  Clean up of some error outputs and extension of existing capability to new types or situations.
-New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for Files on a default path is included to allow 1 or more default paths for configuration files or other file arguments.
+New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for Files on a default path is included to allow 1 or more default paths for configuration files or other file arguments.  
 
-There is a possible breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.
+There is a possible breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.  
 
-* Added a sum multi-option policy and refactor the add_flag to fix a bug when using optional<bool> as type. [#709][]
+* Added a sum multi-option policy and refactor the `add_flag` to fix a bug when using optional<bool> as type. [#709][]
 * Add support for an empty vector result in TOML and as a default string [#660][]
 * Add support for testing in meson and cleanup symbolic link generation [#701][],[#697][]
 * Add option to validate optional arguments on a vector to better support discriminating positional arguments from vector option arguments [#668][]
@@ -28,8 +28,9 @@ There is a possible breaking change in behavior of certain types which wrapped a
 [#665]: https://github.com/CLIUtils/CLI11/pull/665
 [#666]: https://github.com/CLIUtils/CLI11/pull/666
 [#668]: https://github.com/CLIUtils/CLI11/pull/668
-[#678]: https://github.com/CLIUtils/CLI11/pull/697
-[#679]: https://github.com/CLIUtils/CLI11/pull/697
+[#678]: https://github.com/CLIUtils/CLI11/pull/678
+[#679]: https://github.com/CLIUtils/CLI11/pull/679
+[#690]: https://github.com/CLIUtils/CLI11/pull/690
 [#697]: https://github.com/CLIUtils/CLI11/pull/697
 [#698]: https://github.com/CLIUtils/CLI11/pull/698
 [#701]: https://github.com/CLIUtils/CLI11/pull/701
