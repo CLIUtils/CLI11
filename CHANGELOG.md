@@ -1,5 +1,42 @@
 # Changelog
 
+## Version 2.2: Option Flexibility
+
+A number of bug fixes and code cleanup for various build configurations.  Clean up of some error outputs and extension of existing capability to new types or situations.
+New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for Files on a default path is included to allow 1 or more default paths for configuration files or other file arguments.  
+
+There is a possible breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.  
+
+* Added a sum multi-option policy and refactor the add_flag to fix a bug when using optional<bool> as type. [#709][]
+* Add support for an empty vector result in TOML and as a default string [#660][]
+* Add support for testing in meson and cleanup symbolic link generation [#701][],[#697][]
+* Add option to validate optional arguments on a vector to better support discriminating positional arguments from vector option arguments [#668][]
+* Add a transform validator that checks for files on a specified default path [#698][]
+* Modify the Range Validator to support additional type and clean up the error output [#690][]
+* Bugfix: The trigger on parse modifier did not work on positional arguments [#713][]
+* Bugfix: The single header file generation was missing custom namespace generation [#707][]
+* Bugfix: Add code support for building with webassembly [#679][]
+* Bugfix: Clean up File Error handling in the argument processing [#678][]
+* Change how the default value is displayed in the help messages from `=XXXX` to `[default=XXXXX]` to make it clearer [#666][]
+* Bugfix: Fix a stack overflow error if nameless commands had fallthrough [#665][]
+* Bugfix: Fix an issue with vectors of multi argument types where partial argument sets did not result in an error [#661][]
+* Bugfix: Fix an issue with type the template matching on C++20 and add some CI builds for C++20 [#663][]
+
+[#660]: https://github.com/CLIUtils/CLI11/pull/660
+[#661]: https://github.com/CLIUtils/CLI11/pull/661
+[#663]: https://github.com/CLIUtils/CLI11/pull/663
+[#665]: https://github.com/CLIUtils/CLI11/pull/665
+[#666]: https://github.com/CLIUtils/CLI11/pull/666
+[#668]: https://github.com/CLIUtils/CLI11/pull/668
+[#678]: https://github.com/CLIUtils/CLI11/pull/697
+[#679]: https://github.com/CLIUtils/CLI11/pull/697
+[#697]: https://github.com/CLIUtils/CLI11/pull/697
+[#698]: https://github.com/CLIUtils/CLI11/pull/698
+[#701]: https://github.com/CLIUtils/CLI11/pull/701
+[#707]: https://github.com/CLIUtils/CLI11/pull/707
+[#709]: https://github.com/CLIUtils/CLI11/pull/709
+[#713]: https://github.com/CLIUtils/CLI11/pull/713
+
 ## Version 2.1: Names and callbacks
 
 The name restrictions for options and subcommands are now much looser, allowing
