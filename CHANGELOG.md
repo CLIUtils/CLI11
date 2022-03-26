@@ -3,9 +3,9 @@
 ## Version 2.2: Option Flexibility
 
 A number of bug fixes and code cleanup for various build configurations.  Clean up of some error outputs and extension of existing capability to new types or situations.
-New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for Files on a default path is included to allow 1 or more default paths for configuration files or other file arguments.  
+New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for Files on a default path is included to allow 1 or more default paths for configuration files or other file arguments.
 
-There is a possible breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.  
+There is a possible breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.
 
 * Added a sum multi-option policy and refactor the `add_flag` to fix a bug when using optional<bool> as type. [#709][]
 * Add support for an empty vector result in TOML and as a default string [#660][]
