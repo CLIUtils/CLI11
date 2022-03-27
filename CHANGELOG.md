@@ -1,5 +1,48 @@
 # Changelog
 
+## Version 2.2: Option and Configuration Flexibility
+
+New features include support for output of an empty vector, a summing option policy that can be applied more broadly, and an option to validate optional arguments to discriminate from positional arguments.  A new validator to check for files on a default path is included to allow one or more default paths for configuration files or other file arguments. A number of bug fixes and code cleanup for various build configurations.  Clean up of some error outputs and extension of existing capability to new types or situations.
+
+There is a possible minor breaking change in behavior of certain types which wrapped an integer, such as `std::atomic<int>` or `std::optional<int>` when used in a flag.  The default behavior is now as a single argument value vs. summing all the arguments.  The default summing behavior is now restricted to pure integral types, int64_t, int, uint32_t, etc.  Use the new `sum` multi option policy to revert to the older behavior.  The summing behavior on wrapper types was not originally intended.
+
+* Add `MultiOptionPolicy::Sum`  and refactor the `add_flag` to fix a bug when using `std::optional<bool>` as type. [#709][]
+* Add support for an empty vector result in TOML and as a default string. [#660][]
+* Add `.validate_optional_arguments()` to support discriminating positional arguments from vector option arguments. [#668][]
+* Add `CLI::FileOnDefaultPath` to check for files on a specified default path. [#698][]
+* Change default value display in help messages from `=XXXX` to `[XXXXX]` to make it clearer. [#666][]
+* Modify the Range Validator to support additional types and clean up the error output. [#690][]
+* Bugfix: The trigger on parse modifier did not work on positional argument.s [#713][]
+* Bugfix: The single header file generation was missing custom namespace generation. [#707][]
+* Bugfix: Clean up File Error handling in the argument processing. [#678][]
+* Bugfix: Fix a stack overflow error if nameless commands had fallthrough. [#665][]
+* Bugfix: A subcommand callback could be executed multiple times if it was a member of an option group. [#666][]
+* Bugfix: Fix an issue with vectors of multi argument types where partial argument sets did not result in an error. [#661][]
+* Bugfix: Fix an issue with type the template matching on C++20 and add some CI builds for C++20. [#663][]
+* Bugfix: Fix typo in C++20 detection on MSVC. [#706][]
+* Bugfix: An issue where the detection of RTTI being disabled on certain MSVC platforms did not disable the use of dynamic cast calls. [#666][]
+* Bugfix: Resolve strict-overflow warning on some GCC compilers. [#666][]
+* Backend: Add additional tests concerning the use of aliases for option groups in config files. [#666][]
+* Build: Add support for testing in meson and cleanup symbolic link generation. [#701][], [#697][]
+* Build: Support building in WebAssembly. [#679][]
+
+[#660]: https://github.com/CLIUtils/CLI11/pull/660
+[#661]: https://github.com/CLIUtils/CLI11/pull/661
+[#663]: https://github.com/CLIUtils/CLI11/pull/663
+[#665]: https://github.com/CLIUtils/CLI11/pull/665
+[#666]: https://github.com/CLIUtils/CLI11/pull/666
+[#668]: https://github.com/CLIUtils/CLI11/pull/668
+[#678]: https://github.com/CLIUtils/CLI11/pull/678
+[#679]: https://github.com/CLIUtils/CLI11/pull/679
+[#690]: https://github.com/CLIUtils/CLI11/pull/690
+[#697]: https://github.com/CLIUtils/CLI11/pull/697
+[#698]: https://github.com/CLIUtils/CLI11/pull/698
+[#701]: https://github.com/CLIUtils/CLI11/pull/701
+[#706]: https://github.com/CLIUtils/CLI11/pull/706
+[#707]: https://github.com/CLIUtils/CLI11/pull/707
+[#709]: https://github.com/CLIUtils/CLI11/pull/709
+[#713]: https://github.com/CLIUtils/CLI11/pull/713
+
 ## Version 2.1: Names and callbacks
 
 The name restrictions for options and subcommands are now much looser, allowing
@@ -44,16 +87,6 @@ is not passed, or every time the option is parsed.
 [#653]: https://github.com/CLIUtils/CLI11/pull/653
 [#656]: https://github.com/CLIUtils/CLI11/pull/656
 [#657]: https://github.com/CLIUtils/CLI11/pull/657
-
-## Version 2.1.3: Bug Fixes and Tweaks
-
-* Change the way the default value is displayed in the included help text generation from `=XXXXX` to `[XXXXX]` to clean up some situations in which the text looked awkward and unclear [#666][]
-* Fix a bug where a subcommand callback could be executed multiple times if it was a member of an option group [#666][]
-* Fix an issue where the detection of RTTI being disabled on certain visual studio platforms did not disable the use of dynamic cast calls [#666][]
-* Add additional tests concerning the use of aliases for option groups in config files [#666][]
-* Resolve strict-overflow warning on some GCC compilers [#666][]
-
-[#666]: https://github.com/CLIUtils/CLI11/pull/666
 
 ## Version 2.0: Simplification
 

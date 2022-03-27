@@ -58,7 +58,7 @@ CLI11 is a command line parser for C++11 and beyond that provides a rich feature
 * [Contribute](#contribute)
 * [License](#license)
 
-Features that were added in the last released major version are marked with "🆕". Features only available in main are marked with "🚧".
+Features that were added in the last released minor version are marked with "🆕". Features only available in main are marked with "🚧".
 
 ## Background
 
@@ -87,7 +87,7 @@ An acceptable CLI parser library should be all of the following:
 * Usable subcommand syntax, with support for multiple subcommands, nested subcommands, option groups, and optional fallthrough (explained later).
 * Ability to add a configuration file (`TOML`, `INI`, or custom format), and produce it as well.
 * Produce real values that can be used directly in code, not something you have pay compute time to look up, for HPC applications.
-* Work with standard types, simple custom types, and extensible to exotic types.
+* Work with common types, simple custom types, and extensible to exotic types.
 * Permissively licensed.
 
 ### Other parsers
@@ -115,6 +115,7 @@ After I wrote this, I also found the following libraries:
 | [Argh!][]               | Very minimalistic C++11 parser, single header. Don't have many features. No help generation?!?! At least it's exception-free.                                                        |
 | [CLI][]                 | Custom language and parser. Huge build-system overkill for very little benefit. Last release in 2009, but still occasionally active.                                                 |
 | [argparse][]            | C++17 single file argument parser. Design seems similar to CLI11 in some ways. The author has several other interesting projects.                                                    |
+| [lyra][]                | a simple header only parser with composable options.  Might work well for simple standardized parsing                     |
 
 See [Awesome C++][] for a less-biased list of parsers. You can also find other single file libraries at [Single file libs][].
 
@@ -167,7 +168,7 @@ include(FetchContent)
 FetchContent_Declare(
   cli11
   GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-  GIT_TAG        v2.1.2
+  GIT_TAG        v2.2.0
 )
 
 FetchContent_MakeAvailable(cli11)
@@ -276,7 +277,7 @@ App* subcom = app.add_subcommand(name, description);
 Option_group *app.add_option_group(name,description);
 ```
 
-An option name may start with any character except ('-', ' ', '\n', and '!') 🆕. For long options, after the first character all characters are allowed except ('=',':','{',' ', '\n')🆕. For the `add_flag*` functions '{' and '!' have special meaning which is why they are not allowed. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on the help line for its positional form.
+An option name may start with any character except ('-', ' ', '\n', and '!'). For long options, after the first character all characters are allowed except ('=',':','{',' ', '\n'). For the `add_flag*` functions '{' and '!' have special meaning which is why they are not allowed. Names are given as a comma separated string, with the dash or dashes. An option or flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed, to count the options. One of the names is allowed to be given without proceeding dash(es); if present the option is a positional option, and that name will be used on the help line for its positional form.
 
 The `add_option_function<type>(...` function will typically require the template parameter be given unless a `std::function` object with an exact match is passed.  The type can be any type supported by the `add_option` function. The function should throw an error (`CLI::ConversionError` or `CLI::ValidationError` possibly) if the value is not valid.
 
@@ -377,8 +378,8 @@ Before parsing, you can set the following options:
 * `->default_val(value)`: Generate the default string from a value and validate that the value is also valid.  For options that assign directly to a value type the value in that type is also updated.  Value must be convertible to a string(one of known types or have a stream operator). The callback may be triggered if the `run_callback_for_default` is set.
 * `->run_callback_for_default()`: This will force the option callback to be executed or the variable set when the `default_val` is set.
 * `->option_text(string)`: Sets the text between the option name and description.
-* `->force_callback()`: 🆕 Causes the option callback or value set to be triggered even if the option was not present in parsing.
-* `->trigger_on_parse()`: 🆕 If set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times.
+* `->force_callback()`: Causes the option callback or value set to be triggered even if the option was not present in parsing.
+* `->trigger_on_parse()`: If set, causes the callback and all associated validation checks for the option to be executed when the option value is parsed vs. at the end of all parsing. This could cause the callback to be executed multiple times. Also works with positional options 🆕.
 
 These options return the `Option` pointer, so you can chain them together, and even skip storing the pointer entirely. The `each` function takes any function that has the signature `void(const std::string&)`; it should throw a `ValidationError` when validation fails. The help message will have the name of the parent option prepended. Since `each`, `check` and `transform` use the same underlying mechanism, you can chain as many as you want, and they will be executed in order. Operations added through `transform` are executed first in reverse order of addition, and `check` and `each` are run following the transform functions in order of addition. If you just want to see the unconverted values, use `.results()` to get the `std::vector<std::string>` of results.
 
@@ -428,7 +429,7 @@ CLI11 has several Validators built-in that perform some common checks
 * `CLI::ExistingDirectory`: Requires that the directory exists.
 * `CLI::ExistingPath`: Requires that the path (file or directory) exists.
 * `CLI::NonexistentPath`: Requires that the path does not exist.
-* `CLI::FileOnDefaultPath`: 🚧 Best used as a transform, Will check that a file exists either directly or in a default path and update the path appropriately.  See [Transforming Validators](#transforming-validators) for more details
+* `CLI::FileOnDefaultPath`: 🆕 Best used as a transform, Will check that a file exists either directly or in a default path and update the path appropriately.  See [Transforming Validators](#transforming-validators) for more details
 * `CLI::Range(min,max)`: Requires that the option be between min and max (make sure to use floating point if needed). Min defaults to 0.
 * `CLI::Bounded(min,max)`: Modify the input such that it is always between min and max (make sure to use floating point if needed). Min defaults to 0.  Will produce an error if conversion is not possible.
 * `CLI::PositiveNumber`: Requires the number be greater than 0
@@ -485,7 +486,7 @@ of `Transformer`:
 
 NOTES:  If the container used in `IsMember`, `Transformer`, or `CheckedTransformer` has a `find` function like `std::unordered_map`  or `std::map` then that function is used to do the searching. If it does not have a `find` function a linear search is performed.  If there are filters present, the fast search is performed first, and if that fails a linear search with the filters on the key values is performed.
 
-* `CLI::FileOnDefaultPath(default_path)`: 🚧 can be used to check for files in a default path.  If used as a transform it will first check that a file exists, if it does nothing further is done,  if it does not it tries to add a default Path to the file and search there again.  If the file does not exist an error is returned normally but this can be disabled using CLI::FileOnDefaultPath(default_path, false).  This allows multiple paths to be chained using multiple transform calls.
+* `CLI::FileOnDefaultPath(default_path)`: 🆕 can be used to check for files in a default path.  If used as a transform it will first check that a file exists, if it does nothing further is done,  if it does not it tries to add a default Path to the file and search there again.  If the file does not exist an error is returned normally but this can be disabled using CLI::FileOnDefaultPath(default_path, false).  This allows multiple paths to be chained using multiple transform calls.
 
 ##### Validator operations
 
@@ -594,7 +595,7 @@ There are several options that are supported on the main app and subcommands and
 * `.enabled_by_default()`: Specify that at the start of each parse the subcommand/option_group should be enabled.  This is useful for allowing some Subcommands to disable others.
 * `.silent()`: Specify that the subcommand is silent meaning that if used it won't show up in the subcommand list.  This allows the use of subcommands as modifiers
 * `.validate_positionals()`: Specify that positionals should pass validation before matching.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional or extra arguments.
-* `.validate_optional_arguments()`:🚧 Specify that optional arguments should pass validation before being assigned to an option.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional subcommand or extra arguments.
+* `.validate_optional_arguments()`:🆕 Specify that optional arguments should pass validation before being assigned to an option.  Validation is specified through `transform`, `check`, and `each` for an option.  If an argument fails validation it is not an error and matching proceeds to the next available positional subcommand or extra arguments.
 * `.excludes(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, these subcommands cannot be given together.  In the case of options, if the option is passed the subcommand cannot be used and will generate an error.
 * `.needs(option_or_subcommand)`: If given an option pointer or pointer to another subcommand, the subcommands will require the given option to have been given before this subcommand is validated which occurs prior to execution of any callback or after parsing is completed.
 * `.require_option()`: Require 1 or more options or option groups be used.
@@ -690,7 +691,7 @@ The subcommand method
 .add_option_group(name,description)
 ```
 
-Will create an option group, and return a pointer to it. The argument for `description` is optional and can be omitted.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/main/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through.  The name given in an option group must not contain newlines or null characters.🆕
+Will create an option group, and return a pointer to it. The argument for `description` is optional and can be omitted.  An option group allows creation of a collection of options, similar to the groups function on options, but with additional controls and requirements.  They allow specific sets of options to be composed and controlled as a collective.  For an example see [range example](https://github.com/CLIUtils/CLI11/blob/main/examples/ranges.cpp).  Option groups are a specialization of an App so all [functions](#subcommand-options) that work with an App or subcommand also work on option groups.  Options can be created as part of an option group using the add functions just like a subcommand, or previously created options can be added through.  The name given in an option group must not contain newlines or null characters.
 
 ```cpp
 ogroup->add_option(option_pointer);
@@ -798,7 +799,7 @@ app.set_config("--config")->expected(1, X);
 
 Where X is some positive number and will allow up to `X` configuration files to be specified by separate `--config` arguments.  Value strings with quote characters in it will be printed with a single quote. All other arguments will use double quote.  Empty strings will use a double quoted argument. Numerical or boolean values are not quoted.
 
-For options or flags which allow 0 arguments to be passed using an empty string in the config file, `{}`, or `[]` will convert the result to the default value specified via `default_str` or `default_val` on the option 🚧.  If no user specified default is given the result is an empty string or the converted value of an empty string.
+For options or flags which allow 0 arguments to be passed using an empty string in the config file, `{}`, or `[]` will convert the result to the default value specified via `default_str` or `default_val` on the option 🆕.  If no user specified default is given the result is an empty string or the converted value of an empty string.
 
 NOTE:  Transforms and checks can be used with the option pointer returned from set_config like any other option to validate the input if needed.  It can also be used with the built in transform `CLI::FileOnDefaultPath` to look in a default path as well as the current one.  For example
 
@@ -1097,3 +1098,4 @@ CLI11 was developed at the [University of Cincinnati][] to support of the [GooFi
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
 [toml]: https://toml.io
+[lyra]: https://github.com/bfgroup/Lyra
