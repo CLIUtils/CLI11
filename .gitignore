@@ -8,6 +8,7 @@ a.out*
 /*.kdev4
 /html/*
 !/meson.build
+.idea
 
 /node_modules/*
 /package.json
