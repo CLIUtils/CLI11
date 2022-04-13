@@ -197,6 +197,7 @@ class ConfigYAML : public Config {
     static std::string indent(unsigned level) { return std::string(level * 2, ' '); }
 
     std::vector<ConfigItem> parse(const YAML::Node& node, std::vector<std::string> parents, unsigned level = 0) const;
+    static void aggregate(std::vector<ConfigItem>&);
 };
 // [CLI11:config_fwd_hpp:end]
 
