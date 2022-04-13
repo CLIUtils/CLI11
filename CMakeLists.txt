@@ -151,9 +151,16 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.13)
   target_link_options(CLI11_warnings INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>)
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+find_package(yaml-cpp REQUIRED)
+
 # Allow IDE's to group targets into folders
 add_library(CLI11 INTERFACE)
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
+
+target_link_libraries(CLI11 INTERFACE yaml-cpp::yaml-cpp)
 
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(CLI11 INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

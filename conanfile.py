@@ -21,6 +21,9 @@ class CLI11Conan(ConanFile):
     homepage = "https://github.com/CLIUtils/CLI11"
     author = "Henry Schreiner <hschrein@cern.ch>"
     license = "BSD-3-Clause"
+    generators = "cmake_find_package"
+
+    requires = "yaml-cpp/0.7.0"
 
     settings = "os", "compiler", "arch", "build_type"
     exports_sources = (

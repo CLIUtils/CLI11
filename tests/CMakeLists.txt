@@ -36,6 +36,7 @@ set(boost-optional-def $<$<BOOL:${Boost_FOUND}>:CLI11_BOOST_OPTIONAL>)
 set(CLI11_TESTS
     HelpersTest
     ConfigFileTest
+    ConfigFileYamlTest
     OptionTypeTest
     SimpleTest
     AppTest
