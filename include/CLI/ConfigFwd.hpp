@@ -17,7 +17,9 @@
 #include "Error.hpp"
 #include "StringTools.hpp"
 
+#if CLI11_ENABLE_YAML
 #include <yaml-cpp/yaml.h>
+#endif
 
 namespace CLI {
 // [CLI11:config_fwd_hpp:verbatim]
@@ -184,6 +186,7 @@ class ConfigINI : public ConfigTOML {
     }
 };
 
+#if CLI11_ENABLE_YAML
 /// ConfigYAML supports YAML configuration file
 class ConfigYAML : public Config {
   public:
@@ -199,6 +202,8 @@ class ConfigYAML : public Config {
     std::vector<ConfigItem> parse(const YAML::Node& node, std::vector<std::string> parents, unsigned level = 0) const;
     static void aggregate(std::vector<ConfigItem>&);
 };
+#endif
+
 // [CLI11:config_fwd_hpp:end]
 
 }  // namespace CLI

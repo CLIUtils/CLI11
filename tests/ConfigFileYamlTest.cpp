@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#if CLI11_ENABLE_YAML
+
 #include "app_helper.hpp"
 
 #include <cstdio>
@@ -1846,3 +1848,5 @@ TEST_CASE_METHOD(TApp, "Yaml IniFalseFlags", "[config]") {
 //    CHECK_THAT(str, Contains("val1=\"I am a string\""));
 //    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 //}
+
+#endif

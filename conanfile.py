@@ -21,9 +21,6 @@ class CLI11Conan(ConanFile):
     homepage = "https://github.com/CLIUtils/CLI11"
     author = "Henry Schreiner <hschrein@cern.ch>"
     license = "BSD-3-Clause"
-    generators = "cmake_find_package"
-
-    requires = "yaml-cpp/0.7.0"
 
     settings = "os", "compiler", "arch", "build_type"
     exports_sources = (
@@ -37,10 +34,24 @@ class CLI11Conan(ConanFile):
         "tests/*",
     )
 
+    generators = "cmake_find_package"
+
+    options = {
+        "enable_yaml": [True, False]
+    }
+    default_options = {
+        "enable_yaml": False
+    }
+
+    def requirements(self):
+        if self.options.enable_yaml:
+            self.requires("yaml-cpp/0.7.0")
+
     def build(self):  # this is not building a library, just tests
         cmake = CMake(self)
         cmake.definitions["CLI11_EXAMPLES"] = "OFF"
         cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"
+        cmake.definitions["CLI11_ENABLE_YAML"] = self.options.enable_yaml
         cmake.configure()
         cmake.build()
         if not cross_building(self.settings):

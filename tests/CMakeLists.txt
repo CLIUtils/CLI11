@@ -36,7 +36,6 @@ set(boost-optional-def $<$<BOOL:${Boost_FOUND}>:CLI11_BOOST_OPTIONAL>)
 set(CLI11_TESTS
     HelpersTest
     ConfigFileTest
-    ConfigFileYamlTest
     OptionTypeTest
     SimpleTest
     AppTest
@@ -53,6 +52,11 @@ set(CLI11_TESTS
     ComplexTypeTest
     TrueFalseTest
     OptionGroupTest)
+
+if (CLI11_ENABLE_YAML)
+  message(STATUS "Enable YAML support")
+  list(APPEND CLI11_TESTS ConfigFileYamlTest)
+endif()
 
 if(WIN32)
   list(APPEND CLI11_TESTS WindowsTest)

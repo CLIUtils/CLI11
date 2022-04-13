@@ -392,6 +392,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     return out.str();
 }
 
+#if CLI11_ENABLE_YAML
 inline std::string
 ConfigYAML::to_config(const App *, bool, bool, std::string) const {
     return {};
@@ -511,7 +512,7 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
 
     return output;
 }
-
+#endif
 
 // [CLI11:config_hpp:end]
 }  // namespace CLI

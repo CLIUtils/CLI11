@@ -77,6 +77,7 @@ endif()
 
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
+option(CLI11_ENABLE_YAML "Enable YAML support for configuration file")
 cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
                        "NOT CMAKE_VERSION VERSION_LESS 3.11" OFF)
 
@@ -151,16 +152,19 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.13)
   target_link_options(CLI11_warnings INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
-
-find_package(yaml-cpp REQUIRED)
-
 # Allow IDE's to group targets into folders
 add_library(CLI11 INTERFACE)
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
-target_link_libraries(CLI11 INTERFACE yaml-cpp::yaml-cpp)
+if(CLI11_ENABLE_YAML)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+  list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+  find_package(yaml-cpp REQUIRED)
+
+  target_compile_definitions(CLI11 INTERFACE -DCLI11_ENABLE_YAML=1)
+  target_link_libraries(CLI11 INTERFACE yaml-cpp::yaml-cpp)
+endif()
 
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(CLI11 INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -279,6 +283,10 @@ if(CLI11_SINGLE_FILE)
   target_include_directories(
     CLI11_SINGLE INTERFACE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>
                            $<INSTALL_INTERFACE:include>)
+  if(CLI11_ENABLE_YAML)
+    target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI11_ENABLE_YAML=1)
+    target_link_libraries(CLI11_SINGLE INTERFACE yaml-cpp::yaml-cpp)
+  endif()
 endif()
 
 if(CLI11_BUILD_TESTS)
