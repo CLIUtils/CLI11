@@ -1414,7 +1414,7 @@ bool lexical_conversion(std::vector<std::string> strings, AssignTo &output) {
     while(!strings.empty()) {
 
         typename std::remove_const<typename std::tuple_element<0, typename ConvertTo::value_type>::type>::type v1;
-        typename std::tuple_element<1, typename ConvertTo::value_type>::type v2;
+        typename std::tuple_element<1, typename ConvertTo::value_type>::type v2{};
         bool retval = tuple_type_conversion<decltype(v1), decltype(v1)>(strings, v1);
         if(!strings.empty()) {
             retval = retval && tuple_type_conversion<decltype(v2), decltype(v2)>(strings, v2);

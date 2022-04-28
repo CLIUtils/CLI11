@@ -1071,7 +1071,7 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
 
 TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
     std::string input = "9.12";
-    long double x;
+    long double x{};
     CHECK(CLI::detail::lexical_cast(input, x));
     CHECK((float)x == Approx((float)9.12));
 
