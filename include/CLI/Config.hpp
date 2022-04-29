@@ -394,8 +394,92 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
 #if CLI11_ENABLE_YAML
 inline std::string
-ConfigYAML::to_config(const App *, bool, bool, std::string) const {
-    return {};
+ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string prefix) const {
+    std::ostringstream out;
+    YAML::Node node;
+
+    std::vector<std::string> groups = app->get_groups();
+    bool defaultUsed = false;
+    groups.insert(groups.begin(), std::string("Options"));
+    if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
+//        out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
+    }
+    for(auto &group : groups) {
+        if(group == "Options" || group.empty()) {
+            if(defaultUsed) {
+                continue;
+            }
+            defaultUsed = true;
+        }
+        if(write_description && group != "Options" && !group.empty()) {
+//            out << '\n' << commentLead << group << " Options\n";
+        }
+        for(const Option *opt : app->get_options({})) {
+
+            // Only process options that are configurable
+            if(opt->get_configurable()) {
+                if(opt->get_group() != group) {
+                    if(!(group == "Options" && opt->get_group().empty())) {
+                        continue;
+                    }
+                }
+                std::string name = prefix + opt->get_single_name();
+                std::string value = detail::ini_join(opt->reduced_results());
+
+                if(value.empty() && default_also) {
+                    if(!opt->get_default_str().empty()) {
+                        value = detail::convert_arg_for_ini(opt->get_default_str());
+                    } else if(opt->get_expected_min() == 0) {
+                        value = "false";
+                    } else if(opt->get_run_callback_for_default()) {
+                        value = "";  // empty string default value
+                    }
+                }
+
+                if(!value.empty()) {
+                    if(write_description && opt->has_description()) {
+//                        out << '\n';
+//                        out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
+                    }
+                    node[name] = value;
+                    out << node;
+                }
+            }
+        }
+    }
+    auto subcommands = app->get_subcommands({});
+    for(const App *subcom : subcommands) {
+        if(subcom->get_name().empty()) {
+            if(write_description && !subcom->get_group().empty()) {
+//                out << '\n' << commentLead << subcom->get_group() << " Options\n";
+            }
+//            out << to_config(subcom, default_also, write_description, prefix);
+        }
+    }
+
+//    for(const App *subcom : subcommands) {
+//        if(!subcom->get_name().empty()) {
+//            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
+//                if(!prefix.empty() || app->get_parent() == nullptr) {
+//                    out << '[' << prefix << subcom->get_name() << "]\n";
+//                } else {
+//                    std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
+//                    auto p = app->get_parent();
+//                    while(p->get_parent() != nullptr) {
+//                        subname = p->get_name() + parentSeparatorChar + subname;
+//                        p = p->get_parent();
+//                    }
+//                    out << '[' << subname << "]\n";
+//                }
+//                out << to_config(subcom, default_also, write_description, "");
+//            } else {
+//                out << to_config(
+//                        subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
+//            }
+//        }
+//    }
+
+    return out.str();
 }
 
 inline std::vector<ConfigItem>

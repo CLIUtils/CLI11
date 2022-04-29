@@ -28,17 +28,23 @@ TEST_CASE_METHOD(TApp, "Yaml IniVector", "[config]") {
                "three:\n"
                " - 1\n"
                " - 2\n"
-               " - 3\n";
+               " - 3\n"
+               "four: [1, 2, 3, 4]\n"
+               "five: \"[1, 2, 3, 4, 5]\"\n";
     }
 
-    std::vector<int> two, three;
+    std::vector<int> two, three, four, five;
     app.add_option("--two", two)->expected(2)->required();
     app.add_option("--three", three)->required();
+    app.add_option("--four", four)->required();
+    app.add_option("--five", five)->required();
 
     run();
 
     CHECK(two == std::vector<int>({2, 3}));
     CHECK(three == std::vector<int>({1, 2, 3}));
+    CHECK(four == std::vector<int>({1, 2, 3, 4}));
+    CHECK(five == std::vector<int>({1, 2, 3, 4, 5}));
 }
 
 TEST_CASE_METHOD(TApp, "Yaml IniVectorMultiple", "[config]") {
@@ -580,55 +586,59 @@ TEST_CASE_METHOD(TApp, "Yaml IniLayeredStream", "[config]") {
 //    REQUIRE_NOTHROW(run());
 //    CHECK(value);
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
-//    bool value{false};
-//    app.add_flag("--val", value)->configurable(false);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//    }
-//
-//    CHECK_THROWS_AS(run(), CLI::ConfigError);
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.add_subcommand("other");
-//    app.set_config("--config", tmpini);
-//    app.allow_config_extras(false);
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[other]" << std::endl;
-//        out << "val=1" << std::endl;
-//    }
-//
-//    CHECK_THROWS_AS(run(), CLI::ConfigError);
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniNoSubFailure", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
-//    app.allow_config_extras(CLI::config_extras_mode::error);
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[other]" << std::endl;
-//        out << "val=1" << std::endl;
-//    }
-//
-//    CHECK_THROWS_AS(run(), CLI::ConfigError);
-//}
-//
+
+TEST_CASE_METHOD(TApp, "YamlNotConfigurable", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+    bool value{false};
+    app.add_flag("--val", value)->configurable(false);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "val: true" << std::endl;
+    }
+
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
+}
+
+TEST_CASE_METHOD(TApp, "YamlSubFailure", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+
+    app.add_subcommand("other");
+    app.set_config("--config", tempYaml);
+    app.allow_config_extras(false);
+    {
+        std::ofstream out{tempYaml};
+        out << "other:" << std::endl;
+        out << " - val: 1" << std::endl;
+    }
+
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
+}
+
+TEST_CASE_METHOD(TApp, "YamlNoSubFailure", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+    app.allow_config_extras(CLI::config_extras_mode::error);
+    {
+        std::ofstream out{tempYaml};
+        out << "other:" << std::endl;
+        out << " - val: 1" << std::endl;
+    }
+
+    CHECK_THROWS_AS(run(), CLI::ConfigError);
+}
+
 //TEST_CASE_METHOD(TApp, "IniFlagConvertFailure", "[config]") {
 //
 //    TempFile tmpini{"TestIniTmp.ini"};
@@ -648,24 +658,26 @@ TEST_CASE_METHOD(TApp, "Yaml IniLayeredStream", "[config]") {
 //    opt->results(res);
 //    CHECK("moobook" == res);
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniFlagNumbers", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    bool boo{false};
-//    app.add_flag("--flag", boo);
-//    app.set_config("--config", tmpini);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "flag=3" << std::endl;
-//    }
-//
-//    REQUIRE_NOTHROW(run());
-//    CHECK(boo);
-//}
-//
+
+TEST_CASE_METHOD(TApp, "YamlFlagNumbers", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    bool boo{false};
+    app.add_flag("--flag", boo);
+    app.set_config("--config", tempYaml);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "flag: 3" << std::endl;
+    }
+
+    REQUIRE_NOTHROW(run());
+    CHECK(boo);
+}
+
 //TEST_CASE_METHOD(TApp, "IniFlagDual", "[config]") {
 //
 //    TempFile tmpini{"TestIniTmp.ini"};
@@ -794,33 +806,35 @@ TEST_CASE_METHOD(TApp, "IniPositional", "[config]") {
 //    REQUIRE_NOTHROW(run());
 //    CHECK(3 == key);
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniFlagText", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    bool flag1{false}, flag2{false}, flag3{false}, flag4{false};
-//    app.add_flag("--flag1", flag1);
-//    app.add_flag("--flag2", flag2);
-//    app.add_flag("--flag3", flag3);
-//    app.add_flag("--flag4", flag4);
-//    app.set_config("--config", tmpini);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "flag1=true" << std::endl;
-//        out << "flag2=on" << std::endl;
-//        out << "flag3=off" << std::endl;
-//        out << "flag4=1" << std::endl;
-//    }
-//
-//    run();
-//
-//    CHECK(flag1);
-//    CHECK(flag2);
-//    CHECK(!flag3);
-//    CHECK(flag4);
-//}
+
+TEST_CASE_METHOD(TApp, "YamlFlagText", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    bool flag1{false}, flag2{false}, flag3{false}, flag4{false};
+    app.add_flag("--flag1", flag1);
+    app.add_flag("--flag2", flag2);
+    app.add_flag("--flag3", flag3);
+    app.add_flag("--flag4", flag4);
+    app.set_config("--config", tempYaml);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "flag1: true\n"
+               "flag2: on\n"
+               "flag3: off\n"
+               "flag4: 1" << std::endl;
+    }
+
+    run();
+
+    CHECK(flag1);
+    CHECK(flag2);
+    CHECK(!flag3);
+    CHECK(flag4);
+}
 
 TEST_CASE_METHOD(TApp, "Yaml IniFlags", "[config]") {
     TempFile tempYaml{"TestYamlTmp.yaml"};
@@ -880,34 +894,35 @@ TEST_CASE_METHOD(TApp, "Yaml IniFalseFlags", "[config]") {
     CHECK(five);
 }
 
-//TEST_CASE_METHOD(TApp, "IniFalseFlagsDef", "[config]") {
-//    TempFile tmpini{"TestIniTmp.ini"};
-//    app.set_config("--config", tmpini);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "two=2" << std::endl;
-//        out << "three=true" << std::endl;
-//        out << "four=on" << std::endl;
-//        out << "five" << std::endl;
-//    }
-//
-//    int two{0};
-//    bool three{false}, four{false}, five{false};
-//    app.add_flag("--two{false}", two);
-//    app.add_flag("--three", three);
-//    app.add_flag("!--four", four);
-//    app.add_flag("--five", five);
-//
-//    run();
-//
-//    CHECK(two == -2);
-//    CHECK(three);
-//    CHECK(!four);
-//    CHECK(five);
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlFalseFlagsDef", "[config]") {
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "two: 2\n"
+               "three: true\n"
+               "four: on\n"
+               "five" << std::endl;
+    }
+
+    int two{0};
+    bool three{false}, four{false}, five{false};
+    app.add_flag("--two{false}", two);
+    app.add_flag("--three", three);
+    app.add_flag("!--four", four);
+    app.add_flag("--five", five);
+
+    run();
+
+    CHECK(two == -2);
+    CHECK(three);
+    CHECK(!four);
+    CHECK(five);
+}
+
 //TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideError", "[config]") {
 //    TempFile tmpini{"TestIniTmp.ini"};
 //    app.set_config("--config", tmpini);
@@ -1627,20 +1642,19 @@ TEST_CASE_METHOD(TApp, "Yaml IniFalseFlags", "[config]") {
 //    CHECK(std::string::npos == loc);
 //    CHECK(locg1 < locg3);
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputVector", "[config]") {
-//
-//    std::vector<int> v;
-//    app.add_option("--vector", v);
-//
-//    args = {"--vector", "1", "2", "3"};
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK(str == "vector=1 2 3\n");
-//}
-//
+
+TEST_CASE_METHOD(TApp, "YamlOutputVector", "[config]") {
+    std::vector<int> v;
+    app.add_option("--vector", v);
+
+    args = {"--vector", "1", "2", "3"};
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK(str == "vector: \"[1, 2, 3]\"");
+}
+
 //TEST_CASE_METHOD(TApp, "IniOutputFlag", "[config]") {
 //
 //    int v{0}, q{0};
