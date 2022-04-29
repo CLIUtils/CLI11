@@ -1655,55 +1655,55 @@ TEST_CASE_METHOD(TApp, "YamlOutputVector", "[config]") {
     CHECK(str == "vector: \"[1, 2, 3]\"");
 }
 
-//TEST_CASE_METHOD(TApp, "IniOutputFlag", "[config]") {
-//
-//    int v{0}, q{0};
-//    app.add_option("--simple", v);
-//    app.add_flag("--nothing");
-//    app.add_flag("--onething");
-//    app.add_flag("--something", q);
-//
-//    args = {"--simple=3", "--onething", "--something", "--something"};
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=3"));
-//    CHECK_THAT(str, !Contains("nothing"));
-//    CHECK_THAT(str, Contains("onething=true"));
-//    CHECK_THAT(str, Contains("something=2"));
-//
-//    str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("nothing"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSet", "[config]") {
-//
-//    int v{0};
-//    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
-//
-//    args = {"--simple=2"};
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=2"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputDefault", "[config]") {
-//
-//    int v{7};
-//    app.add_option("--simple", v)->capture_default_str();
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, !Contains("simple=7"));
-//
-//    str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("simple=7"));
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlOutputFlag", "[config]") {
+
+    int v{0}, q{0};
+    app.add_option("--simple", v);
+    app.add_flag("--nothing");
+    app.add_flag("--onething");
+    app.add_flag("--something", q);
+
+    args = {"--simple=3", "--onething", "--something", "--something"};
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: 3"));
+    CHECK_THAT(str, !Contains("nothing"));
+    CHECK_THAT(str, Contains("onething: true"));
+    CHECK_THAT(str, Contains("something: 2"));
+
+    str = app.config_to_str(true);
+    CHECK_THAT(str, Contains("nothing"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputSet", "[config]") {
+
+    int v{0};
+    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
+
+    args = {"--simple=2"};
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: 2"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputDefault", "[config]") {
+
+    int v{7};
+    app.add_option("--simple", v)->capture_default_str();
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, !Contains("simple: 7"));
+
+    str = app.config_to_str(true);
+    CHECK_THAT(str, Contains("simple: 7"));
+}
+
 //TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
 //
 //    app.add_flag("--simple");

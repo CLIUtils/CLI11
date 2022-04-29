@@ -442,11 +442,15 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 //                        out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
                     node[name] = value;
-                    out << node;
                 }
             }
         }
     }
+
+    if (node.size() != 0) {
+        out << node;
+    }
+
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
