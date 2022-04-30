@@ -181,76 +181,45 @@ TEST_CASE_METHOD(TApp, "YamlLayeredDotSection", "[config]") {
     CHECK(three == 0);
 }
 
-//TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlLayeredOptionGroupAlias", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "val: 1" << std::endl;
+        out << "ogroup: " << std::endl;
+        out << "  val2: 2" << std::endl;
+    }
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_option_group("ogroup")->alias("ogroup");
+    subcom->add_option("--val2", two);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+}
+
+//TEST_CASE_METHOD(TApp, "YamlSubcommandConfigurable", "[config]") {
 //
-//    TempFile tmpini{"TestIniTmp.ini"};
+//    TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    app.set_config("--config", tmpini);
+//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
 //
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[subcom]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "[subcom|subsubcom]" << std::endl;
-//        out << "val=3" << std::endl;
-//    }
-//    app.get_config_formatter_base()->parentSeparator('|');
-//    int one{0}, two{0}, three{0};
-//    app.add_option("--val", one);
-//    auto subcom = app.add_subcommand("subcom");
-//    subcom->add_option("--val", two);
-//    auto subsubcom = subcom->add_subcommand("subsubcom");
-//    subsubcom->add_option("--val", three);
-//
-//    run();
-//
-//    CHECK(one == 1);
-//    CHECK(two == 2);
-//    CHECK(three == 3);
-//
-//    CHECK(0U == subcom->count());
-//    CHECK(!*subcom);
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniLayeredOptionGroupAlias", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
+//    app.set_config("--config", tempYaml);
 //
 //    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[ogroup]" << std::endl;
-//        out << "val2=2" << std::endl;
-//    }
-//    int one{0}, two{0};
-//    app.add_option("--val", one);
-//    auto subcom = app.add_option_group("ogroup")->alias("ogroup");
-//    subcom->add_option("--val2", two);
-//
-//    run();
-//
-//    CHECK(one == 1);
-//    CHECK(two == 2);
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniSubcommandConfigurable", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[subcom]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
+//        std::ofstream out{tempYaml};
+//        out << "val: 1" << std::endl;
+//        out << "subcom:" << std::endl;
+//        out << "  val: 2" << std::endl;
+//        out << "  subsubcom:" << std::endl;
+//        out << "    val: 3" << std::endl;
 //    }
 //
 //    int one{0}, two{0}, three{0};
@@ -271,20 +240,21 @@ TEST_CASE_METHOD(TApp, "YamlLayeredDotSection", "[config]") {
 //    CHECK(*subcom);
 //    CHECK(app.got_subcommand(subcom));
 //}
+
+//TEST_CASE_METHOD(TApp, "YamlSubcommandConfigurablePreParse", "[config]") {
 //
-//TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
+//    TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
+//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//    app.set_config("--config", tempYaml);
 //
 //    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[subcom]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
+//        std::ofstream out{tempYaml};
+//        out << "val: 1" << std::endl;
+//        out << "subcom:" << std::endl;
+//        out << "  val: 2" << std::endl;
+//        out << "  subsubcom:" << std::endl;
+//        out << "    val: 3" << std::endl;
 //    }
 //
 //    int one{0}, two{0}, three{0}, four{0};
@@ -312,21 +282,22 @@ TEST_CASE_METHOD(TApp, "YamlLayeredDotSection", "[config]") {
 //
 //    CHECK(0U == subcom2->count());
 //}
+
+//TEST_CASE_METHOD(TApp, "YamlSection", "[config]") {
 //
-//TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
+//    TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
+//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//    app.set_config("--config", tempYaml);
 //    app.get_config_formatter_base()->section("config");
 //
 //    {
-//        std::ofstream out{tmpini};
-//        out << "[config]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
+//        std::ofstream out{tempYaml};
+//        out << "config:" << std::endl;
+//        out << "  val: 2" << std::endl;
+//        out << "  subsubcom:" << std::endl;
+//        out << "    val: 3" << std::endl;
+//        out << "val: 1" << std::endl;
 //    }
 //
 //    int val{0};
@@ -336,7 +307,7 @@ TEST_CASE_METHOD(TApp, "YamlLayeredDotSection", "[config]") {
 //
 //    CHECK(2 == val);
 //}
-//
+
 //TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
 //
 //    TempFile tmpini{"TestIniTmp.ini"};

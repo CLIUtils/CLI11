@@ -563,10 +563,11 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
             if(it->IsScalar()) {
                 config_item.inputs.push_back(it->as<std::string>());
             } else {
-                if(parents.size() < maximumLayers) {
-                    for(auto ci: parse(*it, parents)) {
-                        output.push_back(std::move(ci));
-                    }
+                if(parents.size() > maximumLayers) {
+                    continue;
+                }
+                for(auto ci: parse(*it, parents)) {
+                    output.push_back(std::move(ci));
                 }
             }
         }
@@ -575,20 +576,24 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
     }
     case YAML::NodeType::Map: {
          for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
-            if(it->second.IsScalar()) {
-                ConfigItem config_item;
-                config_item.name = it->first.as<std::string>();
-                config_item.parents = parents;
-                config_item.inputs.push_back(it->second.as<std::string>());
-                output.push_back(std::move(config_item));
 
+             std::string name = it->first.as<std::string>();
+
+             if(parents.size() > maximumLayers) {
+                 continue;
+             }
+
+             if(it->second.IsScalar()) {
+                 ConfigItem config_item;
+                 config_item.name = name;
+                 config_item.parents = parents;
+                 config_item.inputs.push_back(it->second.as<std::string>());
+                 output.push_back(std::move(config_item));
             } else {
                 auto tmp = parents;
-                tmp.push_back(it->first.as<std::string>());
-                if(tmp.size() < maximumLayers) {
-                    for(auto ci: parse(it->second, tmp)) {
-                        output.push_back(std::move(ci));
-                    }
+                tmp.push_back(name);
+                for(auto ci: parse(it->second, tmp)) {
+                    output.push_back(std::move(ci));
                 }
             }
         }
