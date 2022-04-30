@@ -188,7 +188,7 @@ class ConfigINI : public ConfigTOML {
 
 #if CLI11_ENABLE_YAML
 /// ConfigYAML supports YAML configuration file
-class ConfigYAML : public Config {
+class ConfigYAML : public ConfigBase {
   public:
     /// Convert an app into a configuration
     std::string to_config(const App *, bool, bool, std::string) const override;

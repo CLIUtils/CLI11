@@ -563,8 +563,10 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
             if(it->IsScalar()) {
                 config_item.inputs.push_back(it->as<std::string>());
             } else {
-                for(auto ci : parse(*it, parents)) {
-                    output.push_back(std::move(ci));
+                if(parents.size() < maximumLayers) {
+                    for(auto ci: parse(*it, parents)) {
+                        output.push_back(std::move(ci));
+                    }
                 }
             }
         }
@@ -583,8 +585,10 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
             } else {
                 auto tmp = parents;
                 tmp.push_back(it->first.as<std::string>());
-                for(auto ci : parse(it->second, tmp)) {
-                    output.push_back(std::move(ci));
+                if(tmp.size() < maximumLayers) {
+                    for(auto ci: parse(it->second, tmp)) {
+                        output.push_back(std::move(ci));
+                    }
                 }
             }
         }

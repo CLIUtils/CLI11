@@ -142,45 +142,45 @@ TEST_CASE_METHOD(TApp, "YamlLayeredStream", "[config]") {
     CHECK(!*subcom);
 }
 
-//TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[subcom]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "[subcom.subsubcom]" << std::endl;
-//        out << "val=3" << std::endl;
-//    }
-//
-//    int one{0}, two{0}, three{0};
-//    app.add_option("--val", one);
-//    auto subcom = app.add_subcommand("subcom");
-//    subcom->add_option("--val", two);
-//    auto subsubcom = subcom->add_subcommand("subsubcom");
-//    subsubcom->add_option("--val", three);
-//
-//    run();
-//
-//    CHECK(one == 1);
-//    CHECK(two == 2);
-//    CHECK(three == 3);
-//
-//    CHECK(0U == subcom->count());
-//    CHECK(!*subcom);
-//
-//    three = 0;
-//    // check maxlayers
-//    app.get_config_formatter_base()->maxLayers(1);
-//    run();
-//    CHECK(three == 0);
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlLayeredDotSection", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    app.set_config("--config", tempYaml);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "val: 1" << std::endl;
+        out << "subcom: " << std::endl;
+        out << "  - val: 2" << std::endl;
+        out << "  - subsubcom:" << std::endl;
+        out << "    - val: 3" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+    auto subsubcom = subcom->add_subcommand("subsubcom");
+    subsubcom->add_option("--val", three);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+
+    CHECK(0U == subcom->count());
+    CHECK(!*subcom);
+
+    three = 0;
+    // check maxlayers
+    app.get_config_formatter_base()->maxLayers(1);
+    run();
+    CHECK(three == 0);
+}
+
 //TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
 //
 //    TempFile tmpini{"TestIniTmp.ini"};
