@@ -308,20 +308,21 @@ TEST_CASE_METHOD(TApp, "YamlLayeredOptionGroupAlias", "[config]") {
 //    CHECK(2 == val);
 //}
 
-//TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
+//TEST_CASE_METHOD(TApp, "YamlSection2", "[config]") {
 //
-//    TempFile tmpini{"TestIniTmp.ini"};
+//    TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    app.set_config("--config", tmpini);
+//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//    app.set_config("--config", tempYaml);
 //    app.get_config_formatter_base()->section("config");
 //
 //    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[config]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
+//        std::ofstream out{tempYaml};
+//        out << "val: 1" << std::endl;
+//        out << "config:" << std::endl;
+//        out << "  val: 2" << std::endl;
+//        out << "  subsubcom:" << std::endl;
+//        out << "    val: 3" << std::endl;
 //    }
 //
 //    int val{0};
@@ -331,83 +332,8 @@ TEST_CASE_METHOD(TApp, "YamlLayeredOptionGroupAlias", "[config]") {
 //
 //    CHECK(2 == val);
 //}
-//
-//TEST_CASE_METHOD(TApp, "jsonLikeParsing", "[config]") {
-//
-//    TempFile tmpjson{"TestJsonTmp.json"};
-//
-//    app.set_config("--config", tmpjson);
-//    app.get_config_formatter_base()->valueSeparator(':');
-//
-//    {
-//        std::ofstream out{tmpjson};
-//        out << "{" << std::endl;
-//        out << "\"val\":1," << std::endl;
-//        out << "\"val2\":\"test\"," << std::endl;
-//        out << "\"flag\":true" << std::endl;
-//        out << "}" << std::endl;
-//    }
-//
-//    int val{0};
-//    app.add_option("--val", val);
-//    std::string val2{0};
-//    app.add_option("--val2", val2);
-//
-//    bool flag{false};
-//    app.add_flag("--flag", flag);
-//
-//    run();
-//
-//    CHECK(1 == val);
-//    CHECK(val2 == "test");
-//    CHECK(flag);
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
-//
-//    TempFile tmpini{"TestTomlTmp.toml"};
-//
-//    app.set_config("--config", tmpini);
-//    app.get_config_formatter_base()->section("config")->index(0);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "[default]" << std::endl;
-//        out << "val=1" << std::endl;
-//        out << "[[config]]" << std::endl;
-//        out << "val=2" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
-//        out << "[[config]]" << std::endl;
-//        out << "val=4" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
-//        out << "[[config]]" << std::endl;
-//        out << "val=6" << std::endl;
-//        out << "subsubcom.val=3" << std::endl;
-//    }
-//
-//    int val{0};
-//    app.add_option("--val", val);
-//
-//    run();
-//
-//    CHECK(2 == val);
-//
-//    auto &index = app.get_config_formatter_base()->indexRef();
-//    index = 1;
-//    run();
-//
-//    CHECK(4 == val);
-//
-//    index = -1;
-//    run();
-//    // Take the first section in this case
-//    CHECK(2 == val);
-//    index = 2;
-//    run();
-//
-//    CHECK(6 == val);
-//}
-//
+
+
 //TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 //
 //    TempFile tmpini{"TestIniTmp.ini"};
@@ -684,23 +610,25 @@ TEST_CASE_METHOD(TApp, "Yaml IniShort", "[config]") {
     CHECK(3 == key);
 }
 
-//TEST_CASE_METHOD(TApp, "IniDefaultPath", "[config]") {
-//
-//    TempFile tmpini{"../TestIniTmp.ini"};
-//
-//    int key{0};
-//    app.add_option("--flag,-f", key);
-//    app.set_config("--config", "TestIniTmp.ini")->transform(CLI::FileOnDefaultPath("../"));
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "f=3" << std::endl;
-//    }
-//
-//    REQUIRE_NOTHROW(run());
-//    CHECK(3 == key);
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlDefaultPath", "[config]") {
+
+    TempFile tempYaml{"../TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    int key{0};
+    app.add_option("--flag,-f", key);
+    app.set_config("--config", "TestYamlTmp.yaml")->transform(CLI::FileOnDefaultPath("../"));
+
+    {
+        std::ofstream out{tempYaml};
+        out << "f: 3" << std::endl;
+    }
+
+    REQUIRE_NOTHROW(run());
+    CHECK(3 == key);
+}
+
 //TEST_CASE_METHOD(TApp, "IniMultipleDefaultPath", "[config]") {
 //
 //    TempFile tmpini{"../TestIniTmp.ini"};
