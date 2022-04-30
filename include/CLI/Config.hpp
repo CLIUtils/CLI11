@@ -394,15 +394,23 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
 #if CLI11_ENABLE_YAML
 inline std::string
-ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string prefix) const {
-    std::ostringstream out;
+ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string) const {
     YAML::Node node;
+    to_config(app, default_also, write_description, node);
 
+    std::ostringstream out;
+    out << node;
+    return out.str();
+}
+
+inline void
+ConfigYAML::to_config(const App *app, bool default_also, bool write_description, YAML::Node& node) const
+{
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
     if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
-//        out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
+        //out << YAML::Comment(app->get_description());
     }
     for(auto &group : groups) {
         if(group == "Options" || group.empty()) {
@@ -412,7 +420,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "Options" && !group.empty()) {
-//            out << '\n' << commentLead << group << " Options\n";
+            //out << YAML::Comment(group + " Options");
         }
         for(const Option *opt : app->get_options({})) {
 
@@ -423,12 +431,12 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
                         continue;
                     }
                 }
-                std::string name = prefix + opt->get_single_name();
+                std::string name = /* prefix + */ opt->get_single_name();
                 std::string value = detail::ini_join(opt->reduced_results());
 
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
-                        value = detail::convert_arg_for_ini(opt->get_default_str());
+                        value = opt->get_default_str();
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
                     } else if(opt->get_run_callback_for_default()) {
@@ -438,17 +446,12 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 
                 if(!value.empty()) {
                     if(write_description && opt->has_description()) {
-//                        out << '\n';
-//                        out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
+                        //out << YAML::Comment(opt->get_description());
                     }
                     node[name] = value;
                 }
             }
         }
-    }
-
-    if (node.size() != 0) {
-        out << node;
     }
 
     auto subcommands = app->get_subcommands({});
@@ -461,8 +464,8 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 
-//    for(const App *subcom : subcommands) {
-//        if(!subcom->get_name().empty()) {
+    for(const App *subcom : subcommands) {
+        if(!subcom->get_name().empty()) {
 //            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
 //                if(!prefix.empty() || app->get_parent() == nullptr) {
 //                    out << '[' << prefix << subcom->get_name() << "]\n";
@@ -480,11 +483,13 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 //                out << to_config(
 //                        subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
 //            }
-//        }
-//    }
-
-    return out.str();
+            YAML::Node sub_node;
+            to_config(subcom, default_also, write_description, sub_node);
+            node[subcom->get_name()] = sub_node;
+        }
+    }
 }
+
 
 inline std::vector<ConfigItem>
 ConfigYAML::from_config(std::istream& is) const {
@@ -518,15 +523,11 @@ ConfigYAML::aggregate(std::vector<ConfigItem>& items)
 }
 
 inline std::vector<ConfigItem>
-ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsigned level) const {
-
+ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) const {
     std::vector<ConfigItem> output;
 
-//    std::cout << "Create Parent: " << detail::join(parents) << std::endl;
     switch (node.Type()) {
     case YAML::NodeType::Null: {
-//        std::cout << indent(level) << "Null" << std::endl;
-
         ConfigItem config_item;
         config_item.name = (parents.empty() ? "": *parents.rbegin());
         config_item.parents = parents;
@@ -538,12 +539,9 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
         break;
     }
     case YAML::NodeType::Scalar: {
-//        std::cout << indent(level) << "Scalar: " << node.as<std::string>() << std::endl;
         break;
     }
     case YAML::NodeType::Sequence: {
-//        std::cout << indent(level) << "Sequence: " << std::endl;
-
         ConfigItem config_item;
         config_item.name = parents.empty() ? "" : *parents.rbegin();
 
@@ -553,11 +551,9 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
 
         for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
             if(it->IsScalar()) {
-//                std::cout << indent(level + 1) << "Value: " << it->as<std::string>() << '\n';
-
                 config_item.inputs.push_back(it->as<std::string>());
             } else {
-                for(auto ci : parse(*it, parents, level + 1)) {
+                for(auto ci : parse(*it, parents)) {
                     output.push_back(std::move(ci));
                 }
             }
@@ -566,13 +562,8 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
         break;
     }
     case YAML::NodeType::Map: {
-//        std::cout << indent(level) << "Map: " << std::endl;
-
          for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
-//            std::cout << indent(level) << "Key: " << it->first.as<std::string>();
             if(it->second.IsScalar()) {
-//                std::cout << ": Value: " << it->second.as<std::string>() << '\n';
-
                 ConfigItem config_item;
                 config_item.name = it->first.as<std::string>();
                 config_item.parents = parents;
@@ -580,10 +571,9 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
                 output.push_back(std::move(config_item));
 
             } else {
-//                std::cout << ":\n";
                 auto tmp = parents;
                 tmp.push_back(it->first.as<std::string>());
-                for(auto ci : parse(it->second, tmp, level + 1)) {
+                for(auto ci : parse(it->second, tmp)) {
                     output.push_back(std::move(ci));
                 }
             }
@@ -591,10 +581,8 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents, unsi
         break;
     }
     case YAML::NodeType::Undefined:
-//        std::cout << indent(level) << "Undefined" << std::endl;
         break;
     default:
-//        std::cout << indent(level) << "Unknown Type" << std::endl;
         break;
     }
 

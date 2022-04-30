@@ -1704,20 +1704,21 @@ TEST_CASE_METHOD(TApp, "YamlOutputDefault", "[config]") {
     CHECK_THAT(str, Contains("simple: 7"));
 }
 
-//TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--simple", "other", "--newer"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other.newer=true"));
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:\n"
+                             "  newer: true"));
+}
+
 //TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
 //
 //    app.add_flag("--simple");
@@ -1847,20 +1848,20 @@ TEST_CASE_METHOD(TApp, "YamlOutputDefault", "[config]") {
 //    CHECK_THAT(str, Contains("val1=\"I am a string\""));
 //    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
 //}
-//
-//TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
-//
-//    std::string val1{"I am a string"};
-//    app.add_option("--val1", val1)->capture_default_str();
-//
-//    std::string val2{R"(I am a "confusing" string)"};
-//    app.add_option("--val2", val2)->capture_default_str();
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("val1=\"I am a string\""));
-//    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
-//}
+
+TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
+
+    std::string val1{"I am a string"};
+    app.add_option("--val1", val1)->capture_default_str();
+
+    std::string val2{R"(I am a "confusing" string)"};
+    app.add_option("--val2", val2)->capture_default_str();
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    run();
+
+    std::string str = app.config_to_str(true);
+    CHECK_THAT(str, Contains(R"(val1: I am a string)"));
+    CHECK_THAT(str, Contains(R"(val2: I am a "confusing" string)"));
+}
 
 #endif

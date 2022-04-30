@@ -197,9 +197,9 @@ class ConfigYAML : public Config {
     std::vector<ConfigItem> from_config(std::istream& is) const override;
 
   private:
-    static std::string indent(unsigned level) { return std::string(level * 2, ' '); }
+    void to_config(const App *app, bool default_also, bool write_description, YAML::Node& root) const;
 
-    std::vector<ConfigItem> parse(const YAML::Node& node, std::vector<std::string> parents, unsigned level = 0) const;
+    std::vector<ConfigItem> parse(const YAML::Node& node, std::vector<std::string> parents) const;
     static void aggregate(std::vector<ConfigItem>&);
 };
 #endif
