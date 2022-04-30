@@ -431,24 +431,34 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
                         continue;
                     }
                 }
-                std::string name = /* prefix + */ opt->get_single_name();
-                std::string value = detail::ini_join(opt->reduced_results());
 
-                if(value.empty() && default_also) {
-                    if(!opt->get_default_str().empty()) {
-                        value = opt->get_default_str();
-                    } else if(opt->get_expected_min() == 0) {
-                        value = "false";
-                    } else if(opt->get_run_callback_for_default()) {
-                        value = "";  // empty string default value
+                const auto& name = opt->get_single_name();
+
+                const auto& results = opt->reduced_results();
+                if(results.size() >= 2) {
+                    for(const auto& res : results) {
+                        node[name].push_back(res);
                     }
                 }
-
-                if(!value.empty()) {
-                    if(write_description && opt->has_description()) {
-                        //out << YAML::Comment(opt->get_description());
+                else {
+                    std::string value = results.empty() ? "" : results[0];
+                    if(value.empty() && default_also) {
+                        if(!opt->get_default_str().empty()) {
+                            value = opt->get_default_str();
+                        } else if(opt->get_expected_min() == 0) {
+                            value = "false";
+                        } else if(opt->get_run_callback_for_default()) {
+                            value = "";  // empty string default value
+                        }
                     }
-                    node[name] = value;
+
+                    if(!value.empty()) {
+                        if(write_description && opt->has_description()) {
+                            //out << YAML::Comment(opt->get_description());
+                        }
+                        node[name] = value;
+                    }
+
                 }
             }
         }

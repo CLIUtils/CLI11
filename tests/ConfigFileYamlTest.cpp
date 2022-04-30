@@ -13,7 +13,7 @@
 
 using Catch::Matchers::Contains;
 
-TEST_CASE_METHOD(TApp, "Yaml IniVector", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlVector", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
 
@@ -47,7 +47,7 @@ TEST_CASE_METHOD(TApp, "Yaml IniVector", "[config]") {
     CHECK(five == std::vector<int>({1, 2, 3, 4, 5}));
 }
 
-TEST_CASE_METHOD(TApp, "Yaml IniVectorMultiple", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlVectorMultiple", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
 
@@ -75,7 +75,7 @@ TEST_CASE_METHOD(TApp, "Yaml IniVectorMultiple", "[config]") {
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
-TEST_CASE_METHOD(TApp, "Yaml IniLayered", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlLayered", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
 
@@ -108,7 +108,7 @@ TEST_CASE_METHOD(TApp, "Yaml IniLayered", "[config]") {
     CHECK(!*subcom);
 }
 
-TEST_CASE_METHOD(TApp, "Yaml IniLayeredStream", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlLayeredStream", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
 
@@ -1652,7 +1652,10 @@ TEST_CASE_METHOD(TApp, "YamlOutputVector", "[config]") {
     run();
 
     std::string str = app.config_to_str();
-    CHECK(str == "vector: \"[1, 2, 3]\"");
+    CHECK(str == "vector:\n"
+                 "  - 1\n"
+                 "  - 2\n"
+                 "  - 3");
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputFlag", "[config]") {
@@ -1733,40 +1736,42 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
 //    CHECK_THAT(str, Contains("simple=true"));
 //    CHECK_THAT(str, Contains("other:newer=true"));
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--simple", "other", "--newer"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other]"));
-//    CHECK_THAT(str, Contains("newer=true"));
-//    CHECK(std::string::npos == str.find("other.newer=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other.newer=true"));
-//    CHECK_THAT(str, Contains("other.sub2.newest=true"));
-//}
-//
+
+TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--simple", "other", "--newer"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:"));
+    CHECK_THAT(str, Contains("  newer: true"));
+    //CHECK(std::string::npos == str.find("other.newer=true"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputSubsubcom", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other");
+    subcom->add_flag("--newer");
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:\n"
+                             "  newer: true"));
+    CHECK_THAT(str, Contains("  sub2:\n"
+                             "    newest: true"));
+}
+
 //TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
 //
 //    app.add_flag("--simple");
@@ -1784,72 +1789,75 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
 //    CHECK_THAT(str, Contains("other|newer=true"));
 //    CHECK_THAT(str, Contains("other|sub2|newest=true"));
 //}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other]"));
-//    CHECK_THAT(str, Contains("newer=true"));
-//    CHECK_THAT(str, Contains("[other.sub2]"));
-//    CHECK_THAT(str, Contains("newest=true"));
-//    CHECK(std::string::npos == str.find("sub2.newest=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurableDeep", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//    auto sssscom = subsubcom->add_subcommand("sub-level2");
-//    subsubcom->add_flag("--still_newer");
-//    auto s5com = sssscom->add_subcommand("sub-level3");
-//    s5com->add_flag("--absolute_newest");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other.sub2.sub-level2.sub-level3]"));
-//    CHECK_THAT(str, Contains("absolute_newest=true"));
-//    CHECK(std::string::npos == str.find(".absolute_newest=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputQuoted", "[config]") {
-//
-//    std::string val1;
-//    app.add_option("--val1", val1);
-//
-//    std::string val2;
-//    app.add_option("--val2", val2);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
-//
-//    run();
-//
-//    CHECK(val1 == "I am a string");
-//    CHECK(val2 == "I am a \"confusing\" string");
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("val1=\"I am a string\""));
-//    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
-//}
 
-TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurable", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:\n"));
+    CHECK_THAT(str, Contains("newer: true"));
+    CHECK_THAT(str, Contains("  sub2:\n"));
+    CHECK_THAT(str, Contains("newest: true"));
+    //CHECK(std::string::npos == str.find("sub2.newest=true"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurableDeep", "[config]") {
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subsubcom = subcom->add_subcommand("sub2");
+    subsubcom->add_flag("--newest");
+    auto sssscom = subsubcom->add_subcommand("sub-level2");
+    subsubcom->add_flag("--still_newer");
+    auto s5com = sssscom->add_subcommand("sub-level3");
+    s5com->add_flag("--absolute_newest");
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
+    run();
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:\n"
+                             "  sub2:\n"
+                             "    sub-level2:\n"
+                             "      sub-level3:\n"));
+    CHECK_THAT(str, Contains("absolute_newest: true"));
+    //CHECK(std::string::npos == str.find(".absolute_newest=true"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputQuoted", "[config]") {
+
+    std::string val1;
+    app.add_option("--val1", val1);
+
+    std::string val2;
+    app.add_option("--val2", val2);
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
+
+    run();
+
+    CHECK(val1 == "I am a string");
+    CHECK(val2 == R"(I am a "confusing" string)");
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("val1: I am a string"));
+    CHECK_THAT(str, Contains(R"(val2: I am a "confusing" string)"));
+}
+
+TEST_CASE_METHOD(TApp, "DefaultsYamlOutputQuoted", "[config]") {
 
     std::string val1{"I am a string"};
     app.add_option("--val1", val1)->capture_default_str();
@@ -1860,7 +1868,7 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
     run();
 
     std::string str = app.config_to_str(true);
-    CHECK_THAT(str, Contains(R"(val1: I am a string)"));
+    CHECK_THAT(str, Contains("val1: I am a string"));
     CHECK_THAT(str, Contains(R"(val2: I am a "confusing" string)"));
 }
 
