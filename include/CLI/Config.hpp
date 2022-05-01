@@ -399,7 +399,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     to_config(app, default_also, write_description, node);
 
     std::ostringstream out;
-    out << node;
+    out << node << std::endl;
     return out.str();
 }
 
@@ -575,6 +575,13 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
         break;
     }
     case YAML::NodeType::Map: {
+         if(!parents.empty()) {
+             ConfigItem start_item;
+             start_item.name = "++";
+             start_item.parents = parents;
+             output.push_back(std::move(start_item));
+         }
+
          for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
 
              std::string name = it->first.as<std::string>();
@@ -596,6 +603,13 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
                     output.push_back(std::move(ci));
                 }
             }
+
+         if (!parents.empty()) {
+             ConfigItem end_item;
+             end_item.name = "--";
+             end_item.parents = parents;
+             output.push_back(std::move(end_item));
+         }
         }
         break;
     }
