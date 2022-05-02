@@ -194,13 +194,13 @@ class ConfigYAML : public ConfigBase {
     std::string to_config(const App *, bool, bool, std::string) const override;
 
     /// Convert a configuration into an app
-    std::vector<ConfigItem> from_config(std::istream& is) const override;
+    std::vector<ConfigItem> from_config(std::istream &is) const override;
 
   private:
-    void to_config(const App *app, bool default_also, bool write_description, YAML::Emitter& emitter) const;
+    void to_config(const App *app, bool default_also, bool write_description, YAML::Emitter &emitter) const;
 
-    std::vector<ConfigItem> parse(const YAML::Node& node, std::vector<std::string> parents) const;
-    static void aggregate(std::vector<ConfigItem>&);
+    std::vector<ConfigItem> parse(const YAML::Node &node, std::vector<std::string> parents) const;
+    static void aggregate(std::vector<ConfigItem> &);
 };
 #endif
 

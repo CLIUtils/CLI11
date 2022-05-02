@@ -36,12 +36,8 @@ class CLI11Conan(ConanFile):
 
     generators = "cmake_find_package"
 
-    options = {
-        "enable_yaml": [True, False]
-    }
-    default_options = {
-        "enable_yaml": False
-    }
+    options = {"enable_yaml": [True, False]}
+    default_options = {"enable_yaml": False}
 
     def requirements(self):
         if self.options.enable_yaml:

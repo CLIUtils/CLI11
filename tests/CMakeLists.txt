@@ -53,7 +53,7 @@ set(CLI11_TESTS
     TrueFalseTest
     OptionGroupTest)
 
-if (CLI11_ENABLE_YAML)
+if(CLI11_ENABLE_YAML)
   message(STATUS "Enable YAML support")
   list(APPEND CLI11_TESTS ConfigFileYamlTest)
 endif()

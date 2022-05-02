@@ -393,8 +393,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 }
 
 #if CLI11_ENABLE_YAML
-inline std::string
-ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string) const {
+inline std::string ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string) const {
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
     to_config(app, default_also, write_description, emitter);
@@ -406,8 +405,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 }
 
 inline void
-ConfigYAML::to_config(const App *app, bool default_also, bool write_description, YAML::Emitter& emitter) const
-{
+ConfigYAML::to_config(const App *app, bool default_also, bool write_description, YAML::Emitter &emitter) const {
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
@@ -424,7 +422,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "Options" && !group.empty()) {
-            if (last_emit_was_comment) {
+            if(last_emit_was_comment) {
                 emitter << YAML::Newline;
             }
             emitter << YAML::Newline << YAML::Comment(group + " Options") << YAML::Newline;
@@ -439,20 +437,19 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
                     }
                 }
 
-                const auto& name = opt->get_single_name();
+                const auto &name = opt->get_single_name();
 
-                const auto& results = opt->reduced_results();
+                const auto &results = opt->reduced_results();
                 if(results.size() >= 2) {
                     emitter << YAML::Key << name;
                     emitter << YAML::Value;
                     emitter << YAML::BeginSeq;
-                    for(const auto& res : results) {
+                    for(const auto &res : results) {
                         emitter << res;
                     }
                     emitter << YAML::EndSeq;
                     last_emit_was_comment = false;
-                }
-                else {
+                } else {
                     std::string value = results.empty() ? "" : results[0];
                     if(value.empty() && default_also) {
                         if(!opt->get_default_str().empty()) {
@@ -466,7 +463,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 
                     if(!value.empty()) {
                         if(write_description && opt->has_description()) {
-                            if (last_emit_was_comment) {
+                            if(last_emit_was_comment) {
                                 emitter << YAML::Newline;
                             }
                             emitter << YAML::Comment(opt->get_description()) << YAML::Newline;
@@ -493,14 +490,14 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     bool first_subcommand = true;
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
-            if (first_subcommand) {
+            if(first_subcommand) {
                 emitter << YAML::Key << subcom->get_name();
                 emitter << YAML::BeginMap;
             }
 
             to_config(subcom, default_also, write_description, emitter);
 
-            if (first_subcommand) {
+            if(first_subcommand) {
                 first_subcommand = false;
                 emitter << YAML::EndMap;
             }
@@ -508,30 +505,26 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     }
 }
 
-inline std::vector<ConfigItem>
-ConfigYAML::from_config(std::istream& is) const {
+inline std::vector<ConfigItem> ConfigYAML::from_config(std::istream &is) const {
     YAML::Node config = YAML::Load(is);
     auto tmp_items = parse(config, {});
     aggregate(tmp_items);
     return tmp_items;
 }
 
-inline void
-ConfigYAML::aggregate(std::vector<ConfigItem>& items)
-{
+inline void ConfigYAML::aggregate(std::vector<ConfigItem> &items) {
     // Aggregate identical config items (parents/name) in inputs
     if(items.size() > 1) {
         for(auto it = items.begin(); it != items.end(); ++it) {
             for(auto jt = it + 1; jt != items.end();) {
-                auto& lh = *it;
-                auto& rh = *jt;
-                if (lh.parents == rh.parents && lh.name == rh.name) {
+                auto &lh = *it;
+                auto &rh = *jt;
+                if(lh.parents == rh.parents && lh.name == rh.name) {
                     for(auto v : rh.inputs) {
                         lh.inputs.push_back(v);
                     }
                     jt = items.erase(jt);
-                }
-                else {
+                } else {
                     ++jt;
                 }
             }
@@ -539,14 +532,13 @@ ConfigYAML::aggregate(std::vector<ConfigItem>& items)
     }
 }
 
-inline std::vector<ConfigItem>
-ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) const {
+inline std::vector<ConfigItem> ConfigYAML::parse(const YAML::Node &node, std::vector<std::string> parents) const {
     std::vector<ConfigItem> output;
 
-    switch (node.Type()) {
+    switch(node.Type()) {
     case YAML::NodeType::Null: {
         ConfigItem config_item;
-        config_item.name = (parents.empty() ? "": *parents.rbegin());
+        config_item.name = (parents.empty() ? "" : *parents.rbegin());
         config_item.parents = parents;
         if(!config_item.parents.empty())
             config_item.parents.erase(config_item.parents.rbegin().base());
@@ -573,7 +565,7 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
                 if(parents.size() > maximumLayers) {
                     continue;
                 }
-                for(auto ci: parse(*it, parents)) {
+                for(auto ci : parse(*it, parents)) {
                     output.push_back(std::move(ci));
                 }
             }
@@ -582,41 +574,41 @@ ConfigYAML::parse(const YAML::Node& node, std::vector<std::string> parents) cons
         break;
     }
     case YAML::NodeType::Map: {
-         if(!parents.empty()) {
-             ConfigItem start_item;
-             start_item.name = "++";
-             start_item.parents = parents;
-             output.push_back(std::move(start_item));
-         }
+        if(!parents.empty()) {
+            ConfigItem start_item;
+            start_item.name = "++";
+            start_item.parents = parents;
+            output.push_back(std::move(start_item));
+        }
 
-         for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
+        for(YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
 
-             std::string name = it->first.as<std::string>();
+            std::string name = it->first.as<std::string>();
 
-             if(parents.size() > maximumLayers) {
-                 continue;
-             }
+            if(parents.size() > maximumLayers) {
+                continue;
+            }
 
-             if(it->second.IsScalar()) {
-                 ConfigItem config_item;
-                 config_item.name = name;
-                 config_item.parents = parents;
-                 config_item.inputs.push_back(it->second.as<std::string>());
-                 output.push_back(std::move(config_item));
+            if(it->second.IsScalar()) {
+                ConfigItem config_item;
+                config_item.name = name;
+                config_item.parents = parents;
+                config_item.inputs.push_back(it->second.as<std::string>());
+                output.push_back(std::move(config_item));
             } else {
                 auto tmp = parents;
                 tmp.push_back(name);
-                for(auto ci: parse(it->second, tmp)) {
+                for(auto ci : parse(it->second, tmp)) {
                     output.push_back(std::move(ci));
                 }
             }
 
-         if (!parents.empty()) {
-             ConfigItem end_item;
-             end_item.name = "--";
-             end_item.parents = parents;
-             output.push_back(std::move(end_item));
-         }
+            if(!parents.empty()) {
+                ConfigItem end_item;
+                end_item.name = "--";
+                end_item.parents = parents;
+                output.push_back(std::move(end_item));
+            }
         }
         break;
     }

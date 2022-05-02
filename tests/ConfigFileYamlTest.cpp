@@ -393,174 +393,173 @@ TEST_CASE_METHOD(TApp, "YamlSubcommandConfigurablePreParse", "[config]") {
     CHECK(0U == subcom2->count());
 }
 
-//TEST_CASE_METHOD(TApp, "YamlSection", "[config]") {
+// TEST_CASE_METHOD(TApp, "YamlSection", "[config]") {
 //
-//    TempFile tempYaml{"TestYamlTmp.yaml"};
+//     TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    app.set_config("--config", tempYaml);
-//    app.get_config_formatter_base()->section("config");
+//     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//     app.set_config("--config", tempYaml);
+//     app.get_config_formatter_base()->section("config");
 //
-//    {
-//        std::ofstream out{tempYaml};
-//        out << "config:" << std::endl;
-//        out << "  val: 2" << std::endl;
-//        out << "  subsubcom:" << std::endl;
-//        out << "    val: 3" << std::endl;
-//        out << "val: 1" << std::endl;
-//    }
+//     {
+//         std::ofstream out{tempYaml};
+//         out << "config:" << std::endl;
+//         out << "  val: 2" << std::endl;
+//         out << "  subsubcom:" << std::endl;
+//         out << "    val: 3" << std::endl;
+//         out << "val: 1" << std::endl;
+//     }
 //
-//    int val{0};
-//    app.add_option("--val", val);
+//     int val{0};
+//     app.add_option("--val", val);
 //
-//    run();
+//     run();
 //
-//    CHECK(2 == val);
-//}
+//     CHECK(2 == val);
+// }
 
-//TEST_CASE_METHOD(TApp, "YamlSection2", "[config]") {
+// TEST_CASE_METHOD(TApp, "YamlSection2", "[config]") {
 //
-//    TempFile tempYaml{"TestYamlTmp.yaml"};
+//     TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    app.set_config("--config", tempYaml);
-//    app.get_config_formatter_base()->section("config");
+//     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//     app.set_config("--config", tempYaml);
+//     app.get_config_formatter_base()->section("config");
 //
-//    {
-//        std::ofstream out{tempYaml};
-//        out << "val: 1" << std::endl;
-//        out << "config:" << std::endl;
-//        out << "  val: 2" << std::endl;
-//        out << "  subsubcom:" << std::endl;
-//        out << "    val: 3" << std::endl;
-//    }
+//     {
+//         std::ofstream out{tempYaml};
+//         out << "val: 1" << std::endl;
+//         out << "config:" << std::endl;
+//         out << "  val: 2" << std::endl;
+//         out << "  subsubcom:" << std::endl;
+//         out << "    val: 3" << std::endl;
+//     }
 //
-//    int val{0};
-//    app.add_option("--val", val);
+//     int val{0};
+//     app.add_option("--val", val);
 //
-//    run();
+//     run();
 //
-//    CHECK(2 == val);
-//}
+//     CHECK(2 == val);
+// }
 
+// TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
+//
+//     TempFile tempYaml{"TestYamlTmp.yaml"};
+//
+//     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//     app.set_config("--config", tempYaml);
+//
+//     {
+//         std::ofstream out{tempYaml};
+//         out << "val: 1" << std::endl;
+//         out << "subcom:" << std::endl;
+//         out << "  val: 2" << std::endl;
+//         out << "  subsubcom:" << std::endl;
+//         out << "    val: 3" << std::endl;
+//     }
+//
+//     int one{0}, two{0}, three{0}, four{0};
+//     app.add_option("--val", one);
+//     auto subcom = app.add_subcommand("subcom");
+//     auto subcom2 = app.add_subcommand("subcom2");
+//     subcom->configurable();
+//     std::vector<std::size_t> parse_c;
+//     subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
+//     subcom->add_option("--val", two);
+//     subcom2->add_option("--val", four);
+//     subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
+//     auto subsubcom = subcom->add_subcommand("subsubcom");
+//     // configurable should be inherited
+//     subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
+//     subsubcom->add_option("--val", three);
+//
+//     run();
+//
+//     CHECK(one == 1);
+//     CHECK(two == 2);
+//     CHECK(three == 3);
+//     CHECK(four == 0);
+//
+//     REQUIRE(2u == parse_c.size());
+//     CHECK(68U == parse_c[0]);
+//     CHECK(58U == parse_c[1]);
+//     CHECK(1u == subsubcom->count());
+//     CHECK(0u == subcom2->count());
+// }
 
-//TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
+// TEST_CASE_METHOD(TApp, "YamlSubcommandMultipleSections", "[config]") {
 //
-//    TempFile tempYaml{"TestYamlTmp.yaml"};
+//     TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    app.set_config("--config", tempYaml);
+//     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//     app.set_config("--config", tempYaml);
 //
-//    {
-//        std::ofstream out{tempYaml};
-//        out << "val: 1" << std::endl;
-//        out << "subcom:" << std::endl;
-//        out << "  val: 2" << std::endl;
-//        out << "  subsubcom:" << std::endl;
-//        out << "    val: 3" << std::endl;
-//    }
+//     {
+//         std::ofstream out{tempYaml};
+//         out << "val: 1" << std::endl;
+//         out << "subcom:" << std::endl;
+//         out << "  val: 2" << std::endl;
+//         out << "  subsubcom:" << std::endl;
+//         out << "    val: 3" << std::endl;
+//         out << "subcom2:" << std::endl;
+//         out << "  val: 4" << std::endl;
+//     }
 //
-//    int one{0}, two{0}, three{0}, four{0};
-//    app.add_option("--val", one);
-//    auto subcom = app.add_subcommand("subcom");
-//    auto subcom2 = app.add_subcommand("subcom2");
-//    subcom->configurable();
-//    std::vector<std::size_t> parse_c;
-//    subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
-//    subcom->add_option("--val", two);
-//    subcom2->add_option("--val", four);
-//    subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
-//    auto subsubcom = subcom->add_subcommand("subsubcom");
-//    // configurable should be inherited
-//    subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
-//    subsubcom->add_option("--val", three);
+//     int one{0}, two{0}, three{0}, four{0};
+//     app.add_option("--val", one);
+//     auto subcom = app.add_subcommand("subcom");
+//     auto subcom2 = app.add_subcommand("subcom2");
+//     subcom->configurable();
+//     std::vector<std::size_t> parse_c;
+//     subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
+//     subcom->add_option("--val", two);
+//     subcom2->add_option("--val", four);
+//     subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
+//     subcom2->configurable(false);
+//     auto subsubcom = subcom->add_subcommand("subsubcom");
+//     // configurable should be inherited
+//     subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
+//     subsubcom->add_option("--val", three);
 //
-//    run();
+//     run();
 //
-//    CHECK(one == 1);
-//    CHECK(two == 2);
-//    CHECK(three == 3);
-//    CHECK(four == 0);
+//     CHECK(one == 1);
+//     CHECK(two == 2);
+//     CHECK(three == 3);
+//     CHECK(four == 4);
 //
-//    REQUIRE(2u == parse_c.size());
-//    CHECK(68U == parse_c[0]);
-//    CHECK(58U == parse_c[1]);
-//    CHECK(1u == subsubcom->count());
-//    CHECK(0u == subcom2->count());
-//}
-
-//TEST_CASE_METHOD(TApp, "YamlSubcommandMultipleSections", "[config]") {
+//     REQUIRE(2u == parse_c.size());
+//     CHECK(68U == parse_c[0]);
+//     CHECK(58U == parse_c[1]);
+//     CHECK(1u == subsubcom->count());
+//     CHECK(0u == subcom2->count());
+// }
 //
-//    TempFile tempYaml{"TestYamlTmp.yaml"};
+// TEST_CASE_METHOD(TApp, "YamlDuplicateSubcommandCallbacks", "[config]") {
 //
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    app.set_config("--config", tempYaml);
+//     TempFile tempYaml{"TestYamlTmp.yaml"};
 //
-//    {
-//        std::ofstream out{tempYaml};
-//        out << "val: 1" << std::endl;
-//        out << "subcom:" << std::endl;
-//        out << "  val: 2" << std::endl;
-//        out << "  subsubcom:" << std::endl;
-//        out << "    val: 3" << std::endl;
-//        out << "subcom2:" << std::endl;
-//        out << "  val: 4" << std::endl;
-//    }
+//     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+//     app.set_config("--config", tempYaml);
 //
-//    int one{0}, two{0}, three{0}, four{0};
-//    app.add_option("--val", one);
-//    auto subcom = app.add_subcommand("subcom");
-//    auto subcom2 = app.add_subcommand("subcom2");
-//    subcom->configurable();
-//    std::vector<std::size_t> parse_c;
-//    subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
-//    subcom->add_option("--val", two);
-//    subcom2->add_option("--val", four);
-//    subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
-//    subcom2->configurable(false);
-//    auto subsubcom = subcom->add_subcommand("subsubcom");
-//    // configurable should be inherited
-//    subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
-//    subsubcom->add_option("--val", three);
+//     {
+//         std::ofstream out{tempYaml};
+//         out << "foo:" << std::endl;
+//         out << "foo:" << std::endl;
+//         out << "foo:" << std::endl;
+//     }
 //
-//    run();
+//     auto foo = app.add_subcommand("foo");
+//     int count{0};
+//     foo->callback([&count]() { ++count; });
+//     foo->immediate_callback();
+//     CHECK(foo->get_immediate_callback());
+//     foo->configurable();
 //
-//    CHECK(one == 1);
-//    CHECK(two == 2);
-//    CHECK(three == 3);
-//    CHECK(four == 4);
-//
-//    REQUIRE(2u == parse_c.size());
-//    CHECK(68U == parse_c[0]);
-//    CHECK(58U == parse_c[1]);
-//    CHECK(1u == subsubcom->count());
-//    CHECK(0u == subcom2->count());
-//}
-//
-//TEST_CASE_METHOD(TApp, "YamlDuplicateSubcommandCallbacks", "[config]") {
-//
-//    TempFile tempYaml{"TestYamlTmp.yaml"};
-//
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    app.set_config("--config", tempYaml);
-//
-//    {
-//        std::ofstream out{tempYaml};
-//        out << "foo:" << std::endl;
-//        out << "foo:" << std::endl;
-//        out << "foo:" << std::endl;
-//    }
-//
-//    auto foo = app.add_subcommand("foo");
-//    int count{0};
-//    foo->callback([&count]() { ++count; });
-//    foo->immediate_callback();
-//    CHECK(foo->get_immediate_callback());
-//    foo->configurable();
-//
-//    run();
-//    CHECK(3 == count);
-//}
+//     run();
+//     CHECK(3 == count);
+// }
 
 TEST_CASE_METHOD(TApp, "YamlFailure", "[config]") {
 
@@ -842,7 +841,8 @@ TEST_CASE_METHOD(TApp, "YamlFlagText", "[config]") {
         out << "flag1: true\n"
                "flag2: on\n"
                "flag3: off\n"
-               "flag4: 1" << std::endl;
+               "flag4: 1"
+            << std::endl;
     }
 
     run();
@@ -922,7 +922,8 @@ TEST_CASE_METHOD(TApp, "YamlFalseFlagsDef", "[config]") {
         out << "two: 2\n"
                "three: true\n"
                "four: on\n"
-               "five" << std::endl;
+               "five"
+            << std::endl;
     }
 
     int two{0};
@@ -1061,10 +1062,10 @@ TEST_CASE_METHOD(TApp, "YamlOutputShortSingleDescription", "[config]") {
     run();
 
     std::string str = app.config_to_str(true, true);
-    CHECK_THAT(str, Contains(
-            "# My Test Program\n"
-            "# " + description + "\n" +
-            flag + ": false\n"));
+    CHECK_THAT(str,
+               Contains("# My Test Program\n"
+                        "# " +
+                        description + "\n" + flag + ": false\n"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputShortDoubleDescription", "[config]") {
@@ -1081,7 +1082,8 @@ TEST_CASE_METHOD(TApp, "YamlOutputShortDoubleDescription", "[config]") {
     run();
 
     std::string str = app.config_to_str(true, true);
-    //WARNING, the test was: std::string ans = "# " + description1 + "\n" + flag1 + ": false\n\n# " + description2 + "\n" + flag2 + ": false\n";
+    // WARNING, the test was: std::string ans = "# " + description1 + "\n" + flag1 + ": false\n\n# " + description2 +
+    // "\n" + flag2 + ": false\n";
     std::string ans = "# " + description1 + "\n" + flag1 + ": false\n# " + description2 + "\n" + flag2 + ": false\n";
     CHECK_THAT(str, Contains(ans));
 }
@@ -1399,8 +1401,9 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("simple: true"));
-    CHECK_THAT(str, Contains("other:\n"
-                             "  newer: true"));
+    CHECK_THAT(str,
+               Contains("other:\n"
+                        "  newer: true"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputSubcomConfigurable", "[config]") {
@@ -1416,7 +1419,7 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcomConfigurable", "[config]") {
     CHECK_THAT(str, Contains("simple: true"));
     CHECK_THAT(str, Contains("other:"));
     CHECK_THAT(str, Contains("  newer: true"));
-    //CHECK(std::string::npos == str.find("other.newer=true"));
+    // CHECK(std::string::npos == str.find("other.newer=true"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputSubsubcom", "[config]") {
@@ -1432,10 +1435,12 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubsubcom", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("simple: true"));
-    CHECK_THAT(str, Contains("other:\n"
-                             "  newer: true"));
-    CHECK_THAT(str, Contains("  sub2:\n"
-                             "    newest: true"));
+    CHECK_THAT(str,
+               Contains("other:\n"
+                        "  newer: true"));
+    CHECK_THAT(str,
+               Contains("  sub2:\n"
+                        "    newest: true"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurable", "[config]") {
@@ -1456,7 +1461,7 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurable", "[config]") {
     CHECK_THAT(str, Contains("newer: true"));
     CHECK_THAT(str, Contains("  sub2:\n"));
     CHECK_THAT(str, Contains("newest: true"));
-    //CHECK(std::string::npos == str.find("sub2.newest=true"));
+    // CHECK(std::string::npos == str.find("sub2.newest=true"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurableDeep", "[config]") {
@@ -1477,12 +1482,13 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurableDeep", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("simple: true"));
-    CHECK_THAT(str, Contains("other:\n"
-                             "  sub2:\n"
-                             "    sub-level2:\n"
-                             "      sub-level3:\n"));
+    CHECK_THAT(str,
+               Contains("other:\n"
+                        "  sub2:\n"
+                        "    sub-level2:\n"
+                        "      sub-level3:\n"));
     CHECK_THAT(str, Contains("absolute_newest: true"));
-    //CHECK(std::string::npos == str.find(".absolute_newest=true"));
+    // CHECK(std::string::npos == str.find(".absolute_newest=true"));
 }
 
 TEST_CASE_METHOD(TApp, "YamlOutputQuoted", "[config]") {
