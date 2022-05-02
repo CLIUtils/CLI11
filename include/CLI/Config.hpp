@@ -411,8 +411,10 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
+    bool last_emit_was_comment = false;
     if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
         emitter << YAML::Comment(app->get_description());
+        last_emit_was_comment = true;
     }
     for(auto &group : groups) {
         if(group == "Options" || group.empty()) {
@@ -422,10 +424,13 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "Options" && !group.empty()) {
-            emitter << YAML::Comment(group + " Options");
+            if (last_emit_was_comment) {
+                emitter << YAML::Newline;
+            }
+            emitter << YAML::Newline << YAML::Comment(group + " Options") << YAML::Newline;
+            last_emit_was_comment = true;
         }
         for(const Option *opt : app->get_options({})) {
-
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
@@ -445,6 +450,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
                         emitter << res;
                     }
                     emitter << YAML::EndSeq;
+                    last_emit_was_comment = false;
                 }
                 else {
                     std::string value = results.empty() ? "" : results[0];
@@ -460,7 +466,10 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 
                     if(!value.empty()) {
                         if(write_description && opt->has_description()) {
-                            emitter << YAML::Comment(opt->get_description());
+                            if (last_emit_was_comment) {
+                                emitter << YAML::Newline;
+                            }
+                            emitter << YAML::Comment(opt->get_description()) << YAML::Newline;
                         }
                         emitter << YAML::Key << name;
                         emitter << YAML::Value;
@@ -475,13 +484,13 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
             if(write_description && !subcom->get_group().empty()) {
-                //emitter << YAML::Comment(subcom->get_group() + " Options");
+                emitter << YAML::Comment(subcom->get_group() + " Options");
             }
-//            out << to_config(subcom, default_also, write_description, prefix);
+            to_config(subcom, default_also, write_description, emitter);
         }
     }
 
-    bool first_subcommand{true};
+    bool first_subcommand = true;
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
 //            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
@@ -507,7 +516,6 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
             }
 
             to_config(subcom, default_also, write_description, emitter);
-            //node[subcom->get_name()] = sub_node;
 
             if (first_subcommand) {
                 first_subcommand = false;

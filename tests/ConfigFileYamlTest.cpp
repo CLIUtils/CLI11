@@ -1032,139 +1032,152 @@ TEST_CASE_METHOD(TApp, "YamlOutputPositional", "[config]") {
     CHECK(str == "pos: 3\n");
 }
 
-//// try the output with environmental only arguments
-//TEST_CASE_METHOD(TApp, "TomlOutputEnvironmental", "[config]") {
-//
-//    put_env("CLI11_TEST_ENV_TMP", "2");
-//
-//    int val{1};
-//    app.add_option(std::string{}, val)->envname("CLI11_TEST_ENV_TMP");
-//
-//    run();
-//
-//    CHECK(val == 2);
-//    std::string str = app.config_to_str();
-//    CHECK(str == "CLI11_TEST_ENV_TMP=2\n");
-//
-//    unset_env("CLI11_TEST_ENV_TMP");
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputNoConfigurable", "[config]") {
-//
-//    int v1{0}, v2{0};
-//    app.add_option("--simple", v1);
-//    app.add_option("--noconf", v2)->configurable(false);
-//
-//    args = {"--simple=3", "--noconf=2"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK(str == "simple=3\n");
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputShortSingleDescription", "[config]") {
-//    std::string flag = "some_flag";
-//    const std::string description = "Some short description.";
-//    app.add_flag("--" + flag, description);
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("# " + description + "\n" + flag + "=false\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputShortDoubleDescription", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1);
-//    app.add_flag("--" + flag2, description2);
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    std::string ans = "# " + description1 + "\n" + flag1 + "=false\n\n# " + description2 + "\n" + flag2 + "=false\n";
-//    CHECK_THAT(str, Contains(ans));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputGroups", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    double val{12.7};
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//    app.add_option("--dval", val)->capture_default_str()->group("");
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//    CHECK_THAT(str, Contains("dval=12.7"));
-//    auto loc = str.find("dval=12.7");
-//    auto locg1 = str.find("group1");
-//    CHECK(loc < locg1);
-//    // make sure it doesn't come twice
-//    loc = str.find("dval=12.7", loc + 4);
-//    CHECK(std::string::npos == loc);
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputAppMultiLineDescription", "[config]") {
-//    app.description("Some short app description.\n"
-//                    "That has multiple lines.");
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("# Some short app description.\n"));
-//    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputMultiLineDescription", "[config]") {
-//    std::string flag = "some_flag";
-//    const std::string description = "Some short description.\nThat has lines.";
-//    app.add_flag("--" + flag, description);
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("# Some short description.\n"));
-//    CHECK_THAT(str, Contains("# That has lines.\n"));
-//    CHECK_THAT(str, Contains(flag + "=false\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") {
-//    std::string flag = "flag";
-//    const std::string description = "Short flag description.\n";
-//    auto og = app.add_option_group("group");
-//    og->description("Option group description.\n"
-//                    "That has multiple lines.");
-//    og->add_flag("--" + flag, description);
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("# Option group description.\n"));
-//    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
-//}
-//
+// try the output with environmental only arguments
+TEST_CASE_METHOD(TApp, "YamlOutputEnvironmental", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    put_env("CLI11_TEST_ENV_TMP", "2");
+
+    int val{1};
+    app.add_option(std::string{}, val)->envname("CLI11_TEST_ENV_TMP");
+
+    run();
+
+    CHECK(val == 2);
+    std::string str = app.config_to_str();
+    CHECK(str == "CLI11_TEST_ENV_TMP: 2\n");
+
+    unset_env("CLI11_TEST_ENV_TMP");
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputShortSingleDescription", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag = "some_flag";
+    const std::string description = "Some short description.";
+    app.add_flag("--" + flag, description);
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains(
+            "# My Test Program\n"
+            "# " + description + "\n" +
+            flag + ": false\n"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputShortDoubleDescription", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1);
+    app.add_flag("--" + flag2, description2);
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    //WARNING, the test was: std::string ans = "# " + description1 + "\n" + flag1 + ": false\n\n# " + description2 + "\n" + flag2 + ": false\n";
+    std::string ans = "# " + description1 + "\n" + flag1 + ": false\n# " + description2 + "\n" + flag2 + ": false\n";
+    CHECK_THAT(str, Contains(ans));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputGroups", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputHiddenOptions", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    double val{12.7};
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+    app.add_option("--dval", val)->capture_default_str()->group("");
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval: 12.7"));
+    auto loc = str.find("dval: 12.7");
+    auto locg1 = str.find("group1");
+    CHECK(loc < locg1);
+    // make sure it doesn't come twice
+    loc = str.find("dval: 12.7", loc + 4);
+    CHECK(std::string::npos == loc);
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputAppMultiLineDescription", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    app.description("Some short app description.\n"
+                    "That has multiple lines.");
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Some short app description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputMultiLineDescription", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag = "some_flag";
+    const std::string description = "Some short description.\nThat has lines.";
+    app.add_flag("--" + flag, description);
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Some short description.\n"));
+    CHECK_THAT(str, Contains("# That has lines.\n"));
+    CHECK_THAT(str, Contains(flag + ": false\n"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputOptionGroupMultiLineDescription", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto og = app.add_option_group("group");
+    og->description("Option group description.\n"
+                    "That has multiple lines.");
+    og->add_flag("--" + flag, description);
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Option group description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
+}
+
 //TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {
 //    std::string flag = "flag";
 //    const std::string description = "Short flag description.\n";
