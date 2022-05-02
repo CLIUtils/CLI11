@@ -1734,21 +1734,6 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
                              "  newer: true"));
 }
 
-//TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    app.get_config_formatter_base()->parentSeparator(':');
-//    args = {"--simple", "other", "--newer"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other:newer=true"));
-//}
-
 TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
@@ -1783,24 +1768,6 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubsubcom", "[config]") {
     CHECK_THAT(str, Contains("  sub2:\n"
                              "    newest: true"));
 }
-
-//TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    app.get_config_formatter_base()->parentSeparator('|');
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other|newer=true"));
-//    CHECK_THAT(str, Contains("other|sub2|newest=true"));
-//}
 
 TEST_CASE_METHOD(TApp, "YamlOutputSubsubcomConfigurable", "[config]") {
 
