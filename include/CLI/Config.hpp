@@ -493,23 +493,6 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     bool first_subcommand = true;
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
-//            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
-//                if(!prefix.empty() || app->get_parent() == nullptr) {
-//                    out << '[' << prefix << subcom->get_name() << "]\n";
-//                } else {
-//                    std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
-//                    auto p = app->get_parent();
-//                    while(p->get_parent() != nullptr) {
-//                        subname = p->get_name() + parentSeparatorChar + subname;
-//                        p = p->get_parent();
-//                    }
-//                    out << '[' << subname << "]\n";
-//                }
-//                out << to_config(subcom, default_also, write_description, "");
-//            } else {
-//                out << to_config(
-//                        subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
-//            }
             if (first_subcommand) {
                 emitter << YAML::Key << subcom->get_name();
                 emitter << YAML::BeginMap;
@@ -524,7 +507,6 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 }
-
 
 inline std::vector<ConfigItem>
 ConfigYAML::from_config(std::istream& is) const {

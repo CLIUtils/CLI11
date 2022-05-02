@@ -168,10 +168,10 @@ TEST_CASE_METHOD(TApp, "YamlVectorMultiple", "[config]") {
     {
         std::ofstream out{tempYaml};
         out << "#this is a comment line\n"
-               "three: 1\n"
                "two: 2\n"
-               "three: 2\n"
                "two: 3\n"
+               "three: 1\n"
+               "three: 2\n"
                "three: 3\n";
     }
 
@@ -536,7 +536,7 @@ TEST_CASE_METHOD(TApp, "YamlSubcommandConfigurablePreParse", "[config]") {
 //    CHECK(1u == subsubcom->count());
 //    CHECK(0u == subcom2->count());
 //}
-
+//
 //TEST_CASE_METHOD(TApp, "YamlDuplicateSubcommandCallbacks", "[config]") {
 //
 //    TempFile tempYaml{"TestYamlTmp.yaml"};
@@ -786,7 +786,7 @@ TEST_CASE_METHOD(TApp, "YamlMultipleDefaultPathAlternate", "[config]") {
     CHECK(cfgOption->as<std::string>() == "../TestYamlTmp.yaml");
 }
 
-TEST_CASE_METHOD(TApp, "IniPositional", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlPositional", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
 
@@ -1032,7 +1032,6 @@ TEST_CASE_METHOD(TApp, "YamlOutputPositional", "[config]") {
     CHECK(str == "pos: 3\n");
 }
 
-// try the output with environmental only arguments
 TEST_CASE_METHOD(TApp, "YamlOutputEnvironmental", "[config]") {
 
     app.config_formatter(std::make_shared<CLI::ConfigYAML>());
@@ -1178,87 +1177,92 @@ TEST_CASE_METHOD(TApp, "YamlOutputOptionGroupMultiLineDescription", "[config]") 
     CHECK_THAT(str, Contains("# That has multiple lines.\n"));
 }
 
-//TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {
-//    std::string flag = "flag";
-//    const std::string description = "Short flag description.\n";
-//    auto subcom = app.add_subcommand("subcommand");
-//    subcom->configurable();
-//    subcom->description("Subcommand description.\n"
-//                        "That has multiple lines.");
-//    subcom->add_flag("--" + flag, description);
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("# Subcommand description.\n"));
-//    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    double val{12.7};
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//    auto og = app.add_option_group("group3", "g3 desc");
-//    og->add_option("--dval", val)->capture_default_str()->group("");
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//    CHECK_THAT(str, Contains("dval=12.7"));
-//    CHECK_THAT(str, Contains("group3"));
-//    CHECK_THAT(str, Contains("g3 desc"));
-//    auto loc = str.find("dval=12.7");
-//    auto locg1 = str.find("group1");
-//    auto locg3 = str.find("group3");
-//    CHECK(loc > locg1);
-//    // make sure it doesn't come twice
-//    loc = str.find("dval=12.7", loc + 4);
-//    CHECK(std::string::npos == loc);
-//    CHECK(locg1 < locg3);
-//}
-//
+TEST_CASE_METHOD(TApp, "YamlOutputSubcommandMultiLineDescription", "[config]") {
 
-//TEST_CASE_METHOD(TApp, "TomlOutputTuple", "[config]") {
-//
-//    std::tuple<double, double, double, double> t;
-//    app.add_option("--tuple", t);
-//    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
-//    args = {"--tuple", "1", "2", "3", "4"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK(str == "tuple=[1, 2, 3, 4]\n");
-//}
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
 
-//TEST_CASE_METHOD(TApp, "TomlOutputSubcomNonConfigurable", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other", "other_descriptor")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    auto subcom2 = app.add_subcommand("sub2", "descriptor2");
-//    subcom2->add_flag("--newest")->configurable(false);
-//
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("other_descriptor"));
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other]"));
-//    CHECK_THAT(str, Contains("newer=true"));
-//    CHECK_THAT(str, !Contains("newest"));
-//    CHECK_THAT(str, !Contains("descriptor2"));
-//}
-//
+    std::string flag = "flag";
+    const std::string description = "Short flag description.\n";
+    auto subcom = app.add_subcommand("subcommand");
+    subcom->configurable();
+    subcom->description("Subcommand description.\n"
+                        "That has multiple lines.");
+    subcom->add_flag("--" + flag, description);
+    run();
 
-// #298
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# Subcommand description.\n"));
+    CHECK_THAT(str, Contains("# That has multiple lines.\n"));
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputOptionGroup", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    std::string flag1 = "flagnr1";
+    std::string flag2 = "flagnr2";
+    double val{12.7};
+    const std::string description1 = "First description.";
+    const std::string description2 = "Second description.";
+    app.add_flag("--" + flag1, description1)->group("group1");
+    app.add_flag("--" + flag2, description2)->group("group2");
+    auto og = app.add_option_group("group3", "g3 desc");
+    og->add_option("--dval", val)->capture_default_str()->group("");
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("group1"));
+    CHECK_THAT(str, Contains("group2"));
+    CHECK_THAT(str, Contains("dval: 12.7"));
+    CHECK_THAT(str, Contains("group3"));
+    CHECK_THAT(str, Contains("g3 desc"));
+    auto loc = str.find("dval: 12.7");
+    auto locg1 = str.find("group1");
+    auto locg3 = str.find("group3");
+    CHECK(loc > locg1);
+    // make sure it doesn't come twice
+    loc = str.find("dval: 12.7", loc + 4);
+    CHECK(std::string::npos == loc);
+    CHECK(locg1 < locg3);
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputTuple", "[config]") {
+
+    std::tuple<double, double, double, double> t;
+    app.add_option("--tuple", t);
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+    args = {"--tuple", "1", "2", "3", "4"};
+
+    run();
+
+    auto str = app.config_to_str();
+    CHECK(str == "tuple:\n  - 1\n  - 2\n  - 3\n  - 4\n");
+}
+
+TEST_CASE_METHOD(TApp, "YamlOutputSubcomNonConfigurable", "[config]") {
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    app.add_flag("--simple");
+    auto subcom = app.add_subcommand("other", "other_descriptor")->configurable();
+    subcom->add_flag("--newer");
+
+    auto subcom2 = app.add_subcommand("sub2", "descriptor2");
+    subcom2->add_flag("--newest")->configurable(false);
+
+    args = {"--simple", "other", "--newer", "sub2", "--newest"};
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("other_descriptor"));
+    CHECK_THAT(str, Contains("simple: true"));
+    CHECK_THAT(str, Contains("other:"));
+    CHECK_THAT(str, Contains("newer: true"));
+    CHECK_THAT(str, !Contains("newest"));
+    CHECK_THAT(str, !Contains("descriptor2"));
+}
+
 TEST_CASE_METHOD(TApp, "YamlStopReadingConfigOnClear", "[config]") {
 
     TempFile tempYaml{"TestYamlTmp.yaml"};
@@ -1305,7 +1309,6 @@ TEST_CASE_METHOD(TApp, "YamlConfigWriteReadWrite", "[config]") {
 
     CHECK(config2 == config1);
 }
-
 
 TEST_CASE_METHOD(TApp, "YamlOutputNoConfigurable", "[config]") {
 
@@ -1400,7 +1403,7 @@ TEST_CASE_METHOD(TApp, "YamlOutputSubcom", "[config]") {
                              "  newer: true"));
 }
 
-TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
+TEST_CASE_METHOD(TApp, "YamlOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
     auto subcom = app.add_subcommand("other")->configurable();
