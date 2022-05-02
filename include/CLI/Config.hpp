@@ -395,22 +395,24 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 #if CLI11_ENABLE_YAML
 inline std::string
 ConfigYAML::to_config(const App *app, bool default_also, bool write_description, std::string) const {
-    YAML::Node node;
-    to_config(app, default_also, write_description, node);
+    YAML::Emitter emitter;
+    emitter << YAML::BeginMap;
+    to_config(app, default_also, write_description, emitter);
+    emitter << YAML::EndMap;
 
     std::ostringstream out;
-    out << node << std::endl;
+    out << emitter.c_str() << std::endl;
     return out.str();
 }
 
 inline void
-ConfigYAML::to_config(const App *app, bool default_also, bool write_description, YAML::Node& node) const
+ConfigYAML::to_config(const App *app, bool default_also, bool write_description, YAML::Emitter& emitter) const
 {
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
     if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
-        //out << YAML::Comment(app->get_description());
+        emitter << YAML::Comment(app->get_description());
     }
     for(auto &group : groups) {
         if(group == "Options" || group.empty()) {
@@ -420,7 +422,7 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "Options" && !group.empty()) {
-            //out << YAML::Comment(group + " Options");
+            emitter << YAML::Comment(group + " Options");
         }
         for(const Option *opt : app->get_options({})) {
 
@@ -436,9 +438,13 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 
                 const auto& results = opt->reduced_results();
                 if(results.size() >= 2) {
+                    emitter << YAML::Key << name;
+                    emitter << YAML::Value;
+                    emitter << YAML::BeginSeq;
                     for(const auto& res : results) {
-                        node[name].push_back(res);
+                        emitter << res;
                     }
+                    emitter << YAML::EndSeq;
                 }
                 else {
                     std::string value = results.empty() ? "" : results[0];
@@ -454,11 +460,12 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 
                     if(!value.empty()) {
                         if(write_description && opt->has_description()) {
-                            //out << YAML::Comment(opt->get_description());
+                            emitter << YAML::Comment(opt->get_description());
                         }
-                        node[name] = value;
+                        emitter << YAML::Key << name;
+                        emitter << YAML::Value;
+                        emitter << value;
                     }
-
                 }
             }
         }
@@ -468,12 +475,13 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
             if(write_description && !subcom->get_group().empty()) {
-//                out << '\n' << commentLead << subcom->get_group() << " Options\n";
+                //emitter << YAML::Comment(subcom->get_group() + " Options");
             }
 //            out << to_config(subcom, default_also, write_description, prefix);
         }
     }
 
+    bool first_subcommand{true};
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
 //            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
@@ -493,9 +501,18 @@ ConfigYAML::to_config(const App *app, bool default_also, bool write_description,
 //                out << to_config(
 //                        subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
 //            }
-            YAML::Node sub_node;
-            to_config(subcom, default_also, write_description, sub_node);
-            node[subcom->get_name()] = sub_node;
+            if (first_subcommand) {
+                emitter << YAML::Key << subcom->get_name();
+                emitter << YAML::BeginMap;
+            }
+
+            to_config(subcom, default_also, write_description, emitter);
+            //node[subcom->get_name()] = sub_node;
+
+            if (first_subcommand) {
+                first_subcommand = false;
+                emitter << YAML::EndMap;
+            }
         }
     }
 }
