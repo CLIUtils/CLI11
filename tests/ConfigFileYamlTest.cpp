@@ -1222,19 +1222,7 @@ TEST_CASE_METHOD(TApp, "YamlOutputOptionGroupMultiLineDescription", "[config]") 
 //    CHECK(locg1 < locg3);
 //}
 //
-//TEST_CASE_METHOD(TApp, "TomlOutputVector", "[config]") {
-//
-//    std::vector<int> v;
-//    app.add_option("--vector", v);
-//    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
-//    args = {"--vector", "1", "2", "3"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK(str == "vector=[1, 2, 3]\n");
-//}
-//
+
 //TEST_CASE_METHOD(TApp, "TomlOutputTuple", "[config]") {
 //
 //    std::tuple<double, double, double, double> t;
@@ -1247,139 +1235,7 @@ TEST_CASE_METHOD(TApp, "YamlOutputOptionGroupMultiLineDescription", "[config]") 
 //    std::string str = app.config_to_str();
 //    CHECK(str == "tuple=[1, 2, 3, 4]\n");
 //}
-//
-//TEST_CASE_METHOD(TApp, "ConfigOutputVectorCustom", "[config]") {
-//
-//    std::vector<int> v;
-//    app.add_option("--vector", v);
-//    auto V = std::make_shared<CLI::ConfigBase>();
-//    V->arrayBounds('{', '}')->arrayDelimiter(';')->valueSeparator(':');
-//    app.config_formatter(V);
-//    args = {"--vector", "1", "2", "3"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK(str == "vector:{1; 2; 3}\n");
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputFlag", "[config]") {
-//
-//    int v{0}, q{0};
-//    app.add_option("--simple", v);
-//    app.add_flag("--nothing");
-//    app.add_flag("--onething");
-//    app.add_flag("--something", q);
-//
-//    args = {"--simple=3", "--onething", "--something", "--something"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=3"));
-//    CHECK_THAT(str, !Contains("nothing"));
-//    CHECK_THAT(str, Contains("onething=true"));
-//    CHECK_THAT(str, Contains("something=2"));
-//
-//    str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("nothing"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputSet", "[config]") {
-//
-//    int v{0};
-//    app.add_option("--simple", v)->check(CLI::IsMember({1, 2, 3}));
-//
-//    args = {"--simple=2"};
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=2"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
-//
-//    int v{7};
-//    app.add_option("--simple", v)->capture_default_str();
-//
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, !Contains("simple=7"));
-//
-//    str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("simple=7"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputSubcom", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//
-//    args = {"--simple", "other", "--newer"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other.newer=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputSubcomConfigurable", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    args = {"--simple", "other", "--newer"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other]"));
-//    CHECK_THAT(str, Contains("newer=true"));
-//    CHECK(std::string::npos == str.find("other.newer=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputSubsubcom", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other");
-//    subcom->add_flag("--newer");
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("other.newer=true"));
-//    CHECK_THAT(str, Contains("other.sub2.newest=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurable", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//
-//    args = {"--simple", "other", "--newer", "sub2", "--newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other]"));
-//    CHECK_THAT(str, Contains("newer=true"));
-//    CHECK_THAT(str, Contains("[other.sub2]"));
-//    CHECK_THAT(str, Contains("newest=true"));
-//    CHECK(std::string::npos == str.find("sub2.newest=true"));
-//}
-//
+
 //TEST_CASE_METHOD(TApp, "TomlOutputSubcomNonConfigurable", "[config]") {
 //
 //    app.add_flag("--simple");
@@ -1401,109 +1257,55 @@ TEST_CASE_METHOD(TApp, "YamlOutputOptionGroupMultiLineDescription", "[config]") 
 //    CHECK_THAT(str, !Contains("descriptor2"));
 //}
 //
-//TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurableDeep", "[config]") {
-//
-//    app.add_flag("--simple");
-//    auto subcom = app.add_subcommand("other")->configurable();
-//    subcom->add_flag("--newer");
-//
-//    auto subsubcom = subcom->add_subcommand("sub2");
-//    subsubcom->add_flag("--newest");
-//    auto sssscom = subsubcom->add_subcommand("sub-level2");
-//    subsubcom->add_flag("--still_newer");
-//    auto s5com = sssscom->add_subcommand("sub-level3");
-//    s5com->add_flag("--absolute_newest");
-//
-//    args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
-//    run();
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("simple=true"));
-//    CHECK_THAT(str, Contains("[other.sub2.sub-level2.sub-level3]"));
-//    CHECK_THAT(str, Contains("absolute_newest=true"));
-//    CHECK(std::string::npos == str.find(".absolute_newest=true"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "TomlOutputQuoted", "[config]") {
-//
-//    std::string val1;
-//    app.add_option("--val1", val1);
-//
-//    std::string val2;
-//    app.add_option("--val2", val2);
-//
-//    args = {"--val1", "I am a string", "--val2", R"(I am a "confusing" string)"};
-//
-//    run();
-//
-//    CHECK(val1 == "I am a string");
-//    CHECK(val2 == "I am a \"confusing\" string");
-//
-//    std::string str = app.config_to_str();
-//    CHECK_THAT(str, Contains("val1=\"I am a string\""));
-//    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
-//
-//    std::string val1{"I am a string"};
-//    app.add_option("--val1", val1)->capture_default_str();
-//
-//    std::string val2{R"(I am a "confusing" string)"};
-//    app.add_option("--val2", val2)->capture_default_str();
-//
-//    run();
-//
-//    std::string str = app.config_to_str(true);
-//    CHECK_THAT(str, Contains("val1=\"I am a string\""));
-//    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
-//}
-//
-//// #298
-//TEST_CASE_METHOD(TApp, "StopReadingConfigOnClear", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.set_config("--config", tmpini);
-//    auto ptr = app.set_config();  // Should *not* read config file
-//    CHECK(nullptr == ptr);
-//
-//    {
-//        std::ofstream out{tmpini};
-//        out << "volume=1" << std::endl;
-//    }
-//
-//    int volume{0};
-//    app.add_option("--volume", volume, "volume1");
-//
-//    run();
-//
-//    CHECK(0 == volume);
-//}
-//
-//TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
-//
-//    TempFile tmpini{"TestIniTmp.ini"};
-//
-//    app.add_flag("--flag");
-//    run();
-//
-//    // Save config, with default values too
-//    std::string config1 = app.config_to_str(true, true);
-//    {
-//        std::ofstream out{tmpini};
-//        out << config1 << std::endl;
-//    }
-//
-//    app.set_config("--config", tmpini, "Read an ini file", true);
-//    run();
-//
-//    std::string config2 = app.config_to_str(true, true);
-//
-//    CHECK(config2 == config1);
-//}
-//
-///////// YAML output tests
+
+// #298
+TEST_CASE_METHOD(TApp, "YamlStopReadingConfigOnClear", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    app.set_config("--config", tempYaml);
+    auto ptr = app.set_config();  // Should *not* read config file
+    CHECK(nullptr == ptr);
+
+    {
+        std::ofstream out{tempYaml};
+        out << "volume: 1" << std::endl;
+    }
+
+    int volume{0};
+    app.add_option("--volume", volume, "volume1");
+
+    run();
+
+    CHECK(0 == volume);
+}
+
+TEST_CASE_METHOD(TApp, "YamlConfigWriteReadWrite", "[config]") {
+
+    TempFile tempYaml{"TestYamlTmp.yaml"};
+
+    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
+
+    app.add_flag("--flag");
+    run();
+
+    // Save config, with default values too
+    std::string config1 = app.config_to_str(true, true);
+    {
+        std::ofstream out{tempYaml};
+        out << config1 << std::endl;
+    }
+
+    app.set_config("--config", tempYaml, "Read a yaml file", true);
+    run();
+
+    std::string config2 = app.config_to_str(true, true);
+
+    CHECK(config2 == config1);
+}
+
 
 TEST_CASE_METHOD(TApp, "YamlOutputNoConfigurable", "[config]") {
 
@@ -1518,155 +1320,6 @@ TEST_CASE_METHOD(TApp, "YamlOutputNoConfigurable", "[config]") {
     std::string str = app.config_to_str();
     CHECK(str == "simple: 3\n");
 }
-
-//TEST_CASE_METHOD(TApp, "IniOutputShortSingleDescription", "[config]") {
-//    std::string flag = "some_flag";
-//    const std::string description = "Some short description.";
-//    app.add_flag("--" + flag, description);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("; " + description + "\n" + flag + "=false\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputShortDoubleDescription", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1);
-//    app.add_flag("--" + flag2, description2);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    std::string ans = "; " + description1 + "\n" + flag1 + "=false\n\n; " + description2 + "\n" + flag2 + "=false\n";
-//    CHECK_THAT(str, Contains(ans));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputGroups", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//}
-
-//TEST_CASE_METHOD(TApp, "YamlOutputHiddenOptions", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    double val{12.7};
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//    app.add_option("--dval", val)->capture_default_str()->group("");
-//    app.config_formatter(std::make_shared<CLI::ConfigYAML>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//    CHECK_THAT(str, Contains("dval: 12.7"));
-//    auto loc = str.find("dval: 12.7");
-//    auto locg1 = str.find("group1");
-//    CHECK(loc < locg1);
-//    // make sure it doesn't come twice
-//    loc = str.find("dval: 12.7", loc + 4);
-//    CHECK(std::string::npos == loc);
-//}
-
-//TEST_CASE_METHOD(TApp, "IniOutputAppMultiLineDescription", "[config]") {
-//    app.description("Some short app description.\n"
-//                    "That has multiple lines.");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("; Some short app description.\n"));
-//    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
-//    std::string flag = "some_flag";
-//    const std::string description = "Some short description.\nThat has lines.";
-//    app.add_flag("--" + flag, description);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("; Some short description.\n"));
-//    CHECK_THAT(str, Contains("; That has lines.\n"));
-//    CHECK_THAT(str, Contains(flag + "=false\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputOptionGroupMultiLineDescription", "[config]") {
-//    std::string flag = "flag";
-//    const std::string description = "Short flag description.\n";
-//    auto og = app.add_option_group("group");
-//    og->description("Option group description.\n"
-//                    "That has multiple lines.");
-//    og->add_flag("--" + flag, description);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("; Option group description.\n"));
-//    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputSubcommandMultiLineDescription", "[config]") {
-//    std::string flag = "flag";
-//    const std::string description = "Short flag description.\n";
-//    auto subcom = app.add_subcommand("subcommand");
-//    subcom->configurable();
-//    subcom->description("Subcommand description.\n"
-//                        "That has multiple lines.");
-//    subcom->add_flag("--" + flag, description);
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("; Subcommand description.\n"));
-//    CHECK_THAT(str, Contains("; That has multiple lines.\n"));
-//}
-//
-//TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
-//    std::string flag1 = "flagnr1";
-//    std::string flag2 = "flagnr2";
-//    double val{12.7};
-//    const std::string description1 = "First description.";
-//    const std::string description2 = "Second description.";
-//    app.add_flag("--" + flag1, description1)->group("group1");
-//    app.add_flag("--" + flag2, description2)->group("group2");
-//    auto og = app.add_option_group("group3", "g3 desc");
-//    og->add_option("--dval", val)->capture_default_str()->group("");
-//    app.config_formatter(std::make_shared<CLI::ConfigINI>());
-//    run();
-//
-//    std::string str = app.config_to_str(true, true);
-//    CHECK_THAT(str, Contains("group1"));
-//    CHECK_THAT(str, Contains("group2"));
-//    CHECK_THAT(str, Contains("dval=12.7"));
-//    CHECK_THAT(str, Contains("group3"));
-//    CHECK_THAT(str, Contains("g3 desc"));
-//    auto loc = str.find("dval=12.7");
-//    auto locg1 = str.find("group1");
-//    auto locg3 = str.find("group3");
-//    CHECK(loc > locg1);
-//    // make sure it doesn't come twice
-//    loc = str.find("dval=12.7", loc + 4);
-//    CHECK(std::string::npos == loc);
-//    CHECK(locg1 < locg3);
-//}
 
 TEST_CASE_METHOD(TApp, "YamlOutputVector", "[config]") {
     std::vector<int> v;
