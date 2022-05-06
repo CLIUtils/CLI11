@@ -7,6 +7,7 @@
 #pragma once
 
 // [CLI11:public_includes:set]
+#include <functional>
 #include <map>
 #include <string>
 #include <utility>
