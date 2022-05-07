@@ -6,7 +6,10 @@
 #include <CLI11.hpp>
 ```
 
-This example uses the single file edition of CLI11. You can download `CLI11.hpp` from the latest release and put it into the same folder as your source code, then compile this with C++ enabled. For a larger project, you can just put this in an include folder and you are set.
+This example uses the single file edition of CLI11. You can download `CLI11.hpp`
+from the latest release and put it into the same folder as your source code,
+then compile this with C++ enabled. For a larger project, you can just put this
+in an include folder and you are set.
 
 ## Full edition
 
@@ -14,27 +17,42 @@ This example uses the single file edition of CLI11. You can download `CLI11.hpp`
 #include <CLI/CLI.hpp>
 ```
 
-If you want to use CLI11 in its full form, you can also use the original multiple file edition. This has an extra utility (`Timer`), and is does not require that you use a release. The only change to your code would be the include shown above.
+If you want to use CLI11 in its full form, you can also use the original
+multiple file edition. This has an extra utility (`Timer`), and is does not
+require that you use a release. The only change to your code would be the
+include shown above.
 
 ### CMake support for the full edition
 
-If you use CMake 3.4+ for your project (highly recommended), CLI11 comes with a powerful CMakeLists.txt file that was designed to also be used with `add_subproject`. You can add the repository to your code (preferably as a git submodule), then add the following line to your project (assuming your folder is called CLI11):
+If you use CMake 3.4+ for your project (highly recommended), CLI11 comes with a
+powerful CMakeLists.txt file that was designed to also be used with
+`add_subproject`. You can add the repository to your code (preferably as a git
+submodule), then add the following line to your project (assuming your folder is
+called CLI11):
 
 ```cmake
 add_subdirectory(CLI11)
 ```
 
-Then, you will have a target `CLI11::CLI11` that you can link to with `target_link_libraries`. It will provide the include paths you need for the library. This is the way [GooFit](https://github.com/GooFit/GooFit) uses CLI11, for example.
+Then, you will have a target `CLI11::CLI11` that you can link to with
+`target_link_libraries`. It will provide the include paths you need for the
+library. This is the way [GooFit](https://github.com/GooFit/GooFit) uses CLI11,
+for example.
 
-You can also configure and optionally install CLI11, and CMake will create the necessary `lib/cmake/CLI11/CLI11Config.cmake` files, so `find_package(CLI11 CONFIG REQUIRED)` also works.
+You can also configure and optionally install CLI11, and CMake will create the
+necessary `lib/cmake/CLI11/CLI11Config.cmake` files, so
+`find_package(CLI11 CONFIG REQUIRED)` also works.
 
 If you use conan.io, CLI11 supports that too.
 
 ### Running tests on the full edition
 
-CLI11 has examples and tests that can be accessed using a CMake build on any platform. Simply build and run ctest to run the 200+ tests to ensure CLI11 works on your system.
+CLI11 has examples and tests that can be accessed using a CMake build on any
+platform. Simply build and run ctest to run the 200+ tests to ensure CLI11 works
+on your system.
 
-As an example of the build system, the following code will download and test CLI11 in a simple Alpine Linux docker container [^1]:
+As an example of the build system, the following code will download and test
+CLI11 in a simple Alpine Linux docker container [^1]:
 
 ```term
 gitbook:~ $ docker run -it alpine
@@ -78,7 +96,8 @@ Test project /CLI11/build
 Total Test time (real) =   0.34 sec
 ```
 
-For the curious, the CMake options and defaults are listed below. Most options default to off if CLI11 is used as a subdirectory in another project.
+For the curious, the CMake options and defaults are listed below. Most options
+default to off if CLI11 is used as a subdirectory in another project.
 
 | Option                        | Description                                                                                     |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -89,4 +108,7 @@ For the curious, the CMake options and defaults are listed below. Most options d
 | `CLI11_CLANG_TIDY=OFF`        | Run `clang-tidy` on the examples and headers. Requires CMake 3.6+.                              |
 | `CLI11_CLANG_TIDY_OPTIONS=""` | Options to pass to `clang-tidy`, such as `-fix` (single threaded build only if applying fixes!) |
 
-[^1]: Docker is being used to create a pristine disposable environment; there is nothing special about this container. Alpine is being used because it is small, modern, and fast. Commands are similar on any other platform.
+[^1]:
+    Docker is being used to create a pristine disposable environment; there is
+    nothing special about this container. Alpine is being used because it is
+    small, modern, and fast. Commands are similar on any other platform.

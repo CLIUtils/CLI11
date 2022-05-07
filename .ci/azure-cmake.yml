@@ -11,5 +11,7 @@ steps:
       destinationFolder: "cmake_program"
       displayName: Extract CMake
 
-  - bash: echo "##vso[task.prependpath]$(Build.SourcesDirectory)/cmake_program/cmake-3.14.3-Linux-x86_64/bin"
+  - bash:
+      echo
+      "##vso[task.prependpath]$(Build.SourcesDirectory)/cmake_program/cmake-3.14.3-Linux-x86_64/bin"
     displayName: Add CMake to PATH
