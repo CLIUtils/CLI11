@@ -10,7 +10,7 @@ After entering the main function, you'll see that a `CLI::App` object is created
 
 A normal CLI11 application would define some flags and options next. This is a simplest possible example, so we'll go on.
 
-The macro `CLI11_PARSE` just runs five simple lines. This internally runs `app.parse(argc, argv)`, which takes the command line info from C++ and parses it. If there is an error, it throws a `ParseError`; if you catch it, you can use `app.exit` with  the error as an argument to print a nice message and produce the correct return code for your application.
+The macro `CLI11_PARSE` just runs five simple lines. This internally runs `app.parse(argc, argv)`, which takes the command line info from C++ and parses it. If there is an error, it throws a `ParseError`; if you catch it, you can use `app.exit` with the error as an argument to print a nice message and produce the correct return code for your application.
 
 If you just use `app.parse` directly, your application will still work, but the stack will not be correctly unwound since you have an uncaught exception, and the command line output will be cluttered, especially for help.
 

@@ -13,46 +13,45 @@ jobs:
     name: Single header
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
 
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
+      - uses: actions/setup-python@v2
 
-    - uses: actions/setup-python@v2
+      - name: Prepare CMake config
+        run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON
 
-    - name: Prepare CMake config
-      run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON
+      - name: Make package
+        run: cmake --build build --target package_source
 
-    - name: Make package
-      run: cmake --build build --target package_source
+      - name: Copy source packages
+        run: |
+          mkdir -p CLI11-Source
+          cp build/CLI11-*-Source.* CLI11-Source
+          cp build/CLI11-*-Source.* .
 
-    - name: Copy source packages
-      run: |
-        mkdir -p CLI11-Source
-        cp build/CLI11-*-Source.* CLI11-Source
-        cp build/CLI11-*-Source.* .
+      - name: Make header
+        run: cmake --build build --target CLI11-generate-single-file
 
-    - name: Make header
-      run: cmake --build build --target CLI11-generate-single-file
+      - name: Copy file to main folder
+        run: cp build/include/CLI11.hpp CLI11.hpp
 
-    - name: Copy file to main folder
-      run: cp build/include/CLI11.hpp CLI11.hpp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: CLI11.hpp
+          path: CLI11.hpp
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: CLI11.hpp
-        path: CLI11.hpp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: CLI11-Source
+          path: CLI11-Source
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: CLI11-Source
-        path: CLI11-Source
-
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          CLI11.hpp
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            CLI11.hpp
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

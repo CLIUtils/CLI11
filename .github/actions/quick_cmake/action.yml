@@ -1,12 +1,12 @@
 name: Quick CMake config
-description: 'Runs CMake 3.4+ (if already setup)'
+description: "Runs CMake 3.4+ (if already setup)"
 inputs:
   args:
-    description: 'Other arguments'
+    description: "Other arguments"
     required: false
-    default: ''
+    default: ""
   cmake-version:
-    description: 'The CMake version to run'
+    description: "The CMake version to run"
     required: true
 
 runs:

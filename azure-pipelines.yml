@@ -4,12 +4,12 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- main
-- 'v*'
+  - main
+  - "v*"
 
 pr:
-- main
-- 'v*'
+  - main
+  - "v*"
 
 variables:
   cli11.single: ON
@@ -19,122 +19,121 @@ variables:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 jobs:
+  - job: ClangTidy
+    variables:
+      CXX_FLAGS: "-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11"
+      cli11.options: -DCLI11_CLANG_TIDY=ON -DCLI11_CLANG_TIDY_OPTIONS="-fix"
+      cli11.std: 11
+      cli11.single: OFF
+      CMAKE_BUILD_PARALLEL_LEVEL: 1
+    pool:
+      vmImage: "ubuntu-latest"
+    container: silkeh/clang:8
+    steps:
+      - template: .ci/azure-cmake.yml
+      - template: .ci/azure-build.yml
+      - script: git diff --exit-code --color
+        displayName: Check tidy
 
-- job: ClangTidy
-  variables:
-    CXX_FLAGS: "-Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties -Wmissing-declarations -Woverlength-strings -Wshadow -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code -std=c++11"
-    cli11.options: -DCLI11_CLANG_TIDY=ON -DCLI11_CLANG_TIDY_OPTIONS="-fix"
-    cli11.std: 11
-    cli11.single: OFF
-    CMAKE_BUILD_PARALLEL_LEVEL: 1
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: silkeh/clang:8
-  steps:
-    - template: .ci/azure-cmake.yml
-    - template: .ci/azure-build.yml
-    - script: git diff --exit-code --color
-      displayName: Check tidy
+  - job: CppLint
+    pool:
+      vmImage: "ubuntu-latest"
+    container: sharaku/cpplint:latest
+    steps:
+      - bash: cpplint --counting=detailed --recursive examples include/CLI tests
+        displayName: Checking against google style guide
 
-- job: CppLint
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: sharaku/cpplint:latest
-  steps:
-    - bash: cpplint --counting=detailed --recursive examples include/CLI tests
-      displayName: Checking against google style guide
+  # TODO: Fix macOS error and windows warning in c++17 mode
+  - job: Native
+    strategy:
+      matrix:
+        Linux14:
+          vmImage: "ubuntu-latest"
+        macOS17:
+          vmImage: "macOS-latest"
+          cli11.std: 17
+        macOS11:
+          vmImage: "macOS-latest"
+          cli11.std: 11
+        Windows17:
+          vmImage: "vs2017-win2016"
+          cli11.std: 17
+        Windows11:
+          vmImage: "vs2017-win2016"
+          cli11.std: 11
+        Windowslatest:
+          vmImage: "windows-2019"
+          cli11.std: 20
+          cli11.options: -DCMAKE_CXX_FLAGS="/std:c++latest /EHsc"
+        Linux17nortti:
+          vmImage: "ubuntu-latest"
+          cli11.std: 17
+          cli11.options: -DCMAKE_CXX_FLAGS="-fno-rtti"
+    pool:
+      vmImage: $(vmImage)
+    steps:
+      - template: .ci/azure-build.yml
+      - template: .ci/azure-test.yml
 
-# TODO: Fix macOS error and windows warning in c++17 mode
-- job: Native
-  strategy:
-    matrix:
-      Linux14:
-        vmImage: 'ubuntu-latest'
-      macOS17:
-        vmImage: 'macOS-latest'
-        cli11.std: 17
-      macOS11:
-        vmImage: 'macOS-latest'
-        cli11.std: 11
-      Windows17:
-        vmImage: 'vs2017-win2016'
-        cli11.std: 17
-      Windows11:
-        vmImage: 'vs2017-win2016'
-        cli11.std: 11
-      Windowslatest:
-        vmImage: 'windows-2019'
-        cli11.std: 20
-        cli11.options: -DCMAKE_CXX_FLAGS="/std:c++latest /EHsc"
-      Linux17nortti:
-        vmImage: 'ubuntu-latest'
-        cli11.std: 17
-        cli11.options: -DCMAKE_CXX_FLAGS="-fno-rtti"
-  pool:
-    vmImage: $(vmImage)
-  steps:
-    - template: .ci/azure-build.yml
-    - template: .ci/azure-test.yml
+  - job: Meson
+    pool:
+      vmImage: "ubuntu-latest"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.7"
+      - script: python3 -m pip install meson ninja
+        displayName: install meson
+      - script: mkdir tests/mesonTest/subprojects
+        displayName: generate test directories
+      - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
+        displayName: generate CLI11 symlink
+      - script: meson build
+        displayName: Run meson to generate build
+        workingDirectory: tests/mesonTest
+      - script: ninja -C tests/mesonTest/build
+        displayName: Build with Ninja
+      - script: ./tests/mesonTest/build/main --help
+        displayName: Run help
 
-- job: Meson
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.7'
-    - script: python3 -m pip install meson ninja
-      displayName: install meson
-    - script: mkdir tests/mesonTest/subprojects
-      displayName: generate test directories
-    - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
-      displayName: generate CLI11 symlink
-    - script: meson build
-      displayName: Run meson to generate build
-      workingDirectory: tests/mesonTest
-    - script: ninja -C tests/mesonTest/build
-      displayName: Build with Ninja
-    - script: ./tests/mesonTest/build/main --help
-      displayName: Run help
-
-- job: Docker
-  variables:
-    cli11.single: OFF
-  pool:
-    vmImage: 'ubuntu-latest'
-  strategy:
-    matrix:
-      gcc9:
-        containerImage: gcc:9
-        cli11.std: 17
-        cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-      gcc11:
-        containerImage: gcc:11
-        cli11.std: 20
-      gcc8:
-        containerImage: gcc:8
-        cli11.std: 17
-      gcc4.8:
-        containerImage: gcc:4.8
-        cli11.std: 11
-        cli11.options:
-      clang3.4:
-        containerImage: silkeh/clang:3.4
-        cli11.std: 11
-      clang8:
-        containerImage: silkeh/clang:8
-        cli11.std: 14
-        cli11.options: -DCLI11_FORCE_LIBCXX=ON
-      clang8_17:
-        containerImage: silkeh/clang:8
-        cli11.std: 17
-        cli11.options: -DCLI11_FORCE_LIBCXX=ON
-      clang10_20:
-        containerImage: silkeh/clang:10
-        cli11.std: 20
-        cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
-  container: $[ variables['containerImage'] ]
-  steps:
-    - template: .ci/azure-cmake.yml
-    - template: .ci/azure-build.yml
-    - template: .ci/azure-test.yml
+  - job: Docker
+    variables:
+      cli11.single: OFF
+    pool:
+      vmImage: "ubuntu-latest"
+    strategy:
+      matrix:
+        gcc9:
+          containerImage: gcc:9
+          cli11.std: 17
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+        gcc11:
+          containerImage: gcc:11
+          cli11.std: 20
+        gcc8:
+          containerImage: gcc:8
+          cli11.std: 17
+        gcc4.8:
+          containerImage: gcc:4.8
+          cli11.std: 11
+          cli11.options:
+        clang3.4:
+          containerImage: silkeh/clang:3.4
+          cli11.std: 11
+        clang8:
+          containerImage: silkeh/clang:8
+          cli11.std: 14
+          cli11.options: -DCLI11_FORCE_LIBCXX=ON
+        clang8_17:
+          containerImage: silkeh/clang:8
+          cli11.std: 17
+          cli11.options: -DCLI11_FORCE_LIBCXX=ON
+        clang10_20:
+          containerImage: silkeh/clang:10
+          cli11.std: 20
+          cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
+    container: $[ variables['containerImage'] ]
+    steps:
+      - template: .ci/azure-cmake.yml
+      - template: .ci/azure-build.yml
+      - template: .ci/azure-test.yml
