@@ -2,63 +2,76 @@ ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"
 
-
 repos:
-- repo: https://github.com/psf/black
-  rev: 22.3.0
-  hooks:
-  - id: black
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
 
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.2.0
-  hooks:
-  - id: check-added-large-files
-  - id: check-case-conflict
-  - id: check-merge-conflict
-  - id: check-symlinks
-  - id: check-yaml
-  - id: end-of-file-fixer
-  - id: mixed-line-ending
-  - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
 
-- repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v14.0.3
-  hooks:
-   - id: clang-format
-     types_or: [c++, c, cuda]
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.3
+    hooks:
+     - id: clang-format
+       types_or: [c++, c, cuda]
 
-- repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: v0.6.13
-  hooks:
-  - id: cmake-format
-    additional_dependencies: [pyyaml]
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        additional_dependencies: [pyyaml]
 
-- repo: https://github.com/markdownlint/markdownlint
-  rev: v0.11.0
-  hooks:
-  - id: markdownlint
-    args: ["--style=scripts/mdlint_style.rb"]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v2.6.2"
+    hooks:
+      - id: prettier
+        types_or: [yaml, markdown, html, css, scss, javascript, json]
 
-- repo: local
-  hooks:
-  - id: remarklint
-    name: remarklint
-    language: node
-    entry: remark
-    types: [markdown]
-    args: ["--frail", "--quiet"]
-    additional_dependencies: [remark, remark-lint, remark-cli, remark-preset-lint-recommended, remark-lint-list-item-indent, remark-lint-no-undefined-references]
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.11.0
+    hooks:
+      - id: markdownlint
+        args: ["--style=scripts/mdlint_style.rb"]
 
-- repo: local
-  hooks:
-  - id: disallow-caps
-    name: Disallow improper capitalization
-    language: pygrep
-    entry: PyBind|Numpy|Cmake|CCache|PyTest|Github
-    exclude: .pre-commit-config.yaml
+  - repo: local
+    hooks:
+      - id: remarklint
+        name: remarklint
+        language: node
+        entry: remark
+        types: [markdown]
+        args: ["--frail", "--quiet"]
+        additional_dependencies:
+          [
+            remark,
+            remark-lint,
+            remark-cli,
+            remark-preset-lint-recommended,
+            remark-lint-list-item-indent,
+            remark-lint-no-undefined-references,
+          ]
 
-- repo: https://github.com/codespell-project/codespell
-  rev: v2.1.0
-  hooks:
-  - id: codespell
-    args: ["-L", "atleast,ans,doub,inout"]
+  - repo: local
+    hooks:
+      - id: disallow-caps
+        name: Disallow improper capitalization
+        language: pygrep
+        entry: PyBind|Numpy|Cmake|CCache|PyTest|Github
+        exclude: .pre-commit-config.yaml
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args: ["-L", "atleast,ans,doub,inout"]
