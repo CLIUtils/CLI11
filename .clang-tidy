@@ -3,22 +3,21 @@
 
 FormatStyle: file
 
-Checks: '
--*,
-google-*,
--google-runtime-references,
-llvm-include-order,
-llvm-namespace-comment,
-misc-throw-by-value-catch-by-reference,
-modernize*,
--modernize-use-trailing-return-type,
-readability-container-size-empty,
-'
+Checks: >
+  -*,
+  google-*,
+  -google-runtime-references,
+  llvm-include-order,
+  llvm-namespace-comment,
+  misc-throw-by-value-catch-by-reference,
+  modernize*,
+  -modernize-use-trailing-return-type,
+  readability-container-size-empty,
 
-WarningsAsErrors: '*'
+WarningsAsErrors: "*"
 
-HeaderFilterRegex: '.*hpp'
+HeaderFilterRegex: ".*hpp"
 
 CheckOptions:
-- key:             google-readability-braces-around-statements.ShortStatementLines
-  value:           '3'
+  - key: google-readability-braces-around-statements.ShortStatementLines
+    value: "3"

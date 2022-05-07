@@ -10,10 +10,10 @@ In CLI11, you can control the output of the help printout in full or in part. Th
 
 There are several configuration options that you can set:
 
-| Set method | Description | Availability |
-|------------|-------------|--------------|
-| `column_width(width)` | The width of the columns | Both |
-| `label(key, value)` | Set a label to a different value | Both |
+| Set method            | Description                      | Availability |
+| --------------------- | -------------------------------- | ------------ |
+| `column_width(width)` | The width of the columns         | Both         |
+| `label(key, value)`   | Set a label to a different value | Both         |
 
 Labels will map the built in names and type names from key to value if present. For example, if you wanted to change the width of the columns to 40 and the `REQUIRED` label from `(REQUIRED)` to `(MUST HAVE)`:
 
@@ -69,5 +69,5 @@ make_option_name(o,p)        make_option_desc(o)
 
 Notes:
 
-* `*1`: This signature depends on whether the call is from a positional or optional.
-* `o` is opt pointer, `p` is true if positional.
+- `*1`: This signature depends on whether the call is from a positional or optional.
+- `o` is opt pointer, `p` is true if positional.

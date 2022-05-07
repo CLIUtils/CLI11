@@ -73,20 +73,20 @@ example is shown below in the `geet` program.
 
 The following values are inherited when you add a new subcommand. This happens at the point the subcommand is created:
 
-* The name and description for the help flag
-* The footer
-* The failure message printer function
-* Option defaults
-* Allow extras
-* Prefix command
-* Ignore case
-* Ignore underscore
-* Allow Windows style options
-* Fallthrough
-* Group name
-* Max required subcommands
-* validate positional arguments
-* validate optional arguments
+- The name and description for the help flag
+- The footer
+- The failure message printer function
+- Option defaults
+- Allow extras
+- Prefix command
+- Ignore case
+- Ignore underscore
+- Allow Windows style options
+- Fallthrough
+- Group name
+- Max required subcommands
+- validate positional arguments
+- validate optional arguments
 
 ## Special modes
 
@@ -115,7 +115,7 @@ This is a special mode that allows "prefix" commands, where the parsing complete
 
 ### Silent subcommands
 
-Subcommands can be modified by using the `silent` option.  This will prevent the subcommand from showing up in the get_subcommands list.  This can be used to make subcommands into modifiers. For example, a help subcommand might look like
+Subcommands can be modified by using the `silent` option. This will prevent the subcommand from showing up in the get_subcommands list. This can be used to make subcommands into modifiers. For example, a help subcommand might look like
 
 ```c++
     auto sub1 = app.add_subcommand("help")->silent();
@@ -131,7 +131,7 @@ This would allow calling help such as:
 
 ### Positional Validation
 
-Some arguments supplied on the command line may be legitamately applied to more than 1 positional argument.  In this context enabling `positional_validation` on the application or subcommand will check any validators before applying the command line argument to the positional option.  It is not an error to fail validation in this context, positional arguments not matching any validators will go into the `extra_args` field which may generate an error depending on settings.
+Some arguments supplied on the command line may be legitamately applied to more than 1 positional argument. In this context enabling `positional_validation` on the application or subcommand will check any validators before applying the command line argument to the positional option. It is not an error to fail validation in this context, positional arguments not matching any validators will go into the `extra_args` field which may generate an error depending on settings.
 
 ### Optional Argument Validation
 
@@ -145,4 +145,4 @@ Similar to positional validation, there are occasional contexts in which case it
     app.validate_optional_arguments();
 ```
 
-In this case a sequence of integers is expected for the argument and remaining strings go to the positional string vector.  Without the `validate_optional_arguments()` active it would be impossible get any later arguments into the positional if the `--args` option is used.  The validator in this context is used to make sure the optional arguments match with what the argument is expecting and if not the `-args` option is closed, and remaining arguments fall into the positional.
+In this case a sequence of integers is expected for the argument and remaining strings go to the positional string vector. Without the `validate_optional_arguments()` active it would be impossible get any later arguments into the positional if the `--args` option is used. The validator in this context is used to make sure the optional arguments match with what the argument is expecting and if not the `-args` option is closed, and remaining arguments fall into the positional.

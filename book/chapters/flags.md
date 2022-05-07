@@ -11,7 +11,7 @@ bool my_flag{false};
 app.add_flag("-f", my_flag, "Optional description");
 ```
 
-This will bind the flag `-f` to the boolean `my_flag`. After the parsing step, `my_flag` will be `false` if the flag was not found on the command line, or `true` if it was. By default, it will be allowed any number of times, but if you explicitly\[^1\] request `->take_last(false)`, it will only be allowed once; passing something like `./my_app -f -f` or `./my_app -ff` will throw a `ParseError` with a nice help description. A flag name may start with any character except ('-', ' ', '\n', and '!'). For long flags, after the first character all characters are allowed except ('=',':','{',' ', '\n').  Names are given as a comma separated string, with the dash or dashes. An flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed.
+This will bind the flag `-f` to the boolean `my_flag`. After the parsing step, `my_flag` will be `false` if the flag was not found on the command line, or `true` if it was. By default, it will be allowed any number of times, but if you explicitly\[^1\] request `->take_last(false)`, it will only be allowed once; passing something like `./my_app -f -f` or `./my_app -ff` will throw a `ParseError` with a nice help description. A flag name may start with any character except ('-', ' ', '\n', and '!'). For long flags, after the first character all characters are allowed except ('=',':','{',' ', '\n'). Names are given as a comma separated string, with the dash or dashes. An flag can have as many names as you want, and afterward, using `count`, you can use any of the names, with dashes as needed.
 
 ## Integer flags
 
@@ -28,29 +28,29 @@ This behavior can also be controlled manually via `->multi_option_policy(CLI::Mu
 
 ## Arbitrary type flags
 
-CLI11 allows the type of the variable to assign to in the `add_flag` function to be any supported type.   This is particularly useful in combination with specifying default values for flags.  The allowed types include  bool, int, float, vector, enum, or string-like.
+CLI11 allows the type of the variable to assign to in the `add_flag` function to be any supported type. This is particularly useful in combination with specifying default values for flags. The allowed types include bool, int, float, vector, enum, or string-like.
 
 ### Default Flag Values
 
-Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed.  For example:
+Flag options specified through the `add_flag*` functions allow a syntax for the option names to default particular options to a false value or any other value if some flags are passed. For example:
 
 ```cpp
 app.add_flag("--flag,!--no-flag",result,"help for flag");
 ```
 
 specifies that if `--flag` is passed on the command line result will be true or contain a value of 1. If `--no-flag` is
-passed `result` will contain false or -1 if `result` is a signed integer type, or 0 if it is an unsigned type.  An
+passed `result` will contain false or -1 if `result` is a signed integer type, or 0 if it is an unsigned type. An
 alternative form of the syntax is more explicit: `"--flag,--no-flag{false}"`; this is equivalent to the previous
-example.  This also works for short form options `"-f,!-n"` or `"-f,-n{false}"`. If `variable_to_bind_to` is anything but an integer value the
+example. This also works for short form options `"-f,!-n"` or `"-f,-n{false}"`. If `variable_to_bind_to` is anything but an integer value the
 default behavior is to take the last value given, while if `variable_to_bind_to` is an integer type the behavior will be to sum
-all the given arguments and return the result.  This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
+all the given arguments and return the result. This can be modified if needed by changing the `multi_option_policy` on each flag (this is not inherited).
 The default value can be any value. For example if you wished to define a numerical flag:
 
 ```cpp
 app.add_flag("-1{1},-2{2},-3{3}",result,"numerical flag")
 ```
 
-using any of those flags on the command line will result in the specified number in the output.  Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
+using any of those flags on the command line will result in the specified number in the output. Similar things can be done for string values, and enumerations, as long as the default value can be converted to the given type.
 
 ## Pure flags
 
