@@ -1592,13 +1592,12 @@ TEST_CASE_METHOD(TApp, "SubcommandCallbackSingle", "[config]") {
         out << "[foo]" << std::endl;
     }
     int count{0};
-    auto* foo = app.add_subcommand("foo");
+    auto *foo = app.add_subcommand("foo");
     foo->configurable();
     foo->callback([&count]() { ++count; });
 
     run();
-    CHECK(1==count);
-    
+    CHECK(1 == count);
 }
 
 TEST_CASE_METHOD(TApp, "IniFailure", "[config]") {
