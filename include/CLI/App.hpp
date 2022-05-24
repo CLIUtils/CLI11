@@ -2844,9 +2844,9 @@ class App {
                     break;
                 }
                 if(validate_optional_arguments_) {
-                    std::string optarg = args.back();
-                    optarg = op->_validate(optarg, 0);
-                    if(!optarg.empty()) {
+                    std::string arg = args.back();
+                    arg = op->_validate(arg, 0);
+                    if(!arg.empty()) {
                         break;
                     }
                 }
