@@ -89,6 +89,15 @@ TEST_CASE_METHOD(TApp, "ProgNameWithSpace", "[stringparse]") {
     CHECK(app.get_name() == "Foo Bar");
 }
 
+// From GitHub issue #739 https://github.com/CLIUtils/CLI11/issues/739
+TEST_CASE_METHOD(TApp, "ProgNameOnly", "[stringparse]") {
+
+    app.add_flag("--foo");
+    CHECK_NOTHROW(app.parse("\"C:\\example.exe\"", true));
+
+    CHECK(app.get_name() == "C:\\example.exe");
+}
+
 TEST_CASE_METHOD(TApp, "ProgNameWithSpaceEmbeddedQuote", "[stringparse]") {
 
     app.add_flag("--foo");
