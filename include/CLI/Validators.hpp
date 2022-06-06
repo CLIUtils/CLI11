@@ -1163,7 +1163,7 @@ inline std::pair<std::string, std::string> split_program_name(std::string comman
     }
 
     // strip the program name
-    vals.second = (esp != std::string::npos) ? commandline.substr(esp + 1) : std::string{};
+    vals.second = (esp < commandline.length() - 1) ? commandline.substr(esp + 1) : std::string{};
     ltrim(vals.second);
     return vals;
 }
