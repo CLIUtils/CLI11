@@ -664,30 +664,30 @@ TEST_CASE("CheckedMultiply: Float", "[helpers]") {
     REQUIRE(CLI::detail::checked_multiply(a, b));
     REQUIRE(-INFINITY == Approx(a));
 
-    a = std::numeric_limits<float>::max() / 100.0F;
+    a = (std::numeric_limits<float>::max)() / 100.0F;
     b = 1.0F;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
+    REQUIRE((std::numeric_limits<float>::max)() / 100.0F == Approx(a));
 
-    a = std::numeric_limits<float>::max() / 100.0F;
+    a = (std::numeric_limits<float>::max)() / 100.0F;
     b = 99.0F;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<float>::max() / 100.0F * 99.0F == Approx(a));
+    REQUIRE((std::numeric_limits<float>::max)() / 100.0F * 99.0F == Approx(a));
 
-    a = std::numeric_limits<float>::max() / 100.0F;
+    a = (std::numeric_limits<float>::max)() / 100.0F;
     b = 101;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
+    REQUIRE((std::numeric_limits<float>::max)() / 100.0F == Approx(a));
 
-    a = std::numeric_limits<float>::max() / 100.0F;
+    a = (std::numeric_limits<float>::max)() / 100.0F;
     b = -99;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<float>::max() / 100.0F * -99.0F == Approx(a));
+    REQUIRE((std::numeric_limits<float>::max)() / 100.0F * -99.0F == Approx(a));
 
-    a = std::numeric_limits<float>::max() / 100.0F;
+    a = (std::numeric_limits<float>::max)() / 100.0F;
     b = -101;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<float>::max() / 100.0F == Approx(a));
+    REQUIRE((std::numeric_limits<float>::max)() / 100.0F == Approx(a));
 }
 
 TEST_CASE("CheckedMultiply: Double", "[helpers]") {
@@ -711,30 +711,30 @@ TEST_CASE("CheckedMultiply: Double", "[helpers]") {
     REQUIRE(CLI::detail::checked_multiply(a, b));
     REQUIRE(-INFINITY == Approx(a));
 
-    a = std::numeric_limits<double>::max() / 100;
+    a = (std::numeric_limits<double>::max)() / 100;
     b = 1;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
+    REQUIRE((std::numeric_limits<double>::max)() / 100 == Approx(a));
 
-    a = std::numeric_limits<double>::max() / 100;
+    a = (std::numeric_limits<double>::max)() / 100;
     b = 99;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<double>::max() / 100 * 99 == Approx(a));
+    REQUIRE((std::numeric_limits<double>::max)() / 100 * 99 == Approx(a));
 
-    a = std::numeric_limits<double>::max() / 100;
+    a = (std::numeric_limits<double>::max)() / 100;
     b = 101;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
+    REQUIRE((std::numeric_limits<double>::max)() / 100 == Approx(a));
 
-    a = std::numeric_limits<double>::max() / 100;
+    a = (std::numeric_limits<double>::max)() / 100;
     b = -99;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<double>::max() / 100 * -99 == Approx(a));
+    REQUIRE((std::numeric_limits<double>::max)() / 100 * -99 == Approx(a));
 
-    a = std::numeric_limits<double>::max() / 100;
+    a = (std::numeric_limits<double>::max)() / 100;
     b = -101;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<double>::max() / 100 == Approx(a));
+    REQUIRE((std::numeric_limits<double>::max)() / 100 == Approx(a));
 }
 
 // Yes, this is testing an app_helper :)
@@ -1029,11 +1029,11 @@ TEST_CASE("Types: TypeName", "[helpers]") {
 
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
     signed char x;
-    auto strmax = std::to_string(std::numeric_limits<signed char>::max() + 1);
+    auto strmax = std::to_string((std::numeric_limits<signed char>::max)() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, x));
 
     unsigned char y;
-    strmax = std::to_string(std::numeric_limits<unsigned char>::max() + 1);
+    strmax = std::to_string((std::numeric_limits<unsigned char>::max)() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, y));
 }
 
@@ -1051,7 +1051,7 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     CHECK_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
     unsigned char y;
-    std::string overflow_input = std::to_string(std::numeric_limits<uint64_t>::max()) + "0";
+    std::string overflow_input = std::to_string((std::numeric_limits<uint64_t>::max)()) + "0";
     CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
     char y_signed;
@@ -1078,7 +1078,7 @@ TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
     std::string bad_input = "hello";
     CHECK_FALSE(CLI::detail::lexical_cast(bad_input, x));
 
-    std::string overflow_input = "1" + std::to_string(std::numeric_limits<long double>::max());
+    std::string overflow_input = "1" + std::to_string((std::numeric_limits<long double>::max)());
     CHECK(CLI::detail::lexical_cast(overflow_input, x));
     CHECK_FALSE(std::isfinite(x));
 
