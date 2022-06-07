@@ -13,8 +13,8 @@ int main(int argc, char **argv) {
     CLI::App app("data output specification");
     app.set_help_all_flag("--help-all", "Expand all help");
 
-    auto format = app.add_option_group("output_format", "formatting type for output");
-    auto target = app.add_option_group("output target", "target location for the output");
+    auto *format = app.add_option_group("output_format", "formatting type for output");
+    auto *target = app.add_option_group("output target", "target location for the output");
     bool csv{false};
     bool human{false};
     bool binary{false};

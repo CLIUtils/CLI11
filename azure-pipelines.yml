@@ -21,18 +21,13 @@ variables:
 jobs:
   - job: ClangTidy
     variables:
-      CXX_FLAGS: >
-        -Werror -Wcast-align -Wfloat-equal -Wimplicit-atomic-properties
-        -Wmissing-declarations -Woverlength-strings -Wshadow
-        -Wstrict-selector-match -Wundeclared-selector -Wunreachable-code
-        -std=c++11
-      cli11.options: -DCLI11_CLANG_TIDY=ON -DCLI11_CLANG_TIDY_OPTIONS="-fix"
-      cli11.std: 11
+      cli11.options: -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);-fix"
+      cli11.std: 17
       cli11.single: OFF
       CMAKE_BUILD_PARALLEL_LEVEL: 1
     pool:
       vmImage: "ubuntu-latest"
-    container: silkeh/clang:8
+    container: silkeh/clang:14
     steps:
       - template: .ci/azure-cmake.yml
       - template: .ci/azure-build.yml

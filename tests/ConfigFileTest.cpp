@@ -47,15 +47,15 @@ TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
 TEST_CASE("StringBased: IniJoin", "[config]") {
     std::vector<std::string> items = {"one", "two", "three four"};
-    std::string result = "\"one\" \"two\" \"three four\"";
+    std::string result = R"("one" "two" "three four")";
 
     CHECK(result == CLI::detail::ini_join(items, ' ', '\0', '\0'));
 
-    result = "[\"one\", \"two\", \"three four\"]";
+    result = R"(["one", "two", "three four"])";
 
     CHECK(result == CLI::detail::ini_join(items));
 
-    result = "{\"one\"; \"two\"; \"three four\"}";
+    result = R"({"one"; "two"; "three four"})";
 
     CHECK(result == CLI::detail::ini_join(items, ';', '{', '}'));
 }
@@ -260,7 +260,7 @@ TEST_CASE("StringBased: SpacesSections", "[config]") {
 // check function to make sure that open sections match close sections
 bool checkSections(const std::vector<CLI::ConfigItem> &output) {
     std::set<std::string> open;
-    for(auto &ci : output) {
+    for(const auto &ci : output) {
         if(ci.name == "++") {
             auto nm = ci.fullname();
             nm.pop_back();
@@ -525,7 +525,7 @@ TEST_CASE_METHOD(TApp, "IniGetNoRemaining", "[config]") {
     int two{0};
     app.add_option("--two", two);
     REQUIRE_NOTHROW(run());
-    CHECK(0u == app.remaining().size());
+    CHECK(app.remaining().empty());
 }
 
 TEST_CASE_METHOD(TApp, "IniRequiredNoDefault", "[config]") {
@@ -554,9 +554,9 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredNoDefault", "[config]") {
 class EvilConfig : public CLI::Config {
   public:
     EvilConfig() = default;
-    virtual std::string to_config(const CLI::App *, bool, bool, std::string) const { throw CLI::FileError("evil"); }
+    std::string to_config(const CLI::App *, bool, bool, std::string) const override { throw CLI::FileError("evil"); }
 
-    virtual std::vector<CLI::ConfigItem> from_config(std::istream &) const { throw CLI::FileError("evil"); }
+    std::vector<CLI::ConfigItem> from_config(std::istream &) const override { throw CLI::FileError("evil"); }
 };
 
 TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
@@ -1121,9 +1121,9 @@ TEST_CASE_METHOD(TApp, "IniLayered", "[config]") {
 
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
+    auto *subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     run();
@@ -1153,9 +1153,9 @@ TEST_CASE_METHOD(TApp, "IniLayeredStream", "[config]") {
 
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
+    auto *subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     std::ifstream in{tmpini};
@@ -1187,9 +1187,9 @@ TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
 
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
+    auto *subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     run();
@@ -1226,9 +1226,9 @@ TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
     app.get_config_formatter_base()->parentSeparator('|');
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
+    auto *subcom = app.add_subcommand("subcom");
     subcom->add_option("--val", two);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     run();
@@ -1256,7 +1256,7 @@ TEST_CASE_METHOD(TApp, "IniLayeredOptionGroupAlias", "[config]") {
     }
     int one{0}, two{0};
     app.add_option("--val", one);
-    auto subcom = app.add_option_group("ogroup")->alias("ogroup");
+    auto *subcom = app.add_option_group("ogroup")->alias("ogroup");
     subcom->add_option("--val2", two);
 
     run();
@@ -1282,10 +1282,10 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurable", "[config]") {
 
     int one{0}, two{0}, three{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
+    auto *subcom = app.add_subcommand("subcom");
     subcom->configurable();
     subcom->add_option("--val", two);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     run();
@@ -1316,15 +1316,15 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
 
     int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
-    auto subcom2 = app.add_subcommand("subcom2");
+    auto *subcom = app.add_subcommand("subcom");
+    auto *subcom2 = app.add_subcommand("subcom2");
     subcom->configurable();
     std::vector<std::size_t> parse_c;
     subcom->preparse_callback([&parse_c](std::size_t cnt) { parse_c.push_back(cnt); });
     subcom->add_option("--val", two);
     subcom2->add_option("--val", four);
     subcom2->preparse_callback([&parse_c](std::size_t cnt) { parse_c.push_back(cnt + 2623); });
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     subsubcom->add_option("--val", three);
 
     run();
@@ -1399,7 +1399,7 @@ TEST_CASE_METHOD(TApp, "jsonLikeParsing", "[config]") {
         std::ofstream out{tmpjson};
         out << "{" << std::endl;
         out << "\"val\":1," << std::endl;
-        out << "\"val2\":\"test\"," << std::endl;
+        out << R"("val2":"test",)" << std::endl;
         out << "\"flag\":true" << std::endl;
         out << "}" << std::endl;
     }
@@ -1482,15 +1482,15 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
     int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
-    auto subcom2 = app.add_subcommand("subcom2");
+    auto *subcom = app.add_subcommand("subcom");
+    auto *subcom2 = app.add_subcommand("subcom2");
     subcom->configurable();
     std::vector<std::size_t> parse_c;
     subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
     subcom->add_option("--val", two);
     subcom2->add_option("--val", four);
     subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     // configurable should be inherited
     subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
     subsubcom->add_option("--val", three);
@@ -1529,8 +1529,8 @@ TEST_CASE_METHOD(TApp, "IniSubcommandMultipleSections", "[config]") {
 
     int one{0}, two{0}, three{0}, four{0};
     app.add_option("--val", one);
-    auto subcom = app.add_subcommand("subcom");
-    auto subcom2 = app.add_subcommand("subcom2");
+    auto *subcom = app.add_subcommand("subcom");
+    auto *subcom2 = app.add_subcommand("subcom2");
     subcom->configurable();
     std::vector<std::size_t> parse_c;
     subcom->parse_complete_callback([&parse_c]() { parse_c.push_back(58); });
@@ -1538,7 +1538,7 @@ TEST_CASE_METHOD(TApp, "IniSubcommandMultipleSections", "[config]") {
     subcom2->add_option("--val", four);
     subcom2->parse_complete_callback([&parse_c]() { parse_c.push_back(2623); });
     subcom2->configurable(false);
-    auto subsubcom = subcom->add_subcommand("subsubcom");
+    auto *subsubcom = subcom->add_subcommand("subsubcom");
     // configurable should be inherited
     subsubcom->parse_complete_callback([&parse_c]() { parse_c.push_back(68); });
     subsubcom->add_option("--val", three);
@@ -1570,7 +1570,7 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[config]") {
         out << "[[foo]]" << std::endl;
     }
 
-    auto foo = app.add_subcommand("foo");
+    auto *foo = app.add_subcommand("foo");
     int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
@@ -2161,7 +2161,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultiLineDescription", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
-    auto og = app.add_option_group("group");
+    auto *og = app.add_option_group("group");
     og->description("Option group description.\n"
                     "That has multiple lines.");
     og->add_flag("--" + flag, description);
@@ -2175,7 +2175,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") 
 TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
-    auto subcom = app.add_subcommand("subcommand");
+    auto *subcom = app.add_subcommand("subcommand");
     subcom->configurable();
     subcom->description("Subcommand description.\n"
                         "That has multiple lines.");
@@ -2195,7 +2195,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
-    auto og = app.add_option_group("group3", "g3 desc");
+    auto *og = app.add_option_group("group3", "g3 desc");
     og->add_option("--dval", val)->capture_default_str()->group("");
 
     run();
@@ -2309,7 +2309,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubcom", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
 
     args = {"--simple", "other", "--newer"};
@@ -2323,7 +2323,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubcom", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
 
     args = {"--simple", "other", "--newer"};
@@ -2339,9 +2339,9 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubcomConfigurable", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubsubcom", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
 
     args = {"--simple", "other", "--newer", "sub2", "--newest"};
@@ -2356,10 +2356,10 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubsubcom", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
 
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
 
     args = {"--simple", "other", "--newer", "sub2", "--newest"};
@@ -2377,10 +2377,10 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurable", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubcomNonConfigurable", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other", "other_descriptor")->configurable();
+    auto *subcom = app.add_subcommand("other", "other_descriptor")->configurable();
     subcom->add_flag("--newer");
 
-    auto subcom2 = app.add_subcommand("sub2", "descriptor2");
+    auto *subcom2 = app.add_subcommand("sub2", "descriptor2");
     subcom2->add_flag("--newest")->configurable(false);
 
     args = {"--simple", "other", "--newer", "sub2", "--newest"};
@@ -2398,14 +2398,14 @@ TEST_CASE_METHOD(TApp, "TomlOutputSubcomNonConfigurable", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputSubsubcomConfigurableDeep", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
 
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
-    auto sssscom = subsubcom->add_subcommand("sub-level2");
+    auto *sssscom = subsubcom->add_subcommand("sub-level2");
     subsubcom->add_flag("--still_newer");
-    auto s5com = sssscom->add_subcommand("sub-level3");
+    auto *s5com = sssscom->add_subcommand("sub-level3");
     s5com->add_flag("--absolute_newest");
 
     args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};
@@ -2459,7 +2459,7 @@ TEST_CASE_METHOD(TApp, "StopReadingConfigOnClear", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    auto ptr = app.set_config();  // Should *not* read config file
+    auto *ptr = app.set_config();  // Should *not* read config file
     CHECK(nullptr == ptr);
 
     {
@@ -2618,7 +2618,7 @@ TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputOptionGroupMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
-    auto og = app.add_option_group("group");
+    auto *og = app.add_option_group("group");
     og->description("Option group description.\n"
                     "That has multiple lines.");
     og->add_flag("--" + flag, description);
@@ -2633,7 +2633,7 @@ TEST_CASE_METHOD(TApp, "IniOutputOptionGroupMultiLineDescription", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubcommandMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
-    auto subcom = app.add_subcommand("subcommand");
+    auto *subcom = app.add_subcommand("subcommand");
     subcom->configurable();
     subcom->description("Subcommand description.\n"
                         "That has multiple lines.");
@@ -2654,7 +2654,7 @@ TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
     const std::string description2 = "Second description.";
     app.add_flag("--" + flag1, description1)->group("group1");
     app.add_flag("--" + flag2, description2)->group("group2");
-    auto og = app.add_option_group("group3", "g3 desc");
+    auto *og = app.add_option_group("group3", "g3 desc");
     og->add_option("--dval", val)->capture_default_str()->group("");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     run();
@@ -2740,7 +2740,7 @@ TEST_CASE_METHOD(TApp, "IniOutputDefault", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     args = {"--simple", "other", "--newer"};
@@ -2754,7 +2754,7 @@ TEST_CASE_METHOD(TApp, "IniOutputSubcom", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     app.get_config_formatter_base()->parentSeparator(':');
@@ -2769,7 +2769,7 @@ TEST_CASE_METHOD(TApp, "IniOutputSubcomCustomSep", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     args = {"--simple", "other", "--newer"};
@@ -2785,9 +2785,9 @@ TEST_CASE_METHOD(TApp, "IniOutputSubcomConfigurable", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     args = {"--simple", "other", "--newer", "sub2", "--newest"};
@@ -2802,9 +2802,9 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcom", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other");
+    auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     app.get_config_formatter_base()->parentSeparator('|');
@@ -2820,10 +2820,10 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSep", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
 
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     args = {"--simple", "other", "--newer", "sub2", "--newest"};
@@ -2841,14 +2841,14 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurable", "[config]") {
 TEST_CASE_METHOD(TApp, "IniOutputSubsubcomConfigurableDeep", "[config]") {
 
     app.add_flag("--simple");
-    auto subcom = app.add_subcommand("other")->configurable();
+    auto *subcom = app.add_subcommand("other")->configurable();
     subcom->add_flag("--newer");
 
-    auto subsubcom = subcom->add_subcommand("sub2");
+    auto *subsubcom = subcom->add_subcommand("sub2");
     subsubcom->add_flag("--newest");
-    auto sssscom = subsubcom->add_subcommand("sub-level2");
+    auto *sssscom = subsubcom->add_subcommand("sub-level2");
     subsubcom->add_flag("--still_newer");
-    auto s5com = sssscom->add_subcommand("sub-level3");
+    auto *s5com = sssscom->add_subcommand("sub-level3");
     s5com->add_flag("--absolute_newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     args = {"--simple", "other", "sub2", "sub-level2", "sub-level3", "--absolute_newest"};

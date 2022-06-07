@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
     std::cout << std::endl << "Remaining commands: ";
 
-    for(auto com : more_comms)
+    for(const auto &com : more_comms)
         std::cout << com << " ";
     std::cout << std::endl;
 

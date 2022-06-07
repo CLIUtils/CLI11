@@ -128,12 +128,12 @@ add_library(CLI11_warnings INTERFACE)
 set(unix-warnings -Wall -Wextra -pedantic -Wshadow -Wsign-conversion -Wswitch-enum)
 
 # Clang warnings
+# -Wfloat-equal could be added with Catch::literals and _a usage
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   list(
     APPEND
     unix-warnings
     -Wcast-align
-    -Wfloat-equal
     -Wimplicit-atomic-properties
     -Wmissing-declarations
     -Woverlength-strings

@@ -35,7 +35,7 @@ inline std::string Formatter::make_positionals(const App *app) const {
         app->get_options([](const Option *opt) { return !opt->get_group().empty() && opt->get_positional(); });
 
     if(opts.empty())
-        return std::string();
+        return {};
 
     return make_group(get_label("Positionals"), true, opts);
 }

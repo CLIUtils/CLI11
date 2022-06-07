@@ -1,10 +1,18 @@
 # Checks that will be implemented in future PRs:
 # performance-unnecessary-value-param, hints to ~110 issues. Be careful with implementing the suggested changes of this one, as auto-fixes may break the code
+# bugprone-forwarding-reference-overload probably should be enabled and fixed.
+# clang-diagnostic-float-equal can be fixed by using _a from Catch::literals
+# bugprone-exception-escape due to main being a bit simple in examples
+# modernize-avoid-c-arrays trips up in TEMPLATE_TEST_CASE catch macro
 
 Checks: |
   *bugprone*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-forwarding-reference-overload,
+  -bugprone-exception-escape,
   clang-analyzer-optin.cplusplus.VirtualCall,
   clang-analyzer-optin.performance.Padding,
+  -clang-diagnostic-float-equal,
   cppcoreguidelines-init-variables,
   cppcoreguidelines-prefer-member-initializer,
   cppcoreguidelines-pro-type-static-cast-downcast,
@@ -23,8 +31,10 @@ Checks: |
   misc-unused-parameters,
   modernize*,
   -modernize-use-trailing-return-type,
+  -modernize-concat-nested-namespaces,
   *performance*,
   -performance-unnecessary-value-param,
+  -performance-inefficient-string-concatenation,
   readability-avoid-const-params-in-decls,
   readability-const-return-type,
   readability-container-size-empty,
@@ -61,5 +71,4 @@ CheckOptions:
 HeaderFilterRegex: "CLI.*hpp"
 
 FormatStyle: file
-
-WarningsAsErrors: "*"
+# WarningsAsErrors: "*"

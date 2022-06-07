@@ -16,7 +16,7 @@ using cx = std::complex<double>;
 CLI::Option *
 add_option(CLI::App &app, std::string name, cx &variable, std::string description = "", bool defaulted = false) {
     CLI::callback_t fun = [&variable](CLI::results_t res) {
-        double x, y;
+        double x = 0, y = 0;
         bool worked = CLI::detail::lexical_cast(res[0], x) && CLI::detail::lexical_cast(res[1], y);
         if(worked)
             variable = cx(x, y);
@@ -89,7 +89,7 @@ template <> bool lexical_cast<std::complex<double>>(const std::string &input, st
 
     std::smatch m;
     double x{0.0}, y{0.0};
-    bool worked;
+    bool worked = false;
     std::regex_search(input, m, creg);
     if(m.size() == 9) {
         worked = CLI::detail::lexical_cast(m[1], x) && CLI::detail::lexical_cast(m[6], y);
@@ -162,8 +162,8 @@ class complex_new {
   public:
     complex_new() = default;
     complex_new(double v1, double v2) : val1_{v1}, val2_{v2} {};
-    double real() { return val1_; }
-    double imag() { return val2_; }
+    [[nodiscard]] double real() const { return val1_; }
+    [[nodiscard]] double imag() const { return val2_; }
 
   private:
     double val1_{0.0};

@@ -16,7 +16,7 @@ Note that this will not shortcut `->required` and other similar options.)raw"};
     test.set_help_flag();
 
     // Add custom flag that activates help
-    auto help = test.add_flag("-h,--help", "Request help");
+    auto *help = test.add_flag("-h,--help", "Request help");
 
     std::string some_option;
     test.add_option("-a", some_option, "Some description");

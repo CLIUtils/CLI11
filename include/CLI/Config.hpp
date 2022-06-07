@@ -25,7 +25,7 @@ namespace detail {
 
 inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote = '"', char characterQuote = '\'') {
     if(arg.empty()) {
-        return std::string(2, stringQuote);
+        return {2, stringQuote};
     }
     // some specifically supported strings
     if(arg == "true" || arg == "false" || arg == "nan" || arg == "inf") {
@@ -33,7 +33,7 @@ inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote 
     }
     // floating point conversion can convert some hex codes, but don't try that here
     if(arg.compare(0, 2, "0x") != 0 && arg.compare(0, 2, "0X") != 0) {
-        double val;
+        double val = 0.0;
         if(detail::lexical_cast(arg, val)) {
             return arg;
         }
@@ -62,9 +62,8 @@ inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote 
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
         return std::string(1, stringQuote) + arg + stringQuote;
-    } else {
-        return characterQuote + arg + characterQuote;
     }
+    return characterQuote + arg + characterQuote;
 }
 
 /// Comma separated join, adds quotes if needed
@@ -230,7 +229,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             std::string item = detail::trim_copy(line.substr(pos + 1));
             auto cloc = item.find(commentChar);
             if(cloc != std::string::npos) {
-                item.erase(cloc, std::string::npos);
+                item.erase(cloc, std::string::npos);  // NOLINT(readability-suspicious-call-argument)
                 detail::trim(item);
             }
             if(item.size() > 1 && item.front() == aStart) {
@@ -250,7 +249,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line);
             auto cloc = name.find(commentChar);
             if(cloc != std::string::npos) {
-                name.erase(cloc, std::string::npos);
+                name.erase(cloc, std::string::npos);  // NOLINT(readability-suspicious-call-argument)
                 detail::trim(name);
             }
 
@@ -374,7 +373,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     out << '[' << prefix << subcom->get_name() << "]\n";
                 } else {
                     std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
-                    auto p = app->get_parent();
+                    const auto *p = app->get_parent();
                     while(p->get_parent() != nullptr) {
                         subname = p->get_name() + parentSeparatorChar + subname;
                         p = p->get_parent();
