@@ -8,9 +8,6 @@ function(add_cli_exe T)
       APPEND_STRING
       PROPERTY LINK_FLAGS -stdlib=libc++)
   endif()
-  if(CLI11_CLANG_TIDY)
-    set_property(TARGET ${T} PROPERTY CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
-  endif()
 endfunction()
 
 if(CLI11_BUILD_EXAMPLES_JSON)
