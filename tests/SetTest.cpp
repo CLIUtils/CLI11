@@ -185,8 +185,8 @@ TEST_CASE_METHOD(TApp, "NonCopyableMap", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
-    map["e1"] = std::make_unique<double>(5.7);
-    map["e3"] = std::make_unique<double>(23.8);
+    map["e1"].reset(new double(5.7));
+    map["e3"].reset(new double(23.8));
     auto *opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "e1"};
     run();
@@ -203,8 +203,8 @@ TEST_CASE_METHOD(TApp, "NonCopyableMapWithFunction", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
-    map["e1"] = std::make_unique<double>(5.7);
-    map["e3"] = std::make_unique<double>(23.8);
+    map["e1"].reset(new double(5.7));
+    map["e3"].reset(new double(23.8));
     auto *opt = app.add_option("-s,--set", map_name)->transform(CLI::IsMember(&map, CLI::ignore_underscore));
     args = {"-s", "e_1"};
     run();
@@ -221,8 +221,8 @@ TEST_CASE_METHOD(TApp, "NonCopyableMapNonStringMap", "[set]") {
 
     std::string map_name;
     std::map<int, std::unique_ptr<double>> map;
-    map[4] = std::make_unique<double>(5.7);
-    map[17] = std::make_unique<double>(23.8);
+    map[4].reset(new double(5.7));
+    map[17].reset(new double(23.8));
     auto *opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "4"};
     run();

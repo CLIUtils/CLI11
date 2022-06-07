@@ -162,8 +162,8 @@ class complex_new {
   public:
     complex_new() = default;
     complex_new(double v1, double v2) : val1_{v1}, val2_{v2} {};
-    [[nodiscard]] double real() const { return val1_; }
-    [[nodiscard]] double imag() const { return val2_; }
+    CLI11_NODISCARD double real() const { return val1_; }
+    CLI11_NODISCARD double imag() const { return val2_; }
 
   private:
     double val1_{0.0};

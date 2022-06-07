@@ -567,7 +567,7 @@ class App {
     }
 
     /// Check to see if this subcommand was parsed, true only if received on command line.
-    [[nodiscard]] bool parsed() const { return parsed_ > 0; }
+    CLI11_NODISCARD bool parsed() const { return parsed_ > 0; }
 
     /// Get the OptionDefault object, to set option defaults
     OptionDefaults *option_defaults() { return &option_defaults_; }
@@ -1028,14 +1028,14 @@ class App {
     }
 
     /// Check to see if a subcommand is part of this command (text version)
-    [[nodiscard]] App *get_subcommand(std::string subcom) const {
+    CLI11_NODISCARD App *get_subcommand(std::string subcom) const {
         auto *subc = _find_subcommand(subcom, false, false);
         if(subc == nullptr)
             throw OptionNotFound(subcom);
         return subc;
     }
     /// Get a pointer to subcommand by index
-    [[nodiscard]] App *get_subcommand(int index = 0) const {
+    CLI11_NODISCARD App *get_subcommand(int index = 0) const {
         if(index >= 0) {
             auto uindex = static_cast<unsigned>(index);
             if(uindex < subcommands_.size())
@@ -1055,7 +1055,7 @@ class App {
     }
 
     /// Check to see if a subcommand is part of this command (text version)
-    [[nodiscard]] CLI::App_p get_subcommand_ptr(std::string subcom) const {
+    CLI11_NODISCARD CLI::App_p get_subcommand_ptr(std::string subcom) const {
         for(const App_p &subcomptr : subcommands_)
             if(subcomptr->check_name(subcom))
                 return subcomptr;
@@ -1063,7 +1063,7 @@ class App {
     }
 
     /// Get an owning pointer to subcommand by index
-    [[nodiscard]] CLI::App_p get_subcommand_ptr(int index = 0) const {
+    CLI11_NODISCARD CLI::App_p get_subcommand_ptr(int index = 0) const {
         if(index >= 0) {
             auto uindex = static_cast<unsigned>(index);
             if(uindex < subcommands_.size())
@@ -1073,7 +1073,7 @@ class App {
     }
 
     /// Check to see if an option group is part of this App
-    [[nodiscard]] App *get_option_group(std::string group_name) const {
+    CLI11_NODISCARD App *get_option_group(std::string group_name) const {
         for(const App_p &app : subcommands_) {
             if(app->name_.empty() && app->group_ == group_name) {
                 return app.get();
@@ -1085,11 +1085,11 @@ class App {
     /// No argument version of count counts the number of times this subcommand was
     /// passed in. The main app will return 1. Unnamed subcommands will also return 1 unless
     /// otherwise modified in a callback
-    [[nodiscard]] std::size_t count() const { return parsed_; }
+    CLI11_NODISCARD std::size_t count() const { return parsed_; }
 
     /// Get a count of all the arguments processed in options and subcommands, this excludes arguments which were
     /// treated as extras.
-    [[nodiscard]] std::size_t count_all() const {
+    CLI11_NODISCARD std::size_t count_all() const {
         std::size_t cnt{0};
         for(const auto &opt : options_) {
             cnt += opt->count();
@@ -1345,11 +1345,11 @@ class App {
     ///@{
 
     /// Counts the number of times the given option was passed.
-    [[nodiscard]] std::size_t count(std::string option_name) const { return get_option(option_name)->count(); }
+    CLI11_NODISCARD std::size_t count(std::string option_name) const { return get_option(option_name)->count(); }
 
     /// Get a subcommand pointer list to the currently selected subcommands (after parsing by default, in command
     /// line order; use parsed = false to get the original definition list.)
-    [[nodiscard]] std::vector<App *> get_subcommands() const { return parsed_subcommands_; }
+    CLI11_NODISCARD std::vector<App *> get_subcommands() const { return parsed_subcommands_; }
 
     /// Get a filtered subcommand pointer list from the original definition list. An empty function will provide all
     /// subcommands (const)
@@ -1393,7 +1393,7 @@ class App {
     }
 
     /// Check with name instead of pointer to see if subcommand was selected
-    [[nodiscard]] bool got_subcommand(std::string subcommand_name) const {
+    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const {
         return get_subcommand(subcommand_name)->parsed_ > 0;
     }
 
@@ -1499,13 +1499,13 @@ class App {
     }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
     /// include default arguments. write_descriptions will print a description for the App and for each option.
-    [[nodiscard]] std::string config_to_str(bool default_also = false, bool write_description = false) const {
+    CLI11_NODISCARD std::string config_to_str(bool default_also = false, bool write_description = false) const {
         return config_formatter_->to_config(this, default_also, write_description, "");
     }
 
     /// Makes a help message, using the currently configured formatter
     /// Will only do one subcommand at a time
-    [[nodiscard]] std::string help(std::string prev = "", AppFormatMode mode = AppFormatMode::Normal) const {
+    CLI11_NODISCARD std::string help(std::string prev = "", AppFormatMode mode = AppFormatMode::Normal) const {
         if(prev.empty())
             prev = get_name();
         else
@@ -1520,7 +1520,7 @@ class App {
     }
 
     /// Displays a version string
-    [[nodiscard]] std::string version() const {
+    CLI11_NODISCARD std::string version() const {
         std::string val;
         if(version_ptr_ != nullptr) {
             auto rv = version_ptr_->results();
@@ -1541,13 +1541,13 @@ class App {
     ///@{
 
     /// Access the formatter
-    [[nodiscard]] std::shared_ptr<FormatterBase> get_formatter() const { return formatter_; }
+    CLI11_NODISCARD std::shared_ptr<FormatterBase> get_formatter() const { return formatter_; }
 
     /// Access the config formatter
-    [[nodiscard]] std::shared_ptr<Config> get_config_formatter() const { return config_formatter_; }
+    CLI11_NODISCARD std::shared_ptr<Config> get_config_formatter() const { return config_formatter_; }
 
     /// Access the config formatter as a configBase pointer
-    [[nodiscard]] std::shared_ptr<ConfigBase> get_config_formatter_base() const {
+    CLI11_NODISCARD std::shared_ptr<ConfigBase> get_config_formatter_base() const {
         // This is safer as a dynamic_cast if we have RTTI, as Config -> ConfigBase
 #if CLI11_USE_STATIC_RTTI == 0
         return std::dynamic_pointer_cast<ConfigBase>(config_formatter_);
@@ -1557,7 +1557,7 @@ class App {
     }
 
     /// Get the app or subcommand description
-    [[nodiscard]] std::string get_description() const { return description_; }
+    CLI11_NODISCARD std::string get_description() const { return description_; }
 
     /// Set the description of the app
     App *description(std::string app_description) {
@@ -1618,7 +1618,7 @@ class App {
     }
 
     /// Get an option by name (noexcept const version)
-    [[nodiscard]] const Option *get_option_no_throw(std::string option_name) const noexcept {
+    CLI11_NODISCARD const Option *get_option_no_throw(std::string option_name) const noexcept {
         for(const Option_p &opt : options_) {
             if(opt->check_name(option_name)) {
                 return opt.get();
@@ -1637,7 +1637,7 @@ class App {
     }
 
     /// Get an option by name
-    [[nodiscard]] const Option *get_option(std::string option_name) const {
+    CLI11_NODISCARD const Option *get_option(std::string option_name) const {
         const auto *opt = get_option_no_throw(option_name);
         if(opt == nullptr) {
             throw OptionNotFound(option_name);
@@ -1661,106 +1661,106 @@ class App {
     const Option *operator[](const char *option_name) const { return get_option(option_name); }
 
     /// Check the status of ignore_case
-    [[nodiscard]] bool get_ignore_case() const { return ignore_case_; }
+    CLI11_NODISCARD bool get_ignore_case() const { return ignore_case_; }
 
     /// Check the status of ignore_underscore
-    [[nodiscard]] bool get_ignore_underscore() const { return ignore_underscore_; }
+    CLI11_NODISCARD bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// Check the status of fallthrough
-    [[nodiscard]] bool get_fallthrough() const { return fallthrough_; }
+    CLI11_NODISCARD bool get_fallthrough() const { return fallthrough_; }
 
     /// Check the status of the allow windows style options
-    [[nodiscard]] bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
+    CLI11_NODISCARD bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
 
     /// Check the status of the allow windows style options
-    [[nodiscard]] bool get_positionals_at_end() const { return positionals_at_end_; }
+    CLI11_NODISCARD bool get_positionals_at_end() const { return positionals_at_end_; }
 
     /// Check the status of the allow windows style options
-    [[nodiscard]] bool get_configurable() const { return configurable_; }
+    CLI11_NODISCARD bool get_configurable() const { return configurable_; }
 
     /// Get the group of this subcommand
-    [[nodiscard]] const std::string &get_group() const { return group_; }
+    CLI11_NODISCARD const std::string &get_group() const { return group_; }
 
     /// Generate and return the footer.
-    [[nodiscard]] std::string get_footer() const {
+    CLI11_NODISCARD std::string get_footer() const {
         return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_;
     }
 
     /// Get the required min subcommand value
-    [[nodiscard]] std::size_t get_require_subcommand_min() const { return require_subcommand_min_; }
+    CLI11_NODISCARD std::size_t get_require_subcommand_min() const { return require_subcommand_min_; }
 
     /// Get the required max subcommand value
-    [[nodiscard]] std::size_t get_require_subcommand_max() const { return require_subcommand_max_; }
+    CLI11_NODISCARD std::size_t get_require_subcommand_max() const { return require_subcommand_max_; }
 
     /// Get the required min option value
-    [[nodiscard]] std::size_t get_require_option_min() const { return require_option_min_; }
+    CLI11_NODISCARD std::size_t get_require_option_min() const { return require_option_min_; }
 
     /// Get the required max option value
-    [[nodiscard]] std::size_t get_require_option_max() const { return require_option_max_; }
+    CLI11_NODISCARD std::size_t get_require_option_max() const { return require_option_max_; }
 
     /// Get the prefix command status
-    [[nodiscard]] bool get_prefix_command() const { return prefix_command_; }
+    CLI11_NODISCARD bool get_prefix_command() const { return prefix_command_; }
 
     /// Get the status of allow extras
-    [[nodiscard]] bool get_allow_extras() const { return allow_extras_; }
+    CLI11_NODISCARD bool get_allow_extras() const { return allow_extras_; }
 
     /// Get the status of required
-    [[nodiscard]] bool get_required() const { return required_; }
+    CLI11_NODISCARD bool get_required() const { return required_; }
 
     /// Get the status of disabled
-    [[nodiscard]] bool get_disabled() const { return disabled_; }
+    CLI11_NODISCARD bool get_disabled() const { return disabled_; }
 
     /// Get the status of silence
-    [[nodiscard]] bool get_silent() const { return silent_; }
+    CLI11_NODISCARD bool get_silent() const { return silent_; }
 
     /// Get the status of disabled
-    [[nodiscard]] bool get_immediate_callback() const { return immediate_callback_; }
+    CLI11_NODISCARD bool get_immediate_callback() const { return immediate_callback_; }
 
     /// Get the status of disabled by default
-    [[nodiscard]] bool get_disabled_by_default() const { return (default_startup == startup_mode::disabled); }
+    CLI11_NODISCARD bool get_disabled_by_default() const { return (default_startup == startup_mode::disabled); }
 
     /// Get the status of disabled by default
-    [[nodiscard]] bool get_enabled_by_default() const { return (default_startup == startup_mode::enabled); }
+    CLI11_NODISCARD bool get_enabled_by_default() const { return (default_startup == startup_mode::enabled); }
     /// Get the status of validating positionals
-    [[nodiscard]] bool get_validate_positionals() const { return validate_positionals_; }
+    CLI11_NODISCARD bool get_validate_positionals() const { return validate_positionals_; }
     /// Get the status of validating optional vector arguments
-    [[nodiscard]] bool get_validate_optional_arguments() const { return validate_optional_arguments_; }
+    CLI11_NODISCARD bool get_validate_optional_arguments() const { return validate_optional_arguments_; }
 
     /// Get the status of allow extras
-    [[nodiscard]] config_extras_mode get_allow_config_extras() const { return allow_config_extras_; }
+    CLI11_NODISCARD config_extras_mode get_allow_config_extras() const { return allow_config_extras_; }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }
 
     /// Get a pointer to the help flag. (const)
-    [[nodiscard]] const Option *get_help_ptr() const { return help_ptr_; }
+    CLI11_NODISCARD const Option *get_help_ptr() const { return help_ptr_; }
 
     /// Get a pointer to the help all flag. (const)
-    [[nodiscard]] const Option *get_help_all_ptr() const { return help_all_ptr_; }
+    CLI11_NODISCARD const Option *get_help_all_ptr() const { return help_all_ptr_; }
 
     /// Get a pointer to the config option.
     Option *get_config_ptr() { return config_ptr_; }
 
     /// Get a pointer to the config option. (const)
-    [[nodiscard]] const Option *get_config_ptr() const { return config_ptr_; }
+    CLI11_NODISCARD const Option *get_config_ptr() const { return config_ptr_; }
 
     /// Get a pointer to the version option.
     Option *get_version_ptr() { return version_ptr_; }
 
     /// Get a pointer to the version option. (const)
-    [[nodiscard]] const Option *get_version_ptr() const { return version_ptr_; }
+    CLI11_NODISCARD const Option *get_version_ptr() const { return version_ptr_; }
 
     /// Get the parent of this subcommand (or nullptr if main app)
     App *get_parent() { return parent_; }
 
     /// Get the parent of this subcommand (or nullptr if main app) (const version)
-    [[nodiscard]] const App *get_parent() const { return parent_; }
+    CLI11_NODISCARD const App *get_parent() const { return parent_; }
 
     /// Get the name of the current app
-    [[nodiscard]] const std::string &get_name() const { return name_; }
+    CLI11_NODISCARD const std::string &get_name() const { return name_; }
 
     /// Get the aliases of the current app
-    [[nodiscard]] const std::vector<std::string> &get_aliases() const { return aliases_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_aliases() const { return aliases_; }
 
     /// clear all the aliases of the current App
     App *clear_aliases() {
@@ -1769,7 +1769,7 @@ class App {
     }
 
     /// Get a display name for an app
-    [[nodiscard]] std::string get_display_name(bool with_aliases = false) const {
+    CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const {
         if(name_.empty()) {
             return std::string("[Option Group: ") + get_group() + "]";
         }
@@ -1786,7 +1786,7 @@ class App {
     }
 
     /// Check the name, case insensitive and underscore insensitive if set
-    [[nodiscard]] bool check_name(std::string name_to_check) const {
+    CLI11_NODISCARD bool check_name(std::string name_to_check) const {
         std::string local_name = name_;
         if(ignore_underscore_) {
             local_name = detail::remove_underscore(name_);
@@ -1815,7 +1815,7 @@ class App {
     }
 
     /// Get the groups available directly from this option (in order)
-    [[nodiscard]] std::vector<std::string> get_groups() const {
+    CLI11_NODISCARD std::vector<std::string> get_groups() const {
         std::vector<std::string> groups;
 
         for(const Option_p &opt : options_) {
@@ -1829,10 +1829,10 @@ class App {
     }
 
     /// This gets a vector of pointers with the original parse order
-    [[nodiscard]] const std::vector<Option *> &parse_order() const { return parse_order_; }
+    CLI11_NODISCARD const std::vector<Option *> &parse_order() const { return parse_order_; }
 
     /// This returns the missing options from the current subcommand
-    [[nodiscard]] std::vector<std::string> remaining(bool recurse = false) const {
+    CLI11_NODISCARD std::vector<std::string> remaining(bool recurse = false) const {
         std::vector<std::string> miss_list;
         for(const std::pair<detail::Classifier, std::string> &miss : missing_) {
             miss_list.push_back(std::get<1>(miss));
@@ -1859,14 +1859,14 @@ class App {
     }
 
     /// This returns the missing options in a form ready for processing by another command line program
-    [[nodiscard]] std::vector<std::string> remaining_for_passthrough(bool recurse = false) const {
+    CLI11_NODISCARD std::vector<std::string> remaining_for_passthrough(bool recurse = false) const {
         std::vector<std::string> miss_list = remaining(recurse);
         std::reverse(std::begin(miss_list), std::end(miss_list));
         return miss_list;
     }
 
     /// This returns the number of remaining options, minus the -- separator
-    [[nodiscard]] std::size_t remaining_size(bool recurse = false) const {
+    CLI11_NODISCARD std::size_t remaining_size(bool recurse = false) const {
         auto remaining_options = static_cast<std::size_t>(std::count_if(
             std::begin(missing_), std::end(missing_), [](const std::pair<detail::Classifier, std::string> &val) {
                 return val.first != detail::Classifier::POSITIONAL_MARK;
@@ -1975,7 +1975,7 @@ class App {
     }
 
     /// Check to see if a subcommand is valid. Give up immediately if subcommand max has been reached.
-    [[nodiscard]] bool _valid_subcommand(const std::string &current, bool ignore_used = true) const {
+    CLI11_NODISCARD bool _valid_subcommand(const std::string &current, bool ignore_used = true) const {
         // Don't match if max has been reached - but still check parents
         if(require_subcommand_max_ != 0 && parsed_subcommands_.size() >= require_subcommand_max_) {
             return parent_ != nullptr && parent_->_valid_subcommand(current, ignore_used);
@@ -1989,7 +1989,8 @@ class App {
     }
 
     /// Selects a Classifier enum based on the type of the current argument
-    [[nodiscard]] detail::Classifier _recognize(const std::string &current, bool ignore_used_subcommands = true) const {
+    CLI11_NODISCARD detail::Classifier _recognize(const std::string &current,
+                                                  bool ignore_used_subcommands = true) const {
         std::string dummy1, dummy2;
 
         if(current == "--")
@@ -2511,7 +2512,7 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    [[nodiscard]] std::size_t _count_remaining_positionals(bool required_only = false) const {
+    CLI11_NODISCARD std::size_t _count_remaining_positionals(bool required_only = false) const {
         std::size_t retval = 0;
         for(const Option_p &opt : options_) {
             if(opt->get_positional() && (!required_only || opt->get_required())) {
@@ -2525,7 +2526,7 @@ class App {
     }
 
     /// Count the required remaining positional arguments
-    [[nodiscard]] bool _has_remaining_positionals() const {
+    CLI11_NODISCARD bool _has_remaining_positionals() const {
         for(const Option_p &opt : options_) {
             if(opt->get_positional() && ((static_cast<int>(opt->count()) < opt->get_items_expected_min()))) {
                 return true;
@@ -2664,7 +2665,7 @@ class App {
 
     /// Locate a subcommand by name with two conditions, should disabled subcommands be ignored, and should used
     /// subcommands be ignored
-    [[nodiscard]] App *
+    CLI11_NODISCARD App *
     _find_subcommand(const std::string &subc_name, bool ignore_disabled, bool ignore_used) const noexcept {
         for(const App_p &com : subcommands_) {
             if(com->disabled_ && ignore_disabled)
@@ -2921,7 +2922,7 @@ class App {
     }
 
     /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
-    [[nodiscard]] const std::string &_compare_subcommand_names(const App &subcom, const App &base) const {
+    CLI11_NODISCARD const std::string &_compare_subcommand_names(const App &subcom, const App &base) const {
         static const std::string estring;
         if(subcom.disabled_) {
             return estring;

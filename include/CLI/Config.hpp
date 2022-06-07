@@ -25,7 +25,7 @@ namespace detail {
 
 inline std::string convert_arg_for_ini(const std::string &arg, char stringQuote = '"', char characterQuote = '\'') {
     if(arg.empty()) {
-        return {2, stringQuote};
+        return std::string(2, stringQuote);
     }
     // some specifically supported strings
     if(arg == "true" || arg == "false" || arg == "nan" || arg == "inf") {

@@ -8,6 +8,12 @@ steps:
         -DCMAKE_BUILD_TYPE=$(cli11.build_type) $(cli11.options)
     displayName: "Configure"
 
-  - script: cmake --build .
-    displayName: "Build"
+  - script: cmake --build . -- -j2 --keep-going
+    displayName: "Build Unix"
     workingDirectory: build
+    condition: ne( variables['Agent.OS'], 'Windows_NT' )
+
+  - script: cmake --build .
+    displayName: "Build Windows"
+    workingDirectory: build
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )

@@ -79,14 +79,14 @@ class FormatterBase {
     ///@{
 
     /// Get the current value of a name (REQUIRED, etc.)
-    [[nodiscard]] std::string get_label(std::string key) const {
+    CLI11_NODISCARD std::string get_label(std::string key) const {
         if(labels_.find(key) == labels_.end())
             return key;
         return labels_.at(key);
     }
 
     /// Get the current column width
-    [[nodiscard]] std::size_t get_column_width() const { return column_width_; }
+    CLI11_NODISCARD std::size_t get_column_width() const { return column_width_; }
 
     ///@}
 };
@@ -124,7 +124,7 @@ class Formatter : public FormatterBase {
 
     /// This prints out a group of options with title
     ///
-    [[nodiscard]] virtual std::string
+    CLI11_NODISCARD virtual std::string
     make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const;
 
     /// This prints out just the positionals "group"

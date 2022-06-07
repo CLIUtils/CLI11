@@ -717,7 +717,7 @@ class Unstreamable {
 
   public:
     Unstreamable() = default;
-    [[nodiscard]] int get_x() const { return x_; }
+    CLI11_NODISCARD int get_x() const { return x_; }
     void set_x(int x) { x_ = x; }
 };
 

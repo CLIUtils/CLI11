@@ -119,31 +119,31 @@ template <typename CRTP> class OptionBase {
     // Getters
 
     /// Get the group of this option
-    [[nodiscard]] const std::string &get_group() const { return group_; }
+    CLI11_NODISCARD const std::string &get_group() const { return group_; }
 
     /// True if this is a required option
-    [[nodiscard]] bool get_required() const { return required_; }
+    CLI11_NODISCARD bool get_required() const { return required_; }
 
     /// The status of ignore case
-    [[nodiscard]] bool get_ignore_case() const { return ignore_case_; }
+    CLI11_NODISCARD bool get_ignore_case() const { return ignore_case_; }
 
     /// The status of ignore_underscore
-    [[nodiscard]] bool get_ignore_underscore() const { return ignore_underscore_; }
+    CLI11_NODISCARD bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// The status of configurable
-    [[nodiscard]] bool get_configurable() const { return configurable_; }
+    CLI11_NODISCARD bool get_configurable() const { return configurable_; }
 
     /// The status of configurable
-    [[nodiscard]] bool get_disable_flag_override() const { return disable_flag_override_; }
+    CLI11_NODISCARD bool get_disable_flag_override() const { return disable_flag_override_; }
 
     /// Get the current delimiter char
-    [[nodiscard]] char get_delimiter() const { return delimiter_; }
+    CLI11_NODISCARD char get_delimiter() const { return delimiter_; }
 
     /// Return true if this will automatically capture the default value for help printing
-    [[nodiscard]] bool get_always_capture_default() const { return always_capture_default_; }
+    CLI11_NODISCARD bool get_always_capture_default() const { return always_capture_default_; }
 
     /// The status of the multi option policy
-    [[nodiscard]] MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
+    CLI11_NODISCARD MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 
     // Shortcuts for multi option policy
 
@@ -361,10 +361,10 @@ class Option : public OptionBase<Option> {
     Option &operator=(const Option &) = delete;
 
     /// Count the total number of times an option was passed
-    [[nodiscard]] std::size_t count() const { return results_.size(); }
+    CLI11_NODISCARD std::size_t count() const { return results_.size(); }
 
     /// True if the option was not passed
-    [[nodiscard]] bool empty() const { return results_.empty(); }
+    CLI11_NODISCARD bool empty() const { return results_.empty(); }
 
     /// This bool operator returns true if any arguments were passed or the option callback is forced
     explicit operator bool() const { return !empty() || force_callback_; }
@@ -427,14 +427,14 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// Get the current value of allow extra args
-    [[nodiscard]] bool get_allow_extra_args() const { return allow_extra_args_; }
+    CLI11_NODISCARD bool get_allow_extra_args() const { return allow_extra_args_; }
     /// Set the value of trigger_on_parse which specifies that the option callback should be triggered on every parse
     Option *trigger_on_parse(bool value = true) {
         trigger_on_result_ = value;
         return this;
     }
     /// The status of trigger on parse
-    [[nodiscard]] bool get_trigger_on_parse() const { return trigger_on_result_; }
+    CLI11_NODISCARD bool get_trigger_on_parse() const { return trigger_on_result_; }
 
     /// Set the value of force_callback
     Option *force_callback(bool value = true) {
@@ -442,7 +442,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// The status of force_callback
-    [[nodiscard]] bool get_force_callback() const { return force_callback_; }
+    CLI11_NODISCARD bool get_force_callback() const { return force_callback_; }
 
     /// Set the value of run_callback_for_default which controls whether the callback function should be called to set
     /// the default This is controlled automatically but could be manipulated by the user.
@@ -451,7 +451,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// Get the current value of run_callback_for_default
-    [[nodiscard]] bool get_run_callback_for_default() const { return run_callback_for_default_; }
+    CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
     /// Adds a Validator with a built in type name
     Option *check(Validator validator, const std::string &validator_name = "") {
@@ -682,41 +682,41 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// The number of arguments the option expects
-    [[nodiscard]] int get_type_size() const { return type_size_min_; }
+    CLI11_NODISCARD int get_type_size() const { return type_size_min_; }
 
     /// The minimum number of arguments the option expects
-    [[nodiscard]] int get_type_size_min() const { return type_size_min_; }
+    CLI11_NODISCARD int get_type_size_min() const { return type_size_min_; }
     /// The maximum number of arguments the option expects
-    [[nodiscard]] int get_type_size_max() const { return type_size_max_; }
+    CLI11_NODISCARD int get_type_size_max() const { return type_size_max_; }
 
     /// Return the inject_separator flag
-    [[nodiscard]] int get_inject_separator() const { return static_cast<int>(inject_separator_); }
+    CLI11_NODISCARD int get_inject_separator() const { return static_cast<int>(inject_separator_); }
 
     /// The environment variable associated to this value
-    [[nodiscard]] std::string get_envname() const { return envname_; }
+    CLI11_NODISCARD std::string get_envname() const { return envname_; }
 
     /// The set of options needed
-    [[nodiscard]] std::set<Option *> get_needs() const { return needs_; }
+    CLI11_NODISCARD std::set<Option *> get_needs() const { return needs_; }
 
     /// The set of options excluded
-    [[nodiscard]] std::set<Option *> get_excludes() const { return excludes_; }
+    CLI11_NODISCARD std::set<Option *> get_excludes() const { return excludes_; }
 
     /// The default value (for help printing)
-    [[nodiscard]] std::string get_default_str() const { return default_str_; }
+    CLI11_NODISCARD std::string get_default_str() const { return default_str_; }
 
     /// Get the callback function
-    [[nodiscard]] callback_t get_callback() const { return callback_; }
+    CLI11_NODISCARD callback_t get_callback() const { return callback_; }
 
     /// Get the long names
-    [[nodiscard]] const std::vector<std::string> &get_lnames() const { return lnames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_lnames() const { return lnames_; }
 
     /// Get the short names
-    [[nodiscard]] const std::vector<std::string> &get_snames() const { return snames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_snames() const { return snames_; }
 
     /// Get the flag names with specified default values
-    [[nodiscard]] const std::vector<std::string> &get_fnames() const { return fnames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_fnames() const { return fnames_; }
     /// Get a single name for the option, first of lname, pname, sname, envname
-    [[nodiscard]] const std::string &get_single_name() const {
+    CLI11_NODISCARD const std::string &get_single_name() const {
         if(!lnames_.empty()) {
             return lnames_[0];
         }
@@ -729,35 +729,35 @@ class Option : public OptionBase<Option> {
         return envname_;
     }
     /// The number of times the option expects to be included
-    [[nodiscard]] int get_expected() const { return expected_min_; }
+    CLI11_NODISCARD int get_expected() const { return expected_min_; }
 
     /// The number of times the option expects to be included
-    [[nodiscard]] int get_expected_min() const { return expected_min_; }
+    CLI11_NODISCARD int get_expected_min() const { return expected_min_; }
     /// The max number of times the option expects to be included
-    [[nodiscard]] int get_expected_max() const { return expected_max_; }
+    CLI11_NODISCARD int get_expected_max() const { return expected_max_; }
 
     /// The total min number of expected  string values to be used
-    [[nodiscard]] int get_items_expected_min() const { return type_size_min_ * expected_min_; }
+    CLI11_NODISCARD int get_items_expected_min() const { return type_size_min_ * expected_min_; }
 
     /// Get the maximum number of items expected to be returned and used for the callback
-    [[nodiscard]] int get_items_expected_max() const {
+    CLI11_NODISCARD int get_items_expected_max() const {
         int t = type_size_max_;
         return detail::checked_multiply(t, expected_max_) ? t : detail::expected_max_vector_size;
     }
     /// The total min number of expected  string values to be used
-    [[nodiscard]] int get_items_expected() const { return get_items_expected_min(); }
+    CLI11_NODISCARD int get_items_expected() const { return get_items_expected_min(); }
 
     /// True if the argument can be given directly
-    [[nodiscard]] bool get_positional() const { return pname_.length() > 0; }
+    CLI11_NODISCARD bool get_positional() const { return pname_.length() > 0; }
 
     /// True if option has at least one non-positional name
-    [[nodiscard]] bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
+    CLI11_NODISCARD bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
 
     /// True if option has description
-    [[nodiscard]] bool has_description() const { return description_.length() > 0; }
+    CLI11_NODISCARD bool has_description() const { return description_.length() > 0; }
 
     /// Get the description
-    [[nodiscard]] const std::string &get_description() const { return description_; }
+    CLI11_NODISCARD const std::string &get_description() const { return description_; }
 
     /// Set the description
     Option *description(std::string option_description) {
@@ -770,7 +770,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    [[nodiscard]] const std::string &get_option_text() const { return option_text_; }
+    CLI11_NODISCARD const std::string &get_option_text() const { return option_text_; }
 
     ///@}
     /// @name Help tools
@@ -780,8 +780,8 @@ class Option : public OptionBase<Option> {
     /// Will include / prefer the positional name if positional is true.
     /// If all_options is false, pick just the most descriptive name to show.
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
-    [[nodiscard]] std::string get_name(bool positional = false,  ///< Show the positional name
-                                       bool all_options = false  ///< Show every option
+    CLI11_NODISCARD std::string get_name(bool positional = false,  ///< Show the positional name
+                                         bool all_options = false  ///< Show every option
     ) const {
         if(get_group().empty())
             return {};  // Hidden
@@ -867,7 +867,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// If options share any of the same names, find it
-    [[nodiscard]] const std::string &matching_name(const Option &other) const {
+    CLI11_NODISCARD const std::string &matching_name(const Option &other) const {
         static const std::string estring;
         for(const std::string &sname : snames_)
             if(other.check_sname(sname))
@@ -891,7 +891,7 @@ class Option : public OptionBase<Option> {
     bool operator==(const Option &other) const { return !matching_name(other).empty(); }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
-    [[nodiscard]] bool check_name(const std::string &name) const {
+    CLI11_NODISCARD bool check_name(const std::string &name) const {
 
         if(name.length() > 2 && name[0] == '-' && name[1] == '-')
             return check_lname(name.substr(2));
@@ -921,17 +921,17 @@ class Option : public OptionBase<Option> {
     }
 
     /// Requires "-" to be removed from string
-    [[nodiscard]] bool check_sname(std::string name) const {
+    CLI11_NODISCARD bool check_sname(std::string name) const {
         return (detail::find_member(std::move(name), snames_, ignore_case_) >= 0);
     }
 
     /// Requires "--" to be removed from string
-    [[nodiscard]] bool check_lname(std::string name) const {
+    CLI11_NODISCARD bool check_lname(std::string name) const {
         return (detail::find_member(std::move(name), lnames_, ignore_case_, ignore_underscore_) >= 0);
     }
 
     /// Requires "--" to be removed from string
-    [[nodiscard]] bool check_fname(std::string name) const {
+    CLI11_NODISCARD bool check_fname(std::string name) const {
         if(fnames_.empty()) {
             return false;
         }
@@ -940,7 +940,7 @@ class Option : public OptionBase<Option> {
 
     /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not
     /// disabled
-    [[nodiscard]] std::string get_flag_value(const std::string &name, std::string input_value) const {
+    CLI11_NODISCARD std::string get_flag_value(const std::string &name, std::string input_value) const {
         static const std::string trueString{"true"};
         static const std::string falseString{"false"};
         static const std::string emptyString{"{}"};
@@ -1006,10 +1006,10 @@ class Option : public OptionBase<Option> {
     }
 
     /// Get the current complete results set
-    [[nodiscard]] const results_t &results() const { return results_; }
+    CLI11_NODISCARD const results_t &results() const { return results_; }
 
     /// Get a copy of the results
-    [[nodiscard]] results_t reduced_results() const {
+    CLI11_NODISCARD results_t reduced_results() const {
         results_t res = proc_results_.empty() ? results_ : proc_results_;
         if(current_option_state_ < option_state::reduced) {
             if(current_option_state_ == option_state::parsing) {
@@ -1059,14 +1059,14 @@ class Option : public OptionBase<Option> {
     }
 
     /// Return the results as the specified type
-    template <typename T> [[nodiscard]] T as() const {
+    template <typename T> CLI11_NODISCARD T as() const {
         T output;
         results(output);
         return output;
     }
 
     /// See if the callback has been run already
-    [[nodiscard]] bool get_callback_run() const { return (current_option_state_ == option_state::callback_run); }
+    CLI11_NODISCARD bool get_callback_run() const { return (current_option_state_ == option_state::callback_run); }
 
     ///@}
     /// @name Custom options
@@ -1180,7 +1180,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Get the full typename for this option
-    [[nodiscard]] std::string get_type_name() const {
+    CLI11_NODISCARD std::string get_type_name() const {
         std::string full_type_name = type_name_();
         if(!validators_.empty()) {
             for(const auto &Validator : validators_) {

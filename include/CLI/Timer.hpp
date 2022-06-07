@@ -81,7 +81,7 @@ class Timer {
     }
 
     /// This formats the numerical value for the time string
-    [[nodiscard]] std::string make_time_str() const {
+    std::string make_time_str() const {  // NOLINT(modernize-use-nodiscard)
         time_point stop = clock::now();
         std::chrono::duration<double> elapsed = stop - start_;
         double time = elapsed.count() / static_cast<double>(cycles);
@@ -90,7 +90,7 @@ class Timer {
 
     // LCOV_EXCL_START
     /// This prints out a time string from a time
-    [[nodiscard]] std::string make_time_str(double time) const {
+    std::string make_time_str(double time) const {  // NOLINT(modernize-use-nodiscard)
         auto print_it = [](double x, std::string unit) {
             const unsigned int buffer_length = 50;
             std::array<char, buffer_length> buffer;
@@ -109,7 +109,7 @@ class Timer {
     // LCOV_EXCL_STOP
 
     /// This is the main function, it creates a string
-    [[nodiscard]] std::string to_string() const { return time_print_(title_, make_time_str()); }
+    std::string to_string() const { return time_print_(title_, make_time_str()); }  // NOLINT(modernize-use-nodiscard)
 
     /// Division sets the number of cycles to divide by (no graphical change)
     Timer &operator/(std::size_t val) {

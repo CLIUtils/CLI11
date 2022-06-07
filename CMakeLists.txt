@@ -139,8 +139,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     -Woverlength-strings
     -Wshadow
     -Wstrict-selector-match
-    -Wundeclared-selector
-    -Wunreachable-code)
+    -Wundeclared-selector)
+  # -Wunreachable-code Doesn't work on Clang 3.4
 endif()
 
 # Buggy in GCC 4.8

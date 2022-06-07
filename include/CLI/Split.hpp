@@ -134,7 +134,7 @@ get_names(const std::vector<std::string> &input) {
         }
     }
 
-    return {short_names, long_names, pos_name};
+    return std::make_tuple(short_names, long_names, pos_name);
 }
 
 }  // namespace detail

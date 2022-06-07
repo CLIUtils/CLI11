@@ -9,7 +9,7 @@ set -evx
 mkdir -p build
 cd build
 cmake .. -DCLI11_WARNINGS_AS_ERRORS=ON -DCLI11_SINGLE_FILE=ON -DCMAKE_CXX_STANDARD="$STD" -DCLI11_SINGLE_FILE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache $@
-cmake --build . -- -j2
+cmake --build . -- -j2 --keep-going
 
 set +evx
 echo -en "travis_fold:end:script.build\\r"

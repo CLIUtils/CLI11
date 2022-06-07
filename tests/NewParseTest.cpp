@@ -210,11 +210,12 @@ template <class X> class objWrapper {
     objWrapper(const objWrapper &ow) = default;
     template <class TT> objWrapper(const TT &obj) = delete;
     objWrapper &operator=(const objWrapper &) = default;
-    objWrapper &operator=(objWrapper &&) noexcept = default;
+    // noexcept not allowed below by GCC 4.8
+    objWrapper &operator=(objWrapper &&) = default;  // NOLINT(performance-noexcept-move-constructor)
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
-    [[nodiscard]] const X &value() const { return val_; }
+    CLI11_NODISCARD const X &value() const { return val_; }
 
   private:
     X val_{};
@@ -313,8 +314,8 @@ class dobjWrapper {
     explicit dobjWrapper(double obj) : dval_{obj} {};
     explicit dobjWrapper(int obj) : ival_{obj} {};
 
-    [[nodiscard]] double dvalue() const { return dval_; }
-    [[nodiscard]] int ivalue() const { return ival_; }
+    CLI11_NODISCARD double dvalue() const { return dval_; }
+    CLI11_NODISCARD int ivalue() const { return ival_; }
 
   private:
     double dval_{0.0};
@@ -358,7 +359,7 @@ template <class X> class AobjWrapper {
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
-    [[nodiscard]] const X &value() const { return val_; }
+    CLI11_NODISCARD const X &value() const { return val_; }
 
   private:
     X val_{};
@@ -391,7 +392,7 @@ TEST_CASE_METHOD(TApp, "uint16Wrapper", "[newparse]") {
 template <class T> class SimpleWrapper {
   public:
     SimpleWrapper() = default;
-    ;
+
     explicit SimpleWrapper(T initial) : val_{std::move(initial)} {};
     T &getRef() { return val_; }
     using value_type = T;

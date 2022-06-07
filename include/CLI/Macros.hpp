@@ -41,6 +41,14 @@
 #define CLI11_DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
+// GCC < 10 doesn't ignore this in unevaluated contexts
+#if !defined(CLI11_CPP17) ||                                                                                           \
+    (defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 10 && __GNUC__ > 4)
+#define CLI11_NODISCARD
+#else
+#define CLI11_NODISCARD [[nodiscard]]
+#endif
+
 /** detection of rtti */
 #ifndef CLI11_USE_STATIC_RTTI
 #if(defined(_HAS_STATIC_RTTI) && _HAS_STATIC_RTTI)

@@ -72,9 +72,9 @@ class Error : public std::runtime_error {
     std::string error_name{"Error"};
 
   public:
-    [[nodiscard]] int get_exit_code() const { return actual_exit_code; }
+    CLI11_NODISCARD int get_exit_code() const { return actual_exit_code; }
 
-    [[nodiscard]] std::string get_name() const { return error_name; }
+    CLI11_NODISCARD std::string get_name() const { return error_name; }
 
     Error(std::string name, std::string msg, int exit_code = static_cast<int>(ExitCodes::BaseClass))
         : runtime_error(msg), actual_exit_code(exit_code), error_name(std::move(name)) {}

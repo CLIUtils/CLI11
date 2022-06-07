@@ -276,7 +276,7 @@ template <typename T,
           enable_if_t<std::is_constructible<std::string, T>::value && !std::is_convertible<T, std::string>::value,
                       detail::enabler> = detail::dummy>
 std::string to_string(const T &value) {
-    return std::string{value};
+    return std::string(value);  // NOLINT(google-readability-casting)
 }
 
 /// Convert an object to a string (streaming must be supported for that type)

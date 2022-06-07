@@ -138,13 +138,13 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    [[nodiscard]] Validator description(std::string validator_desc) const {
+    CLI11_NODISCARD Validator description(std::string validator_desc) const {
         Validator newval(*this);
         newval.desc_function_ = [validator_desc]() { return validator_desc; };
         return newval;
     }
     /// Generate type description information for the Validator
-    [[nodiscard]] std::string get_description() const {
+    CLI11_NODISCARD std::string get_description() const {
         if(active_) {
             return desc_function_();
         }
@@ -156,20 +156,20 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    [[nodiscard]] Validator name(std::string validator_name) const {
+    CLI11_NODISCARD Validator name(std::string validator_name) const {
         Validator newval(*this);
         newval.name_ = std::move(validator_name);
         return newval;
     }
     /// Get the name of the Validator
-    [[nodiscard]] const std::string &get_name() const { return name_; }
+    CLI11_NODISCARD const std::string &get_name() const { return name_; }
     /// Specify whether the Validator is active or not
     Validator &active(bool active_val = true) {
         active_ = active_val;
         return *this;
     }
     /// Specify whether the Validator is active or not
-    [[nodiscard]] Validator active(bool active_val = true) const {
+    CLI11_NODISCARD Validator active(bool active_val = true) const {
         Validator newval(*this);
         newval.active_ = active_val;
         return newval;
@@ -186,18 +186,18 @@ class Validator {
         return *this;
     }
     /// Specify the application index of a validator
-    [[nodiscard]] Validator application_index(int app_index) const {
+    CLI11_NODISCARD Validator application_index(int app_index) const {
         Validator newval(*this);
         newval.application_index_ = app_index;
         return newval;
     }
     /// Get the current value of the application index
-    [[nodiscard]] int get_application_index() const { return application_index_; }
+    CLI11_NODISCARD int get_application_index() const { return application_index_; }
     /// Get a boolean if the validator is active
-    [[nodiscard]] bool get_active() const { return active_; }
+    CLI11_NODISCARD bool get_active() const { return active_; }
 
     /// Get a boolean if the validator is allowed to modify the input returns true if it can modify the input
-    [[nodiscard]] bool get_modifying() const { return !non_modifying_; }
+    CLI11_NODISCARD bool get_modifying() const { return !non_modifying_; }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
