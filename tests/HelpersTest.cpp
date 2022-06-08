@@ -622,25 +622,25 @@ TEST_CASE("CheckedMultiply: SizeT", "[helpers]") {
     REQUIRE(CLI::detail::checked_multiply(a, b));
     REQUIRE(0u == a);
 
-    a = std::numeric_limits<std::size_t>::max();
+    a = (std::numeric_limits<std::size_t>::max)();
     b = 1u;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
+    REQUIRE((std::numeric_limits<std::size_t>::max)() == a);
 
-    a = std::numeric_limits<std::size_t>::max();
+    a = (std::numeric_limits<std::size_t>::max)();
     b = 2u;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
+    REQUIRE((std::numeric_limits<std::size_t>::max)() == a);
 
-    a = std::numeric_limits<std::size_t>::max();
-    b = std::numeric_limits<std::size_t>::max();
+    a = (std::numeric_limits<std::size_t>::max)();
+    b = (std::numeric_limits<std::size_t>::max)();
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<std::size_t>::max() == a);
+    REQUIRE((std::numeric_limits<std::size_t>::max)() == a);
 
-    a = std::numeric_limits<std::size_t>::max() / 100;
+    a = (std::numeric_limits<std::size_t>::max)() / 100;
     b = 99u;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<std::size_t>::max() / 100u * 99u == a);
+    REQUIRE((std::numeric_limits<std::size_t>::max)() / 100u * 99u == a);
 }
 
 TEST_CASE("CheckedMultiply: Float", "[helpers]") {
