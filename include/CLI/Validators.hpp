@@ -527,7 +527,7 @@ class Range : public Validator {
 /// Check for a non negative number
 const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
-/// Check for a positive valued number (val>0.0), min() her is the smallest positive number
+/// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 /// Produce a bounded range (factory). Min and max are inclusive.

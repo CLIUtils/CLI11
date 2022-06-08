@@ -541,68 +541,68 @@ TEST_CASE("CheckedMultiply: Int", "[helpers]") {
     REQUIRE(CLI::detail::checked_multiply(a, b));
     REQUIRE(0 == a);
 
-    a = std::numeric_limits<int>::max();
+    a = (std::numeric_limits<int>::max)();
     b = 1;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::max() == a);
+    REQUIRE((std::numeric_limits<int>::max)() == a);
 
-    a = std::numeric_limits<int>::max();
+    a = (std::numeric_limits<int>::max)();
     b = 2;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::max() == a);
+    REQUIRE((std::numeric_limits<int>::max)() == a);
 
-    a = std::numeric_limits<int>::max();
+    a = (std::numeric_limits<int>::max)();
     b = -1;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(-std::numeric_limits<int>::max() == a);
+    REQUIRE(-(std::numeric_limits<int>::max)() == a);
 
-    a = std::numeric_limits<int>::max();
-    b = std::numeric_limits<int>::max();
+    a = (std::numeric_limits<int>::max)();
+    b = (std::numeric_limits<int>::max)();
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::max() == a);
+    REQUIRE((std::numeric_limits<int>::max)() == a);
 
-    a = std::numeric_limits<int>::min();
-    b = std::numeric_limits<int>::max();
+    a = (std::numeric_limits<int>::min)();
+    b = (std::numeric_limits<int>::max)();
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::min() == a);
+    REQUIRE((std::numeric_limits<int>::min)() == a);
 
-    a = std::numeric_limits<int>::min();
+    a = (std::numeric_limits<int>::min)();
     b = 1;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::min() == a);
+    REQUIRE((std::numeric_limits<int>::min)() == a);
 
-    a = std::numeric_limits<int>::min();
+    a = (std::numeric_limits<int>::min)();
     b = -1;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::min() == a);
+    REQUIRE((std::numeric_limits<int>::min)() == a);
 
-    b = std::numeric_limits<int>::min();
+    b = (std::numeric_limits<int>::min)();
     a = -1;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
     REQUIRE(-1 == a);
 
-    a = std::numeric_limits<int>::min() / 100;
+    a = (std::numeric_limits<int>::min)() / 100;
     b = 99;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::min() / 100 * 99 == a);
+    REQUIRE((std::numeric_limits<int>::min)() / 100 * 99 == a);
 
-    a = std::numeric_limits<int>::min() / 100;
+    a = (std::numeric_limits<int>::min)() / 100;
     b = -101;
     REQUIRE(!CLI::detail::checked_multiply(a, b));
-    REQUIRE(std::numeric_limits<int>::min() / 100 == a);
+    REQUIRE((std::numeric_limits<int>::min)() / 100 == a);
     a = 2;
-    b = std::numeric_limits<int>::min() / 2;
+    b = (std::numeric_limits<int>::min)() / 2;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    a = std::numeric_limits<int>::min() / 2;
+    a = (std::numeric_limits<int>::min)() / 2;
     b = 2;
     REQUIRE(CLI::detail::checked_multiply(a, b));
 
     a = 4;
-    b = std::numeric_limits<int>::min() / 4;
+    b = (std::numeric_limits<int>::min)() / 4;
     REQUIRE(CLI::detail::checked_multiply(a, b));
 
     a = 48;
-    b = std::numeric_limits<int>::min() / 48;
+    b = (std::numeric_limits<int>::min)() / 48;
     REQUIRE(CLI::detail::checked_multiply(a, b));
 }
 
