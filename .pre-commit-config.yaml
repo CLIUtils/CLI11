@@ -71,6 +71,14 @@ repos:
         entry: PyBind|Numpy|Cmake|CCache|PyTest|Github
         exclude: .pre-commit-config.yaml
 
+  - repo: local
+    hooks:
+      - id: avoid-msvc-macro
+        name: Avoid MSVC <=2017 min/max macro (use extra parens)
+        language: pygrep
+        entry: \b(min|max)\(
+        exclude: .pre-commit-config.yaml
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
