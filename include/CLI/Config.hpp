@@ -8,6 +8,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -81,7 +82,7 @@ inline std::string ini_join(const std::vector<std::string> &args,
     for(const auto &arg : args) {
         if(start++ > 0) {
             joined.push_back(sepChar);
-            if(isspace(sepChar) == 0) {
+            if(std::isspace(sepChar) == 0) {
                 joined.push_back(' ');
             }
         }

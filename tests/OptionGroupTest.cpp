@@ -421,7 +421,7 @@ struct ManyGroups : public TApp {
         g3->add_option("--val3", val3);
     }
 
-    void remove_required() const {
+    void remove_required() {  // NOLINT(readability-make-member-function-const)
         g1->get_option("--name1")->required(false);
         g2->get_option("--name2")->required(false);
         g3->get_option("--name3")->required(false);

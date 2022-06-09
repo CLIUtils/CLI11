@@ -218,7 +218,7 @@ class Validator {
             return s1 + s2;
         };
 
-        newval.active_ = ((static_cast<int>(active_) & static_cast<int>(other.active_)) != 0);
+        newval.active_ = active_ && other.active_;
         newval.application_index_ = application_index_;
         return newval;
     }
@@ -242,7 +242,7 @@ class Validator {
 
             return std::string("(") + s1 + ") OR (" + s2 + ")";
         };
-        newval.active_ = ((static_cast<int>(active_) & static_cast<int>(other.active_)) != 0);
+        newval.active_ = active_ && other.active_;
         newval.application_index_ = application_index_;
         return newval;
     }
