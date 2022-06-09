@@ -690,7 +690,7 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD int get_type_size_max() const { return type_size_max_; }
 
     /// Return the inject_separator flag
-    CLI11_NODISCARD int get_inject_separator() const { return static_cast<int>(inject_separator_); }
+    CLI11_NODISCARD bool get_inject_separator() const { return inject_separator_; }
 
     /// The environment variable associated to this value
     CLI11_NODISCARD std::string get_envname() const { return envname_; }

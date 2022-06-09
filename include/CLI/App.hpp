@@ -2561,7 +2561,7 @@ class App {
 
                             parse_order_.push_back(opt.get());
                             /// if we require a separator add it here
-                            if(opt->get_inject_separator() != 0) {
+                            if(opt->get_inject_separator()) {
                                 if(!opt->results().empty() && !opt->results().back().empty()) {
                                     opt->add_result(std::string{});
                                 }
@@ -2592,7 +2592,7 @@ class App {
                         continue;
                     }
                 }
-                if(opt->get_inject_separator() != 0) {
+                if(opt->get_inject_separator()) {
                     if(!opt->results().empty() && !opt->results().back().empty()) {
                         opt->add_result(std::string{});
                     }
@@ -2790,7 +2790,7 @@ class App {
         // Get a reference to the pointer to make syntax bearable
         Option_p &op = *op_ptr;
         /// if we require a separator add it here
-        if(op->get_inject_separator() != 0) {
+        if(op->get_inject_separator()) {
             if(!op->results().empty() && !op->results().back().empty()) {
                 op->add_result(std::string{});
             }
