@@ -82,7 +82,7 @@ inline std::string ini_join(const std::vector<std::string> &args,
     for(const auto &arg : args) {
         if(start++ > 0) {
             joined.push_back(sepChar);
-            if(std::isspace<char>(sepChar, std::locale()) {
+            if(std::isspace<char>(sepChar, std::locale())) {
                 joined.push_back(' ');
             }
         }
