@@ -9,7 +9,7 @@ repos:
       - id: black
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v4.3.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -21,7 +21,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v14.0.3
+    rev: v14.0.4-1
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
