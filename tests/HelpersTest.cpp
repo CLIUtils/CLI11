@@ -6,6 +6,8 @@
 
 #include "app_helper.hpp"
 
+#include <cmath>
+
 #include <array>
 #include <atomic>
 #include <complex>
@@ -27,7 +29,7 @@ std::ostream &operator<<(std::ostream &out, const Streamable &) { return out << 
 
 TEST_CASE("TypeTools: Streaming", "[helpers]") {
 
-    CHECK("" == CLI::detail::to_string(NotStreamable{}));
+    CHECK(CLI::detail::to_string(NotStreamable{}).empty());
 
     CHECK("Streamable" == CLI::detail::to_string(Streamable{}));
 
@@ -148,7 +150,7 @@ TEST_CASE("Split: Single", "[helpers]") {
 TEST_CASE("Split: Empty", "[helpers]") {
     auto out = CLI::detail::split("", '.');
     REQUIRE(out.size() == 1u);
-    CHECK(out.at(0) == "");
+    CHECK(out.at(0).empty());
 }
 
 TEST_CASE("String: InvalidName", "[helpers]") {
@@ -321,17 +323,17 @@ TEST_CASE("Validators: FilePathModifier", "[helpers]") {
 
 TEST_CASE("Validators: FileIsDir", "[helpers]") {
     std::string mydir{"../tests"};
-    CHECK("" != CLI::ExistingFile(mydir));
+    CHECK(!CLI::ExistingFile(mydir).empty());
 }
 
 TEST_CASE("Validators: DirectoryExists", "[helpers]") {
     std::string mydir{"../tests"};
-    CHECK("" == CLI::ExistingDirectory(mydir));
+    CHECK(CLI::ExistingDirectory(mydir).empty());
 }
 
 TEST_CASE("Validators: DirectoryNotExists", "[helpers]") {
     std::string mydir{"nondirectory"};
-    CHECK("" != CLI::ExistingDirectory(mydir));
+    CHECK(!CLI::ExistingDirectory(mydir).empty());
 }
 
 TEST_CASE("Validators: DirectoryIsFile", "[helpers]") {
@@ -347,7 +349,7 @@ TEST_CASE("Validators: DirectoryIsFile", "[helpers]") {
 
 TEST_CASE("Validators: PathExistsDir", "[helpers]") {
     std::string mydir{"../tests"};
-    CHECK("" == CLI::ExistingPath(mydir));
+    CHECK(CLI::ExistingPath(mydir).empty());
 }
 
 TEST_CASE("Validators: PathExistsFile", "[helpers]") {
@@ -363,7 +365,7 @@ TEST_CASE("Validators: PathExistsFile", "[helpers]") {
 
 TEST_CASE("Validators: PathNotExistsDir", "[helpers]") {
     std::string mydir{"nonpath"};
-    CHECK("" != CLI::ExistingPath(mydir));
+    CHECK(!CLI::ExistingPath(mydir).empty());
 }
 
 TEST_CASE("Validators: IPValidate1", "[helpers]") {
@@ -701,15 +703,15 @@ TEST_CASE("CheckedMultiply: Double", "[helpers]") {
     REQUIRE(CLI::detail::checked_multiply(a, b));
     REQUIRE(0 == Approx(a));
 
-    a = INFINITY;
+    a = std::numeric_limits<double>::infinity();
     b = 20;
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(INFINITY == Approx(a));
+    REQUIRE(std::numeric_limits<double>::infinity() == Approx(a));
 
     a = 2;
-    b = -INFINITY;
+    b = -std::numeric_limits<double>::infinity();
     REQUIRE(CLI::detail::checked_multiply(a, b));
-    REQUIRE(-INFINITY == Approx(a));
+    REQUIRE(-std::numeric_limits<double>::infinity() == Approx(a));
 
     a = (std::numeric_limits<double>::max)() / 100;
     b = 1;
@@ -795,11 +797,11 @@ TEST_CASE("RegEx: Shorts", "[helpers]") {
 
     CHECK(CLI::detail::split_short("-a", name, value));
     CHECK(name == "a");
-    CHECK(value == "");
+    CHECK(value.empty());
 
     CHECK(CLI::detail::split_short("-B", name, value));
     CHECK(name == "B");
-    CHECK(value == "");
+    CHECK(value.empty());
 
     CHECK(CLI::detail::split_short("-cc", name, value));
     CHECK(name == "c");
@@ -821,11 +823,11 @@ TEST_CASE("RegEx: Longs", "[helpers]") {
 
     CHECK(CLI::detail::split_long("--a", name, value));
     CHECK(name == "a");
-    CHECK(value == "");
+    CHECK(value.empty());
 
     CHECK(CLI::detail::split_long("--thing", name, value));
     CHECK(name == "thing");
-    CHECK(value == "");
+    CHECK(value.empty());
 
     CHECK(CLI::detail::split_long("--some=thing", name, value));
     CHECK(name == "some");
@@ -846,7 +848,7 @@ TEST_CASE("RegEx: SplittingNew", "[helpers]") {
     CHECK_NOTHROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}));
     CHECK(longs == std::vector<std::string>({"long", "also-long"}));
     CHECK(shorts == std::vector<std::string>({"s", "q"}));
-    CHECK(pname == "");
+    CHECK(pname.empty());
 
     std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"});
     CHECK(longs == std::vector<std::string>({"long", "also-long"}));
@@ -1028,33 +1030,33 @@ TEST_CASE("Types: TypeName", "[helpers]") {
 }
 
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
-    signed char x;
+    signed char x = 0;
     auto strmax = std::to_string((std::numeric_limits<signed char>::max)() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, x));
 
-    unsigned char y;
+    unsigned char y = 0;
     strmax = std::to_string((std::numeric_limits<unsigned char>::max)() + 1);
     CHECK_FALSE(CLI::detail::lexical_cast(strmax, y));
 }
 
 TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     std::string signed_input = "-912";
-    int x_signed;
+    int x_signed = 0;
     CHECK(CLI::detail::lexical_cast(signed_input, x_signed));
     CHECK(x_signed == -912);
 
     std::string unsigned_input = "912";
-    unsigned int x_unsigned;
+    unsigned int x_unsigned = 0;
     CHECK(CLI::detail::lexical_cast(unsigned_input, x_unsigned));
     CHECK(x_unsigned == (unsigned int)912);
 
     CHECK_FALSE(CLI::detail::lexical_cast(signed_input, x_unsigned));
 
-    unsigned char y;
+    unsigned char y = 0;
     std::string overflow_input = std::to_string((std::numeric_limits<uint64_t>::max)()) + "0";
     CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y));
 
-    char y_signed;
+    char y_signed = 0;
     CHECK_FALSE(CLI::detail::lexical_cast(overflow_input, y_signed));
 
     std::string bad_input = "hello";
@@ -1071,7 +1073,7 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
 
 TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
     std::string input = "9.12";
-    long double x;
+    long double x = NAN;
     CHECK(CLI::detail::lexical_cast(input, x));
     CHECK((float)x == Approx((float)9.12));
 
@@ -1091,7 +1093,7 @@ TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
 
 TEST_CASE("Types: LexicalCastBool", "[helpers]") {
     std::string input = "false";
-    bool x;
+    bool x = false;
     CHECK(CLI::detail::lexical_cast(input, x));
     CHECK_FALSE(x);
 
@@ -1131,7 +1133,7 @@ TEST_CASE("Types: LexicalCastParsable", "[helpers]") {
 TEST_CASE("Types: LexicalCastEnum", "[helpers]") {
     enum t1 : signed char { v1 = 5, v3 = 7, v5 = -9 };
 
-    t1 output;
+    t1 output = v1;
     CHECK(CLI::detail::lexical_cast("-9", output));
     CHECK(v5 == output);
 

@@ -11,8 +11,8 @@ using Catch::Matchers::Contains;
 using vs_t = std::vector<std::string>;
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroup", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
-    int res;
+    auto *ogroup = app.add_option_group("clusters");
+    int res = 0;
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
@@ -34,7 +34,7 @@ TEST_CASE_METHOD(TApp, "OptionGroupInvalidNames", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupExact", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -58,7 +58,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupExact", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupExactTooMany", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -71,7 +71,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupExactTooMany", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMax", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -95,7 +95,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMax", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferent", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -123,7 +123,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferent", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferentReversed", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -155,12 +155,12 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMaxDifferentReversed", "[optiongroup]
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMax", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
     ogroup->add_option("--test3", res);
-    int val2;
+    int val2 = 0;
     app.add_option("--option", val2);
     ogroup->require_option(-2);
     args = {"--test1", "5"};
@@ -179,7 +179,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMax", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMax1", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -203,7 +203,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMax1", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMin", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -224,7 +224,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMin", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupExact2", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -248,7 +248,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupExact2", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMin2", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
     ogroup->add_option("--test2", res);
@@ -271,13 +271,13 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMin2", "[optiongroup]") {
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMoved", "[optiongroup]") {
 
     int res{0};
-    auto opt1 = app.add_option("--test1", res);
-    auto opt2 = app.add_option("--test2", res);
-    auto opt3 = app.add_option("--test3", res);
+    auto *opt1 = app.add_option("--test1", res);
+    auto *opt2 = app.add_option("--test2", res);
+    auto *opt3 = app.add_option("--test3", res);
     int val2{0};
     app.add_option("--option", val2);
 
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     ogroup->require_option();
     ogroup->add_option(opt1);
     ogroup->add_option(opt2);
@@ -300,13 +300,13 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMoved", "[optiongroup]") {
 TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMovedAsGroup", "[optiongroup]") {
 
     int res{0};
-    auto opt1 = app.add_option("--test1", res);
-    auto opt2 = app.add_option("--test2", res);
-    auto opt3 = app.add_option("--test3", res);
+    auto *opt1 = app.add_option("--test1", res);
+    auto *opt2 = app.add_option("--test2", res);
+    auto *opt3 = app.add_option("--test3", res);
     int val2{0};
     app.add_option("--option", val2);
 
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     ogroup->require_option();
     ogroup->add_options(opt1, opt2, opt3);
 
@@ -328,17 +328,17 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMinMovedAsGroup", "[optiongroup]") {
 TEST_CASE_METHOD(TApp, "BasicOptionGroupAddFailures", "[optiongroup]") {
 
     int res{0};
-    auto opt1 = app.add_option("--test1", res);
+    auto *opt1 = app.add_option("--test1", res);
     app.set_config("--config");
     int val2{0};
     app.add_option("--option", val2);
 
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     CHECK_THROWS_AS(ogroup->add_options(app.get_config_ptr()), CLI::OptionAlreadyAdded);
     CHECK_THROWS_AS(ogroup->add_options(app.get_help_ptr()), CLI::OptionAlreadyAdded);
 
-    auto sub = app.add_subcommand("sub", "subcommand");
-    auto opt2 = sub->add_option("--option2", val2);
+    auto *sub = app.add_subcommand("sub", "subcommand");
+    auto *opt2 = sub->add_option("--option2", val2);
 
     CHECK_THROWS_AS(ogroup->add_option(opt2), CLI::OptionNotFound);
 
@@ -346,7 +346,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupAddFailures", "[optiongroup]") {
 
     ogroup->add_option(opt1);
 
-    auto opt3 = app.add_option("--test1", res);
+    auto *opt3 = app.add_option("--test1", res);
 
     CHECK_THROWS_AS(ogroup->add_option(opt3), CLI::OptionAlreadyAdded);
 }
@@ -354,14 +354,14 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupAddFailures", "[optiongroup]") {
 TEST_CASE_METHOD(TApp, "BasicOptionGroupScrewedUpMove", "[optiongroup]") {
 
     int res{0};
-    auto opt1 = app.add_option("--test1", res);
-    auto opt2 = app.add_option("--test2", res);
+    auto *opt1 = app.add_option("--test1", res);
+    auto *opt2 = app.add_option("--test2", res);
     int val2{0};
     app.add_option("--option", val2);
 
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     ogroup->require_option();
-    auto ogroup2 = ogroup->add_option_group("clusters2");
+    auto *ogroup2 = ogroup->add_option_group("clusters2");
     CHECK_THROWS_AS(ogroup2->add_options(opt1, opt2), CLI::OptionNotFound);
 
     CLI::Option_group EmptyGroup("description", "new group", nullptr);
@@ -371,7 +371,7 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupScrewedUpMove", "[optiongroup]") {
 }
 
 TEST_CASE_METHOD(TApp, "InvalidOptions", "[optiongroup]") {
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     CLI::Option *opt = nullptr;
     CHECK_THROWS_AS(ogroup->excludes(opt), CLI::OptionNotFound);
     CLI::App *app_p = nullptr;
@@ -382,7 +382,7 @@ TEST_CASE_METHOD(TApp, "InvalidOptions", "[optiongroup]") {
 
 TEST_CASE_METHOD(TApp, "OptionGroupInheritedOptionDefaults", "[optiongroup]") {
     app.option_defaults()->ignore_case();
-    auto ogroup = app.add_option_group("clusters");
+    auto *ogroup = app.add_option_group("clusters");
     int res{0};
     ogroup->add_option("--test1", res);
 
@@ -421,7 +421,7 @@ struct ManyGroups : public TApp {
         g3->add_option("--val3", val3);
     }
 
-    void remove_required() {
+    void remove_required() {  // NOLINT(readability-make-member-function-const)
         g1->get_option("--name1")->required(false);
         g2->get_option("--name2")->required(false);
         g3->get_option("--name3")->required(false);
@@ -486,8 +486,8 @@ TEST_CASE_METHOD(ManyGroups, "NeedsGroup", "[optiongroup]") {
 // test adding an option group with existing subcommands to an app
 TEST_CASE_METHOD(TApp, "ExistingSubcommandMatch", "[optiongroup]") {
     auto sshared = std::make_shared<CLI::Option_group>("documenting the subcommand", "sub1g", nullptr);
-    auto s1 = sshared->add_subcommand("sub1");
-    auto o1 = sshared->add_option_group("opt1");
+    auto *s1 = sshared->add_subcommand("sub1");
+    auto *o1 = sshared->add_option_group("opt1");
     o1->add_subcommand("sub3")->alias("sub4");
 
     app.add_subcommand("sub1");
@@ -597,9 +597,9 @@ TEST_CASE_METHOD(ManyGroups, "DisableFirst", "[optiongroup]") {
 TEST_CASE_METHOD(ManyGroups, "SameSubcommand", "[optiongroup]") {
     // only 1 group can be used if remove_required not used
     remove_required();
-    auto sub1 = g1->add_subcommand("sub1")->disabled();
-    auto sub2 = g2->add_subcommand("sub1")->disabled();
-    auto sub3 = g3->add_subcommand("sub1");
+    auto *sub1 = g1->add_subcommand("sub1")->disabled();
+    auto *sub2 = g2->add_subcommand("sub1")->disabled();
+    auto *sub3 = g3->add_subcommand("sub1");
     // so when the subcommands are disabled they can have the same name
     sub1->disabled(false);
     sub2->disabled(false);
@@ -679,7 +679,7 @@ TEST_CASE_METHOD(ManyGroups, "Inheritance", "[optiongroup]") {
     remove_required();
     g1->ignore_case();
     g1->ignore_underscore();
-    auto t2 = g1->add_subcommand("t2");
+    auto *t2 = g1->add_subcommand("t2");
     args = {"T2", "t_2"};
     CHECK(t2->get_ignore_underscore());
     CHECK(t2->get_ignore_case());
@@ -689,7 +689,7 @@ TEST_CASE_METHOD(ManyGroups, "Inheritance", "[optiongroup]") {
 
 TEST_CASE_METHOD(ManyGroups, "Moving", "[optiongroup]") {
     remove_required();
-    auto mg = app.add_option_group("maing");
+    auto *mg = app.add_option_group("maing");
     mg->add_subcommand(g1);
     mg->add_subcommand(g2);
 
@@ -767,11 +767,11 @@ TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsPositionals", "[optiongro
 
 TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsSubcommand", "[optiongroup]") {
 
-    auto sub1 = g1->add_subcommand("sub1")->fallthrough();
+    auto *sub1 = g1->add_subcommand("sub1")->fallthrough();
     g2->add_subcommand("sub2")->fallthrough();
     g3->add_subcommand("sub3")->fallthrough();
 
-    std::size_t subtrigger;
+    std::size_t subtrigger = 0;
     sub1->preparse_callback([&subtrigger](std::size_t count) { subtrigger = count; });
     args = {"sub1"};
     run();

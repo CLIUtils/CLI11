@@ -24,7 +24,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheck", "[stringparse]") {
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +
-                  " --string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`",
+                  R"( --string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"`)",
               true);
     CHECK("this is my quoted string" == str);
     CHECK("qstring 2" == str2);
@@ -46,7 +46,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithSpace", "[stringparse]") {
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +
-                  " --string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`",
+                  R"( --string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"`)",
               true);
     CHECK("this is my quoted string" == str);
     CHECK("qstring 2" == str2);
@@ -70,7 +70,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithLotsOfSpace", "[stringparse]") {
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +
-                  " --string=\"this is my quoted string\" -t 'qstring 2' -m=`\"quoted string\"`",
+                  R"( --string="this is my quoted string" -t 'qstring 2' -m=`"quoted string"`)",
               true);
     CHECK("this is my quoted string" == str);
     CHECK("qstring 2" == str2);

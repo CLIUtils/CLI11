@@ -17,7 +17,7 @@ int main(int argc, const char *argv[]) {
 
     app.add_option("-v", logLevel, "level");
 
-    auto subcom = app.add_subcommand("sub", "")->fallthrough();
+    auto *subcom = app.add_subcommand("sub", "")->fallthrough();
     subcom->preparse_callback([&app](size_t) { app.get_subcommand("sub")->add_option_group("group"); });
 
     CLI11_PARSE(app, argc, argv);

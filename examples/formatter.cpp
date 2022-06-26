@@ -24,9 +24,9 @@ int main(int argc, char **argv) {
 
     app.add_flag("--flag", "This is a flag");
 
-    auto sub1 = app.add_subcommand("one", "Description One");
+    auto *sub1 = app.add_subcommand("one", "Description One");
     sub1->add_flag("--oneflag", "Some flag");
-    auto sub2 = app.add_subcommand("two", "Description Two");
+    auto *sub2 = app.add_subcommand("two", "Description Two");
     sub2->add_flag("--twoflag", "Some other flag");
 
     CLI11_PARSE(app, argc, argv);

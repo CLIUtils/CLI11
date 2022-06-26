@@ -66,8 +66,8 @@ inline bool split_windows_style(const std::string &current, std::string &name, s
 // Splits a string into multiple long and short names
 inline std::vector<std::string> split_names(std::string current) {
     std::vector<std::string> output;
-    std::size_t val;
-    while((val = current.find(",")) != std::string::npos) {
+    std::size_t val = 0;
+    while((val = current.find(',')) != std::string::npos) {
         output.push_back(trim_copy(current.substr(0, val)));
         current = current.substr(val + 1);
     }
@@ -94,7 +94,7 @@ inline std::vector<std::pair<std::string, std::string>> get_default_flag_values(
         if((def_start != std::string::npos) && (flag.back() == '}')) {
             defval = flag.substr(def_start + 1);
             defval.pop_back();
-            flag.erase(def_start, std::string::npos);
+            flag.erase(def_start, std::string::npos);  // NOLINT(readability-suspicious-call-argument)
         }
         flag.erase(0, flag.find_first_not_of("-!"));
         output.emplace_back(flag, defval);
@@ -134,8 +134,7 @@ get_names(const std::vector<std::string> &input) {
         }
     }
 
-    return std::tuple<std::vector<std::string>, std::vector<std::string>, std::string>(
-        short_names, long_names, pos_name);
+    return std::make_tuple(short_names, long_names, pos_name);
 }
 
 }  // namespace detail

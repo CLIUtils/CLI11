@@ -347,7 +347,7 @@ inline std::vector<std::string> split_up(std::string str, char delimiter = '\0')
 
     const std::string delims("\'\"`");
     auto find_ws = [delimiter](char ch) {
-        return (delimiter == '\0') ? (std::isspace<char>(ch, std::locale()) != 0) : (ch == delimiter);
+        return (delimiter == '\0') ? std::isspace<char>(ch, std::locale()) : (ch == delimiter);
     };
     trim(str);
 

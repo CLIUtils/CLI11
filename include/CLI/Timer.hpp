@@ -12,6 +12,8 @@
 #define _GLIBCXX_USE_NANOSLEEP
 #endif
 
+#include <cmath>
+
 #include <array>
 #include <chrono>
 #include <functional>
@@ -63,7 +65,7 @@ class Timer {
     /// Time a function by running it multiple times. Target time is the len to target.
     std::string time_it(std::function<void()> f, double target_time = 1) {
         time_point start = start_;
-        double total_time;
+        double total_time = NAN;
 
         start_ = clock::now();
         std::size_t n = 0;
@@ -79,7 +81,7 @@ class Timer {
     }
 
     /// This formats the numerical value for the time string
-    std::string make_time_str() const {
+    std::string make_time_str() const {  // NOLINT(modernize-use-nodiscard)
         time_point stop = clock::now();
         std::chrono::duration<double> elapsed = stop - start_;
         double time = elapsed.count() / static_cast<double>(cycles);
@@ -88,7 +90,7 @@ class Timer {
 
     // LCOV_EXCL_START
     /// This prints out a time string from a time
-    std::string make_time_str(double time) const {
+    std::string make_time_str(double time) const {  // NOLINT(modernize-use-nodiscard)
         auto print_it = [](double x, std::string unit) {
             const unsigned int buffer_length = 50;
             std::array<char, buffer_length> buffer;
@@ -98,17 +100,16 @@ class Timer {
 
         if(time < .000001)
             return print_it(time * 1000000000, "ns");
-        else if(time < .001)
+        if(time < .001)
             return print_it(time * 1000000, "us");
-        else if(time < 1)
+        if(time < 1)
             return print_it(time * 1000, "ms");
-        else
-            return print_it(time, "s");
+        return print_it(time, "s");
     }
     // LCOV_EXCL_STOP
 
     /// This is the main function, it creates a string
-    std::string to_string() const { return time_print_(title_, make_time_str()); }
+    std::string to_string() const { return time_print_(title_, make_time_str()); }  // NOLINT(modernize-use-nodiscard)
 
     /// Division sets the number of cycles to divide by (no graphical change)
     Timer &operator/(std::size_t val) {

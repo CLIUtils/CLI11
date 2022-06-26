@@ -10,7 +10,7 @@
 #include <string>
 
 int main(int argc, char **argv) {
-    CLI::AutoTimer("This is a timer");
+    CLI::AutoTimer give_me_a_name("This is a timer");
 
     CLI::App app("K3Pi goofit fitter");
 

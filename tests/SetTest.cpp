@@ -6,6 +6,7 @@
 
 #include "app_helper.hpp"
 #include <map>
+#include <memory>
 
 static_assert(CLI::is_shared_ptr<std::shared_ptr<int>>::value == true, "is_shared_ptr should work on shared pointers");
 static_assert(CLI::is_shared_ptr<int *>::value == false, "is_shared_ptr should work on pointers");
@@ -34,7 +35,7 @@ static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value
 TEST_CASE_METHOD(TApp, "SimpleMaps", "[set]") {
     int value{0};
     std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
+    auto *opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -78,9 +79,9 @@ TEST_CASE_METHOD(TApp, "StringStringMapNoModify", "[set]") {
 enum SimpleEnum { SE_one = 1, SE_two = 2 };
 
 TEST_CASE_METHOD(TApp, "EnumMap", "[set]") {
-    SimpleEnum value;
+    SimpleEnum value;  // NOLINT(cppcoreguidelines-init-variables)
     std::map<std::string, SimpleEnum> map = {{"one", SE_one}, {"two", SE_two}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
+    auto *opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -92,9 +93,9 @@ TEST_CASE_METHOD(TApp, "EnumMap", "[set]") {
 enum class SimpleEnumC { one = 1, two = 2 };
 
 TEST_CASE_METHOD(TApp, "EnumCMap", "[set]") {
-    SimpleEnumC value;
+    SimpleEnumC value;  // NOLINT(cppcoreguidelines-init-variables)
     std::map<std::string, SimpleEnumC> map = {{"one", SimpleEnumC::one}, {"two", SimpleEnumC::two}};
-    auto opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
+    auto *opt = app.add_option("-s,--set", value)->transform(CLI::Transformer(map));
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -111,7 +112,7 @@ TEST_CASE_METHOD(TApp, "structMap", "[set]") {
     };
     std::string struct_name;
     std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
-    auto opt = app.add_option("-s,--set", struct_name)->check(CLI::IsMember(map));
+    auto *opt = app.add_option("-s,--set", struct_name)->check(CLI::IsMember(map));
     args = {"-s", "sone"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -131,8 +132,8 @@ TEST_CASE_METHOD(TApp, "structMapChange", "[set]") {
     };
     std::string struct_name;
     std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
-    auto opt = app.add_option("-s,--set", struct_name)
-                   ->transform(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
+    auto *opt = app.add_option("-s,--set", struct_name)
+                    ->transform(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
     args = {"-s", "s one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -159,8 +160,8 @@ TEST_CASE_METHOD(TApp, "structMapNoChange", "[set]") {
     };
     std::string struct_name;
     std::map<std::string, struct tstruct> map = {{"sone", {4, 32.4, "foo"}}, {"stwo", {5, 99.7, "bar"}}};
-    auto opt = app.add_option("-s,--set", struct_name)
-                   ->check(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
+    auto *opt = app.add_option("-s,--set", struct_name)
+                    ->check(CLI::IsMember(map, CLI::ignore_case, CLI::ignore_underscore, CLI::ignore_space));
     args = {"-s", "SONE"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -184,9 +185,9 @@ TEST_CASE_METHOD(TApp, "NonCopyableMap", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
-    map["e1"] = std::unique_ptr<double>(new double(5.7));
-    map["e3"] = std::unique_ptr<double>(new double(23.8));
-    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
+    map["e1"].reset(new double(5.7));
+    map["e3"].reset(new double(23.8));
+    auto *opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "e1"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -202,9 +203,9 @@ TEST_CASE_METHOD(TApp, "NonCopyableMapWithFunction", "[set]") {
 
     std::string map_name;
     std::map<std::string, std::unique_ptr<double>> map;
-    map["e1"] = std::unique_ptr<double>(new double(5.7));
-    map["e3"] = std::unique_ptr<double>(new double(23.8));
-    auto opt = app.add_option("-s,--set", map_name)->transform(CLI::IsMember(&map, CLI::ignore_underscore));
+    map["e1"].reset(new double(5.7));
+    map["e3"].reset(new double(23.8));
+    auto *opt = app.add_option("-s,--set", map_name)->transform(CLI::IsMember(&map, CLI::ignore_underscore));
     args = {"-s", "e_1"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -220,9 +221,9 @@ TEST_CASE_METHOD(TApp, "NonCopyableMapNonStringMap", "[set]") {
 
     std::string map_name;
     std::map<int, std::unique_ptr<double>> map;
-    map[4] = std::unique_ptr<double>(new double(5.7));
-    map[17] = std::unique_ptr<double>(new double(23.8));
-    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
+    map[4].reset(new double(5.7));
+    map[17].reset(new double(23.8));
+    auto *opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(&map));
     args = {"-s", "4"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -240,7 +241,7 @@ TEST_CASE_METHOD(TApp, "CopyableMapMove", "[set]") {
     std::map<int, double> map;
     map[4] = 5.7;
     map[17] = 23.8;
-    auto opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(std::move(map)));
+    auto *opt = app.add_option("-s,--set", map_name)->check(CLI::IsMember(std::move(map)));
     args = {"-s", "4"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -254,7 +255,7 @@ TEST_CASE_METHOD(TApp, "CopyableMapMove", "[set]") {
 
 TEST_CASE_METHOD(TApp, "SimpleSets", "[set]") {
     std::string value;
-    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<std::string>({"one", "two", "three"})});
+    auto *opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<std::string>({"one", "two", "three"})});
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -264,9 +265,9 @@ TEST_CASE_METHOD(TApp, "SimpleSets", "[set]") {
 }
 
 TEST_CASE_METHOD(TApp, "SimpleSetsPtrs", "[set]") {
-    auto set = std::shared_ptr<std::set<std::string>>(new std::set<std::string>{"one", "two", "three"});
+    auto set = std::make_shared<std::set<std::string>>(std::set<std::string>{"one", "two", "three"});
     std::string value;
-    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{set});
+    auto *opt = app.add_option("-s,--set", value)->check(CLI::IsMember{set});
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -286,7 +287,7 @@ TEST_CASE_METHOD(TApp, "SimpleSetsPtrs", "[set]") {
 
 TEST_CASE_METHOD(TApp, "SimiShortcutSets", "[set]") {
     std::string value;
-    auto opt = app.add_option("--set", value)->check(CLI::IsMember({"one", "two", "three"}));
+    auto *opt = app.add_option("--set", value)->check(CLI::IsMember({"one", "two", "three"}));
     args = {"--set", "one"};
     run();
     CHECK(app.count("--set") == 1u);
@@ -294,7 +295,7 @@ TEST_CASE_METHOD(TApp, "SimiShortcutSets", "[set]") {
     CHECK("one" == value);
 
     std::string value2;
-    auto opt2 = app.add_option("--set2", value2)->transform(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
+    auto *opt2 = app.add_option("--set2", value2)->transform(CLI::IsMember({"One", "two", "three"}, CLI::ignore_case));
     args = {"--set2", "onE"};
     run();
     CHECK(app.count("--set2") == 1u);
@@ -302,8 +303,8 @@ TEST_CASE_METHOD(TApp, "SimiShortcutSets", "[set]") {
     CHECK("One" == value2);
 
     std::string value3;
-    auto opt3 = app.add_option("--set3", value3)
-                    ->transform(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
+    auto *opt3 = app.add_option("--set3", value3)
+                     ->transform(CLI::IsMember({"O_ne", "two", "three"}, CLI::ignore_case, CLI::ignore_underscore));
     args = {"--set3", "onE"};
     run();
     CHECK(app.count("--set3") == 1u);
@@ -312,10 +313,10 @@ TEST_CASE_METHOD(TApp, "SimiShortcutSets", "[set]") {
 }
 
 TEST_CASE_METHOD(TApp, "SetFromCharStarArrayVector", "[set]") {
-    constexpr const char *names[3]{"one", "two", "three"};
+    constexpr const char *names[3]{"one", "two", "three"};  // NOLINT(modernize-avoid-c-arrays)
     std::string value;
-    auto opt = app.add_option("-s,--set", value)
-                   ->check(CLI::IsMember{std::vector<std::string>(std::begin(names), std::end(names))});
+    auto *opt = app.add_option("-s,--set", value)
+                    ->check(CLI::IsMember{std::vector<std::string>(std::begin(names), std::end(names))});
     args = {"-s", "one"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -327,7 +328,7 @@ TEST_CASE_METHOD(TApp, "SetFromCharStarArrayVector", "[set]") {
 TEST_CASE_METHOD(TApp, "OtherTypeSets", "[set]") {
     int value{0};
     std::vector<int> set = {2, 3, 4};
-    auto opt = app.add_option("--set", value)->check(CLI::IsMember(set));
+    auto *opt = app.add_option("--set", value)->check(CLI::IsMember(set));
     args = {"--set", "3"};
     run();
     CHECK(app.count("--set") == 1u);
@@ -338,7 +339,7 @@ TEST_CASE_METHOD(TApp, "OtherTypeSets", "[set]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     std::vector<int> set2 = {-2, 3, 4};
-    auto opt2 = app.add_option("--set2", value)->transform(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
+    auto *opt2 = app.add_option("--set2", value)->transform(CLI::IsMember(set2, [](int x) { return std::abs(x); }));
     args = {"--set2", "-3"};
     run();
     CHECK(app.count("--set2") == 1u);
@@ -360,7 +361,7 @@ TEST_CASE_METHOD(TApp, "OtherTypeSets", "[set]") {
 
 TEST_CASE_METHOD(TApp, "NumericalSets", "[set]") {
     int value{0};
-    auto opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<int>({1, 2, 3})});
+    auto *opt = app.add_option("-s,--set", value)->check(CLI::IsMember{std::set<int>({1, 2, 3})});
     args = {"-s", "1"};
     run();
     CHECK(app.count("-s") == 1u);
@@ -494,7 +495,7 @@ TEST_CASE_METHOD(TApp, "FailSet", "[set]") {
 TEST_CASE_METHOD(TApp, "FailMutableSet", "[set]") {
 
     int choice{0};
-    auto vals = std::shared_ptr<std::set<int>>(new std::set<int>({1, 2, 3}));
+    auto vals = std::make_shared<std::set<int>>(std::set<int>{1, 2, 3});
     app.add_option("-q,--quick", choice)->check(CLI::IsMember(vals));
     app.add_option("-s,--slow", choice)->capture_default_str()->check(CLI::IsMember(vals));
 
@@ -554,7 +555,7 @@ TEST_CASE_METHOD(TApp, "InSetIgnoreCaseMutableValue", "[set]") {
 
 TEST_CASE_METHOD(TApp, "InSetIgnoreCasePointer", "[set]") {
 
-    std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
+    auto *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
     app.add_option("-q,--quick", choice)->transform(CLI::IsMember(*options, CLI::ignore_case));
 
@@ -584,7 +585,7 @@ TEST_CASE_METHOD(TApp, "InSetIgnoreCasePointer", "[set]") {
 
 TEST_CASE_METHOD(TApp, "NotInSetIgnoreCasePointer", "[set]") {
 
-    std::set<std::string> *options = new std::set<std::string>{"one", "Two", "THREE"};
+    auto *options = new std::set<std::string>{"one", "Two", "THREE"};
     std::string choice;
     app.add_option("-q,--quick", choice)->check(!CLI::IsMember(*options, CLI::ignore_case));
 

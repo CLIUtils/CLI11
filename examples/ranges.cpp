@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     std::vector<int> range;
     app.add_option("--range,-R", range, "A range")->expected(-2);
 
-    auto ogroup = app.add_option_group("min_max_step", "set the min max and step");
+    auto *ogroup = app.add_option_group("min_max_step", "set the min max and step");
     int min{0}, max{0}, step{1};
     ogroup->add_option("--min,-m", min, "The minimum")->required();
     ogroup->add_option("--max,-M", max, "The maximum")->required();

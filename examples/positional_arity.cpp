@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
 
     CLI::App app("test for positional arity");
 
-    auto numbers = app.add_option_group("numbers", "specify key numbers");
-    auto files = app.add_option_group("files", "specify files");
+    auto *numbers = app.add_option_group("numbers", "specify key numbers");
+    auto *files = app.add_option_group("files", "specify files");
     int num1{-1}, num2{-1};
     numbers->add_option("num1", num1, "first number");
     numbers->add_option("num2", num2, "second number");

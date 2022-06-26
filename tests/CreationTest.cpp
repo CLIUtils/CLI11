@@ -41,7 +41,7 @@ TEST_CASE_METHOD(TApp, "AddingExistingWithCase", "[creation]") {
 }
 
 TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter", "[creation]") {
-    auto count = app.add_flag("-c,--count");
+    auto *count = app.add_flag("-c,--count");
     app.add_flag("--Cat,-C");
 
     CHECK_THROWS_AS(count->ignore_case(), CLI::OptionAlreadyAdded);
@@ -49,20 +49,20 @@ TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter2", "[creation]") {
     app.add_flag("-c,--count");
-    auto cat = app.add_flag("--Cat,-C");
+    auto *cat = app.add_flag("--Cat,-C");
 
     CHECK_THROWS_AS(cat->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "AddingExistingWithUnderscoreAfter", "[creation]") {
-    auto count = app.add_flag("--underscore");
+    auto *count = app.add_flag("--underscore");
     app.add_flag("--under_score");
 
     CHECK_THROWS_AS(count->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "AddingExistingWithUnderscoreAfter2", "[creation]") {
-    auto count = app.add_flag("--under_score");
+    auto *count = app.add_flag("--under_score");
     app.add_flag("--underscore");
 
     CHECK_THROWS_AS(count->ignore_underscore(), CLI::OptionAlreadyAdded);
@@ -125,13 +125,13 @@ TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreFirst", "[creation]"
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseInplace", "[creation]") {
     app.add_subcommand("first");
-    auto first = app.add_subcommand("fIrst");
+    auto *first = app.add_subcommand("fIrst");
 
     CHECK_THROWS_AS(first->ignore_case(), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseInplace2", "[creation]") {
-    auto first = app.add_subcommand("first");
+    auto *first = app.add_subcommand("first");
     app.add_subcommand("fIrst");
 
     CHECK_THROWS_AS(first->ignore_case(), CLI::OptionAlreadyAdded);
@@ -139,29 +139,29 @@ TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithCaseInplace2", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreInplace", "[creation]") {
     app.add_subcommand("first_option");
-    auto first = app.add_subcommand("firstoption");
+    auto *first = app.add_subcommand("firstoption");
 
     CHECK_THROWS_AS(first->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomMatchingWithUnderscoreInplace2", "[creation]") {
-    auto first = app.add_subcommand("firstoption");
+    auto *first = app.add_subcommand("firstoption");
     app.add_subcommand("first_option");
 
     CHECK_THROWS_AS(first->ignore_underscore(), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomNoMatchingInplace2", "[creation]") {
-    auto first = app.add_subcommand("first");
-    auto second = app.add_subcommand("second");
+    auto *first = app.add_subcommand("first");
+    auto *second = app.add_subcommand("second");
 
     CHECK_NOTHROW(first->ignore_case());
     CHECK_NOTHROW(second->ignore_case());
 }
 
 TEST_CASE_METHOD(TApp, "MultipleSubcomNoMatchingInplaceUnderscore2", "[creation]") {
-    auto first = app.add_subcommand("first_option");
-    auto second = app.add_subcommand("second_option");
+    auto *first = app.add_subcommand("first_option");
+    auto *second = app.add_subcommand("second_option");
 
     CHECK_NOTHROW(first->ignore_underscore());
     CHECK_NOTHROW(second->ignore_underscore());
@@ -183,25 +183,25 @@ TEST_CASE_METHOD(TApp, "IncorrectConstructionFlagPositional3", "[creation]") {
 }
 
 TEST_CASE_METHOD(TApp, "IncorrectConstructionNeedsCannotFind", "[creation]") {
-    auto cat = app.add_flag("--cat");
+    auto *cat = app.add_flag("--cat");
     CHECK_THROWS_AS(cat->needs("--nothing"), CLI::IncorrectConstruction);
 }
 
 TEST_CASE_METHOD(TApp, "IncorrectConstructionExcludesCannotFind", "[creation]") {
-    auto cat = app.add_flag("--cat");
+    auto *cat = app.add_flag("--cat");
     CHECK_THROWS_AS(cat->excludes("--nothing"), CLI::IncorrectConstruction);
 }
 
 TEST_CASE_METHOD(TApp, "IncorrectConstructionDuplicateNeeds", "[creation]") {
-    auto cat = app.add_flag("--cat");
-    auto other = app.add_flag("--other");
+    auto *cat = app.add_flag("--cat");
+    auto *other = app.add_flag("--other");
     REQUIRE_NOTHROW(cat->needs(other));
     // duplicated needs is redundant but not an error
     CHECK_NOTHROW(cat->needs(other));
 }
 
 TEST_CASE_METHOD(TApp, "IncorrectConstructionDuplicateNeedsTxt", "[creation]") {
-    auto cat = app.add_flag("--cat");
+    auto *cat = app.add_flag("--cat");
     app.add_flag("--other");
     REQUIRE_NOTHROW(cat->needs("--other"));
     // duplicate needs is redundant but not an error
@@ -210,28 +210,28 @@ TEST_CASE_METHOD(TApp, "IncorrectConstructionDuplicateNeedsTxt", "[creation]") {
 
 // Now allowed
 TEST_CASE_METHOD(TApp, "CorrectConstructionDuplicateExcludes", "[creation]") {
-    auto cat = app.add_flag("--cat");
-    auto other = app.add_flag("--other");
+    auto *cat = app.add_flag("--cat");
+    auto *other = app.add_flag("--other");
     REQUIRE_NOTHROW(cat->excludes(other));
     REQUIRE_NOTHROW(other->excludes(cat));
 }
 
 // Now allowed
 TEST_CASE_METHOD(TApp, "CorrectConstructionDuplicateExcludesTxt", "[creation]") {
-    auto cat = app.add_flag("--cat");
-    auto other = app.add_flag("--other");
+    auto *cat = app.add_flag("--cat");
+    auto *other = app.add_flag("--other");
     REQUIRE_NOTHROW(cat->excludes("--other"));
     REQUIRE_NOTHROW(other->excludes("--cat"));
 }
 
 TEST_CASE_METHOD(TApp, "CheckName", "[creation]") {
-    auto long1 = app.add_flag("--long1");
-    auto long2 = app.add_flag("--Long2");
-    auto short1 = app.add_flag("-a");
-    auto short2 = app.add_flag("-B");
+    auto *long1 = app.add_flag("--long1");
+    auto *long2 = app.add_flag("--Long2");
+    auto *short1 = app.add_flag("-a");
+    auto *short2 = app.add_flag("-B");
     int x{0}, y{0};
-    auto pos1 = app.add_option("pos1", x);
-    auto pos2 = app.add_option("pOs2", y);
+    auto *pos1 = app.add_option("pos1", x);
+    auto *pos2 = app.add_option("pOs2", y);
 
     CHECK(long1->check_name("--long1"));
     CHECK(!long1->check_name("--lonG1"));
@@ -253,13 +253,13 @@ TEST_CASE_METHOD(TApp, "CheckName", "[creation]") {
 }
 
 TEST_CASE_METHOD(TApp, "CheckNameNoCase", "[creation]") {
-    auto long1 = app.add_flag("--long1")->ignore_case();
-    auto long2 = app.add_flag("--Long2")->ignore_case();
-    auto short1 = app.add_flag("-a")->ignore_case();
-    auto short2 = app.add_flag("-B")->ignore_case();
+    auto *long1 = app.add_flag("--long1")->ignore_case();
+    auto *long2 = app.add_flag("--Long2")->ignore_case();
+    auto *short1 = app.add_flag("-a")->ignore_case();
+    auto *short2 = app.add_flag("-B")->ignore_case();
     int x{0}, y{0};
-    auto pos1 = app.add_option("pos1", x)->ignore_case();
-    auto pos2 = app.add_option("pOs2", y)->ignore_case();
+    auto *pos1 = app.add_option("pos1", x)->ignore_case();
+    auto *pos2 = app.add_option("pOs2", y)->ignore_case();
 
     CHECK(long1->check_name("--long1"));
     CHECK(long1->check_name("--lonG1"));
@@ -281,12 +281,12 @@ TEST_CASE_METHOD(TApp, "CheckNameNoCase", "[creation]") {
 }
 
 TEST_CASE_METHOD(TApp, "CheckNameNoUnderscore", "[creation]") {
-    auto long1 = app.add_flag("--longoption1")->ignore_underscore();
-    auto long2 = app.add_flag("--long_option2")->ignore_underscore();
+    auto *long1 = app.add_flag("--longoption1")->ignore_underscore();
+    auto *long2 = app.add_flag("--long_option2")->ignore_underscore();
 
     int x{0}, y{0};
-    auto pos1 = app.add_option("pos_option_1", x)->ignore_underscore();
-    auto pos2 = app.add_option("posoption2", y)->ignore_underscore();
+    auto *pos1 = app.add_option("pos_option_1", x)->ignore_underscore();
+    auto *pos2 = app.add_option("posoption2", y)->ignore_underscore();
 
     CHECK(long1->check_name("--long_option1"));
     CHECK(long1->check_name("--longoption_1"));
@@ -312,12 +312,12 @@ TEST_CASE_METHOD(TApp, "CheckNameNoUnderscore", "[creation]") {
 }
 
 TEST_CASE_METHOD(TApp, "CheckNameNoCaseNoUnderscore", "[creation]") {
-    auto long1 = app.add_flag("--LongoptioN1")->ignore_underscore()->ignore_case();
-    auto long2 = app.add_flag("--long_Option2")->ignore_case()->ignore_underscore();
+    auto *long1 = app.add_flag("--LongoptioN1")->ignore_underscore()->ignore_case();
+    auto *long2 = app.add_flag("--long_Option2")->ignore_case()->ignore_underscore();
 
     int x{0}, y{0};
-    auto pos1 = app.add_option("pos_Option_1", x)->ignore_underscore()->ignore_case();
-    auto pos2 = app.add_option("posOption2", y)->ignore_case()->ignore_underscore();
+    auto *pos1 = app.add_option("pos_Option_1", x)->ignore_underscore()->ignore_case();
+    auto *pos2 = app.add_option("posOption2", y)->ignore_case()->ignore_underscore();
 
     CHECK(long1->check_name("--Long_Option1"));
     CHECK(long1->check_name("--lONgoption_1"));
@@ -344,7 +344,7 @@ TEST_CASE_METHOD(TApp, "CheckNameNoCaseNoUnderscore", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "PreSpaces", "[creation]") {
     int x{0};
-    auto myapp = app.add_option(" -a, --long, other", x);
+    auto *myapp = app.add_option(" -a, --long, other", x);
 
     CHECK(myapp->check_lname("long"));
     CHECK(myapp->check_sname("a"));
@@ -353,7 +353,7 @@ TEST_CASE_METHOD(TApp, "PreSpaces", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "AllSpaces", "[creation]") {
     int x{0};
-    auto myapp = app.add_option(" -a , --long , other ", x);
+    auto *myapp = app.add_option(" -a , --long , other ", x);
 
     CHECK(myapp->check_lname("long"));
     CHECK(myapp->check_sname("a"));
@@ -365,26 +365,26 @@ TEST_CASE_METHOD(TApp, "OptionFromDefaults", "[creation]") {
 
     // Options should remember defaults
     int x{0};
-    auto opt = app.add_option("--simple", x);
+    auto *opt = app.add_option("--simple", x);
     CHECK(opt->get_required());
 
     // Flags cannot be required
-    auto flag = app.add_flag("--other");
+    auto *flag = app.add_flag("--other");
     CHECK(!flag->get_required());
 
     app.option_defaults()->required(false);
-    auto opt2 = app.add_option("--simple2", x);
+    auto *opt2 = app.add_option("--simple2", x);
     CHECK(!opt2->get_required());
 
     app.option_defaults()->required()->ignore_case();
 
-    auto opt3 = app.add_option("--simple3", x);
+    auto *opt3 = app.add_option("--simple3", x);
     CHECK(opt3->get_required());
     CHECK(opt3->get_ignore_case());
 
     app.option_defaults()->required()->ignore_underscore();
 
-    auto opt4 = app.add_option("--simple4", x);
+    auto *opt4 = app.add_option("--simple4", x);
     CHECK(opt4->get_required());
     CHECK(opt4->get_ignore_underscore());
 }
@@ -408,7 +408,7 @@ TEST_CASE_METHOD(TApp, "OptionFromDefaultsSubcommands", "[creation]") {
         ->disable_flag_override()
         ->group("Something");
 
-    auto app2 = app.add_subcommand("app2");
+    auto *app2 = app.add_subcommand("app2");
 
     CHECK(app2->option_defaults()->get_required());
     CHECK(CLI::MultiOptionPolicy::TakeLast == app2->option_defaults()->get_multi_option_policy());
@@ -421,10 +421,10 @@ TEST_CASE_METHOD(TApp, "OptionFromDefaultsSubcommands", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "GetNameCheck", "[creation]") {
     int x{0};
-    auto a = app.add_flag("--that");
-    auto b = app.add_flag("-x");
-    auto c = app.add_option("pos", x);
-    auto d = app.add_option("one,-o,--other", x);
+    auto *a = app.add_flag("--that");
+    auto *b = app.add_flag("-x");
+    auto *c = app.add_option("pos", x);
+    auto *d = app.add_option("one,-o,--other", x);
 
     CHECK("--that" == a->get_name(false, true));
     CHECK("-x" == b->get_name(false, true));
@@ -455,7 +455,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     CHECK(!app.get_configurable());
     CHECK(!app.get_validate_positionals());
 
-    CHECK("" == app.get_footer());
+    CHECK(app.get_footer().empty());
     CHECK("Subcommands" == app.get_group());
     CHECK(0u == app.get_require_subcommand_min());
     CHECK(0u == app.get_require_subcommand_max());
@@ -478,7 +478,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     app.group("Stuff");
     app.require_subcommand(2, 3);
 
-    auto app2 = app.add_subcommand("app2");
+    auto *app2 = app.add_subcommand("app2");
 
     // Initial defaults
     CHECK(app2->get_allow_extras());
@@ -533,8 +533,8 @@ TEST_CASE_METHOD(TApp, "SubcommandMinMax", "[creation]") {
 
 TEST_CASE_METHOD(TApp, "GetOptionList", "[creation]") {
     int two{0};
-    auto flag = app.add_flag("--one");
-    auto opt = app.add_option("--two", two);
+    auto *flag = app.add_flag("--one");
+    auto *opt = app.add_option("--two", two);
 
     const CLI::App &const_app = app;  // const alias to force use of const-methods
     std::vector<const CLI::Option *> opt_list = const_app.get_options();
@@ -561,9 +561,9 @@ TEST_CASE("ValidatorTests: TestValidatorCreation", "[creation]") {
     CHECK(V.get_active());
 
     CHECK("test" == V("test"));
-    CHECK(std::string{} == V("test5"));
+    CHECK(V("test5").empty());
 
-    CHECK(std::string{} == V.get_description());
+    CHECK(V.get_description().empty());
     V.description("this is a description");
     CHECK("this is a description" == V.get_description());
 }
@@ -717,7 +717,7 @@ class Unstreamable {
 
   public:
     Unstreamable() = default;
-    int get_x() const { return x_; }
+    CLI11_NODISCARD int get_x() const { return x_; }
     void set_x(int x) { x_ = x; }
 };
 
@@ -725,7 +725,7 @@ class Unstreamable {
 static_assert(!CLI::detail::is_istreamable<Unstreamable, std::istream>::value, "Unstreamable type is streamable");
 
 std::istream &operator>>(std::istream &in, Unstreamable &value) {
-    int x;
+    int x = 0;
     in >> x;
     value.set_x(x);
     return in;

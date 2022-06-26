@@ -1,17 +1,80 @@
 # Checks that will be implemented in future PRs:
 # performance-unnecessary-value-param, hints to ~110 issues. Be careful with implementing the suggested changes of this one, as auto-fixes may break the code
+# bugprone-forwarding-reference-overload probably should be enabled and fixed.
+# clang-diagnostic-float-equal can be fixed by using _a from Catch::literals
+# bugprone-exception-escape due to main being a bit simple in examples
+# modernize-avoid-c-arrays trips up in TEMPLATE_TEST_CASE catch macro
+# modernize-return-braced-init-list triggers on lambdas ?
+# modernize-make-unique requires C++14
 
-FormatStyle: file
-
-Checks: >
-  -*, google-*, -google-runtime-references, llvm-include-order,
-  llvm-namespace-comment, misc-throw-by-value-catch-by-reference, modernize*,
-  -modernize-use-trailing-return-type, readability-container-size-empty,
-
-WarningsAsErrors: "*"
-
-HeaderFilterRegex: ".*hpp"
+Checks: |
+  *bugprone*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-forwarding-reference-overload,
+  -bugprone-exception-escape,
+  clang-analyzer-optin.cplusplus.VirtualCall,
+  clang-analyzer-optin.performance.Padding,
+  -clang-diagnostic-float-equal,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-prefer-member-initializer,
+  cppcoreguidelines-pro-type-static-cast-downcast,
+  cppcoreguidelines-slicing,
+  google-*,
+  -google-runtime-references,
+  llvm-include-order,
+  llvm-namespace-comment,
+  misc-definitions-in-headers,
+  misc-misplaced-const,
+  misc-non-copyable-objects,
+  misc-static-assert,
+  misc-throw-by-value-catch-by-reference,
+  misc-throw-by-value-catch-by-reference,
+  misc-uniqueptr-reset-release,
+  misc-unused-parameters,
+  modernize*,
+  -modernize-use-trailing-return-type,
+  -modernize-concat-nested-namespaces,
+  -modernize-return-braced-init-list,
+  -modernize-make-unique,
+  *performance*,
+  -performance-unnecessary-value-param,
+  -performance-inefficient-string-concatenation,
+  readability-avoid-const-params-in-decls,
+  readability-const-return-type,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-else-after-return,
+  readability-implicit-bool-conversion,
+  readability-inconsistent-declaration-parameter-name,
+  readability-make-member-function-const,
+  readability-misplaced-array-index,
+  readability-non-const-parameter,
+  readability-qualified-auto,
+  readability-redundant-function-ptr-dereference,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  readability-simplify-subscript-expr,
+  readability-static-accessed-through-instance,
+  readability-static-definition-in-anonymous-namespace,
+  readability-string-compare,
+  readability-suspicious-call-argument,
+  readability-uniqueptr-delete-release,
 
 CheckOptions:
   - key: google-readability-braces-around-statements.ShortStatementLines
     value: "3"
+  - key: performance-for-range-copy.WarnOnAllAutoCopies
+    value: true
+  - key: performance-inefficient-string-concatenation.StrictMode
+    value: true
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: "exception_ptr$;"
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: modernize-use-nodiscard.ReplacementString
+    value: "CLI11_NODISCARD"
+
+HeaderFilterRegex: "CLI.*hpp"
+
+FormatStyle: file
+# WarningsAsErrors: "*"

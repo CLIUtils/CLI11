@@ -105,13 +105,6 @@ cmake_dependent_option(
   CLI11_CUDA_TESTS "Build the tests with NVCC to check for warnings there - requires CMake 3.9+"
   OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
 
-cmake_dependent_option(
-  CLI11_CLANG_TIDY "Look for and use Clang-Tidy" OFF
-  "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;NOT CMAKE_VERSION VERSION_LESS 3.6" OFF)
-set(CLI11_CLANG_TIDY_OPTIONS
-    ""
-    CACHE STRING "Clang tidy options, such as -fix, semicolon separated")
-
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
 endif()
@@ -133,6 +126,22 @@ endif()
 add_library(CLI11_warnings INTERFACE)
 
 set(unix-warnings -Wall -Wextra -pedantic -Wshadow -Wsign-conversion -Wswitch-enum)
+
+# Clang warnings
+# -Wfloat-equal could be added with Catch::literals and _a usage
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  list(
+    APPEND
+    unix-warnings
+    -Wcast-align
+    -Wimplicit-atomic-properties
+    -Wmissing-declarations
+    -Woverlength-strings
+    -Wshadow
+    -Wstrict-selector-match
+    -Wundeclared-selector)
+  # -Wunreachable-code Doesn't work on Clang 3.4
+endif()
 
 # Buggy in GCC 4.8
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
@@ -189,16 +198,6 @@ if(CLI11_CUDA_TESTS)
 
   # Print out warning and error numbers
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --display_error_number")
-endif()
-
-# Prepare Clang-Tidy
-if(CLI11_CLANG_TIDY)
-  find_program(
-    CLANG_TIDY_EXE
-    NAMES "clang-tidy"
-    DOC "Path to clang-tidy executable" REQUIRED)
-
-  set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" ${CLI11_CLANG_TIDY_OPTIONS})
 endif()
 
 # This folder should be installed

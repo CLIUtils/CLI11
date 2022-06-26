@@ -26,9 +26,10 @@ complexity of CLI11 needlessly.
 - Formatting should be done with pre-commit, otherwise the format check will not
   pass. However, it is trivial to apply this to your PR, so don't worry about
   this check. If you do want to run it, see below.
-- Everything must pass clang-tidy as well, run with `-DCLI11_CLANG_TIDY=ON` (if
-  you set `-DCLI11_CLANG_TIDY_OPTIONS="-fix"`, make sure you use a single
-  threaded build process, or just build one example target).
+- Everything must pass clang-tidy as well, run with
+  `-DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy)"` (if you set
+  `"$(which clang-tidy) -fix"`, make sure you use a single threaded build
+  process, or just build one example target).
 - Your changes must also conform to most of the
   [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
   rules checked by [cpplint](https://github.com/cpplint/cpplint). For unused

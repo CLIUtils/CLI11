@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <cmath>
+
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
@@ -30,10 +32,10 @@ TEST_CASE_METHOD(TApp, "OneFlagShortValues", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "OneFlagShortValuesAs", "[app]") {
-    auto flg = app.add_flag("-c{1},--count{2}");
+    auto *flg = app.add_flag("-c{1},--count{2}");
     args = {"-c"};
     run();
-    auto opt = app["-c"];
+    const auto *opt = app["-c"];
     CHECK(1 == opt->as<int>());
     args = {"--count"};
     run();
@@ -68,8 +70,8 @@ TEST_CASE_METHOD(TApp, "OneFlagShortWindows", "[app]") {
 TEST_CASE_METHOD(TApp, "WindowsLongShortMix1", "[app]") {
     app.allow_windows_style_options();
 
-    auto a = app.add_flag("-c");
-    auto b = app.add_flag("--c");
+    auto *a = app.add_flag("-c");
+    auto *b = app.add_flag("--c");
     args = {"/c"};
     run();
     CHECK(a->count() == 1u);
@@ -79,8 +81,8 @@ TEST_CASE_METHOD(TApp, "WindowsLongShortMix1", "[app]") {
 TEST_CASE_METHOD(TApp, "WindowsLongShortMix2", "[app]") {
     app.allow_windows_style_options();
 
-    auto a = app.add_flag("--c");
-    auto b = app.add_flag("-c");
+    auto *a = app.add_flag("--c");
+    auto *b = app.add_flag("-c");
     args = {"/c"};
     run();
     CHECK(a->count() == 1u);
@@ -160,7 +162,7 @@ TEST_CASE_METHOD(TApp, "RequireOptionsError", "[app]") {
 
 TEST_CASE_METHOD(TApp, "BoolFlagOverride", "[app]") {
     bool val{false};
-    auto flg = app.add_flag("--this,--that", val);
+    auto *flg = app.add_flag("--this,--that", val);
 
     app.parse("--this");
     CHECK(val);
@@ -200,7 +202,7 @@ TEST_CASE_METHOD(TApp, "OneFlagRefValue", "[app]") {
 
 TEST_CASE_METHOD(TApp, "OneFlagRefValueFalse", "[app]") {
     int ref{0};
-    auto flg = app.add_flag("-c,--count", ref);
+    auto *flg = app.add_flag("-c,--count", ref);
     args = {"--count=false"};
     run();
     CHECK(app.count("-c") == 1u);
@@ -220,7 +222,7 @@ TEST_CASE_METHOD(TApp, "OneFlagRefValueFalse", "[app]") {
 
 TEST_CASE_METHOD(TApp, "FlagNegation", "[app]") {
     int ref{0};
-    auto flg = app.add_flag("-c,--count,--ncount{false}", ref);
+    auto *flg = app.add_flag("-c,--count,--ncount{false}", ref);
     args = {"--count", "-c", "--ncount"};
     CHECK(!flg->check_fname("count"));
     CHECK(flg->check_fname("ncount"));
@@ -437,7 +439,7 @@ TEST_CASE_METHOD(TApp, "OneStringFlagLike", "[app]") {
 
 TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
     int val{0};
-    auto opt = app.add_option("-i", val)->expected(0, 1);
+    auto *opt = app.add_option("-i", val)->expected(0, 1);
     args = {"-i"};
     run();
     CHECK(app.count("-i") == 1u);
@@ -534,7 +536,7 @@ TEST_CASE_METHOD(TApp, "NumberFlags", "[app]") {
 TEST_CASE_METHOD(TApp, "DisableFlagOverrideTest", "[app]") {
 
     int val{0};
-    auto opt = app.add_flag("--1{1},--2{2},--3{3},--4{4},--5{5},--6{6}, --7{7}, --8{8}, --9{9}", val);
+    auto *opt = app.add_flag("--1{1},--2{2},--3{3},--4{4},--5{5},--6{6}, --7{7}, --8{8}, --9{9}", val);
     CHECK(!opt->get_disable_flag_override());
     opt->disable_flag_override();
     args = {"--7=5"};
@@ -609,7 +611,7 @@ TEST_CASE_METHOD(TApp, "StrangeOptionNames", "[app]") {
 
 TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {
     bool val{false};
-    auto opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
+    auto *opt = app.add_option("--flag", val)->type_size(0)->default_str("true");
     args = {"--flag"};
     run();
     CHECK(app.count("--flag") == 1u);
@@ -625,7 +627,7 @@ TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {
 
 TEST_CASE_METHOD(TApp, "FlagLikeIntOption", "[app]") {
     int val{-47};
-    auto opt = app.add_option("--flag", val)->expected(0, 1);
+    auto *opt = app.add_option("--flag", val)->expected(0, 1);
     // normally some default value should be set, but this test is for some paths in the validators checks to skip
     // validation on empty string if nothing is expected
     opt->check(CLI::PositiveNumber);
@@ -678,7 +680,7 @@ TEST_CASE_METHOD(TApp, "ShortOpts", "[app]") {
 TEST_CASE_METHOD(TApp, "TwoParamTemplateOpts", "[app]") {
 
     double funnyint{0.0};
-    auto opt = app.add_option<double, unsigned int>("-y", funnyint);
+    auto *opt = app.add_option<double, unsigned int>("-y", funnyint);
 
     args = {"-y", "32"};
 
@@ -776,7 +778,7 @@ TEST_CASE_METHOD(TApp, "JoinOpt", "[app]") {
 
 TEST_CASE_METHOD(TApp, "SumOpt", "[app]") {
 
-    int val;
+    int val = 0;
     app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
 
     args = {"--val=1", "--val=4"};
@@ -788,7 +790,7 @@ TEST_CASE_METHOD(TApp, "SumOpt", "[app]") {
 
 TEST_CASE_METHOD(TApp, "SumOptFloat", "[app]") {
 
-    double val;
+    double val = NAN;
     app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
 
     args = {"--val=1.3", "--val=-0.7"};
@@ -846,7 +848,7 @@ TEST_CASE_METHOD(TApp, "TakeLastOptMulti_alternative_path", "[app]") {
 
 TEST_CASE_METHOD(TApp, "TakeLastOptMultiCheck", "[app]") {
     std::vector<int> vals;
-    auto opt = app.add_option("--long", vals)->expected(-2)->take_last();
+    auto *opt = app.add_option("--long", vals)->expected(-2)->take_last();
 
     opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
     opt->check((!CLI::PositiveNumber).application_index(1));
@@ -979,7 +981,7 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
 
     std::vector<std::string> strs;
     std::vector<std::string> strs2;
-    auto opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
+    auto *opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
     app.add_option("--str2", strs2);
     args = {"--str"};
 
@@ -995,13 +997,13 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
 
     run();
 
-    CHECK(std::vector<std::string>{} == strs);
+    CHECK(strs.empty());
     CHECK(std::vector<std::string>{"{}"} == strs2);
     opt1->default_str("{}");
     args = {"--str"};
 
     CHECK_NOTHROW(run());
-    CHECK(std::vector<std::string>{} == strs);
+    CHECK(strs.empty());
 }
 
 TEST_CASE_METHOD(TApp, "RequiredOptsDoubleShort", "[app]") {
@@ -1096,7 +1098,7 @@ TEST_CASE_METHOD(TApp, "RequiredPositionals", "[app]") {
     sources.clear();
     run();
 
-    CHECK(0u == sources.size());
+    CHECK(sources.empty());
     CHECK("a" == dest);
 }
 
@@ -1130,7 +1132,7 @@ TEST_CASE_METHOD(TApp, "RequiredPositionalVector", "[app]") {
 // Tests positionals at end
 TEST_CASE_METHOD(TApp, "RequiredPositionalValidation", "[app]") {
     std::vector<std::string> sources;
-    int dest;  // required
+    int dest = 0;  // required
     std::string d2;
     app.add_option("src", sources);
     app.add_option("dest", dest)->required()->check(CLI::PositiveNumber);
@@ -1214,10 +1216,10 @@ TEST_CASE_METHOD(TApp, "RequiredOptsUnlimited", "[app]") {
 
     app.allow_extras(false);
     std::vector<std::string> remain;
-    auto popt = app.add_option("positional", remain);
+    auto *popt = app.add_option("positional", remain);
     run();
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
-    CHECK(std::vector<std::string>() == remain);
+    CHECK(remain.empty());
 
     args = {"--str", "one", "--", "two"};
 
@@ -1265,7 +1267,7 @@ TEST_CASE_METHOD(TApp, "RequiredOptsUnlimitedShort", "[app]") {
     app.add_option("positional", remain);
     run();
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
-    CHECK(std::vector<std::string>() == remain);
+    CHECK(remain.empty());
 
     args = {"-s", "one", "--", "two"};
 
@@ -1492,7 +1494,7 @@ TEST_CASE_METHOD(TApp, "Positionals", "[app]") {
 
 TEST_CASE_METHOD(TApp, "ForcedPositional", "[app]") {
     std::vector<std::string> posit;
-    auto one = app.add_flag("--one");
+    auto *one = app.add_flag("--one");
     app.add_option("posit", posit);
 
     args = {"--one", "two", "three"};
@@ -1597,7 +1599,7 @@ TEST_CASE_METHOD(TApp, "Reset", "[app]") {
 
 TEST_CASE_METHOD(TApp, "RemoveOption", "[app]") {
     app.add_flag("--one");
-    auto opt = app.add_flag("--two");
+    auto *opt = app.add_flag("--two");
 
     CHECK(app.remove_option(opt));
     CHECK(!app.remove_option(opt));
@@ -1608,8 +1610,8 @@ TEST_CASE_METHOD(TApp, "RemoveOption", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "RemoveNeedsLinks", "[app]") {
-    auto one = app.add_flag("--one");
-    auto two = app.add_flag("--two");
+    auto *one = app.add_flag("--one");
+    auto *two = app.add_flag("--two");
 
     two->needs(one);
     one->needs(two);
@@ -1622,8 +1624,8 @@ TEST_CASE_METHOD(TApp, "RemoveNeedsLinks", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "RemoveExcludesLinks", "[app]") {
-    auto one = app.add_flag("--one");
-    auto two = app.add_flag("--two");
+    auto *one = app.add_flag("--one");
+    auto *two = app.add_flag("--two");
 
     two->excludes(one);
     one->excludes(two);
@@ -1640,7 +1642,7 @@ TEST_CASE_METHOD(TApp, "FileNotExists", "[app]") {
     REQUIRE_NOTHROW(CLI::NonexistentPath(myfile));
 
     std::string filename;
-    auto opt = app.add_option("--file", filename)->check(CLI::NonexistentPath, "path_check");
+    auto *opt = app.add_option("--file", filename)->check(CLI::NonexistentPath, "path_check");
     args = {"--file", myfile};
 
     run();
@@ -1696,15 +1698,15 @@ TEST_CASE_METHOD(TApp, "NotFileExists", "[app]") {
 TEST_CASE_METHOD(TApp, "DefaultedResult", "[app]") {
     std::string sval = "NA";
     int ival{0};
-    auto opts = app.add_option("--string", sval)->capture_default_str();
-    auto optv = app.add_option("--val", ival);
+    auto *opts = app.add_option("--string", sval)->capture_default_str();
+    auto *optv = app.add_option("--val", ival);
     args = {};
     run();
     CHECK("NA" == sval);
     std::string nString;
     opts->results(nString);
     CHECK("NA" == nString);
-    int newIval;
+    int newIval = 0;
     // CHECK_THROWS_AS (optv->results(newIval), CLI::ConversionError);
     optv->default_str("442");
     optv->results(newIval);
@@ -1791,7 +1793,7 @@ TEST_CASE_METHOD(TApp, "NeedsMultiFlags", "[app]") {
     CLI::Option *opt1 = app.add_flag("--opt1");
     CLI::Option *opt2 = app.add_flag("--opt2");
     CLI::Option *opt3 = app.add_flag("--opt3");
-    app.add_flag("--optall")->needs(opt1, opt2, opt3);
+    app.add_flag("--optall")->needs(opt1, opt2, opt3);  // NOLINT(readability-suspicious-call-argument)
 
     run();
 
@@ -2121,20 +2123,20 @@ TEST_CASE_METHOD(TApp, "FallthroughParentFail", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "FallthroughParents", "[app]") {
-    auto sub = app.add_subcommand("test");
+    auto *sub = app.add_subcommand("test");
     CHECK(&app == CLI::detail::AppFriend::get_fallthrough_parent(sub));
 
-    auto ssub = sub->add_subcommand("sub2");
+    auto *ssub = sub->add_subcommand("sub2");
     CHECK(sub == CLI::detail::AppFriend::get_fallthrough_parent(ssub));
 
-    auto og1 = app.add_option_group("g1");
-    auto og2 = og1->add_option_group("g2");
-    auto og3 = og2->add_option_group("g3");
+    auto *og1 = app.add_option_group("g1");
+    auto *og2 = og1->add_option_group("g2");
+    auto *og3 = og2->add_option_group("g3");
     CHECK(&app == CLI::detail::AppFriend::get_fallthrough_parent(og3));
 
-    auto ogb1 = sub->add_option_group("g1");
-    auto ogb2 = ogb1->add_option_group("g2");
-    auto ogb3 = ogb2->add_option_group("g3");
+    auto *ogb1 = sub->add_option_group("g1");
+    auto *ogb2 = ogb1->add_option_group("g2");
+    auto *ogb3 = ogb2->add_option_group("g3");
     CHECK(sub == CLI::detail::AppFriend::get_fallthrough_parent(ogb3));
 
     ogb2->name("groupb");
@@ -2153,7 +2155,7 @@ TEST_CASE_METHOD(TApp, "OptionWithDefaults", "[app]") {
 // Added to test ->transform
 TEST_CASE_METHOD(TApp, "OrderedModifyingTransforms", "[app]") {
     std::vector<std::string> val;
-    auto m = app.add_option("-m", val);
+    auto *m = app.add_option("-m", val);
     m->transform([](std::string x) { return x + "1"; });
     m->transform([](std::string x) { return x + "2"; });
 
@@ -2166,7 +2168,7 @@ TEST_CASE_METHOD(TApp, "OrderedModifyingTransforms", "[app]") {
 
 TEST_CASE_METHOD(TApp, "ThrowingTransform", "[app]") {
     std::string val;
-    auto m = app.add_option("-m,--mess", val);
+    auto *m = app.add_option("-m,--mess", val);
     m->transform([](std::string) -> std::string { throw CLI::ValidationError("My Message"); });
 
     REQUIRE_NOTHROW(run());
@@ -2188,7 +2190,7 @@ TEST_CASE_METHOD(TApp, "EachItem", "[app]") {
     std::vector<std::string> results;
     std::vector<std::string> dummy;
 
-    auto opt = app.add_option("--vec", dummy);
+    auto *opt = app.add_option("--vec", dummy);
 
     opt->each([&results](std::string item) { results.push_back(item); });
 
@@ -2259,7 +2261,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse", "[app]") {
 
     std::vector<int> vals{1, 2, 3};
     args = {"--idx", "1,2,3"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    auto *opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     CHECK(std::vector<int>({1, 2, 3}) == vals);
     std::vector<int> vals2;
@@ -2279,7 +2281,7 @@ TEST_CASE_METHOD(TApp, "DefaultUserSepParse", "[app]") {
 
     std::vector<std::string> vals;
     args = {"--idx", "1 2 3", "4 5 6"};
-    auto opt = app.add_option("--idx", vals, "");
+    auto *opt = app.add_option("--idx", vals, "");
     run();
     CHECK(std::vector<std::string>({"1 2 3", "4 5 6"}) == vals);
     opt->delimiter(',');
@@ -2303,7 +2305,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse2", "[app]") {
 
     std::vector<int> vals{1, 2, 3};
     args = {"--idx", "1,2,"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    auto *opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     CHECK(std::vector<int>({1, 2}) == vals);
 
@@ -2329,7 +2331,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParseToggle", "[app]") {
 
     std::vector<std::string> vals;
     args = {"--idx", "1,2,3"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    auto *opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     CHECK(std::vector<std::string>({"1", "2", "3"}) == vals);
     opt->delimiter('\0');
@@ -2348,7 +2350,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse3", "[app]") {
             "1",
             ","
             "2"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',');
+    auto *opt = app.add_option("--idx", vals)->delimiter(',');
     run();
     CHECK(std::vector<int>({1, 2}) == vals);
     app.remove_option(opt);
@@ -2363,7 +2365,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse4", "[app]") {
 
     std::vector<int> vals;
     args = {"--idx", "1,    2"};
-    auto opt = app.add_option("--idx", vals)->delimiter(',')->capture_default_str();
+    auto *opt = app.add_option("--idx", vals)->delimiter(',')->capture_default_str();
     run();
     CHECK(std::vector<int>({1, 2}) == vals);
 
@@ -2379,7 +2381,7 @@ TEST_CASE_METHOD(TApp, "CustomUserSepParse5", "[app]") {
 
     std::vector<std::string> bar;
     args = {"this", "is", "a", "test"};
-    auto opt = app.add_option("bar", bar, "bar");
+    auto *opt = app.add_option("bar", bar, "bar");
     run();
     CHECK(std::vector<std::string>({"this", "is", "a", "test"}) == bar);
 
@@ -2421,7 +2423,7 @@ TEST_CASE_METHOD(TApp, "logFormSingleDash", "[app]") {
 
 TEST_CASE("C20_compile", "simple") {
     CLI::App app{"test"};
-    auto flag = app.add_flag("--flag", "desc");
+    auto *flag = app.add_flag("--flag", "desc");
 
     app.parse("--flag");
     CHECK_FALSE(flag->empty());

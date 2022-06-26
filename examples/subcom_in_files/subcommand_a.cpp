@@ -15,7 +15,7 @@
 void setup_subcommand_a(CLI::App &app) {
     // Create the option and subcommand objects.
     auto opt = std::make_shared<SubcommandAOptions>();
-    auto sub = app.add_subcommand("subcommand_a", "performs subcommand a");
+    auto *sub = app.add_subcommand("subcommand_a", "performs subcommand a");
 
     // Add options to sub, binding them to opt.
     sub->add_option("-f,--file", opt->file, "File name")->required();

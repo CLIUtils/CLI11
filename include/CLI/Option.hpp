@@ -119,44 +119,44 @@ template <typename CRTP> class OptionBase {
     // Getters
 
     /// Get the group of this option
-    const std::string &get_group() const { return group_; }
+    CLI11_NODISCARD const std::string &get_group() const { return group_; }
 
     /// True if this is a required option
-    bool get_required() const { return required_; }
+    CLI11_NODISCARD bool get_required() const { return required_; }
 
     /// The status of ignore case
-    bool get_ignore_case() const { return ignore_case_; }
+    CLI11_NODISCARD bool get_ignore_case() const { return ignore_case_; }
 
     /// The status of ignore_underscore
-    bool get_ignore_underscore() const { return ignore_underscore_; }
+    CLI11_NODISCARD bool get_ignore_underscore() const { return ignore_underscore_; }
 
     /// The status of configurable
-    bool get_configurable() const { return configurable_; }
+    CLI11_NODISCARD bool get_configurable() const { return configurable_; }
 
     /// The status of configurable
-    bool get_disable_flag_override() const { return disable_flag_override_; }
+    CLI11_NODISCARD bool get_disable_flag_override() const { return disable_flag_override_; }
 
     /// Get the current delimiter char
-    char get_delimiter() const { return delimiter_; }
+    CLI11_NODISCARD char get_delimiter() const { return delimiter_; }
 
     /// Return true if this will automatically capture the default value for help printing
-    bool get_always_capture_default() const { return always_capture_default_; }
+    CLI11_NODISCARD bool get_always_capture_default() const { return always_capture_default_; }
 
     /// The status of the multi option policy
-    MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
+    CLI11_NODISCARD MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 
     // Shortcuts for multi option policy
 
     /// Set the multi option policy to take last
     CRTP *take_last() {
-        auto self = static_cast<CRTP *>(this);
+        auto *self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::TakeLast);
         return self;
     }
 
     /// Set the multi option policy to take last
     CRTP *take_first() {
-        auto self = static_cast<CRTP *>(this);
+        auto *self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::TakeFirst);
         return self;
     }
@@ -170,7 +170,7 @@ template <typename CRTP> class OptionBase {
 
     /// Set the multi option policy to join
     CRTP *join() {
-        auto self = static_cast<CRTP *>(this);
+        auto *self = static_cast<CRTP *>(this);
         self->multi_option_policy(MultiOptionPolicy::Join);
         return self;
     }
@@ -361,10 +361,10 @@ class Option : public OptionBase<Option> {
     Option &operator=(const Option &) = delete;
 
     /// Count the total number of times an option was passed
-    std::size_t count() const { return results_.size(); }
+    CLI11_NODISCARD std::size_t count() const { return results_.size(); }
 
     /// True if the option was not passed
-    bool empty() const { return results_.empty(); }
+    CLI11_NODISCARD bool empty() const { return results_.empty(); }
 
     /// This bool operator returns true if any arguments were passed or the option callback is forced
     explicit operator bool() const { return !empty() || force_callback_; }
@@ -427,14 +427,14 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// Get the current value of allow extra args
-    bool get_allow_extra_args() const { return allow_extra_args_; }
+    CLI11_NODISCARD bool get_allow_extra_args() const { return allow_extra_args_; }
     /// Set the value of trigger_on_parse which specifies that the option callback should be triggered on every parse
     Option *trigger_on_parse(bool value = true) {
         trigger_on_result_ = value;
         return this;
     }
     /// The status of trigger on parse
-    bool get_trigger_on_parse() const { return trigger_on_result_; }
+    CLI11_NODISCARD bool get_trigger_on_parse() const { return trigger_on_result_; }
 
     /// Set the value of force_callback
     Option *force_callback(bool value = true) {
@@ -442,7 +442,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// The status of force_callback
-    bool get_force_callback() const { return force_callback_; }
+    CLI11_NODISCARD bool get_force_callback() const { return force_callback_; }
 
     /// Set the value of run_callback_for_default which controls whether the callback function should be called to set
     /// the default This is controlled automatically but could be manipulated by the user.
@@ -451,7 +451,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
     /// Get the current value of run_callback_for_default
-    bool get_run_callback_for_default() const { return run_callback_for_default_; }
+    CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
     /// Adds a Validator with a built in type name
     Option *check(Validator validator, const std::string &validator_name = "") {
@@ -547,7 +547,7 @@ class Option : public OptionBase<Option> {
     /// Any number supported, any mix of string and Opt
     template <typename A, typename B, typename... ARG> Option *needs(A opt, B opt1, ARG... args) {
         needs(opt);
-        return needs(opt1, args...);
+        return needs(opt1, args...);  // NOLINT(readability-suspicious-call-argument)
     }
 
     /// Remove needs link from an option. Returns true if the option really was in the needs list.
@@ -621,7 +621,7 @@ class Option : public OptionBase<Option> {
                 if(opt.get() == this) {
                     continue;
                 }
-                auto &omatch = opt->matching_name(*this);
+                const auto &omatch = opt->matching_name(*this);
                 if(!omatch.empty()) {
                     ignore_case_ = false;
                     throw OptionAlreadyAdded("adding ignore case caused a name conflict with " + omatch);
@@ -646,7 +646,7 @@ class Option : public OptionBase<Option> {
                 if(opt.get() == this) {
                     continue;
                 }
-                auto &omatch = opt->matching_name(*this);
+                const auto &omatch = opt->matching_name(*this);
                 if(!omatch.empty()) {
                     ignore_underscore_ = false;
                     throw OptionAlreadyAdded("adding ignore underscore caused a name conflict with " + omatch);
@@ -682,41 +682,41 @@ class Option : public OptionBase<Option> {
     ///@{
 
     /// The number of arguments the option expects
-    int get_type_size() const { return type_size_min_; }
+    CLI11_NODISCARD int get_type_size() const { return type_size_min_; }
 
     /// The minimum number of arguments the option expects
-    int get_type_size_min() const { return type_size_min_; }
+    CLI11_NODISCARD int get_type_size_min() const { return type_size_min_; }
     /// The maximum number of arguments the option expects
-    int get_type_size_max() const { return type_size_max_; }
+    CLI11_NODISCARD int get_type_size_max() const { return type_size_max_; }
 
     /// Return the inject_separator flag
-    int get_inject_separator() const { return inject_separator_; }
+    CLI11_NODISCARD bool get_inject_separator() const { return inject_separator_; }
 
     /// The environment variable associated to this value
-    std::string get_envname() const { return envname_; }
+    CLI11_NODISCARD std::string get_envname() const { return envname_; }
 
     /// The set of options needed
-    std::set<Option *> get_needs() const { return needs_; }
+    CLI11_NODISCARD std::set<Option *> get_needs() const { return needs_; }
 
     /// The set of options excluded
-    std::set<Option *> get_excludes() const { return excludes_; }
+    CLI11_NODISCARD std::set<Option *> get_excludes() const { return excludes_; }
 
     /// The default value (for help printing)
-    std::string get_default_str() const { return default_str_; }
+    CLI11_NODISCARD std::string get_default_str() const { return default_str_; }
 
     /// Get the callback function
-    callback_t get_callback() const { return callback_; }
+    CLI11_NODISCARD callback_t get_callback() const { return callback_; }
 
     /// Get the long names
-    const std::vector<std::string> &get_lnames() const { return lnames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_lnames() const { return lnames_; }
 
     /// Get the short names
-    const std::vector<std::string> &get_snames() const { return snames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_snames() const { return snames_; }
 
     /// Get the flag names with specified default values
-    const std::vector<std::string> &get_fnames() const { return fnames_; }
+    CLI11_NODISCARD const std::vector<std::string> &get_fnames() const { return fnames_; }
     /// Get a single name for the option, first of lname, pname, sname, envname
-    const std::string &get_single_name() const {
+    CLI11_NODISCARD const std::string &get_single_name() const {
         if(!lnames_.empty()) {
             return lnames_[0];
         }
@@ -729,35 +729,35 @@ class Option : public OptionBase<Option> {
         return envname_;
     }
     /// The number of times the option expects to be included
-    int get_expected() const { return expected_min_; }
+    CLI11_NODISCARD int get_expected() const { return expected_min_; }
 
     /// The number of times the option expects to be included
-    int get_expected_min() const { return expected_min_; }
+    CLI11_NODISCARD int get_expected_min() const { return expected_min_; }
     /// The max number of times the option expects to be included
-    int get_expected_max() const { return expected_max_; }
+    CLI11_NODISCARD int get_expected_max() const { return expected_max_; }
 
     /// The total min number of expected  string values to be used
-    int get_items_expected_min() const { return type_size_min_ * expected_min_; }
+    CLI11_NODISCARD int get_items_expected_min() const { return type_size_min_ * expected_min_; }
 
     /// Get the maximum number of items expected to be returned and used for the callback
-    int get_items_expected_max() const {
+    CLI11_NODISCARD int get_items_expected_max() const {
         int t = type_size_max_;
         return detail::checked_multiply(t, expected_max_) ? t : detail::expected_max_vector_size;
     }
     /// The total min number of expected  string values to be used
-    int get_items_expected() const { return get_items_expected_min(); }
+    CLI11_NODISCARD int get_items_expected() const { return get_items_expected_min(); }
 
     /// True if the argument can be given directly
-    bool get_positional() const { return pname_.length() > 0; }
+    CLI11_NODISCARD bool get_positional() const { return pname_.length() > 0; }
 
     /// True if option has at least one non-positional name
-    bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
+    CLI11_NODISCARD bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
 
     /// True if option has description
-    bool has_description() const { return description_.length() > 0; }
+    CLI11_NODISCARD bool has_description() const { return description_.length() > 0; }
 
     /// Get the description
-    const std::string &get_description() const { return description_; }
+    CLI11_NODISCARD const std::string &get_description() const { return description_; }
 
     /// Set the description
     Option *description(std::string option_description) {
@@ -770,7 +770,7 @@ class Option : public OptionBase<Option> {
         return this;
     }
 
-    const std::string &get_option_text() const { return option_text_; }
+    CLI11_NODISCARD const std::string &get_option_text() const { return option_text_; }
 
     ///@}
     /// @name Help tools
@@ -780,8 +780,8 @@ class Option : public OptionBase<Option> {
     /// Will include / prefer the positional name if positional is true.
     /// If all_options is false, pick just the most descriptive name to show.
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
-    std::string get_name(bool positional = false,  ///< Show the positional name
-                         bool all_options = false  ///< Show every option
+    CLI11_NODISCARD std::string get_name(bool positional = false,  ///< Show the positional name
+                                         bool all_options = false  ///< Show every option
     ) const {
         if(get_group().empty())
             return {};  // Hidden
@@ -867,7 +867,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// If options share any of the same names, find it
-    const std::string &matching_name(const Option &other) const {
+    CLI11_NODISCARD const std::string &matching_name(const Option &other) const {
         static const std::string estring;
         for(const std::string &sname : snames_)
             if(other.check_sname(sname))
@@ -891,7 +891,7 @@ class Option : public OptionBase<Option> {
     bool operator==(const Option &other) const { return !matching_name(other).empty(); }
 
     /// Check a name. Requires "-" or "--" for short / long, supports positional name
-    bool check_name(const std::string &name) const {
+    CLI11_NODISCARD bool check_name(const std::string &name) const {
 
         if(name.length() > 2 && name[0] == '-' && name[1] == '-')
             return check_lname(name.substr(2));
@@ -921,17 +921,17 @@ class Option : public OptionBase<Option> {
     }
 
     /// Requires "-" to be removed from string
-    bool check_sname(std::string name) const {
+    CLI11_NODISCARD bool check_sname(std::string name) const {
         return (detail::find_member(std::move(name), snames_, ignore_case_) >= 0);
     }
 
     /// Requires "--" to be removed from string
-    bool check_lname(std::string name) const {
+    CLI11_NODISCARD bool check_lname(std::string name) const {
         return (detail::find_member(std::move(name), lnames_, ignore_case_, ignore_underscore_) >= 0);
     }
 
     /// Requires "--" to be removed from string
-    bool check_fname(std::string name) const {
+    CLI11_NODISCARD bool check_fname(std::string name) const {
         if(fnames_.empty()) {
             return false;
         }
@@ -940,7 +940,7 @@ class Option : public OptionBase<Option> {
 
     /// Get the value that goes for a flag, nominally gets the default value but allows for overrides if not
     /// disabled
-    std::string get_flag_value(const std::string &name, std::string input_value) const {
+    CLI11_NODISCARD std::string get_flag_value(const std::string &name, std::string input_value) const {
         static const std::string trueString{"true"};
         static const std::string falseString{"false"};
         static const std::string emptyString{"{}"};
@@ -964,9 +964,8 @@ class Option : public OptionBase<Option> {
         if((input_value.empty()) || (input_value == emptyString)) {
             if(flag_like_) {
                 return (ind < 0) ? trueString : default_flag_values_[static_cast<std::size_t>(ind)].second;
-            } else {
-                return (ind < 0) ? default_str_ : default_flag_values_[static_cast<std::size_t>(ind)].second;
             }
+            return (ind < 0) ? default_str_ : default_flag_values_[static_cast<std::size_t>(ind)].second;
         }
         if(ind < 0) {
             return input_value;
@@ -1007,10 +1006,10 @@ class Option : public OptionBase<Option> {
     }
 
     /// Get the current complete results set
-    const results_t &results() const { return results_; }
+    CLI11_NODISCARD const results_t &results() const { return results_; }
 
     /// Get a copy of the results
-    results_t reduced_results() const {
+    CLI11_NODISCARD results_t reduced_results() const {
         results_t res = proc_results_.empty() ? results_ : proc_results_;
         if(current_option_state_ < option_state::reduced) {
             if(current_option_state_ == option_state::parsing) {
@@ -1030,7 +1029,7 @@ class Option : public OptionBase<Option> {
 
     /// Get the results as a specified type
     template <typename T> void results(T &output) const {
-        bool retval;
+        bool retval = false;
         if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
             const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
             retval = detail::lexical_conversion<T, T>(res, output);
@@ -1060,14 +1059,14 @@ class Option : public OptionBase<Option> {
     }
 
     /// Return the results as the specified type
-    template <typename T> T as() const {
+    template <typename T> CLI11_NODISCARD T as() const {
         T output;
         results(output);
         return output;
     }
 
     /// See if the callback has been run already
-    bool get_callback_run() const { return (current_option_state_ == option_state::callback_run); }
+    CLI11_NODISCARD bool get_callback_run() const { return (current_option_state_ == option_state::callback_run); }
 
     ///@}
     /// @name Custom options
@@ -1181,10 +1180,10 @@ class Option : public OptionBase<Option> {
     }
 
     /// Get the full typename for this option
-    std::string get_type_name() const {
+    CLI11_NODISCARD std::string get_type_name() const {
         std::string full_type_name = type_name_();
         if(!validators_.empty()) {
-            for(auto &Validator : validators_) {
+            for(const auto &Validator : validators_) {
                 std::string vtype = Validator.get_description();
                 if(!vtype.empty()) {
                     full_type_name += ":" + vtype;
@@ -1235,14 +1234,14 @@ class Option : public OptionBase<Option> {
     }
 
     /** reduce the results in accordance with the MultiOptionPolicy
-    @param[out] res results are assigned to res if there if they are different
+    @param[out] out results are assigned to res if there if they are different
     */
-    void _reduce_results(results_t &res, const results_t &original) const {
+    void _reduce_results(results_t &out, const results_t &original) const {
 
         // max num items expected or length of vector, always at least 1
         // Only valid for a trimming policy
 
-        res.clear();
+        out.clear();
         // Operation depends on the policy setting
         switch(multi_option_policy_) {
         case MultiOptionPolicy::TakeAll:
@@ -1252,23 +1251,23 @@ class Option : public OptionBase<Option> {
             std::size_t trim_size = std::min<std::size_t>(
                 static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
             if(original.size() != trim_size) {
-                res.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
+                out.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
             }
         } break;
         case MultiOptionPolicy::TakeFirst: {
             std::size_t trim_size = std::min<std::size_t>(
                 static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
             if(original.size() != trim_size) {
-                res.assign(original.begin(), original.begin() + static_cast<results_t::difference_type>(trim_size));
+                out.assign(original.begin(), original.begin() + static_cast<results_t::difference_type>(trim_size));
             }
         } break;
         case MultiOptionPolicy::Join:
             if(results_.size() > 1) {
-                res.push_back(detail::join(original, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
+                out.push_back(detail::join(original, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
             }
             break;
         case MultiOptionPolicy::Sum:
-            res.push_back(detail::sum_string_vector(original));
+            out.push_back(detail::sum_string_vector(original));
             break;
         case MultiOptionPolicy::Throw:
         default: {
@@ -1290,14 +1289,14 @@ class Option : public OptionBase<Option> {
         }
         }
         // this check is to allow an empty vector in certain circumstances but not if expected is not zero.
-        // {} is the indicator for a an empty container
-        if(res.empty()) {
+        // {} is the indicator for an empty container
+        if(out.empty()) {
             if(original.size() == 1 && original[0] == "{}" && get_items_expected_min() > 0) {
-                res.push_back("{}");
-                res.push_back("%%");
+                out.push_back("{}");
+                out.push_back("%%");
             }
-        } else if(res.size() == 1 && res[0] == "{}" && get_items_expected_min() > 0) {
-            res.push_back("%%");
+        } else if(out.size() == 1 && out[0] == "{}" && get_items_expected_min() > 0) {
+            out.push_back("%%");
         }
     }
 

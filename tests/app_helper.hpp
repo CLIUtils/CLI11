@@ -46,8 +46,8 @@ class TempFile {
         std::remove(_name.c_str());  // Doesn't matter if returns 0 or not
     }
 
-    operator const std::string &() const { return _name; }
-    const char *c_str() const { return _name.c_str(); }
+    operator const std::string &() const { return _name; }  // NOLINT(google-explicit-constructor)
+    CLI11_NODISCARD const char *c_str() const { return _name.c_str(); }
 };
 
 inline void put_env(std::string name, std::string value) {

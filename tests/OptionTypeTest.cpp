@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+
 #include <atomic>
+#include <cmath>
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
@@ -17,7 +19,10 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
+
+using Catch::literals::operator"" _a;
 
 TEST_CASE_METHOD(TApp, "OneStringAgain", "[optiontype]") {
     std::string str;
@@ -44,13 +49,13 @@ TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
-    CHECK(300.356 == res);
+    CHECK(300.356_a == res);
     // get the original value as entered as an integer
-    CHECK(-354.356f == app["--val"]->as<float>());
+    CHECK(-354.356_a == app["--val"]->as<float>());
 }
 
 TEST_CASE_METHOD(TApp, "doubleFunctionFail", "[optiontype]") {
-    double res;
+    double res = NAN;
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "not_double"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -65,8 +70,8 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunction", "[optiontype]") {
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
     CHECK(3u == res.size());
-    CHECK(10.0 == res[0]);
-    CHECK(12.0 == res[2]);
+    CHECK(10.0_a == res[0]);
+    CHECK(12.0_a == res[2]);
 }
 
 TEST_CASE_METHOD(TApp, "doubleVectorFunctionFail", "[optiontype]") {
@@ -86,7 +91,7 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunctionFail", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "doubleVectorFunctionRunCallbackOnDefault", "[optiontype]") {
     std::vector<double> res;
-    auto opt = app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
+    auto *opt = app.add_option_function<std::vector<double>>("--val", [&res](const std::vector<double> &val) {
         res = val;
         std::transform(res.begin(), res.end(), res.begin(), [](double v) { return v + 5.0; });
     });
@@ -195,7 +200,7 @@ TEST_CASE_METHOD(TApp, "BoolOption", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "atomic_int_option", "[optiontype]") {
     std::atomic<int> i{0};
-    auto aopt = app.add_option("-i,--int", i);
+    auto *aopt = app.add_option("-i,--int", i);
     args = {"-i4"};
     run();
     CHECK(app.count("--int") == 1u);
@@ -240,7 +245,7 @@ TEST_CASE_METHOD(TApp, "CharOption", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "vectorDefaults", "[optiontype]") {
     std::vector<int> vals{4, 5};
-    auto opt = app.add_option("--long", vals)->capture_default_str();
+    auto *opt = app.add_option("--long", vals)->capture_default_str();
 
     args = {"--long", "[1,2,3]"};
 
@@ -286,7 +291,7 @@ TEST_CASE_METHOD(TApp, "CallbackBoolFlags", "[optiontype]") {
 
     auto func = [&value]() { value = true; };
 
-    auto cback = app.add_flag_callback("--val", func);
+    auto *cback = app.add_flag_callback("--val", func);
     args = {"--val"};
     run();
     CHECK(value);
@@ -339,7 +344,7 @@ TEST_CASE_METHOD(TApp, "pair_check_take_first", "[optiontype]") {
     CHECK(CLI::ExistingFile(myfile).empty());
     std::pair<std::string, int> findex;
 
-    auto opt = app.add_option("--file", findex)->check(CLI::ExistingFile)->check(CLI::PositiveNumber);
+    auto *opt = app.add_option("--file", findex)->check(CLI::ExistingFile)->check(CLI::PositiveNumber);
     CHECK_THROWS_AS(opt->get_validator(3), CLI::OptionNotFound);
     opt->get_validator(0)->application_index(0);
     opt->get_validator(1)->application_index(1);
@@ -422,7 +427,7 @@ TEST_CASE_METHOD(TApp, "VectorUnlimString", "[optiontype]") {
 // From https://github.com/CLIUtils/CLI11/issues/420
 TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
     struct nType {
-        explicit nType(const std::string &a_value) : m_value{a_value} {}
+        explicit nType(std::string a_value) : m_value{std::move(a_value)} {}
 
         explicit operator std::string() const { return std::string{"op str"}; }
 
@@ -492,7 +497,7 @@ TEST_CASE_METHOD(TApp, "CustomDoubleOption", "[optiontype]") {
 
     std::pair<int, double> custom_opt;
 
-    auto opt = app.add_option("posit", [&custom_opt](CLI::results_t vals) {
+    auto *opt = app.add_option("posit", [&custom_opt](CLI::results_t vals) {
         custom_opt = {stol(vals.at(0)), stod(vals.at(1))};
         return true;
     });
@@ -544,7 +549,7 @@ TEST_CASE_METHOD(TApp, "vectorPair", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
 
-    auto opt = app.add_option("--dict", custom_opt);
+    auto *opt = app.add_option("--dict", custom_opt);
 
     args = {"--dict", "1", "str1", "--dict", "3", "str3"};
 
@@ -578,7 +583,7 @@ TEST_CASE_METHOD(TApp, "vectorPairFail2", "[optiontype]") {
 
     std::vector<std::pair<int, int>> custom_opt;
 
-    auto opt = app.add_option("--pairs", custom_opt);
+    auto *opt = app.add_option("--pairs", custom_opt);
 
     args = {"--pairs", "1", "2", "3", "4"};
 
@@ -599,7 +604,7 @@ TEST_CASE_METHOD(TApp, "vectorPairTypeRange", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> custom_opt;
 
-    auto opt = app.add_option("--dict", custom_opt);
+    auto *opt = app.add_option("--dict", custom_opt);
 
     opt->type_size(2, 1);  // just test switched arguments
     CHECK(1 == opt->get_type_size_min());
@@ -635,7 +640,7 @@ TEST_CASE_METHOD(TApp, "vectorTuple", "[optiontype]") {
 
     std::vector<std::tuple<int, std::string, double>> custom_opt;
 
-    auto opt = app.add_option("--dict", custom_opt);
+    auto *opt = app.add_option("--dict", custom_opt);
 
     args = {"--dict", "1", "str1", "4.3", "--dict", "3", "str3", "2.7"};
 
@@ -665,7 +670,7 @@ TEST_CASE_METHOD(TApp, "vectorVector", "[optiontype]") {
 
     std::vector<std::vector<int>> custom_opt;
 
-    auto opt = app.add_option("--dict", custom_opt);
+    auto *opt = app.add_option("--dict", custom_opt);
 
     args = {"--dict", "1", "2", "4", "--dict", "3", "1"};
 
@@ -701,7 +706,7 @@ TEST_CASE_METHOD(TApp, "vectorVectorFixedSize", "[optiontype]") {
 
     std::vector<std::vector<int>> custom_opt;
 
-    auto opt = app.add_option("--dict", custom_opt)->type_size(4);
+    auto *opt = app.add_option("--dict", custom_opt)->type_size(4);
 
     args = {"--dict", "1", "2", "4", "3", "--dict", "3", "1", "2", "8"};
 
@@ -905,7 +910,7 @@ TEST_CASE_METHOD(TApp, "unknownContainerWrapper", "[optiontype]") {
     class vopt {
       public:
         vopt() = default;
-        explicit vopt(const std::vector<double> &vdub) : val_{vdub} {};
+        explicit vopt(std::vector<double> vdub) : val_{std::move(vdub)} {};
         std::vector<double> val_{};
     };
 

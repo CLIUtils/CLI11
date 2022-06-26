@@ -94,6 +94,9 @@ class Validator {
     /// specify that a validator should not modify the input
     bool non_modifying_{false};
 
+    Validator(std::string validator_desc, std::function<std::string(std::string &)> func)
+        : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(func)) {}
+
   public:
     Validator() = default;
     /// Construct a Validator with just the description string
@@ -135,13 +138,13 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    Validator description(std::string validator_desc) const {
+    CLI11_NODISCARD Validator description(std::string validator_desc) const {
         Validator newval(*this);
         newval.desc_function_ = [validator_desc]() { return validator_desc; };
         return newval;
     }
     /// Generate type description information for the Validator
-    std::string get_description() const {
+    CLI11_NODISCARD std::string get_description() const {
         if(active_) {
             return desc_function_();
         }
@@ -153,20 +156,20 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    Validator name(std::string validator_name) const {
+    CLI11_NODISCARD Validator name(std::string validator_name) const {
         Validator newval(*this);
         newval.name_ = std::move(validator_name);
         return newval;
     }
     /// Get the name of the Validator
-    const std::string &get_name() const { return name_; }
+    CLI11_NODISCARD const std::string &get_name() const { return name_; }
     /// Specify whether the Validator is active or not
     Validator &active(bool active_val = true) {
         active_ = active_val;
         return *this;
     }
     /// Specify whether the Validator is active or not
-    Validator active(bool active_val = true) const {
+    CLI11_NODISCARD Validator active(bool active_val = true) const {
         Validator newval(*this);
         newval.active_ = active_val;
         return newval;
@@ -183,18 +186,18 @@ class Validator {
         return *this;
     }
     /// Specify the application index of a validator
-    Validator application_index(int app_index) const {
+    CLI11_NODISCARD Validator application_index(int app_index) const {
         Validator newval(*this);
         newval.application_index_ = app_index;
         return newval;
     }
     /// Get the current value of the application index
-    int get_application_index() const { return application_index_; }
+    CLI11_NODISCARD int get_application_index() const { return application_index_; }
     /// Get a boolean if the validator is active
-    bool get_active() const { return active_; }
+    CLI11_NODISCARD bool get_active() const { return active_; }
 
     /// Get a boolean if the validator is allowed to modify the input returns true if it can modify the input
-    bool get_modifying() const { return !non_modifying_; }
+    CLI11_NODISCARD bool get_modifying() const { return !non_modifying_; }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
@@ -212,11 +215,10 @@ class Validator {
             std::string s2 = f2(input);
             if(!s1.empty() && !s2.empty())
                 return std::string("(") + s1 + ") AND (" + s2 + ")";
-            else
-                return s1 + s2;
+            return s1 + s2;
         };
 
-        newval.active_ = (active_ & other.active_);
+        newval.active_ = active_ && other.active_;
         newval.application_index_ = application_index_;
         return newval;
     }
@@ -240,7 +242,7 @@ class Validator {
 
             return std::string("(") + s1 + ") OR (" + s2 + ")";
         };
-        newval.active_ = (active_ & other.active_);
+        newval.active_ = active_ && other.active_;
         newval.application_index_ = application_index_;
         return newval;
     }
@@ -410,7 +412,7 @@ class IPV4Validator : public Validator {
             if(result.size() != 4) {
                 return std::string("Invalid IPV4 address must have four parts (") + ip_addr + ')';
             }
-            int num;
+            int num = 0;
             for(const auto &var : result) {
                 bool retval = detail::lexical_cast(var, num);
                 if(!retval) {
@@ -447,15 +449,14 @@ const detail::IPV4Validator ValidIPV4;
 /// Validate the input as a particular type
 template <typename DesiredType> class TypeValidator : public Validator {
   public:
-    explicit TypeValidator(const std::string &validator_name) : Validator(validator_name) {
-        func_ = [](std::string &input_string) {
-            auto val = DesiredType();
-            if(!detail::lexical_cast(input_string, val)) {
-                return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
-            }
-            return std::string();
-        };
-    }
+    explicit TypeValidator(const std::string &validator_name)
+        : Validator(validator_name, [](std::string &input_string) {
+              auto val = DesiredType();
+              if(!detail::lexical_cast(input_string, val)) {
+                  return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
+              }
+              return std::string();
+          }) {}
     TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
 };
 
@@ -664,9 +665,8 @@ template <typename T>
 inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
     if((a > 0) == (b > 0)) {
         return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
-    } else {
-        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
     }
+    return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
 }
 /// Do a check for overflow on unsigned numbers
 template <typename T>
@@ -1056,6 +1056,10 @@ class AsNumberWithUnit : public Validator {
     }
 };
 
+inline AsNumberWithUnit::Options operator|(const AsNumberWithUnit::Options &a, const AsNumberWithUnit::Options &b) {
+    return static_cast<AsNumberWithUnit::Options>(static_cast<int>(a) | static_cast<int>(b));
+}
+
 /// Converts a human-readable size string (with unit literal) to uin64_t size.
 /// Example:
 ///   "100" => 100
@@ -1111,10 +1115,9 @@ class AsSizeValue : public AsNumberWithUnit {
         if(kb_is_1000) {
             static auto m = init_mapping(true);
             return m;
-        } else {
-            static auto m = init_mapping(false);
-            return m;
         }
+        static auto m = init_mapping(false);
+        return m;
     }
 };
 

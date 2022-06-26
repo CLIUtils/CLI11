@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
 
     CLI::App app("example for retired/deprecated options");
     std::vector<int> x;
-    auto opt1 = app.add_option("--retired_option2", x);
+    auto *opt1 = app.add_option("--retired_option2", x);
 
     std::pair<int, int> y;
-    auto opt2 = app.add_option("--deprecate", y);
+    auto *opt2 = app.add_option("--deprecate", y);
 
     app.add_option("--not_deprecated", x);
 

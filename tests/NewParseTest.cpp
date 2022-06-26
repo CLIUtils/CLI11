@@ -8,6 +8,7 @@
 
 #include <complex>
 #include <cstdint>
+#include <utility>
 
 using Catch::Matchers::Contains;
 
@@ -158,7 +159,7 @@ TEST_CASE_METHOD(TApp, "ComplexSingleImagOption", "[newparse]") {
 class spair {
   public:
     spair() = default;
-    spair(const std::string &s1, const std::string &s2) : first(s1), second(s2) {}
+    spair(std::string s1, std::string s2) : first(std::move(s1)), second(std::move(s2)) {}
     std::string first{};
     std::string second{};
 };
@@ -205,15 +206,16 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
 template <class X> class objWrapper {
   public:
     objWrapper() = default;
-    explicit objWrapper(X obj) : val_{obj} {};
+    explicit objWrapper(X obj) : val_{std::move(obj)} {};
     objWrapper(const objWrapper &ow) = default;
     template <class TT> objWrapper(const TT &obj) = delete;
     objWrapper &operator=(const objWrapper &) = default;
-    objWrapper &operator=(objWrapper &&) = default;
+    // noexcept not allowed below by GCC 4.8
+    objWrapper &operator=(objWrapper &&) = default;  // NOLINT(performance-noexcept-move-constructor)
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
-    const X &value() const { return val_; }
+    CLI11_NODISCARD const X &value() const { return val_; }
 
   private:
     X val_{};
@@ -312,8 +314,8 @@ class dobjWrapper {
     explicit dobjWrapper(double obj) : dval_{obj} {};
     explicit dobjWrapper(int obj) : ival_{obj} {};
 
-    double dvalue() const { return dval_; }
-    int ivalue() const { return ival_; }
+    CLI11_NODISCARD double dvalue() const { return dval_; }
+    CLI11_NODISCARD int ivalue() const { return ival_; }
 
   private:
     double dval_{0.0};
@@ -357,7 +359,7 @@ template <class X> class AobjWrapper {
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
-    const X &value() const { return val_; }
+    CLI11_NODISCARD const X &value() const { return val_; }
 
   private:
     X val_{};
@@ -389,13 +391,14 @@ TEST_CASE_METHOD(TApp, "uint16Wrapper", "[newparse]") {
 
 template <class T> class SimpleWrapper {
   public:
-    SimpleWrapper() : val_{} {};
-    explicit SimpleWrapper(const T &initial) : val_{initial} {};
+    SimpleWrapper() = default;
+
+    explicit SimpleWrapper(T initial) : val_{std::move(initial)} {};
     T &getRef() { return val_; }
     using value_type = T;
 
   private:
-    T val_;
+    T val_{};
 };
 
 TEST_CASE_METHOD(TApp, "wrapperInt", "[newparse]") {
@@ -434,13 +437,13 @@ TEST_CASE_METHOD(TApp, "wrapperwrapperString", "[newparse]") {
 
     run();
     auto v1 = wrap.getRef().getRef();
-    auto v2 = "arg";
+    const auto *v2 = "arg";
     CHECK(v2 == v1);
 }
 
 TEST_CASE_METHOD(TApp, "wrapperwrapperVector", "[newparse]") {
     SimpleWrapper<SimpleWrapper<std::vector<int>>> wrap;
-    auto opt = app.add_option("--val", wrap);
+    auto *opt = app.add_option("--val", wrap);
     args = {"--val", "1", "2", "3", "4"};
 
     run();

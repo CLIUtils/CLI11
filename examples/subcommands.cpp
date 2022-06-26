@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     std::cout << "Working on --count from stop: " << s->count() << ", direct count: " << stop->count("--count")
               << std::endl;
     std::cout << "Count of --random flag: " << app.count("--random") << std::endl;
-    for(auto subcom : app.get_subcommands())
+    for(auto *subcom : app.get_subcommands())
         std::cout << "Subcommand: " << subcom->get_name() << std::endl;
 
     return 0;
