@@ -40,12 +40,12 @@ jobs:
           vmImage: "macOS-latest"
           cli11.std: 11
         Windows17:
-          vmImage: "vs2017-win2016"
+          vmImage: "windows-2019"
           cli11.std: 17
         Windows11:
-          vmImage: "vs2017-win2016"
+          vmImage: "windows-2019"
           cli11.std: 11
-        Windowslatest:
+        WindowsLatest:
           vmImage: "windows-2019"
           cli11.std: 20
           cli11.options: -DCMAKE_CXX_FLAGS="/std:c++latest /EHsc"

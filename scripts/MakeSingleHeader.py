@@ -4,7 +4,7 @@ from __future__ import print_function, unicode_literals
 
 import os
 import re
-from argparse import ArgumentParser
+import argparse
 from subprocess import Popen, PIPE
 import warnings
 
@@ -128,8 +128,9 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(
-        usage="Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros)."
+    parser = argparse.ArgumentParser(
+        usage="Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--output", default=None, help="Single header file output")
     parser.add_argument(
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         default="CLI11.hpp.in",
         help="The main include file that defines the other files",
     )
-    parser.add_argument("files", nargs="*", help="The header files")
+    parser.add_argument("files", nargs="+", help="The header files")
     parser.add_argument("--namespace", default="CLI", help="Set the namespace")
     parser.add_argument("--tag", default="CLI11", help="Tag to look up")
     parser.add_argument(
