@@ -45,10 +45,14 @@ jobs:
         Windows11:
           vmImage: "windows-2019"
           cli11.std: 11
-        WindowsLatest:
-          vmImage: "windows-2019"
+        Windows20:
+          vmImage: "windows-2022"
           cli11.std: 20
-          cli11.options: -DCMAKE_CXX_FLAGS="/std:c++latest /EHsc"
+          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
+        WindowsLatest:
+          vmImage: "windows-2022"
+          cli11.std: 23
+          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
         Linux17nortti:
           vmImage: "ubuntu-latest"
           cli11.std: 17
