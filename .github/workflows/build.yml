@@ -37,12 +37,12 @@ jobs:
       - name: Copy file to main folder
         run: cp build/include/CLI11.hpp CLI11.hpp
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: CLI11.hpp
           path: CLI11.hpp
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: CLI11-Source
           path: CLI11-Source
