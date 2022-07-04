@@ -112,7 +112,7 @@ jobs:
     name: Meson build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Prepare commands
         run: |
@@ -129,7 +129,7 @@ jobs:
     name: CMake config check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Check CMake 3.4
         with:
