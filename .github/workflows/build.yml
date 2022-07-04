@@ -17,7 +17,9 @@ jobs:
         with:
           submodules: true
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
 
       - name: Prepare CMake config
         run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON
