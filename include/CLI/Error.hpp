@@ -15,6 +15,7 @@
 // [CLI11:public_includes:end]
 
 // CLI library includes
+#include "Macros.hpp"
 #include "StringTools.hpp"
 
 namespace CLI {
