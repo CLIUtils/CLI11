@@ -16,6 +16,7 @@
 
 // CLI library includes
 #include "StringTools.hpp"
+#include "Macros.hpp"
 
 namespace CLI {
 // [CLI11:error_hpp:verbatim]
