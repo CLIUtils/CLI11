@@ -1228,6 +1228,8 @@ TEST_CASE("Types: LexicalConversionTuple3", "[helpers]") {
 TEST_CASE("Types: LexicalConversionTuple4", "[helpers]") {
     CLI::results_t input = {"9.12", "19", "18.6", "5.87"};
     std::array<double, 4> x;
+    auto tsize=CLI::detail::type_count<decltype(x)>::value;
+    CHECK(tsize==4);
     bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
     CHECK(res);
     CHECK(19 == Approx(std::get<1>(x)));
