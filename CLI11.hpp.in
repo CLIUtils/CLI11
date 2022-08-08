@@ -68,6 +68,8 @@ namespace {namespace} {{
 
 {config_hpp}
 
+{config_inl_hpp}
+
 {formatter_hpp}
 
 }} // namespace {namespace}
