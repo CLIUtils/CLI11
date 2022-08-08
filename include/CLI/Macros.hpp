@@ -65,4 +65,11 @@
 #define CLI11_USE_STATIC_RTTI 1
 #endif
 #endif
+
+/** Inline macro **/
+#ifdef CLI11_COMPILE
+#define CLI11_INLINE
+#else
+#define CLI11_INLINE inline
+#endif
 // [CLI11:macros_hpp:end]
