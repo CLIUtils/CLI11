@@ -60,6 +60,8 @@ namespace {namespace} {{
 
 {option_hpp}
 
+{option_inl_hpp}
+
 {app_hpp}
 
 {app_inl_hpp}
