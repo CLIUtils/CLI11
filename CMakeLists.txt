@@ -77,6 +77,7 @@ endif()
 
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
+option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only")
 cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
                        "NOT CMAKE_VERSION VERSION_LESS 3.11" OFF)
 
@@ -104,6 +105,11 @@ cmake_dependent_option(
 cmake_dependent_option(
   CLI11_CUDA_TESTS "Build the tests with NVCC to check for warnings there - requires CMake 3.9+"
   OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
+
+if(CLI11_PRECOMPILED AND CLI11_SINGLE_FILE)
+  # Sanity check
+  message(FATAL_ERROR "CLI11_PRECOMPILE and CLI11_SINGLE_FILE are mutually exclusive")
+endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
@@ -160,13 +166,35 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.13)
   target_link_options(CLI11_warnings INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>)
 endif()
 
+# To see in IDE, headers must be listed for target
+set(MAYBE_CONFIGURE_DEPENDS "")
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT CMAKE_VERSION VERSION_LESS 3.12)
+  list(INSERT MAYBE_CONFIGURE_DEPENDS 0 CONFIGURE_DEPENDS)
+endif()
+
+file(GLOB CLI11_headers ${MAYBE_CONFIGURE_DEPENDS} "${PROJECT_SOURCE_DIR}/include/CLI/*.hpp")
+file(GLOB CLI11_impl_headers ${MAYBE_CONFIGURE_DEPENDS}
+     "${PROJECT_SOURCE_DIR}/include/CLI/impl/*.hpp")
+
+if(CLI11_PRECOMPILED)
+  # Create static lib
+  file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
+  add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_impl_headers} ${CLI11_precompile_sources})
+  target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
+
+  set(PUBLIC_OR_INTERFACE PUBLIC)
+else()
+  add_library(CLI11 INTERFACE)
+  set(PUBLIC_OR_INTERFACE INTERFACE)
+endif()
+
 # Allow IDE's to group targets into folders
-add_library(CLI11 INTERFACE)
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
 # Duplicated because CMake adds the current source dir if you don't.
-target_include_directories(CLI11 INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                                           $<INSTALL_INTERFACE:include>)
+target_include_directories(
+  CLI11 ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
 if(CMAKE_VERSION VERSION_LESS 3.8)
   # This might not be a complete list
@@ -184,14 +212,6 @@ else()
   target_compile_features(CLI11 INTERFACE cxx_std_11)
 endif()
 
-# To see in IDE, headers must be listed for target
-set(header-patterns "${PROJECT_SOURCE_DIR}/include/CLI/*")
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT CMAKE_VERSION VERSION_LESS 3.12)
-  list(INSERT header-patterns 0 CONFIGURE_DEPENDS)
-endif()
-
-file(GLOB CLI11_headers ${header-patterns})
-
 # Allow tests to be run on CUDA
 if(CLI11_CUDA_TESTS)
   enable_language(CUDA)
@@ -202,7 +222,10 @@ endif()
 
 # This folder should be installed
 if(CLI11_INSTALL)
-  install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES ${CLI11_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
+  if(NOT CLI11_COMPILE)
+    install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
+  endif()
 
   # Make an export target
   install(TARGETS CLI11 EXPORT CLI11Targets)
@@ -257,9 +280,10 @@ if(CLI11_SINGLE_FILE)
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
     COMMAND
       Python::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py"
-      ${CLI11_headers} --main "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.hpp.in" --output
-      "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp" --version "${CLI11_VERSION}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI11_headers})
+      ${CLI11_headers} ${CLI11_impl_headers} --main "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.hpp.in"
+      --output "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp" --version "${CLI11_VERSION}"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI11_headers}
+            ${CLI11_impl_headers})
   add_custom_target(CLI11-generate-single-file ALL
                     DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
   set_property(TARGET CLI11-generate-single-file PROPERTY FOLDER "Scripts")
