@@ -72,4 +72,6 @@ namespace {namespace} {{
 
 {formatter_hpp}
 
+{formatter_inl_hpp}
+
 }} // namespace {namespace}
