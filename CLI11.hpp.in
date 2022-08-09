@@ -60,6 +60,8 @@ namespace {namespace} {{
 
 {validators_hpp}
 
+{validators_inl_hpp}
+
 {formatter_fwd_hpp}
 
 {option_hpp}
