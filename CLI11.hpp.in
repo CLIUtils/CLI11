@@ -46,6 +46,8 @@ namespace {namespace} {{
 
 {string_tools_hpp}
 
+{string_tools_inl_hpp}
+
 {error_hpp}
 
 {type_tools_hpp}
