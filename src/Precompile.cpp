@@ -4,10 +4,10 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#include <CLI/impl/App_inl.hpp>
+#include <CLI/impl/Config_inl.hpp>
+#include <CLI/impl/Formatter_inl.hpp>
 #include <CLI/impl/Option_inl.hpp>
-#include <CLI/App.hpp>
-
-template class CLI::OptionBase<CLI::OptionDefaults>;
-template class CLI::OptionBase<CLI::Option>;
-
-template void CLI::OptionBase<CLI::OptionDefaults>::copy_to(CLI::Option *) const;
+#include <CLI/impl/Split_inl.hpp>
+#include <CLI/impl/StringTools_inl.hpp>
+#include <CLI/impl/Validators_inl.hpp>
