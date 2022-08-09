@@ -52,6 +52,8 @@ namespace {namespace} {{
 
 {split_hpp}
 
+{split_inl_hpp}
+
 {config_fwd_hpp}
 
 {validators_hpp}
