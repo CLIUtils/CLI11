@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         std: ["11", "14", "17", "20"]
+        precompile: ["ON", "OFF"]
     steps:
       - uses: actions/checkout@v3
 
@@ -33,6 +34,7 @@ jobs:
             -DCMAKE_CXX_STANDARD=${{matrix.std}} \
             -DCLI11_SINGLE_FILE_TESTS=OFF \
             -DCLI11_EXAMPLES=OFF \
+            -DCLI11_PRECOMPILED=${{matrix.precompile}} \
             -DCMAKE_BUILD_TYPE=Coverage
 
       - name: Build
