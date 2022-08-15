@@ -152,10 +152,8 @@ CLI11_INLINE void remove_default_flag_values(std::string &flags) {
     flags.erase(std::remove(flags.begin(), flags.end(), '!'), flags.end());
 }
 
-CLI11_INLINE std::ptrdiff_t find_member(std::string name,
-                                        const std::vector<std::string> names,
-                                        bool ignore_case,
-                                        bool ignore_underscore) {
+CLI11_INLINE std::ptrdiff_t
+find_member(std::string name, const std::vector<std::string> names, bool ignore_case, bool ignore_underscore) {
     auto it = std::end(names);
     if(ignore_case) {
         if(ignore_underscore) {
