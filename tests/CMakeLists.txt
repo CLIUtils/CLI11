@@ -1,5 +1,3 @@
-list(APPEND CMAKE_MODULE_PATH "${CLI11_SOURCE_DIR}/cmake")
-
 if(CLI11_SANITIZERS)
   message(STATUS "Using arsenm/sanitizers-cmake")
   FetchContent_Declare(
@@ -109,7 +107,7 @@ foreach(T IN LISTS CLI11_TESTS)
   if(CLI11_CUDA_TESTS)
     set_property(SOURCE ${T}.cpp PROPERTY LANGUAGE CUDA)
   endif()
-  add_executable(${T} ${T}.cpp ${CLI11_headers})
+  add_executable(${T} ${T}.cpp)
   add_sanitizers(${T})
   if(NOT CLI11_CUDA_TESTS)
     target_link_libraries(${T} PRIVATE CLI11_warnings)
@@ -126,7 +124,7 @@ foreach(T IN LISTS CLI11_TESTS)
 endforeach()
 
 foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
-  add_executable(${T} ${T}.cpp ${CLI11_headers})
+  add_executable(${T} ${T}.cpp)
   add_sanitizers(${T})
   target_link_libraries(${T} PUBLIC CLI11)
   add_catch_test(${T})

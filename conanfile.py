@@ -27,6 +27,7 @@ class CLI11Conan(ConanFile):
         "LICENSE",
         "README.md",
         "include/*",
+        "src/*",
         "extern/*",
         "cmake/*",
         "CMakeLists.txt",

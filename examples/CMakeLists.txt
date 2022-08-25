@@ -1,5 +1,5 @@
 function(add_cli_exe T)
-  add_executable(${T} ${ARGN} ${CLI11_headers})
+  add_executable(${T} ${ARGN})
   target_link_libraries(${T} PUBLIC CLI11)
   set_property(TARGET ${T} PROPERTY FOLDER "Examples")
   if(CLI11_FORCE_LIBCXX)

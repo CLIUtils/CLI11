@@ -27,6 +27,8 @@ project(
   LANGUAGES CXX
   VERSION ${VERSION_STRING})
 
+list(APPEND CMAKE_MODULE_PATH "${CLI11_SOURCE_DIR}/cmake")
+
 # Print the version number of CMake if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   message(STATUS "CMake ${CMAKE_VERSION}")
@@ -128,89 +130,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
-# Special target that adds warnings. Is not exported.
-add_library(CLI11_warnings INTERFACE)
+include(CLI11Warnings)
 
-set(unix-warnings -Wall -Wextra -pedantic -Wshadow -Wsign-conversion -Wswitch-enum)
-
-# Clang warnings
-# -Wfloat-equal could be added with Catch::literals and _a usage
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  list(
-    APPEND
-    unix-warnings
-    -Wcast-align
-    -Wimplicit-atomic-properties
-    -Wmissing-declarations
-    -Woverlength-strings
-    -Wshadow
-    -Wstrict-selector-match
-    -Wundeclared-selector)
-  # -Wunreachable-code Doesn't work on Clang 3.4
-endif()
-
-# Buggy in GCC 4.8
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
-  list(APPEND unix-warnings -Weffc++)
-endif()
-
-target_compile_options(
-  CLI11_warnings
-  INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>
-            $<$<CXX_COMPILER_ID:MSVC>:/W4
-            $<$<BOOL:${CLI11_WARNINGS_AS_ERRORS}>:/WX>>
-            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:${unix-warnings}
-            $<$<BOOL:${CLI11_WARNINGS_AS_ERRORS}>:-Werror>>)
-
-if(NOT CMAKE_VERSION VERSION_LESS 3.13)
-  target_link_options(CLI11_warnings INTERFACE $<$<BOOL:${CLI11_FORCE_LIBCXX}>:-stdlib=libc++>)
-endif()
-
-# To see in IDE, headers must be listed for target
-set(MAYBE_CONFIGURE_DEPENDS "")
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT CMAKE_VERSION VERSION_LESS 3.12)
-  list(INSERT MAYBE_CONFIGURE_DEPENDS 0 CONFIGURE_DEPENDS)
-endif()
-
-file(GLOB CLI11_headers ${MAYBE_CONFIGURE_DEPENDS} "${PROJECT_SOURCE_DIR}/include/CLI/*.hpp")
-file(GLOB CLI11_impl_headers ${MAYBE_CONFIGURE_DEPENDS}
-     "${PROJECT_SOURCE_DIR}/include/CLI/impl/*.hpp")
-
-if(CLI11_PRECOMPILED)
-  # Create static lib
-  file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
-  add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_impl_headers} ${CLI11_precompile_sources})
-  target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
-
-  set(PUBLIC_OR_INTERFACE PUBLIC)
-else()
-  add_library(CLI11 INTERFACE)
-  set(PUBLIC_OR_INTERFACE INTERFACE)
-endif()
-
-# Allow IDE's to group targets into folders
-add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
-
-# Duplicated because CMake adds the current source dir if you don't.
-target_include_directories(
-  CLI11 ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-if(CMAKE_VERSION VERSION_LESS 3.8)
-  # This might not be a complete list
-  target_compile_features(
-    CLI11
-    INTERFACE cxx_lambdas
-              cxx_nullptr
-              cxx_override
-              cxx_range_for
-              cxx_right_angle_brackets
-              cxx_strong_enums
-              cxx_constexpr
-              cxx_auto_type)
-else()
-  target_compile_features(CLI11 INTERFACE cxx_std_11)
-endif()
+add_subdirectory(src)
 
 # Allow tests to be run on CUDA
 if(CLI11_CUDA_TESTS)
@@ -222,13 +144,6 @@ endif()
 
 # This folder should be installed
 if(CLI11_INSTALL)
-  install(FILES ${CLI11_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-  if(NOT CLI11_COMPILE)
-    install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
-  endif()
-
-  # Make an export target
-  install(TARGETS CLI11 EXPORT CLI11Targets)
 
   # Use find_package on the installed package
   # Since we have no custom code, we can directly write this
@@ -259,42 +174,6 @@ if(CLI11_INSTALL)
 
   # Register in the user cmake package registry
   export(PACKAGE CLI11)
-endif()
-
-if(CLI11_SINGLE_FILE)
-  # Single file test
-  if(CMAKE_VERSION VERSION_LESS 3.12)
-    find_package(PythonInterp REQUIRED)
-    add_executable(Python::Interpreter IMPORTED)
-    set_target_properties(Python::Interpreter PROPERTIES IMPORTED_LOCATION "${PYTHON_EXECUTABLE}"
-                                                         VERSION "${PYTHON_VERSION_STRING}")
-  else()
-    find_package(
-      Python
-      COMPONENTS Interpreter
-      REQUIRED)
-  endif()
-
-  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
-  add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp"
-    COMMAND
-      Python::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/scripts/MakeSingleHeader.py"
-      ${CLI11_headers} ${CLI11_impl_headers} --main "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.hpp.in"
-      --output "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp" --version "${CLI11_VERSION}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/CLI/CLI.hpp" ${CLI11_headers}
-            ${CLI11_impl_headers})
-  add_custom_target(CLI11-generate-single-file ALL
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp")
-  set_property(TARGET CLI11-generate-single-file PROPERTY FOLDER "Scripts")
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/CLI11.hpp" DESTINATION include)
-  add_library(CLI11_SINGLE INTERFACE)
-  target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
-  add_dependencies(CLI11_SINGLE CLI11-generate-single-file)
-  target_compile_definitions(CLI11_SINGLE INTERFACE -DCLI11_SINGLE_FILE)
-  target_include_directories(
-    CLI11_SINGLE INTERFACE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>
-                           $<INSTALL_INTERFACE:include>)
 endif()
 
 if(CLI11_BUILD_TESTS)
