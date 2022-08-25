@@ -1,4 +1,8 @@
 steps:
+  # Needed on GCC 4.8 docker image for some reason
+  - script: mkdir build
+    displayName: "Make build directory"
+
   - task: CMake@1
     inputs:
       cmakeArgs:

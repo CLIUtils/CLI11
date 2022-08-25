@@ -16,6 +16,7 @@ variables:
   cli11.std: 14
   cli11.build_type: Debug
   cli11.options: -DCLI11_EXAMPLES_JSON=ON
+  cli11.precompile: OFF
   CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 jobs:
@@ -33,15 +34,26 @@ jobs:
       matrix:
         Linux14:
           vmImage: "ubuntu-latest"
+        Linux14PC:
+          vmImage: "ubuntu-latest"
+          cli11.precompile: ON
         macOS17:
           vmImage: "macOS-latest"
           cli11.std: 17
         macOS11:
           vmImage: "macOS-latest"
           cli11.std: 11
+        macOS11PC:
+          vmImage: "macOS-latest"
+          cli11.std: 11
+          cli11.precompile: ON
         Windows17:
           vmImage: "windows-2019"
           cli11.std: 17
+        Windows17PC:
+          vmImage: "windows-2019"
+          cli11.std: 17
+          cli11.precompile: ON
         Windows11:
           vmImage: "windows-2019"
           cli11.std: 11
@@ -102,7 +114,7 @@ jobs:
           containerImage: gcc:8
           cli11.std: 17
         gcc4.8:
-          containerImage: gcc:4.8
+          containerImage: helics/buildenv:gcc4-8-builder
           cli11.std: 11
           cli11.options:
         clang3.4:

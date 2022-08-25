@@ -45,23 +45,23 @@ repos:
       - id: markdownlint
         args: ["--style=scripts/mdlint_style.rb"]
 
-  - repo: local
-    hooks:
-      - id: remarklint
-        name: remarklint
-        language: node
-        entry: remark
-        types: [markdown]
-        args: ["--frail", "--quiet"]
-        additional_dependencies:
-          [
-            remark,
-            remark-lint,
-            remark-cli,
-            remark-preset-lint-recommended,
-            remark-lint-list-item-indent,
-            remark-lint-no-undefined-references,
-          ]
+  # - repo: local
+  #   hooks:
+  #     - id: remarklint
+  #       name: remarklint
+  #       language: node
+  #       entry: remark
+  #       types: [markdown]
+  #       args: ["--frail", "--quiet"]
+  #       additional_dependencies:
+  #         [
+  #           remark,
+  #           remark-lint,
+  #           remark-cli,
+  #           remark-preset-lint-recommended,
+  #           remark-lint-list-item-indent,
+  #           remark-lint-no-undefined-references,
+  #         ]
 
   - repo: local
     hooks:
