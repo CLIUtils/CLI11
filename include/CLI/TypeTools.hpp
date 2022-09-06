@@ -655,7 +655,8 @@ struct classify_object<
     typename std::enable_if<is_tuple_like<T>::value &&
                             ((type_count<T>::value >= 2 && !is_wrapper<T>::value) ||
                              (uncommon_type<T>::value && !is_direct_constructible<T, double>::value &&
-                              !is_direct_constructible<T, int>::value))>::type> {
+                              !is_direct_constructible<T, int>::value) ||
+                             (uncommon_type<T>::value && type_count<T>::value >= 2))>::type> {
     static constexpr object_category value{object_category::tuple_value};
     // the condition on this class requires it be like a tuple, but on some compilers (like Xcode) tuples can be
     // constructed from just the first element so tuples of <string, int,int> can be constructed from a string, which
