@@ -916,6 +916,10 @@ TEST_CASE_METHOD(TApp, "SubcomInheritCaseCheck", "[subcom]") {
     CHECK(app.get_subcommands({}).size() == 2u);
     CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
 
+    // check the const version of get_subcommands
+    const auto &app_const = app;
+    CHECK(app_const.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
+
     args = {"SuB1"};
     run();
     CHECK(app.get_subcommands().at(0) == sub1);
@@ -1190,6 +1194,18 @@ TEST_CASE_METHOD(ManySubcommands, "manyIndexQueryPtr", "[subcom]") {
     CHECK(sub3 == s3.get());
     CHECK(sub4 == s4.get());
     CHECK_THROWS_AS(app.get_subcommand_ptr(4), CLI::OptionNotFound);
+}
+
+TEST_CASE_METHOD(ManySubcommands, "manyIndexQueryPtrByName", "[subcom]") {
+    auto s1 = app.get_subcommand_ptr("sub1");
+    auto s2 = app.get_subcommand_ptr("sub2");
+    auto s3 = app.get_subcommand_ptr("sub3");
+    auto s4 = app.get_subcommand_ptr("sub4");
+    CHECK(sub1 == s1.get());
+    CHECK(sub2 == s2.get());
+    CHECK(sub3 == s3.get());
+    CHECK(sub4 == s4.get());
+    CHECK_THROWS_AS(app.get_subcommand_ptr("sub5"), CLI::OptionNotFound);
 }
 
 TEST_CASE_METHOD(ManySubcommands, "Required1Fuzzy", "[subcom]") {

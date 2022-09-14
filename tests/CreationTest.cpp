@@ -549,6 +549,25 @@ TEST_CASE_METHOD(TApp, "GetOptionList", "[creation]") {
     }
 }
 
+TEST_CASE_METHOD(TApp, "GetOptionListFilter", "[creation]") {
+    int two{0};
+    auto *flag = app.add_flag("--one");
+    app.add_option("--two", two);
+
+    const CLI::App &const_app = app;  // const alias to force use of const-methods
+    std::vector<const CLI::Option *> opt_listc =
+        const_app.get_options([](const CLI::Option *opt) { return opt->get_name() == "--one"; });
+
+    REQUIRE(static_cast<std::size_t>(1) == opt_listc.size());
+    CHECK(flag == opt_listc.at(0));
+
+    std::vector<CLI::Option *> opt_list =
+        app.get_options([](const CLI::Option *opt) { return opt->get_name() == "--one"; });
+
+    REQUIRE(static_cast<std::size_t>(1) == opt_list.size());
+    CHECK(flag == opt_list.at(0));
+}
+
 TEST_CASE("ValidatorTests: TestValidatorCreation", "[creation]") {
     std::function<std::string(std::string &)> op1 = [](std::string &val) {
         return (val.size() >= 5) ? std::string{} : val;

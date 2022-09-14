@@ -2497,6 +2497,29 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
     CHECK(config2 == config1);
 }
 
+TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    bool flag{true};
+    app.add_flag("!--no-flag", flag);
+    args = {"--no-flag"};
+    run();
+
+    // Save config, with default values too
+    std::string config1 = app.config_to_str(false, false);
+    {
+        std::ofstream out{tmpini};
+        out << config1 << std::endl;
+    }
+    CHECK_FALSE(flag);
+    args.clear();
+    flag = true;
+    app.set_config("--config", tmpini, "Read an ini file", true);
+    run();
+
+    CHECK_FALSE(flag);
+}
+
 /////// INI output tests
 
 TEST_CASE_METHOD(TApp, "IniOutputSimple", "[config]") {
