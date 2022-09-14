@@ -2497,12 +2497,11 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
     CHECK(config2 == config1);
 }
 
-
 TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     bool flag{true};
-    app.add_flag("!--no-flag",flag);
+    app.add_flag("!--no-flag", flag);
     args = {"--no-flag"};
     run();
 
@@ -2514,7 +2513,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
     }
     CHECK_FALSE(flag);
     args.clear();
-    flag=true;
+    flag = true;
     app.set_config("--config", tmpini, "Read an ini file", true);
     run();
 

@@ -344,8 +344,8 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 if(!value.empty()) {
-                    if (!opt->get_fnames().empty()) {
-                       value = opt->get_flag_value(name, value);
+                    if(!opt->get_fnames().empty()) {
+                        value = opt->get_flag_value(name, value);
                     }
                     if(write_description && opt->has_description()) {
                         out << '\n';

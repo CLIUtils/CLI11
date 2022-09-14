@@ -555,12 +555,14 @@ TEST_CASE_METHOD(TApp, "GetOptionListFilter", "[creation]") {
     app.add_option("--two", two);
 
     const CLI::App &const_app = app;  // const alias to force use of const-methods
-    std::vector<const CLI::Option *> opt_listc = const_app.get_options([](const CLI::Option *opt){ return opt->get_name() == "--one"; });
+    std::vector<const CLI::Option *> opt_listc =
+        const_app.get_options([](const CLI::Option *opt) { return opt->get_name() == "--one"; });
 
     REQUIRE(static_cast<std::size_t>(1) == opt_listc.size());
     CHECK(flag == opt_listc.at(0));
 
-    std::vector<CLI::Option *> opt_list = app.get_options([](const CLI::Option *opt){ return opt->get_name() == "--one"; });
+    std::vector<CLI::Option *> opt_list =
+        app.get_options([](const CLI::Option *opt) { return opt->get_name() == "--one"; });
 
     REQUIRE(static_cast<std::size_t>(1) == opt_list.size());
     CHECK(flag == opt_list.at(0));

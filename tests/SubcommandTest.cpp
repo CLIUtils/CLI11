@@ -917,7 +917,7 @@ TEST_CASE_METHOD(TApp, "SubcomInheritCaseCheck", "[subcom]") {
     CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
 
     // check the const version of get_subcommands
-    const auto &app_const=app;
+    const auto &app_const = app;
     CHECK(app_const.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
 
     args = {"SuB1"};
