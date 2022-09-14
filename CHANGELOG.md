@@ -1,5 +1,36 @@
 # Changelog
 
+## Version 2.3: Precompilation Support
+
+This version adds a pre-compiled mode to CLI11, which allows you to precompile
+the library, saving time on incremental rebuilds, making CLI11 more competitive
+on compile time with classic compiled CLI libraries. The header-only mode is
+still default, and is not yet distributed via binaries.
+
+- Add `CLI11_PRECOMPILED` as an option. [#762][]
+- Bugfix: Include `<functional>` in `FormatterFwd` [#727][]
+- Bugfix: Add missing `Macros.hpp` to `Error.hpp` [#755][]
+- Bugfix: Fix subcommand callback trigger [#733][]
+- Bugfix: Variable rename to avoid warning [#734][]
+- Bugfix: `split_program_name` single file name error [#740][]
+- Bugfix: Better support for min/max overrides on MSVC [#741][]
+- Bugfix: Support MSVC 2022 [#748][]
+- Bugfix: Support negated flag in config file [#775][]
+- Bugfix: Better errors for some confusing config file situations [#781][]
+- Backend: Restore coverage testing (lost with Travis CI) [#747][]
+
+[#727]: https://github.com/CLIUtils/CLI11/pull/727
+[#733]: https://github.com/CLIUtils/CLI11/pull/733
+[#734]: https://github.com/CLIUtils/CLI11/pull/734
+[#740]: https://github.com/CLIUtils/CLI11/pull/740
+[#741]: https://github.com/CLIUtils/CLI11/pull/741
+[#747]: https://github.com/CLIUtils/CLI11/pull/747
+[#748]: https://github.com/CLIUtils/CLI11/pull/748
+[#755]: https://github.com/CLIUtils/CLI11/pull/755
+[#762]: https://github.com/CLIUtils/CLI11/pull/762
+[#775]: https://github.com/CLIUtils/CLI11/pull/775
+[#781]: https://github.com/CLIUtils/CLI11/pull/781
+
 ## Version 2.2: Option and Configuration Flexibility
 
 New features include support for output of an empty vector, a summing option
