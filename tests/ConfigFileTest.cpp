@@ -1017,17 +1017,19 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
         out << "zero1=[]\n";
         out << "zero2={}\n";
         out << "zero3={}\n";
+        out << "zero4=[\"{}\",\"\"]\n";
         out << "nzero={}\n";
         out << "one=[\"1\"]\n";
         out << "two=[\"2\",\"3\"]\n";
         out << "three=[\"1\",\"2\",\"3\"]\n";
     }
 
-    std::vector<std::string> nzero, zero1, zero2, zero3, one, two, three;
+    std::vector<std::string> nzero, zero1, zero2, zero3, zero4, one, two, three;
     app.add_option("--zero1", zero1)->required()->expected(0, 99)->default_str("{}");
     app.add_option("--zero2", zero2)->required()->expected(0, 99)->default_val(std::vector<std::string>{});
     // if no default is specified the argument results in an empty string
     app.add_option("--zero3", zero3)->required()->expected(0, 99);
+    app.add_option("--zero4", zero4)->required()->expected(0, 99);
     app.add_option("--nzero", nzero)->required();
     app.add_option("--one", one)->required();
     app.add_option("--two", two)->required();
@@ -1038,6 +1040,7 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
     CHECK(zero1 == std::vector<std::string>({}));
     CHECK(zero2 == std::vector<std::string>({}));
     CHECK(zero3 == std::vector<std::string>({""}));
+    CHECK(zero4 == std::vector<std::string>({"{}"}));
     CHECK(nzero == std::vector<std::string>({"{}"}));
     CHECK(one == std::vector<std::string>({"1"}));
     CHECK(two == std::vector<std::string>({"2", "3"}));
@@ -1733,6 +1736,23 @@ TEST_CASE_METHOD(TApp, "IniFlagDual", "[config]") {
     }
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "IniVectorMax", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    std::vector<std::string> v1;
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    app.add_option("--vec", v1)->expected(0, 2);
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "vec=[a,b,c]" << std::endl;
+    }
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
 
 TEST_CASE_METHOD(TApp, "IniShort", "[config]") {

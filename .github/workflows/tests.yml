@@ -20,6 +20,8 @@ jobs:
         precompile: ["ON", "OFF"]
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Get LCov
         run: |
@@ -50,12 +52,10 @@ jobs:
           lcov --list coverage.info
         working-directory: build
 
-      - name: Upload coverage
-        run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov
-        working-directory: build
+      - uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+          working-directory: build
 
   clang-tidy:
     name: Clang-Tidy

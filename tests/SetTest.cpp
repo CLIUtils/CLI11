@@ -492,6 +492,23 @@ TEST_CASE_METHOD(TApp, "FailSet", "[set]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "shortStringCheck", "[set]") {
+
+    std::string choice;
+    app.add_option("-q,--quick", choice)->check([](const std::string &v) {
+        if(v.size() > 5) {
+            return std::string{"string too long"};
+        }
+        return std::string{};
+    });
+
+    args = {"--quick", "3"};
+    CHECK_NOTHROW(run());
+
+    args = {"--quick=hello_goodbye"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "FailMutableSet", "[set]") {
 
     int choice{0};
