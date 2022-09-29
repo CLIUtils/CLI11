@@ -1383,19 +1383,29 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
     if(op->empty()) {
 
-        if(op->get_expected_min() == 0) {
-            // Flag parsing
-            auto res = config_formatter_->to_flag(item);
-            res = op->get_flag_value(item.name, res);
+        if (op->get_expected_min() == 0) {
+            if (item.inputs.size() <= 1)
+            {
+                // Flag parsing
+                auto res = config_formatter_->to_flag(item);
+                res = op->get_flag_value(item.name, res);
 
-            op->add_result(res);
-
-        } else {
-            op->add_result(item.inputs);
-            op->run_callback();
+                op->add_result(res);
+                return true;
+            }
+            if (item.inputs.size() > op->get_items_expected_max())
+            {
+                if (op->get_items_expected_max() > 1)
+                {
+                    throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
+                }
+                throw ConversionError::TooManyInputsFlag(item.fullname());
+            }
         }
+        op->add_result(item.inputs);
+        op->run_callback();   
     }
-
+        
     return true;
 }
 
