@@ -983,7 +983,7 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
     std::vector<std::string> strs2;
     std::vector<std::string> strs3;
     auto *opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
-    app.add_option("--str3",strs3)->expected(1,3);
+    app.add_option("--str3", strs3)->expected(1, 3);
     app.add_option("--str2", strs2);
     args = {"--str"};
 
@@ -1007,7 +1007,7 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
     CHECK_NOTHROW(run());
     CHECK(strs.empty());
     opt1->required(false);
-    args = { "--str3","{}"};
+    args = {"--str3", "{}"};
 
     CHECK_NOTHROW(run());
     CHECK_FALSE(strs3.empty());

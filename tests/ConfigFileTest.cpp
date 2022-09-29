@@ -1024,7 +1024,7 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
         out << "three=[\"1\",\"2\",\"3\"]\n";
     }
 
-    std::vector<std::string> nzero, zero1, zero2, zero3,zero4, one, two, three;
+    std::vector<std::string> nzero, zero1, zero2, zero3, zero4, one, two, three;
     app.add_option("--zero1", zero1)->required()->expected(0, 99)->default_str("{}");
     app.add_option("--zero2", zero2)->required()->expected(0, 99)->default_val(std::vector<std::string>{});
     // if no default is specified the argument results in an empty string
@@ -1744,7 +1744,7 @@ TEST_CASE_METHOD(TApp, "IniVectorMax", "[config]") {
 
     std::vector<std::string> v1;
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
-    app.add_option("--vec", v1)->expected(0,2);
+    app.add_option("--vec", v1)->expected(0, 2);
     app.set_config("--config", tmpini);
 
     {

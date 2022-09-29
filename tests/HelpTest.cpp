@@ -974,16 +974,14 @@ TEST_CASE("THelp: GroupOrder", "[help]") {
     CHECK(aee_loc > zee_loc);
 }
 
-
 TEST_CASE("THelp: GroupNameError", "[help]") {
     CLI::App app;
 
-    auto *f1=app.add_flag("--one");
-    auto *f2=app.add_flag("--two");
+    auto *f1 = app.add_flag("--one");
+    auto *f2 = app.add_flag("--two");
 
-    CHECK_THROWS_AS(f1->group("evil group name\non two lines"),CLI::IncorrectConstruction);
-    CHECK_THROWS_AS(f2->group(std::string(5,'\0')), CLI::IncorrectConstruction);
-
+    CHECK_THROWS_AS(f1->group("evil group name\non two lines"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(f2->group(std::string(5, '\0')), CLI::IncorrectConstruction);
 }
 
 TEST_CASE("THelp: ValidatorsText", "[help]") {
