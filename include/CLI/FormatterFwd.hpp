@@ -121,6 +121,7 @@ class Formatter : public FormatterBase {
     Formatter(const Formatter &) = default;
     Formatter(Formatter &&) = default;
     Formatter &operator=(const Formatter &) = default;
+    Formatter &operator=(Formatter &&) = default;
 
     /// @name Overridables
     ///@{
