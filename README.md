@@ -530,7 +530,7 @@ Before parsing, you can set the following options:
   are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::Throw`,
   `CLI::MultiOptionPolicy::TakeLast`, `CLI::MultiOptionPolicy::TakeFirst`,
   `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`, and
-  `CLI::MultiOptionPolicy::Sum` 🚧.
+  `CLI::MultiOptionPolicy::Sum` 🆕.
 - `->check(std::string(const std::string &), validator_name="",validator_description="")`:
   Define a check function. The function should return a non empty string with
   the error message if the check fails
@@ -571,7 +571,7 @@ Before parsing, you can set the following options:
 - `->trigger_on_parse()`: If set, causes the callback and all associated
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
-  executed multiple times. Also works with positional options 🆕.
+  executed multiple times. Also works with positional options.
 
 These options return the `Option` pointer, so you can chain them together, and
 even skip storing the pointer entirely. The `each` function takes any function
@@ -658,7 +658,7 @@ CLI11 has several Validators built-in that perform some common checks
 - `CLI::ExistingDirectory`: Requires that the directory exists.
 - `CLI::ExistingPath`: Requires that the path (file or directory) exists.
 - `CLI::NonexistentPath`: Requires that the path does not exist.
-- `CLI::FileOnDefaultPath`: 🆕 Best used as a transform, Will check that a file
+- `CLI::FileOnDefaultPath`: Best used as a transform, Will check that a file
   exists either directly or in a default path and update the path appropriately.
   See [Transforming Validators](#transforming-validators) for more details
 - `CLI::Range(min,max)`: Requires that the option be between min and max (make
