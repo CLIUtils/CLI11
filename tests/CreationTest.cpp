@@ -455,6 +455,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     CHECK(!app.get_configurable());
     CHECK(!app.get_validate_positionals());
 
+    CHECK(app.get_usage().empty());
     CHECK(app.get_footer().empty());
     CHECK("Subcommands" == app.get_group());
     CHECK(0u == app.get_require_subcommand_min());
@@ -474,6 +475,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
 
     app.fallthrough();
     app.validate_positionals();
+    app.usage("ussy");
     app.footer("footy");
     app.group("Stuff");
     app.require_subcommand(2, 3);
@@ -494,6 +496,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     CHECK(app2->get_fallthrough());
     CHECK(app2->get_validate_positionals());
     CHECK(app2->get_configurable());
+    CHECK("ussy" == app2->get_usage());
     CHECK("footy" == app2->get_footer());
     CHECK("Stuff" == app2->get_group());
     CHECK(0u == app2->get_require_subcommand_min());
