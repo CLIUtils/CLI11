@@ -137,7 +137,7 @@ CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
     if(footer.empty()) {
         return std::string{};
     }
-    return footer + "\n";
+    return "\n" + footer + "\n";
 }
 
 CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, AppFormatMode mode) const {
@@ -159,7 +159,7 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    out << '\n' << make_footer(app);
+    out << make_footer(app);
 
     return out.str();
 }
