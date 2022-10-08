@@ -750,7 +750,7 @@ class AsNumberWithUnit : public Validator {
 
         // transform function
         func_ = [mapping, opts](std::string &input) -> std::string {
-            Number num;
+            Number num{};
 
             detail::rtrim(input);
             if(input.empty()) {
