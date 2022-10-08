@@ -53,13 +53,14 @@ TEST_CASE("THelp: UsageCallback", "[help]") {
 TEST_CASE("THelp: UsageCallbackBoth", "[help]") {
     CLI::App app{"My prog"};
     app.usage([]() { return "use: just use it"; });
-    app.usage(", like 1, 2, and 3");
+    app.usage("like 1, 2, and 3");
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, Contains("-h,--help"));
     CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("use: just use it, like 1, 2, and 3"));
+    CHECK_THAT(help, Contains("use: just use it"));
+    CHECK_THAT(help, Contains("like 1, 2, and 3"));
 }
 
 TEST_CASE("THelp: Footer", "[help]") {
@@ -849,7 +850,7 @@ TEST_CASE_METHOD(CapturedHelp, "CallForAllHelpOutput", "[help]") {
                        "  One description\n\n"
                        "two\n"
                        "  Options:\n"
-                       "    --three                     \n\n\n");
+                       "    --three                     \n\n");
 }
 TEST_CASE_METHOD(CapturedHelp, "NewFormattedHelp", "[help]") {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
