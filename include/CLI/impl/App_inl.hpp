@@ -1431,7 +1431,7 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::SHORT:
     case detail::Classifier::WINDOWS_STYLE:
         // If already parsed a subcommand, don't accept options_
-        _parse_arg(args, classifier);
+        _parse_arg(args, classifier,false);
         break;
     case detail::Classifier::NONE:
         // Probably a positional or something for a parent (sub)command
@@ -1641,7 +1641,7 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
     return false;
 }
 
-CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type) {
+CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only) {
 
     std::string current = args.back();
 
@@ -1683,7 +1683,7 @@ CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classi
     if(op_ptr == std::end(options_)) {
         for(auto &subc : subcommands_) {
             if(subc->name_.empty() && !subc->disabled_) {
-                if(subc->_parse_arg(args, current_type)) {
+                if(subc->_parse_arg(args, current_type,local_processing_only)) {
                     if(!subc->pre_parse_called_) {
                         subc->_trigger_pre_parse(args.size());
                     }
@@ -1697,9 +1697,50 @@ CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classi
             return false;
         }
 
+        // now check for '.' notation of subcommands
+        auto dotloc=arg_name.find_first_of('.',1);
+        if ( dotloc != std::string::npos)
+        {
+            //using dot notation is equivalent to single argument subcommand
+            auto *sub =_find_subcommand(arg_name.substr(0,dotloc),true,false);
+            if (sub != nullptr)
+            {
+                auto v=args.back();
+                args.pop_back();
+                arg_name=arg_name.substr(dotloc+1);
+                if (arg_name.size() > 1)
+                {
+                    args.push_back(std::string("--")+v.substr(dotloc+3));
+                    current_type=detail::Classifier::LONG;
+                }
+                else
+                {
+                    args.push_back(std::string("-")+v.substr(dotloc+3));
+                    current_type=detail::Classifier::SHORT;
+                }
+                auto val=sub->_parse_arg(args,current_type,true);
+                if (val)
+                {
+                    if(!sub->silent_) {
+                        parsed_subcommands_.push_back(sub);
+                    }
+                    // deal with preparsing
+                    increment_parsed();
+                    _trigger_pre_parse(args.size());
+
+                    return true;
+                }
+                args.pop_back();
+                args.push_back(v);
+            }
+        }
+        if (local_processing_only)
+        {
+            return false;
+        }
         // If a subcommand, try the main command
         if(parent_ != nullptr && fallthrough_)
-            return _get_fallthrough_parent()->_parse_arg(args, current_type);
+            return _get_fallthrough_parent()->_parse_arg(args, current_type,false);
 
         // Otherwise, add to missing
         args.pop_back();

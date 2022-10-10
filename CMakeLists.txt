@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.4)
 # Note: this is a header only library. If you have an older CMake than 3.4,
 # just add the CLI11/include directory and that's all you need to do.
 
-# Make sure users don't get warnings on a tested (3.4 to 3.22) version
+# Make sure users don't get warnings on a tested (3.4 to 3.24) version
 # of CMake. For most of the policies, the new version is better (hence the change).
-# We don't use the 3.4...3.21 syntax because of a bug in an older MSVC's
+# We don't use the 3.4...3.24 syntax because of a bug in an older MSVC's
 # built-in and modified CMake 3.11
-if(${CMAKE_VERSION} VERSION_LESS 3.22)
+if(${CMAKE_VERSION} VERSION_LESS 3.24)
   cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-  cmake_policy(VERSION 3.22)
+  cmake_policy(VERSION 3.24)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
