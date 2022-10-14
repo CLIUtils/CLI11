@@ -964,15 +964,12 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
         return detail::Classifier::WINDOWS_STYLE;
     if((current == "++") && !name_.empty() && parent_ != nullptr)
         return detail::Classifier::SUBCOMMAND_TERMINATOR;
-    auto dotloc=current.find_first_of('.');
-    if (dotloc != std::string::npos)
-    {
-        auto *cm=_find_subcommand(current.substr(0, dotloc),true,ignore_used_subcommands);
-        if (cm != nullptr)
-        {
-            auto res=cm->_recognize(current.substr(dotloc+1),ignore_used_subcommands);
-            if (res == detail::Classifier::SUBCOMMAND)
-            {
+    auto dotloc = current.find_first_of('.');
+    if(dotloc != std::string::npos) {
+        auto *cm = _find_subcommand(current.substr(0, dotloc), true, ignore_used_subcommands);
+        if(cm != nullptr) {
+            auto res = cm->_recognize(current.substr(dotloc + 1), ignore_used_subcommands);
+            if(res == detail::Classifier::SUBCOMMAND) {
                 return res;
             }
         }
@@ -1444,7 +1441,7 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::SHORT:
     case detail::Classifier::WINDOWS_STYLE:
         // If already parsed a subcommand, don't accept options_
-        _parse_arg(args, classifier,false);
+        _parse_arg(args, classifier, false);
         break;
     case detail::Classifier::NONE:
         // Probably a positional or something for a parent (sub)command
@@ -1632,16 +1629,13 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
         return true;
     }
     auto *com = _find_subcommand(args.back(), true, true);
-    if (com == nullptr)
-    {
+    if(com == nullptr) {
         // the main way to get here is using .notation
-        auto dotloc=args.back().find_first_of('.');
-        if (dotloc != std::string::npos)
-        {
-            com=_find_subcommand(args.back().substr(0,dotloc), true, true);
-            if (com != nullptr)
-            {
-                args.back()=args.back().substr(dotloc+1);
+        auto dotloc = args.back().find_first_of('.');
+        if(dotloc != std::string::npos) {
+            com = _find_subcommand(args.back().substr(0, dotloc), true, true);
+            if(com != nullptr) {
+                args.back() = args.back().substr(dotloc + 1);
                 args.push_back(com->get_display_name());
             }
         }
@@ -1668,7 +1662,8 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
     return false;
 }
 
-CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only) {
+CLI11_INLINE bool
+App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only) {
 
     std::string current = args.back();
 
@@ -1710,7 +1705,7 @@ CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classi
     if(op_ptr == std::end(options_)) {
         for(auto &subc : subcommands_) {
             if(subc->name_.empty() && !subc->disabled_) {
-                if(subc->_parse_arg(args, current_type,local_processing_only)) {
+                if(subc->_parse_arg(args, current_type, local_processing_only)) {
                     if(!subc->pre_parse_called_) {
                         subc->_trigger_pre_parse(args.size());
                     }
@@ -1725,29 +1720,23 @@ CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classi
         }
 
         // now check for '.' notation of subcommands
-        auto dotloc=arg_name.find_first_of('.',1);
-        if ( dotloc != std::string::npos)
-        {
-            //using dot notation is equivalent to single argument subcommand
-            auto *sub =_find_subcommand(arg_name.substr(0,dotloc),true,false);
-            if (sub != nullptr)
-            {
-                auto v=args.back();
+        auto dotloc = arg_name.find_first_of('.', 1);
+        if(dotloc != std::string::npos) {
+            // using dot notation is equivalent to single argument subcommand
+            auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
+            if(sub != nullptr) {
+                auto v = args.back();
                 args.pop_back();
-                arg_name=arg_name.substr(dotloc+1);
-                if (arg_name.size() > 1)
-                {
-                    args.push_back(std::string("--")+v.substr(dotloc+3));
-                    current_type=detail::Classifier::LONG;
+                arg_name = arg_name.substr(dotloc + 1);
+                if(arg_name.size() > 1) {
+                    args.push_back(std::string("--") + v.substr(dotloc + 3));
+                    current_type = detail::Classifier::LONG;
+                } else {
+                    args.push_back(std::string("-") + v.substr(dotloc + 3));
+                    current_type = detail::Classifier::SHORT;
                 }
-                else
-                {
-                    args.push_back(std::string("-")+v.substr(dotloc+3));
-                    current_type=detail::Classifier::SHORT;
-                }
-                auto val=sub->_parse_arg(args,current_type,true);
-                if (val)
-                {
+                auto val = sub->_parse_arg(args, current_type, true);
+                if(val) {
                     if(!sub->silent_) {
                         parsed_subcommands_.push_back(sub);
                     }
@@ -1761,13 +1750,12 @@ CLI11_INLINE bool App::_parse_arg(std::vector<std::string> &args, detail::Classi
                 args.push_back(v);
             }
         }
-        if (local_processing_only)
-        {
+        if(local_processing_only) {
             return false;
         }
         // If a subcommand, try the main command
         if(parent_ != nullptr && fallthrough_)
-            return _get_fallthrough_parent()->_parse_arg(args, current_type,false);
+            return _get_fallthrough_parent()->_parse_arg(args, current_type, false);
 
         // Otherwise, add to missing
         args.pop_back();

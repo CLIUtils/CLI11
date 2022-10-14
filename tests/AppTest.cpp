@@ -2093,21 +2093,23 @@ TEST_CASE_METHOD(TApp, "AllowExtrasArgModify", "[app]") {
 TEST_CASE_METHOD(TApp, "CheckShortFail", "[app]") {
     args = {"--two"};
 
-    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::SHORT,false), CLI::HorribleError);
+    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::SHORT, false),
+                    CLI::HorribleError);
 }
 
 // Test horrible error
 TEST_CASE_METHOD(TApp, "CheckLongFail", "[app]") {
     args = {"-t"};
 
-    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::LONG,false), CLI::HorribleError);
+    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::LONG, false),
+                    CLI::HorribleError);
 }
 
 // Test horrible error
 TEST_CASE_METHOD(TApp, "CheckWindowsFail", "[app]") {
     args = {"-t"};
 
-    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::WINDOWS_STYLE,false),
+    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::WINDOWS_STYLE, false),
                     CLI::HorribleError);
 }
 
@@ -2115,7 +2117,8 @@ TEST_CASE_METHOD(TApp, "CheckWindowsFail", "[app]") {
 TEST_CASE_METHOD(TApp, "CheckOtherFail", "[app]") {
     args = {"-t"};
 
-    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::NONE,false), CLI::HorribleError);
+    CHECK_THROWS_AS(CLI::detail::AppFriend::parse_arg(&app, args, CLI::detail::Classifier::NONE, false),
+                    CLI::HorribleError);
 }
 
 // Test horrible error
