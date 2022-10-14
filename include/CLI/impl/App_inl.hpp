@@ -964,6 +964,19 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
         return detail::Classifier::WINDOWS_STYLE;
     if((current == "++") && !name_.empty() && parent_ != nullptr)
         return detail::Classifier::SUBCOMMAND_TERMINATOR;
+    auto dotloc=current.find_first_of('.');
+    if (dotloc != std::string::npos)
+    {
+        auto *cm=_find_subcommand(current.substr(0, dotloc),true,ignore_used_subcommands);
+        if (cm != nullptr)
+        {
+            auto res=cm->_recognize(current.substr(dotloc+1),ignore_used_subcommands);
+            if (res == detail::Classifier::SUBCOMMAND)
+            {
+                return res;
+            }
+        }
+    }
     return detail::Classifier::NONE;
 }
 
@@ -1619,6 +1632,20 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
         return true;
     }
     auto *com = _find_subcommand(args.back(), true, true);
+    if (com == nullptr)
+    {
+        // the main way to get here is using .notation
+        auto dotloc=args.back().find_first_of('.');
+        if (dotloc != std::string::npos)
+        {
+            com=_find_subcommand(args.back().substr(0,dotloc), true, true);
+            if (com != nullptr)
+            {
+                args.back()=args.back().substr(dotloc+1);
+                args.push_back(com->get_display_name());
+            }
+        }
+    }
     if(com != nullptr) {
         args.pop_back();
         if(!com->silent_) {

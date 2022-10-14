@@ -2045,3 +2045,40 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive", "[subcom]") {
     CHECK(extras.front()=="--sub1.sub2.bob");
 
 }
+
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive2", "[subcom]") {
+    std::string v1,v2,v3,vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 =sub1->add_subcommand("sub2");
+    auto *sub3 = sub2->add_subcommand("sub3");
+
+    sub1->add_option("--value", v1);
+    sub2->add_option("--value", v2);
+    sub3->add_option("--value", v3);
+    app.add_option("--value",vbase);
+    args = {"sub1.sub2.sub3","--value", "val1"};
+    run();
+    CHECK(v3=="val1");
+
+    args = {"sub1.sub2","--value", "val2"};
+    run();
+    CHECK(v2=="val2");
+
+    args = {"sub1.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"sub1.sub2.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"sub1.sub2.sub3.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    app.allow_extras();
+    CHECK_NOTHROW(run());
+    auto extras=app.remaining();
+    CHECK(extras.size()==1);
+    CHECK(extras.front()=="sub1.sub2.sub3.bob");
+
+}
