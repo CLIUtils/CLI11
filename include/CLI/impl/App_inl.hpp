@@ -1732,7 +1732,15 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     args.push_back(std::string("--") + v.substr(dotloc + 3));
                     current_type = detail::Classifier::LONG;
                 } else {
-                    args.push_back(std::string("-") + v.substr(dotloc + 3));
+                    auto nval=v.substr(dotloc+2);
+                    nval.front() = '-';
+                    if (nval.size()>2)
+                    {
+                        // '=' not allowed in short form arguments
+                        args.push_back(nval.substr(3));
+                        nval.resize(2);
+                    }
+                    args.push_back(nval);
                     current_type = detail::Classifier::SHORT;
                 }
                 auto val = sub->_parse_arg(args, current_type, true);

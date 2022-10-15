@@ -2011,7 +2011,37 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommand", "[subcom]") {
     CHECK(vbase == "base");
 
     auto subs = app.get_subcommands();
-    REQUIRE(subs.size() > 0);
+    REQUIRE(!subs.empty());
+    CHECK(subs.front()->get_name() == "sub2");
+}
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandSingleChar", "[subcom]") {
+    std::string v1, v2, vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
+    sub1->add_option("-v", v1);
+    sub2->add_option("-v", v2);
+    app.add_option("-v", vbase);
+    args = {"--sub1.v", "val1"};
+    run();
+    CHECK(v1 == "val1");
+
+    args = {"--sub2.v", "val2", "-v", "base"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+    v1.clear();
+    v2.clear();
+    vbase.clear();
+
+    args = {"--sub2.v=val2", "-vbase"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+
+    auto subs = app.get_subcommands();
+    REQUIRE(!subs.empty());
     CHECK(subs.front()->get_name() == "sub2");
 }
 
