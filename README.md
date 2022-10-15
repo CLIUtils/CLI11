@@ -938,6 +938,18 @@ nameless subcommands are allowed. Callbacks for nameless subcommands are only
 triggered if any options from the subcommand were parsed. Subcommand names given
 through the `add_subcommand` method have the same restrictions as option names.
 
+🚧 Options or flags in a subcommand may be directly specified using dot notation
+
+- `--subcommand.long=val` (long subcommand option)
+- `--subcommand.long val` (long subcommand option)
+- `--subcommand.f=val` (short form subcommand option)
+- `--subcommand.f val` (short form subcommand option)
+- `--subcommand.f` (short form subcommand flag)
+- `--subcommand1.subsub.f val` (short form nested subcommand option)
+
+The use of dot notation in this form is equivalent `--subcommand.long <args>` => `subcommand --long <args> ++`.
+Nested subcommands also work `"sub1.subsub"` would trigger the subsub subcommand in `sub1`.  This is equivalent to "sub1 subsub"
+
 #### Subcommand options
 
 There are several options that are supported on the main app and subcommands and

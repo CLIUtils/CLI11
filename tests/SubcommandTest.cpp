@@ -1410,6 +1410,15 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptionsCallbackOrdering", "[su
     CHECK_NOTHROW(run());
 }
 
+TEST_CASE_METHOD(ManySubcommands, "SubcommandParseCompleteDotNotation", "[subcom]") {
+    int count{0};
+    sub1->add_flag("--flag1");
+    sub1->parse_complete_callback([&count]() { ++count; });
+    args = {"--sub1.flag1", "--sub1.flag1"};
+    run();
+    CHECK(count==2);
+}
+
 TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {
 
     auto *opt = app.add_flag("--subactive");

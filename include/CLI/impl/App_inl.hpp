@@ -1750,7 +1750,14 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     // deal with preparsing
                     increment_parsed();
                     _trigger_pre_parse(args.size());
-
+                    //run the parse complete callback since the subcommand processing is now complete
+                    if(sub->parse_complete_callback_) {
+                        sub->_process_env();
+                        sub->_process_callbacks();
+                        sub->_process_help_flags();
+                        sub->_process_requirements();
+                        sub->run_callback(false, true);
+                    }
                     return true;
                 }
                 args.pop_back();
