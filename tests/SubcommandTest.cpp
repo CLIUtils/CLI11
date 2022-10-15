@@ -1416,7 +1416,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandParseCompleteDotNotation", "[subcom
     sub1->parse_complete_callback([&count]() { ++count; });
     args = {"--sub1.flag1", "--sub1.flag1"};
     run();
-    CHECK(count==2);
+    CHECK(count == 2);
 }
 
 TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {

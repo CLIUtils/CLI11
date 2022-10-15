@@ -947,8 +947,10 @@ through the `add_subcommand` method have the same restrictions as option names.
 - `--subcommand.f` (short form subcommand flag)
 - `--subcommand1.subsub.f val` (short form nested subcommand option)
 
-The use of dot notation in this form is equivalent `--subcommand.long <args>` => `subcommand --long <args> ++`.
-Nested subcommands also work `"sub1.subsub"` would trigger the subsub subcommand in `sub1`.  This is equivalent to "sub1 subsub"
+The use of dot notation in this form is equivalent `--subcommand.long <args>` =>
+`subcommand --long <args> ++`. Nested subcommands also work `"sub1.subsub"`
+would trigger the subsub subcommand in `sub1`. This is equivalent to "sub1
+subsub"
 
 #### Subcommand options
 
