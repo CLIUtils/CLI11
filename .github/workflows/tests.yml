@@ -246,7 +246,7 @@ jobs:
         with:
           cmake-version: "3.22"
         if: success() || failure()
-        
+
       - name: Check CMake 3.23 (full)
         uses: ./.github/actions/quick_cmake
         with:
@@ -260,4 +260,3 @@ jobs:
           cmake-version: "3.24"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
-
