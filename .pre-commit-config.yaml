@@ -33,14 +33,14 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.2"
+    rev: "v3.0.0-alpha.3"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
 
   - repo: https://github.com/markdownlint/markdownlint
-    rev: v0.11.0
+    rev: v0.12.0
     hooks:
       - id: markdownlint
         args: ["--style=scripts/mdlint_style.rb"]
