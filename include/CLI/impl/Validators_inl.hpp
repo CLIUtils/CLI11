@@ -132,7 +132,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
         return path_type::nonexistent;
     }
     switch(stat.type()) {
-    case std::filesystem::file_type::none:
+    case std::filesystem::file_type::none:  // LCOV_EXCL_LINE
     case std::filesystem::file_type::not_found:
         return path_type::nonexistent;
     case std::filesystem::file_type::directory:

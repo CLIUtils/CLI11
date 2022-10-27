@@ -525,6 +525,10 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
     CHECK(std::string("./") + std::string(myfile) == res.first);
     CHECK(res.second.empty());
+
+    res = CLI::detail::split_program_name("'odd_program_name.exe --arg --arg2=5");
+    CHECK("'odd_program_name.exe" == res.first);
+    CHECK(res.second.empty());
 }
 
 TEST_CASE("CheckedMultiply: Int", "[helpers]") {
