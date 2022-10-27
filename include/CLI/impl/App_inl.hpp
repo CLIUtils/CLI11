@@ -434,13 +434,13 @@ CLI11_NODISCARD CLI11_INLINE CLI::App_p App::get_subcommand_ptr(int index) const
 }
 
 CLI11_NODISCARD CLI11_INLINE CLI::App *App::get_option_group(std::string group_name) const {
-for(const App_p &app : subcommands_) {
-    if(app->name_.empty() && app->group_ == group_name) {
-        return app.get();
+    for(const App_p &app : subcommands_) {
+        if(app->name_.empty() && app->group_ == group_name) {
+            return app.get();
+        }
     }
+    throw OptionNotFound(group_name);
 }
-throw OptionNotFound(group_name);
-    }
 
 CLI11_NODISCARD CLI11_INLINE std::size_t App::count_all() const {
     std::size_t cnt{0};
