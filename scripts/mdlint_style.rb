@@ -6,4 +6,4 @@ exclude_rule 'MD034'  # Bare URL (for now)
 
 rule 'MD026', punctuation: '.,;:!'  # Trailing punctuation in header (& in this case)
 rule 'MD029', style: :ordered
-rule 'MD007', indent: '4' # indentation set to 4 spaces for lists
+rule 'MD007', indent: 2
