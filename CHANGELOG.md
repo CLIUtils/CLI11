@@ -164,9 +164,9 @@ a lot of backend cleanup, including a complete overhaul of the testing system
 and single file generation system.
 
 - Built-in config format is TOML compliant now [#435][]
-  - Support multiline TOML [#528][]
-  - Support for configurable quotes [#599][]
-  - Support short/positional options in config mode [#443][]
+   - Support multiline TOML [#528][]
+   - Support for configurable quotes [#599][]
+   - Support short/positional options in config mode [#443][]
 - More powerful containers, support for `%%` separator [#423][]
 - Support atomic types [#520][] and complex types natively [#423][]
 - Add a type validator `CLI::TypeValidator<TYPE>` [#526][]
@@ -622,12 +622,12 @@ several warnings, including an experimental optional error on Clang 7. Several
 smaller fixes.
 
 - Fixed help-all formatting [#163][]
-  - Printing help-all on nested command now fixed (App)
-  - Missing space after help-all restored (Default formatter)
-  - More detail printed on help all (Default formatter)
-  - Help-all subcommands get indented with inner blank lines removed (Default
+   - Printing help-all on nested command now fixed (App)
+   - Missing space after help-all restored (Default formatter)
+   - More detail printed on help all (Default formatter)
+   - Help-all subcommands get indented with inner blank lines removed (Default
     formatter)
-  - `detail::find_and_replace` added to utilities
+   - `detail::find_and_replace` added to utilities
 - Fixed CMake install as subproject with `CLI11_INSTALL` flag. [#156][]
 - Fixed warning about local variable hiding class member with MSVC [#157][]
 - Fixed compile error with default settings on Clang 7 and libc++ [#158][]

@@ -1065,6 +1065,10 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     std::string extra_input = "912i";
     CHECK_FALSE(CLI::detail::lexical_cast(extra_input, y));
 
+    extra_input = "true";
+    CHECK(CLI::detail::lexical_cast(extra_input, y));
+    CHECK(static_cast<bool>(y));
+
     std::string empty_input{};
     CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x_signed));
     CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x_unsigned));
