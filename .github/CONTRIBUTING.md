@@ -97,7 +97,7 @@ Steps:
 - Update changelog if needed
 - Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
 - Find and replace in README (new minor/major release only):
-   - Replace " 🆕" and "🆕 " with "" (ignores the description line)
-   - Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
-   - Replace "🚧" with "🆕" (manually ignore the description line)
+  - Replace " 🆕" and "🆕 " with "" (ignores the description line)
+  - Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
+  - Replace "🚧" with "🆕" (manually ignore the description line)
 - Make a release in the GitHub UI, use a name such as "Version X.Y(.Z): Title"
