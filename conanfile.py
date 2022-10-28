@@ -37,7 +37,7 @@ class CLI11Conan(ConanFile):
 
     def build(self):  # this is not building a library, just tests
         cmake = CMake(self)
-        cmake.definitions["CLI11_EXAMPLES"] = "OFF"
+        cmake.definitions["CLI11_BUILD_EXAMPLES"] = "OFF"
         cmake.definitions["CLI11_SINGLE_FILE"] = "OFF"
         cmake.configure()
         cmake.build()

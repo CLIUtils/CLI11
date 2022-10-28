@@ -525,6 +525,10 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     res = CLI::detail::split_program_name(std::string("  ./") + std::string(myfile) + "    ");
     CHECK(std::string("./") + std::string(myfile) == res.first);
     CHECK(res.second.empty());
+
+    res = CLI::detail::split_program_name("'odd_program_name.exe --arg --arg2=5");
+    CHECK("'odd_program_name.exe" == res.first);
+    CHECK_FALSE(res.second.empty());
 }
 
 TEST_CASE("CheckedMultiply: Int", "[helpers]") {
@@ -1064,6 +1068,10 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
 
     std::string extra_input = "912i";
     CHECK_FALSE(CLI::detail::lexical_cast(extra_input, y));
+
+    extra_input = "true";
+    CHECK(CLI::detail::lexical_cast(extra_input, x_signed));
+    CHECK(x_signed != 0);
 
     std::string empty_input{};
     CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x_signed));
