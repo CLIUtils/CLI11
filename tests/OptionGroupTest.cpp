@@ -450,10 +450,9 @@ TEST_CASE_METHOD(ManyGroups, "SingleGroup", "[optiongroup]") {
 
 TEST_CASE_METHOD(ManyGroups, "getGroup", "[optiongroup]") {
     // only 1 group can be used
-   auto *mn=app.get_option_group("main");
-   CHECK(mn==main);
-   CHECK_THROWS_AS(app.get_option_group("notfound"),CLI::OptionNotFound);
-
+    auto *mn = app.get_option_group("main");
+    CHECK(mn == main);
+    CHECK_THROWS_AS(app.get_option_group("notfound"), CLI::OptionNotFound);
 }
 
 TEST_CASE_METHOD(ManyGroups, "ExcludesGroup", "[optiongroup]") {
