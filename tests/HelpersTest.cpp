@@ -289,6 +289,11 @@ TEST_CASE("Validators: FileExists", "[helpers]") {
     CHECK_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
+TEST_CASE("Validators: FileExistsUTF8", "[helpers]") {
+    std::string myfile{"data/Hello Halló Привет 你好 👩‍🚀❤️.txt"};
+    CHECK(CLI::ExistingFile(myfile).empty());
+}
+
 TEST_CASE("Validators: FileNotExists", "[helpers]") {
     std::string myfile{"TestFileNotUsed.txt"};
     CHECK(CLI::NonexistentPath(myfile).empty());

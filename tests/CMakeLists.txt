@@ -89,6 +89,18 @@ else()
   target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
+# Add special target that copies the data directory for tests
+add_custom_command(
+  TARGET catch_main POST_BUILD
+  COMMENT "Copying data directory for tests"
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/data"
+    "${CMAKE_CURRENT_BINARY_DIR}/data"
+    VERBATIM
+)
+message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/data")
+
 # Target must already exist
 macro(add_catch_test TESTNAME)
   target_link_libraries(${TESTNAME} PUBLIC catch_main)

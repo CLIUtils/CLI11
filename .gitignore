@@ -6,8 +6,10 @@ a.out*
 /CMakeFiles/*
 /cmake_install.cmake
 /*.kdev4
+/.vscode
 /html/*
 !/meson.build
+/CMakeUserPresets.json
 
 /node_modules/*
 /package.json
