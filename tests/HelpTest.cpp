@@ -813,7 +813,7 @@ TEST_CASE_METHOD(CapturedHelp, "CallForAllHelpOutput", "[help]") {
                        "  One description\n\n"
                        "two\n"
                        "  Options:\n"
-                       "    --three                     \n\n\n");
+                       "    --three                     \n\n");
 }
 TEST_CASE_METHOD(CapturedHelp, "NewFormattedHelp", "[help]") {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
