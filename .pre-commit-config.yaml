@@ -44,6 +44,8 @@ repos:
     hooks:
       - id: markdownlint
         args: ["--style=scripts/mdlint_style.rb"]
+        # Uncomment on macOS - Apple has deprecated Ruby, so macOS is stuck on 2.6
+        # language_version: 3.1.2
 
   # - repo: local
   #   hooks:
