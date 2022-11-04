@@ -435,7 +435,7 @@ TEST_CASE("StringBased: file_error", "[config]") {
     CHECK_THROWS_AS(CLI::ConfigINI().from_file("nonexist_file"), CLI::FileError);
 }
 
-static const int fclear1=fileClear("TestIniTmp.ini");
+static const int fclear1 = fileClear("TestIniTmp.ini");
 
 TEST_CASE_METHOD(TApp, "IniNotRequired", "[config]") {
 
@@ -597,7 +597,7 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
     REQUIRE_NOTHROW(run());
 }
 
-static const int fclear2=fileClear("TestIniTmp2.ini");
+static const int fclear2 = fileClear("TestIniTmp2.ini");
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredNotDefault", "[config]") {
 
@@ -2024,7 +2024,7 @@ TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideSuccess", "[config]") {
     CHECK(val == 15);
 }
 
-static const int fclear3=fileClear("TestIniTmp3.ini");
+static const int fclear3 = fileClear("TestIniTmp3.ini");
 
 TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
 
@@ -2052,7 +2052,6 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
         out << "three=true" << std::endl;
     }
 
-
     int val{0};
     app.add_flag("--one{1},--two{2},--three{3}", val)->disable_flag_override();
 
@@ -2061,8 +2060,7 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
     CHECK(val == 2);
 
     args = {"--config", tmpini2};
-    CHECK_THROWS_AS(run(),CLI::ArgumentMismatch);
-
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 
     args = {"--config", tmpini3};
     run();
