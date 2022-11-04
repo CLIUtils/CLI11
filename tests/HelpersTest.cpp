@@ -289,7 +289,9 @@ TEST_CASE("Validators: FileExists", "[helpers]") {
     CHECK_FALSE(CLI::ExistingFile(myfile).empty());
 }
 
-TEST_CASE("Validators: FileExistsUTF8", "[helpers]") {
+TEST_CASE("Validators: FileExistsUTF8", "[helpers][unicode]") {
+    // Can't create the file then check it's existence - unicode gets corrupted the same way during creation and during
+    // checking.
     std::string myfile{"data/Hello Halló Привет 你好 👩‍🚀❤️.txt"};
     CHECK(CLI::ExistingFile(myfile).empty());
 }

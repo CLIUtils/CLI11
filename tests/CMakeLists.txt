@@ -59,6 +59,8 @@ if(Boost_FOUND)
   list(APPEND CLI11_TESTS BoostOptionTypeTest)
 endif()
 
+set(CLI11_COMMON_TEST_SOURCES execute_with)
+
 set(CLI11_MULTIONLY_TESTS TimerTest)
 
 add_library(catch_main main.cpp catch.hpp)
@@ -90,16 +92,40 @@ else()
 endif()
 
 # Add special target that copies the data directory for tests
-add_custom_command(
-  TARGET catch_main POST_BUILD
-  COMMENT "Copying data directory for tests"
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/data"
-    "${CMAKE_CURRENT_BINARY_DIR}/data"
+file(GLOB_RECURSE DATA_FILES
+  LIST_DIRECTORIES false
+  RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+
+foreach(DATA_FILE IN LISTS DATA_FILES)
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
+      "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
+    MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
     VERBATIM
-)
-message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/data")
+  )
+  target_sources(catch_main PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}")
+endforeach()
+
+# Build dependent applications which are launched from test code
+set(CLI11_DEPENDENT_APPLICATIONS
+  parse_unicode
+  parse_wide_string)
+
+foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
+	add_executable(${APP} applications/${APP}.cpp)
+	target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  add_dependencies(catch_main ${APP})
+endforeach()
+
+function(add_dependent_application_definitions TARGET)
+  foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
+    string(TOUPPER ${APP} APP_UPPERCASE)
+    target_compile_definitions(${TARGET} PRIVATE CLI11_${APP_UPPERCASE}_EXE="$<TARGET_FILE:${APP}>")
+  endforeach()
+endfunction()
 
 # Target must already exist
 macro(add_catch_test TESTNAME)
@@ -120,6 +146,11 @@ foreach(T IN LISTS CLI11_TESTS)
     set_property(SOURCE ${T}.cpp PROPERTY LANGUAGE CUDA)
   endif()
   add_executable(${T} ${T}.cpp)
+  foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
+    target_sources(${T} PRIVATE ${COMMON_TEST_SOURCE}.cpp)
+  endforeach()
+
+  add_dependent_application_definitions(${T})
   add_sanitizers(${T})
   if(NOT CLI11_CUDA_TESTS)
     target_link_libraries(${T} PRIVATE CLI11_warnings)
@@ -129,6 +160,10 @@ foreach(T IN LISTS CLI11_TESTS)
 
   if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
     add_executable(${T}_Single ${T}.cpp)
+    foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
+      target_sources(${T} PRIVATE ${COMMON_TEST_SOURCE}.cpp)
+    endforeach()
+    add_dependent_application_definitions(${T})
     target_link_libraries(${T}_Single PRIVATE CLI11_SINGLE)
     add_catch_test(${T}_Single)
     set_property(TARGET ${T}_Single PROPERTY FOLDER "Tests Single File")
@@ -137,6 +172,10 @@ endforeach()
 
 foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
   add_executable(${T} ${T}.cpp)
+  foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
+    target_sources(${T} PRIVATE ${COMMON_TEST_SOURCE}.cpp)
+  endforeach()
+  add_dependent_application_definitions(${T})
   add_sanitizers(${T})
   target_link_libraries(${T} PUBLIC CLI11)
   add_catch_test(${T})

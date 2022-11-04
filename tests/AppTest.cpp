@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include "execute_with.hpp"
 #include <cmath>
 
 #include <complex>
@@ -2463,3 +2464,44 @@ TEST_CASE("C20_compile", "simple") {
     app.parse("--flag");
     CHECK_FALSE(flag->empty());
 }
+
+#ifdef _WIN32
+
+// #14
+TEST_CASE("ParseUnicodeCmd", "[app][unicode]") {
+    TempFile outfile("parse_unicode.out.txt");
+    execute_with<shell::cmd>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+}
+
+// // #14
+// TEST_CASE("ParseWideStringCmd", "[app][unicode]") {
+//     TempFile outfile("parse_unicode.out.txt");
+//     execute_with<shell::cmd>(CLI11_PARSE_WIDE_STRING_EXE, "data/parse_test.txt");
+//     check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+// }
+
+// #14
+TEST_CASE("ParseUnicodePowerShell", "[app][unicode]") {
+    TempFile outfile("parse_unicode.out.txt");
+    execute_with<shell::powershell>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+}
+
+// // #14
+// TEST_CASE("Validators: ParseWideStringPowerShell", "[app][unicode]") {
+//     TempFile outfile("parse_unicode.out.txt");
+//     execute_with<shell::powershell>(CLI11_PARSE_WIDE_STRING_EXE, "data/parse_test.txt");
+//     check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+// }
+
+#else
+
+// #14
+TEST_CASE("ParseUnicodeBash", "[app][unicode]") {
+    TempFile outfile("parse_unicode.out.txt");
+    execute_with<shell::bash>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+}
+
+#endif  // _WIN32
