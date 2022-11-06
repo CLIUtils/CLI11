@@ -57,6 +57,8 @@ class FormatterBase {
     FormatterBase() = default;
     FormatterBase(const FormatterBase &) = default;
     FormatterBase(FormatterBase &&) = default;
+    FormatterBase &operator=(const FormatterBase &) = default;
+    FormatterBase &operator=(FormatterBase &&) = default;
 
     /// Adding a destructor in this form to work around bug in GCC 4.7
     virtual ~FormatterBase() noexcept {}  // NOLINT(modernize-use-equals-default)
@@ -118,6 +120,8 @@ class Formatter : public FormatterBase {
     Formatter() = default;
     Formatter(const Formatter &) = default;
     Formatter(Formatter &&) = default;
+    Formatter &operator=(const Formatter &) = default;
+    Formatter &operator=(Formatter &&) = default;
 
     /// @name Overridables
     ///@{

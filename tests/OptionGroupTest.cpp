@@ -448,6 +448,12 @@ TEST_CASE_METHOD(ManyGroups, "SingleGroup", "[optiongroup]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+TEST_CASE_METHOD(ManyGroups, "getGroup", "[optiongroup]") {
+    auto *mn = app.get_option_group("main");
+    CHECK(mn == main);
+    CHECK_THROWS_AS(app.get_option_group("notfound"), CLI::OptionNotFound);
+}
+
 TEST_CASE_METHOD(ManyGroups, "ExcludesGroup", "[optiongroup]") {
     // only 1 group can be used
     g1->excludes(g2);

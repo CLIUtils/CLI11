@@ -31,6 +31,20 @@ still default, and is not yet distributed via binaries.
 [#775]: https://github.com/CLIUtils/CLI11/pull/775
 [#781]: https://github.com/CLIUtils/CLI11/pull/781
 
+### Version 2.3.1: Missing implementation
+
+A function implementation was missing after the pre-compile move, missed due to
+the fact we lost 100% after losing coverage checking. We are working on filling
+out 100% coverage again to ensure this doesn't happen again!
+
+- Bugfix: `App::get_option_group` implementation missing [#793][]
+- Bugfix: Fix spacing when setting an empty footer [#796][]
+- Bugfix: Address Klocwork static analysis checking issues [#785][]
+
+[#785]: https://github.com/CLIUtils/CLI11/pull/785
+[#793]: https://github.com/CLIUtils/CLI11/pull/793
+[#796]: https://github.com/CLIUtils/CLI11/pull/796
+
 ## Version 2.2: Option and Configuration Flexibility
 
 New features include support for output of an empty vector, a summing option

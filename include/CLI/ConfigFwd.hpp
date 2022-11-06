@@ -61,7 +61,7 @@ class Config {
         if(item.inputs.empty()) {
             return "{}";
         }
-        throw ConversionError::TooManyInputsFlag(item.fullname());
+        throw ConversionError::TooManyInputsFlag(item.fullname());  // LCOV_EXCL_LINE
     }
 
     /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
