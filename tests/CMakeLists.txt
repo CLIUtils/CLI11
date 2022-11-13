@@ -111,8 +111,7 @@ endforeach()
 
 # Build dependent applications which are launched from test code
 set(CLI11_DEPENDENT_APPLICATIONS
-  parse_unicode
-  parse_wide_string)
+  parse_unicode)
 
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
 	add_executable(${APP} applications/${APP}.cpp)

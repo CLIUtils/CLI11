@@ -9,6 +9,8 @@
 // This include is only needed for IDEs to discover symbols
 #include <CLI/App.hpp>
 
+#include <CLI/Argv.hpp>
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <memory>
@@ -474,6 +476,8 @@ CLI11_INLINE void App::clear() {
     }
 }
 
+CLI11_INLINE void App::parse() { parse(argc(), argv()); }
+
 CLI11_INLINE void App::parse(int argc, const char *const *argv) {
     // If the name is not set, read from command line
     if(name_.empty() || has_automatic_name_) {
@@ -487,6 +491,22 @@ CLI11_INLINE void App::parse(int argc, const char *const *argv) {
         args.emplace_back(argv[i]);
     parse(std::move(args));
 }
+
+#ifdef _WIN32
+CLI11_INLINE void App::parse(int argc, const wchar_t *const *argv) {
+    // If the name is not set, read from command line
+    if(name_.empty() || has_automatic_name_) {
+        has_automatic_name_ = true;
+        name_ = narrow(argv[0]);
+    }
+
+    std::vector<std::string> args;
+    args.reserve(static_cast<std::size_t>(argc) - 1U);
+    for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
+        args.emplace_back(narrow(argv[i]));
+    parse(std::move(args));
+}
+#endif // _WIN32
 
 CLI11_INLINE void App::parse(std::string commandline, bool program_name_included) {
 
@@ -514,6 +534,12 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
 
     parse(std::move(args));
 }
+
+#ifdef _WIN32
+CLI11_INLINE void App::parse(std::wstring commandline, bool program_name_included) {
+    parse(narrow(commandline), program_name_included);
+}
+#endif // _WIN32
 
 CLI11_INLINE void App::parse(std::vector<std::string> &args) {
     // Clear if parsed

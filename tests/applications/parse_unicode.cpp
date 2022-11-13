@@ -7,8 +7,7 @@ int main(int argc, char **argv) {
     std::string str;
 
     app.add_option("str", str, "utf-8 string");
-
-    CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app);
 
     std::ofstream{"parse_unicode.out.txt"} << str;
 }

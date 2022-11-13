@@ -66,6 +66,33 @@
 #endif
 #endif
 
+/** availability of filesystem */
+#if defined CLI11_CPP17 && defined __has_include && !defined CLI11_HAS_FILESYSTEM
+#if __has_include(<filesystem>)
+// Filesystem cannot be used if targeting macOS < 10.15
+#if defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 101500
+#define CLI11_HAS_FILESYSTEM 0
+#elif defined(__wasi__)
+// As of wasi-sdk-14, filesystem is not implemented
+#define CLI11_HAS_FILESYSTEM 0
+#else
+#include <filesystem>
+#if defined __cpp_lib_filesystem && __cpp_lib_filesystem >= 201703
+#if defined _GLIBCXX_RELEASE && _GLIBCXX_RELEASE >= 9
+#define CLI11_HAS_FILESYSTEM 1
+#elif defined(__GLIBCXX__)
+// if we are using gcc and Version <9 default to no filesystem
+#define CLI11_HAS_FILESYSTEM 0
+#else
+#define CLI11_HAS_FILESYSTEM 1
+#endif
+#else
+#define CLI11_HAS_FILESYSTEM 0
+#endif
+#endif
+#endif
+#endif
+
 /** Inline macro **/
 #ifdef CLI11_COMPILE
 #define CLI11_INLINE

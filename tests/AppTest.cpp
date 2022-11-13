@@ -262,6 +262,18 @@ TEST_CASE_METHOD(TApp, "OneString", "[app]") {
     CHECK("mystring" == str);
 }
 
+#ifdef _WIN32
+TEST_CASE_METHOD(TApp, "OneWideString", "[app]") {
+    std::wstring str;
+    app.add_option("-s,--string", str);
+    args = {"--string", "mystring"};
+    run();
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK(L"mystring" == str);
+}
+#endif
+
 TEST_CASE_METHOD(TApp, "OneStringWindowsStyle", "[app]") {
     std::string str;
     app.add_option("-s,--string", str);
@@ -2470,38 +2482,24 @@ TEST_CASE("C20_compile", "simple") {
 // #14
 TEST_CASE("ParseUnicodeCmd", "[app][unicode]") {
     TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::cmd>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+    execute_with<shell::cmd>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
 }
-
-// // #14
-// TEST_CASE("ParseWideStringCmd", "[app][unicode]") {
-//     TempFile outfile("parse_unicode.out.txt");
-//     execute_with<shell::cmd>(CLI11_PARSE_WIDE_STRING_EXE, "data/parse_test.txt");
-//     check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
-// }
 
 // #14
 TEST_CASE("ParseUnicodePowerShell", "[app][unicode]") {
     TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::powershell>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+    execute_with<shell::powershell>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
 }
-
-// // #14
-// TEST_CASE("Validators: ParseWideStringPowerShell", "[app][unicode]") {
-//     TempFile outfile("parse_unicode.out.txt");
-//     execute_with<shell::powershell>(CLI11_PARSE_WIDE_STRING_EXE, "data/parse_test.txt");
-//     check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
-// }
 
 #else
 
 // #14
 TEST_CASE("ParseUnicodeBash", "[app][unicode]") {
     TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::bash>(CLI11_PARSE_UNICODE_EXE, "data/parse_test.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_test.txt");
+    execute_with<shell::bash>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
+    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
 }
 
 #endif  // _WIN32
