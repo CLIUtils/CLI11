@@ -7,6 +7,7 @@
 #pragma once
 
 // [CLI11:public_includes:set]
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <limits>
@@ -15,7 +16,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <cmath>
 // [CLI11:public_includes:end]
 
 #include "StringTools.hpp"
