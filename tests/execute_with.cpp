@@ -55,7 +55,7 @@ void winapi_execute(const char *executable, const char *commandline) {
         }
     });
 
-    bool ok = ShellExecuteExA(&info);
+    auto ok = static_cast<bool>(ShellExecuteExA(&info));
     if(!ok) {
         auto error_code = GetLastError();
         std::string error = "winapi_exec: ShellExecuteExA produced error code " + std::to_string(error_code);
