@@ -49,7 +49,8 @@ set(CLI11_TESTS
     StringParseTest
     ComplexTypeTest
     TrueFalseTest
-    OptionGroupTest)
+    OptionGroupTest
+    EncodingTest)
 
 if(WIN32)
   list(APPEND CLI11_TESTS WindowsTest)
