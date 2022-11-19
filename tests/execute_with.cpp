@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 template <typename F> struct scope_guard_t {
     F closure;
@@ -84,7 +85,7 @@ template <> void execute_with<shell::cmd>(const char *executable_c_str, const ch
     std::replace(args_file.begin(), args_file.end(), '/', '\\');
 
     std::string commandline =
-        "/C \"for /F \"usebackq delims=\" %X in (\"" + args_file + "\") do @\"" + executable + "\" %X \"";
+        R"lit(/C "for /F "usebackq delims=" %X in (")lit" + args_file + "\") do @\"" + executable + "\" %X \"";
 
     winapi_execute("cmd.exe", commandline.c_str());
 }
@@ -95,8 +96,9 @@ template <> void execute_with<shell::powershell>(const char *executable_c_str, c
     std::replace(executable.begin(), executable.end(), '/', '\\');
     std::replace(args_file.begin(), args_file.end(), '/', '\\');
 
-    std::string commandline = "-NoProfile -NonInteractive -Command \"&\\\"" + executable + "\\\" $($(Get-Content \\\"" +
-                              args_file + "\\\") -Split ' (?=(?:[^\\\"]|\\\"[^\\\"]*\\\")*$)')\"";
+    std::string commandline = R"lit(-NoProfile -NonInteractive -Command "&\")lit" + executable +
+                              R"lit(\" $($(Get-Content \")lit" + args_file +
+                              R"lit(\") -Split ' (?=(?:[^\"]|\"[^\"]*\")*$)')")lit";
 
     winapi_execute("powershell.exe", commandline.c_str());
 }

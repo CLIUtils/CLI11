@@ -14,6 +14,7 @@
 // [CLI11:public_includes:set]
 #include <memory>
 #include <string>
+#include <vector>
 // [CLI11:public_includes:set]
 
 #ifdef _WIN32
@@ -41,8 +42,10 @@ CLI11_INLINE const std::vector<const char *> &args() {
             int argc = 0;
 
             auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
+            // NOLINTBEGIN(*-avoid-c-arrays)
             auto wargv =
                 std::unique_ptr<wchar_t *[], decltype(deleter)>(CommandLineToArgvW(GetCommandLineW(), &argc), deleter);
+            // NOLINTEND(*-avoid-c-arrays)
 
             if(wargv == nullptr) {
                 throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
@@ -59,7 +62,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
         std::vector<const char *> result;
         result.reserve(args_as_strings.size());
 
-        for(auto &arg : args_as_strings) {
+        for(const auto &arg : args_as_strings) {
             result.push_back(arg.data());
         }
 
@@ -113,7 +116,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
 }  // namespace detail
 
 CLI11_INLINE const char *const *argv() { return detail::args().data(); }
-CLI11_INLINE int argc() { return detail::args().size(); }
+CLI11_INLINE int argc() { return static_cast<int>(detail::args().size()); }
 
 // [CLI11:argv_inl_hpp:end]
 }  // namespace CLI
