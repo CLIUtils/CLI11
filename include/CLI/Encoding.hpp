@@ -26,6 +26,7 @@
 #endif
 
 namespace CLI {
+// [CLI11:encoding_hpp:verbatim]
 
 /// Convert a wide string to a narrow string.
 CLI11_INLINE std::string narrow(const std::wstring &str);
@@ -47,6 +48,7 @@ CLI11_INLINE std::wstring widen(std::string_view str);
 CLI11_INLINE std::filesystem::path to_path(std::string_view str);
 #endif
 
+// [CLI11:encoding_hpp:verbatim]
 }  // namespace CLI
 
 #endif  // _WIN32

@@ -20,6 +20,7 @@
 #include "SlimWindowsH.hpp"
 
 namespace CLI {
+// [CLI11:encoding_inl_hpp:verbatim]
 
 CLI11_INLINE std::string narrow(const wchar_t *str, std::size_t str_size) {
     std::string result;
@@ -76,6 +77,7 @@ CLI11_INLINE std::wstring widen(std::string_view str) { return widen(str.data(),
 CLI11_INLINE std::filesystem::path to_path(std::string_view str) { return std::filesystem::path{widen(str)}; }
 #endif
 
+// [CLI11:encoding_inl_hpp:verbatim]
 }  // namespace CLI
 
 #endif  // _WIN32

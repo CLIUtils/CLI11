@@ -24,7 +24,7 @@
 #endif  // _WIN32
 
 namespace CLI {
-// [CLI11:config_hpp:verbatim]
+// [CLI11:argv_inl_hpp:verbatim]
 
 namespace detail {
 
@@ -115,5 +115,5 @@ CLI11_INLINE const std::vector<const char *> &args() {
 CLI11_INLINE const char *const *argv() { return detail::args().data(); }
 CLI11_INLINE int argc() { return detail::args().size(); }
 
-// [CLI11:config_hpp:end]
+// [CLI11:argv_inl_hpp:end]
 }  // namespace CLI

@@ -13,7 +13,7 @@
 // [CLI11:public_includes:set]
 
 namespace CLI {
-// [CLI11:config_hpp:verbatim]
+// [CLI11:argv_hpp:verbatim]
 
 /// argc as passed in to this executable.
 CLI11_INLINE int argc();
@@ -21,7 +21,7 @@ CLI11_INLINE int argc();
 /// argv as passed in to this executable, converted to utf-8 on Windows.
 CLI11_INLINE const char *const *argv();
 
-// [CLI11:config_hpp:end]
+// [CLI11:argv_hpp:end]
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
