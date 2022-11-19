@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
+// [CLI11:slim_windows_h_hpp:verbatim]
+#ifdef _WIN32
 // The most slimmed-down version of Windows.h.
-
 #define WIN32_LEAN_AND_MEAN
 #define WIN32_EXTRA_LEAN
 
@@ -52,9 +53,7 @@
 #define NODEFERWINDOWPOS  // DeferWindowPos routines
 #define NOMCX             // Modem Configuration Extensions
 
-// [CLI11:public_includes:set]
 #include "Windows.h"
-// [CLI11:public_includes:set]
 
 #undef WIN32_LEAN_AND_MEAN
 #undef WIN32_EXTRA_LEAN
@@ -98,3 +97,6 @@
 #undef NOPROFILER
 #undef NODEFERWINDOWPOS
 #undef NOMCX
+
+#endif  // _WIN32
+// [CLI11:slim_windows_h_hpp:end]

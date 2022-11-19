@@ -8,24 +8,20 @@
 
 #include <CLI/Macros.hpp>
 
+// [CLI11:encoding_includes:verbatim]
 #ifdef _WIN32
-// [CLI11:public_includes:set]
 #include <string>
-// [CLI11:public_includes:set]
 
 #ifdef CLI11_CPP17
-// [CLI11:public_includes:set]
 #include <string_view>
-// [CLI11:public_includes:set]
 #endif  // CLI11_CPP17
 #endif  // _WIN32
 
-#ifdef CLI11_HAS_FILESYSTEM
-// [CLI11:public_includes:set]
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>
 #include <string_view>  // NOLINT(build/include)
-// [CLI11:public_includes:set]
-#endif
+#endif                  // CLI11_HAS_FILESYSTEM
+// [CLI11:encoding_includes:end]
 
 namespace CLI {
 // [CLI11:encoding_hpp:verbatim]
@@ -47,12 +43,12 @@ CLI11_INLINE std::wstring widen(std::string_view str);
 #endif  // CLI11_CPP17
 #endif  // _WIN32
 
-#ifdef CLI11_HAS_FILESYSTEM
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 /// Convert a char-string to a native path correctly.
 CLI11_INLINE std::filesystem::path to_path(std::string_view str);
 #endif  // CLI11_HAS_FILESYSTEM
 
-// [CLI11:encoding_hpp:verbatim]
+// [CLI11:encoding_hpp:end]
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE

@@ -9,14 +9,16 @@
 // This include is only needed for IDEs to discover symbols
 #include <CLI/Encoding.hpp>
 
+// [CLI11:encoding_inl_includes:verbatim]
 #ifdef _WIN32
-// [CLI11:public_includes:set]
 #include <cstring>
 #include <cwchar>
 #include <stdexcept>
 #include <string>
-// [CLI11:public_includes:set]
+#endif  // _WIN32
+// [CLI11:encoding_inl_includes:end]
 
+#ifdef _WIN32
 #include "SlimWindowsH.hpp"
 #endif  // _WIN32
 
@@ -88,7 +90,7 @@ CLI11_INLINE std::wstring widen(std::string_view str) { return widen(str.data(),
 #endif  // CLI11_CPP17
 #endif  // _WIN32
 
-#ifdef CLI11_HAS_FILESYSTEM
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 CLI11_INLINE std::filesystem::path to_path(std::string_view str) {
     return std::filesystem::path{
 #ifdef _WIN32
@@ -100,5 +102,5 @@ CLI11_INLINE std::filesystem::path to_path(std::string_view str) {
 }
 #endif  // CLI11_HAS_FILESYSTEM
 
-// [CLI11:encoding_inl_hpp:verbatim]
+// [CLI11:encoding_inl_hpp:end]
 }  // namespace CLI

@@ -13,6 +13,10 @@
 
 #include "Macros.hpp"
 
+#include "Encoding.hpp"
+
+#include "Argv.hpp"
+
 #include "StringTools.hpp"
 
 #include "Error.hpp"
@@ -34,7 +38,3 @@
 #include "Config.hpp"
 
 #include "Formatter.hpp"
-
-#include "Encoding.hpp"
-
-#include "Argv.hpp"
