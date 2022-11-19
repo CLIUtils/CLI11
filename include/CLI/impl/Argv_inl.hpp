@@ -28,6 +28,7 @@ namespace CLI {
 
 namespace detail {
 
+/// Command-line arguments, as passed in to this executable, converted to utf-8 on Windows.
 CLI11_INLINE const std::vector<const char *> &args() {
     // This function uses initialization via lambdas extensively to take advantage of the thread safety of static
     // variable initialization [stmt.dcl.3]

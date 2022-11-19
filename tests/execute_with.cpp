@@ -6,6 +6,14 @@
 
 #include "execute_with.hpp"
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <shellapi.h>
+#include <synchapi.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
+
 #ifdef CLI11_SINGLE_FILE
 #include "CLI11.hpp"
 #else
@@ -28,12 +36,6 @@ template <typename F> CLI11_NODISCARD scope_guard_t<F> scope_guard(F &&closure) 
 }
 
 #ifdef _WIN32
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <shellapi.h>
-#include <synchapi.h>
-#undef WIN32_LEAN_AND_MEAN
 
 void winapi_execute(const char *executable, const char *commandline) {
     SHELLEXECUTEINFOA info{};

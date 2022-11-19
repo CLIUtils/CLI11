@@ -34,3 +34,7 @@
 #include "Config.hpp"
 
 #include "Formatter.hpp"
+
+#include "Encoding.hpp"
+
+#include "Argv.hpp"

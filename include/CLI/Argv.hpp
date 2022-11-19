@@ -15,13 +15,6 @@
 namespace CLI {
 // [CLI11:config_hpp:verbatim]
 
-namespace detail {
-
-/// Command-line arguments, as passed in to this executable, converted to utf-8 on Windows.
-CLI11_INLINE const std::vector<const char *> &args();
-
-}  // namespace detail
-
 /// argc as passed in to this executable.
 CLI11_INLINE int argc();
 

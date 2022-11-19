@@ -17,11 +17,7 @@
 #include <stdexcept>
 // [CLI11:public_includes:set]
 
-#define WIN32_LEAN_AND_MEAN
-// [CLI11:public_includes:set]
-#include <Windows.h>
-// [CLI11:public_includes:set]
-#undef WIN32_LEAN_AND_MEAN
+#include "SlimWindowsH.hpp"
 
 namespace CLI {
 
