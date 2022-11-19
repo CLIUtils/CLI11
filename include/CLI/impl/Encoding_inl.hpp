@@ -10,7 +10,6 @@
 #include <CLI/Encoding.hpp>
 
 #ifdef _WIN32
-
 // [CLI11:public_includes:set]
 #include <cstring>
 #include <cwchar>
@@ -19,10 +18,12 @@
 // [CLI11:public_includes:set]
 
 #include "SlimWindowsH.hpp"
+#endif  // _WIN32
 
 namespace CLI {
 // [CLI11:encoding_inl_hpp:verbatim]
 
+#ifdef _WIN32
 CLI11_INLINE std::string narrow(const wchar_t *str, std::size_t str_size) {
     std::string result;
     auto result_size = static_cast<std::size_t>(
@@ -85,12 +86,19 @@ CLI11_INLINE std::wstring widen(const char *str) { return widen(str, std::strlen
 CLI11_INLINE std::string narrow(std::wstring_view str) { return narrow(str.data(), str.size()); }
 CLI11_INLINE std::wstring widen(std::string_view str) { return widen(str.data(), str.size()); }
 #endif  // CLI11_CPP17
+#endif  // _WIN32
 
 #ifdef CLI11_HAS_FILESYSTEM
-CLI11_INLINE std::filesystem::path to_path(std::string_view str) { return std::filesystem::path{widen(str)}; }
-#endif
+CLI11_INLINE std::filesystem::path to_path(std::string_view str) {
+    return std::filesystem::path{
+#ifdef _WIN32
+        widen(str)
+#else
+        str
+#endif  // _WIN32
+    };
+}
+#endif  // CLI11_HAS_FILESYSTEM
 
 // [CLI11:encoding_inl_hpp:verbatim]
 }  // namespace CLI
-
-#endif  // _WIN32
