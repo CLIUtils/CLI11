@@ -308,9 +308,11 @@ interfere.
 
 <details><summary>Note: Why are argc and argv not used? (click to expand)</summary><p>
 
-`argc` and `argv` may contain incorrect information on Windows when unicode text is passed in. Check out a section on [unicode support](#unicode-support) below. 
+`argc` and `argv` may contain incorrect information on Windows when unicode text
+is passed in. Check out a section on [unicode support](#unicode-support) below.
 
-If this is not a concern, you can explicitly pass `argc` and `argv` from main or from an external preprocessor of CLI arguments to `parse`:
+If this is not a concern, you can explicitly pass `argc` and `argv` from main or
+from an external preprocessor of CLI arguments to `parse`:
 
 ```cpp
 int main(int argc, char** argv) {
@@ -1484,39 +1486,58 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
 ```
 
 ### Unicode support
-CLI11 supports unicode and wide string as defined in the [UTF-8 Everywhere](http://utf8everywhere.org/) manifesto. In particular:
- - On Linux, command-line string is already assumed to be in UTF-8, and no wide string facilities are provided.
- - On Windows, command-line string *can* be correctly parsed into UTF-8, if you provide CLI11 with correct inputs.
 
-When using the command line on Windows with unicode arguments, your `main` function may already receive broken unicode. Parsing `argv` at that point will not give you a correct string. To fix this, you have three options:
+CLI11 supports unicode and wide string as defined in the
+[UTF-8 Everywhere](http://utf8everywhere.org/) manifesto. In particular:
 
-1. If you pass unmodified command-line arguments to CLI11, call `app.parse()` instead of `app.parse(argc, argv)` (or `CLI11_PARSE(app)` instead of `CLI11_PARSE(app, argc, argv)`). The library will find correct arguments itself.
-    ```cpp
-    int main() {
-        CLI::App app;
-        // ...
-        CLI11_PARSE(app);
-    }
-    ```
-1. Get correct arguments using provided functions: `CLI::argc()` and `CLI::argv()`. These two are the only cross-platform methods of handling unicode correcly.
-    ```cpp
-    int main() {
-        CLI::App app;
-        // ...
-        CLI11_PARSE(app, CLI::argc(), CLI::argv());
-    }
-    ```
-1. Use the Windows-only non-standard `wmain` function, which accepts `wchar_t *argv[]` instead of `char* argv[]`. Parsing this will allow CLI to convert wide strings to UTF-8 without losing information.
-    ```cpp
-    int wmain(int argc, wchar_t *argv[]) {
-        CLI::App app;
-        // ...
-        CLI11_PARSE(app, argc, argv);
-    }
-    ```
-1. Retrieve arguments yourself by using Windows APIs like [`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw) and pass them to CLI. This is what the library is doing under the hood in `CLI::argv()`.
+- On Linux, command-line string is already assumed to be in UTF-8, and no wide
+  string facilities are provided.
+- On Windows, command-line string _can_ be correctly parsed into UTF-8, if you
+  provide CLI11 with correct inputs.
 
-On Windows, the library provides functions to convert between UTF-8 and wide strings:
+When using the command line on Windows with unicode arguments, your `main`
+function may already receive broken unicode. Parsing `argv` at that point will
+not give you a correct string. To fix this, you have three options:
+
+1. If you pass unmodified command-line arguments to CLI11, call `app.parse()`
+   instead of `app.parse(argc, argv)` (or `CLI11_PARSE(app)` instead of
+   `CLI11_PARSE(app, argc, argv)`). The library will find correct arguments
+   itself.
+   ```cpp
+   int main() {
+       CLI::App app;
+       // ...
+       CLI11_PARSE(app);
+   }
+   ```
+1. Get correct arguments using provided functions: `CLI::argc()` and
+   `CLI::argv()`. These two are the only cross-platform methods of handling
+   unicode correcly.
+   ```cpp
+   int main() {
+       CLI::App app;
+       // ...
+       CLI11_PARSE(app, CLI::argc(), CLI::argv());
+   }
+   ```
+1. Use the Windows-only non-standard `wmain` function, which accepts
+   `wchar_t *argv[]` instead of `char* argv[]`. Parsing this will allow CLI to
+   convert wide strings to UTF-8 without losing information.
+   ```cpp
+   int wmain(int argc, wchar_t *argv[]) {
+       CLI::App app;
+       // ...
+       CLI11_PARSE(app, argc, argv);
+   }
+   ```
+1. Retrieve arguments yourself by using Windows APIs like
+   [`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
+   and pass them to CLI. This is what the library is doing under the hood in
+   `CLI::argv()`.
+
+On Windows, the library provides functions to convert between UTF-8 and wide
+strings:
+
 ```cpp
 namespace CLI {
     std::string narrow(const std::wstring &str);
@@ -1532,14 +1553,19 @@ namespace CLI {
 ```
 
 #### Note on using unicode paths
-When creating a `filesystem::path` from a UTF-8 path on Windows, you need to convert it to a wide string first. CLI provides a platform-independent `to_path` function, which you can use even if the original UTF-8 string didn't come from CLI:
+
+When creating a `filesystem::path` from a UTF-8 path on Windows, you need to
+convert it to a wide string first. CLI provides a platform-independent `to_path`
+function, which you can use even if the original UTF-8 string didn't come from
+CLI:
+
 ```cpp
 std::string utf8_name = "Hello Halló Привет 你好 👩‍🚀❤️.txt";
 
 std::filesystem::path p = CLI::to_path(utf8_name);
 std::ifstream stream(CLI::to_path(utf8_name));
 // etc.
-``` 
+```
 
 ### Utilities
 

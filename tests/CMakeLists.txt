@@ -93,7 +93,8 @@ else()
 endif()
 
 # Add special target that copies the data directory for tests
-file(GLOB_RECURSE DATA_FILES
+file(
+  GLOB_RECURSE DATA_FILES
   LIST_DIRECTORIES false
   RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
   "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
@@ -101,29 +102,27 @@ file(GLOB_RECURSE DATA_FILES
 foreach(DATA_FILE IN LISTS DATA_FILES)
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
-      "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
+            "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
     MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
-    VERBATIM
-  )
+    VERBATIM)
   target_sources(catch_main PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}")
 endforeach()
 
 # Build dependent applications which are launched from test code
-set(CLI11_DEPENDENT_APPLICATIONS
-  parse_unicode)
+set(CLI11_DEPENDENT_APPLICATIONS parse_unicode)
 
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
-	add_executable(${APP} applications/${APP}.cpp)
-	target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  add_executable(${APP} applications/${APP}.cpp)
+  target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
   add_dependencies(catch_main ${APP})
 endforeach()
 
 function(add_dependent_application_definitions TARGET)
   foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
     string(TOUPPER ${APP} APP_UPPERCASE)
-    target_compile_definitions(${TARGET} PRIVATE CLI11_${APP_UPPERCASE}_EXE="$<TARGET_FILE:${APP}>")
+    target_compile_definitions(${TARGET}
+                               PRIVATE CLI11_${APP_UPPERCASE}_EXE="$<TARGET_FILE:${APP}>")
   endforeach()
 endfunction()
 
