@@ -1512,7 +1512,7 @@ not give you a correct string. To fix this, you have three options:
    }
    ```
 
-1. Get correct arguments using provided functions: `CLI::argc()` and
+2. Get correct arguments using provided functions: `CLI::argc()` and
    `CLI::argv()`. These two are the only cross-platform methods of handling
    unicode correctly.
 
@@ -1524,7 +1524,7 @@ not give you a correct string. To fix this, you have three options:
    }
    ```
 
-1. Use the Windows-only non-standard `wmain` function, which accepts
+3. Use the Windows-only non-standard `wmain` function, which accepts
    `wchar_t *argv[]` instead of `char* argv[]`. Parsing this will allow CLI to
    convert wide strings to UTF-8 without losing information.
 
@@ -1536,7 +1536,7 @@ not give you a correct string. To fix this, you have three options:
    }
    ```
 
-1. Retrieve arguments yourself by using Windows APIs like
+4. Retrieve arguments yourself by using Windows APIs like
    [`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
    and pass them to CLI. This is what the library is doing under the hood in
    `CLI::argv()`.
