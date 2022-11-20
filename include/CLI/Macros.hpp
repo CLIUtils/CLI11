@@ -109,10 +109,10 @@
 #define CLI11_DIAGNOSTIC_IGNORE_DEPRECATED _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 
 #elif defined(_MSC_VER)
-#define CLI11_DIAGNOSTIC_PUSH _Pragma("warning(push)")
-#define CLI11_DIAGNOSTIC_POP _Pragma("warning(pop)")
+#define CLI11_DIAGNOSTIC_PUSH __pragma(warning(push))
+#define CLI11_DIAGNOSTIC_POP __pragma(warning(pop))
 
-#define CLI11_DIAGNOSTIC_IGNORE_DEPRECATED _Pragma("warning(disable: 4996)")
+#define CLI11_DIAGNOSTIC_IGNORE_DEPRECATED __pragma(warning(disable : 4996))
 
 #else
 #define CLI11_DIAGNOSTIC_PUSH
