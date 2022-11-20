@@ -11,7 +11,6 @@
 #include <CLI/Macros.hpp>
 
 // [CLI11:public_includes:set]
-#include <codecvt>
 #include <cstring>
 #include <cwchar>
 #include <locale>
