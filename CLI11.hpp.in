@@ -36,11 +36,11 @@
 // Standard combined includes:
 {public_includes}
 
-{slim_windows_h_hpp}
-
 {version_hpp}
 
 {macros_hpp}
+
+{slim_windows_h_hpp}
 
 {validators_hpp_filesystem}
 

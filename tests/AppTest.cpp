@@ -261,7 +261,6 @@ TEST_CASE_METHOD(TApp, "OneString", "[app]") {
     CHECK("mystring" == str);
 }
 
-#if defined(CLI11_HAS_CODECVT) && CLI11_HAS_CODECVT > 0
 TEST_CASE_METHOD(TApp, "OneWideString", "[app]") {
     std::wstring str;
     app.add_option("-s,--string", str);
@@ -271,7 +270,6 @@ TEST_CASE_METHOD(TApp, "OneWideString", "[app]") {
     CHECK(app.count("--string") == 1u);
     CHECK(L"mystring" == str);
 }
-#endif
 
 TEST_CASE_METHOD(TApp, "OneStringWindowsStyle", "[app]") {
     std::string str;
