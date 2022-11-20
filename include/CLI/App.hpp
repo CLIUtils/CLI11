@@ -844,18 +844,14 @@ class App {
     /// Parses the command line - throws errors.
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv);
-#ifdef _WIN32
     void parse(int argc, const wchar_t *const *argv);
-#endif  // _WIN32
 
     /// Parse a single string as if it contained command line arguments.
     /// This function splits the string into arguments then calls parse(std::vector<std::string> &)
     /// the function takes an optional boolean argument specifying if the programName is included in the string to
     /// process
     void parse(std::string commandline, bool program_name_included = false);
-#ifdef _WIN32
     void parse(std::wstring commandline, bool program_name_included = false);
-#endif  // _WIN32
 
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.

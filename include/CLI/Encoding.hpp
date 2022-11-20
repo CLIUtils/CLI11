@@ -8,14 +8,14 @@
 
 #include <CLI/Macros.hpp>
 
-// [CLI11:encoding_includes:verbatim]
-#ifdef _WIN32
+// [CLI11:public_includes:set]
 #include <string>
+// [CLI11:public_includes:end]
 
+// [CLI11:encoding_includes:verbatim]
 #ifdef CLI11_CPP17
 #include <string_view>
 #endif  // CLI11_CPP17
-#endif  // _WIN32
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>
@@ -26,7 +26,6 @@
 namespace CLI {
 // [CLI11:encoding_hpp:verbatim]
 
-#ifdef _WIN32
 /// Convert a wide string to a narrow string.
 CLI11_INLINE std::string narrow(const std::wstring &str);
 CLI11_INLINE std::string narrow(const wchar_t *str);
@@ -41,7 +40,6 @@ CLI11_INLINE std::wstring widen(const char *str, std::size_t size);
 CLI11_INLINE std::string narrow(std::wstring_view str);
 CLI11_INLINE std::wstring widen(std::string_view str);
 #endif  // CLI11_CPP17
-#endif  // _WIN32
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 /// Convert a char-string to a native path correctly.

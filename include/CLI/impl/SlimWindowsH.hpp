@@ -33,25 +33,25 @@
 #define NOGDI              // All GDI defines and routines
 #define NOKERNEL           // All KERNEL defines and routines
 #define NOUSER             // All USER defines and routines
-// #define NONLS           // All NLS defines and routines
-#define NOMB              // MB_* and MessageBox()
-#define NOMEMMGR          // GMEM_*, LMEM_*, GHND, LHND, associated routines
-#define NOMETAFILE        // typedef METAFILEPICT
-#define NOMINMAX          // Macros min (a,b) and max (a,b)
-#define NOMSG             // typedef MSG and associated routines
-#define NOOPENFILE        // OpenFile(), OemToAnsi, AnsiToOem, and OF_*
-#define NOSCROLL          // SB_* and scrolling routines
-#define NOSERVICE         // All Service Controller routines, SERVICE_ equates, etc.
-#define NOSOUND           // Sound driver routines
-#define NOTEXTMETRIC      // typedef TEXTMETRIC and associated routines
-#define NOWH              // SetWindowsHook and WH_*
-#define NOWINOFFSETS      // GWL_*, GCL_*, associated routines
-#define NOCOMM            // COMM driver routines
-#define NOKANJI           // Kanji support stuff.
-#define NOHELP            // Help engine interface.
-#define NOPROFILER        // Profiler interface.
-#define NODEFERWINDOWPOS  // DeferWindowPos routines
-#define NOMCX             // Modem Configuration Extensions
+#define NONLS              // All NLS defines and routines
+#define NOMB               // MB_* and MessageBox()
+#define NOMEMMGR           // GMEM_*, LMEM_*, GHND, LHND, associated routines
+#define NOMETAFILE         // typedef METAFILEPICT
+#define NOMINMAX           // Macros min (a,b) and max (a,b)
+#define NOMSG              // typedef MSG and associated routines
+#define NOOPENFILE         // OpenFile(), OemToAnsi, AnsiToOem, and OF_*
+#define NOSCROLL           // SB_* and scrolling routines
+#define NOSERVICE          // All Service Controller routines, SERVICE_ equates, etc.
+#define NOSOUND            // Sound driver routines
+#define NOTEXTMETRIC       // typedef TEXTMETRIC and associated routines
+#define NOWH               // SetWindowsHook and WH_*
+#define NOWINOFFSETS       // GWL_*, GCL_*, associated routines
+#define NOCOMM             // COMM driver routines
+#define NOKANJI            // Kanji support stuff.
+#define NOHELP             // Help engine interface.
+#define NOPROFILER         // Profiler interface.
+#define NODEFERWINDOWPOS   // DeferWindowPos routines
+#define NOMCX              // Modem Configuration Extensions
 
 #include "Windows.h"
 
@@ -78,7 +78,7 @@
 #undef NOGDI
 #undef NOKERNEL
 #undef NOUSER
-// #undef NONLS
+#undef NONLS
 #undef NOMB
 #undef NOMEMMGR
 #undef NOMETAFILE
