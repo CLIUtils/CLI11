@@ -19,17 +19,50 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
-// [CLI11:argv_inl_includes:verbatim]
 #ifdef _WIN32
+#include "SlimWindowsH.hpp"
+#endif  // _WIN32
+
+// [CLI11:argv_inl_includes:verbatim]
+#if defined(_WIN32)
 #include <processenv.h>
 #include <shellapi.h>
-#endif  // _WIN32
+#elif defined(__APPLE__)
+#include <crt_externs.h>
+#endif
 // [CLI11:argv_inl_includes:end]
 
 namespace CLI {
 // [CLI11:argv_inl_hpp:verbatim]
 
 namespace detail {
+
+#ifdef __APPLE__
+// Copy argc and argv as early as possible to avoid modification
+static const std::vector<const char *> static_args = [] {
+    static const std::vector<std::string> static_args_as_strings = [] {
+        std::vector<std::string> args_as_strings;
+        int argc = *_NSGetArgc();
+        char **argv = *_NSGetArgv();
+
+        args_as_strings.reserve(static_cast<size_t>(argc));
+        for(size_t i = 0; i < static_cast<size_t>(argc); i++) {
+            args_as_strings.push_back(argv[i]);
+        }
+
+        return args_as_strings;
+    }();
+
+    std::vector<const char *> static_args_result;
+    static_args_result.reserve(static_args_as_strings.size());
+
+    for(const auto &arg : static_args_as_strings) {
+        static_args_result.push_back(arg.data());
+    }
+
+    return static_args_result;
+}();
+#endif
 
 /// Command-line arguments, as passed in to this executable, converted to utf-8 on Windows.
 CLI11_INLINE const std::vector<const char *> &args() {
@@ -70,6 +103,10 @@ CLI11_INLINE const std::vector<const char *> &args() {
 
         return static_args_result;
     }();
+
+    return static_args;
+
+#elif defined(__APPLE__)
 
     return static_args;
 
