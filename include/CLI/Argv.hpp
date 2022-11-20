@@ -8,10 +8,6 @@
 
 #include <CLI/Macros.hpp>
 
-// [CLI11:public_includes:set]
-#include <vector>
-// [CLI11:public_includes:end]
-
 namespace CLI {
 // [CLI11:argv_hpp:verbatim]
 

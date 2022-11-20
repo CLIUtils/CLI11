@@ -10,6 +10,7 @@
 #include <CLI/App.hpp>
 
 #include <CLI/Argv.hpp>
+#include <CLI/Encoding.hpp>
 
 // [CLI11:public_includes:set]
 #include <algorithm>
