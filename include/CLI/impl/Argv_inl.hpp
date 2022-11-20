@@ -150,7 +150,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
     }();
 
     return static_args;
-#endif  // _WIN32
+#endif
 }
 
 }  // namespace detail
