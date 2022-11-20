@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-#include "execute_with.hpp"
 #include <cmath>
 
 #include <complex>
@@ -2477,29 +2476,20 @@ TEST_CASE("C20_compile", "simple") {
     CHECK_FALSE(flag->empty());
 }
 
-#ifdef _WIN32
-
 // #14
-TEST_CASE("ParseUnicodeCmd", "[app][unicode]") {
-    TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::cmd>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
+TEST_CASE("System Args", "[app]") {
+    const char *commandline = CLI11_SYSTEM_ARGS_EXE " 1234 false \"hello world\"";
+    int retval = std::system(commandline);
+
+    if(retval == -1) {
+        FAIL("Executable '" << commandline << "' reported different argc count");
+    }
+
+    if(retval > 0) {
+        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+    }
+
+    if(retval != 0) {
+        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+    }
 }
-
-// #14
-TEST_CASE("ParseUnicodePowerShell", "[app][unicode]") {
-    TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::powershell>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
-}
-
-#else
-
-// #14
-TEST_CASE("ParseUnicodeBash", "[app][unicode]") {
-    TempFile outfile("parse_unicode.out.txt");
-    execute_with<shell::bash>(CLI11_PARSE_UNICODE_EXE, "data/parse_unicode.txt");
-    check_identical_files("parse_unicode.out.txt", "data/parse_unicode.txt");
-}
-
-#endif  // _WIN32

@@ -5,15 +5,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include <CLI/CLI.hpp>
-#include <fstream>
-#include <string>
+#include <cstring>
 
 int main(int argc, char **argv) {
-    CLI::App app;
-    std::string str;
+    if(argc != CLI::argc()) {
+        return -1;
+    }
 
-    app.add_option("str", str, "utf-8 string");
-    CLI11_PARSE(app);
+    for(int i = 0; i < argc; i++) {
+        if(std::strcmp(argv[i], CLI::argv()[i]) != 0) {
+            return i + 1;
+        }
+    }
 
-    std::ofstream{"parse_unicode.out.txt"} << str;
+    return 0;
 }

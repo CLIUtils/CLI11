@@ -60,8 +60,6 @@ if(Boost_FOUND)
   list(APPEND CLI11_TESTS BoostOptionTypeTest)
 endif()
 
-set(CLI11_COMMON_TEST_SOURCES execute_with)
-
 set(CLI11_MULTIONLY_TESTS TimerTest)
 
 add_library(catch_main main.cpp catch.hpp)
@@ -110,7 +108,7 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
 endforeach()
 
 # Build dependent applications which are launched from test code
-set(CLI11_DEPENDENT_APPLICATIONS parse_unicode)
+set(CLI11_DEPENDENT_APPLICATIONS system_args)
 
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
@@ -145,9 +143,6 @@ foreach(T IN LISTS CLI11_TESTS)
     set_property(SOURCE ${T}.cpp PROPERTY LANGUAGE CUDA)
   endif()
   add_executable(${T} ${T}.cpp)
-  foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
-    target_sources(${T} PRIVATE ${COMMON_TEST_SOURCE}.cpp)
-  endforeach()
 
   add_dependent_application_definitions(${T})
   add_sanitizers(${T})
@@ -159,9 +154,6 @@ foreach(T IN LISTS CLI11_TESTS)
 
   if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
     add_executable(${T}_Single ${T}.cpp)
-    foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
-      target_sources(${T}_Single PRIVATE ${COMMON_TEST_SOURCE}.cpp)
-    endforeach()
     add_dependent_application_definitions(${T}_Single)
     target_link_libraries(${T}_Single PRIVATE CLI11_SINGLE)
     add_catch_test(${T}_Single)
@@ -171,9 +163,6 @@ endforeach()
 
 foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
   add_executable(${T} ${T}.cpp)
-  foreach(COMMON_TEST_SOURCE IN LISTS CLI11_COMMON_TEST_SOURCES)
-    target_sources(${T} PRIVATE ${COMMON_TEST_SOURCE}.cpp)
-  endforeach()
   add_dependent_application_definitions(${T})
   add_sanitizers(${T})
   target_link_libraries(${T} PUBLIC CLI11)
