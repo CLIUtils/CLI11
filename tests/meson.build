@@ -57,6 +57,20 @@ testnames = [
     ['link_test_2', {'link_with': link_test_lib}],
 ]
 
+dependent_applications = [
+    'system_args'
+]
+dependent_applications_definitions = []
+#dependent_applications_targets = []
+foreach app: dependent_applications
+    app_target = executable(app, 'applications'/app + '.cpp',
+        build_by_default: false
+    )
+
+    #dependent_applications_targets += dependency(app_target)
+    dependent_applications_definitions += '-DCLI11_@0@_EXE="@1@"'.format(app.to_upper(), app_target)
+endforeach
+
 if host_machine.system() == 'windows'
     testnames += [['WindowsTest', {}]]
 endif
@@ -69,7 +83,7 @@ foreach n: testnames
     name = n[0]
     kwargs = n[1]
     t = executable(name, name + '.cpp',
-        cpp_args: kwargs.get('cpp_args', []),
+        cpp_args: kwargs.get('cpp_args', []) + dependent_applications_definitions,
         build_by_default: false,
         dependencies: [testdep] + kwargs.get('dependencies', []),
         link_with: kwargs.get('link_with', [])
