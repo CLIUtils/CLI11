@@ -65,6 +65,10 @@ TEST_CASE("Encoding: Widen", "[unicode]") {
 
     CHECK(hello_wstr == widen(hello_str.c_str()));
     CHECK(hello_wstr == widen(hello_str.c_str(), hello_str.size()));
+
+#ifdef CLI11_CPP17
+    CHECK(hello_wstr == widen(std::string_view{hello_str}));
+#endif  // CLI11_CPP17
 }
 
 // #14
@@ -77,6 +81,10 @@ TEST_CASE("Encoding: Narrow", "[unicode]") {
 
     CHECK(hello_str == narrow(hello_wstr.c_str()));
     CHECK(hello_str == narrow(hello_wstr.c_str(), hello_wstr.size()));
+
+#ifdef CLI11_CPP17
+    CHECK(hello_str == narrow(std::wstring_view{hello_wstr}));
+#endif  // CLI11_CPP17
 }
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0

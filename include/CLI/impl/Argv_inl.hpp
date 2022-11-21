@@ -120,7 +120,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
             std::unique_ptr<FILE, decltype(deleter)> fp_unique(std::fopen("/proc/self/cmdline", "r"), deleter);
             FILE *fp = fp_unique.get();
             if(!fp) {
-                throw std::runtime_error("could not open /proc/self/cmdline for reading");
+                throw std::runtime_error("could not open /proc/self/cmdline for reading");  // LCOV_EXCL_LINE
             }
 
             size_t size = 0;
@@ -129,7 +129,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
                 size += std::fread(cmdline.data() + size, 1, 128, fp);
 
                 if(std::ferror(fp) != 0) {
-                    throw std::runtime_error("error during reading /proc/self/cmdline");
+                    throw std::runtime_error("error during reading /proc/self/cmdline");  // LCOV_EXCL_LINE
                 }
             }
             cmdline.resize(size);
