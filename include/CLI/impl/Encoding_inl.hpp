@@ -125,10 +125,12 @@ CLI11_DIAGNOSTIC_POP
 
 CLI11_INLINE std::string narrow(const wchar_t *str, std::size_t str_size) { return detail::narrow_impl(str, str_size); }
 CLI11_INLINE std::string narrow(const std::wstring &str) { return detail::narrow_impl(str.data(), str.size()); }
+// Flawfinder: ignore
 CLI11_INLINE std::string narrow(const wchar_t *str) { return detail::narrow_impl(str, std::wcslen(str)); }
 
 CLI11_INLINE std::wstring widen(const char *str, std::size_t str_size) { return detail::widen_impl(str, str_size); }
 CLI11_INLINE std::wstring widen(const std::string &str) { return detail::widen_impl(str.data(), str.size()); }
+// Flawfinder: ignore
 CLI11_INLINE std::wstring widen(const char *str) { return detail::widen_impl(str, std::strlen(str)); }
 
 #ifdef CLI11_CPP17

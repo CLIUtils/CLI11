@@ -107,7 +107,9 @@ CLI11_INLINE void check_identical_files(const char *path1, const char *path2) {
     std::array<uint8_t, 10240> buffer2;
 
     for(size_t ibuffer = 0; file1.good(); ++ibuffer) {
+        // Flawfinder: ignore
         file1.read(reinterpret_cast<char *>(buffer1.data()), static_cast<std::streamsize>(buffer1.size()));
+        // Flawfinder: ignore
         file2.read(reinterpret_cast<char *>(buffer2.data()), static_cast<std::streamsize>(buffer2.size()));
 
         for(size_t i = 0; i < static_cast<size_t>(file1.gcount()); ++i) {
