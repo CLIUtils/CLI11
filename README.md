@@ -1487,16 +1487,15 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
 
 ### Unicode support
 
-CLI11 supports unicode and wide string as defined in the
+CLI11 supports Unicode and wide strings as defined in the
 [UTF-8 Everywhere](http://utf8everywhere.org/) manifesto. In particular:
 
-- On Linux, command-line string is already assumed to be in UTF-8, and no wide
-  string facilities are provided.
-- On Windows, command-line string _can_ be correctly parsed into UTF-8, if you
-  provide CLI11 with correct inputs.
+- The library can parse a wide version of command-line arguments on Windows, which are converted internally to UTF-8 (more on this below);
+- You can store option values in `std::wstring`, in which case they will be converted to a correct wide string encoding on your system (UTF-16 on Windows and UTF-32 on most other systems);
+- Instead of storing wide strings, it is recommended to use provided `widen` and `narrow` functions to convert to and from wide strings when actually necessary (such as when calling into Windows APIs).
 
 When using the command line on Windows with unicode arguments, your `main`
-function may already receive broken unicode. Parsing `argv` at that point will
+function may already receive broken Unicode. Parsing `argv` at that point will
 not give you a correct string. To fix this, you have three options:
 
 1. If you pass unmodified command-line arguments to CLI11, call `app.parse()`
@@ -1512,8 +1511,8 @@ not give you a correct string. To fix this, you have three options:
    }
    ```
 
-2. Get correct arguments using provided functions: `CLI::argc()` and
-   `CLI::argv()`. These two are the only cross-platform methods of handling
+2. Get correct arguments with which the program was originally executed using provided functions: `CLI::argc()` and
+   `CLI::argv()`. These two methods are the only cross-platform ways of handling
    unicode correctly.
 
    ```cpp
@@ -1541,7 +1540,7 @@ not give you a correct string. To fix this, you have three options:
    and pass them to CLI. This is what the library is doing under the hood in
    `CLI::argv()`.
 
-On Windows, the library provides functions to convert between UTF-8 and wide
+The library provides functions to convert between UTF-8 and wide
 strings:
 
 ```cpp
@@ -1558,12 +1557,11 @@ namespace CLI {
 }
 ```
 
-#### Note on using unicode paths
+#### Note on using Unicode paths
 
 When creating a `filesystem::path` from a UTF-8 path on Windows, you need to
-convert it to a wide string first. CLI provides a platform-independent `to_path`
-function, which you can use even if the original UTF-8 string didn't come from
-CLI:
+convert it to a wide string first. CLI11 provides a platform-independent `to_path`
+function, which will convert a UTF-8 string to path, the right way:
 
 ```cpp
 std::string utf8_name = "Hello Halló Привет 你好 👩‍🚀❤️.txt";
