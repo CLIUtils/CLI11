@@ -71,7 +71,7 @@ inline void unset_env(std::string name) {
 #endif
 }
 
-void check_identical_files(const char *path1, const char *path2) {
+CLI11_INLINE void check_identical_files(const char *path1, const char *path2) {
     std::string err1 = CLI::ExistingFile(path1);
     if(!err1.empty()) {
         FAIL("Could not open " << path1 << ": " << err1);

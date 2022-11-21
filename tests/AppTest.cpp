@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 #include <cmath>
 
+#include <array>
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
@@ -275,8 +276,8 @@ TEST_CASE_METHOD(TApp, "OneStringWideInput", "[app][unicode]") {
     std::string str;
     app.add_option("-s,--string", str);
 
-    const wchar_t *cmdline[] = {L"app", L"--string", L"mystring"};
-    app.parse(3, cmdline);
+    std::array<const wchar_t *, 3> cmdline{L"app", L"--string", L"mystring"};
+    app.parse(static_cast<int>(cmdline.size()), cmdline.data());
 
     CHECK(app.count("-s") == 1u);
     CHECK(app.count("--string") == 1u);
