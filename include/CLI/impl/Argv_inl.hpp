@@ -124,11 +124,11 @@ CLI11_INLINE const std::vector<const char *> &args() {
             }
 
             size_t size = 0;
-            while(!std::feof(fp)) {
+            while(std::feof(fp) == 0) {
                 cmdline.resize(size + 128);
                 size += std::fread(cmdline.data() + size, 1, 128, fp);
 
-                if(std::ferror(fp)) {
+                if(std::ferror(fp) != 0) {
                     throw std::runtime_error("error during reading /proc/self/cmdline");
                 }
             }
