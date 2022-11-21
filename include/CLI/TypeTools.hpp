@@ -7,6 +7,7 @@
 #pragma once
 
 // [CLI11:public_includes:set]
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <limits>
@@ -1545,8 +1546,7 @@ inline std::string sum_string_vector(const std::vector<std::string> &values) {
     } else {
         if(val <= static_cast<double>((std::numeric_limits<std::int64_t>::min)()) ||
            val >= static_cast<double>((std::numeric_limits<std::int64_t>::max)()) ||
-           // NOLINTNEXTLINE(clang-diagnostic-float-equal,bugprone-narrowing-conversions)
-           val == static_cast<std::int64_t>(val)) {
+           std::ceil(val) == std::floor(val)) {
             output = detail::value_string(static_cast<int64_t>(val));
         } else {
             output = detail::value_string(val);
