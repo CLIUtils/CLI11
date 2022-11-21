@@ -846,6 +846,10 @@ class App {
     void parse(int argc, const char *const *argv);
     void parse(int argc, const wchar_t *const *argv);
 
+  private:
+    template <class CharT> void parse_char_t(int argc, const CharT *const *argv);
+
+  public:
     /// Parse a single string as if it contained command line arguments.
     /// This function splits the string into arguments then calls parse(std::vector<std::string> &)
     /// the function takes an optional boolean argument specifying if the programName is included in the string to

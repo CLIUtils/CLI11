@@ -271,6 +271,18 @@ TEST_CASE_METHOD(TApp, "OneWideString", "[app]") {
     CHECK(L"mystring" == str);
 }
 
+TEST_CASE_METHOD(TApp, "OneStringWideInput", "[app][unicode]") {
+    std::string str;
+    app.add_option("-s,--string", str);
+
+    const wchar_t *cmdline[] = {L"app", L"--string", L"mystring"};
+    app.parse(3, cmdline);
+
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
+}
+
 TEST_CASE_METHOD(TApp, "OneStringWindowsStyle", "[app]") {
     std::string str;
     app.add_option("-s,--string", str);
@@ -287,6 +299,16 @@ TEST_CASE_METHOD(TApp, "OneStringSingleStringInput", "[app]") {
     app.add_option("-s,--string", str);
 
     app.parse("--string mystring");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
+}
+
+TEST_CASE_METHOD(TApp, "OneStringSingleWideStringInput", "[app][unicode]") {
+    std::string str;
+    app.add_option("-s,--string", str);
+
+    app.parse(L"--string mystring");
     CHECK(app.count("-s") == 1u);
     CHECK(app.count("--string") == 1u);
     CHECK("mystring" == str);
