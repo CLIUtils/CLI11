@@ -31,7 +31,7 @@ namespace detail {
 #if !CLI11_HAS_CODECVT
 /// Attempt to set one of the acceptable unicode locales for conversion
 CLI11_INLINE void set_unicode_locale() {
-    static const std::array<const char *, 3> unicode_locales = {"C.UTF-8", "en_US.UTF-8", ".UTF-8"};
+    static const std::array<const char *, 3> unicode_locales{{"C.UTF-8", "en_US.UTF-8", ".UTF-8"}};
 
     for(const auto &locale_name : unicode_locales) {
         if(std::setlocale(LC_ALL, locale_name) != nullptr) {

@@ -276,7 +276,7 @@ TEST_CASE_METHOD(TApp, "OneStringWideInput", "[app][unicode]") {
     std::string str;
     app.add_option("-s,--string", str);
 
-    std::array<const wchar_t *, 3> cmdline{L"app", L"--string", L"mystring"};
+    std::array<const wchar_t *, 3> cmdline{{L"app", L"--string", L"mystring"}};
     app.parse(static_cast<int>(cmdline.size()), cmdline.data());
 
     CHECK(app.count("-s") == 1u);
