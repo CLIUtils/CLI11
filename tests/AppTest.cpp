@@ -1995,6 +1995,31 @@ TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {
+    std::string str;
+    app.add_option("-s,--string", str);
+    app.add_flag("--opt1")->check([&](const std::string &) {
+        return (str != "val_with_opt1")?std::string("--opt1 requires --string val_with_opt1"):std::string{};
+        });
+
+    run();
+
+    args = {"--opt1"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--string", "val"};
+    run();
+
+    args = {"--string", "val", "--opt1"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--string", "val_with_opt1", "--opt1"};
+    run();
+
+    args = {"--opt1", "--string", "val_with_opt1"};  // order is not revelant
+    run();
+}
+
 // Check to make sure programmatic access to left over is available
 TEST_CASE_METHOD(TApp, "AllowExtras", "[app]") {
 

@@ -796,11 +796,16 @@ inline std::string type_name() {
 /// Convert to an unsigned integral
 template <typename T, enable_if_t<std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 bool integral_conversion(const std::string &input, T &output) noexcept {
-    if(input.empty()) {
+    if(input.empty()||input.front()=='-') {
         return false;
     }
     char *val = nullptr;
+    errno=0;
     std::uint64_t output_ll = std::strtoull(input.c_str(), &val, 0);
+    if (errno == ERANGE)
+    {
+        return false;
+    }
     output = static_cast<T>(output_ll);
     if(val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll) {
         return true;
@@ -821,7 +826,12 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         return false;
     }
     char *val = nullptr;
+    errno=0;
     std::int64_t output_ll = std::strtoll(input.c_str(), &val, 0);
+    if (errno == ERANGE)
+    {
+        return false;
+    }
     output = static_cast<T>(output_ll);
     if(val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll) {
         return true;

@@ -405,6 +405,86 @@ TEST_CASE_METHOD(TApp, "VectorIndexedValidator", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "IntegerOverFlowShort", "[optiontype]") {
+    short A;
+    unsigned short B;
+
+    app.add_option("-a", A);
+    app.add_option("-b",B);
+
+    args = {"-a", "2626254242"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "2626254242"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-26262"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-262624262525"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "IntegerOverFlowInt", "[optiontype]") {
+    int A;
+    unsigned int B;
+
+    app.add_option("-a", A);
+    app.add_option("-b",B);
+
+    args = {"-a", "262625424225252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "262625424225252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-2626225252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-26262426252525252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "IntegerOverFlowLong", "[optiontype]") {
+    long A;
+    unsigned long B;
+
+    app.add_option("-a", A);
+    app.add_option("-b",B);
+
+    args = {"-a", "1111111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "1111111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-2626225252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "IntegerOverFlowLongLong", "[optiontype]") {
+    long long A;
+    unsigned long long B;
+
+    app.add_option("-a", A);
+    app.add_option("-b",B);
+
+    args = {"-a", "1111111111111111111111111111111111111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "1111111111111111111111111111111111111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-2626225252"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-b", "-111111111111111111111111111111111111111111111111111111111"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
 TEST_CASE_METHOD(TApp, "VectorUnlimString", "[optiontype]") {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
