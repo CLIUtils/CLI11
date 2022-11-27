@@ -410,7 +410,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowShort", "[optiontype]") {
     unsigned short B;
 
     app.add_option("-a", A);
-    app.add_option("-b",B);
+    app.add_option("-b", B);
 
     args = {"-a", "2626254242"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -430,7 +430,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowInt", "[optiontype]") {
     unsigned int B;
 
     app.add_option("-a", A);
-    app.add_option("-b",B);
+    app.add_option("-b", B);
 
     args = {"-a", "262625424225252"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -450,7 +450,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowLong", "[optiontype]") {
     unsigned long B;
 
     app.add_option("-a", A);
-    app.add_option("-b",B);
+    app.add_option("-b", B);
 
     args = {"-a", "1111111111111111111111111111"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -470,7 +470,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowLongLong", "[optiontype]") {
     unsigned long long B;
 
     app.add_option("-a", A);
-    app.add_option("-b",B);
+    app.add_option("-b", B);
 
     args = {"-a", "1111111111111111111111111111111111111111111111111111111111"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);

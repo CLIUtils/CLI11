@@ -1999,8 +1999,8 @@ TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {
     std::string str;
     app.add_option("-s,--string", str);
     app.add_flag("--opt1")->check([&](const std::string &) {
-        return (str != "val_with_opt1")?std::string("--opt1 requires --string val_with_opt1"):std::string{};
-        });
+        return (str != "val_with_opt1") ? std::string("--opt1 requires --string val_with_opt1") : std::string{};
+    });
 
     run();
 
