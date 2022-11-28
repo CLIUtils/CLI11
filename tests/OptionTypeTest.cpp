@@ -406,8 +406,8 @@ TEST_CASE_METHOD(TApp, "VectorIndexedValidator", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "IntegerOverFlowShort", "[optiontype]") {
-    short A;
-    unsigned short B;
+    std::int16_t A{0};
+    std::uint16_t B{0};
 
     app.add_option("-a", A);
     app.add_option("-b", B);
@@ -426,8 +426,8 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowShort", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "IntegerOverFlowInt", "[optiontype]") {
-    int A;
-    unsigned int B;
+    int A{0};
+    unsigned int B{0};
 
     app.add_option("-a", A);
     app.add_option("-b", B);
@@ -446,8 +446,8 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowInt", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "IntegerOverFlowLong", "[optiontype]") {
-    long A;
-    unsigned long B;
+    std::int32_t A{0};
+    std::uint32_t B{0};
 
     app.add_option("-a", A);
     app.add_option("-b", B);
@@ -466,8 +466,8 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowLong", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "IntegerOverFlowLongLong", "[optiontype]") {
-    long long A;
-    unsigned long long B;
+    std::int64_t A{ 0 };
+    std::uint64_t B{0};
 
     app.add_option("-a", A);
     app.add_option("-b", B);
