@@ -466,7 +466,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowLong", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "IntegerOverFlowLongLong", "[optiontype]") {
-    std::int64_t A{ 0 };
+    std::int64_t A{0};
     std::uint64_t B{0};
 
     app.add_option("-a", A);
