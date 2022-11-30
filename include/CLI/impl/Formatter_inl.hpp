@@ -75,7 +75,7 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
         if(min_options == 1) {
             desc += " \n[Exactly 1 of the following options is required]";
         } else {
-            desc += " \n[Exactly " + std::to_string(min_options) + "options from the following list are required]";
+            desc += " \n[Exactly " + std::to_string(min_options) + " options from the following list are required]";
         }
     } else if(max_options > 0) {
         if(min_options > 0) {
