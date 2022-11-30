@@ -43,7 +43,9 @@ constexpr enabler dummy = {};
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
 
 /// A copy of std::void_t from C++17 (helper for C++11 and C++14)
-template <typename... Ts> struct make_void { using type = void; };
+template <typename... Ts> struct make_void {
+    using type = void;
+};
 
 /// A copy of std::void_t from C++17 - same reasoning as enable_if_t, it does not hurt to redefine
 template <typename... Ts> using void_t = typename make_void<Ts...>::type;
@@ -72,10 +74,14 @@ template <typename T> struct is_copyable_ptr {
 };
 
 /// This can be specialized to override the type deduction for IsMember.
-template <typename T> struct IsMemberType { using type = T; };
+template <typename T> struct IsMemberType {
+    using type = T;
+};
 
 /// The main custom type needed here is const char * should be a string.
-template <> struct IsMemberType<const char *> { using type = std::string; };
+template <> struct IsMemberType<const char *> {
+    using type = std::string;
+};
 
 namespace detail {
 
@@ -85,7 +91,9 @@ namespace detail {
 /// pointer_traits<T> be valid.
 
 /// not a pointer
-template <typename T, typename Enable = void> struct element_type { using type = T; };
+template <typename T, typename Enable = void> struct element_type {
+    using type = T;
+};
 
 template <typename T> struct element_type<T, typename std::enable_if<is_copyable_ptr<T>::value>::type> {
     using type = typename std::pointer_traits<T>::element_type;
@@ -93,7 +101,9 @@ template <typename T> struct element_type<T, typename std::enable_if<is_copyable
 
 /// Combination of the element type and value type - remove pointer (including smart pointers) and get the value_type of
 /// the container
-template <typename T> struct element_value_type { using type = typename element_type<T>::type::value_type; };
+template <typename T> struct element_value_type {
+    using type = typename element_type<T>::type::value_type;
+};
 
 /// Adaptor for set-like structure: This just wraps a normal container in a few utilities that do almost nothing.
 template <typename T, typename _ = void> struct pair_adaptor : std::false_type {
@@ -354,7 +364,9 @@ auto value_string(const T &value) -> decltype(to_string(value)) {
 }
 
 /// template to get the underlying value type if it exists or use a default
-template <typename T, typename def, typename Enable = void> struct wrapped_type { using type = def; };
+template <typename T, typename def, typename Enable = void> struct wrapped_type {
+    using type = def;
+};
 
 /// Type size for regular object types that do not look like a tuple
 template <typename T, typename def> struct wrapped_type<T, def, typename std::enable_if<is_wrapper<T>::value>::type> {
@@ -362,7 +374,9 @@ template <typename T, typename def> struct wrapped_type<T, def, typename std::en
 };
 
 /// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count_base { static const int value{0}; };
+template <typename T, typename Enable = void> struct type_count_base {
+    static const int value{0};
+};
 
 /// Type size for regular object types that do not look like a tuple
 template <typename T>
@@ -392,7 +406,9 @@ template <typename T> struct subtype_count;
 template <typename T> struct subtype_count_min;
 
 /// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count { static const int value{0}; };
+template <typename T, typename Enable = void> struct type_count {
+    static const int value{0};
+};
 
 /// Type size for regular object types that do not look like a tuple
 template <typename T>
@@ -443,7 +459,9 @@ template <typename T> struct subtype_count {
 };
 
 /// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count_min { static const int value{0}; };
+template <typename T, typename Enable = void> struct type_count_min {
+    static const int value{0};
+};
 
 /// Type size for regular object types that do not look like a tuple
 template <typename T>
@@ -492,7 +510,9 @@ template <typename T> struct subtype_count_min {
 };
 
 /// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct expected_count { static const int value{0}; };
+template <typename T, typename Enable = void> struct expected_count {
+    static const int value{0};
+};
 
 /// For most types the number of expected items is 1
 template <typename T>
