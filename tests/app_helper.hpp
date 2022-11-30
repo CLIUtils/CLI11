@@ -33,6 +33,8 @@ class TApp {
     }
 };
 
+CLI11_INLINE int fileClear(const std::string &name) { return std::remove(name.c_str()); }
+
 class TempFile {
     std::string _name{};
 

@@ -435,6 +435,8 @@ TEST_CASE("StringBased: file_error", "[config]") {
     CHECK_THROWS_AS(CLI::ConfigINI().from_file("nonexist_file"), CLI::FileError);
 }
 
+static const int fclear1 = fileClear("TestIniTmp.ini");
+
 TEST_CASE_METHOD(TApp, "IniNotRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -594,6 +596,8 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
     app.add_option("--two", two);
     REQUIRE_NOTHROW(run());
 }
+
+static const int fclear2 = fileClear("TestIniTmp2.ini");
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredNotDefault", "[config]") {
 
@@ -2018,6 +2022,51 @@ TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideSuccess", "[config]") {
     CHECK(two == 2);
     CHECK(four == 4);
     CHECK(val == 15);
+}
+
+static const int fclear3 = fileClear("TestIniTmp3.ini");
+
+TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+    TempFile tmpini3{"TestIniTmp3.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "two=7" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini3};
+        out << "[default]" << std::endl;
+        out << "three=true" << std::endl;
+    }
+
+    int val{0};
+    app.add_flag("--one{1},--two{2},--three{3}", val)->disable_flag_override();
+
+    run();
+    CHECK(tmpini.c_str() == app["--config"]->as<std::string>());
+    CHECK(val == 2);
+
+    args = {"--config", tmpini2};
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+
+    args = {"--config", tmpini3};
+    run();
+
+    CHECK(val == 3);
+    CHECK(tmpini3.c_str() == app.get_config_ptr()->as<std::string>());
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputSimple", "[config]") {

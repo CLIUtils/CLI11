@@ -1396,7 +1396,22 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
             if(item.inputs.size() <= 1) {
                 // Flag parsing
                 auto res = config_formatter_->to_flag(item);
-                res = op->get_flag_value(item.name, res);
+                bool converted{false};
+                if(op->get_disable_flag_override()) {
+
+                    try {
+                        auto val = detail::to_flag_value(res);
+                        if(val == 1) {
+                            res = op->get_flag_value(item.name, "{}");
+                            converted = true;
+                        }
+                    } catch(...) {
+                    }
+                }
+
+                if(!converted) {
+                    res = op->get_flag_value(item.name, res);
+                }
 
                 op->add_result(res);
                 return true;
