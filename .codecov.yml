@@ -1,3 +1,6 @@
 ignore:
   - "tests"
   - "examples"
+  - "book"
+  - "docs"
+  - "test_package"
