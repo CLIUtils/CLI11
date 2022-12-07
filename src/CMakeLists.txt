@@ -26,7 +26,7 @@ set(CLI11_impl_headers
     ${CLI11_implLoc}/StringTools_inl.hpp
     ${CLI11_implLoc}/Validators_inl.hpp)
 
-set(CLI11_library_headers ${CLI11_headerLoc}/App.hpp ${CLI11_headerLoc}/Timer.hpp)
+set(CLI11_library_headers ${CLI11_headerLoc}/CLI.hpp ${CLI11_headerLoc}/Timer.hpp)
 
 if(CLI11_PRECOMPILED)
   # Create static lib
