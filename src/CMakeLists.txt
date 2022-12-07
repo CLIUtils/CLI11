@@ -113,7 +113,7 @@ if(CLI11_INSTALL)
   # Make an export target
   install(TARGETS CLI11 EXPORT CLI11Targets)
   if(NOT CLI11_SINGLE_FILE)
-    install(FILES ${CLI11_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
+    install(FILES ${CLI11_headers} ${CLI11_library_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
     if(NOT CLI11_COMPILE)
       install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
     endif()
