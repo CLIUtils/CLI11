@@ -26,15 +26,13 @@ set(CLI11_impl_headers
     ${CLI11_implLoc}/StringTools_inl.hpp
     ${CLI11_implLoc}/Validators_inl.hpp)
 
-set(CLI11_library_headers
-    ${CLI11_headerLoc}/App.hpp
-    ${CLI11_headerLoc}/Timer.hpp
-    )
+set(CLI11_library_headers ${CLI11_headerLoc}/App.hpp ${CLI11_headerLoc}/Timer.hpp)
 
 if(CLI11_PRECOMPILED)
   # Create static lib
   file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
-  add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers} ${CLI11_precompile_sources})
+  add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
+                           ${CLI11_precompile_sources})
   target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
 
   set(PUBLIC_OR_INTERFACE PUBLIC)

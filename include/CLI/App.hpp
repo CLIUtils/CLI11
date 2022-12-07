@@ -49,11 +49,11 @@ struct AppFriend;
 }  // namespace detail
 
 namespace FailureMessage {
-    /// Printout a clean, simple message on error (the default in CLI11 1.5+)
-    CLI11_INLINE std::string simple(const App *app, const Error &e);
+/// Printout a clean, simple message on error (the default in CLI11 1.5+)
+CLI11_INLINE std::string simple(const App *app, const Error &e);
 
-    /// Printout the full help string on error (if this fn is set, the old default for CLI11)
-    CLI11_INLINE std::string help(const App *app, const Error &e);
+/// Printout the full help string on error (if this fn is set, the old default for CLI11)
+CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
 
 /// enumeration of modes of how to deal with extras in config files
