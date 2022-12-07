@@ -110,6 +110,7 @@ jobs:
         gcc11:
           containerImage: gcc:11
           cli11.std: 20
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
         gcc8:
           containerImage: gcc:8
           cli11.std: 17
