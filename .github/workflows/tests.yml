@@ -48,14 +48,15 @@ jobs:
       - name: Prepare coverage
         run: |
           lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/tests/*' '*/examples/*' '/usr/*' --output-file coverage.info
+          lcov --remove coverage.info '*/tests/*' '*/examples/*' '/usr/*' '*/book/*' --output-file coverage.info
           lcov --list coverage.info
         working-directory: build
 
       - uses: codecov/codecov-action@v3
         with:
+          files: build/coverage.info
           fail_ci_if_error: true
-          working-directory: build
+          functionalities: fixes
 
   clang-tidy:
     name: Clang-Tidy
@@ -129,7 +130,7 @@ jobs:
 
   cmake-config:
     name: CMake config check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
 

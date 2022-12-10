@@ -110,13 +110,14 @@ jobs:
         gcc11:
           containerImage: gcc:11
           cli11.std: 20
-        gcc8:
-          containerImage: gcc:8
-          cli11.std: 17
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+        gcc7:
+          containerImage: gcc:7
+          cli11.std: 14
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wconversion"
         gcc4.8:
           containerImage: helics/buildenv:gcc4-8-builder
           cli11.std: 11
-          cli11.options:
         clang3.4:
           containerImage: silkeh/clang:3.4
           cli11.std: 11
