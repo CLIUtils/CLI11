@@ -196,19 +196,14 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
 }
 
 /// Wrapper with an unconvenient interface
-template<class T>
-class badlywrapped {
+template <class T> class badlywrapped {
   public:
     // Not default-constructible.
-    badlywrapped(): value() {}
+    badlywrapped() : value() {}
 
-    T get() const {
-        return value;
-    }
+    T get() const { return value; }
 
-    void set(T val) {
-        value = val;
-    }
+    void set(T val) { value = val; }
 
   private:
     T value;
@@ -216,15 +211,14 @@ class badlywrapped {
 
 // Example of a custom converted for a template type.
 // It will be found via argument-dependent lookup, so should be in the same namespace as the `badlywrapped` type.
-template<class T>
-bool lexical_cast(const std::string &input, badlywrapped<T> &output) {
+template <class T> bool lexical_cast(const std::string &input, badlywrapped<T> &output) {
     // This using declaration lets us use an unqualified call to lexical_cast below. This is important because
     // unqualified call finds the proper overload via argument-dependent lookup, and thus it will be able to find
     // an overload for `spair` type, which is not in `CLI::detail`.
     using CLI::detail::lexical_cast;
 
     T value;
-    if (!lexical_cast(input, value))
+    if(!lexical_cast(input, value))
         return false;
     output.set(value);
     return true;
