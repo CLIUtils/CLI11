@@ -10,7 +10,7 @@ This looks like:
 ```cpp
 Option* add_option(string name, T item) {
     this->function = [&item](string value){
-        item = detail::lexical_cast<T>(value);
+        return lexical_cast(value, item);
     }
 }
 ```

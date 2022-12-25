@@ -966,18 +966,18 @@ bool lexical_cast(const std::string &input, T &output) {
     bool worked = false;
     auto nloc = str1.find_last_of("+-");
     if(nloc != std::string::npos && nloc > 0) {
-        worked = detail::lexical_cast(str1.substr(0, nloc), x);
+        worked = lexical_cast(str1.substr(0, nloc), x);
         str1 = str1.substr(nloc);
         if(str1.back() == 'i' || str1.back() == 'j')
             str1.pop_back();
-        worked = worked && detail::lexical_cast(str1, y);
+        worked = worked && lexical_cast(str1, y);
     } else {
         if(str1.back() == 'i' || str1.back() == 'j') {
             str1.pop_back();
-            worked = detail::lexical_cast(str1, y);
+            worked = lexical_cast(str1, y);
             x = XC{0};
         } else {
-            worked = detail::lexical_cast(str1, x);
+            worked = lexical_cast(str1, x);
             y = XC{0};
         }
     }
@@ -1198,7 +1198,7 @@ template <typename AssignTo,
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, AssignTo &output) {
     ConvertTo val{};
-    bool parse_result = (!input.empty()) ? lexical_cast<ConvertTo>(input, val) : true;
+    bool parse_result = (!input.empty()) ? lexical_cast(input, val) : true;
     if(parse_result) {
         output = val;
     }
@@ -1214,7 +1214,7 @@ template <
                 detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, AssignTo &output) {
     ConvertTo val{};
-    bool parse_result = input.empty() ? true : lexical_cast<ConvertTo>(input, val);
+    bool parse_result = input.empty() ? true : lexical_cast(input, val);
     if(parse_result) {
         output = AssignTo(val);  // use () form of constructor to allow some implicit conversions
     }
@@ -1292,7 +1292,7 @@ bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &outpu
         if(str1.back() == 'i' || str1.back() == 'j') {
             str1.pop_back();
         }
-        auto worked = detail::lexical_cast(strings[0], x) && detail::lexical_cast(str1, y);
+        auto worked = lexical_cast(strings[0], x) && lexical_cast(str1, y);
         if(worked) {
             output = ConvertTo{x, y};
         }
@@ -1556,7 +1556,7 @@ inline std::string sum_string_vector(const std::vector<std::string> &values) {
     std::string output;
     for(const auto &arg : values) {
         double tv{0.0};
-        auto comp = detail::lexical_cast<double>(arg, tv);
+        auto comp = lexical_cast(arg, tv);
         if(!comp) {
             try {
                 tv = static_cast<double>(detail::to_flag_value(arg));
