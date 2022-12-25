@@ -8,7 +8,7 @@ classes or inheritance. This is accomplished through lambda functions.
 This looks like:
 
 ```cpp
-Option* add_option(string name, T item) {
+Option* add_option(string name, T &item) {
     this->function = [&item](string value){
         return lexical_cast(value, item);
     }

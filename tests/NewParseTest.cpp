@@ -164,7 +164,7 @@ class spair {
     std::string second{};
 };
 
-// Example of custom converter that can be used to add new parsing options.
+// Example of a custom converter that can be used to add new parsing options.
 // It will be found via argument-dependent lookup, so should be in the same namespace as the `spair` type.
 bool lexical_cast(const std::string &input, spair &output) {
     auto sep = input.find_first_of(':');
@@ -198,7 +198,6 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
 /// Wrapper with an unconvenient interface
 template <class T> class badlywrapped {
   public:
-    // Not default-constructible.
     badlywrapped() : value() {}
 
     T get() const { return value; }
@@ -209,7 +208,7 @@ template <class T> class badlywrapped {
     T value;
 };
 
-// Example of a custom converted for a template type.
+// Example of a custom converter for a template type.
 // It will be found via argument-dependent lookup, so should be in the same namespace as the `badlywrapped` type.
 template <class T> bool lexical_cast(const std::string &input, badlywrapped<T> &output) {
     // This using declaration lets us use an unqualified call to lexical_cast below. This is important because
