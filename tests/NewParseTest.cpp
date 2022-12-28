@@ -254,6 +254,33 @@ TEST_CASE_METHOD(TApp, "custom_string_converter_adl", "[newparse]") {
     CHECK("string2" == val.get().second);
 }
 
+/// Another wrapper to test that specializing CLI::detail::lexical_cast works
+struct anotherstring {
+    std::string s;
+};
+
+// This is a custom converter done via specializing the CLI::detail::lexical_cast template. This was the recommended
+// mechanism for extending the library before, so we need to test it. Don't do this in your code, use
+// argument-dependent lookup as outlined in the examples for spair and template badlywrapped.
+template<>
+bool CLI::detail::lexical_cast<anotherstring>(const std::string &input, anotherstring &output) {
+    bool result = CLI::detail::lexical_cast(input, output.s);
+    if (result)
+        output.s += "!";
+    return result;
+}
+
+TEST_CASE_METHOD(TApp, "custom_string_converter_specialize", "[newparse]") {
+    anotherstring s;
+
+    app.add_option("-s", s);
+
+    args = {"-s", "something"};
+
+    run();
+    CHECK("something!" == s.s);
+}
+
 /// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
 /// option assignments
 template <class X> class objWrapper {
