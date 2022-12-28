@@ -262,10 +262,9 @@ struct anotherstring {
 // This is a custom converter done via specializing the CLI::detail::lexical_cast template. This was the recommended
 // mechanism for extending the library before, so we need to test it. Don't do this in your code, use
 // argument-dependent lookup as outlined in the examples for spair and template badlywrapped.
-template<>
-bool CLI::detail::lexical_cast<anotherstring>(const std::string &input, anotherstring &output) {
+template <> bool CLI::detail::lexical_cast<anotherstring>(const std::string &input, anotherstring &output) {
     bool result = CLI::detail::lexical_cast(input, output.s);
-    if (result)
+    if(result)
         output.s += "!";
     return result;
 }
