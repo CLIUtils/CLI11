@@ -256,7 +256,8 @@ TEST_CASE_METHOD(TApp, "custom_string_converter_adl", "[newparse]") {
 
 /// Another wrapper to test that specializing CLI::detail::lexical_cast works
 struct anotherstring {
-    std::string s;
+    anotherstring() = default;
+    std::string s{};
 };
 
 // This is a custom converter done via specializing the CLI::detail::lexical_cast template. This was the recommended
