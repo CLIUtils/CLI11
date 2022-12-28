@@ -200,7 +200,7 @@ template <class T> class badlywrapped {
   public:
     badlywrapped() : value() {}
 
-    T get() const { return value; }
+    CLI11_NODISCARD T get() const { return value; }
 
     void set(T val) { value = val; }
 
