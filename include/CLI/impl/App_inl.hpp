@@ -668,7 +668,7 @@ CLI11_NODISCARD CLI11_INLINE std::string App::help(std::string prev, AppFormatMo
     // Delegate to subcommand if needed
     auto selected_subcommands = get_subcommands();
     if(!selected_subcommands.empty()) {
-        return selected_subcommands.at(0)->help(prev, mode);
+        return selected_subcommands.back()->help(prev, mode);
     }
     return formatter_->make_help(this, prev, mode);
 }
