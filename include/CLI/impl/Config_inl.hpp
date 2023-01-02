@@ -31,8 +31,9 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
     }
     // floating point conversion can convert some hex codes, but don't try that here
     if(arg.compare(0, 2, "0x") != 0 && arg.compare(0, 2, "0X") != 0) {
+        using CLI::detail::lexical_cast;
         double val = 0.0;
-        if(detail::lexical_cast(arg, val)) {
+        if(lexical_cast(arg, val)) {
             return arg;
         }
     }

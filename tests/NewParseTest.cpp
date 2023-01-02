@@ -163,14 +163,10 @@ class spair {
     std::string first{};
     std::string second{};
 };
-// an example of custom converter that can be used to add new parsing options
-// On MSVC and possibly some other new compilers this can be a free standing function without the template
-// specialization but this is compiler dependent
-namespace CLI {
-namespace detail {
 
-template <> bool lexical_cast<spair>(const std::string &input, spair &output) {
-
+// Example of a custom converter that can be used to add new parsing options.
+// It will be found via argument-dependent lookup, so should be in the same namespace as the `spair` type.
+bool lexical_cast(const std::string &input, spair &output) {
     auto sep = input.find_first_of(':');
     if((sep == std::string::npos) && (sep > 0)) {
         return false;
@@ -178,8 +174,6 @@ template <> bool lexical_cast<spair>(const std::string &input, spair &output) {
     output = {input.substr(0, sep), input.substr(sep + 1)};
     return true;
 }
-}  // namespace detail
-}  // namespace CLI
 
 TEST_CASE_METHOD(TApp, "custom_string_converter", "[newparse]") {
     spair val;
@@ -199,6 +193,96 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
     args = {"-d", "string2"};
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+/// Wrapper with an unconvenient interface
+template <class T> class badlywrapped {
+  public:
+    badlywrapped() : value() {}
+
+    CLI11_NODISCARD T get() const { return value; }
+
+    void set(T val) { value = val; }
+
+  private:
+    T value;
+};
+
+// Example of a custom converter for a template type.
+// It will be found via argument-dependent lookup, so should be in the same namespace as the `badlywrapped` type.
+template <class T> bool lexical_cast(const std::string &input, badlywrapped<T> &output) {
+    // This using declaration lets us use an unqualified call to lexical_cast below. This is important because
+    // unqualified call finds the proper overload via argument-dependent lookup, and thus it will be able to find
+    // an overload for `spair` type, which is not in `CLI::detail`.
+    using CLI::detail::lexical_cast;
+
+    T value;
+    if(!lexical_cast(input, value))
+        return false;
+    output.set(value);
+    return true;
+}
+
+TEST_CASE_METHOD(TApp, "custom_string_converter_flag", "[newparse]") {
+    badlywrapped<bool> val;
+    std::vector<badlywrapped<bool>> vals;
+    app.add_flag("-1", val);
+    app.add_flag("-2", vals);
+
+    val.set(false);
+    args = {"-1"};
+    run();
+    CHECK(true == val.get());
+
+    args = {"-2", "-2"};
+    run();
+    CHECK(2 == vals.size());
+    CHECK(true == vals[0].get());
+    CHECK(true == vals[1].get());
+}
+
+TEST_CASE_METHOD(TApp, "custom_string_converter_adl", "[newparse]") {
+    // This test checks that the lexical_cast calls route as expected.
+    badlywrapped<spair> val;
+
+    app.add_option("-d,--dual_string", val);
+
+    args = {"-d", "string1:string2"};
+
+    run();
+    CHECK("string1" == val.get().first);
+    CHECK("string2" == val.get().second);
+}
+
+/// Another wrapper to test that specializing CLI::detail::lexical_cast works
+struct anotherstring {
+    anotherstring() = default;
+    std::string s{};
+};
+
+// This is a custom converter done via specializing the CLI::detail::lexical_cast template. This was the recommended
+// mechanism for extending the library before, so we need to test it. Don't do this in your code, use
+// argument-dependent lookup as outlined in the examples for spair and template badlywrapped.
+namespace CLI {
+namespace detail {
+template <> bool lexical_cast<anotherstring>(const std::string &input, anotherstring &output) {
+    bool result = lexical_cast(input, output.s);
+    if(result)
+        output.s += "!";
+    return result;
+}
+}  // namespace detail
+}  // namespace CLI
+
+TEST_CASE_METHOD(TApp, "custom_string_converter_specialize", "[newparse]") {
+    anotherstring s;
+
+    app.add_option("-s", s);
+
+    args = {"-s", "something"};
+
+    run();
+    CHECK("something!" == s.s);
 }
 
 /// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the

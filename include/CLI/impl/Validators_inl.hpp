@@ -219,7 +219,8 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
         }
         int num = 0;
         for(const auto &var : result) {
-            bool retval = detail::lexical_cast(var, num);
+            using CLI::detail::lexical_cast;
+            bool retval = lexical_cast(var, num);
             if(!retval) {
                 return std::string("Failed parsing number (") + var + ')';
             }

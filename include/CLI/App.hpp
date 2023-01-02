@@ -626,7 +626,8 @@ class App {
                      std::string flag_description = "") {
 
         CLI::callback_t fun = [&flag_result](const CLI::results_t &res) {
-            return CLI::detail::lexical_cast(res[0], flag_result);
+            using CLI::detail::lexical_cast;
+            return lexical_cast(res[0], flag_result);
         };
         auto *opt = _add_flag_internal(flag_name, std::move(fun), std::move(flag_description));
         return detail::default_flag_modifiers<T>(opt);
@@ -642,8 +643,9 @@ class App {
         CLI::callback_t fun = [&flag_results](const CLI::results_t &res) {
             bool retval = true;
             for(const auto &elem : res) {
+                using CLI::detail::lexical_cast;
                 flag_results.emplace_back();
-                retval &= detail::lexical_cast(elem, flag_results.back());
+                retval &= lexical_cast(elem, flag_results.back());
             }
             return retval;
         };

@@ -265,8 +265,9 @@ CLI11_INLINE Option *App::add_flag_callback(std::string flag_name,
                                             std::string flag_description) {
 
     CLI::callback_t fun = [function](const CLI::results_t &res) {
+        using CLI::detail::lexical_cast;
         bool trigger{false};
-        auto result = CLI::detail::lexical_cast(res[0], trigger);
+        auto result = lexical_cast(res[0], trigger);
         if(result && trigger) {
             function();
         }
@@ -281,8 +282,9 @@ App::add_flag_function(std::string flag_name,
                        std::string flag_description) {
 
     CLI::callback_t fun = [function](const CLI::results_t &res) {
+        using CLI::detail::lexical_cast;
         std::int64_t flag_count{0};
-        CLI::detail::lexical_cast(res[0], flag_count);
+        lexical_cast(res[0], flag_count);
         function(flag_count);
         return true;
     };
