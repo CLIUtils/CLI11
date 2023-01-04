@@ -1285,8 +1285,9 @@ class App {
     bool _parse_subcommand(std::vector<std::string> &args);
 
     /// Parse a short (false) or long (true) argument, must be at the top of the list
+    /// if local_processing_only is set to true then fallthrough is disabled will return false if not found
     /// return true if the argument was processed or false if nothing was done
-    bool _parse_arg(std::vector<std::string> &args, detail::Classifier current_type);
+    bool _parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only);
 
     /// Trigger the pre_parse callback if needed
     void _trigger_pre_parse(std::size_t remaining_args);
