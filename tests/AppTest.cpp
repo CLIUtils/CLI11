@@ -141,8 +141,6 @@ TEST_CASE_METHOD(TApp, "StrangeFlagNames", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "RequireOptionsError", "[app]") {
-    using Catch::Matchers::Contains;
-
     app.add_flag("-c");
     app.add_flag("--q");
     app.add_flag("--this,--that");

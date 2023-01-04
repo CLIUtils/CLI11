@@ -6,8 +6,6 @@
 
 #include "app_helper.hpp"
 
-using Catch::Matchers::Contains;
-
 using vs_t = std::vector<std::string>;
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroup", "[optiongroup]") {

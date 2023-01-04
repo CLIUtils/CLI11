@@ -13,8 +13,6 @@
 #include "catch.hpp"
 #include <fstream>
 
-using Catch::Matchers::Contains;
-
 class SimpleFormatter : public CLI::FormatterBase {
   public:
     SimpleFormatter() : FormatterBase() {}

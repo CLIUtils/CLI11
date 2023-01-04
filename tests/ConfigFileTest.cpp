@@ -9,8 +9,6 @@
 #include <cstdio>
 #include <sstream>
 
-using Catch::Matchers::Contains;
-
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
     CHECK("\"\"" == CLI::detail::convert_arg_for_ini(std::string{}));
