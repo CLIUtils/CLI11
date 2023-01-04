@@ -46,6 +46,7 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
         configurable_ = parent_->configurable_;
         allow_windows_style_options_ = parent_->allow_windows_style_options_;
         group_ = parent_->group_;
+        usage_ = parent_->usage_;
         footer_ = parent_->footer_;
         formatter_ = parent_->formatter_;
         config_formatter_ = parent_->config_formatter_;

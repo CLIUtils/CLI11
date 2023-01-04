@@ -91,6 +91,11 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
 }
 
 CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name) const {
+    std::string usage = app->get_usage();
+    if(!usage.empty()) {
+        return usage + "\n";
+    }
+
     std::stringstream out;
 
     out << get_label("Usage") << ":" << (name.empty() ? "" : " ") << name;

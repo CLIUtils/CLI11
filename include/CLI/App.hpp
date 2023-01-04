@@ -150,6 +150,12 @@ class App {
     /// @name Help
     ///@{
 
+    /// Usage to put after program/subcommand description in the help output INHERITABLE
+    std::string usage_{};
+
+    /// This is a function that generates a usage to put after program/subcommand description in help output
+    std::function<std::string()> usage_callback_{};
+
     /// Footer to put after all options in the help output INHERITABLE
     std::string footer_{};
 
@@ -947,6 +953,16 @@ class App {
     /// @name Help
     ///@{
 
+    /// Set usage.
+    App *usage(std::string usage_string) {
+        usage_ = std::move(usage_string);
+        return this;
+    }
+    /// Set usage.
+    App *usage(std::function<std::string()> usage_function) {
+        usage_callback_ = std::move(usage_function);
+        return this;
+    }
     /// Set footer.
     App *footer(std::string footer_string) {
         footer_ = std::move(footer_string);
@@ -1054,6 +1070,11 @@ class App {
 
     /// Get the group of this subcommand
     CLI11_NODISCARD const std::string &get_group() const { return group_; }
+
+    /// Generate and return the usage.
+    CLI11_NODISCARD std::string get_usage() const {
+        return (usage_callback_) ? usage_callback_() + '\n' + usage_ : usage_;
+    }
 
     /// Generate and return the footer.
     CLI11_NODISCARD std::string get_footer() const {
