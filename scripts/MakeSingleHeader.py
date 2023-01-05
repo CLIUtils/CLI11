@@ -80,7 +80,7 @@ class HeaderGroups(dict):
         """
         for key in self:
             if isinstance(self[key], set):
-                self[key] = "\n".join(self[key])
+                self[key] = "\n".join(sorted(self[key]))
 
 
 def make_header(output, main_header, files, tag, namespace, macro=None, version=None):
@@ -100,6 +100,8 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
         groups["git"] = ""
 
     for f in files:
+        if os.path.isdir(f):
+            continue
         groups.read_header(f)
 
     groups["namespace"] = namespace
