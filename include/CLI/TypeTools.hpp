@@ -18,6 +18,7 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+#include "Encoding.hpp"
 #include "StringTools.hpp"
 
 namespace CLI {
@@ -242,8 +243,10 @@ struct is_mutable_container<
                          decltype(std::declval<T>().clear()),
                          decltype(std::declval<T>().insert(std::declval<decltype(std::declval<T>().end())>(),
                                                            std::declval<const typename T::value_type &>()))>,
-                  void>>
-    : public conditional_t<std::is_constructible<T, std::string>::value, std::false_type, std::true_type> {};
+                  void>> : public conditional_t<std::is_constructible<T, std::string>::value ||
+                                                    std::is_constructible<T, std::wstring>::value,
+                                                std::false_type,
+                                                std::true_type> {};
 
 // check to see if an object is a mutable container (fail by default)
 template <typename T, typename _ = void> struct is_readable_container : std::false_type {};
@@ -546,6 +549,8 @@ enum class object_category : int {
     // string like types
     string_assignable = 23,
     string_constructible = 24,
+    wstring_assignable = 25,
+    wstring_constructible = 26,
     other = 45,
     // special wrapper or container types
     wrapper_value = 50,
@@ -613,6 +618,27 @@ struct classify_object<
     static constexpr object_category value{object_category::string_constructible};
 };
 
+/// Wide strings
+template <typename T>
+struct classify_object<T,
+                       typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                                               !std::is_assignable<T &, std::string>::value &&
+                                               !std::is_constructible<T, std::string>::value &&
+                                               std::is_assignable<T &, std::wstring>::value>::type> {
+    static constexpr object_category value{object_category::wstring_assignable};
+};
+
+template <typename T>
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            !std::is_assignable<T &, std::string>::value &&
+                            !std::is_constructible<T, std::string>::value &&
+                            !std::is_assignable<T &, std::wstring>::value && (type_count<T>::value == 1) &&
+                            std::is_constructible<T, std::wstring>::value>::type> {
+    static constexpr object_category value{object_category::wstring_constructible};
+};
+
 /// Enumerations
 template <typename T> struct classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
     static constexpr object_category value{object_category::enumeration};
@@ -625,12 +651,13 @@ template <typename T> struct classify_object<T, typename std::enable_if<is_compl
 /// Handy helper to contain a bunch of checks that rule out many common types (integers, string like, floating point,
 /// vectors, and enumerations
 template <typename T> struct uncommon_type {
-    using type = typename std::conditional<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               !std::is_assignable<T &, std::string>::value &&
-                                               !std::is_constructible<T, std::string>::value && !is_complex<T>::value &&
-                                               !is_mutable_container<T>::value && !std::is_enum<T>::value,
-                                           std::true_type,
-                                           std::false_type>::type;
+    using type = typename std::conditional<
+        !std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+            !std::is_assignable<T &, std::string>::value && !std::is_constructible<T, std::string>::value &&
+            !std::is_assignable<T &, std::wstring>::value && !std::is_constructible<T, std::wstring>::value &&
+            !is_complex<T>::value && !is_mutable_container<T>::value && !std::is_enum<T>::value,
+        std::true_type,
+        std::false_type>::type;
     static constexpr bool value = type::value;
 };
 
@@ -1005,6 +1032,23 @@ bool lexical_cast(const std::string &input, T &output) {
     return true;
 }
 
+/// Wide strings
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::wstring_assignable, detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    output = widen(input);
+    return true;
+}
+
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::wstring_constructible, detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    output = T{widen(input)};
+    return true;
+}
+
 /// Enumerations
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::enumeration, detail::enabler> = detail::dummy>
@@ -1133,7 +1177,9 @@ template <typename AssignTo,
           typename ConvertTo,
           enable_if_t<std::is_same<AssignTo, ConvertTo>::value &&
                           (classify_object<AssignTo>::value == object_category::string_assignable ||
-                           classify_object<AssignTo>::value == object_category::string_constructible),
+                           classify_object<AssignTo>::value == object_category::string_constructible ||
+                           classify_object<AssignTo>::value == object_category::wstring_assignable ||
+                           classify_object<AssignTo>::value == object_category::wstring_constructible),
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, AssignTo &output) {
     return lexical_cast(input, output);
@@ -1144,7 +1190,9 @@ template <typename AssignTo,
           typename ConvertTo,
           enable_if_t<std::is_same<AssignTo, ConvertTo>::value && std::is_assignable<AssignTo &, AssignTo>::value &&
                           classify_object<AssignTo>::value != object_category::string_assignable &&
-                          classify_object<AssignTo>::value != object_category::string_constructible,
+                          classify_object<AssignTo>::value != object_category::string_constructible &&
+                          classify_object<AssignTo>::value != object_category::wstring_assignable &&
+                          classify_object<AssignTo>::value != object_category::wstring_constructible,
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, AssignTo &output) {
     if(input.empty()) {

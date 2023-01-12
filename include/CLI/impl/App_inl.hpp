@@ -9,6 +9,9 @@
 // This include is only needed for IDEs to discover symbols
 #include <CLI/App.hpp>
 
+#include <CLI/Argv.hpp>
+#include <CLI/Encoding.hpp>
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <memory>
@@ -474,17 +477,31 @@ CLI11_INLINE void App::clear() {
     }
 }
 
-CLI11_INLINE void App::parse(int argc, const char *const *argv) {
+CLI11_INLINE void App::parse() { parse(argc(), argv()); }  // LCOV_EXCL_LINE
+
+CLI11_INLINE void App::parse(int argc, const char *const *argv) { parse_char_t(argc, argv); }
+CLI11_INLINE void App::parse(int argc, const wchar_t *const *argv) { parse_char_t(argc, argv); }
+
+namespace detail {
+
+// Do nothing or perform narrowing
+CLI11_INLINE const char *maybe_narrow(const char *str) { return str; }
+CLI11_INLINE std::string maybe_narrow(const wchar_t *str) { return narrow(str); }
+
+}  // namespace detail
+
+template <class CharT> CLI11_INLINE void App::parse_char_t(int argc, const CharT *const *argv) {
     // If the name is not set, read from command line
     if(name_.empty() || has_automatic_name_) {
         has_automatic_name_ = true;
-        name_ = argv[0];
+        name_ = detail::maybe_narrow(argv[0]);
     }
 
     std::vector<std::string> args;
     args.reserve(static_cast<std::size_t>(argc) - 1U);
     for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
-        args.emplace_back(argv[i]);
+        args.emplace_back(detail::maybe_narrow(argv[i]));
+
     parse(std::move(args));
 }
 
@@ -513,6 +530,10 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     std::reverse(args.begin(), args.end());
 
     parse(std::move(args));
+}
+
+CLI11_INLINE void App::parse(std::wstring commandline, bool program_name_included) {
+    parse(narrow(commandline), program_name_included);
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &args) {

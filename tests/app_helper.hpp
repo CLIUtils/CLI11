@@ -13,6 +13,9 @@
 #endif
 
 #include "catch.hpp"
+#include <array>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -66,4 +69,55 @@ inline void unset_env(std::string name) {
 #else
     unsetenv(name.c_str());
 #endif
+}
+
+CLI11_INLINE void check_identical_files(const char *path1, const char *path2) {
+    std::string err1 = CLI::ExistingFile(path1);
+    if(!err1.empty()) {
+        FAIL("Could not open " << path1 << ": " << err1);
+    }
+
+    std::string err2 = CLI::ExistingFile(path2);
+    if(!err2.empty()) {
+        FAIL("Could not open " << path2 << ": " << err2);
+    }
+
+    // open files at the end to compare size first
+    std::ifstream file1(path1, std::ifstream::ate | std::ifstream::binary);
+    std::ifstream file2(path2, std::ifstream::ate | std::ifstream::binary);
+
+    if(!file1.good()) {
+        FAIL("File " << path1 << " is corrupted");
+    }
+
+    if(!file2.good()) {
+        FAIL("File " << path2 << " is corrupted");
+    }
+
+    if(file1.tellg() != file2.tellg()) {
+        FAIL("Different file sizes:\n  " << file1.tellg() << " bytes in " << path1 << "\n  " << file2.tellg()
+                                         << " bytes in " << path2);
+    }
+
+    // rewind files
+    file1.seekg(0);
+    file2.seekg(0);
+
+    std::array<uint8_t, 10240> buffer1;
+    std::array<uint8_t, 10240> buffer2;
+
+    for(size_t ibuffer = 0; file1.good(); ++ibuffer) {
+        // Flawfinder: ignore
+        file1.read(reinterpret_cast<char *>(buffer1.data()), static_cast<std::streamsize>(buffer1.size()));
+        // Flawfinder: ignore
+        file2.read(reinterpret_cast<char *>(buffer2.data()), static_cast<std::streamsize>(buffer2.size()));
+
+        for(size_t i = 0; i < static_cast<size_t>(file1.gcount()); ++i) {
+            if(buffer1[i] != buffer2[i]) {
+                FAIL(std::hex << std::setfill('0') << "Different bytes at position " << (ibuffer * 10240 + i) << ":\n  "
+                              << "0x" << std::setw(2) << static_cast<int>(buffer1[i]) << " in " << path1 << "\n  "
+                              << "0x" << std::setw(2) << static_cast<int>(buffer2[i]) << " in " << path2);
+            }
+        }
+    }
 }

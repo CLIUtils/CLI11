@@ -35,9 +35,9 @@ namespace CLI {
 // [CLI11:app_hpp:verbatim]
 
 #ifndef CLI11_PARSE
-#define CLI11_PARSE(app, argc, argv)                                                                                   \
+#define CLI11_PARSE(app, ...)                                                                                          \
     try {                                                                                                              \
-        (app).parse((argc), (argv));                                                                                   \
+        (app).parse(__VA_ARGS__);                                                                                      \
     } catch(const CLI::ParseError &e) {                                                                                \
         return (app).exit(e);                                                                                          \
     }
@@ -837,15 +837,25 @@ class App {
     /// Reset the parsed data
     void clear();
 
+    /// Parse the command-line arguments passed to the main function of the executable.
+    /// This overload will correctly parse unicode arguments on Windows.
+    void parse();
+
     /// Parses the command line - throws errors.
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv);
+    void parse(int argc, const wchar_t *const *argv);
 
+  private:
+    template <class CharT> void parse_char_t(int argc, const CharT *const *argv);
+
+  public:
     /// Parse a single string as if it contained command line arguments.
     /// This function splits the string into arguments then calls parse(std::vector<std::string> &)
     /// the function takes an optional boolean argument specifying if the programName is included in the string to
     /// process
     void parse(std::string commandline, bool program_name_included = false);
+    void parse(std::wstring commandline, bool program_name_included = false);
 
     /// The real work is done here. Expects a reversed vector.
     /// Changes the vector to the remaining options.

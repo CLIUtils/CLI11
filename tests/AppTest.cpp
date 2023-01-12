@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 #include <cmath>
 
+#include <array>
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
@@ -261,6 +262,28 @@ TEST_CASE_METHOD(TApp, "OneString", "[app]") {
     CHECK("mystring" == str);
 }
 
+TEST_CASE_METHOD(TApp, "OneWideString", "[app]") {
+    std::wstring str;
+    app.add_option("-s,--string", str);
+    args = {"--string", "mystring"};
+    run();
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK(L"mystring" == str);
+}
+
+TEST_CASE_METHOD(TApp, "OneStringWideInput", "[app][unicode]") {
+    std::string str;
+    app.add_option("-s,--string", str);
+
+    std::array<const wchar_t *, 3> cmdline{{L"app", L"--string", L"mystring"}};
+    app.parse(static_cast<int>(cmdline.size()), cmdline.data());
+
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
+}
+
 TEST_CASE_METHOD(TApp, "OneStringWindowsStyle", "[app]") {
     std::string str;
     app.add_option("-s,--string", str);
@@ -277,6 +300,16 @@ TEST_CASE_METHOD(TApp, "OneStringSingleStringInput", "[app]") {
     app.add_option("-s,--string", str);
 
     app.parse("--string mystring");
+    CHECK(app.count("-s") == 1u);
+    CHECK(app.count("--string") == 1u);
+    CHECK("mystring" == str);
+}
+
+TEST_CASE_METHOD(TApp, "OneStringSingleWideStringInput", "[app][unicode]") {
+    std::string str;
+    app.add_option("-s,--string", str);
+
+    app.parse(L"--string mystring");
     CHECK(app.count("-s") == 1u);
     CHECK(app.count("--string") == 1u);
     CHECK("mystring" == str);
@@ -2462,4 +2495,22 @@ TEST_CASE("C20_compile", "simple") {
 
     app.parse("--flag");
     CHECK_FALSE(flag->empty());
+}
+
+// #14
+TEST_CASE("System Args", "[app]") {
+    const char *commandline = CLI11_SYSTEM_ARGS_EXE " 1234 false \"hello world\"";
+    int retval = std::system(commandline);
+
+    if(retval == -1) {
+        FAIL("Executable '" << commandline << "' reported different argc count");
+    }
+
+    if(retval > 0) {
+        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+    }
+
+    if(retval != 0) {
+        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+    }
 }

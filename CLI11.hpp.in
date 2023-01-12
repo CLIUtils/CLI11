@@ -40,9 +40,23 @@
 
 {macros_hpp}
 
+{slim_windows_h_hpp}
+
 {validators_hpp_filesystem}
 
+{encoding_includes}
+
+{argv_inl_includes}
+
 namespace {namespace} {{
+
+{encoding_hpp}
+
+{encoding_inl_hpp}
+
+{argv_hpp}
+
+{argv_inl_hpp}
 
 {string_tools_hpp}
 
