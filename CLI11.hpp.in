@@ -40,8 +40,6 @@
 
 {macros_hpp}
 
-{slim_windows_h_hpp}
-
 {validators_hpp_filesystem}
 
 {encoding_includes}
