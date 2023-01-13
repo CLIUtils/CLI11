@@ -32,11 +32,11 @@
 #endif
 #endif
 #define NOMINMAX
-//first
+// first
 #include <windef.h>
-//second
+// second
 #include <winbase.h>
-//third
+// third
 #include <processthreadsapi.h>
 #include <shellapi.h>
 
