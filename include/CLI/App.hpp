@@ -35,13 +35,13 @@ namespace CLI {
 // [CLI11:app_hpp:verbatim]
 
 #ifndef CLI11_PARSE
-#define CLI11_PARSE(app, argc, argv)                        \
-    do                                                      \
-        try {                                               \
-            (app).parse((argc), (argv));                    \
-        } catch(const CLI::ParseError &e) {                 \
-            return (app).exit(e);                           \
-        }                                                   \
+#define CLI11_PARSE(app, argc, argv)                                                                                   \
+    do                                                                                                                 \
+        try {                                                                                                          \
+            (app).parse((argc), (argv));                                                                               \
+        } catch(const CLI::ParseError &e) {                                                                            \
+            return (app).exit(e);                                                                                      \
+        }                                                                                                              \
     while(false)
 #endif
 
