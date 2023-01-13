@@ -22,7 +22,8 @@
 // [CLI11:argv_inl_includes:verbatim]
 #if defined(_WIN32)
 #if !(defined(_AMD64_) || defined(_X86_) || defined(_ARM_))
-#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64)
+#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) ||           \
+    defined(_M_AMD64)
 #define _AMD64_
 #elif defined(i386) || defined(__i386) || defined(__i386__) || defined(__i386__) || defined(_M_IX86)
 #define _X86_
@@ -31,12 +32,12 @@
 #endif
 #endif
 #define NOMINMAX
-#include <windef.h>
-#include <winbase.h>
-#include <processthreadsapi.h>
-#include <processenv.h>
 #include <errhandlingapi.h>
+#include <processenv.h>
+#include <processthreadsapi.h>
 #include <shellapi.h>
+#include <winbase.h>
+#include <windef.h>
 #undef NOMINMAX
 #elif defined(__APPLE__)
 #include <crt_externs.h>
