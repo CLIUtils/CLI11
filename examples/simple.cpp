@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     double value{0.0};  // = 3.14;
     app.add_option("-d,--double", value, "Some Value");
 
-    CLI11_PARSE(app, argc, argv)
+    CLI11_PARSE(app, argc, argv);
 
     std::cout << "Working on file: " << file << ", direct count: " << app.count("--file")
               << ", opt count: " << opt->count() << std::endl;

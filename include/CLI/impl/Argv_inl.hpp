@@ -32,12 +32,14 @@
 #endif
 #endif
 #define NOMINMAX
-#include <errhandlingapi.h>
-#include <processenv.h>
+//first
+#include <windef.h>
+//second
+#include <winbase.h>
+//third
 #include <processthreadsapi.h>
 #include <shellapi.h>
-#include <winbase.h>
-#include <windef.h>
+
 #undef NOMINMAX
 #elif defined(__APPLE__)
 #include <crt_externs.h>
