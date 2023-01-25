@@ -25,7 +25,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v15.0.6
+    rev: v15.0.7
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
