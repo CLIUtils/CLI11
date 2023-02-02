@@ -978,7 +978,12 @@ bool lexical_cast(const std::string &input, T &output) {
         return false;
     }
     char *val = nullptr;
+#ifdef __wasi__
+    // Symbol missing
+    auto output_ld = std::strtod(input.c_str(), &val);
+#else
     auto output_ld = std::strtold(input.c_str(), &val);
+#endif
     output = static_cast<T>(output_ld);
     return val == (input.c_str() + input.size());
 }
