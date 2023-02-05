@@ -5,5 +5,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    target-branch: 'main'
+    target-branch: "main"
     open-pull-requests-limit: 10
