@@ -53,9 +53,17 @@ endif()
 # Allow IDE's to group targets into folders
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  set(SYSTEM_INCL "")
+else()
+  # If this project is included from somewhere else, we mark our headers as system headers to avoid
+  # the compiler emitting any warnings about them
+  set(SYSTEM_INCL "SYSTEM")
+endif()
+
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(
-  CLI11 ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  CLI11 ${SYSTEM_INCL} ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
 if(CMAKE_VERSION VERSION_LESS 3.8)
