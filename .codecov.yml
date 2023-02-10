@@ -4,3 +4,4 @@ ignore:
   - "book"
   - "docs"
   - "test_package"
+  - "fuzz"

@@ -336,6 +336,36 @@ TEST_CASE_METHOD(TApp, "pair_check", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "pair_check_string", "[optiontype]") {
+    std::string myfile{"pair_check_file.txt"};
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
+
+    CHECK(CLI::ExistingFile(myfile).empty());
+    std::pair<std::string, std::string> findex;
+
+    auto v0 = CLI::ExistingFile;
+    v0.application_index(0);
+    auto v1 = CLI::PositiveNumber;
+    v1.application_index(1);
+    app.add_option("--file", findex)->check(v0)->check(v1);
+
+    args = {"--file", myfile, "2"};
+
+    CHECK_NOTHROW(run());
+
+    CHECK(myfile == findex.first);
+    CHECK("2" == findex.second);
+
+    args = {"--file", myfile, "-3"};
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--file", myfile, "2"};
+    std::remove(myfile.c_str());
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "pair_check_take_first", "[optiontype]") {
     std::string myfile{"pair_check_file2.txt"};
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file

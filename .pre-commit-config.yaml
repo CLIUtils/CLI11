@@ -1,3 +1,4 @@
+exclude: ^(.github/workflows/|docs/img/)
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"
