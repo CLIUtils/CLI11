@@ -87,6 +87,10 @@ app.allow_config_extras(CLI::config_extras_mode::ignore_all);
 will completely ignore any mismatches, extras, or other issues with the config
 file
 
+Config file extras are stored in the remaining output as two components. The
+first is the name of the field including subcommands using dot notation the
+second (or more) are the argument fields.
+
 ### Getting the used configuration file name
 
 If it is needed to get the configuration file name used this can be obtained via

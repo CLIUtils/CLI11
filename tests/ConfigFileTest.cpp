@@ -509,8 +509,45 @@ TEST_CASE_METHOD(TApp, "IniGetRemainingOption", "[config]") {
     int two{0};
     app.add_option("--two", two);
     REQUIRE_NOTHROW(run());
-    std::vector<std::string> ExpectedRemaining = {ExtraOption};
+    std::vector<std::string> ExpectedRemaining = {ExtraOption, "3"};
     CHECK(ExpectedRemaining == app.remaining());
+}
+
+TEST_CASE_METHOD(TApp, "IniRemainingSub", "[config]") {
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    auto *map = app.add_subcommand("map");
+    map->allow_config_extras();
+
+    {
+        std::ofstream out{tmpini};
+        out << "[map]\n";
+        out << "a = 1\n";
+        out << "b=[1,2,3]\n";
+        out << "c = 3" << std::endl;
+    }
+
+    REQUIRE_NOTHROW(run());
+    std::vector<std::string> rem = map->remaining();
+    REQUIRE(rem.size() == 8U);
+    CHECK(rem[0] == "map.a");
+    CHECK(rem[2] == "map.b");
+    CHECK(rem[6] == "map.c");
+    CHECK(rem[5] == "3");
+
+    int a{0};
+    int c{0};
+    std::vector<int> b;
+    map->add_option("-a", a);
+    map->add_option("-b", b);
+    map->add_option("-c", c);
+
+    CHECK_NOTHROW(app.parse(app.remaining_for_passthrough()));
+    CHECK(a == 1);
+    CHECK(c == 3);
+    REQUIRE(b.size() == 3U);
+    CHECK(b[1] == 2);
 }
 
 TEST_CASE_METHOD(TApp, "IniGetNoRemaining", "[config]") {

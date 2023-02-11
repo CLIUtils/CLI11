@@ -1414,6 +1414,9 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         if(get_allow_config_extras() == config_extras_mode::capture)
             // Should we worry about classifying the extras properly?
             missing_.emplace_back(detail::Classifier::NONE, item.fullname());
+        for(const auto &input : item.inputs) {
+            missing_.emplace_back(detail::Classifier::NONE, input);
+        }
         return false;
     }
 
