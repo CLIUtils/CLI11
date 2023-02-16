@@ -31,16 +31,23 @@
 #define _ARM_
 #endif
 #endif
-#define NOMINMAX
+
 // first
+#ifndef NOMINMAX
+// if NOMINMAX is already defined we don't want to mess with that either way
+#define NOMINMAX
 #include <windef.h>
+#undef NOMINMAX
+#else
+#include <windef.h>
+#endif
+
 // second
 #include <winbase.h>
 // third
 #include <processthreadsapi.h>
 #include <shellapi.h>
 
-#undef NOMINMAX
 #elif defined(__APPLE__)
 #include <crt_externs.h>
 #endif
