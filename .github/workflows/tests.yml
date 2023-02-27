@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Add wget
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     container: zouzias/boost:1.76.0
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Add deps
