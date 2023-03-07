@@ -60,19 +60,6 @@ name, pre-commit):
 pre-commit install
 ```
 
-## For developers releasing to Conan.io
-
-This is now done by the CI system on tagged releases. Previously, the steps to
-make a Conan.io release were:
-
-```bash
-conan remove '*' # optional, I like to be clean
-conan create . cliutils/stable
-conan upload "*" -r cli11 --all
-```
-
-Here I've assumed that the remote is `cli11`.
-
 ## For maintainers: remember to add contributions
 
 In a commit to a PR, just add
