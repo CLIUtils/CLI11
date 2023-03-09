@@ -305,6 +305,27 @@ template <class X> class objWrapper {
     X val_{};
 };
 
+/// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
+/// option assignments
+template <class X> class objWrapperRestricted {
+  public:
+    objWrapperRestricted() = default;
+    explicit objWrapperRestricted(int val) : val_{val} {};
+    objWrapperRestricted(const objWrapperRestricted &) = delete;
+    objWrapperRestricted(objWrapperRestricted &&) = delete;
+    objWrapperRestricted &operator=(const objWrapperRestricted &) = delete;
+    objWrapperRestricted &operator=(objWrapperRestricted &&) = delete;
+
+    objWrapperRestricted &operator=(int val) {
+        val_ = val;
+        return *this;
+    }
+    CLI11_NODISCARD const X &value() const { return val_; }
+
+  private:
+    X val_{};
+};
+
 // I think there is a bug with the is_assignable in visual studio 2015 it is fixed in later versions
 // so this test will not compile in that compiler
 #if !defined(_MSC_VER) || _MSC_VER >= 1910
@@ -345,6 +366,26 @@ TEST_CASE_METHOD(TApp, "doubleWrapper", "[newparse]") {
     args = {"-v", "thing"};
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "intWrapperRestricted", "[newparse]") {
+    objWrapperRestricted<double> dWrapper;
+    app.add_option("-v", dWrapper);
+    args = {"-v", "4"};
+
+    run();
+
+    CHECK(4.0 == dWrapper.value());
+
+    args = {"-v", "thing"};
+
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-v", ""};
+
+    run();
+
+    CHECK(0.0 == dWrapper.value());
 }
 
 static_assert(CLI::detail::is_direct_constructible<objWrapper<int>, int>::value,

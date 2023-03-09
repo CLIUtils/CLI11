@@ -48,7 +48,7 @@ jobs:
       - name: Prepare coverage
         run: |
           lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/tests/*' '*/examples/*' '/usr/*' '*/book/*' --output-file coverage.info
+          lcov --remove coverage.info '*/tests/*' '*/examples/*' '/usr/*' '*/book/*' '*/fuzz/*' --output-file coverage.info
           lcov --list coverage.info
         working-directory: build
 

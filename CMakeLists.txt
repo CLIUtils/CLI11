@@ -132,6 +132,9 @@ endif()
 
 include(CLI11Warnings)
 
+# build the fuzzing example or fuzz entry point
+add_subdirectory(fuzz)
+
 add_subdirectory(src)
 
 # Allow tests to be run on CUDA

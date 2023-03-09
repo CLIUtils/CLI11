@@ -28,7 +28,6 @@ jobs:
       - bash: cpplint --counting=detailed --recursive examples include/CLI tests
         displayName: Checking against google style guide
 
-  # TODO: Fix macOS error and windows warning in c++17 mode
   - job: Native
     strategy:
       matrix:
@@ -38,13 +37,13 @@ jobs:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
         macOS17:
-          vmImage: "macOS-latest"
+          vmImage: "macOS-12"
           cli11.std: 17
         macOS11:
-          vmImage: "macOS-latest"
+          vmImage: "macOS-11"
           cli11.std: 11
         macOS11PC:
-          vmImage: "macOS-latest"
+          vmImage: "macOS-11"
           cli11.std: 11
           cli11.precompile: ON
         Windows17:

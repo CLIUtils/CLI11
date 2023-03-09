@@ -56,6 +56,10 @@ if(WIN32)
   list(APPEND CLI11_TESTS WindowsTest)
 endif()
 
+if(CMAKE_CXX_STANDARD GREATER 16)
+  list(APPEND CLI11_TESTS FuzzFailTest)
+endif()
+
 if(Boost_FOUND)
   list(APPEND CLI11_TESTS BoostOptionTypeTest)
 endif()
@@ -168,6 +172,16 @@ foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
   target_link_libraries(${T} PUBLIC CLI11)
   add_catch_test(${T})
 endforeach()
+
+if(CMAKE_CXX_STANDARD GREATER 16)
+  set(TEST_FILE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR})
+  target_compile_definitions(FuzzFailTest PUBLIC -DTEST_FILE_FOLDER="${TEST_FILE_FOLDER}")
+  target_sources(FuzzFailTest PUBLIC ${PROJECT_SOURCE_DIR}/fuzz/fuzzApp.cpp)
+  if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
+    target_compile_definitions(FuzzFailTest_Single PUBLIC -DTEST_FILE_FOLDER="${TEST_FILE_FOLDER}")
+    target_sources(FuzzFailTest_Single PUBLIC ${PROJECT_SOURCE_DIR}/fuzz/fuzzApp.cpp)
+  endif()
+endif()
 
 # Add -Wno-deprecated-declarations to DeprecatedTest
 set(no-deprecated-declarations $<$<CXX_COMPILER_ID:MSVC>:/wd4996>

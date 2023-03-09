@@ -66,20 +66,22 @@ target_include_directories(
   CLI11 ${SYSTEM_INCL} ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-if(CMAKE_VERSION VERSION_LESS 3.8)
-  # This might not be a complete list
-  target_compile_features(
-    CLI11
-    INTERFACE cxx_lambdas
-              cxx_nullptr
-              cxx_override
-              cxx_range_for
-              cxx_right_angle_brackets
-              cxx_strong_enums
-              cxx_constexpr
-              cxx_auto_type)
-else()
-  target_compile_features(CLI11 INTERFACE cxx_std_11)
+if(CMAKE_CXX_STANDARD LESS 14)
+  if(CMAKE_VERSION VERSION_LESS 3.8)
+    # This might not be a complete list
+    target_compile_features(
+      CLI11
+      INTERFACE cxx_lambdas
+                cxx_nullptr
+                cxx_override
+                cxx_range_for
+                cxx_right_angle_brackets
+                cxx_strong_enums
+                cxx_constexpr
+                cxx_auto_type)
+  else()
+    target_compile_features(CLI11 INTERFACE cxx_std_11)
+  endif()
 endif()
 
 if(CLI11_SINGLE_FILE)

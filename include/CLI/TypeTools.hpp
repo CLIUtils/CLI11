@@ -1239,9 +1239,17 @@ bool lexical_assign(const std::string &input, AssignTo &output) {
         output = 0;
         return true;
     }
-    int val = 0;
+    int val{0};
     if(lexical_cast(input, val)) {
+#if defined(__clang__)
+/* on some older clang compilers */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#endif
         output = val;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
         return true;
     }
     return false;
@@ -1296,11 +1304,13 @@ template <typename AssignTo,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
     // the remove const is to handle pair types coming from a container
-    typename std::remove_const<typename std::tuple_element<0, ConvertTo>::type>::type v1;
-    typename std::tuple_element<1, ConvertTo>::type v2;
-    bool retval = lexical_assign<decltype(v1), decltype(v1)>(strings[0], v1);
+    using FirstType = typename std::remove_const<typename std::tuple_element<0, ConvertTo>::type>::type;
+    using SecondType = typename std::tuple_element<1, ConvertTo>::type;
+    FirstType v1;
+    SecondType v2;
+    bool retval = lexical_assign<FirstType, FirstType>(strings[0], v1);
     if(strings.size() > 1) {
-        retval = retval && lexical_assign<decltype(v2), decltype(v2)>(strings[1], v2);
+        retval = retval && lexical_assign<SecondType, SecondType>(strings[1], v2);
     }
     if(retval) {
         output = AssignTo{v1, v2};
@@ -1460,7 +1470,7 @@ tuple_type_conversion(std::vector<std::string> &strings, AssignTo &output) {
 
     std::size_t index{subtype_count_min<ConvertTo>::value};
     const std::size_t mx_count{subtype_count<ConvertTo>::value};
-    const std::size_t mx{(std::max)(mx_count, strings.size())};
+    const std::size_t mx{(std::min)(mx_count, strings.size() - 1)};
 
     while(index < mx) {
         if(is_separator(strings[index])) {
@@ -1470,7 +1480,11 @@ tuple_type_conversion(std::vector<std::string> &strings, AssignTo &output) {
     }
     bool retval = lexical_conversion<AssignTo, ConvertTo>(
         std::vector<std::string>(strings.begin(), strings.begin() + static_cast<std::ptrdiff_t>(index)), output);
-    strings.erase(strings.begin(), strings.begin() + static_cast<std::ptrdiff_t>(index) + 1);
+    if(strings.size() > index) {
+        strings.erase(strings.begin(), strings.begin() + static_cast<std::ptrdiff_t>(index) + 1);
+    } else {
+        strings.clear();
+    }
     return retval;
 }
 
