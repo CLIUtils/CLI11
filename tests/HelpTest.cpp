@@ -13,8 +13,6 @@
 #include "catch.hpp"
 #include <fstream>
 
-using Catch::Matchers::Contains;
-
 TEST_CASE("THelp: Basic", "[help]") {
     CLI::App app{"My prog"};
 
@@ -1313,7 +1311,7 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
     try {
         app.parse("--Version");
     } catch(const CLI::CallForVersion &v) {
-        CHECK_THAT(CLI11_VERSION, Catch::Equals(v.what()));
+        CHECK_THAT(CLI11_VERSION, Equals(v.what()));
         CHECK(0 == v.get_exit_code());
         const auto &appc = app;
         const auto *cptr = appc.get_version_ptr();

@@ -6,8 +6,6 @@
 
 #include "app_helper.hpp"
 
-using Catch::Matchers::Contains;
-
 TEST_CASE("Deprecated: Empty", "[deprecated]") {
     // No deprecated features at this time.
     CHECK(true);

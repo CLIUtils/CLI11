@@ -1,14 +1,21 @@
 catch2 = dependency('catch2')
 
-testmain = static_library(
-    'catch_main',
-    'main.cpp', 'catch.hpp',
-    dependencies: catch2,
-)
-testdep = declare_dependency(
-    link_with: testmain,
-    dependencies: [catch2, CLI11_dep]
-)
+if catch2.version().version_compare('<3')
+    testmain = static_library(
+        'catch_main',
+        'main.cpp', 'catch.hpp',
+        dependencies: catch2,
+    )
+    testdep = declare_dependency(
+        link_with: testmain,
+        dependencies: [catch2, CLI11_dep]
+    )
+else
+    testdep = declare_dependency(
+        dependencies: [CLI11_dep, dependency('catch2-with-main')],
+        compile_args: '-DCLI11_CATCH3'
+    )
+endif
 
 link_test_lib = library(
     'link_test_1',

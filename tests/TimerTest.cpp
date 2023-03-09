@@ -12,8 +12,6 @@
 #include <string>
 #include <thread>
 
-using Catch::Matchers::Contains;
-
 TEST_CASE("Timer: MSTimes", "[timer]") {
     CLI::Timer timer{"My Timer"};
     std::this_thread::sleep_for(std::chrono::milliseconds(123));

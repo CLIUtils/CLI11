@@ -66,32 +66,39 @@ endif()
 
 set(CLI11_MULTIONLY_TESTS TimerTest)
 
-add_library(catch_main main.cpp catch.hpp)
-target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-
 find_package(Catch2 CONFIG)
 
 if(Catch2_FOUND)
   if(NOT TARGET Catch2::Catch2)
     message(FATAL_ERROR "Found Catch2 at ${Catch2_DIR} but targets are missing.")
   endif()
-  message(STATUS "Found Catch2")
-  target_link_libraries(catch_main PUBLIC Catch2::Catch2)
+  message(STATUS "Found Catch2 ${Catch2_VERSION}")
+
+  if(Catch2_VERSION VERSION_LESS 3)
+    add_library(catch_main main.cpp catch.hpp)
+    target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(catch_main PUBLIC Catch2::Catch2)
+  else()
+    add_library(catch_main ALIAS Catch2::Catch2WithMain)
+    target_compile_definitions(Catch2::Catch2WithMain INTERFACE -DCLI11_CATCH3)
+  endif()
 else()
   message(STATUS "Downloading Catch2")
 
   # FetchContent would be better, but requires newer CMake.
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/catch2")
-  set(url https://github.com/philsquared/Catch/releases/download/v2.13.7/catch.hpp)
+  set(url https://github.com/philsquared/Catch/releases/download/v2.13.10/catch.hpp)
   file(
     DOWNLOAD ${url} "${CMAKE_CURRENT_BINARY_DIR}/catch2/catch.hpp"
     STATUS status
-    EXPECTED_HASH SHA256=ea379c4a3cb5799027b1eb451163dff065a3d641aaba23bf4e24ee6b536bd9bc)
+    EXPECTED_HASH SHA256=3725c0f0a75f376a5005dde31ead0feb8f7da7507644c201b814443de8355170)
   list(GET status 0 error)
   if(error)
     message(FATAL_ERROR "Could not download ${url}, and Catch2 not found on your system.")
   endif()
-  target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
+  add_library(catch_main main.cpp catch.hpp)
+  target_include_directories(catch_main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+                                               "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
 # Add special target that copies the data directory for tests

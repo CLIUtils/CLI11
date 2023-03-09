@@ -15,3 +15,6 @@ a.out*
 /package.json
 /yarn.lock
 /CLI11.hpp
+
+/subprojects/Catch2-*
+/subprojects/packagecache
