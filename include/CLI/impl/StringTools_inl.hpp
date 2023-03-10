@@ -87,7 +87,7 @@ CLI11_INLINE std::ostream &
 format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid) {
     // Split name and opts into two parts, but only at first space (cannot use provided split(...) function for that)
     std::vector<std::string> name_opts;
-    const std::size_t firstSpace = name.find(" ");
+    const std::size_t firstSpace = name.find(' ');
 
     name_opts.push_back(name.substr(0, firstSpace));
     if(firstSpace != std::string::npos)
@@ -95,7 +95,7 @@ format_help(std::ostream &out, std::string name, const std::string &description,
 
     // Check for any single or dual dash. If none present, this is a subcommand or positional. Subcommand/positional
     // doesn't need special formatting
-    if(name_opts[0].find("-", 0) == std::string::npos && name_opts[0].find("--", 0) == std::string::npos) {
+    if(name_opts[0].find('-', 0) == std::string::npos && name_opts[0].find("--", 0) == std::string::npos) {
         // Use default formatting
         name = "  " + name;
         out << std::setw(static_cast<int>(wid)) << std::left << name;
@@ -110,7 +110,7 @@ format_help(std::ostream &out, std::string name, const std::string &description,
         // Search first double dash (long) name
         for(std::size_t i = 0; i < names.size(); i++) {
             if(posFirstDoubleDashName == -1 && (names[i].find("--", 0) != std::string::npos))
-                posFirstDoubleDashName = i;
+                posFirstDoubleDashName = static_cast<int>(i);
         }
 
         // Calculate num of single dash (short) names
@@ -150,7 +150,7 @@ format_help(std::ostream &out, std::string name, const std::string &description,
         if(posFirstDoubleDashName > -1) {
             // Join all double dash (long) names, seperated by ", "
             std::string doubleDashNames = "";
-            for(std::size_t i = static_cast<std::size_t>(posFirstDoubleDashName); i < names.size(); i++) {
+            for(auto i = static_cast<std::size_t>(posFirstDoubleDashName); i < names.size(); i++) {
                 doubleDashNames += names[i];
 
                 // Add seperator (command + space) only if we're not at the last element
