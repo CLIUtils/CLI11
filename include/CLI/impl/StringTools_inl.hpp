@@ -10,10 +10,10 @@
 #include <CLI/StringTools.hpp>
 
 // [CLI11:public_includes:set]
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <cmath>
+#include <string>
+#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -122,7 +122,7 @@ format_help(std::ostream &out, std::string name, const std::string &description,
         // Calculate setw sizes
         const int leftSideWidth = static_cast<int>(wid) / 4;  // 25% left for short names
         const int rightSideWidth = static_cast<int>(
-                                                    std::ceil(static_cast<float>(wid) / 4.0f * 3.0f));  // 75% right for long names and options, ceil result
+            std::ceil(static_cast<float>(wid) / 4.0f * 3.0f));  // 75% right for long names and options, ceil result
 
         //*****************************************************************************
         // Assemble short (single dash) names if any and print them on left side
