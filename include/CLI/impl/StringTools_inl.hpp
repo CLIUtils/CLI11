@@ -88,100 +88,91 @@ format_help(std::ostream &out, std::string name, const std::string &description,
     // Split name and opts into two parts, but only at first space (cannot use provided split(...) function for that)
     std::vector<std::string> name_opts;
     const std::size_t firstSpace = name.find(" ");
-    
+
     name_opts.push_back(name.substr(0, firstSpace));
     if(firstSpace != std::string::npos)
         name_opts.push_back(name.substr(firstSpace + 1, std::string::npos));
-    
-    // Check for any single or dual dash. If none present, this is a subcommand or positional. Subcommand/positional doesn't need special formatting
-    if(name_opts[0].find("-", 0) == std::string::npos && name_opts[0].find("--", 0) == std::string::npos)
-    {
+
+    // Check for any single or dual dash. If none present, this is a subcommand or positional. Subcommand/positional
+    // doesn't need special formatting
+    if(name_opts[0].find("-", 0) == std::string::npos && name_opts[0].find("--", 0) == std::string::npos) {
         // Use default formatting
         name = "  " + name;
         out << std::setw(static_cast<int>(wid)) << std::left << name;
-    }
-    else
-    {
+    } else {
         // Split names at comma
         const auto names = split(name_opts[0], ',');
-        
+
         // Search short and long names
         int posFirstDoubleDashName = -1;
         std::size_t numOfSingleDashName = 0;
-        
+
         // Search first double dash (long) name
-        for(std::size_t i = 0; i < names.size(); i++)
-        {
+        for(std::size_t i = 0; i < names.size(); i++) {
             if(posFirstDoubleDashName == -1 && (names[i].find("--", 0) != std::string::npos))
                 posFirstDoubleDashName = i;
         }
-        
+
         // Calculate num of single dash (short) names
         if(posFirstDoubleDashName == -1)
-            numOfSingleDashName = names.size(); // Only single dash name
+            numOfSingleDashName = names.size();  // Only single dash name
         else
             numOfSingleDashName = static_cast<std::size_t>(posFirstDoubleDashName);
-        
+
         // Calculate setw sizes
-        const int leftSideWidth = static_cast<int>(wid) / 4; // 25% left for short names
-        const int rightSideWidth = static_cast<int>(std::ceil(static_cast<float>(wid) / 4.0f * 3.0f)); // 75% right for long names and options, ceil result
-        
+        const int leftSideWidth = static_cast<int>(wid) / 4;  // 25% left for short names
+        const int rightSideWidth = static_cast<int>(
+                                                    std::ceil(static_cast<float>(wid) / 4.0f * 3.0f));  // 75% right for long names and options, ceil result
+
         //*****************************************************************************
         // Assemble short (single dash) names if any and print them on left side
-        if(numOfSingleDashName > 0)
-        {
+        if(numOfSingleDashName > 0) {
             // Join all single dash (short) names, seperated by ", "
             std::string singleDashNames = "  ";
-            for(std::size_t i = 0; i < numOfSingleDashName; i++)
-            {
+            for(std::size_t i = 0; i < numOfSingleDashName; i++) {
                 singleDashNames += names[i];
-                
+
                 // Add seperator (command + space) only if we're not at the last element
                 if(i < numOfSingleDashName - 1)
                     singleDashNames += ", ";
             }
-            
+
             // Print joined single dash (short) names on the left side
             out << std::setw(leftSideWidth) << std::left << singleDashNames;
-        }
-        else
-        {
+        } else {
             // No single dash (short) names. Print spaces for left side
             out << std::setw(leftSideWidth) << std::left << " ";
         }
-        
+
         //*****************************************************************************
-        // Assemble long (double dash) names if any and print them on right side. Also add name options to the right side
-        if(posFirstDoubleDashName > -1)
-        {
+        // Assemble long (double dash) names if any and print them on right side. Also add name options to the right
+        // side
+        if(posFirstDoubleDashName > -1) {
             // Join all double dash (long) names, seperated by ", "
             std::string doubleDashNames = "";
-            for(std::size_t i = static_cast<std::size_t>(posFirstDoubleDashName); i < names.size(); i++)
-            {
+            for(std::size_t i = static_cast<std::size_t>(posFirstDoubleDashName); i < names.size(); i++) {
                 doubleDashNames += names[i];
-                
+
                 // Add seperator (command + space) only if we're not at the last element
                 if(i < names.size() - 1)
                     doubleDashNames += ", ";
             }
-            
+
             // Add options (if any)
             if(name_opts.size() > 1)
                 doubleDashNames += " " + name_opts[1];
-            
+
             // Print joined double dash (long) names and options on the right side
             out << std::setw(rightSideWidth) << std::left << doubleDashNames;
-        }
-        else
-        {
+        } else {
             // No double dash (long) options. Print options (if any) or spaces for right side
             if(name_opts.size() > 1)
-                out << std::setw(rightSideWidth) << std::left << name_opts[1]; // We have options
+                out << std::setw(rightSideWidth) << std::left << name_opts[1];  // We have options
             else
                 out << std::setw(rightSideWidth) << std::left << " ";
         }
     }
-    
+
     if(!description.empty()) {
         if(name.length() >= wid)
             out << "\n" << std::setw(static_cast<int>(wid)) << "";
