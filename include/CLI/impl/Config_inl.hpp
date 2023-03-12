@@ -308,9 +308,6 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("Options"));
-    if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
-        out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
-    }
     for(auto &group : groups) {
         if(group == "Options" || group.empty()) {
             if(defaultUsed) {
@@ -319,10 +316,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "Options" && !group.empty()) {
-            out << '\n' << commentLead << group << " Options\n";
+            out << '\n' << commentChar << commentLead << group << " Options\n";
         }
         for(const Option *opt : app->get_options({})) {
-
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
@@ -334,6 +330,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 std::string value = detail::ini_join(
                     opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, characterQuote);
 
+                bool isDefault = false;
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
                         value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, characterQuote);
@@ -341,7 +338,12 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         value = "false";
                     } else if(opt->get_run_callback_for_default()) {
                         value = "\"\"";  // empty string default value
+                    } else if(opt->get_required()) {
+                        value = "\"<REQUIRED>\"";
+                    } else {
+                        value = "\"\"";
                     }
+                    isDefault = true;
                 }
 
                 if(!value.empty()) {
@@ -349,13 +351,18 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         value = opt->get_flag_value(name, value);
                     }
                     if(write_description && opt->has_description()) {
-                        out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    out << name << valueDelimiter << value << '\n';
+                    if(commentDefaultsBool && isDefault) {
+                        name = commentChar + name;
+                    }
+                    out << name << valueDelimiter << value << "\n\n";
                 }
             }
         }
+    }
+    if(write_description && !out.str().empty()) {
+        out << '\n';
     }
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
@@ -389,7 +396,13 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 
-    return out.str();
+    std::string outString;
+    if(write_description && !out.str().empty()) {
+        outString =
+            commentChar + commentLead + detail::fix_newlines(commentChar + commentLead, app->get_description()) + '\n';
+    }
+
+    return outString + out.str();
 }
 // [CLI11:config_inl_hpp:end]
 }  // namespace CLI
