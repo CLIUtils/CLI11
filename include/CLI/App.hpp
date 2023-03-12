@@ -288,6 +288,10 @@ class App {
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<Config> config_formatter_{new ConfigTOML()};
 
+    /// Take all options from all config files into account. Results are in the order config files are parsed
+    /// Last parsed config file takes precedence
+    bool all_config_files_{false};
+
     ///@}
 
     /// Special private constructor for subcommand
@@ -475,6 +479,12 @@ class App {
     /// Set the config formatter
     App *config_formatter(std::shared_ptr<Config> fmt) {
         config_formatter_ = fmt;
+        return this;
+    }
+
+    /// Specify that all options from all config files are considered
+    App *all_config_files(bool all = true) {
+        all_config_files_ = all;
         return this;
     }
 
@@ -1222,6 +1232,9 @@ class App {
 
     /// Read and process a configuration file (main app only)
     void _process_config_file();
+
+    /// Read and process a particular configuration file
+    void _process_config_file(const std::string &config_file, bool config_required, bool file_given);
 
     /// Get envname options if not yet passed. Runs on *all* subcommands.
     void _process_env();

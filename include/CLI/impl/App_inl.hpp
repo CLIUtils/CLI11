@@ -54,6 +54,7 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
         formatter_ = parent_->formatter_;
         config_formatter_ = parent_->config_formatter_;
         require_subcommand_max_ = parent_->require_subcommand_max_;
+        all_config_files_ = parent_->all_config_files_;
     }
 }
 
@@ -1010,10 +1011,28 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
     return detail::Classifier::NONE;
 }
 
+CLI11_INLINE void App::_process_config_file(const std::string &config_file, bool config_required, bool file_given) {
+    auto path_result = detail::check_path(config_file.c_str());
+    if(path_result == detail::path_type::file) {
+        try {
+            std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
+            _parse_config(values);
+            if(!file_given) {
+                config_ptr_->add_result(config_file);
+            }
+        } catch(const FileError &) {
+            if(config_required || file_given)
+                throw;
+        }
+    } else if(config_required || file_given) {
+        throw FileError::Missing(config_file);
+    }
+}
+
 CLI11_INLINE void App::_process_config_file() {
     if(config_ptr_ != nullptr) {
         bool config_required = config_ptr_->get_required();
-        auto file_given = config_ptr_->count() > 0;
+        bool file_given = config_ptr_->count() > 0;
         auto config_files = config_ptr_->as<std::vector<std::string>>();
         if(config_files.empty() || config_files.front().empty()) {
             if(config_required) {
@@ -1021,22 +1040,14 @@ CLI11_INLINE void App::_process_config_file() {
             }
             return;
         }
-        for(auto rit = config_files.rbegin(); rit != config_files.rend(); ++rit) {
-            const auto &config_file = *rit;
-            auto path_result = detail::check_path(config_file.c_str());
-            if(path_result == detail::path_type::file) {
-                try {
-                    std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
-                    _parse_config(values);
-                    if(!file_given) {
-                        config_ptr_->add_result(config_file);
-                    }
-                } catch(const FileError &) {
-                    if(config_required || file_given)
-                        throw;
-                }
-            } else if(config_required || file_given) {
-                throw FileError::Missing(config_file);
+
+        if(all_config_files_) {
+            for(auto it = config_files.begin(); it != config_files.end(); ++it) {
+                _process_config_file(*it, config_required, file_given);
+            }
+        } else {
+            for(auto rit = config_files.rbegin(); rit != config_files.rend(); ++rit) {
+                _process_config_file(*rit, config_required, file_given);
             }
         }
     }
@@ -1424,7 +1435,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         throw ConfigError::NotConfigurable(item.fullname());
     }
 
-    if(op->empty()) {
+    if(op->empty() || all_config_files_) {
 
         if(op->get_expected_min() == 0) {
             if(item.inputs.size() <= 1) {
