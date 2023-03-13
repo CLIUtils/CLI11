@@ -19,7 +19,7 @@ jobs:
         std: ["11", "14", "17", "20"]
         precompile: ["ON", "OFF"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     container: silkeh/clang:14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Configure
         run: >
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Add wget
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     container: zouzias/boost:1.76.0
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Add deps
@@ -115,7 +115,7 @@ jobs:
     name: Meson build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Prepare commands
         run: |
@@ -132,7 +132,7 @@ jobs:
     name: CMake config check (Ubuntu 18.04)
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Check CMake 3.4
         with:
@@ -179,7 +179,7 @@ jobs:
     name: CMake config check (Ubuntu 20.04)
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Check CMake 3.11 (full)
         uses: ./.github/actions/quick_cmake
@@ -222,7 +222,7 @@ jobs:
     name: CMake config check (Ubuntu 22.04)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Check CMake 3.17
         uses: ./.github/actions/quick_cmake
