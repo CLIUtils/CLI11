@@ -69,7 +69,7 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
     auto min_options = app->get_require_option_min();
     auto max_options = app->get_require_option_max();
     if(app->get_required()) {
-        desc += " REQUIRED ";
+        desc += " " + get_label("REQUIRED") + " ";
     }
     if((max_options == min_options) && (min_options > 0)) {
         if(min_options == 1) {
@@ -213,7 +213,10 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
 CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
     std::stringstream out;
-    detail::format_help(out, sub->get_display_name(true), sub->get_description(), column_width_);
+    detail::format_help(out,
+                        sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : ""),
+                        sub->get_description(),
+                        column_width_);
     return out.str();
 }
 
