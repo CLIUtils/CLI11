@@ -75,45 +75,41 @@ jobs:
         run: cmake --build build -j4 -- --keep-going
 
   cuda10-build:
-    name: CUDA build only
+    name: CUDA 10 build only
     runs-on: ubuntu-latest
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
+      - name: Add build tools
+        run: apt-get update && apt-get install -y wget git cmake
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Add wget
-        run: apt-get update && apt-get install -y wget
-      - name: Get cmake
-        uses: jwlawson/actions-setup-cmake@v1.13
       - name: Configure
         run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
       - name: Build
         run: cmake --build build -j2
         
   cuda11-build:
-    name: CUDA build only
+    name: CUDA 11 build only
     runs-on: ubuntu-latest
     container: nvidia/cuda:11.8.0-devel-ubuntu22.04
     steps:
+      - name: Add build tools
+        run: apt-get update && apt-get install -y wget git cmake
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Add wget
-        run: apt-get update && apt-get install -y wget
-      - name: Get cmake
-        uses: jwlawson/actions-setup-cmake@v1.13
       - name: Configure
         run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
       - name: Build
         run: cmake --build build -j2
 
   cuda12-build:
-    name: CUDA build only
+    name: CUDA 12 build only
     runs-on: ubuntu-latest
     container: nvidia/cuda:12.1.0-devel-ubuntu22.04
     steps:
-      - name: Add wget
+      - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
       - uses: actions/checkout@v3
         with:
@@ -128,13 +124,11 @@ jobs:
     runs-on: ubuntu-latest
     container: zouzias/boost:1.78.0
     steps:
+      - name: Add deps
+        run: apt-get update && apt-get install make cmake
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Add deps
-        run: apt-get update && apt-get install make
-      - name: Get CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
       - name: Configure
         run: cmake -S . -B build -DCLI11_BOOST=ON
       - name: Build
