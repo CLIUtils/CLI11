@@ -106,19 +106,13 @@ jobs:
 
   boost-build:
     name: Boost build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: 1.78.0
+      - name: Add boost
+        run: sudo apt-get update && sudo apt-get install -y libboost-dev
       # NOTE: If a boost version matching all requirements cannot be found,
       # this build step will fail
       - name: Configure
