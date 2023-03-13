@@ -74,21 +74,6 @@ jobs:
       - name: Build
         run: cmake --build build -j4 -- --keep-going
 
-  cuda10-build:
-    name: CUDA 10 build only
-    runs-on: ubuntu-latest
-    container: nvidia/cuda:10.2-devel-ubuntu18.04
-    steps:
-      - name: Add build tools
-        run: apt-get update && apt-get install -y wget git cmake
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Configure
-        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
-      - name: Build
-        run: cmake --build build -j2
-        
   cuda11-build:
     name: CUDA 11 build only
     runs-on: ubuntu-latest
@@ -122,13 +107,20 @@ jobs:
   boost-build:
     name: Boost build
     runs-on: ubuntu-latest
-    container: zouzias/boost:1.78.0
     steps:
-      - name: Add deps
-        run: apt-get update && apt-get install make cmake
       - uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.4.1
+        id: install-boost
+        with:
+            # REQUIRED: Specify the required boost version
+            # A list of supported versions can be found here:
+            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+            boost_version: 1.78.0
+      # NOTE: If a boost version matching all requirements cannot be found,
+      # this build step will fail
       - name: Configure
         run: cmake -S . -B build -DCLI11_BOOST=ON
       - name: Build
