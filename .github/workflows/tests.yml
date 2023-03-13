@@ -113,13 +113,11 @@ jobs:
     runs-on: ubuntu-latest
     container: nvidia/cuda:12.1.0-devel-ubuntu22.04
     steps:
+      - name: Add wget
+        run: apt-get update && apt-get install -y wget git cmake
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Add wget
-        run: apt-get update && apt-get install -y wget
-      - name: Get cmake
-        uses: jwlawson/actions-setup-cmake@v1.13
       - name: Configure
         run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
       - name: Build
