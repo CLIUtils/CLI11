@@ -74,12 +74,46 @@ jobs:
       - name: Build
         run: cmake --build build -j4 -- --keep-going
 
-  cuda-build:
+  cuda10-build:
     name: CUDA build only
     runs-on: ubuntu-latest
     container: nvidia/cuda:10.2-devel-ubuntu18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Add wget
+        run: apt-get update && apt-get install -y wget
+      - name: Get cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+      - name: Build
+        run: cmake --build build -j2
+        
+  cuda11-build:
+    name: CUDA build only
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:11.8-devel-ubuntu22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Add wget
+        run: apt-get update && apt-get install -y wget
+      - name: Get cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+      - name: Build
+        run: cmake --build build -j2
+
+  cuda12-build:
+    name: CUDA build only
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:12.1-devel-ubuntu22.04
+    steps:
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Add wget
@@ -96,7 +130,7 @@ jobs:
     runs-on: ubuntu-latest
     container: zouzias/boost:1.76.0
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Add deps
@@ -260,16 +294,22 @@ jobs:
           cmake-version: "3.22"
         if: success() || failure()
 
-      - name: Check CMake 3.23 (full)
+      - name: Check CMake 3.23 
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.23"
-          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
       - name: Check CMake 3.24 (full)
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.24"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 3.25 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.25"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
