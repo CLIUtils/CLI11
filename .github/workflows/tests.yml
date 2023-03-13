@@ -94,7 +94,7 @@ jobs:
   cuda11-build:
     name: CUDA build only
     runs-on: ubuntu-latest
-    container: nvidia/cuda:11.8-devel-ubuntu22.04
+    container: nvidia/cuda:11.8.0-devel-ubuntu22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -111,7 +111,7 @@ jobs:
   cuda12-build:
     name: CUDA build only
     runs-on: ubuntu-latest
-    container: nvidia/cuda:12.1-devel-ubuntu22.04
+    container: nvidia/cuda:12.1.0-devel-ubuntu22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -128,7 +128,7 @@ jobs:
   boost-build:
     name: Boost build
     runs-on: ubuntu-latest
-    container: zouzias/boost:1.76.0
+    container: zouzias/boost:1.78.0
     steps:
       - uses: actions/checkout@v3
         with:
