@@ -242,6 +242,13 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub) const {
     return detail::find_and_replace(tmp, "\n", "\n  ") + "\n";
 }
 
+CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_positional) const {
+    std::stringstream out;
+    detail::format_help(
+        out, make_option_name(opt, is_positional) + make_option_opts(opt), make_option_desc(opt), column_width_);
+    return out.str();
+}
+
 CLI11_INLINE std::string Formatter::make_option_name(const Option *opt, bool is_positional) const {
     if(is_positional)
         return opt->get_name(true, false);

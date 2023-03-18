@@ -54,7 +54,7 @@ template <typename CRTP> class OptionBase {
 
   protected:
     /// The group membership
-    std::string group_ = std::string("Options");
+    std::string group_ = std::string("OPTIONS");
 
     /// True if this is a required option
     bool required_{false};
