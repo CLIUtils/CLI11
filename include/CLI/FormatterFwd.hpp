@@ -51,7 +51,7 @@ class FormatterBase {
     std::size_t right_column_width_{65};
 
     /// The width of the description paragraph at the top of help
-    std::size_t description_paragraph_width_{75};
+    std::size_t description_paragraph_width_{80};
 
     /// The width of the footer paragraph
     std::size_t footer_paragraph_width_{80};
