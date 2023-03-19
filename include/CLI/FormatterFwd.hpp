@@ -53,6 +53,9 @@ class FormatterBase {
     /// The width of the description paragraph at the top of help
     std::size_t description_paragraph_width_{75};
 
+    /// The width of the footer paragraph
+    std::size_t footer_paragraph_width_{80};
+
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
     std::map<std::string, std::string> labels_{};
@@ -90,6 +93,9 @@ class FormatterBase {
     /// Set the description paragraph width at the top of help
     void description_paragraph_width(std::size_t val) { description_paragraph_width_ = val; }
 
+    /// Set the footer paragraph width
+    void footer_paragraph_width(std::size_t val) { footer_paragraph_width_ = val; }
+
     ///@}
     /// @name Getters
     ///@{
@@ -109,6 +115,9 @@ class FormatterBase {
 
     /// Get the current description paragraph width at the top of help
     CLI11_NODISCARD std::size_t get_description_paragraph_width() const { return description_paragraph_width_; }
+
+    /// Get the current footer paragraph width
+    CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
 
     ///@}
 };

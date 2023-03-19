@@ -167,11 +167,12 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
 
     out << make_usage(app, name);
     detail::streamOutAsParagraphWithLinePrefix(
-        out, make_description(app), description_paragraph_width_, "  ");  // Format as paragraph
+        out, make_description(app), description_paragraph_width_, "  ");  // Format description as paragraph
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    out << make_footer(app);
+    detail::streamOutAsParagraphWithLinePrefix(
+        out, make_footer(app), footer_paragraph_width_);  // Format footer as paragraph
 
     return out.str();
 }

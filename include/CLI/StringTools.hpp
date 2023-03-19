@@ -268,7 +268,7 @@ CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"
 CLI11_INLINE std::ostream &streamOutAsParagraphWithLinePrefix(std::ostream &out,
                                                               const std::string &text,
                                                               std::size_t paragraphWidth,
-                                                              const std::string &linePrefix,
+                                                              const std::string &linePrefix = "",
                                                               bool skipPrefixOnFirstLine = false);
 
 }  // namespace detail
