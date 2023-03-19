@@ -166,12 +166,12 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     }
 
     out << make_usage(app, name);
-    detail::streamOutAsParagraphWithLinePrefix(
+    detail::streamOutAsParagraph(
         out, make_description(app), description_paragraph_width_, "  ");  // Format description as paragraph
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    detail::streamOutAsParagraphWithLinePrefix(
+    detail::streamOutAsParagraph(
         out, make_footer(app), footer_paragraph_width_);  // Format footer as paragraph
 
     return out.str();
@@ -261,7 +261,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
                 out << "\n";
                 skipFirstLinePrefix = false;
             }
-            detail::streamOutAsParagraphWithLinePrefix(
+            detail::streamOutAsParagraph(
                 out, desc, right_column_width_, std::string(column_width_, ' '), skipFirstLinePrefix);
         }
     } else {
@@ -329,7 +329,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
                 out << "\n";
                 skipFirstLinePrefix = false;
             }
-            detail::streamOutAsParagraphWithLinePrefix(
+            detail::streamOutAsParagraph(
                 out, desc, right_column_width_, std::string(column_width_, ' '), skipFirstLinePrefix);
         }
     }
