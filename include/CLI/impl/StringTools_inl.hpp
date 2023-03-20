@@ -578,14 +578,6 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 std::size_t paragraphWidth,
                                                 const std::string &linePrefix,
                                                 bool skipPrefixOnFirstLine) {
-    // Do we even have line wrapping?
-    const std::size_t firstLineSize = text.size() + (skipPrefixOnFirstLine ? 0 : linePrefix.size());
-    if(firstLineSize <= paragraphWidth) {
-        // No line wraps
-        out << (skipPrefixOnFirstLine ? "" : linePrefix) << text;
-        return out;
-    }
-
     if(!skipPrefixOnFirstLine)
         out << linePrefix;  // First line prefix
 
@@ -597,13 +589,13 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
         std::size_t charsWritten = 0;
 
         while(iss >> word) {
-            if(word.size() + charsWritten > paragraphWidth) {
+            if(word.length() + charsWritten > paragraphWidth) {
                 out << std::endl << linePrefix;
                 charsWritten = 0;
             }
 
             out << word << " ";
-            charsWritten += word.size() + 1;
+            charsWritten += word.length() + 1;
         }
 
         if(!lss.eof())
