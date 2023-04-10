@@ -8,14 +8,13 @@
 #include <cstdio>
 #include <sstream>
 
-
 TEST_CASE_METHOD(TApp, "NoEscape1", "[escape]") {
     // Ensure an positional argument isn't split.
     std::string str;
     app.add_option("-s,--string,string", str);
     // example command line: `exe string\ one` or `exe "string one"`
     std::vector<std::string> cli_args = {"string one"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("string one" == str);
 }
@@ -25,8 +24,8 @@ TEST_CASE_METHOD(TApp, "NoEscape2", "[escape]") {
     std::string str;
     app.add_option("-s,--string,string", str);
     // Example command line: `exe -s string\ one` or `exe -s "string one"`
-    std::vector<std::string> cli_args = {"-s","string one"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::vector<std::string> cli_args = {"-s", "string one"};
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("string one" == str);
 }
@@ -36,8 +35,8 @@ TEST_CASE_METHOD(TApp, "NoEscape3", "[escape]") {
     std::string str;
     app.add_option("-s,--string,string", str);
     // Example command line: `exe -s -s`
-    std::vector<std::string> cli_args = {"-s","-s"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::vector<std::string> cli_args = {"-s", "-s"};
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("-s" == str);
 }
@@ -48,7 +47,7 @@ TEST_CASE_METHOD(TApp, "NoEscape4", "[escape]") {
     app.add_option("-s,--string,string", str);
     // Example command line: `exe string`
     std::vector<std::string> cli_args = {"string"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("string" == str);
 }
@@ -58,8 +57,8 @@ TEST_CASE_METHOD(TApp, "Escape1", "[escape]") {
     std::string str;
     app.add_option("-s,--string,string", str);
     // Example command line: `exe -s \\-s` or `exe -s "\-s"`
-    std::vector<std::string> cli_args = {"-s",R"(\-s)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::vector<std::string> cli_args = {"-s", R"(\-s)"};
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("-s" == str);
 }
@@ -70,7 +69,7 @@ TEST_CASE_METHOD(TApp, "Escape2", "[escape]") {
     app.add_option("-s,--string,string", str);
     // Example command line: `exe \\-s` or `exe "\-s"`
     std::vector<std::string> cli_args = {R"(\-s)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("-s" == str);
 }
@@ -80,8 +79,8 @@ TEST_CASE_METHOD(TApp, "Escape3", "[escape]") {
     std::string str;
     app.add_option("-s,--string,string", str);
     // Example command line: `exe -s \\\-s` or `exe -s "\\-s"`
-    std::vector<std::string> cli_args = {"-s",R"(\\-s)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::vector<std::string> cli_args = {"-s", R"(\\-s)"};
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK(R"(\-s)" == str);
 }
@@ -92,7 +91,7 @@ TEST_CASE_METHOD(TApp, "Escape4", "[escape]") {
     app.add_option("-s,--string,string", str);
     // Example command line: `exe \\\-s` or `exe "\\-s"`
     std::vector<std::string> cli_args = {R"(\\-s)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK(R"(\-s)" == str);
 }
@@ -102,8 +101,8 @@ TEST_CASE_METHOD(TApp, "Numbers", "[escape]") {
     std::string str;
     app.add_option("--number", str);
     // Example command line: `exe \\\-s` or `exe "\\-s"`
-    std::vector<std::string> cli_args = {"--number",R"(-10)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::vector<std::string> cli_args = {"--number", R"(-10)"};
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("-10" == str);
 }
@@ -116,7 +115,7 @@ TEST_CASE_METHOD(TApp, "Flags", "[escape]") {
     app.add_option("-O", name, "name");
     // Example command line: `exe \\-O2` or `exe "\-O2"`
     std::vector<std::string> cli_args = {R"(\-O2)"};
-    std::reverse(cli_args.begin(),cli_args.end());
+    std::reverse(cli_args.begin(), cli_args.end());
     app.parse(cli_args);
     CHECK("-O2" == flags);
     CHECK("" == name);
