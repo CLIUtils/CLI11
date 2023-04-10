@@ -47,6 +47,7 @@ set(CLI11_TESTS
     OptionalTest
     DeprecatedTest
     StringParseTest
+    EscapeTest
     ComplexTypeTest
     TrueFalseTest
     OptionGroupTest
