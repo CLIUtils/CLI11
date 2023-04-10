@@ -107,3 +107,17 @@ TEST_CASE_METHOD(TApp, "Numbers", "[escape]") {
     app.parse(cli_args);
     CHECK("-10" == str);
 }
+
+TEST_CASE_METHOD(TApp, "Flags", "[escape]") {
+    // Ensure a positional that looks like a flag resolves
+    std::string flags;
+    std::string name;
+    app.add_option("flags", flags, "flags");
+    app.add_option("-O", name, "name");
+    // Example command line: `exe \\-O2` or `exe "\-O2"`
+    std::vector<std::string> cli_args = {R"(\-O2)"};
+    std::reverse(cli_args.begin(),cli_args.end());
+    app.parse(cli_args);
+    CHECK("-O2" == flags);
+    CHECK("" == name);
+}
