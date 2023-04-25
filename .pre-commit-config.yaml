@@ -5,7 +5,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
 
@@ -26,7 +26,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v16.0.0
+    rev: v16.0.2
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
@@ -38,7 +38,7 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.6"
+    rev: "v3.0.0-alpha.9-for-vscode"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
