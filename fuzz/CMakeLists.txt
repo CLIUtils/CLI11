@@ -19,14 +19,17 @@ if(CMAKE_CXX_STANDARD GREATER 16)
       set(CLI11_FUZZ_ARTIFACT_PATH ${PROJECT_BINARY_DIR}/fuzz)
     endif()
 
-    if(NOT CLI11_FUZZ_TIME)
-      set(CLI11_FUZZ_TIME 360)
+    if(NOT CLI11_FUZZ_TIME_APP)
+      set(CLI11_FUZZ_TIME_APP 600)
+    endif()
+    if(NOT CLI11_FUZZ_TIME_FILE)
+      set(CLI11_FUZZ_TIME_FILE 240)
     endif()
     add_custom_target(
       QUICK_CLI11_APP_FUZZ
       COMMAND ${CMAKE_COMMAND} -E make_directory corp
       COMMAND
-        cli11_app_fuzzer corp -max_total_time=${CLI11_FUZZ_TIME} -max_len=2048
+        cli11_app_fuzzer corp -max_total_time=${CLI11_FUZZ_TIME_APP} -max_len=2148
         -dict=${CMAKE_CURRENT_SOURCE_DIR}/fuzz_dictionary1.txt
         -exact_artifact_path=${CLI11_FUZZ_ARTIFACT_PATH}/cli11_app_fail_artifact.txt)
 
@@ -34,7 +37,7 @@ if(CMAKE_CXX_STANDARD GREATER 16)
       QUICK_CLI11_FILE_FUZZ
       COMMAND ${CMAKE_COMMAND} -E make_directory corp
       COMMAND
-        cli11_file_fuzzer corp -max_total_time=${CLI11_FUZZ_TIME} -max_len=2048
+        cli11_file_fuzzer corp -max_total_time=${CLI11_FUZZ_TIME_FILE} -max_len=2048
         -dict=${CMAKE_CURRENT_SOURCE_DIR}/fuzz_dictionary2.txt
         -exact_artifact_path=${CLI11_FUZZ_ARTIFACT_PATH}/cli11_file_fail_artifact.txt)
 

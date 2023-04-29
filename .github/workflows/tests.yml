@@ -105,7 +105,7 @@ jobs:
 
   boost-build:
     name: Boost build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:

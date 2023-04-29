@@ -23,15 +23,25 @@ std::string loadFailureFile(const std::string &type, int index) {
 
 TEST_CASE("app_fail") {
     CLI::FuzzApp fuzzdata;
-
     auto app = fuzzdata.generateApp();
 
-    int index = GENERATE(range(1, 3));
-
+    int index = GENERATE(range(1, 4));
+    std::string optionString;
     auto parseData = loadFailureFile("fuzz_app_fail", index);
+    if(index >= 3 && parseData.size() > 25) {
+        optionString = parseData.substr(0, 25);
+        parseData.erase(0, 25);
+    }
+
     try {
 
-        app->parse(parseData);
-    } catch(const CLI::ParseError & /*e*/) {
+        if(!optionString.empty()) {
+            app->add_option(optionString, fuzzdata.buffer);
+        }
+        try {
+            app->parse(parseData);
+        } catch(const CLI::ParseError & /*e*/) {
+        }
+    } catch(const CLI::ConstructionError & /*e*/) {
     }
 }
