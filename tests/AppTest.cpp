@@ -1715,6 +1715,31 @@ TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
     CHECK(!CLI::ExistingFile(myfile).empty());
 }
 
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
+    std::filesystem::path myfile{"voilà.txt"};
+
+    std::filesystem::path fpath;
+    app.add_option("--file", fpath)->check(CLI::ExistingFile, "existing file");
+
+    CHECK_THROWS_AS(app.parse(L"--file voilà.txt"), CLI::ValidationError);
+
+
+    bool ok = static_cast<bool>(std::ofstream("voilà.txt").put('a'));  // create file
+    CHECK(ok);
+ 
+    // deactivate the check, so it should run now
+    
+    CHECK_NOTHROW(app.parse(L"--file voilà.txt"));
+
+    CHECK(fpath == myfile);
+
+    CHECK(std::filesystem::exists(fpath));
+    std::filesystem::remove(myfile);
+    CHECK(!std::filesystem::exists(fpath));
+}
+#endif
+
 TEST_CASE_METHOD(TApp, "NotFileExists", "[app]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
     CHECK(!CLI::ExistingFile(myfile).empty());

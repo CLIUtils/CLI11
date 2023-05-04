@@ -1033,6 +1033,14 @@ TEST_CASE("Types: TypeName", "[helpers]") {
     CHECK((atomic_name == "INT" || atomic_name == "TEXT"));
 }
 
+TEST_CASE("Types: TypeNameStrings", "[helpers]") {
+    auto sclass = CLI::detail::classify_object<std::string>::value;
+    CHECK(CLI::detail::object_category::string_assignable == sclass);
+
+    auto wsclass = CLI::detail::classify_object<std::wstring>::value;
+    CHECK(CLI::detail::object_category::wstring_assignable == wsclass);
+}
+
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
     signed char x = 0;
     auto strmax = std::to_string((std::numeric_limits<signed char>::max)() + 1);

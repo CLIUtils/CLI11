@@ -612,6 +612,8 @@ template <typename T> struct classify_object<T, typename std::enable_if<std::is_
 template <typename T>
 struct classify_object<T,
                        typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                                               !std::is_assignable<T &, std::wstring>::value &&
+                                               !std::is_constructible<T, std::wstring>::value &&
                                                std::is_assignable<T &, std::string>::value>::type> {
     static constexpr object_category value{object_category::string_assignable};
 };
@@ -622,6 +624,8 @@ struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             !std::is_assignable<T &, std::string>::value && (type_count<T>::value == 1) &&
+                            !std::is_assignable<T &, std::wstring>::value &&
+                            !std::is_constructible<T, std::wstring>::value &&
                             std::is_constructible<T, std::string>::value>::type> {
     static constexpr object_category value{object_category::string_constructible};
 };
@@ -630,8 +634,6 @@ struct classify_object<
 template <typename T>
 struct classify_object<T,
                        typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               !std::is_assignable<T &, std::string>::value &&
-                                               !std::is_constructible<T, std::string>::value &&
                                                std::is_assignable<T &, std::wstring>::value>::type> {
     static constexpr object_category value{object_category::wstring_assignable};
 };
@@ -640,8 +642,6 @@ template <typename T>
 struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                            !std::is_assignable<T &, std::string>::value &&
-                            !std::is_constructible<T, std::string>::value &&
                             !std::is_assignable<T &, std::wstring>::value && (type_count<T>::value == 1) &&
                             std::is_constructible<T, std::wstring>::value>::type> {
     static constexpr object_category value{object_category::wstring_constructible};
