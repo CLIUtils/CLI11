@@ -47,6 +47,17 @@ constexpr enabler dummy = {};
 /// It is not in the std namespace anyway, so no harm done.
 template <bool B, class T = void> using enable_if_t = typename std::enable_if<B, T>::type;
 
+// C++14
+template <class T> using remove_cv_t = typename std::remove_cv<T>::type;
+
+template <class T> using remove_reference_t = typename std::remove_reference<T>::type;
+
+// C++20
+template <class T> struct remove_cvref {
+    using type = remove_cv_t<remove_reference_t<T>>;
+};
+template <class T> using remove_cvref_t = typename remove_cvref<T>::type;
+
 /// A copy of std::void_t from C++17 (helper for C++11 and C++14)
 template <typename... Ts> struct make_void {
     using type = void;
@@ -78,16 +89,18 @@ template <typename T> struct is_copyable_ptr {
     static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
 };
 
-template <typename T> struct is_path : std::false_type {};
-template <typename T> struct force_widen : std::false_type {};
+template <typename T, typename Enable = void> struct is_path : std::false_type {};
+template <typename T, typename Enable = void> struct force_widen : std::false_type {};
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-template <> struct is_path<std::filesystem::path> : std::true_type {};
+template <typename T>
+struct is_path<T, typename std::enable_if<std::is_same<std::filesystem::path, remove_cvref_t<T>>::value>::type>
+    : std::true_type {};
 #if _WIN32
-template <> struct force_widen<std::filesystem::path> : std::true_type {};
+template <typename T> struct force_widen<T, enable_if_t<is_path<T>::value>> : std::true_type {};
 #endif
-// struct is_path : std::is_same<std::filesystem::path,
-//                              typename std::remove_cv<T>::type>::value {};
+#else
+template <typename T> struct is_path : std::false_type {};
 #endif
 
 /// This can be specialized to override the type deduction for IsMember.

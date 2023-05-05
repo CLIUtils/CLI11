@@ -1320,6 +1320,27 @@ TEST_CASE("Types: LexicalConversionPath", "[helpers]") {
     CHECK(res);
     CHECK(CLI::to_path("TéstFileNotUsed.txt").native() == x.native());
 }
+
+static_assert(!CLI::is_path<float>::value, "float shouldn't be a path");
+static_assert(!CLI::is_path<std::string>::value, "string shouldn't be a path");
+
+static_assert(CLI::is_path<std::filesystem::path>::value, "path should be a path");
+static_assert(CLI::is_path<const std::filesystem::path>::value, "const path should be a path");
+static_assert(CLI::is_path<std::filesystem::path &>::value, "path& should be a path");
+static_assert(CLI::is_path<const std::filesystem::path &>::value, "const path& should be a path");
+
+#if _WIN32
+static_assert(CLI::force_widen<std::filesystem::path>::value, "path should be widen on WIN32");
+static_assert(CLI::force_widen<const std::filesystem::path>::value, "const path should be widen on WIN32");
+static_assert(CLI::force_widen<std::filesystem::path &>::value, "path& should be widen on WIN32");
+static_assert(CLI::force_widen<const std::filesystem::path &>::value, "const path& should be widen on WIN32");
+#else
+static_assert(!CLI::force_widen<std::filesystem::path>::value, "path should not be widen on WIN32");
+static_assert(!CLI::force_widen<const std::filesystem::path>::value, "const path should not be widen on WIN32");
+static_assert(!CLI::force_widen<std::filesystem::path &>::value, "path& should not be widen on WIN32");
+static_assert(!CLI::force_widen<const std::filesystem::path &>::value, "const path& should not be widen on WIN32");
+#endif
+
 #endif  // CLI11_HAS_FILESYSTEM
 
 static_assert(CLI::detail::is_wrapper<std::vector<double>>::value, "vector double should be a wrapper");
