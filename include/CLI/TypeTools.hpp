@@ -639,9 +639,10 @@ template <typename T> struct classify_object<T, typename std::enable_if<std::is_
 
 /// String and similar direct assignment
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               std::is_assignable<T &, std::string>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            std::is_assignable<T &, std::string>::value && !force_widen<T>::value>::type> {
     static constexpr object_category value{object_category::string_assignable};
 };
 
@@ -651,17 +652,18 @@ struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             !std::is_assignable<T &, std::string>::value && (type_count<T>::value == 1) &&
-                            std::is_constructible<T, std::string>::value>::type> {
+                            std::is_constructible<T, std::string>::value && !force_widen<T>::value>::type> {
     static constexpr object_category value{object_category::string_constructible};
 };
 
 /// Wide strings
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               !std::is_assignable<T &, std::string>::value &&
-                                               !std::is_constructible<T, std::string>::value &&
-                                               std::is_assignable<T &, std::wstring>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
+                            (!std::is_assignable<T &, std::string>::value || force_widen<T>::value) &&
+                            !std::is_constructible<T, std::string>::value &&
+                            std::is_assignable<T &, std::wstring>::value>::type> {
     static constexpr object_category value{object_category::wstring_assignable};
 };
 
@@ -669,7 +671,7 @@ template <typename T>
 struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                            !std::is_assignable<T &, std::string>::value &&
+                            (!std::is_assignable<T &, std::string>::value || force_widen<T>::value) &&
                             !std::is_constructible<T, std::string>::value &&
                             !std::is_assignable<T &, std::wstring>::value && (type_count<T>::value == 1) &&
                             std::is_constructible<T, std::wstring>::value>::type> {
@@ -1054,17 +1056,16 @@ bool lexical_cast(const std::string &input, T &output) {
 
 /// String and similar direct assignment
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::string_assignable && !force_widen<T>::value,
-                      detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == object_category::string_assignable, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
 
 /// String and similar constructible and copy assignment
-template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::string_constructible && !force_widen<T>::value,
-                      detail::enabler> = detail::dummy>
+template <
+    typename T,
+    enable_if_t<classify_object<T>::value == object_category::string_constructible, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;

@@ -1313,14 +1313,6 @@ TEST_CASE("Types: LexicalConversionComplex", "[helpers]") {
 }
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-TEST_CASE("Types: LexicalConversionPath", "[helpers]") {
-    CLI::results_t input = {"TéstFileNotUsed.txt"};
-    std::filesystem::path x;
-    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
-    CHECK(res);
-    CHECK(CLI::to_path("TéstFileNotUsed.txt").native() == x.native());
-}
-
 static_assert(!CLI::is_path<float>::value, "float shouldn't be a path");
 static_assert(!CLI::is_path<std::string>::value, "string shouldn't be a path");
 
@@ -1330,16 +1322,31 @@ static_assert(CLI::is_path<std::filesystem::path &>::value, "path& should be a p
 static_assert(CLI::is_path<const std::filesystem::path &>::value, "const path& should be a path");
 
 #if _WIN32
-static_assert(CLI::force_widen<std::filesystem::path>::value, "path should be widen on WIN32");
-static_assert(CLI::force_widen<const std::filesystem::path>::value, "const path should be widen on WIN32");
-static_assert(CLI::force_widen<std::filesystem::path &>::value, "path& should be widen on WIN32");
-static_assert(CLI::force_widen<const std::filesystem::path &>::value, "const path& should be widen on WIN32");
+static_assert(CLI::detail::classify_object<std::filesystem::path>::value ==
+                  CLI::detail::object_category::wstring_assignable,
+              "path is not classified as wstring_assignable on WIN32");
+static_assert(CLI::force_widen<std::filesystem::path>::value, "path should be force_widen on WIN32");
+static_assert(CLI::force_widen<const std::filesystem::path>::value, "const path should be force_widen on WIN32");
+static_assert(CLI::force_widen<std::filesystem::path &>::value, "path& should be force_widen on WIN32");
+static_assert(CLI::force_widen<const std::filesystem::path &>::value, "const path& should be force_widen on WIN32");
 #else
-static_assert(!CLI::force_widen<std::filesystem::path>::value, "path should not be widen on WIN32");
-static_assert(!CLI::force_widen<const std::filesystem::path>::value, "const path should not be widen on WIN32");
-static_assert(!CLI::force_widen<std::filesystem::path &>::value, "path& should not be widen on WIN32");
-static_assert(!CLI::force_widen<const std::filesystem::path &>::value, "const path& should not be widen on WIN32");
+static_assert(CLI::detail::classify_object<std::filesystem::path>::value ==
+                  CLI::detail::object_category::string_assignable,
+              "path is not classified as string_assignable");
+
+static_assert(!CLI::force_widen<std::filesystem::path>::value, "path should not be force_widen");
+static_assert(!CLI::force_widen<const std::filesystem::path>::value, "const path should not be force_widen");
+static_assert(!CLI::force_widen<std::filesystem::path &>::value, "path& should not be force_widen");
+static_assert(!CLI::force_widen<const std::filesystem::path &>::value, "const path& should not be force_widen");
 #endif
+
+TEST_CASE("Types: LexicalConversionPath", "[helpers]") {
+    CLI::results_t input = {"TéstFileNotUsed.txt"};
+    std::filesystem::path x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    CHECK(res);
+    CHECK(CLI::to_path("TéstFileNotUsed.txt").native() == x.native());
+}
 
 #endif  // CLI11_HAS_FILESYSTEM
 
