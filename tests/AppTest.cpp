@@ -1724,7 +1724,7 @@ TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
 
     CHECK_THROWS_AS(app.parse(L"--file voil\u20ac.txt"), CLI::ValidationError);
 
-    bool ok = static_cast<bool>(std::ofstream(L"voil\u20ac.txt").put('a'));  // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile).put('a'));  // create file
     CHECK(ok);
 
     // deactivate the check, so it should run now
