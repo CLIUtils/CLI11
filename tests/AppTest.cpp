@@ -1715,7 +1715,7 @@ TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
     CHECK(!CLI::ExistingFile(myfile).empty());
 }
 
-#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
 TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
     std::filesystem::path myfile{L"voil\u20ac.txt"};
 
