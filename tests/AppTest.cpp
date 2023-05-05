@@ -1717,19 +1717,19 @@ TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
-    std::filesystem::path myfile{"voilà.txt"};
+    std::filesystem::path myfile{L"voil\u20ac.txt"};
 
     std::filesystem::path fpath;
     app.add_option("--file", fpath)->check(CLI::ExistingFile, "existing file");
 
-    CHECK_THROWS_AS(app.parse(L"--file voilà.txt"), CLI::ValidationError);
+    CHECK_THROWS_AS(app.parse(L"--file voil\u20ac.txt"), CLI::ValidationError);
 
-    bool ok = static_cast<bool>(std::ofstream("voilà.txt").put('a'));  // create file
+    bool ok = static_cast<bool>(std::ofstream(L"voil\u20ac.txt").put('a'));  // create file
     CHECK(ok);
 
     // deactivate the check, so it should run now
 
-    CHECK_NOTHROW(app.parse(L"--file voilà.txt"));
+    CHECK_NOTHROW(app.parse(L"--file voil\u20ac.txt"));
 
     CHECK(fpath == myfile);
 
