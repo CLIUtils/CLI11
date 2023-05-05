@@ -1724,12 +1724,11 @@ TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
 
     CHECK_THROWS_AS(app.parse(L"--file voilà.txt"), CLI::ValidationError);
 
-
     bool ok = static_cast<bool>(std::ofstream("voilà.txt").put('a'));  // create file
     CHECK(ok);
- 
+
     // deactivate the check, so it should run now
-    
+
     CHECK_NOTHROW(app.parse(L"--file voilà.txt"));
 
     CHECK(fpath == myfile);
