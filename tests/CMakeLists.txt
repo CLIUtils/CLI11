@@ -69,7 +69,7 @@ set(CLI11_MULTIONLY_TESTS TimerTest)
 find_package(Catch2 CONFIG)
 
 if(Catch2_FOUND)
-  if(NOT TARGET Catch2::Catch2)
+  if(NOT (TARGET Catch2::Catch2 OR TARGET Catch2::Catch2WithMain))
     message(FATAL_ERROR "Found Catch2 at ${Catch2_DIR} but targets are missing.")
   endif()
   message(STATUS "Found Catch2 ${Catch2_VERSION}")

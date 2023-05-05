@@ -21,6 +21,10 @@
 #include <unordered_map>
 #include <utility>
 
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#include <filesystem>
+#endif  // CLI11_HAS_FILESYSTEM
+
 class NotStreamable {};
 
 class Streamable {};
@@ -1307,6 +1311,16 @@ TEST_CASE("Types: LexicalConversionComplex", "[helpers]") {
     CHECK(5.1 == x.real());
     CHECK(3.5 == x.imag());
 }
+
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+TEST_CASE("Types: LexicalConversionPath", "[helpers]") {
+    CLI::results_t input = {"TéstFileNotUsed.txt"};
+    std::filesystem::path x;
+    bool res = CLI::detail::lexical_conversion<decltype(x), decltype(x)>(input, x);
+    CHECK(res);
+    CHECK(CLI::to_path("TéstFileNotUsed.txt").native() == x.native());
+}
+#endif  // CLI11_HAS_FILESYSTEM
 
 static_assert(CLI::detail::is_wrapper<std::vector<double>>::value, "vector double should be a wrapper");
 static_assert(CLI::detail::is_wrapper<std::vector<std::string>>::value, "vector string should be a wrapper");
