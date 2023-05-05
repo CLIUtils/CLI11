@@ -18,6 +18,10 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#include <filesystem>
+#endif  // CLI11_HAS_FILESYSTEM
+
 #include "Encoding.hpp"
 #include "StringTools.hpp"
 
@@ -73,6 +77,18 @@ template <typename T> struct is_shared_ptr<const std::shared_ptr<T>> : std::true
 template <typename T> struct is_copyable_ptr {
     static bool const value = is_shared_ptr<T>::value || std::is_pointer<T>::value;
 };
+
+template <typename T> struct is_path : std::false_type {};
+template <typename T> struct force_widen : std::false_type {};
+
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+template <> struct is_path<std::filesystem::path> : std::true_type {};
+#if _WIN32
+template <> struct force_widen<std::filesystem::path> : std::true_type {};
+#endif
+// struct is_path : std::is_same<std::filesystem::path,
+//                              typename std::remove_cv<T>::type>::value {};
+#endif
 
 /// This can be specialized to override the type deduction for IsMember.
 template <typename T> struct IsMemberType {
@@ -1025,16 +1041,17 @@ bool lexical_cast(const std::string &input, T &output) {
 
 /// String and similar direct assignment
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::string_assignable, detail::enabler> = detail::dummy>
+          enable_if_t<classify_object<T>::value == object_category::string_assignable && !force_widen<T>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = input;
     return true;
 }
 
 /// String and similar constructible and copy assignment
-template <
-    typename T,
-    enable_if_t<classify_object<T>::value == object_category::string_constructible, detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::string_constructible && !force_widen<T>::value,
+                      detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
     output = T(input);
     return true;
