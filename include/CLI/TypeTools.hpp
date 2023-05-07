@@ -608,11 +608,13 @@ template <typename T> struct classify_object<T, typename std::enable_if<std::is_
     static constexpr object_category value{object_category::floating_point};
 };
 #if defined _MSC_VER
-// in MSVC wstring should take precedence if available this isn't as useful on other compilers due to the broader use of utf-8 encoding
-#define WIDE_STRING_CHECK !std::is_assignable<T &, std::wstring>::value && !std::is_constructible<T, std::wstring>::value &&
+// in MSVC wstring should take precedence if available this isn't as useful on other compilers due to the broader use of
+// utf-8 encoding
+#define WIDE_STRING_CHECK                                                                                              \
+    !std::is_assignable<T &, std::wstring>::value && !std::is_constructible<T, std::wstring>::value &&
 #define STRING_CHECK
 #else
-#define WIDE_STRING_CHECK 
+#define WIDE_STRING_CHECK
 #define STRING_CHECK !std::is_assignable<T &, std::string>::value && !std::is_constructible<T, std::string>::value &&
 #endif
 
@@ -620,8 +622,7 @@ template <typename T> struct classify_object<T, typename std::enable_if<std::is_
 template <typename T>
 struct classify_object<T,
                        typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               WIDE_STRING_CHECK
-                                               std::is_assignable<T &, std::string>::value>::type> {
+                                               WIDE_STRING_CHECK std::is_assignable<T &, std::string>::value>::type> {
     static constexpr object_category value{object_category::string_assignable};
 };
 
@@ -631,8 +632,7 @@ struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             !std::is_assignable<T &, std::string>::value && (type_count<T>::value == 1) &&
-                            WIDE_STRING_CHECK
-                            std::is_constructible<T, std::string>::value>::type> {
+                            WIDE_STRING_CHECK std::is_constructible<T, std::string>::value>::type> {
     static constexpr object_category value{object_category::string_constructible};
 };
 
@@ -640,8 +640,7 @@ struct classify_object<
 template <typename T>
 struct classify_object<T,
                        typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               STRING_CHECK
-                                               std::is_assignable<T &, std::wstring>::value>::type> {
+                                               STRING_CHECK std::is_assignable<T &, std::wstring>::value>::type> {
     static constexpr object_category value{object_category::wstring_assignable};
 };
 
@@ -650,11 +649,9 @@ struct classify_object<
     T,
     typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
                             !std::is_assignable<T &, std::wstring>::value && (type_count<T>::value == 1) &&
-                            STRING_CHECK
-                            std::is_constructible<T, std::wstring>::value>::type> {
+                            STRING_CHECK std::is_constructible<T, std::wstring>::value>::type> {
     static constexpr object_category value{object_category::wstring_constructible};
 };
-
 
 /// Enumerations
 template <typename T> struct classify_object<T, typename std::enable_if<std::is_enum<T>::value>::type> {
