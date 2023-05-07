@@ -620,9 +620,10 @@ template <typename T> struct classify_object<T, typename std::enable_if<std::is_
 
 /// String and similar direct assignment
 template <typename T>
-struct classify_object<T,
-                       typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value &&
-                                               WIDE_STRING_CHECK && std::is_assignable<T &, std::string>::value>::type> {
+struct classify_object<
+    T,
+    typename std::enable_if<!std::is_floating_point<T>::value && !std::is_integral<T>::value && WIDE_STRING_CHECK &&
+                            std::is_assignable<T &, std::string>::value>::type> {
     static constexpr object_category value{object_category::string_assignable};
 };
 
