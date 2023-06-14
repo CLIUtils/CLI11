@@ -55,7 +55,6 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: build/coverage.info
-          fail_ci_if_error: true
           functionalities: fixes
 
   clang-tidy:
