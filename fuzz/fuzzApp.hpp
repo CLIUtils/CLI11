@@ -41,6 +41,16 @@ class doubleWrapper {
     double val{0.0};
 };
 
+class stringWrapper {
+  public:
+    stringWrapper() = default;
+    explicit stringWrapper(std::string_view v) : val(v){};
+    CLI11_NODISCARD std::string value() const { return val; }
+
+  private:
+    std::string val{};
+};
+
 class FuzzApp {
   public:
     FuzzApp() = default;
@@ -80,6 +90,7 @@ class FuzzApp {
                std::vector<int>,
                std::optional<std::string>>
         tcomplex2{};
+    std::vector<std::tuple<std::string, double, char, std::vector<std::string>>> vectup{};
     std::string_view vstrv = "";
 
     bool flag1{false};
@@ -88,5 +99,9 @@ class FuzzApp {
 
     intWrapper64 iwrap{0};
     doubleWrapper dwrap{0.0};
+    stringWrapper swrap{};
+    std::string buffer{};
+    int intbuffer{0};
+    std::atomic<double> doubleAtomic{0.0};
 };
 }  // namespace CLI

@@ -35,12 +35,12 @@ jobs:
       - name: Build
         run: cmake --build build -j4
 
-      - name: Test
+      - name: Test_app
         run: |
           cd build
           make QUICK_CLI11_APP_FUZZ
 
-      - name: Test2
+      - name: Test_file
         run: |
           cd build
           make QUICK_CLI11_FILE_FUZZ

@@ -1991,6 +1991,28 @@ TEST_CASE_METHOD(TApp, "RangeDouble", "[app]") {
     run();
 }
 
+TEST_CASE_METHOD(TApp, "RangeFloat", "[app]") {
+
+    float x{0.0f};
+    /// Note that this must be a float in Range, too
+    app.add_option("--one", x, "testing floats")->check(CLI::Range(3.0, 6.0));
+
+    args = {"--one=1"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--one=7"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--one=3"};
+    run();
+
+    args = {"--one=5"};
+    run();
+
+    args = {"--one=6"};
+    run();
+}
+
 TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
 
     std::string res;

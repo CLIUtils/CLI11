@@ -187,6 +187,10 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommands", "[subcom]") {
     run();
     CHECK(*foo);
     CHECK(3u == foo->count());
+
+    auto subs = app.get_subcommands();
+    // subcommands only get triggered once
+    CHECK(subs.size() == 1U);
 }
 
 TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[subcom]") {
