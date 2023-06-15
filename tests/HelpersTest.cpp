@@ -1033,6 +1033,19 @@ TEST_CASE("Types: TypeName", "[helpers]") {
     CHECK((atomic_name == "INT" || atomic_name == "TEXT"));
 }
 
+TEST_CASE("Types: TypeNameStrings", "[helpers]") {
+    auto sclass = CLI::detail::classify_object<std::string>::value;
+    CHECK(CLI::detail::object_category::string_assignable == sclass);
+
+    auto wsclass = CLI::detail::classify_object<std::wstring>::value;
+    CHECK(CLI::detail::object_category::wstring_assignable == wsclass);
+
+#if defined CLI11_HAS_FILEYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
+    auto fspclass = CLI::detail::classify_object<std::filesystem::path>::value;
+    CHECK(CLI::detail::object_category::wstring_assignable == fspclass);
+#endif
+}
+
 TEST_CASE("Types: OverflowSmall", "[helpers]") {
     signed char x = 0;
     auto strmax = std::to_string((std::numeric_limits<signed char>::max)() + 1);
