@@ -1015,9 +1015,26 @@ CLI11_INLINE void App::_process_config_file() {
         bool config_required = config_ptr_->get_required();
         auto file_given = config_ptr_->count() > 0;
         auto config_files = config_ptr_->as<std::vector<std::string>>();
-        if(config_files.empty() || config_files.front().empty()) {
+        if (config_files.empty() || config_files.front().empty()) {
+            if (!config_ptr_->envname_.empty())
+            {
+                std::string ename_string = detail::get_environment_value(config_ptr_->envname_);
+                if (!ename_string.empty())
+                {
+                    if (config_files.empty())
+                    {
+                        config_files.push_back(ename_string);
+                    }
+                    else
+                    {
+                        config_files[0]=ename_string;
+                    }
+                }
+            }
+        }
+        if(config_files.empty() || config_files.front().empty()) {    
             if(config_required) {
-                throw FileError::Missing("no specified config file");
+                throw FileError("config file is required but none was given");
             }
             return;
         }
@@ -1045,23 +1062,7 @@ CLI11_INLINE void App::_process_config_file() {
 CLI11_INLINE void App::_process_env() {
     for(const Option_p &opt : options_) {
         if(opt->count() == 0 && !opt->envname_.empty()) {
-            char *buffer = nullptr;
-            std::string ename_string;
-
-#ifdef _MSC_VER
-            // Windows version
-            std::size_t sz = 0;
-            if(_dupenv_s(&buffer, &sz, opt->envname_.c_str()) == 0 && buffer != nullptr) {
-                ename_string = std::string(buffer);
-                free(buffer);
-            }
-#else
-            // This also works on Windows, but gives a warning
-            buffer = std::getenv(opt->envname_.c_str());
-            if(buffer != nullptr)
-                ename_string = std::string(buffer);
-#endif
-
+            std::string ename_string=detail::get_environment_value(opt->envname_);
             if(!ename_string.empty()) {
                 opt->add_result(ename_string);
             }
