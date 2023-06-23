@@ -1333,8 +1333,7 @@ template <class AssignTo,
                       detail::enabler> = detail::dummy>
 bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
     output.erase(output.begin(), output.end());
-    if (strings.empty())
-    {
+    if(strings.empty()) {
         return true;
     }
     if(strings.size() == 1 && strings[0] == "{}") {

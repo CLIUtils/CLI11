@@ -255,9 +255,7 @@ CLI11_INLINE std::string &add_quotes_if_needed(std::string &str) {
     return str;
 }
 
-
-std::string get_environment_value(const std::string& env_name)
-{
+std::string get_environment_value(const std::string &env_name) {
     char *buffer = nullptr;
     std::string ename_string;
 

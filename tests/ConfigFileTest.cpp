@@ -677,7 +677,6 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    
     app.set_config("--config", "")->envname("CONFIG")->required();
 
     {
@@ -692,7 +691,7 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
     app.add_option("--two", two);
     app.add_option("--three", three);
 
-    put_env("CONFIG",tmpini);
+    put_env("CONFIG", tmpini);
 
     CHECK_NOTHROW(run());
 
@@ -701,7 +700,7 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
 
     unset_env("CONFIG");
 
-    CHECK_THROWS_AS(run(),CLI::FileError);
+    CHECK_THROWS_AS(run(), CLI::FileError);
 }
 
 TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {

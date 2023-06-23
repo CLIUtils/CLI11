@@ -4,8 +4,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "app_helper.hpp"
 #include "CLI/StringTools.hpp"
+#include "app_helper.hpp"
 
 #include <cmath>
 
@@ -1356,14 +1356,13 @@ TEST_CASE("FixNewLines: EdgesCheck", "[helpers]") {
     CHECK(output == result);
 }
 
-
 TEST_CASE("String: environment", "[helpers]") {
-    put_env("TEST1","TESTS");
-    
-    auto value=CLI::detail::get_environment_value("TEST1");
-    CHECK(value=="TESTS");
+    put_env("TEST1", "TESTS");
+
+    auto value = CLI::detail::get_environment_value("TEST1");
+    CHECK(value == "TESTS");
     unset_env("TEST1");
 
-    value=CLI::detail::get_environment_value("TEST2");
+    value = CLI::detail::get_environment_value("TEST2");
     CHECK(value.empty());
 }

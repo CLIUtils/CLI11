@@ -315,7 +315,7 @@ CLI11_INLINE Option *App::set_config(std::string option_name,
         }
         if(!default_filename.empty()) {
             config_ptr_->default_str(std::move(default_filename));
-            config_ptr_->force_callback_=true;
+            config_ptr_->force_callback_ = true;
         }
         config_ptr_->configurable(false);
         // set the option to take the last value given by default
@@ -1017,16 +1017,14 @@ CLI11_INLINE void App::_process_config_file() {
     if(config_ptr_ != nullptr) {
         bool config_required = config_ptr_->get_required();
         auto file_given = config_ptr_->count() > 0;
-        if (!(file_given || config_ptr_->envname_.empty()))
-        {
-                std::string ename_string = detail::get_environment_value(config_ptr_->envname_);
-                if (!ename_string.empty())
-                {
-                    config_ptr_->add_result(ename_string);
-                }
+        if(!(file_given || config_ptr_->envname_.empty())) {
+            std::string ename_string = detail::get_environment_value(config_ptr_->envname_);
+            if(!ename_string.empty()) {
+                config_ptr_->add_result(ename_string);
+            }
         }
         config_ptr_->run_callback();
-        
+
         auto config_files = config_ptr_->as<std::vector<std::string>>();
         if(config_files.empty() || config_files.front().empty()) {
             if(config_required) {
@@ -1055,7 +1053,7 @@ CLI11_INLINE void App::_process_config_file() {
 CLI11_INLINE void App::_process_env() {
     for(const Option_p &opt : options_) {
         if(opt->count() == 0 && !opt->envname_.empty()) {
-            std::string ename_string=detail::get_environment_value(opt->envname_);
+            std::string ename_string = detail::get_environment_value(opt->envname_);
             if(!ename_string.empty()) {
                 opt->add_result(ename_string);
             }
