@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "CLI/StringTools.hpp"
 #include "app_helper.hpp"
 
 #include <cmath>
