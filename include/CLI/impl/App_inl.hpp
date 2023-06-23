@@ -315,8 +315,11 @@ CLI11_INLINE Option *App::set_config(std::string option_name,
         }
         if(!default_filename.empty()) {
             config_ptr_->default_str(std::move(default_filename));
+            config_ptr_->force_callback_=true;
         }
         config_ptr_->configurable(false);
+        // set the option to take the last value given by default
+        config_ptr_->take_last();
     }
 
     return config_ptr_;
@@ -1014,25 +1017,18 @@ CLI11_INLINE void App::_process_config_file() {
     if(config_ptr_ != nullptr) {
         bool config_required = config_ptr_->get_required();
         auto file_given = config_ptr_->count() > 0;
-        auto config_files = config_ptr_->as<std::vector<std::string>>();
-        if (config_files.empty() || config_files.front().empty()) {
-            if (!config_ptr_->envname_.empty())
-            {
+        if (!(file_given || config_ptr_->envname_.empty()))
+        {
                 std::string ename_string = detail::get_environment_value(config_ptr_->envname_);
                 if (!ename_string.empty())
                 {
-                    if (config_files.empty())
-                    {
-                        config_files.push_back(ename_string);
-                    }
-                    else
-                    {
-                        config_files[0]=ename_string;
-                    }
+                    config_ptr_->add_result(ename_string);
                 }
-            }
         }
-        if(config_files.empty() || config_files.front().empty()) {    
+        config_ptr_->run_callback();
+        
+        auto config_files = config_ptr_->as<std::vector<std::string>>();
+        if(config_files.empty() || config_files.front().empty()) {
             if(config_required) {
                 throw FileError("config file is required but none was given");
             }
@@ -1045,9 +1041,6 @@ CLI11_INLINE void App::_process_config_file() {
                 try {
                     std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
                     _parse_config(values);
-                    if(!file_given) {
-                        config_ptr_->add_result(config_file);
-                    }
                 } catch(const FileError &) {
                     if(config_required || file_given)
                         throw;
