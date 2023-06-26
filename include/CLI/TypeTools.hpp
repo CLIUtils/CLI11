@@ -1649,8 +1649,8 @@ inline std::string sum_string_vector(const std::vector<std::string> &values) {
             output.append(arg);
         }
     } else {
-        if(val > static_cast<double>(std::numeric_limits<std::int64_t>::min()) &&
-           val < static_cast<double>(std::numeric_limits<std::int64_t>::max()) &&
+        if(val > static_cast<double>((std::numeric_limits<std::int64_t>::min)()) &&
+           val < static_cast<double>((std::numeric_limits<std::int64_t>::max)()) &&
            std::ceil(val) - std::floor(val) <= std::numeric_limits<double>::epsilon()) {
             output = detail::value_string(static_cast<int64_t>(val));
         } else {
