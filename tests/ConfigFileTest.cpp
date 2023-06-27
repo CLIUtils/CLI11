@@ -673,6 +673,36 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredNotDefault", "[config]") {
     CHECK(tmpini2.c_str() == app.get_config_ptr()->as<std::string>());
 }
 
+TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", "")->envname("CONFIG")->required();
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    put_env("CONFIG", tmpini);
+
+    CHECK_NOTHROW(run());
+
+    CHECK(two == 99);
+    CHECK(three == 3);
+
+    unset_env("CONFIG");
+
+    CHECK_THROWS_AS(run(), CLI::FileError);
+}
+
 TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
