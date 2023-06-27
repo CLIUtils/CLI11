@@ -11,6 +11,7 @@
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 
 TEST_CASE_METHOD(TApp, "OneFlagShort", "[app]") {
     app.add_flag("-c,--count");
@@ -828,7 +829,7 @@ TEST_CASE_METHOD(TApp, "SumOptFloat", "[app]") {
 
     run();
 
-    CHECK(0.6 == val);
+    CHECK(std::fabs(0.6 - val) <= std::numeric_limits<double>::epsilon());
 }
 
 TEST_CASE_METHOD(TApp, "SumOptString", "[app]") {
