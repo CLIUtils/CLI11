@@ -115,8 +115,8 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
             "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}"
     MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_FILE}"
     VERBATIM)
-  target_sources(catch_main PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}")
 endforeach()
+add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
 
 # Build dependent applications which are launched from test code
 set(CLI11_DEPENDENT_APPLICATIONS system_args)
@@ -124,7 +124,6 @@ set(CLI11_DEPENDENT_APPLICATIONS system_args)
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
   target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-  add_dependencies(catch_main ${APP})
 endforeach()
 
 function(add_dependent_application_definitions TARGET)
@@ -138,6 +137,7 @@ endfunction()
 # Target must already exist
 macro(add_catch_test TESTNAME)
   target_link_libraries(${TESTNAME} PUBLIC catch_main)
+  add_dependencies(${TESTNAME} cli11_test_data)
 
   add_test(${TESTNAME} ${TESTNAME})
   set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
