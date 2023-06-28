@@ -24,39 +24,43 @@ set with a simple and intuitive interface.
 
 ## Table of Contents
 
-- [Background](#background)
-  - [Introduction](#introduction)
-  - [Why write another CLI parser?](#why-write-another-cli-parser)
-  - [Other parsers](#other-parsers)
-  - [Features not supported by this library](#features-not-supported-by-this-library)
-- [Install](#install)
-- [Usage](#usage)
-  - [Adding options](#adding-options)
-    - [Option types](#option-types)
-    - [Example](#example)
-    - [Option options](#option-options)
-    - [Validators](#validators)
-      - [Transforming Validators](#transforming-validators)
-      - [Validator operations](#validator-operations)
-      - [Custom Validators](#custom-validators)
-      - [Querying Validators](#querying-validators)
-      - [Getting Results](#getting-results)
-  - [Subcommands](#subcommands)
-    - [Subcommand options](#subcommand-options)
-    - [Option groups](#option-groups)
-    - [Callbacks](#callbacks)
-  - [Configuration file](#configuration-file)
-  - [Inheriting defaults](#inheriting-defaults)
-  - [Formatting](#formatting)
-  - [Subclassing](#subclassing)
-  - [How it works](#how-it-works)
-  - [Unicode support](#unicode-support)
-  - [Utilities](#utilities)
-  - [Other libraries](#other-libraries)
-- [API](#api)
-- [Examples](#Examples)
-- [Contribute](#contribute)
-- [License](#license)
+- [CLI11: Command line parser for C++11](#cli11-command-line-parser-for-c11)
+  - [Table of Contents](#table-of-contents)
+  - [Background](#background)
+    - [Introduction](#introduction)
+    - [Why write another CLI parser?](#why-write-another-cli-parser)
+    - [Other parsers](#other-parsers)
+    - [Features not supported by this library](#features-not-supported-by-this-library)
+  - [Install](#install)
+  - [Usage](#usage)
+    - [Adding options](#adding-options)
+      - [Option types](#option-types)
+      - [Example](#example)
+      - [Option options](#option-options)
+      - [Validators](#validators)
+        - [Transforming Validators](#transforming-validators)
+        - [Validator operations](#validator-operations)
+        - [Custom Validators](#custom-validators)
+        - [Querying Validators](#querying-validators)
+      - [Getting results](#getting-results)
+    - [Subcommands](#subcommands)
+      - [Subcommand options](#subcommand-options)
+      - [Callbacks](#callbacks)
+      - [Option groups](#option-groups)
+    - [Configuration file](#configuration-file)
+    - [Inheriting defaults](#inheriting-defaults)
+    - [Formatting](#formatting)
+    - [Subclassing](#subclassing)
+    - [How it works](#how-it-works)
+      - [Example](#example-1)
+    - [Unicode support](#unicode-support)
+      - [Note on using Unicode paths](#note-on-using-unicode-paths)
+    - [Utilities](#utilities)
+    - [Other libraries](#other-libraries)
+  - [API](#api)
+  - [Examples](#examples)
+  - [Contribute](#contribute)
+  - [License](#license)
 
 Features that were added in the last released minor version are marked with
 "🆕". Features only available in main are marked with "🚧".
@@ -265,6 +269,8 @@ In some cases certain clang compilations may require linking against `libc++fs`.
 These situations have not been encountered so the specific situations requiring
 them are unknown yet.
 
+If building with WASI it is necessary to add the flag `-lc-printscan-long-double` to the build to allow long double support.  
+See #841 for more details.
 </p></details>
 </br>
 
@@ -287,6 +293,7 @@ int main() {
 }
 ```
 
+The `CLI11_PARSE(app)` is only available in main current and not in a release.
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
 ```cpp
@@ -309,7 +316,7 @@ interfere.
 <details><summary>Note: Why are argc and argv not used? (click to expand)</summary><p>
 
 `argc` and `argv` may contain incorrect information on Windows when unicode text
-is passed in. Check out a section on [unicode support](#unicode-support) below.
+is passed in. Check out a section on [unicode support](#unicode-support)🚧 below.
 
 If this is not a concern, you can explicitly pass `argc` and `argv` from main or
 from an external preprocessor of CLI arguments to `parse`:
@@ -514,7 +521,7 @@ Before parsing, you can set the following options:
 - `->envname(name)`: Gets the value from the environment if present and not
   passed on the command line.
 - `->group(name)`: The help group to put the option in. No effect for positional
-  options. Defaults to `"Options"`. `""` will not show up in the help print
+  options. Defaults to `"Options"`. Options given an empty string will not show up in the help print
   (hidden).
 - `->ignore_case()`: Ignore the case on the command line (also works on
   subcommands, does not affect arguments).
@@ -901,7 +908,10 @@ not used in performance critical code:
 
 ### Subcommands
 
-Subcommands are supported, and can be nested infinitely. To add a subcommand,
+Subcommands are keywords that invoke a new set of options and features. For
+example, the `git` command has a long series of subcommands, like `add` and
+`commit`. Each can have its own options and implementations.
+Subcommands are supported in CLI11, and can be nested infinitely. To add a subcommand,
 call the `add_subcommand` method with a name and an optional description. This
 gives a pointer to an `App` that behaves just like the main app, and can take
 options or further subcommands. Add `->ignore_case()` to a subcommand to allow
@@ -1109,7 +1119,7 @@ option_groups. These are:
   returns a pointer to the created option. Expands subcommands.
 - `.failure_message(func)`: Set the failure message function. Two provided:
   `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
-- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting `""`
+- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting an empty string for the name
   will be hide the subcommand.
 - `[option_name]`: retrieve a const pointer to an option given by `option_name`
   for Example `app["--flag1"]` will get a pointer to the option for the
