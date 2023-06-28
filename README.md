@@ -269,8 +269,10 @@ In some cases certain clang compilations may require linking against `libc++fs`.
 These situations have not been encountered so the specific situations requiring
 them are unknown yet.
 
-If building with WASI it is necessary to add the flag `-lc-printscan-long-double` to the build to allow long double support.  
-See #841 for more details.
+If building with WASI it is necessary to add the flag
+`-lc-printscan-long-double` to the build to allow long double support. See #841
+for more details.
+
 </p></details>
 </br>
 
@@ -294,6 +296,7 @@ int main() {
 ```
 
 The `CLI11_PARSE(app)` is only available in main current and not in a release.
+
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
 ```cpp
@@ -316,7 +319,8 @@ interfere.
 <details><summary>Note: Why are argc and argv not used? (click to expand)</summary><p>
 
 `argc` and `argv` may contain incorrect information on Windows when unicode text
-is passed in. Check out a section on [unicode support](#unicode-support)🚧 below.
+is passed in. Check out a section on [unicode support](#unicode-support)🚧
+below.
 
 If this is not a concern, you can explicitly pass `argc` and `argv` from main or
 from an external preprocessor of CLI arguments to `parse`:
@@ -521,8 +525,8 @@ Before parsing, you can set the following options:
 - `->envname(name)`: Gets the value from the environment if present and not
   passed on the command line.
 - `->group(name)`: The help group to put the option in. No effect for positional
-  options. Defaults to `"Options"`. Options given an empty string will not show up in the help print
-  (hidden).
+  options. Defaults to `"Options"`. Options given an empty string will not show
+  up in the help print (hidden).
 - `->ignore_case()`: Ignore the case on the command line (also works on
   subcommands, does not affect arguments).
 - `->ignore_underscore()`: Ignore any underscores in the options names (also
@@ -910,13 +914,13 @@ not used in performance critical code:
 
 Subcommands are keywords that invoke a new set of options and features. For
 example, the `git` command has a long series of subcommands, like `add` and
-`commit`. Each can have its own options and implementations.
-Subcommands are supported in CLI11, and can be nested infinitely. To add a subcommand,
-call the `add_subcommand` method with a name and an optional description. This
-gives a pointer to an `App` that behaves just like the main app, and can take
-options or further subcommands. Add `->ignore_case()` to a subcommand to allow
-any variation of caps to also be accepted. `->ignore_underscore()` is similar,
-but for underscores. Children inherit the current setting from the parent. You
+`commit`. Each can have its own options and implementations. Subcommands are
+supported in CLI11, and can be nested infinitely. To add a subcommand, call the
+`add_subcommand` method with a name and an optional description. This gives a
+pointer to an `App` that behaves just like the main app, and can take options or
+further subcommands. Add `->ignore_case()` to a subcommand to allow any
+variation of caps to also be accepted. `->ignore_underscore()` is similar, but
+for underscores. Children inherit the current setting from the parent. You
 cannot add multiple matching subcommand names at the same level (including
 `ignore_case` and `ignore_underscore`).
 
@@ -1119,8 +1123,8 @@ option_groups. These are:
   returns a pointer to the created option. Expands subcommands.
 - `.failure_message(func)`: Set the failure message function. Two provided:
   `CLI::FailureMessage::help` and `CLI::FailureMessage::simple` (the default).
-- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting an empty string for the name
-  will be hide the subcommand.
+- `.group(name)`: Set a group name, defaults to `"Subcommands"`. Setting an
+  empty string for the name will be hide the subcommand.
 - `[option_name]`: retrieve a const pointer to an option given by `option_name`
   for Example `app["--flag1"]` will get a pointer to the option for the
   "--flag1" value, `app["--flag1"]->as<bool>()` will get the results of the

@@ -643,18 +643,13 @@ TEST_CASE_METHOD(TApp, "StrangeOptionNames", "[app]") {
 
 TEST_CASE_METHOD(TApp, "singledash", "[app]") {
     app.add_option("-t");
-    try
-    {
+    try {
         app.add_option("-test");
-    }
-    catch (const CLI::BadNameString& e)
-    {
-        std::string str=e.what();
-        CHECK_THAT(str,Contains("2 dashes"));
-        CHECK_THAT(str,Contains("-test"));
-    }
-    catch (...)
-    {
+    } catch(const CLI::BadNameString &e) {
+        std::string str = e.what();
+        CHECK_THAT(str, Contains("2 dashes"));
+        CHECK_THAT(str, Contains("-test"));
+    } catch(...) {
         CHECK(false);
     }
 }
