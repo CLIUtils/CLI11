@@ -178,7 +178,7 @@ To use, there are several methods:
   separately.
 - All-in-one global header: Like above, but copying the file to a shared folder
   location like `/opt/CLI11`. Then, the C++ include path has to be extended to
-  point at this folder. With CMake, use `include_directories(/opt/CLI11)`
+  point at this folder. With CMake 3.5+, use `include_directories(/opt/CLI11)`
 - Local headers and target: Use `CLI/*.hpp` files. You could check out the
   repository as a git submodule, for example. With CMake, you can use
   `add_subdirectory` and the `CLI11::CLI11` interface target when linking. If

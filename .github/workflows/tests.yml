@@ -145,11 +145,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check CMake 3.4
-        with:
-          cmake-version: "3.4"
-        uses: ./.github/actions/quick_cmake
-
       - name: Check CMake 3.5
         uses: ./.github/actions/quick_cmake
         with:
@@ -265,22 +260,34 @@ jobs:
           cmake-version: "3.22"
         if: success() || failure()
 
-      - name: Check CMake 3.23 
+      - name: Check CMake 3.23
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.23"
         if: success() || failure()
 
-      - name: Check CMake 3.24 (full)
+      - name: Check CMake 3.24
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.24"
-          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
-      - name: Check CMake 3.25 (full)
+      - name: Check CMake 3.25
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.25"
+        if: success() || failure()
+
+      - name: Check CMake 3.26 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.26"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 3.27 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.27"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
