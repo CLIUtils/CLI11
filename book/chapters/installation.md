@@ -24,7 +24,7 @@ include shown above.
 
 ### CMake support for the full edition
 
-If you use CMake 3.4+ for your project (highly recommended), CLI11 comes with a
+If you use CMake 3.5+ for your project (highly recommended), CLI11 comes with a
 powerful CMakeLists.txt file that was designed to also be used with
 `add_subproject`. You can add the repository to your code (preferably as a git
 submodule), then add the following line to your project (assuming your folder is
@@ -43,7 +43,8 @@ You can also configure and optionally install CLI11, and CMake will create the
 necessary `lib/cmake/CLI11/CLI11Config.cmake` files, so
 `find_package(CLI11 CONFIG REQUIRED)` also works.
 
-If you use conan.io, CLI11 supports that too.
+If you use conan.io, CLI11 supports that too. CLI11 also supports Meson and
+pkg-config if you are not using CMake.
 
 ### Running tests on the full edition
 
