@@ -48,7 +48,8 @@ pkg-config if you are not using CMake.
 
 #### Using Fetchcontent
 
-If you do not want to add cmake as a submodule or include it with your code the project can be added using `FetchContent`.  This capability requires CMake 3.11+.
+If you do not want to add cmake as a submodule or include it with your code the
+project can be added using `FetchContent`. This capability requires CMake 3.11+.
 
 An example CMake file would include:
 
@@ -128,25 +129,23 @@ Total Test time (real) =   0.34 sec
 For the curious, the CMake options and defaults are listed below. Most options
 default to off if CLI11 is used as a subdirectory in another project.
 
-| Option                        | Description                                                                                     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| `CLI11_SINGLE_FILE=ON`        | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7).                |
-| `CLI11_PRECOMPILED=OFF`       | generate a precompiled static library instead of header-only                                    |
-| `CLI11_SINGLE_FILE_TESTS=OFF` | Run the tests on the generated single file version as well                                      |
-| `CLI11_BUILD_DOCS=ON`         | build CLI11 documentation and book                                                              |
-| `CLI11_BUILD_EXAMPLES=ON`     | Build the example programs.                                                                     |
-| `CLI11_BUILD_EXAMPLES_JSON=ON`| Build some additional example using json libraries                                              |
-| `CLI11_INSTALL=ON`            | install CLI11 to the install folder during the install process                                  |
-| `CLI11_FORCE_LIBCXX=OFF`      | use libc++ instead of libstdc++ if building with clang on linux                                 |
-| `CLI11_CUDA_TESTS=OFF`        | build the tests with NVCC                                                                       |
-| `CLI11_BUILD_TESTS=ON`        | Build the tests.                                                                                |
-
+| Option                         | Description                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| `CLI11_SINGLE_FILE=ON`         | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
+| `CLI11_PRECOMPILED=OFF`        | generate a precompiled static library instead of header-only                     |
+| `CLI11_SINGLE_FILE_TESTS=OFF`  | Run the tests on the generated single file version as well                       |
+| `CLI11_BUILD_DOCS=ON`          | build CLI11 documentation and book                                               |
+| `CLI11_BUILD_EXAMPLES=ON`      | Build the example programs.                                                      |
+| `CLI11_BUILD_EXAMPLES_JSON=ON` | Build some additional example using json libraries                               |
+| `CLI11_INSTALL=ON`             | install CLI11 to the install folder during the install process                   |
+| `CLI11_FORCE_LIBCXX=OFF`       | use libc++ instead of libstdc++ if building with clang on linux                  |
+| `CLI11_CUDA_TESTS=OFF`         | build the tests with NVCC                                                        |
+| `CLI11_BUILD_TESTS=ON`         | Build the tests.                                                                 |
 
 [^1]:
     Docker is being used to create a pristine disposable environment; there is
     nothing special about this container. Alpine is being used because it is
     small, modern, and fast. Commands are similar on any other platform.
-
 
 ## Installing cli11 using vcpkg
 

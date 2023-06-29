@@ -172,7 +172,9 @@ this library:
 
 ## Install
 
-To use, there are several methods described below additional details are available at [installation](https://cliutils.github.io/CLI11/book/chapters/installation.html):
+To use, there are several methods described below additional details are
+available at
+[installation](https://cliutils.github.io/CLI11/book/chapters/installation.html):
 
 - All-in-one local header: Copy `CLI11.hpp` from the [most recent
   release][github releases] into your include directory, and you are set. This
