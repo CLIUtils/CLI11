@@ -123,6 +123,9 @@ class BadNameString : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, BadNameString)
     CLI11_ERROR_SIMPLE(BadNameString)
     static BadNameString OneCharName(std::string name) { return BadNameString("Invalid one char name: " + name); }
+    static BadNameString MissingDash(std::string name) {
+        return BadNameString("Long names strings require 2 dashes " + name);
+    }
     static BadNameString BadLongName(std::string name) { return BadNameString("Bad long name: " + name); }
     static BadNameString DashesOnly(std::string name) {
         return BadNameString("Must have a name, not just dashes: " + name);
