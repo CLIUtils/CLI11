@@ -146,3 +146,22 @@ default to off if CLI11 is used as a subdirectory in another project.
     Docker is being used to create a pristine disposable environment; there is
     nothing special about this container. Alpine is being used because it is
     small, modern, and fast. Commands are similar on any other platform.
+
+
+## Installing cli11 using vcpkg
+
+You can download and install cli11 using the
+[vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+```bash
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install cli11
+```
+
+The cli11 port in vcpkg is kept up to date by Microsoft team members and
+community contributors. If the version is out of date, please
+[create an issue or pull request](https://github.com/Microsoft/vcpkg) on the
+vcpkg repository.
