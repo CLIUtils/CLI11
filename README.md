@@ -295,7 +295,8 @@ int main() {
 }
 ```
 
-The 🚧 `CLI11_PARSE(app)` is only available in main currently and not in a release.
+The 🚧 `CLI11_PARSE(app)` is only available in main currently and not in a
+release.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
