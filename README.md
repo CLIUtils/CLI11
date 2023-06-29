@@ -228,7 +228,7 @@ include(FetchContent)
 FetchContent_Declare(
   cli11
   GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-  GIT_TAG        v2.2.0
+  GIT_TAG        v2.3.2
 )
 
 FetchContent_MakeAvailable(cli11)
@@ -295,7 +295,7 @@ int main() {
 }
 ```
 
-The `CLI11_PARSE(app)` is only available in main current and not in a release.
+The 🚧 `CLI11_PARSE(app)` is only available in main currently and not in a release.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
