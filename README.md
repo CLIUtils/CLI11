@@ -172,7 +172,7 @@ this library:
 
 ## Install
 
-To use, there are several methods:
+To use, there are several methods described below additional details are available at [installation](https://cliutils.github.io/CLI11/book/chapters/installation.html):
 
 - All-in-one local header: Copy `CLI11.hpp` from the [most recent
   release][github releases] into your include directory, and you are set. This
@@ -248,7 +248,7 @@ cmake --build build
 CTEST_OUTPUT_ON_FAILURE=1 cmake --build build -t test
 ```
 
-<details><summary>Note: Special instructions for GCC 8</summary><p>
+<details><summary>Note: Special instructions for GCC 8, certain clang compilers and WASI</summary><p>
 
 If you are using GCC 8 and using it in C++17 mode with CLI11. CLI11 makes use of
 the `<filesystem>` header if available, but specifically for this compiler, the
