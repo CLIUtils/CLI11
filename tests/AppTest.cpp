@@ -652,18 +652,13 @@ TEST_CASE_METHOD(TApp, "singledash", "[app]") {
     } catch(...) {
         CHECK(false);
     }
-    try
-    {
+    try {
         app.add_option("-!");
-    }
-    catch (const CLI::BadNameString& e)
-    {
-        std::string str=e.what();
-        CHECK_THAT(str,Contains("one char"));
-        CHECK_THAT(str,Contains("-!"));
-    }
-    catch (...)
-    {
+    } catch(const CLI::BadNameString &e) {
+        std::string str = e.what();
+        CHECK_THAT(str, Contains("one char"));
+        CHECK_THAT(str, Contains("-!"));
+    } catch(...) {
         CHECK(false);
     }
 }
