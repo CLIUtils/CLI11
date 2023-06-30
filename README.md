@@ -1402,8 +1402,6 @@ need to convert to. Some examples of some new parsers for `complex<double>` that
 support all of the features of a standard `add_options` call are in
 [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
-#### Example
-
 ```cpp
 app.add_option("--fancy-count", [](std::vector<std::string> val){
     std::cout << "This option was given " << val.size() << " times." << std::endl;
