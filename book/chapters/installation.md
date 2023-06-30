@@ -9,7 +9,8 @@
 This example uses the single file edition of CLI11. You can download `CLI11.hpp`
 from the latest release and put it into the same folder as your source code,
 then compile this with C++ enabled. For a larger project, you can just put this
-in an include folder and you are set.  This is the simplest and most straightforward means of including CLI11 with a project.
+in an include folder and you are set. This is the simplest and most
+straightforward means of including CLI11 with a project.
 
 ## Full edition
 
@@ -44,15 +45,17 @@ necessary `lib/cmake/CLI11/CLI11Config.cmake` files, so
 `find_package(CLI11 CONFIG REQUIRED)` also works.
 
 If you use conan.io, CLI11 supports that too. CLI11 also supports Meson and
-pkg-config if you are not using CMake.  
+pkg-config if you are not using CMake.
 
-If the CMake option `CLI11_PRECOMPILED` is set then the library is compiled into a static library.  This can be used to improve compile times if CLI11 is included in many different parts of a project.  
+If the CMake option `CLI11_PRECOMPILED` is set then the library is compiled into
+a static library. This can be used to improve compile times if CLI11 is included
+in many different parts of a project.
 
 ### Global Headers
 
-Use `CLI/*.hpp` files stored in a shared folder. You could
-  check out the git repository to a system-wide folder, for example `/opt/`.
-  With CMake, you could add to the include path via:
+Use `CLI/*.hpp` files stored in a shared folder. You could check out the git
+repository to a system-wide folder, for example `/opt/`. With CMake, you could
+add to the include path via:
 
 ```bash
 if(NOT DEFINED CLI11_DIR)
@@ -72,21 +75,23 @@ linker errors):
 
 #### Global Headers with Target
 
-configuring and installing the project is required
-  for linking CLI11 to your project in the same way as you would do with any
-  other external library. With CMake, this step allows using
-  `find_package(CLI11 CONFIG REQUIRED)` and then using the `CLI11::CLI11` target
-  when linking. If `CMAKE_INSTALL_PREFIX` was changed during install to a
-  specific folder like `/opt/CLI11`, then you have to pass
-  `-DCLI11_DIR=/opt/CLI11` when building your current project. You can also use
-  [Conan.io](https://conan.io/center/cli11) or [Hunter](https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html). (These are just conveniences to allow
-  you to use your favorite method of managing packages; it's just header only so
-  including the correct path and using C++11 is all you really need.)
+configuring and installing the project is required for linking CLI11 to your
+project in the same way as you would do with any other external library. With
+CMake, this step allows using `find_package(CLI11 CONFIG REQUIRED)` and then
+using the `CLI11::CLI11` target when linking. If `CMAKE_INSTALL_PREFIX` was
+changed during install to a specific folder like `/opt/CLI11`, then you have to
+pass `-DCLI11_DIR=/opt/CLI11` when building your current project. You can also
+use [Conan.io](https://conan.io/center/cli11) or
+[Hunter](https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html). (These are
+just conveniences to allow you to use your favorite method of managing packages;
+it's just header only so including the correct path and using C++11 is all you
+really need.)
 
 #### Using Fetchcontent
 
 If you do not want to add cmake as a submodule or include it with your code the
-project can be added using `FetchContent`. This capability requires CMake 3.14+ (or 3.11+ with more work).
+project can be added using `FetchContent`. This capability requires CMake 3.14+
+(or 3.11+ with more work).
 
 An example CMake file would include:
 
@@ -113,11 +118,11 @@ And use
 #include <CLI/CLI.hpp>
 ```
 
-in your project.  It is highly recommended that you use the git hash for `GIT_TAG` instead of a
-tag or branch, as that will both be more secure, as well as faster to
-reconfigure - CMake will not have to reach out to the internet to see if the tag
-moved. You can also download just the single header file from the releases using
-`file(DOWNLOAD)`.
+in your project. It is highly recommended that you use the git hash for
+`GIT_TAG` instead of a tag or branch, as that will both be more secure, as well
+as faster to reconfigure - CMake will not have to reach out to the internet to
+see if the tag moved. You can also download just the single header file from the
+releases using `file(DOWNLOAD)`.
 
 ### Running tests on the full edition
 
@@ -208,7 +213,6 @@ The cli11 port in vcpkg is kept up to date by Microsoft team members and
 community contributors. If the version is out of date, please
 [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the
 vcpkg repository.
-
 
 ## Special instructions for GCC 8, Some clang, and WASI
 

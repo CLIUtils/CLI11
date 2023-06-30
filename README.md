@@ -172,9 +172,8 @@ this library:
 
 ## Install
 
-To use, the most common methods are described here additional methods and details are
-available at
-[installation][]:
+To use, the most common methods are described here additional methods and
+details are available at [installation][]:
 
 - All-in-one local header: Copy `CLI11.hpp` from the [most recent
   release][github releases] into your include directory, and you are set. This
@@ -185,7 +184,8 @@ available at
 - All-in-one global header: Like above, but copying the file to a shared folder
   location like `/opt/CLI11`. Then, the C++ include path has to be extended to
   point at this folder. With CMake 3.5+, use `include_directories(/opt/CLI11)`
-- For other methods including using CMake or vcpkg and some specific instructions for GCC 8 or WASI see [installation][].
+- For other methods including using CMake or vcpkg and some specific
+  instructions for GCC 8 or WASI see [installation][].
 
 ## Usage
 
