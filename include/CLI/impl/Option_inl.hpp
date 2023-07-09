@@ -389,10 +389,10 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
         return input_value;
     }
     if(default_flag_values_[static_cast<std::size_t>(ind)].second == falseString) {
-        errno=0;
+        errno = 0;
         auto val = detail::to_flag_value(input_value);
-        if (errno != 0) {
-            errno=0;
+        if(errno != 0) {
+            errno = 0;
             return input_value;
         }
         return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));

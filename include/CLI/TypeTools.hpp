@@ -857,11 +857,11 @@ inline std::string type_name() {
 
 /// Convert to an unsigned integral
 template <typename T, enable_if_t<std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
-bool integral_conversion(const std::string& input, T& output) noexcept {
-    if (input.empty() || input.front() == '-') {
+bool integral_conversion(const std::string &input, T &output) noexcept {
+    if(input.empty() || input.front() == '-') {
         return false;
     }
-    char* val{nullptr};
+    char *val{nullptr};
     errno = 0;
     std::uint64_t output_ll = std::strtoull(input.c_str(), &val, 0);
     if(errno == ERANGE) {
@@ -905,7 +905,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
 }
 
 /// Convert a flag into an integer value  typically binary flags sets errno to nonzero if conversion failed
-inline std::int64_t to_flag_value(std::string val) noexcept{
+inline std::int64_t to_flag_value(std::string val) noexcept {
     static const std::string trueString("true");
     static const std::string falseString("false");
     if(val == trueString) {
@@ -933,7 +933,7 @@ inline std::int64_t to_flag_value(std::string val) noexcept{
             ret = 1;
             break;
         default:
-            errno=EINVAL;
+            errno = EINVAL;
             return -1;
         }
         return ret;
@@ -945,8 +945,8 @@ inline std::int64_t to_flag_value(std::string val) noexcept{
     } else {
         char *loc_ptr{nullptr};
         ret = std::strtoll(val.c_str(), &loc_ptr, 0);
-        if(loc_ptr != (val.c_str() + val.size()) && errno==0) {
-            errno=EINVAL;
+        if(loc_ptr != (val.c_str() + val.size()) && errno == 0) {
+            errno = EINVAL;
         }
     }
     return ret;
@@ -975,19 +975,14 @@ bool lexical_cast(const std::string &input, T &output) {
 /// Boolean values
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::boolean_value, detail::enabler> = detail::dummy>
-bool lexical_cast(const std::string& input, T& output) {
-    errno=0;
+bool lexical_cast(const std::string &input, T &output) {
+    errno = 0;
     auto out = to_flag_value(input);
-    if (errno==0)
-    {
+    if(errno == 0) {
         output = (out > 0);
-    }
-    else if (errno==ERANGE)
-    {
+    } else if(errno == ERANGE) {
         output = (input[0] != '-');
-    }
-    else
-    {
+    } else {
         return false;
     }
     return true;
@@ -1646,14 +1641,13 @@ inline std::string sum_string_vector(const std::vector<std::string> &values) {
         double tv{0.0};
         auto comp = lexical_cast(arg, tv);
         if(!comp) {
-            errno=0;
-           auto fv=detail::to_flag_value(arg);
-           fail=(errno!=0);
-           if (fail)
-           {
-               break;
-           }
-           tv = static_cast<double>(fv);
+            errno = 0;
+            auto fv = detail::to_flag_value(arg);
+            fail = (errno != 0);
+            if(fail) {
+                break;
+            }
+            tv = static_cast<double>(fv);
         }
         val += tv;
     }
