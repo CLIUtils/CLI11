@@ -2118,3 +2118,26 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive2", "[subcom]") {
     CHECK(extras.size() == 1);
     CHECK(extras.front() == "sub1.sub2.sub3.bob");
 }
+
+// Reported bug #903 on github 
+TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
+    auto *sub1 = app.add_subcommand("sub1");
+    std::string someFile;
+    int sub1value{0};
+    sub1->add_option("-f,--file", someFile)->envname("SOME_FILE")->required()->check(CLI::ExistingFile);
+    sub1->add_option("-v",sub1value);
+    auto sub2 = app.add_subcommand("sub2");
+    int completelyUnrelatedToSub1 = 0;
+    sub2->add_option("-v,--value", completelyUnrelatedToSub1)->required();
+
+    args={"sub2","-v", "111"};
+    CHECK_NOTHROW(run());
+
+    put_env("SOME_FILE", "notafile.txt");
+
+    CHECK_NOTHROW(run());
+    
+    args={"sub1","-v", "111"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    unset_env("SOME_FILE");
+}
