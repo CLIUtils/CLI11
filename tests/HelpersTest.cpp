@@ -202,14 +202,23 @@ TEST_CASE("StringTools: Modify3", "[helpers]") {
 
 TEST_CASE("StringTools: flagValues", "[helpers]") {
     CHECK(-1 == CLI::detail::to_flag_value("0"));
+    CHECK(errno==0);
     CHECK(1 == CLI::detail::to_flag_value("t"));
     CHECK(1 == CLI::detail::to_flag_value("1"));
     CHECK(6 == CLI::detail::to_flag_value("6"));
     CHECK(-6 == CLI::detail::to_flag_value("-6"));
     CHECK(-1 == CLI::detail::to_flag_value("false"));
     CHECK(1 == CLI::detail::to_flag_value("YES"));
-    CHECK_THROWS_AS(CLI::detail::to_flag_value("frog"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::to_flag_value("q"), std::invalid_argument);
+    errno=0;
+    CLI::detail::to_flag_value("frog");
+    CHECK(errno==EINVAL);
+    errno=0;
+    CLI::detail::to_flag_value("q");
+    CHECK(errno==EINVAL);
+    errno=0;
+    CLI::detail::to_flag_value("77777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777");
+    CHECK(errno==ERANGE);
+    errno=0;
     CHECK(-1 == CLI::detail::to_flag_value("NO"));
     CHECK(475555233 == CLI::detail::to_flag_value("475555233"));
 }
