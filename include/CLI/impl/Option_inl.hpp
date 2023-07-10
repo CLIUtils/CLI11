@@ -396,9 +396,8 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
             return input_value;
         }
         return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
-    } else {
-        return input_value;
     }
+    return input_value;
 }
 
 CLI11_INLINE Option *Option::add_result(std::string s) {
