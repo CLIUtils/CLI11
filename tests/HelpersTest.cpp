@@ -201,7 +201,7 @@ TEST_CASE("StringTools: Modify3", "[helpers]") {
 }
 
 TEST_CASE("StringTools: flagValues", "[helpers]") {
-    errno=0;
+    errno = 0;
     CHECK(-1 == CLI::detail::to_flag_value("0"));
     CHECK(errno == 0);
     CHECK(1 == CLI::detail::to_flag_value("t"));
