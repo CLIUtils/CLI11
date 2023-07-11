@@ -172,7 +172,8 @@ this library:
 
 ## Install
 
-To use, there are several methods:
+To use, the most common methods are described here additional methods and
+details are available at [installation][]:
 
 - All-in-one local header: Copy `CLI11.hpp` from the [most recent
   release][github releases] into your include directory, and you are set. This
@@ -183,98 +184,8 @@ To use, there are several methods:
 - All-in-one global header: Like above, but copying the file to a shared folder
   location like `/opt/CLI11`. Then, the C++ include path has to be extended to
   point at this folder. With CMake 3.5+, use `include_directories(/opt/CLI11)`
-- Local headers and target: Use `CLI/*.hpp` files. You could check out the
-  repository as a git submodule, for example. With CMake, you can use
-  `add_subdirectory` and the `CLI11::CLI11` interface target when linking. If
-  not using a submodule, you must ensure that the copied files are located
-  inside the same tree directory than your current project, to prevent an error
-  with CMake and `add_subdirectory`.
-- Global headers: Use `CLI/*.hpp` files stored in a shared folder. You could
-  check out the git repository to a system-wide folder, for example `/opt/`.
-  With CMake, you could add to the include path via:
-
-```bash
-if(NOT DEFINED CLI11_DIR)
-set (CLI11_DIR "/opt/CLI11" CACHE STRING "CLI11 git repository")
-endif()
-include_directories(${CLI11_DIR}/include)
-```
-
-And then in the source code (adding several headers might be needed to prevent
-linker errors):
-
-```cpp
-#include "CLI/App.hpp"
-#include "CLI/Formatter.hpp"
-#include "CLI/Config.hpp"
-```
-
-- Global headers and target: configuring and installing the project is required
-  for linking CLI11 to your project in the same way as you would do with any
-  other external library. With CMake, this step allows using
-  `find_package(CLI11 CONFIG REQUIRED)` and then using the `CLI11::CLI11` target
-  when linking. If `CMAKE_INSTALL_PREFIX` was changed during install to a
-  specific folder like `/opt/CLI11`, then you have to pass
-  `-DCLI11_DIR=/opt/CLI11` when building your current project. You can also use
-  [Conan.io][conan-link] or [Hunter][]. (These are just conveniences to allow
-  you to use your favorite method of managing packages; it's just header only so
-  including the correct path and using C++11 is all you really need.)
-- Via FetchContent in CMake 3.14+ (or 3.11+ with more work): you can add this
-  with fetch-content, then use the `CLI11::CLI11` target as above, and CMake
-  will download the project in the configure stage:
-
-```cmake
-include(FetchContent)
-FetchContent_Declare(
-  cli11
-  GIT_REPOSITORY https://github.com/CLIUtils/CLI11
-  GIT_TAG        v2.3.2
-)
-
-FetchContent_MakeAvailable(cli11)
-```
-
-It is highly recommended that you use the git hash for `GIT_TAG` instead of a
-tag or branch, as that will both be more secure, as well as faster to
-reconfigure - CMake will not have to reach out to the internet to see if the tag
-moved. You can also download just the single header file from the releases using
-`file(DOWNLOAD`.
-
-To build the tests, checkout the repository and use CMake:
-
-```bash
-cmake -S . -B build
-cmake --build build
-CTEST_OUTPUT_ON_FAILURE=1 cmake --build build -t test
-```
-
-<details><summary>Note: Special instructions for GCC 8</summary><p>
-
-If you are using GCC 8 and using it in C++17 mode with CLI11. CLI11 makes use of
-the `<filesystem>` header if available, but specifically for this compiler, the
-`filesystem` library is separate from the standard library and needs to be
-linked separately. So it is available but CLI11 doesn't use it by default.
-
-Specifically `libstdc++fs` needs to be added to the linking list and
-`CLI11_HAS_FILESYSTEM=1` has to be defined. Then the filesystem variant of the
-Validators could be used on GCC 8. GCC 9+ does not have this issue so the
-`<filesystem>` is used by default.
-
-There may also be other cases where a specific library needs to be linked.
-
-Defining `CLI11_HAS_FILESYSTEM=0` which will remove the usage and hence any
-linking issue.
-
-In some cases certain clang compilations may require linking against `libc++fs`.
-These situations have not been encountered so the specific situations requiring
-them are unknown yet.
-
-If building with WASI it is necessary to add the flag
-`-lc-printscan-long-double` to the build to allow long double support. See #841
-for more details.
-
-</p></details>
-</br>
+- For other methods including using CMake or vcpkg and some specific
+  instructions for GCC 8 or WASI see [installation][].
 
 ## Usage
 
@@ -1491,8 +1402,6 @@ need to convert to. Some examples of some new parsers for `complex<double>` that
 support all of the features of a standard `add_options` call are in
 [one of the tests](./tests/NewParseTest.cpp). A simpler example is shown below:
 
-#### Example
-
 ```cpp
 app.add_option("--fancy-count", [](std::vector<std::string> val){
     std::cout << "This option was given " << val.size() << " times." << std::endl;
@@ -1908,3 +1817,4 @@ try! Feedback is always welcome.
 [argparse]: https://github.com/p-ranav/argparse
 [toml]: https://toml.io
 [lyra]: https://github.com/bfgroup/Lyra
+[installation]: https://cliutils.github.io/CLI11/book/chapters/installation.html
