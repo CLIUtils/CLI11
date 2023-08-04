@@ -9,7 +9,6 @@ trigger:
 
 pr:
   - main
-  - "v*"
 
 variables:
   cli11.single: ON
@@ -28,10 +27,10 @@ jobs:
       - bash: cpplint --counting=detailed --recursive examples include/CLI tests
         displayName: Checking against google style guide
 
-  - job: msvc_arm64
+  - job: build_only
     strategy:
       matrix:
-        vs_arm64:
+        visual_studio_arm64:
           vmImage: "windows-2022"
           cli11.std: 17
           cli11.build_type: Debug
