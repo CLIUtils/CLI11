@@ -29,6 +29,10 @@
 #define _X86_
 #elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARMT)
 #define _ARM_
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define _ARM64_
+#elif defined(_M_ARM64EC)
+#define _ARM64EC_
 #endif
 #endif
 
