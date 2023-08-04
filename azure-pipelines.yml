@@ -28,6 +28,20 @@ jobs:
       - bash: cpplint --counting=detailed --recursive examples include/CLI tests
         displayName: Checking against google style guide
 
+  - job: msvc_arm64
+    strategy:
+      matrix:
+        vs_arm64:
+          vmImage: "windows-2022"
+          cli11.std: 17
+          cli11.build_type: Debug
+          cli11.options: -G "Visual Studio 17 2022" -A ARM64
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - template: .ci/azure-build.yml
+
   - job: Native
     strategy:
       matrix:
