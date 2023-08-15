@@ -281,7 +281,7 @@ endif()
 if(CLI11_INSTALL_PACKAGE_TESTS)
   set(CLI11_PACKAGE_SEARCH_LOC)
 else()
-  set(CLI11_PACKAGE_SEARCH_LOC "-DCLI11_DIR=${PROJECT_BINARY_DIR}")
+  set(CLI11_PACKAGE_SEARCH_LOC "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # tests of the cmake package and pkg-config package
