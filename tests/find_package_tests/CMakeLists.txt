@@ -4,8 +4,8 @@ project(CLI11-find-package-test)
 
 include(CTest)
 
-if (CLI11_DIR)
-   set(CMAKE_PREFIX_PATH ${CLI11_DIR})
+if(CLI11_DIR)
+  set(CMAKE_PREFIX_PATH ${CLI11_DIR})
 endif()
 
 # Test the CLI11 CMake package config
