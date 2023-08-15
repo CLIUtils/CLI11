@@ -146,10 +146,25 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      #- name: Add pkgconfig
-      #  run: sudo apt-get update && sudo apt-get install -y pkgconfig
       - name: Configure
         run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure
+        working-directory: build
+        
+  install-test-precompiled:
+    name: install tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
       - name: Build
         run: cmake --build build  -j2
       - name: install
