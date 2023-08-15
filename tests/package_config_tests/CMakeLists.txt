@@ -4,12 +4,13 @@ project(CLI11-package-config-test)
 
 include(CTest)
 
-# Test the CLI11 CMake package config
-find_package(CLI11 2.0 REQUIRED)
-
 find_package(PkgConfig)
 
-pkg_check_modules(CLI11 REQUIRED IMPORTED_TARGET cli11)
+if(CLI11_DIR)
+  set(CMAKE_PREFIX_PATH ${CLI11_DIR})
+endif()
+
+pkg_check_modules(CLI11 REQUIRED IMPORTED_TARGET CLI11)
 
 # Test the target
 add_executable(package-config-test ../../examples/positional_validation.cpp)

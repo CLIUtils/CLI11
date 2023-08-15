@@ -339,7 +339,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       package-config-tests
       ${CMAKE_CTEST_COMMAND}
       -C
-      ${CLI11_PACKAGE_TEST_BUILD_TYPE}
+      "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
       --build-and-test
       "${CMAKE_CURRENT_SOURCE_DIR}/package_config_tests"
       "${CMAKE_CURRENT_BINARY_DIR}/package_config_tests"
@@ -348,7 +348,6 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       --build-generator-platform
       "${CMAKE_GENERATOR_PLATFORM}"
       --build-options
-      "-DCLI11_VERSION=${CLI11_VERSION}"
       "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
       "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
       ${package_test_command})
