@@ -157,7 +157,7 @@ jobs:
         working-directory: build
         
   install-test-precompiled:
-    name: install tests
+    name: install tests precompiled
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

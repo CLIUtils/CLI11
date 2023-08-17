@@ -129,7 +129,7 @@ if(CLI11_INSTALL)
   if(NOT CLI11_SINGLE_FILE)
     install(FILES ${CLI11_headers} ${CLI11_library_headers}
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-    if(NOT CLI11_COMPILE)
+    if(NOT CLI11_PRECOMPILED)
       install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
     endif()
   endif()
