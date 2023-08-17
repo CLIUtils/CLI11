@@ -139,7 +139,7 @@ jobs:
       - name: Build
         run: meson compile -C build-meson
         
-  install-test:
+  install:
     name: install tests
     runs-on: ubuntu-latest
     steps:
@@ -153,10 +153,10 @@ jobs:
       - name: install
         run: cmake --install build
       - name: Run tests
-        run: ctest --output-on-failure
+        run: ctest --output-on-failure -L Packaging
         working-directory: build
         
-  install-test-precompiled:
+  install-precompiled:
     name: install tests precompiled
     runs-on: ubuntu-latest
     steps:
@@ -165,6 +165,23 @@ jobs:
           submodules: true
       - name: Configure
         run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+        
+  install-single_file:
+    name: install tests single file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
       - name: Build
         run: cmake --build build  -j2
       - name: install
