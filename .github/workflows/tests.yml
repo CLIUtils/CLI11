@@ -170,7 +170,7 @@ jobs:
       - name: install
         run: cmake --install build
       - name: Run tests
-        run: ctest --output-on-failure
+        run: ctest --output-on-failure -L Packaging
         working-directory: build
 
   cmake-config-ubuntu-2004:

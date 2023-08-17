@@ -327,10 +327,10 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
     NAME find-package-testsC
     COMMAND ${CMAKE_CTEST_COMMAND} -C ${CLI11_PACKAGE_TEST_BUILD_TYPE}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
-  set_property(TEST find-package-testsA PROPERTY LABELS Packaging PackagingFast)
-  set_property(TEST find-package-testsB PROPERTY LABELS Packaging PackagingFast)
+  set_property(TEST find-package-testsA PROPERTY LABELS Packaging)
+  set_property(TEST find-package-testsB PROPERTY LABELS Packaging)
   set_property(TEST find-package-testsB PROPERTY DEPENDS find-package-testsA)
-  set_property(TEST find-package-testsC PROPERTY LABELS Packaging PackagingFast)
+  set_property(TEST find-package-testsC PROPERTY LABELS Packaging)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
   if(NOT MSVC)
