@@ -744,6 +744,90 @@ TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {
     CHECK(one == 55);
 }
 
+TEST_CASE_METHOD(TApp, "MultiConfig_takelast", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+
+    app.set_config("--config")->multi_option_policy(CLI::MultiOptionPolicy::TakeLast)->expected(1, 3);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "one=55" << std::endl;
+        out << "three=4" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    args = {"--config", tmpini, "--config", tmpini2};
+    run();
+
+    CHECK(two == 99);
+    CHECK(three == 3);
+    CHECK(one == 55);
+
+    two = 0;
+    args = {"--config", tmpini2, "--config", tmpini};
+    run();
+
+    CHECK(two == 99);
+    CHECK(three == 4);
+    CHECK(one == 55);
+}
+
+TEST_CASE_METHOD(TApp, "MultiConfig_takeAll", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    TempFile tmpini2{"TestIniTmp2.ini"};
+
+    app.set_config("--config")->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=99" << std::endl;
+        out << "three=3" << std::endl;
+    }
+
+    {
+        std::ofstream out{tmpini2};
+        out << "[default]" << std::endl;
+        out << "one=55" << std::endl;
+        out << "three=4" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+    app.add_option("--three", three);
+
+    args = {"--config", tmpini, "--config", tmpini2};
+    run();
+
+    CHECK(two == 99);
+    CHECK(three == 3);
+    CHECK(one == 55);
+
+    two = 0;
+    args = {"--config", tmpini2, "--config", tmpini};
+    run();
+
+    CHECK(two == 99);
+    CHECK(three == 4);
+    CHECK(one == 55);
+}
+
 TEST_CASE_METHOD(TApp, "MultiConfig_single", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
