@@ -41,7 +41,7 @@ enum class MultiOptionPolicy : char {
     TakeFirst,  //!< take only the first Expected number of arguments
     Join,       //!< merge all the arguments together into a single string via the delimiter character default('\n')
     TakeAll,    //!< just get all the passed argument regardless
-    Sum,         //!< sum all the arguments together if numerical or concatenate directly without delimiter
+    Sum,        //!< sum all the arguments together if numerical or concatenate directly without delimiter
     Reverse,    //!< take only the last Expected number of arguments in reverse order
 };
 

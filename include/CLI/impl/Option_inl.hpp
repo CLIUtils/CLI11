@@ -500,7 +500,8 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
         if(type_size_max_ > 1) {  // in this context index refers to the index in the type
             int index = 0;
             if(get_items_expected_max() < static_cast<int>(res.size()) &&
-               (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast||multi_option_policy_==CLI::MultiOptionPolicy::Reverse)) {
+               (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast ||
+                multi_option_policy_ == CLI::MultiOptionPolicy::Reverse)) {
                 // create a negative index for the earliest ones
                 index = get_items_expected_max() - static_cast<int>(res.size());
             }
@@ -518,7 +519,8 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
         } else {
             int index = 0;
             if(expected_max_ < static_cast<int>(res.size()) &&
-                (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast||multi_option_policy_==CLI::MultiOptionPolicy::Reverse)) {
+               (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast ||
+                multi_option_policy_ == CLI::MultiOptionPolicy::Reverse)) {
                 // create a negative index for the earliest ones
                 index = expected_max_ - static_cast<int>(res.size());
             }
@@ -554,10 +556,10 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
         // Allow multi-option sizes (including 0)
         std::size_t trim_size = std::min<std::size_t>(
             static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
-        if(original.size() != trim_size || trim_size>1) {
+        if(original.size() != trim_size || trim_size > 1) {
             out.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
         }
-        std::reverse(out.begin(),out.end());
+        std::reverse(out.begin(), out.end());
     } break;
     case MultiOptionPolicy::TakeFirst: {
         std::size_t trim_size = std::min<std::size_t>(

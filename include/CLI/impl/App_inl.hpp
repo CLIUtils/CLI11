@@ -1047,8 +1047,8 @@ CLI11_INLINE void App::_process_config_file() {
             }
             return;
         }
-        for(const auto &config_file:config_files) {
-            _process_config_file(config_file,config_required||file_given);
+        for(const auto &config_file : config_files) {
+            _process_config_file(config_file, config_required || file_given);
         }
     }
 }
