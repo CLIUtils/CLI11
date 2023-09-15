@@ -198,39 +198,41 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND EXISTS "${CMAKE_CURRENT_SOURCE_D
 endif()
 
 # Packaging support
-set(CPACK_PACKAGE_VENDOR "github.com/CLIUtils/CLI11")
-set(CPACK_PACKAGE_CONTACT "https://${CPACK_PACKAGE_VENDOR}")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Command line parser with simple and intuitive interface")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.CPack.Description.txt")
-set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  set(CPACK_PACKAGE_VENDOR "github.com/CLIUtils/CLI11")
+  set(CPACK_PACKAGE_CONTACT "https://${CPACK_PACKAGE_VENDOR}")
+  set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Command line parser with simple and intuitive interface")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.CPack.Description.txt")
+  set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
 
-# CPack collects *everything* except what's listed here.
-set(CPACK_SOURCE_IGNORE_FILES
-    /.git
-    /dist
-    /.*build.*
-    /\\\\.DS_Store
-    /.*\\\\.egg-info
-    /var
-    /azure-pipelines.yml
-    /.ci
-    /docs
-    /examples
-    /test_package
-    /book
-    /.travis.yml
-    .swp
-    /.all-contributorsrc
-    /.appveyor.yml
-    /.pre-commit.*yaml)
+  # CPack collects *everything* except what's listed here.
+  set(CPACK_SOURCE_IGNORE_FILES
+      /.git
+      /dist
+      /.*build.*
+      /\\\\.DS_Store
+      /.*\\\\.egg-info
+      /var
+      /azure-pipelines.yml
+      /.ci
+      /docs
+      /examples
+      /test_package
+      /book
+      /.travis.yml
+      .swp
+      /.all-contributorsrc
+      /.appveyor.yml
+      /.pre-commit.*yaml)
 
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
-set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
-set(CPACK_DEBIAN_PACKAGE_NAME "libcli11-dev")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
+  set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
+  set(CPACK_DEBIAN_PACKAGE_NAME "libcli11-dev")
 
-include(CPack)
+  include(CPack)
+endif()
