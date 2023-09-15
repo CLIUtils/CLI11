@@ -54,10 +54,21 @@ TEST_CASE_METHOD(TApp, "OneFlagShortValuesAs", "[app]") {
     auto vec = opt->as<std::vector<int>>();
     CHECK(1 == vec[0]);
     CHECK(2 == vec[1]);
+
+    flg->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+    vec = opt->as<std::vector<int>>();
+    CHECK(3 == vec[0]);
+    CHECK(vec.size() == 1);
+
     flg->multi_option_policy(CLI::MultiOptionPolicy::Join);
     CHECK("1\n2" == opt->as<std::string>());
     flg->delimiter(',');
     CHECK("1,2" == opt->as<std::string>());
+    flg->multi_option_policy(CLI::MultiOptionPolicy::Reverse)->expected(1, 300);
+    vec = opt->as<std::vector<int>>();
+    REQUIRE(vec.size() == 2U);
+    CHECK(2 == vec[0]);
+    CHECK(1 == vec[1]);
 }
 
 TEST_CASE_METHOD(TApp, "OneFlagShortWindows", "[app]") {
@@ -864,6 +875,29 @@ TEST_CASE_METHOD(TApp, "SumOptString", "[app]") {
     run();
 
     CHECK("i2" == val);
+}
+
+TEST_CASE_METHOD(TApp, "ReverseOpt", "[app]") {
+
+    std::vector<std::string> val;
+    auto *opt1 = app.add_option("--val", val)->multi_option_policy(CLI::MultiOptionPolicy::Reverse);
+
+    args = {"--val=string1", "--val=string2", "--val", "string3", "string4"};
+
+    run();
+
+    CHECK(val.size() == 4U);
+
+    CHECK(val.front() == "string4");
+    CHECK(val.back() == "string1");
+
+    opt1->expected(1, 2);
+    run();
+    CHECK(val.size() == 2U);
+
+    CHECK(val.front() == "string4");
+    CHECK(val.back() == "string3");
+    CHECK(opt1->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse);
 }
 
 TEST_CASE_METHOD(TApp, "JoinOpt2", "[app]") {

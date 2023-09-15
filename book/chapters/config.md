@@ -8,7 +8,9 @@ config flag. The second item is the default file name. If that is specified, the
 config will try to read that file. The third item is the help string, with a
 reasonable default, and the final argument is a boolean (default: false) that
 indicates that the configuration file is required and an error will be thrown if
-the file is not found and this is set to true.
+the file is not found and this is set to true. The option pointer returned by
+`set_config` is the same type as returned by `add_option` and all modifiers
+including validators, and checks are valid.
 
 ### Adding a default path
 
@@ -97,6 +99,21 @@ If it is needed to get the configuration file name used this can be obtained via
 `app.get_config_ptr()->as<std::string>()` or
 `app["--config"]->as<std::string>()` assuming `--config` was the configuration
 option name.
+
+### Order of precedence
+
+By default if multiple configuration files are given they are read in reverse
+order. With the last one given taking precedence over the earlier ones. This
+behavior can be changed through the `multi_option_policy`. For example:
+
+```cpp
+app.set_config("--config")
+    ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+```
+
+will read the files in the order given, which may be useful in some
+circumstances. Using `CLI::MultiOptionPolicy::TakeLast` would work similarly
+getting the last `N` files given.
 
 ## Configure file format
 

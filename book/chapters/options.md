@@ -222,7 +222,7 @@ that to add option modifiers. A full listing of the option modifiers:
 | `->allow_extra_args()`                                  | Allow extra argument values to be included when an option is passed. Enabled by default for vector options.                                                                                                                                                                                                                                                                                                                                               |
 | `->disable_flag_override()`                             | specify that flag options cannot be overridden on the command line use `=<newval>`                                                                                                                                                                                                                                                                                                                                                                        |
 | `->delimiter('<CH>')`                                   | specify a character that can be used to separate elements in a command line argument, default is <none>, common values are ',', and ';'                                                                                                                                                                                                                                                                                                                   |
-| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily.                                                                                                                                                            |
+| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, `Reverse`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily.                                                                                                                                                 |
 | `->take_last()`                                         | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`.                                                                                                                                                                                                                                                      |
 | `->take_first()`                                        | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst)`                                                                                                                                                                                                                                                                                                                                                                                           |
 | `->take_all()`                                          | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)`                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -245,6 +245,28 @@ The `->check(...)` and `->transform(...)` modifiers can also take a callback
 function of the form `bool function(std::string)` that runs on every value that
 the option receives, and returns a value that tells CLI11 whether the check
 passed or failed.
+
+### Multi Option policy
+
+The Multi option policy can be used to instruct CLI11 what to do when an option
+is called multiple times and how to return those values in a meaningful way.
+There are several options can be set through the
+`->multi_option_policy( CLI::MultiOptionPolicy::Throw)` option modifier.
+`Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`,
+`Join`, `Reverse`, and `Sum`
+
+| Value     | Description                                                                       |
+| --------- | --------------------------------------------------------------------------------- |
+| Throw     | Throws an error if more values are given then expected                            |
+| TakeLast  | Selects the last expected number of values given                                  |
+| TakeFirst | Selects the first expected number of of values given                              |
+| Join      | Joins the strings together using the `delimiter` given                            |
+| TakeAll   | Takes all the values                                                              |
+| Sum       | If the values are numeric, it sums them and returns the result                    |
+| Reverse   | Selects the last expected number of values given and return them in reverse order |
+
+NOTE: For reverse, the index used for an indexed validator is also applied in
+reverse order index 1 will be the last element and 2 second from last and so on.
 
 ## Using the `CLI::Option` pointer
 

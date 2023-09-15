@@ -318,8 +318,8 @@ CLI11_INLINE Option *App::set_config(std::string option_name,
             config_ptr_->force_callback_ = true;
         }
         config_ptr_->configurable(false);
-        // set the option to take the last value given by default
-        config_ptr_->take_last();
+        // set the option to take the last value and reverse given by default
+        config_ptr_->multi_option_policy(MultiOptionPolicy::Reverse);
     }
 
     return config_ptr_;
@@ -1013,6 +1013,21 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
     return detail::Classifier::NONE;
 }
 
+CLI11_INLINE void App::_process_config_file(const std::string &config_file, bool throw_error) {
+    auto path_result = detail::check_path(config_file.c_str());
+    if(path_result == detail::path_type::file) {
+        try {
+            std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
+            _parse_config(values);
+        } catch(const FileError &) {
+            if(throw_error)
+                throw;
+        }
+    } else if(throw_error) {
+        throw FileError::Missing(config_file);
+    }
+}
+
 CLI11_INLINE void App::_process_config_file() {
     if(config_ptr_ != nullptr) {
         bool config_required = config_ptr_->get_required();
@@ -1032,20 +1047,8 @@ CLI11_INLINE void App::_process_config_file() {
             }
             return;
         }
-        for(auto rit = config_files.rbegin(); rit != config_files.rend(); ++rit) {
-            const auto &config_file = *rit;
-            auto path_result = detail::check_path(config_file.c_str());
-            if(path_result == detail::path_type::file) {
-                try {
-                    std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
-                    _parse_config(values);
-                } catch(const FileError &) {
-                    if(config_required || file_given)
-                        throw;
-                }
-            } else if(config_required || file_given) {
-                throw FileError::Missing(config_file);
-            }
+        for(const auto &config_file : config_files) {
+            _process_config_file(config_file, config_required || file_given);
         }
     }
 }
