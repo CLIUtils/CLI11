@@ -277,3 +277,80 @@ if(CMAKE_BUILD_TYPE STREQUAL Coverage)
     ${CLI11_TESTS}
     ${CLI11_MULTIONLY_TESTS})
 endif()
+
+set(CLI11_PACKAGE_SEARCH_LOC "")
+
+# tests of the cmake package and pkg-config package
+if(CLI11_INSTALL_PACKAGE_TESTS)
+  if(NOT MSVC)
+    set(package_test_command --test-command "${CMAKE_CTEST_COMMAND}")
+  else() # don't try to run the tests on MSVC since that would require copying the dll's and doing
+    # some other setup that isn't that important to run on all OS
+    set(package_test_command)
+  endif()
+
+  if(CMAKE_BUILD_TYPE)
+    set(CLI11_PACKAGE_TEST_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+  else()
+    set(CLI11_PACKAGE_TEST_BUILD_TYPE Release)
+  endif()
+
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
+
+  if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER 3.12.9)
+    # Tests for other CMake projects including and using CLI11 using find_package
+    add_test(
+      NAME find-package-testsA
+      COMMAND
+        ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" -A "${CMAKE_GENERATOR_PLATFORM}"
+        "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}" "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+        "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
+        "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/find_package_tests"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
+  else()
+    add_test(
+      NAME find-package-testsA
+      COMMAND
+        ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
+        "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}" "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
+        "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/find_package_tests"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
+  endif()
+
+  add_test(NAME find-package-testsB
+           COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests"
+                   --config ${CLI11_PACKAGE_TEST_BUILD_TYPE})
+
+  add_test(
+    NAME find-package-testsC
+    COMMAND ${CMAKE_CTEST_COMMAND} -C ${CLI11_PACKAGE_TEST_BUILD_TYPE}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
+  set_property(TEST find-package-testsA PROPERTY LABELS Packaging)
+  set_property(TEST find-package-testsB PROPERTY LABELS Packaging)
+  set_property(TEST find-package-testsB PROPERTY DEPENDS find-package-testsA)
+  set_property(TEST find-package-testsC PROPERTY LABELS Packaging)
+  set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
+
+  if(NOT MSVC)
+    # Tests for other CMake projects using the package_config files
+    add_test(
+      package-config-tests
+      ${CMAKE_CTEST_COMMAND}
+      -C
+      --build-and-test
+      "${CMAKE_CURRENT_SOURCE_DIR}/package_config_tests"
+      "${CMAKE_CURRENT_BINARY_DIR}/package_config_tests"
+      --build-generator
+      "${CMAKE_GENERATOR}"
+      --build-generator-platform
+      "${CMAKE_GENERATOR_PLATFORM}"
+      --build-options
+      "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
+      "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
+      ${package_test_command})
+    set_property(TEST package-config-tests PROPERTY LABELS Packaging)
+  endif()
+endif()

@@ -112,6 +112,10 @@ if(CLI11_SINGLE_FILE)
   if(CLI11_INSTALL)
     install(FILES "${PROJECT_BINARY_DIR}/include/CLI11.hpp"
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    configure_file("${CLI11_SOURCE_DIR}/cmake/CLIsingle.hpp.in"
+                   "${PROJECT_BINARY_DIR}/include/CLI/CLI.hpp" @ONLY)
+    install(FILES "${PROJECT_BINARY_DIR}/include/CLI/CLI.hpp"
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CLI)
   endif()
   add_library(CLI11_SINGLE INTERFACE)
   target_link_libraries(CLI11_SINGLE INTERFACE CLI11)
@@ -129,7 +133,7 @@ if(CLI11_INSTALL)
   if(NOT CLI11_SINGLE_FILE)
     install(FILES ${CLI11_headers} ${CLI11_library_headers}
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-    if(NOT CLI11_COMPILE)
+    if(NOT CLI11_PRECOMPILED)
       install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
     endif()
   endif()

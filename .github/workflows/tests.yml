@@ -35,7 +35,7 @@ jobs:
           cmake -S . -B build \
             -DCMAKE_CXX_STANDARD=${{matrix.std}} \
             -DCLI11_SINGLE_FILE_TESTS=OFF \
-            -DCLI11_EXAMPLES=OFF \
+            -DCLI11_BUILD_EXAMPLES=OFF \
             -DCLI11_PRECOMPILED=${{matrix.precompile}} \
             -DCMAKE_BUILD_TYPE=Coverage
 
@@ -138,6 +138,57 @@ jobs:
 
       - name: Build
         run: meson compile -C build-meson
+        
+  install:
+    name: install tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+        
+  install-precompiled:
+    name: install tests precompiled
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+        
+  install-single_file:
+    name: install tests single file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
 
   cmake-config-ubuntu-2004:
     name: CMake config check (Ubuntu 20.04)
