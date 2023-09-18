@@ -207,7 +207,9 @@ int main(int argc, char** argv) {
 }
 ```
 
-For more information about 🚧`ensure_utf8` the section on [Unicode support](#unicode-support) below. The 🚧`ensure_utf8` function is only available in main currently and not in a release.
+For more information about 🚧`ensure_utf8` the section on
+[Unicode support](#unicode-support) below. The 🚧`ensure_utf8` function is only
+available in main currently and not in a release.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
@@ -1405,9 +1407,15 @@ CLI11 supports Unicode and wide strings as defined in the
 
 When using the command line on Windows with unicode arguments, your `main`
 function may already receive broken Unicode. Parsing `argv` at that point will
-not give you a correct string. To fix this, you have three good options and two bad ones:
+not give you a correct string. To fix this, you have three good options and two
+bad ones:
 
-1. Replace `argv` with `app.ensure_utf8(argv)` before any arguments are parsed. `ensure_utf8` will do nothing on systems where `argv` is already in UTF-8 (Such as Linux or macOS) and return `argv` unmodified. On Windows, it will discard `argv` and replace it with a correctly decoded array or arguments from win32 API.
+1. Replace `argv` with `app.ensure_utf8(argv)` before any arguments are parsed.
+   `ensure_utf8` will do nothing on systems where `argv` is already in UTF-8
+   (Such as Linux or macOS) and return `argv` unmodified. On Windows, it will
+   discard `argv` and replace it with a correctly decoded array or arguments
+   from win32 API.
+
    ```cpp
    int main(int argc, char** argv) {
        CLI::App app;
@@ -1422,7 +1430,9 @@ not give you a correct string. To fix this, you have three good options and two 
    `CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
    itself.
 
-   Note: this approach may not work on weird OS configurations, such as when the `/proc` dir is missing on Linux systems (see also [#845](https://github.com/CLIUtils/CLI11/issues/845)).
+   Note: this approach may not work on weird OS configurations, such as when the
+   `/proc` dir is missing on Linux systems (see also
+   [#845](https://github.com/CLIUtils/CLI11/issues/845)).
 
    ```cpp
    int main() {
