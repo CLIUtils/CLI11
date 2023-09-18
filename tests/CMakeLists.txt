@@ -119,7 +119,10 @@ endforeach()
 add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
 
 # Build dependent applications which are launched from test code
-set(CLI11_DEPENDENT_APPLICATIONS system_args)
+set(CLI11_DEPENDENT_APPLICATIONS
+  system_args
+  ensure_utf8
+)
 
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
