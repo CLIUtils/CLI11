@@ -57,6 +57,42 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
     }
 }
 
+CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
+#ifdef _WIN32
+    (void)argv;
+
+    int argc = 0;
+    auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
+
+    // NOLINTBEGIN(*-avoid-c-arrays)
+    std::unique_ptr<wchar_t *[], decltype(deleter)> wargv(CommandLineToArgvW(GetCommandLineW(), &argc), deleter);
+    // NOLINTEND(*-avoid-c-arrays)
+
+    if(wargv == nullptr) {
+        throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
+    }
+
+    if(!normalized_argv_.empty()) {
+        normalized_argv_.clear();
+        normalized_argv_view_.clear();
+    }
+
+    normalized_argv_.reserve(static_cast<size_t>(argc));
+    normalized_argv_view_.reserve(static_cast<size_t>(argc));
+
+    for(size_t i = 0; i < static_cast<size_t>(argc); ++i) {
+        normalized_argv_.push_back(narrow(wargv[i]));
+
+        // using const_cast is well-defined, string is known to not be const.
+        normalized_argv_view_.push_back(const_cast<char *>(normalized_argv_.back().data()));
+    }
+
+    return normalized_argv_view_.data();
+#else
+    return argv;
+#endif
+}
+
 CLI11_INLINE App *App::name(std::string app_name) {
 
     if(parent_ != nullptr) {
