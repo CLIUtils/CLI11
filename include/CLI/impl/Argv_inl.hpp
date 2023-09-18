@@ -89,6 +89,29 @@ static const std::vector<const char *> static_args = [] {
 }();
 #endif
 
+#ifdef _WIN32
+CLI11_INLINE std::vector<std::string> compute_win32_argv() {
+    std::vector<std::string> result;
+    int argc = 0;
+
+    auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
+    // NOLINTBEGIN(*-avoid-c-arrays)
+    auto wargv = std::unique_ptr<wchar_t *[], decltype(deleter)>(CommandLineToArgvW(GetCommandLineW(), &argc), deleter);
+    // NOLINTEND(*-avoid-c-arrays)
+
+    if(wargv == nullptr) {
+        throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
+    }
+
+    result.reserve(static_cast<size_t>(argc));
+    for(size_t i = 0; i < static_cast<size_t>(argc); ++i) {
+        result.push_back(narrow(wargv[i]));
+    }
+
+    return result;
+}
+#endif
+
 /// Command-line arguments, as passed in to this executable, converted to utf-8 on Windows.
 CLI11_INLINE const std::vector<const char *> &args() {
     // This function uses initialization via lambdas extensively to take advantage of the thread safety of static
@@ -96,28 +119,7 @@ CLI11_INLINE const std::vector<const char *> &args() {
 
 #ifdef _WIN32
     static const std::vector<const char *> static_args = [] {
-        static const std::vector<std::string> static_args_as_strings = [] {
-            // On Windows, take arguments from GetCommandLineW and convert them to utf-8.
-            std::vector<std::string> args_as_strings;
-            int argc = 0;
-
-            auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
-            // NOLINTBEGIN(*-avoid-c-arrays)
-            auto wargv =
-                std::unique_ptr<wchar_t *[], decltype(deleter)>(CommandLineToArgvW(GetCommandLineW(), &argc), deleter);
-            // NOLINTEND(*-avoid-c-arrays)
-
-            if(wargv == nullptr) {
-                throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
-            }
-
-            args_as_strings.reserve(static_cast<size_t>(argc));
-            for(size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-                args_as_strings.push_back(narrow(wargv[i]));
-            }
-
-            return args_as_strings;
-        }();
+        static const std::vector<std::string> static_args_as_strings = compute_win32_argv();
 
         std::vector<const char *> static_args_result;
         static_args_result.reserve(static_args_as_strings.size());

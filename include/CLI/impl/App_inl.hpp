@@ -61,30 +61,16 @@ CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #ifdef _WIN32
     (void)argv;
 
-    int argc = 0;
-    auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
+    normalized_argv_ = detail::compute_win32_argv();
 
-    // NOLINTBEGIN(*-avoid-c-arrays)
-    std::unique_ptr<wchar_t *[], decltype(deleter)> wargv(CommandLineToArgvW(GetCommandLineW(), &argc), deleter);
-    // NOLINTEND(*-avoid-c-arrays)
-
-    if(wargv == nullptr) {
-        throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
-    }
-
-    if(!normalized_argv_.empty()) {
-        normalized_argv_.clear();
+    if(!normalized_argv_view_.empty()) {
         normalized_argv_view_.clear();
     }
 
-    normalized_argv_.reserve(static_cast<size_t>(argc));
-    normalized_argv_view_.reserve(static_cast<size_t>(argc));
-
-    for(size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-        normalized_argv_.push_back(narrow(wargv[i]));
-
+    normalized_argv_view_.reserve(normalized_argv_.size());
+    for(auto &arg : normalized_argv_) {
         // using const_cast is well-defined, string is known to not be const.
-        normalized_argv_view_.push_back(const_cast<char *>(normalized_argv_.back().data()));
+        normalized_argv_view_.push_back(const_cast<char *>(arg.data()));
     }
 
     return normalized_argv_view_.data();
