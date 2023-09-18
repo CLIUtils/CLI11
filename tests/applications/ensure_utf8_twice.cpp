@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
     CLI::App app{"App description"};
     char **original_argv = argv;
     argv = app.ensure_utf8(argv);
+    argv = app.ensure_utf8(argv);  // completely useless but works ok
 
 #ifdef _WIN32
     for(int i = 0; i < argc; i++) {
