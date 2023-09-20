@@ -2615,3 +2615,39 @@ TEST_CASE("System Args", "[app]") {
         FAIL("Executable '" << commandline << "' failed with an unknown return code");
     }
 }
+
+// #845
+TEST_CASE("Ensure UTF-8", "[app]") {
+    const char *commandline = CLI11_ENSURE_UTF8_EXE " 1234 false \"hello world\"";
+    int retval = std::system(commandline);
+
+    if(retval == -1) {
+        FAIL("Executable '" << commandline << "' reported that argv pointer changed where it should not have been");
+    }
+
+    if(retval > 0) {
+        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+    }
+
+    if(retval != 0) {
+        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+    }
+}
+
+// #845
+TEST_CASE("Ensure UTF-8 called twice", "[app]") {
+    const char *commandline = CLI11_ENSURE_UTF8_TWICE_EXE " 1234 false \"hello world\"";
+    int retval = std::system(commandline);
+
+    if(retval == -1) {
+        FAIL("Executable '" << commandline << "' reported that argv pointer changed where it should not have been");
+    }
+
+    if(retval > 0) {
+        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+    }
+
+    if(retval != 0) {
+        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+    }
+}

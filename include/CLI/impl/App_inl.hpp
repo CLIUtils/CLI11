@@ -57,6 +57,28 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
     }
 }
 
+CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
+#ifdef _WIN32
+    (void)argv;
+
+    normalized_argv_ = detail::compute_win32_argv();
+
+    if(!normalized_argv_view_.empty()) {
+        normalized_argv_view_.clear();
+    }
+
+    normalized_argv_view_.reserve(normalized_argv_.size());
+    for(auto &arg : normalized_argv_) {
+        // using const_cast is well-defined, string is known to not be const.
+        normalized_argv_view_.push_back(const_cast<char *>(arg.data()));
+    }
+
+    return normalized_argv_view_.data();
+#else
+    return argv;
+#endif
+}
+
 CLI11_INLINE App *App::name(std::string app_name) {
 
     if(parent_ != nullptr) {

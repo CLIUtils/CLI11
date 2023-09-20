@@ -290,6 +290,14 @@ class App {
 
     ///@}
 
+#ifdef _WIN32
+    /// When normalizing argv to UTF-8 on Windows, this is the storage for normalized args.
+    std::vector<std::string> normalized_argv_{};
+
+    /// When normalizing argv to UTF-8 on Windows, this is the `char**` value returned to the user.
+    std::vector<char *> normalized_argv_view_{};
+#endif
+
     /// Special private constructor for subcommand
     App(std::string app_description, std::string app_name, App *parent);
 
@@ -308,6 +316,9 @@ class App {
 
     /// virtual destructor
     virtual ~App() = default;
+
+    /// Convert the contents of argv to UTF-8. Only does something on Windows, does nothing elsewhere.
+    CLI11_NODISCARD char **ensure_utf8(char **argv);
 
     /// Set a callback for execution when all parsing and processing has completed
     ///
