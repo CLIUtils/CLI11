@@ -1080,7 +1080,11 @@ CLI11_INLINE void App::_process_env() {
         if(opt->count() == 0 && !opt->envname_.empty()) {
             std::string ename_string = detail::get_environment_value(opt->envname_);
             if(!ename_string.empty()) {
-                opt->add_result(ename_string);
+                std::string result = ename_string;
+                result = opt->_validate(result, 0);
+                if(result.empty()) {
+                    opt->add_result(ename_string);
+                }
             }
         }
     }

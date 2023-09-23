@@ -417,7 +417,8 @@ Before parsing, you can set the following options:
   option. Options can be removed from the excludes list with
   `->remove_excludes(opt)`
 - `->envname(name)`: Gets the value from the environment if present and not
-  passed on the command line.
+  passed on the command line. 🚧 The value must also pass any validators to be
+  used.
 - `->group(name)`: The help group to put the option in. No effect for positional
   options. Defaults to `"Options"`. Options given an empty string will not show
   up in the help print (hidden).

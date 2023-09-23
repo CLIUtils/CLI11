@@ -2138,6 +2138,6 @@ TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
     CHECK_NOTHROW(run());
 
     args = {"sub1", "-v", "111"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
     unset_env("SOME_FILE");
 }

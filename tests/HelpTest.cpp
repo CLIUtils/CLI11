@@ -10,6 +10,8 @@
 #include "CLI/CLI.hpp"
 #endif
 
+#include "app_helper.hpp"
+
 #include "catch.hpp"
 #include <fstream>
 
@@ -716,6 +718,22 @@ TEST_CASE("THelp: CustomHelp", "[help]") {
     } catch(const CLI::CallForHelp &e) {
         CHECK(e.get_exit_code() == static_cast<int>(CLI::ExitCodes::Success));
     }
+}
+
+TEST_CASE("THelp: HelpSubcommandPriority", "[help]") {
+    CLI::App app{"My prog"};
+
+    app.set_help_flag("-h", "display help and exit");
+
+    auto *sub1 = app.add_subcommand("sub1");
+    std::string someFile = "";
+
+    put_env("SOME_FILE", "NOT_A_FILE");
+    sub1->add_option("-f,--file", someFile)->envname("SOME_FILE")->required()->expected(1)->check(CLI::ExistingFile);
+
+    std::string input{"sub1 -h"};
+    CHECK_THROWS_AS(app.parse(input), CLI::CallForHelp);
+    unset_env("SOME_FILE");
 }
 
 TEST_CASE("THelp: NextLineShouldBeAlignmentInMultilineDescription", "[help]") {
