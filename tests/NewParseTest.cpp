@@ -193,7 +193,7 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-/// Wrapper with an unconvenient interface
+/// Wrapper with an inconvenient interface
 template <class T> class badlywrapped {
   public:
     badlywrapped() : value() {}
