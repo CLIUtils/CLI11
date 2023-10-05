@@ -1176,16 +1176,14 @@ TEST_CASE_METHOD(TApp, "PositionalAtEnd", "[app]") {
 }
 
 // Tests positionals at end
-TEST_CASE_METHOD(TApp, "PositionalAtEndInjectSeparator", "[app]") {
+TEST_CASE_METHOD(TApp, "PositionalInjectSeparator", "[app]") {
     std::string options;
     std::vector<std::vector<std::string>> foo;
 
     app.add_option("-O", options);
-    auto *fooopt = app.add_option("-f,foo", foo);
+    auto *fooopt=app.add_option("foo", foo);
     fooopt->inject_separator();
-    app.positionals_at_end();
-    CHECK(app.get_positionals_at_end());
-    args = {"-f", "test1", "-O", "Test", "test2"};
+    args = {"test1","-O", "Test", "test2"};
     run();
 
     CHECK("Test" == options);

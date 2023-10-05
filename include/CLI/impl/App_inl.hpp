@@ -2138,8 +2138,8 @@ CLI11_INLINE void retire_option(App *app, Option *opt) {
                             ->allow_extra_args(opt->get_allow_extra_args());
 
     app->remove_option(opt);
-    auto *opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect")
-                     ->type_name("RETIRED")
+    auto *opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect");
+    opt2->type_name("RETIRED")
                      ->default_str("RETIRED")
                      ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
                      ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
