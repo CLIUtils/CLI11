@@ -1443,7 +1443,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
     if(!op->get_configurable()) {
         if(get_allow_config_extras() == config_extras_mode::ignore_all) {
-             return false;
+            return false;
         }
         throw ConfigError::NotConfigurable(item.fullname());
     }
@@ -1552,7 +1552,7 @@ CLI11_NODISCARD CLI11_INLINE bool App::_has_remaining_positionals() const {
 CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
 
     const std::string &positional = args.back();
-    Option* posOpt{ nullptr };
+    Option *posOpt{nullptr};
 
     if(positionals_at_end_) {
         // deal with the case of required arguments at the end which should take precedence over other arguments
@@ -1569,23 +1569,22 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
                                 continue;
                             }
                         }
-                        posOpt=opt.get();
+                        posOpt = opt.get();
                         break;
                     }
                 }
             }
         }
     }
-    if (posOpt == nullptr)
-    {
-        for (const Option_p& opt : options_) {
+    if(posOpt == nullptr) {
+        for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
-            if (opt->get_positional() &&
-                (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
-                if (validate_positionals_) {
+            if(opt->get_positional() &&
+               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
+                if(validate_positionals_) {
                     std::string pos = positional;
                     pos = opt->_validate(pos, 0);
-                    if (!pos.empty()) {
+                    if(!pos.empty()) {
                         continue;
                     }
                 }
@@ -1594,26 +1593,24 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
             }
         }
     }
-    if (posOpt!=nullptr)
-    {
+    if(posOpt != nullptr) {
         parse_order_.push_back(posOpt);
-        if (posOpt->get_inject_separator()) {
-            if (!posOpt->results().empty() && !posOpt->results().back().empty()) {
+        if(posOpt->get_inject_separator()) {
+            if(!posOpt->results().empty() && !posOpt->results().back().empty()) {
                 posOpt->add_result(std::string{});
             }
         }
-        if (posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
+        if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
             posOpt->clear();
         }
         posOpt->add_result(positional);
-        if (posOpt->get_trigger_on_parse()) {
+        if(posOpt->get_trigger_on_parse()) {
             posOpt->run_callback();
         }
-        
+
         args.pop_back();
         return true;
     }
-    
 
     for(auto &subc : subcommands_) {
         if((subc->name_.empty()) && (!subc->disabled_)) {

@@ -1319,7 +1319,6 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
     }
 }
 
-
 TEST_CASE("TVersion: exit", "[help]") {
 
     CLI::App app;
@@ -1330,8 +1329,8 @@ TEST_CASE("TVersion: exit", "[help]") {
         app.parse("--version");
     } catch(const CLI::CallForVersion &v) {
         std::ostringstream out;
-        auto ret=app.exit(v,out);
+        auto ret = app.exit(v, out);
         CHECK_THAT(out.str(), Contains(CLI11_VERSION));
-        CHECK(0==ret);
+        CHECK(0 == ret);
     }
 }
