@@ -1318,3 +1318,20 @@ TEST_CASE("TVersion: parse_throw", "[help]") {
         CHECK(1U == cptr->count());
     }
 }
+
+
+TEST_CASE("TVersion: exit", "[help]") {
+
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+
+    try {
+        app.parse("--version");
+    } catch(const CLI::CallForVersion &v) {
+        std::ostringstream out;
+        auto ret=app.exit(v,out);
+        CHECK_THAT(out.str(), Contains(CLI11_VERSION));
+        CHECK(0==ret);
+    }
+}

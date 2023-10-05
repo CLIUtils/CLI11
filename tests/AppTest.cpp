@@ -27,7 +27,7 @@ TEST_CASE_METHOD(TApp, "OneFlagShortValues", "[app]") {
     run();
     CHECK(app.count("-c") == 1u);
     CHECK(app.count("--count") == 1u);
-    auto v = app["-c"]->results();
+    const auto &v = app["-c"]->results();
     CHECK("v1" == v[0]);
 
     CHECK_THROWS_AS(app["--invalid"], CLI::OptionNotFound);
@@ -1173,6 +1173,24 @@ TEST_CASE_METHOD(TApp, "PositionalAtEnd", "[app]") {
 
     args = {"param2", "-O", "Test"};
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
+
+// Tests positionals at end
+TEST_CASE_METHOD(TApp, "PositionalAtEndInjectSeparator", "[app]") {
+    std::string options;
+    std::vector<std::vector<std::string>> foo;
+
+    app.add_option("-O", options);
+    auto *fooopt=app.add_option("-f,foo", foo);
+    fooopt->inject_separator();
+    app.positionals_at_end();
+    CHECK(app.get_positionals_at_end());
+    args = {"-f","test1","-O", "Test", "test2"};
+    run();
+
+    CHECK("Test" == options);
+    CHECK(foo.size()==2U);
 }
 
 // Tests positionals at end

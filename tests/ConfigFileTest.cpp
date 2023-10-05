@@ -1804,6 +1804,8 @@ TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
     }
 
     CHECK_THROWS_AS(run(), CLI::ConfigError);
+    app.allow_config_extras(CLI::config_extras_mode::ignore_all);
+    CHECK_NOTHROW(run());
 }
 
 TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
