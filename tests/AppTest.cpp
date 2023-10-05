@@ -1181,9 +1181,9 @@ TEST_CASE_METHOD(TApp, "PositionalInjectSeparator", "[app]") {
     std::vector<std::vector<std::string>> foo;
 
     app.add_option("-O", options);
-    auto *fooopt=app.add_option("foo", foo);
+    auto *fooopt = app.add_option("foo", foo);
     fooopt->inject_separator();
-    args = {"test1","-O", "Test", "test2"};
+    args = {"test1", "-O", "Test", "test2"};
     run();
 
     CHECK("Test" == options);

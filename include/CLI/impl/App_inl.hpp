@@ -2140,10 +2140,10 @@ CLI11_INLINE void retire_option(App *app, Option *opt) {
     app->remove_option(opt);
     auto *opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect");
     opt2->type_name("RETIRED")
-                     ->default_str("RETIRED")
-                     ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
-                     ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
-                     ->allow_extra_args(option_copy->get_allow_extra_args());
+        ->default_str("RETIRED")
+        ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
+        ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
+        ->allow_extra_args(option_copy->get_allow_extra_args());
 
     Validator retired_warning{[opt2](std::string &) {
                                   std::cout << "WARNING " << opt2->get_name() << " is retired and has no effect\n";
