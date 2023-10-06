@@ -2117,7 +2117,7 @@ TEST_CASE_METHOD(TApp, "IniFlagsAltComment", "[config]") {
         out << std::endl;
     }
 
-    auto config=app.get_config_formatter_base();
+    auto config = app.get_config_formatter_base();
     config->comment('%');
     int two{0};
     bool three{false}, four{false}, five{false};

@@ -222,15 +222,14 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter);
-        auto comment_pos=line.find_first_of(commentChar);
-        if (comment_pos < delimiter_pos)
-        {
-            delimiter_pos=std::string::npos;
+        auto comment_pos = line.find_first_of(commentChar);
+        if(comment_pos < delimiter_pos) {
+            delimiter_pos = std::string::npos;
         }
-        if(delimiter_pos != std::string::npos) { 
+        if(delimiter_pos != std::string::npos) {
             name = detail::trim_copy(line.substr(0, delimiter_pos));
-            std::string item = detail::trim_copy(line.substr(delimiter_pos + 1,comment_pos-delimiter_pos-1));
-           
+            std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, comment_pos - delimiter_pos - 1));
+
             if(item.size() > 1 && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
@@ -245,9 +244,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 items_buffer = {item};
             }
         } else {
-            name = detail::trim_copy(line.substr(0,comment_pos));
-            if (name.empty())
-            {
+            name = detail::trim_copy(line.substr(0, comment_pos));
+            if(name.empty()) {
                 continue;
             }
             items_buffer = {"true"};
