@@ -2074,6 +2074,66 @@ TEST_CASE_METHOD(TApp, "IniFlags", "[config]") {
     CHECK(five);
 }
 
+TEST_CASE_METHOD(TApp, "IniFlagsComment", "[config]") {
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2 # comment 1" << std::endl;
+        out << "three=true" << std::endl;
+        out << "four=on #comment 2" << std::endl;
+        out << "five #comment 3" << std::endl;
+        out << std::endl;
+    }
+
+    int two{0};
+    bool three{false}, four{false}, five{false};
+    app.add_flag("--two", two);
+    app.add_flag("--three", three);
+    app.add_flag("--four", four);
+    app.add_flag("--five", five);
+
+    run();
+
+    CHECK(two == 2);
+    CHECK(three);
+    CHECK(four);
+    CHECK(five);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagsAltComment", "[config]") {
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "two=2 % comment 1" << std::endl;
+        out << "three=true" << std::endl;
+        out << "four=on %% comment 2" << std::endl;
+        out << "five %= 3" << std::endl;
+        out << std::endl;
+    }
+
+    auto config=app.get_config_formatter_base();
+    config->comment('%');
+    int two{0};
+    bool three{false}, four{false}, five{false};
+    app.add_flag("--two", two);
+    app.add_flag("--three", three);
+    app.add_flag("--four", four);
+    app.add_flag("--five", five);
+
+    run();
+
+    CHECK(two == 2);
+    CHECK(three);
+    CHECK(four);
+    CHECK(five);
+}
+
 TEST_CASE_METHOD(TApp, "IniFalseFlags", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
