@@ -244,7 +244,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 items_buffer = {item};
             }
         } else {
-            name = detail::trim_copy(line.substr(0,comment_pos));
+            name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
         if(name.find(parentSeparatorChar) == std::string::npos) {
