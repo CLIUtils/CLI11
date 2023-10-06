@@ -84,6 +84,7 @@ TEST_CASE("StringBased: FirstWithComments", "[config]") {
     ofile << "one=three\n";
     ofile << "two=four\n";
     ofile << "; and another one\n";
+    ofile << "   ; and yet another one\n";
 
     ofile.seekg(0, std::ios::beg);
 
@@ -2359,6 +2360,17 @@ TEST_CASE_METHOD(TApp, "TomlOutputShortSingleDescription", "[config]") {
 
     std::string str = app.config_to_str(true, true);
     CHECK_THAT(str, Contains("# " + description + "\n" + flag + "=false\n"));
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputdefaultOptionString", "[config]") {
+    std::string option = "some_option";
+    const std::string description = "Some short description.";
+    app.add_option("--" + option, description)->run_callback_for_default();
+
+    run();
+
+    std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains("# " + description + "\n" + option + "=\"\"\n"));
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputShortDoubleDescription", "[config]") {
