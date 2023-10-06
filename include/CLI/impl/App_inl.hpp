@@ -82,7 +82,7 @@ CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 CLI11_INLINE App *App::name(std::string app_name) {
 
     if(parent_ != nullptr) {
-        auto oname = name_;
+        std::string oname = name_;
         name_ = app_name;
         const auto &res = _compare_subcommand_names(*this, *_get_fallthrough_parent());
         if(!res.empty()) {
@@ -832,7 +832,7 @@ CLI11_NODISCARD CLI11_INLINE bool App::check_name(std::string name_to_check) con
     if(local_name == name_to_check) {
         return true;
     }
-    for(auto les : aliases_) {  // NOLINT(performance-for-range-copy)
+    for(std::string les : aliases_) {  // NOLINT(performance-for-range-copy)
         if(ignore_underscore_) {
             les = detail::remove_underscore(les);
         }
@@ -1556,6 +1556,7 @@ CLI11_NODISCARD CLI11_INLINE bool App::_has_remaining_positionals() const {
 CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool haltOnSubcommand) {
 
     const std::string &positional = args.back();
+    Option *posOpt{nullptr};
 
     if(positionals_at_end_) {
         // deal with the case of required arguments at the end which should take precedence over other arguments
@@ -1572,56 +1573,47 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
                                 continue;
                             }
                         }
-
-                        parse_order_.push_back(opt.get());
-                        /// if we require a separator add it here
-                        if(opt->get_inject_separator()) {
-                            if(!opt->results().empty() && !opt->results().back().empty()) {
-                                opt->add_result(std::string{});
-                            }
-                        }
-                        if(opt->get_trigger_on_parse() &&
-                           opt->current_option_state_ == Option::option_state::callback_run) {
-                            opt->clear();
-                        }
-                        opt->add_result(positional);
-                        if(opt->get_trigger_on_parse()) {
-                            opt->run_callback();
-                        }
-                        args.pop_back();
-                        return true;
+                        posOpt = opt.get();
+                        break;
                     }
                 }
             }
         }
     }
-    for(const Option_p &opt : options_) {
-        // Eat options, one by one, until done
-        if(opt->get_positional() &&
-           (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
-            if(validate_positionals_) {
-                std::string pos = positional;
-                pos = opt->_validate(pos, 0);
-                if(!pos.empty()) {
-                    continue;
+    if(posOpt == nullptr) {
+        for(const Option_p &opt : options_) {
+            // Eat options, one by one, until done
+            if(opt->get_positional() &&
+               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
+                if(validate_positionals_) {
+                    std::string pos = positional;
+                    pos = opt->_validate(pos, 0);
+                    if(!pos.empty()) {
+                        continue;
+                    }
                 }
+                posOpt = opt.get();
+                break;
             }
-            if(opt->get_inject_separator()) {
-                if(!opt->results().empty() && !opt->results().back().empty()) {
-                    opt->add_result(std::string{});
-                }
-            }
-            if(opt->get_trigger_on_parse() && opt->current_option_state_ == Option::option_state::callback_run) {
-                opt->clear();
-            }
-            opt->add_result(positional);
-            if(opt->get_trigger_on_parse()) {
-                opt->run_callback();
-            }
-            parse_order_.push_back(opt.get());
-            args.pop_back();
-            return true;
         }
+    }
+    if(posOpt != nullptr) {
+        parse_order_.push_back(posOpt);
+        if(posOpt->get_inject_separator()) {
+            if(!posOpt->results().empty() && !posOpt->results().back().empty()) {
+                posOpt->add_result(std::string{});
+            }
+        }
+        if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
+            posOpt->clear();
+        }
+        posOpt->add_result(positional);
+        if(posOpt->get_trigger_on_parse()) {
+            posOpt->run_callback();
+        }
+
+        args.pop_back();
+        return true;
     }
 
     for(auto &subc : subcommands_) {
@@ -1964,7 +1956,7 @@ CLI11_INLINE void App::_trigger_pre_parse(std::size_t remaining_args) {
     } else if(immediate_callback_) {
         if(!name_.empty()) {
             auto pcnt = parsed_;
-            auto extras = std::move(missing_);
+            missing_t extras = std::move(missing_);
             clear();
             parsed_ = pcnt;
             pre_parse_called_ = true;
@@ -2150,12 +2142,12 @@ CLI11_INLINE void retire_option(App *app, Option *opt) {
                             ->allow_extra_args(opt->get_allow_extra_args());
 
     app->remove_option(opt);
-    auto *opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect")
-                     ->type_name("RETIRED")
-                     ->default_str("RETIRED")
-                     ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
-                     ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
-                     ->allow_extra_args(option_copy->get_allow_extra_args());
+    auto *opt2 = app->add_option(option_copy->get_name(false, true), "option has been retired and has no effect");
+    opt2->type_name("RETIRED")
+        ->default_str("RETIRED")
+        ->type_size(option_copy->get_type_size_min(), option_copy->get_type_size_max())
+        ->expected(option_copy->get_expected_min(), option_copy->get_expected_max())
+        ->allow_extra_args(option_copy->get_allow_extra_args());
 
     Validator retired_warning{[opt2](std::string &) {
                                   std::cout << "WARNING " << opt2->get_name() << " is retired and has no effect\n";
