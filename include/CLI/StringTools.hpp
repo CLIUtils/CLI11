@@ -220,9 +220,6 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter =
 /// the return value is the offset+1 which is required by the find_and_modify function.
 CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset);
 
-/// Add quotes if the string contains spaces
-CLI11_INLINE std::string &add_quotes_if_needed(std::string &str);
-
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
 }  // namespace detail

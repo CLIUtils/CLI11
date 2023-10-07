@@ -1101,6 +1101,42 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturn", "[app]") {
     CHECK_FALSE(strs3.empty());
 }
 
+TEST_CASE_METHOD(TApp, "emptyVectorReturnReduce", "[app]") {
+
+    std::vector<std::string> strs;
+    std::vector<std::string> strs2;
+    std::vector<std::string> strs3;
+    auto *opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
+    app.add_option("--str3", strs3)->expected(1, 3);
+    app.add_option("--str2", strs2)->expected(1,1)->take_first();
+    args = {"--str"};
+
+    CHECK_NOTHROW(run());
+    CHECK(std::vector<std::string>({""}) == strs);
+    args = {"--str", "one", "two"};
+
+    run();
+
+    CHECK(std::vector<std::string>({"one", "two"}) == strs);
+
+    args = {"--str", "{}", "--str2", "{}","test"};
+
+    run();
+
+    CHECK(strs.empty());
+    CHECK(std::vector<std::string>{"{}"} == strs2);
+    opt1->default_str("{}");
+    args = {"--str"};
+
+    CHECK_NOTHROW(run());
+    CHECK(strs.empty());
+    opt1->required(false);
+    args = {"--str3", "{}"};
+
+    CHECK_NOTHROW(run());
+    CHECK_FALSE(strs3.empty());
+}
+
 TEST_CASE_METHOD(TApp, "RequiredOptsDoubleShort", "[app]") {
 
     std::vector<std::string> strs;
