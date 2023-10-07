@@ -1108,7 +1108,7 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturnReduce", "[app]") {
     std::vector<std::string> strs3;
     auto *opt1 = app.add_option("--str", strs)->required()->expected(0, 2);
     app.add_option("--str3", strs3)->expected(1, 3);
-    app.add_option("--str2", strs2)->expected(1,1)->take_first();
+    app.add_option("--str2", strs2)->expected(1, 1)->take_first();
     args = {"--str"};
 
     CHECK_NOTHROW(run());
@@ -1119,7 +1119,7 @@ TEST_CASE_METHOD(TApp, "emptyVectorReturnReduce", "[app]") {
 
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
 
-    args = {"--str", "{}", "--str2", "{}","test"};
+    args = {"--str", "{}", "--str2", "{}", "test"};
 
     run();
 
