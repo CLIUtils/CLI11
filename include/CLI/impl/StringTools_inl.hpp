@@ -244,17 +244,6 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
     return offset + 1;
 }
 
-CLI11_INLINE std::string &add_quotes_if_needed(std::string &str) {
-    if((str.front() != '"' && str.front() != '\'') || str.front() != str.back()) {
-        char quote = str.find('"') < str.find('\'') ? '\'' : '"';
-        if(str.find(' ') != std::string::npos) {
-            str.insert(0, 1, quote);
-            str.append(1, quote);
-        }
-    }
-    return str;
-}
-
 std::string get_environment_value(const std::string &env_name) {
     char *buffer = nullptr;
     std::string ename_string;
