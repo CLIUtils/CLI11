@@ -121,6 +121,17 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     sub->add_option("--sdwrap", dwrap);
     sub->add_option("--siwrap", iwrap);
 
+
+    auto *resgroup = fApp->add_option_group("outputOrder");
+
+    resgroup->add_option("--vA",vstrA)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+    resgroup->add_option("--vB",vstrB)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+    resgroup->add_option("--vC",vstrC)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
+    resgroup->add_option("--vD",vstrD)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::Reverse);
+    resgroup->add_option("--vS",val32)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+    resgroup->add_option("--vM",mergeBuffer)->expected(0,2)->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    resgroup->add_option("--vE",vstrE)->expected(2,4)->delimiter(',');
+
     return fApp;
 }
 
