@@ -72,6 +72,7 @@
 "svopt4"
 "config"
 "nflag2"
+"vdtr"
 "--"
 "fuzzer"
 "t-"

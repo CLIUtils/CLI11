@@ -112,6 +112,7 @@ class FuzzApp {
     std::vector<std::string> vstrD{};
     std::vector<std::string> vstrE{};
     std::vector<std::string> vstrF{};
-    std::string mergeBuffer;
+    std::string mergeBuffer{};
+    std::vector<std::string> validator_strings{};
 };
 }  // namespace CLI
