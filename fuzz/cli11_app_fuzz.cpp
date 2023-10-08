@@ -45,11 +45,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         // this just indicates we caught an error known by CLI
     }
 
-    //should be able to write the config to a file and read from it again
-  std::string configOut=app->config_to_str();
-  app->clear();
-  std::stringstream out(configOut);
-  app->parse_from_stream(out);
+    // should be able to write the config to a file and read from it again
+    std::string configOut = app->config_to_str();
+    app->clear();
+    std::stringstream out(configOut);
+    app->parse_from_stream(out);
 
     return 0;  // Non-zero return values are reserved for future use.
 }
