@@ -138,7 +138,9 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     vldtr->add_option("--vdtr2", validator_strings[1])->join()->check(CLI::NonNegativeNumber);
     vldtr->add_option("--vdtr3", validator_strings[2])->join()->check(CLI::NonexistentPath);
     vldtr->add_option("--vdtr4", validator_strings[3])->join()->check(CLI::Range(7, 3456));
-    vldtr->add_option("--vdtr5", validator_strings[4])->join()->check(CLI::Range(std::string("aa"), std::string("zz"), "string range"));
+    vldtr->add_option("--vdtr5", validator_strings[4])
+        ->join()
+        ->check(CLI::Range(std::string("aa"), std::string("zz"), "string range"));
     vldtr->add_option("--vdtr6", validator_strings[5])->join()->check(CLI::TypeValidator<double>());
     vldtr->add_option("--vdtr7", validator_strings[6])->join()->check(CLI::TypeValidator<bool>());
     vldtr->add_option("--vdtr8", validator_strings[7])->join()->check(CLI::ValidIPV4);
