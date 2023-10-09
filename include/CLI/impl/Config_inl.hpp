@@ -423,7 +423,31 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
                 if(!value.empty()) {
                     if(!opt->get_fnames().empty()) {
-                        value = opt->get_flag_value(name, value);
+                        try
+                        {
+                            value = opt->get_flag_value(name, value);
+                        }
+                        catch (const CLI::ArgumentMismatch& e)
+                        {
+                            bool valid{false};
+                            for (const auto& test_name : opt->get_fnames())
+                            {
+                                try
+                                {
+                                    value = opt->get_flag_value(test_name, value);
+                                    name=test_name;
+                                    valid=true;
+                                }
+                                catch (const CLI::ArgumentMismatch&)
+                                {
+                                    continue;
+                                }
+                            }
+                            if (!valid)
+                            {
+                                throw e;
+                            }
+                        }
                     }
                     if(write_description && opt->has_description()) {
                         out << '\n';
