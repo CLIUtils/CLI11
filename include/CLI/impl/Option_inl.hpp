@@ -369,8 +369,7 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
             if(default_ind >= 0) {
                 // We can static cast this to std::size_t because it is more than 0 in this block
                 if(default_flag_values_[static_cast<std::size_t>(default_ind)].second != input_value) {
-                    if (input_value == default_str_ && force_callback_)
-                    {
+                    if(input_value == default_str_ && force_callback_) {
                         return input_value;
                     }
                     throw(ArgumentMismatch::FlagOverride(name));

@@ -59,12 +59,11 @@ TEST_CASE("file_fail") {
     }
 }
 
-
 TEST_CASE("app_file_gen_fail") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    int index = GENERATE(range(1,2));
+    int index = GENERATE(range(1, 2));
     std::string optionString;
     auto parseData = loadFailureFile("fuzz_app_file_fail", index);
     if(parseData.size() > 25) {
@@ -85,9 +84,8 @@ TEST_CASE("app_file_gen_fail") {
     } catch(const CLI::ConstructionError & /*e*/) {
         return;
     }
-    std::string configOut=app->config_to_str();
+    std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
     app->parse_from_stream(out);
-
 }
