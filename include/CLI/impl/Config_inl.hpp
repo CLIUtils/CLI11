@@ -427,7 +427,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         {
                             value = opt->get_flag_value(name, value);
                         }
-                        catch (const CLI::ArgumentMismatch& e)
+                        catch (const CLI::ArgumentMismatch&)
                         {
                             bool valid{false};
                             for (const auto& test_name : opt->get_fnames())
@@ -445,7 +445,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                             }
                             if (!valid)
                             {
-                                throw e;
+                                throw;
                             }
                         }
                     }
