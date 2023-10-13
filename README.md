@@ -1210,9 +1210,10 @@ file will be read if it exists, and does not throw an error unless `required` is
 `true`. Configuration files are in [TOML][] format by default, though the
 default reader can also accept files in INI format as well. It should be noted
 that CLI11 does not contain a full TOML parser but can read strings from most
-TOML file and run them through the CLI11 parser. Other formats can be added by
-an adept user, some variations are available through customization points in the
-default formatter. An example of a TOML file:
+TOML files, including multi-line strings 🚧, and run them through the CLI11
+parser. Other formats can be added by an adept user, some variations are
+available through customization points in the default formatter. An example of a
+TOML file:
 
 ```toml
 # Comments are supported, using a #

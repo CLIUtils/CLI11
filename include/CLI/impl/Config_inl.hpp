@@ -19,6 +19,8 @@
 namespace CLI {
 // [CLI11:config_inl_hpp:verbatim]
 
+static constexpr auto tquote = R"(""")";
+
 namespace detail {
 
 CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote) {
@@ -58,6 +60,9 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
                 return arg;
             }
         }
+    }
+    if(arg.find_first_of('\n') != std::string::npos) {
+        return std::string(tquote) + arg + tquote;
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
         return std::string(1, stringQuote) + arg + stringQuote;
@@ -164,28 +169,55 @@ checkParentSegments(std::vector<ConfigItem> &output, const std::string &currentS
     output.back().parents = std::move(parents);
     output.back().name = "++";
 }
+
+CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
+    if(fullString.length() < 3) {
+        return false;
+    }
+    auto it = fullString.rbegin();
+    return (*it == check) && (*(it + 1) == check) && (*(it + 2) == check);
+}
 }  // namespace detail
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
+    std::string buffer;
     std::string currentSection = "default";
     std::string previousSection = "default";
     std::vector<ConfigItem> output;
     bool isDefaultArray = (arrayStart == '[' && arrayEnd == ']' && arraySeparator == ',');
     bool isINIArray = (arrayStart == '\0' || arrayStart == ' ') && arrayStart == arrayEnd;
     bool inSection{false};
+    bool inMLineComment{false};
+    bool inMLineValue{false};
     char aStart = (isINIArray) ? '[' : arrayStart;
     char aEnd = (isINIArray) ? ']' : arrayEnd;
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
-    while(getline(input, line)) {
+
+    while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
         std::string name;
 
-        detail::trim(line);
+        line = detail::trim_copy(buffer);
         std::size_t len = line.length();
         // lines have to be at least 3 characters to have any meaning to CLI just skip the rest
         if(len < 3) {
+            continue;
+        }
+        if(line.compare(0, 3, tquote) == 0 || line.compare(0, 3, "'''") == 0) {
+            inMLineComment = true;
+            auto cchar = line.front();
+            while(inMLineComment) {
+                if(getline(input, line)) {
+                    detail::trim(line);
+                } else {
+                    break;
+                }
+                if(detail::hasMLString(line, cchar)) {
+                    inMLineComment = false;
+                }
+            }
             continue;
         }
         if(line.front() == '[' && line.back() == ']') {
@@ -227,10 +259,61 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             delimiter_pos = std::string::npos;
         }
         if(delimiter_pos != std::string::npos) {
+
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, comment_pos - delimiter_pos - 1));
-
-            if(item.size() > 1 && item.front() == aStart) {
+            if(item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0) {
+                // mutliline string
+                auto keyChar = item.front();
+                item = buffer.substr(delimiter_pos + 1, std::string::npos);
+                detail::ltrim(item);
+                item.erase(0, 3);
+                inMLineValue = true;
+                bool lineExtension{false};
+                bool firstLine = true;
+                if(!item.empty() && item.back() == '\\') {
+                    item.pop_back();
+                    lineExtension = true;
+                }
+                while(inMLineValue) {
+                    std::string l2;
+                    if(!std::getline(input, l2)) {
+                        break;
+                    }
+                    line = l2;
+                    detail::rtrim(line);
+                    if(detail::hasMLString(line, keyChar)) {
+                        line.pop_back();
+                        line.pop_back();
+                        line.pop_back();
+                        if(lineExtension) {
+                            detail::ltrim(line);
+                        } else if(!(firstLine && item.empty())) {
+                            item.push_back('\n');
+                        }
+                        firstLine = false;
+                        item += line;
+                        inMLineValue = false;
+                        if(!item.empty() && item.back() == '\n') {
+                            item.pop_back();
+                        }
+                    } else {
+                        if(lineExtension) {
+                            detail::trim(l2);
+                        } else if(!(firstLine && item.empty())) {
+                            item.push_back('\n');
+                        }
+                        lineExtension = false;
+                        firstLine = false;
+                        if(!l2.empty() && l2.back() == '\\') {
+                            lineExtension = true;
+                            l2.pop_back();
+                        }
+                        item += l2;
+                    }
+                }
+                items_buffer = {item};
+            } else if(item.size() > 1 && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
                     item += multiline;
