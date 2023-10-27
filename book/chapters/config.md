@@ -120,7 +120,7 @@ getting the last `N` files given.
 Here is an example configuration file, in
 [TOML](https://github.com/toml-lang/toml) format:
 
-```ini
+```toml
 # Comments are supported, using a #
 # The default section is [default], case insensitive
 
@@ -164,6 +164,47 @@ sub.subcommand = true
 The main differences are in vector notation and comment character. Note: CLI11
 is not a full TOML parser as it just reads values as strings. It is possible
 (but not recommended) to mix notation.
+
+### Multi-line strings
+
+The default config file parser supports multi-line strings like the toml
+standard [TOML](https://toml.io/en/). It also supports multiline comments like
+python doc strings.
+
+```toml
+"""
+this is a multine
+comment
+"""
+
+""" this is also
+a multiline comment"""
+
+''' and so is
+this
+'''
+
+value = 1
+str = """
+this is a multiline string value
+the first \n is removed and so is the last
+"""
+
+str2 = ''' this is also a mu-
+ltiline value '''
+
+str3 = """\
+    a line continuation \
+    will skip \
+    all white space between the '\' \
+    and the next non-whitespace character \
+    making this into a single line
+"""
+
+```
+
+The key is that the closing of the multiline string must be at the end of a line
+and match the starting 3 quote sequence.
 
 ## Multiple configuration files
 
