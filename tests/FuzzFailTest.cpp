@@ -64,7 +64,7 @@ TEST_CASE("app_file_gen_fail") {
     auto app = fuzzdata.generateApp();
 
     int index = GENERATE(range(1, 4));
-    std::string optionString,flagString;
+    std::string optionString, flagString;
     auto parseData = loadFailureFile("fuzz_app_file_fail", index);
     if(parseData.size() > 25) {
         optionString = parseData.substr(0, 25);

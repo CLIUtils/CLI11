@@ -11,8 +11,8 @@ engines:
 languages:
 
 exclude_paths:
-  - 'fuzz/**/*'
-  - 'fuzz/*'
-  - 'scripts/**/*'
-  - 'scripts/*'
-  - '**.md'
+  - "fuzz/**/*"
+  - "fuzz/*"
+  - "scripts/**/*"
+  - "scripts/*"
+  - "**.md"
