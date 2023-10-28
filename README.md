@@ -1579,8 +1579,10 @@ GitBook][gitbook].
 
 Several short examples of different features are included in the repository. A
 brief description of each is included here
+
 - [arg_capture](https://github.com/CLIUtils/CLI11/blob/main/examples/arg_capture.cpp):
-  Example of capturing all remaining arguments after a specific option, using subcommand and prefix_command() with an alias.
+  Example of capturing all remaining arguments after a specific option, using
+  subcommand and prefix_command() with an alias.
 - [callback_passthrough](https://github.com/CLIUtils/CLI11/blob/main/examples/callback_passthrough.cpp):
   Example of directly passing remaining arguments through to a callback function
   which generates a CLI11 application based on existing arguments.

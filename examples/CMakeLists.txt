@@ -188,7 +188,7 @@ add_cli_exe(prefix_command prefix_command.cpp)
 add_test(NAME prefix_command COMMAND prefix_command -v 3 2 1 -- other one two 3)
 set_property(TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION "Prefix: 3 : 2 : 1"
                                           "Remaining commands: other one two 3")
-                                          
+
 add_cli_exe(arg_capture arg_capture.cpp)
 add_test(NAME arg_capture COMMAND arg_capture -v 27 --sub -v 13 --val prefix)
 set_property(TEST arg_capture PROPERTY PASS_REGULAR_EXPRESSION "value=27")

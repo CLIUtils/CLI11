@@ -19,11 +19,10 @@ int main(int argc, const char *argv[]) {
     auto *subcom = app.add_subcommand("sub", "")->prefix_command();
     CLI11_PARSE(app, argc, argv);
 
-    std::cout<<"value ="<<value<<std::endl;
-    std::cout<<"after Args:";
-    for (const auto& aarg : subcom->remaining())
-    {
-        std::cout<<aarg<<" ";
+    std::cout << "value =" << value << std::endl;
+    std::cout << "after Args:";
+    for(const auto &aarg : subcom->remaining()) {
+        std::cout << aarg << " ";
     }
-    std::cout<<std::endl;
+    std::cout << std::endl;
 }
