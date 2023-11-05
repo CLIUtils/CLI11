@@ -437,7 +437,8 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                                 }
                             }
                             if(!valid) {
-                                throw;
+                                value = detail::ini_join(
+                                    opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, characterQuote);
                             }
                         }
                     }

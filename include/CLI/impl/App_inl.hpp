@@ -723,7 +723,8 @@ CLI11_NODISCARD CLI11_INLINE std::string App::help(std::string prev, AppFormatMo
 CLI11_NODISCARD CLI11_INLINE std::string App::version() const {
     std::string val;
     if(version_ptr_ != nullptr) {
-        auto rv = version_ptr_->results();
+        // copy the results for reuse later
+        results_t rv = version_ptr_->results();
         version_ptr_->clear();
         version_ptr_->add_result("true");
         try {
@@ -1479,7 +1480,46 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 if(op->get_items_expected_max() > 1) {
                     throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
                 }
-                throw ConversionError::TooManyInputsFlag(item.fullname());
+                if (op->get_disable_flag_override())
+                {
+                    for (const auto& res : item.inputs)
+                    {
+                        bool valid_value{false};
+                        if (op->default_flag_values_.empty())
+                        {
+                            if (res == "true" || res == "false" || res == "1" || res == "0") {
+                                valid_value=true;
+                            }
+                        }
+                        else
+                        {
+                            for (const auto& valid_res : op->default_flag_values_)
+                            {
+                                if (valid_res.second == res)
+                                {
+                                    valid_value=true;
+                                    break;
+                                }
+                            }
+
+                        }
+                        
+                        if (valid_value)
+                        {
+                            op->add_result(res);
+                        }
+                        else
+                        {
+                            throw InvalidError("invalid flag argument given");
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    throw ConversionError::TooManyInputsFlag(item.fullname());
+                }
+                
             }
         }
         op->add_result(item.inputs);
