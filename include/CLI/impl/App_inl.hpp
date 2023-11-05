@@ -1480,46 +1480,32 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 if(op->get_items_expected_max() > 1) {
                     throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
                 }
-                if (op->get_disable_flag_override())
-                {
-                    for (const auto& res : item.inputs)
-                    {
+                if(op->get_disable_flag_override()) {
+                    for(const auto &res : item.inputs) {
                         bool valid_value{false};
-                        if (op->default_flag_values_.empty())
-                        {
-                            if (res == "true" || res == "false" || res == "1" || res == "0") {
-                                valid_value=true;
+                        if(op->default_flag_values_.empty()) {
+                            if(res == "true" || res == "false" || res == "1" || res == "0") {
+                                valid_value = true;
                             }
-                        }
-                        else
-                        {
-                            for (const auto& valid_res : op->default_flag_values_)
-                            {
-                                if (valid_res.second == res)
-                                {
-                                    valid_value=true;
+                        } else {
+                            for(const auto &valid_res : op->default_flag_values_) {
+                                if(valid_res.second == res) {
+                                    valid_value = true;
                                     break;
                                 }
                             }
+                        }
 
-                        }
-                        
-                        if (valid_value)
-                        {
+                        if(valid_value) {
                             op->add_result(res);
-                        }
-                        else
-                        {
+                        } else {
                             throw InvalidError("invalid flag argument given");
                         }
                     }
                     return true;
-                }
-                else
-                {
+                } else {
                     throw ConversionError::TooManyInputsFlag(item.fullname());
                 }
-                
             }
         }
         op->add_result(item.inputs);
