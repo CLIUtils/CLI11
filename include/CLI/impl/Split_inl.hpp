@@ -129,15 +129,11 @@ get_names(const std::vector<std::string> &input) {
         } else {
             if(!pos_name.empty())
                 throw BadNameString::MultiPositionalNames(name);
-            if (valid_name_string(name))
-            {
+            if(valid_name_string(name)) {
                 pos_name = name;
-            }
-            else
-            {
+            } else {
                 throw BadNameString::BadPositionalName(name);
             }
-            
         }
     }
 
