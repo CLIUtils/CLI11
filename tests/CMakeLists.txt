@@ -1,10 +1,11 @@
+if(${CMAKE_VERSION} VERSION_GREATER "3.13.0") 
 if(CLI11_SANITIZERS)
   message(STATUS "Using arsenm/sanitizers-cmake")
   FetchContent_Declare(
     sanitizers
     GIT_REPOSITORY https://github.com/arsenm/sanitizers-cmake.git
     GIT_SHALLOW 1
-    GIT_TAG c3dc841)
+    GIT_TAG 3f0542e)
 
   FetchContent_GetProperties(sanitizers)
 
@@ -22,6 +23,7 @@ else()
   macro(add_sanitizers)
 
   endmacro()
+endif()
 endif()
 
 # Add boost to test boost::optional (currently explicitly requested)"

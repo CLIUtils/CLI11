@@ -337,7 +337,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         for(auto &it : items_buffer) {
             detail::remove_quotes(it);
         }
-
+        std::string orig_name=name;
         std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
         if(parents.size() > maximumLayers) {
             continue;
@@ -357,6 +357,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } else {
             output.emplace_back();
             output.back().parents = std::move(parents);
+            if (orig_name != name)
+            {
+                output.back().orig_name=std::move(orig_name);
+            }
             output.back().name = std::move(name);
             output.back().inputs = std::move(items_buffer);
         }

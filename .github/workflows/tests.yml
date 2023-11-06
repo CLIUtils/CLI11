@@ -232,11 +232,10 @@ jobs:
           cmake-version: "3.10"
         if: success() || failure()
 
-      - name: Check CMake 3.11 (full)
+      - name: Check CMake 3.11
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.11"
-          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
       - name: Check CMake 3.12
@@ -255,6 +254,7 @@ jobs:
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.14"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
       - name: Check CMake 3.15

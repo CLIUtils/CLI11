@@ -29,7 +29,8 @@ struct ConfigItem {
 
     /// This is the name
     std::string name{};
-
+    /// @brief storage for the full name as a string
+    std::string orig_name{};
     /// Listing of inputs
     std::vector<std::string> inputs{};
 

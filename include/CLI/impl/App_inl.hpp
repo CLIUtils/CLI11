@@ -1396,14 +1396,26 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
 }
 
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
+    Option *op{nullptr};
     if(level < item.parents.size()) {
-        try {
-            auto *subcom = get_subcommand(item.parents.at(level));
-            auto result = subcom->_parse_single_config(item, level + 1);
-
-            return result;
-        } catch(const OptionNotFound &) {
-            return false;
+        //need to check for oddly named options first
+        if (item.orig_name != item.name)
+        {
+            op = get_option_no_throw("--" + item.orig_name);
+            if(op == nullptr) {
+                op = get_option_no_throw(item.orig_name);
+            }
+        }
+        
+        if (op == nullptr)
+        {
+            try {
+                auto* subcom = get_subcommand(item.parents.at(level));
+                return subcom->_parse_single_config(item, level + 1);
+            }
+            catch (const OptionNotFound&) {
+                return false;
+            }
         }
     }
     // check for section open
@@ -1426,15 +1438,20 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         return true;
     }
-    Option *op = get_option_no_throw("--" + item.name);
-    if(op == nullptr) {
-        if(item.name.size() == 1) {
-            op = get_option_no_throw("-" + item.name);
+    if (op == nullptr)
+    {
+        op = get_option_no_throw("--" + item.name);
+        if(op == nullptr) {
+            if(item.name.size() == 1) {
+                op = get_option_no_throw("-" + item.name);
+            }
+            if(op == nullptr) {
+                op = get_option_no_throw(item.name);
+            }
         }
     }
-    if(op == nullptr) {
-        op = get_option_no_throw(item.name);
-    }
+    
+    
     if(op == nullptr) {
         // If the option was not present
         if(get_allow_config_extras() == config_extras_mode::capture)
@@ -1480,7 +1497,12 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 if(op->get_items_expected_max() > 1) {
                     throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
                 }
-                if(op->get_disable_flag_override()) {
+                
+                if (!op->get_disable_flag_override()) {
+                    throw ConversionError::TooManyInputsFlag(item.fullname());
+                }
+                // if the disable flag override is set then we must have the flag values match a known flag value
+                // this is true regardless of the output value, so an array input is possible and must be accounted for
                     for(const auto &res : item.inputs) {
                         bool valid_value{false};
                         if(op->default_flag_values_.empty()) {
@@ -1503,9 +1525,6 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                         }
                     }
                     return true;
-                } else {
-                    throw ConversionError::TooManyInputsFlag(item.fullname());
-                }
             }
         }
         op->add_result(item.inputs);
