@@ -1493,7 +1493,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op->add_result(res);
                 return true;
             }
-            if(static_cast<int>(item.inputs.size()) > op->get_items_expected_max()) {
+            if(static_cast<int>(item.inputs.size()) > op->get_items_expected_max() && op->get_multi_option_policy()!=MultiOptionPolicy::TakeAll) {
                 if(op->get_items_expected_max() > 1) {
                     throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
                 }
