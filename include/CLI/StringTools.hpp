@@ -141,15 +141,15 @@ CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<s
 /// Verify the first character of an option
 /// - is a trigger character, ! has special meaning and new lines would just be annoying to deal with
 template <typename T> bool valid_first_char(T c) {
-    return ((c != '-') && (c != '!') && (c != ' ') && (c != '\n') && (c != '\0'));
+    return ((c != '-') && (static_cast<unsigned char>(c) > 33)); // space and '!' not allowed
 }
 
 /// Verify following characters of an option
 template <typename T> bool valid_later_char(T c) {
     // = and : are value separators, { has special meaning for option defaults,
-    // and \n and '\0' would just be annoying to deal with in many places allowing space here has too much potential for
+    // and control codes other than tab would just be annoying to deal with in many places allowing space here has too much potential for
     // inadvertent entry errors and bugs
-    return ((c != '=') && (c != ':') && (c != '{') && (c != ' ') && (c != '\n') && (c != '\0'));
+    return ((c != '=') && (c != ':') && (c != '{') && ((static_cast<unsigned char>(c) > 32)||c=='\t'));
 }
 
 /// Verify an option/subcommand name
