@@ -44,9 +44,10 @@ CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
         }
     }
     if(escaped_string != string_to_escape) {
-        escaped_string.insert(0, "B(\"");
+        escaped_string.insert(0, "'B(\"");
         escaped_string.push_back(')');
         escaped_string.push_back('"');
+        escaped_string.push_back('\'');
     }
     return escaped_string;
 }
