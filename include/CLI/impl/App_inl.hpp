@@ -371,7 +371,8 @@ CLI11_INLINE bool App::remove_option(Option *opt) {
 CLI11_INLINE App *App::add_subcommand(std::string subcommand_name, std::string subcommand_description) {
     if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
         if(!detail::valid_first_char(subcommand_name[0])) {
-            throw IncorrectConstruction("Subcommand name starts with invalid character, '!' and '-' and control characters");
+            throw IncorrectConstruction(
+                "Subcommand name starts with invalid character, '!' and '-' and control characters");
         }
         for(auto c : subcommand_name) {
             if(!detail::valid_later_char(c)) {
