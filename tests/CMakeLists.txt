@@ -4,7 +4,7 @@ if(CLI11_SANITIZERS)
     sanitizers
     GIT_REPOSITORY https://github.com/arsenm/sanitizers-cmake.git
     GIT_SHALLOW 1
-    GIT_TAG c3dc841)
+    GIT_TAG 3f0542e)
 
   FetchContent_GetProperties(sanitizers)
 
