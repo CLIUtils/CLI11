@@ -1,5 +1,4 @@
-if(${CMAKE_VERSION} VERSION_GREATER "3.13.0") 
-if(CLI11_SANITIZERS)
+if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.13.0") 
   message(STATUS "Using arsenm/sanitizers-cmake")
   FetchContent_Declare(
     sanitizers
@@ -23,7 +22,6 @@ else()
   macro(add_sanitizers)
 
   endmacro()
-endif()
 endif()
 
 # Add boost to test boost::optional (currently explicitly requested)"

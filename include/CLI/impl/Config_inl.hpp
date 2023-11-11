@@ -23,7 +23,35 @@ static constexpr auto tquote = R"(""")";
 
 namespace detail {
 
+    CLI11_INLINE std::string escape_string(const std::string& string_to_escape)
+    {
+        // s is our escaped output string
+        std::string escaped_string{};
+        // loop through all characters
+        for(char c : string_to_escape)
+        {
+            // check if a given character is printable
+            // the cast is necessary to avoid undefined behaviour
+            if (isprint((unsigned char)c) == 0) {
+                escaped_string.push_back(c);
+            }
+            else
+            {
+                std::stringstream stream;
+                // if the character is not printable
+                // we'll convert it to a hex string using a stringstream
+                // note that since char is signed we have to cast it to unsigned first
+                stream << std::hex << (unsigned int)(unsigned char)(c);
+                std::string code = stream.str();
+                escaped_string += std::string("\\x")+(code.size()<2?"0":"")+code;
+            }
+        }
+}
+
+
+
 CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote) {
+    static const std::string elchars=std::string("\n")+'\0';
     if(arg.empty()) {
         return std::string(2, stringQuote);
     }
@@ -61,7 +89,7 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
             }
         }
     }
-    if(arg.find_first_of('\n') != std::string::npos) {
+    if(arg.find_first_of(elchars) != std::string::npos) {
         return std::string(tquote) + arg + tquote;
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
