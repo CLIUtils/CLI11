@@ -23,42 +23,38 @@ static constexpr auto tquote = R"(""")";
 
 namespace detail {
 
-    CLI11_INLINE std::string escape_string(const std::string& string_to_escape)
-    {
-        // s is our escaped output string
-        std::string escaped_string{};
-        // loop through all characters
-        for(char c : string_to_escape)
-        {
-            // check if a given character is printable
-            // the cast is necessary to avoid undefined behaviour
-            if (isprint((unsigned char)c) == 0) {
-                std::stringstream stream;
-                // if the character is not printable
-                // we'll convert it to a hex string using a stringstream
-                // note that since char is signed we have to cast it to unsigned first
-                stream << std::hex << (unsigned int)(unsigned char)(c);
-                std::string code = stream.str();
-                escaped_string += std::string("\\x")+(code.size()<2?"0":"")+code;
-                
-            }
-            else
-            {
-                escaped_string.push_back(c);
-            }
-        }
-        if (escaped_string != string_to_escape)
-        {
-            escaped_string.insert(0,"B(\"");
-            escaped_string.push_back(')');
-            escaped_string.push_back('"');
-        }
-        return escaped_string;
-    }
+CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
+    // s is our escaped output string
+    std::string escaped_string{};
+    // loop through all characters
+    for(char c : string_to_escape) {
+        // check if a given character is printable
+        // the cast is necessary to avoid undefined behaviour
+        if(isprint((unsigned char)c) == 0) {
+            std::stringstream stream;
+            // if the character is not printable
+            // we'll convert it to a hex string using a stringstream
+            // note that since char is signed we have to cast it to unsigned first
+            stream << std::hex << (unsigned int)(unsigned char)(c);
+            std::string code = stream.str();
+            escaped_string += std::string("\\x") + (code.size() < 2 ? "0" : "") + code;
 
-    CLI11_INLINE bool is_printable(const std::string& test_string)
-    {
-        return std::all_of(test_string.begin(), test_string.end(), [](char x) {return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n'); });
+        } else {
+            escaped_string.push_back(c);
+        }
+    }
+    if(escaped_string != string_to_escape) {
+        escaped_string.insert(0, "B(\"");
+        escaped_string.push_back(')');
+        escaped_string.push_back('"');
+    }
+    return escaped_string;
+}
+
+CLI11_INLINE bool is_printable(const std::string &test_string) {
+    return std::all_of(test_string.begin(), test_string.end(), [](char x) {
+        return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n');
+    });
 }
 
 CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote) {
@@ -79,8 +75,7 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
     }
     // just quote a single non numeric character
     if(arg.size() == 1) {
-        if (isprint(static_cast<unsigned char>(arg.front())) == 0)
-        {
+        if(isprint(static_cast<unsigned char>(arg.front())) == 0) {
             return escape_string(arg);
         }
         return std::string(1, characterQuote) + arg + characterQuote;
@@ -103,11 +98,10 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
             }
         }
     }
-    if (!is_printable(arg))
-    {
+    if(!is_printable(arg)) {
         return escape_string(arg);
     }
-    if (arg.find_first_of("\n") != std::string::npos) {
+    if(arg.find_first_of("\n") != std::string::npos) {
         return std::string(tquote) + arg + tquote;
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
@@ -383,7 +377,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         for(auto &it : items_buffer) {
             detail::remove_quotes(it);
         }
-        std::string orig_name=name;
+        std::string orig_name = name;
         std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
         if(parents.size() > maximumLayers) {
             continue;
@@ -403,9 +397,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } else {
             output.emplace_back();
             output.back().parents = std::move(parents);
-            if (orig_name != name)
-            {
-                output.back().orig_name=std::move(orig_name);
+            if(orig_name != name) {
+                output.back().orig_name = std::move(orig_name);
             }
             output.back().name = std::move(name);
             output.back().inputs = std::move(items_buffer);
