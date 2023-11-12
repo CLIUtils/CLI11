@@ -294,7 +294,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         }
 
         // Find = in string, split and recombine
-        auto delimiter_pos = line.find_first_of(valueDelimiter,1);
+        auto delimiter_pos = line.find_first_of(valueDelimiter, 1);
         auto comment_pos = line.find_first_of(commentChar);
         if(comment_pos < delimiter_pos) {
             delimiter_pos = std::string::npos;
