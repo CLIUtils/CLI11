@@ -44,6 +44,12 @@ CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
         }
     }
     if(escaped_string != string_to_escape) {
+        auto sqLoc=escaped_string.find('\'');
+        while (sqLoc != std::string::npos)
+        {
+            escaped_string.replace(sqLoc,sqLoc+1,"\\x27");
+            sqLoc=escaped_string.find('\'');
+        }
         escaped_string.insert(0, "'B(\"");
         escaped_string.push_back(')');
         escaped_string.push_back('"');
