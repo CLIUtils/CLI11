@@ -1026,7 +1026,9 @@ option_groups. These are:
   command line for a flag. The operation will throw an exception if the option
   name is not valid.
 
-> Note: if you have a fixed number of required positional options, that will
+> [!NOTE]
+>
+> If you have a fixed number of required positional options, that will
 > match before subcommand names. `{}` is an empty filter function, and any
 > positional argument will match before repeated subcommand names.
 
@@ -1431,17 +1433,19 @@ bad ones:
    `CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
    itself.
 
-   Note: this approach may not work on weird OS configurations, such as when the
-   `/proc` dir is missing on Linux systems (see also
-   [#845](https://github.com/CLIUtils/CLI11/issues/845)).
-
-   ```cpp
-   int main() {
-       CLI::App app;
-       // ...
-       CLI11_PARSE(app);
-   }
-   ```
+   > [!NOTE]
+   >
+   > This approach may not work on weird OS configurations, such as when the
+   > `/proc` dir is missing on Linux systems (see also
+   > [#845](https://github.com/CLIUtils/CLI11/issues/845)).
+   >
+   > ```cpp
+   > int main() {
+   >     CLI::App app;
+   >     // ...
+   >     CLI11_PARSE(app);
+   > }
+   > ```
 
 3. Get correct arguments with which the program was originally executed using
    provided functions: `CLI::argc()` and `CLI::argv()`. These three methods are
