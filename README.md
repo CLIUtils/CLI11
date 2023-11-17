@@ -1028,9 +1028,9 @@ option_groups. These are:
 
 > [!NOTE]
 >
-> If you have a fixed number of required positional options, that will
-> match before subcommand names. `{}` is an empty filter function, and any
-> positional argument will match before repeated subcommand names.
+> If you have a fixed number of required positional options, that will match
+> before subcommand names. `{}` is an empty filter function, and any positional
+> argument will match before repeated subcommand names.
 
 #### Callbacks
 
