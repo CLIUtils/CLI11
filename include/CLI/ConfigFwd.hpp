@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 // [CLI11:public_includes:end]
 
 #include "Error.hpp"
