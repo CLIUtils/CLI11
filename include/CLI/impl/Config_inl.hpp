@@ -63,7 +63,7 @@ CLI11_INLINE bool is_printable(const std::string &test_string) {
     });
 }
 
-CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote) {
+CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote,bool disable_multi_line) {
     if(arg.empty()) {
         return std::string(2, stringQuote);
     }
@@ -108,7 +108,15 @@ CLI11_INLINE std::string convert_arg_for_ini(const std::string &arg, char string
         return escape_string(arg);
     }
     if(arg.find_first_of("\n") != std::string::npos) {
-        return std::string(tquote) + arg + tquote;
+        if (disable_multi_line)
+        {
+            return escape_string(arg);
+        }
+        else
+        {
+            return std::string(tquote) + arg + tquote;
+        }
+        
     }
     if(arg.find_first_of(stringQuote) == std::string::npos) {
         return std::string(1, stringQuote) + arg + stringQuote;
@@ -122,9 +130,11 @@ CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
                                   char arrayEnd,
                                   char stringQuote,
                                   char characterQuote) {
+    bool disable_multi_line{false};
     std::string joined;
     if(args.size() > 1 && arrayStart != '\0') {
         joined.push_back(arrayStart);
+        disable_multi_line=true;
     }
     std::size_t start = 0;
     for(const auto &arg : args) {
@@ -134,7 +144,7 @@ CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
                 joined.push_back(' ');
             }
         }
-        joined.append(convert_arg_for_ini(arg, stringQuote, characterQuote));
+        joined.append(convert_arg_for_ini(arg, stringQuote, characterQuote,disable_multi_line));
     }
     if(args.size() > 1 && arrayEnd != '\0') {
         joined.push_back(arrayEnd);
@@ -491,7 +501,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
-                        value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, characterQuote);
+                        value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, characterQuote,false);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
                     } else if(opt->get_run_callback_for_default()) {
