@@ -236,15 +236,17 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     bool inSection{false};
     bool inMLineComment{false};
     bool inMLineValue{false};
+    
     char aStart = (isINIArray) ? '[' : arrayStart;
     char aEnd = (isINIArray) ? ']' : arrayEnd;
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
+    std::unique_ptr<ConfigItem> alt_config{nullptr};
 
     while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
         std::string name;
-
+        bool literalName{false};
         line = detail::trim_copy(buffer);
         std::size_t len = line.length();
         // lines have to be at least 3 characters to have any meaning to CLI just skip the rest
@@ -295,14 +297,36 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
         // comment lines
         if(line.front() == ';' || line.front() == '#' || line.front() == commentChar) {
-            continue;
+            if (line.compare(2, 13, "cli11:literal") == 0)
+            {
+                literalName=true;
+                getline(input, buffer);
+                line = detail::trim_copy(buffer);
+                len=line.length();
+                if (len < 3)
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                continue;
+            }
+            
         }
 
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter, 1);
-        auto comment_pos = line.find_first_of(commentChar);
+        auto comment_pos = (literalName)?std::string::npos:line.find_first_of(commentChar);
+        std::string orig_name;
         if(comment_pos < delimiter_pos) {
+            if (delimiter_pos != std::string::npos)
+            {
+                alt_config=std::unique_ptr<ConfigItem>(new ConfigItem);
+                alt_config->name=detail::trim_copy(line.substr(0, delimiter_pos));
+            }
             delimiter_pos = std::string::npos;
+            
         }
         if(delimiter_pos != std::string::npos) {
 
@@ -370,7 +394,17 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
                 items_buffer = detail::split_up(item);
             } else {
-                items_buffer = {item};
+                if (literalName)
+                {
+                    items_buffer = {item};
+                }
+                else
+                {
+                    auto citems=detail::split_up(line.substr(delimiter_pos + 1, std::string::npos),commentChar);
+                    item = detail::trim_copy(citems.front());
+                    items_buffer={item};
+                }
+                
             }
         } else {
             name = detail::trim_copy(line.substr(0, comment_pos));
@@ -383,8 +417,16 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         for(auto &it : items_buffer) {
             detail::remove_quotes(it);
         }
-        std::string orig_name = name;
-        std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
+        std::vector<std::string> parents;
+        if (literalName)
+        {
+            std::string noname{};
+            parents = detail::generate_parents(currentSection, noname, parentSeparatorChar);
+        }
+        else
+        {
+            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
+        } 
         if(parents.size() > maximumLayers) {
             continue;
         }
@@ -403,9 +445,6 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } else {
             output.emplace_back();
             output.back().parents = std::move(parents);
-            if(orig_name != name) {
-                output.back().orig_name = std::move(orig_name);
-            }
             output.back().name = std::move(name);
             output.back().inputs = std::move(items_buffer);
         }
@@ -430,6 +469,10 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::string commentLead;
     commentLead.push_back(commentChar);
     commentLead.push_back(' ');
+
+    std::string commentTest="#;";
+    commentTest.push_back(commentChar);
+    commentTest.push_back(parentSeparatorChar);
 
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
@@ -494,6 +537,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     if(write_description && opt->has_description()) {
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
+                    }
+                    if (name.find_first_of(commentTest) != std::string::npos || name.compare(0, 3, tquote) == 0 || name.compare(0, 3, "'''") == 0 || (name.front()=='[' && name.back()==']')) {
+                        out<<commentChar<<" cli11:literal\n";
                     }
                     out << name << valueDelimiter << value << '\n';
                 }

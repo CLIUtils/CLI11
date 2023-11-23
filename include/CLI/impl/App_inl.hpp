@@ -1399,13 +1399,6 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
     Option *op{nullptr};
     if(level < item.parents.size()) {
-        // need to check for oddly named options first
-        if(item.orig_name != item.name) {
-            op = get_option_no_throw("--" + item.orig_name);
-            if(op == nullptr) {
-                op = get_option_no_throw(item.orig_name);
-            }
-        }
 
         if(op == nullptr) {
             try {
