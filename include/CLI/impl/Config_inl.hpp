@@ -407,8 +407,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             items_buffer = {"true"};
         }
         if(name.find(parentSeparatorChar) == std::string::npos) {
-            if (!literalName)
-            {
+            if(!literalName) {
                 detail::remove_quotes(name);
             }
         }
@@ -535,8 +534,10 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
                     if(name.find_first_of(commentTest) != std::string::npos || name.compare(0, 3, tquote) == 0 ||
-                       name.compare(0, 3, "'''") == 0 || (name.front() == '[' && name.back() == ']')|| (name.front() == stringQuote && name.back() == stringQuote)
-                        || (name.front() == characterQuote && name.back() == characterQuote) || (name.front() == '`' && name.back() == '`')) {
+                       name.compare(0, 3, "'''") == 0 || (name.front() == '[' && name.back() == ']') ||
+                       (name.front() == stringQuote && name.back() == stringQuote) ||
+                       (name.front() == characterQuote && name.back() == characterQuote) ||
+                       (name.front() == '`' && name.back() == '`')) {
                         out << commentChar << " cli11:literal\n";
                     }
                     out << name << valueDelimiter << value << '\n';
