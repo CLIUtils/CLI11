@@ -244,14 +244,14 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
     return offset + 1;
 }
 
-CLI11_INLINE std::string escape_string(const std::string& string_to_escape) {
+CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
     // s is our escaped output string
     std::string escaped_string{};
     // loop through all characters
-    for (char c : string_to_escape) {
+    for(char c : string_to_escape) {
         // check if a given character is printable
         // the cast is necessary to avoid undefined behaviour
-        if (isprint((unsigned char)c) == 0) {
+        if(isprint((unsigned char)c) == 0) {
             std::stringstream stream;
             // if the character is not printable
             // we'll convert it to a hex string using a stringstream
@@ -260,14 +260,13 @@ CLI11_INLINE std::string escape_string(const std::string& string_to_escape) {
             std::string code = stream.str();
             escaped_string += std::string("\\x") + (code.size() < 2 ? "0" : "") + code;
 
-        }
-        else {
+        } else {
             escaped_string.push_back(c);
         }
     }
-    if (escaped_string != string_to_escape) {
+    if(escaped_string != string_to_escape) {
         auto sqLoc = escaped_string.find('\'');
-        while (sqLoc != std::string::npos) {
+        while(sqLoc != std::string::npos) {
             escaped_string.replace(sqLoc, sqLoc + 1, "\\x27");
             sqLoc = escaped_string.find('\'');
         }
@@ -279,87 +278,69 @@ CLI11_INLINE std::string escape_string(const std::string& string_to_escape) {
     return escaped_string;
 }
 
-CLI11_INLINE bool is_escaped_string(const std::string& escaped_string)
-{
-    size_t ssize=escaped_string.size();
-    if (escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize-2,2,")\"")==0)
-    {
+CLI11_INLINE bool is_escaped_string(const std::string &escaped_string) {
+    size_t ssize = escaped_string.size();
+    if(escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
         return true;
     }
-    return (escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize-3,3,")\"'")==0);
+    return (escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0);
 }
 
-CLI11_INLINE std::string extract_string(const std::string& escaped_string)
-{
+CLI11_INLINE std::string extract_string(const std::string &escaped_string) {
     std::size_t start{0};
     std::size_t tail{0};
-    size_t ssize=escaped_string.size();
-    if (escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize-2,2,")\"")==0)
-    {
-        start=3;
-        tail=2;
-    }
-    else if (escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize-3,3,")\"'")==0)
-    {
-        start=4;
-        tail=3;
+    size_t ssize = escaped_string.size();
+    if(escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
+        start = 3;
+        tail = 2;
+    } else if(escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0) {
+        start = 4;
+        tail = 3;
     }
 
-    if (start == 0)
-    {
+    if(start == 0) {
         return escaped_string;
     }
-        std::string outstring;
-        
-        outstring.reserve(ssize-start-tail);
-        std::size_t loc=start;
-        while (loc < ssize-tail)
-        {
-            // ssize-2 to skip )" at the end
-            if (escaped_string[loc] == '\\' && escaped_string[loc+1]=='x')
-            {
-                    auto c1=escaped_string[loc+2];
-                    auto c2=escaped_string[loc+3];
-                    unsigned char res{0};
-                    bool invalid{false};
-                    if (c1>=48 && c1<=57)
-                    {
-                        res = (c1-48)*16;
-                    } else if (c1>=65 && c1<=70) {
-                        res = (c1-55)*16;
-                    } else if (c1>=97 && c1<=102) {
-                        res = (c1-87)*16;
-                    }
-                    else
-                    {
-                        invalid=true;
-                    }
+    std::string outstring;
 
-                    if (c2>=48 && c2<=57)
-                    {
-                        res += (c2-48);
-                    } else if (c2>=65 && c2<=70) {
-                        res += (c2-55);
-                    } else if (c2>=97 && c2<=102) {
-                        res += (c2-87);
-                    }
-                    else
-                    {
-                        invalid=true;
-                    }
-                    if (!invalid)
-                    {
-                        loc+=4;
-                        outstring.push_back(static_cast<char>(res));
-                        continue;
-                    }
+    outstring.reserve(ssize - start - tail);
+    std::size_t loc = start;
+    while(loc < ssize - tail) {
+        // ssize-2 to skip )" at the end
+        if(escaped_string[loc] == '\\' && escaped_string[loc + 1] == 'x') {
+            auto c1 = escaped_string[loc + 2];
+            auto c2 = escaped_string[loc + 3];
+            unsigned char res{0};
+            bool invalid{false};
+            if(c1 >= 48 && c1 <= 57) {
+                res = (c1 - 48) * 16;
+            } else if(c1 >= 65 && c1 <= 70) {
+                res = (c1 - 55) * 16;
+            } else if(c1 >= 97 && c1 <= 102) {
+                res = (c1 - 87) * 16;
+            } else {
+                invalid = true;
             }
-            outstring.push_back(escaped_string[loc]);
-            ++loc;
-        }
-        return outstring;
-    
 
+            if(c2 >= 48 && c2 <= 57) {
+                res += (c2 - 48);
+            } else if(c2 >= 65 && c2 <= 70) {
+                res += (c2 - 55);
+            } else if(c2 >= 97 && c2 <= 102) {
+                res += (c2 - 87);
+            } else {
+                invalid = true;
+            }
+            if(!invalid) {
+                loc += 4;
+                outstring.push_back(static_cast<char>(res));
+                continue;
+            }
+        }
+        outstring.push_back(escaped_string[loc]);
+        ++loc;
+    }
+    return outstring;
 }
 
 std::string get_environment_value(const std::string &env_name) {

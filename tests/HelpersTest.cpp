@@ -238,32 +238,31 @@ TEST_CASE("StringTools: Validation", "[helpers]") {
 }
 
 TEST_CASE("StringTools: escapseConversion", "[helpers]") {
-    std::string testString ("string1");
-    std::string estring=CLI::detail::escape_string(testString);
-    CHECK(testString==estring);
+    std::string testString("string1");
+    std::string estring = CLI::detail::escape_string(testString);
+    CHECK(testString == estring);
     CHECK_FALSE(CLI::detail::is_escaped_string(estring));
 
-    std::string testString2 ("\nstring1\n");
-    estring=CLI::detail::escape_string(testString2);
-    CHECK_FALSE(testString==estring);
+    std::string testString2("\nstring1\n");
+    estring = CLI::detail::escape_string(testString2);
+    CHECK_FALSE(testString == estring);
     CHECK(CLI::detail::is_escaped_string(estring));
-    std::string rstring=CLI::detail::extract_string(estring);
-    CHECK(rstring==testString2);
+    std::string rstring = CLI::detail::extract_string(estring);
+    CHECK(rstring == testString2);
 
     testString2.push_back(0);
     testString2.push_back(static_cast<char>(197));
     testString2.push_back(78);
     testString2.push_back(-34);
 
-    rstring=CLI::detail::extract_string(CLI::detail::escape_string(testString2));
-    CHECK(rstring==testString2);
+    rstring = CLI::detail::extract_string(CLI::detail::escape_string(testString2));
+    CHECK(rstring == testString2);
 
     testString2.push_back('b');
     testString2.push_back('G');
 
-    rstring=CLI::detail::extract_string(CLI::detail::escape_string(testString2));
-    CHECK(rstring==testString2);
-
+    rstring = CLI::detail::extract_string(CLI::detail::escape_string(testString2));
+    CHECK(rstring == testString2);
 }
 
 TEST_CASE("Trim: Various", "[helpers]") {

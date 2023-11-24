@@ -17,13 +17,11 @@
 // [CLI11:public_includes:end]
 
 namespace CLI {
-    // [CLI11:config_inl_hpp:verbatim]
+// [CLI11:config_inl_hpp:verbatim]
 
-    static constexpr auto tquote = R"(""")";
+static constexpr auto tquote = R"(""")";
 
-    namespace detail {
-
-
+namespace detail {
 
 CLI11_INLINE bool is_printable(const std::string &test_string) {
     return std::all_of(test_string.begin(), test_string.end(), [](char x) {
@@ -383,9 +381,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         // clean up quotes on the items and check for escaped strings
         for(auto &it : items_buffer) {
             detail::remove_quotes(it);
-            if (detail::is_escaped_string(it))
-            {
-                it=detail::extract_string(it);
+            if(detail::is_escaped_string(it)) {
+                it = detail::extract_string(it);
             }
         }
         std::vector<std::string> parents;
