@@ -224,6 +224,15 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset);
 
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
+
+/// generate a string with all non printable characters escaped to hex codes
+CLI11_INLINE std::string escape_string(const std::string& string_to_escape);
+
+CLI11_INLINE bool is_escaped_string(const std::string& escaped_string);
+
+/// extract an escaped string
+CLI11_INLINE std::string extract_string(const std::string& escaped_string);
+
 }  // namespace detail
 
 // [CLI11:string_tools_hpp:end]
