@@ -195,46 +195,41 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
     bool embeddedQuote = false;
     char keyChar = ' ';
     while(!str.empty()) {
-        if (quoteChars.find_first_of(str[0]) != std::string::npos) {
+        if(quoteChars.find_first_of(str[0]) != std::string::npos) {
             keyChar = str[0];
             auto end = str.find_first_of(keyChar, 1);
-            while ((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
+            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
-            if (end != std::string::npos) {
+            if(end != std::string::npos) {
                 output.push_back(str.substr(1, end - 1));
-                if (end + 2 < str.size()) {
+                if(end + 2 < str.size()) {
                     str = str.substr(end + 2);
-                }
-                else {
+                } else {
                     str.clear();
                 }
 
-            }
-            else {
+            } else {
                 output.push_back(str.substr(1));
                 str.clear();
             }
-        } else if (bracketChars.find_first_of(str[0])!=std::string::npos)
-        {
-            auto bracketLoc=bracketChars.find_first_of(str[0]);
+        } else if(bracketChars.find_first_of(str[0]) != std::string::npos) {
+            auto bracketLoc = bracketChars.find_first_of(str[0]);
             keyChar = matchBracketChars[bracketLoc];
             auto end = str.find_first_of(keyChar, 1);
-            while ((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
+            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
-            if (end != std::string::npos) {
-                output.push_back(str.substr(0, end+1));
-                if (end + 2 < str.size()) {
+            if(end != std::string::npos) {
+                output.push_back(str.substr(0, end + 1));
+                if(end + 2 < str.size()) {
                     str = str.substr(end + 2);
-                }
-                else {
+                } else {
                     str.clear();
                 }
-            }
-            else {
+            } else {
                 output.push_back(str);
                 str.clear();
             }

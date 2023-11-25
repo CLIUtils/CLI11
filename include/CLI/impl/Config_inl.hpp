@@ -294,9 +294,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            bool mlquote=(item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0);
-            if (!mlquote && comment_pos != std::string::npos  && !literalName)
-            {
+            bool mlquote = (item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0);
+            if(!mlquote && comment_pos != std::string::npos && !literalName) {
                 auto citems = detail::split_up(item, commentChar);
                 item = detail::trim_copy(citems.front());
             }
