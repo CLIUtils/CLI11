@@ -215,7 +215,6 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     char aEnd = (isINIArray) ? ']' : arrayEnd;
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
-    std::unique_ptr<ConfigItem> alt_config{nullptr};
 
     while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
@@ -287,19 +286,21 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter, 1);
         auto comment_pos = (literalName) ? std::string::npos : line.find_first_of(commentChar);
-        std::string orig_name;
+
         if(comment_pos < delimiter_pos) {
-            if(delimiter_pos != std::string::npos) {
-                alt_config = std::unique_ptr<ConfigItem>(new ConfigItem);
-                alt_config->name = detail::trim_copy(line.substr(0, delimiter_pos));
-            }
             delimiter_pos = std::string::npos;
         }
         if(delimiter_pos != std::string::npos) {
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
-            std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, comment_pos - delimiter_pos - 1));
-            if(item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0) {
+            std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
+            bool mlquote=(item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0);
+            if (!mlquote && comment_pos != std::string::npos  && !literalName)
+            {
+                auto citems = detail::split_up(item, commentChar);
+                item = detail::trim_copy(citems.front());
+            }
+            if(mlquote) {
                 // mutliline string
                 auto keyChar = item.front();
                 item = buffer.substr(delimiter_pos + 1, std::string::npos);
@@ -361,13 +362,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
                 items_buffer = detail::split_up(item);
             } else {
-                if(literalName) {
-                    items_buffer = {item};
-                } else {
-                    auto citems = detail::split_up(line.substr(delimiter_pos + 1, std::string::npos), commentChar);
-                    item = detail::trim_copy(citems.front());
-                    items_buffer = {item};
-                }
+                items_buffer = {item};
             }
         } else {
             name = detail::trim_copy(line.substr(0, comment_pos));
