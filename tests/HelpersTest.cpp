@@ -947,35 +947,35 @@ TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
 TEST_CASE("SplitUp: Bracket1", "[helpers]") {
     std::vector<std::string> oput = {"one", "[two, three]"};
     std::string orig{"one, [two, three]"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',',false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket2", "[helpers]") {
     std::vector<std::string> oput = {"one", "<two, three>"};
     std::string orig{"one, <two, three>"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',',false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket3", "[helpers]") {
     std::vector<std::string> oput = {"one", "(two, three)"};
     std::string orig{"one, (two, three)"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',',false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket4", "[helpers]") {
     std::vector<std::string> oput = {"one", "{two, three}"};
     std::string orig{"one, {two, three}"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',',false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Comment", "[helpers]") {
     std::vector<std::string> oput = {R"(["quote1", "#"])"};
     std::string orig{R"(["quote1", "#"])"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, '#',false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, '#', false);
     CHECK(result == oput);
 }
 

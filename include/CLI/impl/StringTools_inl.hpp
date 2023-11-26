@@ -180,7 +180,7 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter,bool removeQuotes) {
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, bool removeQuotes) {
 
     const std::string bracketChars{"'\"`[(<{"};
     const std::string matchBracketChars("'\"`])>}");
@@ -193,20 +193,19 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter,b
     std::vector<std::string> output;
     bool embeddedQuote = false;
     char keyChar = ' ';
-    int adjust=removeQuotes?1:0;
+    int adjust = removeQuotes ? 1 : 0;
     while(!str.empty()) {
         if(bracketChars.find_first_of(str[0]) != std::string::npos) {
             auto bracketLoc = bracketChars.find_first_of(str[0]);
             keyChar = matchBracketChars[bracketLoc];
             auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\') &&
-                  (str[end - 2] != '\\')) {
+            while((end != std::string::npos) && (str[end - 1] == '\\') && (str[end - 2] != '\\')) {
                 // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
             if(end != std::string::npos) {
-                output.push_back(str.substr(adjust, end + 1-2*adjust));
+                output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
                 if(end + 2 < str.size()) {
                     str = str.substr(end + 2);
                 } else {
