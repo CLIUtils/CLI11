@@ -186,6 +186,8 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
     const std::string bracketChars{"[(<{"};
     const std::string matchBracketChars("])>}");
 
+    const std::string escapableString=quoteChars+bracketChars+matchBracketChars;
+
     auto find_ws = [delimiter](char ch) {
         return (delimiter == '\0') ? std::isspace<char>(ch, std::locale()) : (ch == delimiter);
     };
@@ -198,7 +200,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
         if(quoteChars.find_first_of(str[0]) != std::string::npos) {
             keyChar = str[0];
             auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
+            while ((end != std::string::npos) && (str[end - 1] == '\\') && (str[end - 2] != '\\')) {  // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
@@ -218,7 +220,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
             auto bracketLoc = bracketChars.find_first_of(str[0]);
             keyChar = matchBracketChars[bracketLoc];
             auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
+            while ((end != std::string::npos) && (str[end - 1] == '\\') && (str[end - 2] != '\\')) {  // deal with escaped quotes
                 end = str.find_first_of(keyChar, end + 1);
                 embeddedQuote = true;
             }
