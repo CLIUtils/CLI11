@@ -213,8 +213,8 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 }
 
 /// Split a string '"one two" "three"' into 'one two', 'three'
-/// Quote characters can be ` ' or "
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0');
+/// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0',bool removeQuotes=true);
 
 /// This function detects an equal or colon followed by an escaped quote after an argument
 /// then modifies the string to replace the equality with a space.  This is needed

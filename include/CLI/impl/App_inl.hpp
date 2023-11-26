@@ -554,7 +554,6 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     // remove all empty strings
     args.erase(std::remove(args.begin(), args.end(), std::string{}), args.end());
     std::reverse(args.begin(), args.end());
-
     parse(std::move(args));
 }
 
