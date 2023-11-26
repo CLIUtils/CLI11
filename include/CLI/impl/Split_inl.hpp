@@ -106,7 +106,6 @@ get_names(const std::vector<std::string> &input) {
     std::vector<std::string> short_names;
     std::vector<std::string> long_names;
     std::string pos_name;
-
     for(std::string name : input) {
         if(name.length() == 0) {
             continue;
@@ -136,7 +135,6 @@ get_names(const std::vector<std::string> &input) {
             }
         }
     }
-
     return std::make_tuple(short_names, long_names, pos_name);
 }
 
