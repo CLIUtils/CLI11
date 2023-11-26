@@ -462,8 +462,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     }
                 }
                 std::string name = prefix + opt->get_single_name();
-                if (name == prefix)
-                {
+                if(name == prefix) {
                     continue;
                 }
                 std::string value = detail::ini_join(
