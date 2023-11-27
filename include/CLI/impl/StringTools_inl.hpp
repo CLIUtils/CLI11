@@ -180,6 +180,74 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
+CLI11_INLINE std::string remove_escaped_characters(const std::string& str)
+{
+    const std::string matchBracketChars("'\"`])>}");
+    std::string out;
+    out.reserve(str.size());
+    for (auto loc = str.begin(); loc < str.end(); ++loc)
+    {
+        if (*loc == '\\')
+        {
+            if (matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos)
+            {
+                out.push_back(*(loc + 1));
+                ++loc;
+            }
+            else
+            {
+                out.push_back(*loc);
+            }
+        }
+        else
+        {
+            out.push_back(*loc);
+        }
+    }
+    return out;
+}
+
+CLI11_INLINE std::pair<std::size_t,bool> close_sequence(const std::string& str, std::size_t start,char closure_char)
+{
+    const std::string bracketChars{"'\"`[(<{"};
+    const std::string matchBracketChars("'\"`])>}");
+    std::string closures;
+    closures.push_back(closure_char);
+    auto loc=start+1;
+    bool inQuote=closure_char=='"'||closure_char=='\''||closure_char=='`';
+    bool hasControlSequence{false};
+    while (loc < str.size())
+    {
+        if (str[loc] == closures.back() && ((str[loc - 1] != '\\') || (str[loc - 2] == '\\'))) {
+            closures.pop_back();
+            if (closures.empty())
+            {
+                return { loc,hasControlSequence };
+            }
+            inQuote=false;
+        }
+        
+        if (!inQuote)
+        {
+            auto bracket_loc=bracketChars.find(str[loc]);
+            if (bracket_loc != std::string::npos)
+            {
+                closures.push_back(matchBracketChars[bracket_loc]);
+                inQuote=(bracket_loc<=2);
+            }
+        }
+        else
+        {
+            if (str[loc] == '\\')
+            {
+                hasControlSequence=true;
+            }
+        }
+        ++loc;
+    }
+    return { loc,hasControlSequence };
+}
+
 CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, bool removeQuotes) {
 
     const std::string bracketChars{"'\"`[(<{"};
@@ -192,18 +260,12 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
 
     std::vector<std::string> output;
     bool embeddedQuote = false;
-    char keyChar = ' ';
     int adjust = removeQuotes ? 1 : 0;
     while(!str.empty()) {
         if(bracketChars.find_first_of(str[0]) != std::string::npos) {
             auto bracketLoc = bracketChars.find_first_of(str[0]);
-            keyChar = matchBracketChars[bracketLoc];
-            auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\') && (str[end - 2] != '\\')) {
-                // deal with escaped quotes
-                end = str.find_first_of(keyChar, end + 1);
-                embeddedQuote = true;
-            }
+            auto closure=close_sequence(str,1,matchBracketChars[bracketLoc]);
+            auto end=closure.first;
             if(end != std::string::npos) {
                 output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
                 if(end + 2 < str.size()) {
@@ -215,6 +277,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
                 output.push_back(str.substr(adjust));
                 str.clear();
             }
+            embeddedQuote=embeddedQuote||closure.second;
         } else {
             auto it = std::find_if(std::begin(str), std::end(str), find_ws);
             if(it != std::end(str)) {
@@ -228,7 +291,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
         }
         // transform any embedded quotes into the regular character
         if(embeddedQuote) {
-            output.back() = find_and_replace(output.back(), std::string("\\") + keyChar, std::string(1, keyChar));
+            output.back() = remove_escaped_characters(output.back());
             embeddedQuote = false;
         }
         trim(str);
