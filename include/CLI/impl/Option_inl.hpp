@@ -315,14 +315,12 @@ CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Opti
     for(const std::string &lname : lnames_)
         if(other.check_lname(lname))
             return lname;
-    if (snames_.empty() && lnames_.empty() && !pname_.empty())
-    {
-        if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_ )
+    if(snames_.empty() && lnames_.empty() && !pname_.empty()) {
+        if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
             return pname_;
     }
-    if (other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty())
-    {
-        if(check_sname(other.pname_) ||  check_lname(other.pname_)||(pname_==other.pname_))
+    if(other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
+        if(check_sname(other.pname_) || check_lname(other.pname_) || (pname_ == other.pname_))
             return other.pname_;
     }
     if(ignore_case_ ||
