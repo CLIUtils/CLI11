@@ -181,12 +181,12 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
 }
 
 CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
-    const std::string matchBracketChars("'\"`])>}");
+    const std::string matchBracketChars("'\"`])>}\\");
     std::string out;
     out.reserve(str.size());
     for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
-            if(matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos) {
+            if (matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos) {
                 out.push_back(*(loc + 1));
                 ++loc;
             } else {
