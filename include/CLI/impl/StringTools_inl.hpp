@@ -184,18 +184,15 @@ static const std::string escapedChars("'\"`])>}\\");
 static const std::string bracketChars{"'\"`[(<{"};
 static const std::string matchBracketChars("'\"`])>}");
 
-CLI11_INLINE bool has_escapable_character(const std::string& str) {
-    return (str.find_first_of(escapedChars)!=std::string::npos);
+CLI11_INLINE bool has_escapable_character(const std::string &str) {
+    return (str.find_first_of(escapedChars) != std::string::npos);
 }
 
-CLI11_INLINE std::string add_escaped_characters(const std::string& str)
-{
+CLI11_INLINE std::string add_escaped_characters(const std::string &str) {
     std::string out;
-    out.reserve(str.size()+4);
-    for (char s : str)
-    {
-        if (escapedChars.find_first_of(s)!=std::string::npos)
-        {
+    out.reserve(str.size() + 4);
+    for(char s : str) {
+        if(escapedChars.find_first_of(s) != std::string::npos) {
             out.push_back('\\');
         }
         out.push_back(s);
@@ -204,12 +201,12 @@ CLI11_INLINE std::string add_escaped_characters(const std::string& str)
 }
 
 CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
-    
+
     std::string out;
     out.reserve(str.size());
     for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
-            if (escapedChars.find_first_of(*(loc + 1)) != std::string::npos) {
+            if(escapedChars.find_first_of(*(loc + 1)) != std::string::npos) {
                 out.push_back(*(loc + 1));
                 ++loc;
             } else {
@@ -221,8 +218,6 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
     }
     return out;
 }
-
-
 
 CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str, std::size_t start, char closure_char) {
     std::string closures;

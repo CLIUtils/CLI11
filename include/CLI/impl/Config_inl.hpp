@@ -84,15 +84,11 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
             return std::string(triple_quote) + arg + triple_quote;
         }
     }
-    if (detail::has_escapable_character(arg))
-    {
+    if(detail::has_escapable_character(arg)) {
         return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
-    }
-    else
-    {
+    } else {
         return std::string(1, stringQuote) + arg + stringQuote;
     }
-    
 }
 
 CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,

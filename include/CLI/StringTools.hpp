@@ -216,7 +216,6 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 /// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
 CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0', bool removeQuotes = true);
 
-
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
 
@@ -229,12 +228,12 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset);
 /// @brief  detect if a string has escapable characters
 /// @param str the string to do the detection on
 /// @return true if the string has escapable characters
-CLI11_INLINE bool has_escapable_character(const std::string& str);
+CLI11_INLINE bool has_escapable_character(const std::string &str);
 
 /// @brief escape all escapable characters
 /// @param str the string to escape
 /// @return a string with the escapble characters escaped with '\'
-CLI11_INLINE std::string add_escaped_characters(const std::string& str);
+CLI11_INLINE std::string add_escaped_characters(const std::string &str);
 
 /// @brief replace the escaped characters with their equivalent
 CLI11_INLINE std::string remove_escaped_characters(const std::string &str);
