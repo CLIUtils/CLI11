@@ -358,11 +358,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                     detail::trim(multiline);
                     item += multiline;
                 }
-                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep,false);
+                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep, false);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
-                items_buffer = detail::split_up(item, aSep,false);
+                items_buffer = detail::split_up(item, aSep, false);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
-                items_buffer = detail::split_up(item,'\0',false);
+                items_buffer = detail::split_up(item, '\0', false);
             } else {
                 items_buffer = {item};
             }
