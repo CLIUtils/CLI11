@@ -19,7 +19,7 @@
 namespace CLI {
 // [CLI11:config_inl_hpp:verbatim]
 
-static constexpr auto tquote = R"(""")";
+static constexpr auto triple_quote = R"(""")";
 
 namespace detail {
 
@@ -49,7 +49,7 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
     // just quote a single non numeric character
     if(arg.size() == 1) {
         if(isprint(static_cast<unsigned char>(arg.front())) == 0) {
-            return escape_string(arg);
+            return binary_escape_string(arg);
         }
         if(arg == "\\") {
             return std::string(1, stringQuote) + "\\\\" + stringQuote;
@@ -75,19 +75,24 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
         }
     }
     if(!is_printable(arg)) {
-        return escape_string(arg);
+        return binary_escape_string(arg);
     }
     if(arg.find_first_of("\n") != std::string::npos) {
         if(disable_multi_line) {
-            return escape_string(arg);
+            return binary_escape_string(arg);
         } else {
-            return std::string(tquote) + arg + tquote;
+            return std::string(triple_quote) + arg + triple_quote;
         }
     }
-    if(arg.find_first_of(stringQuote) == std::string::npos) {
+    if (detail::has_escapable_character(arg))
+    {
+        return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
+    }
+    else
+    {
         return std::string(1, stringQuote) + arg + stringQuote;
     }
-    return characterQuote + arg + characterQuote;
+    
 }
 
 CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
@@ -229,7 +234,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         if(len < 3) {
             continue;
         }
-        if(line.compare(0, 3, tquote) == 0 || line.compare(0, 3, "'''") == 0) {
+        if(line.compare(0, 3, triple_quote) == 0 || line.compare(0, 3, "'''") == 0) {
             inMLineComment = true;
             auto cchar = line.front();
             while(inMLineComment) {
@@ -297,7 +302,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            bool mlquote = (item.compare(0, 3, "'''") == 0 || item.compare(0, 3, tquote) == 0);
+            bool mlquote = (item.compare(0, 3, "'''") == 0 || item.compare(0, 3, triple_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos && !literalName) {
                 auto citems = detail::split_up(item, commentChar, false);
                 item = detail::trim_copy(citems.front());
@@ -378,8 +383,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         // clean up quotes on the items and check for escaped strings
         for(auto &it : items_buffer) {
             detail::remove_quotes(it);
-            if(detail::is_escaped_string(it)) {
-                it = detail::extract_string(it);
+            if(detail::is_binary_escaped_string(it)) {
+                it = detail::extract_binary_string(it);
             }
         }
         std::vector<std::string> parents;
@@ -503,7 +508,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    if(name.find_first_of(commentTest) != std::string::npos || name.compare(0, 3, tquote) == 0 ||
+                    if(name.find_first_of(commentTest) != std::string::npos || name.compare(0, 3, triple_quote) == 0 ||
                        name.compare(0, 3, "'''") == 0 || (name.front() == '[' && name.back() == ']') ||
                        (name.front() == stringQuote && name.back() == stringQuote) ||
                        (name.front() == characterQuote && name.back() == characterQuote) ||

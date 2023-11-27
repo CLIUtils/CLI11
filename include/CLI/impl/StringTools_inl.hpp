@@ -180,13 +180,36 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
+static const std::string escapedChars("'\"`])>}\\");
+static const std::string bracketChars{"'\"`[(<{"};
+static const std::string matchBracketChars("'\"`])>}");
+
+CLI11_INLINE bool has_escapable_character(const std::string& str) {
+    return (str.find_first_of(escapedChars)!=std::string::npos);
+}
+
+CLI11_INLINE std::string add_escaped_characters(const std::string& str)
+{
+    std::string out;
+    out.reserve(str.size()+4);
+    for (char s : str)
+    {
+        if (escapedChars.find_first_of(s)!=std::string::npos)
+        {
+            out.push_back('\\');
+        }
+        out.push_back(s);
+    }
+    return out;
+}
+
 CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
-    const std::string matchBracketChars("'\"`])>}\\");
+    
     std::string out;
     out.reserve(str.size());
     for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
-            if(matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos) {
+            if (escapedChars.find_first_of(*(loc + 1)) != std::string::npos) {
                 out.push_back(*(loc + 1));
                 ++loc;
             } else {
@@ -199,9 +222,9 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
     return out;
 }
 
+
+
 CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str, std::size_t start, char closure_char) {
-    const std::string bracketChars{"'\"`[(<{"};
-    const std::string matchBracketChars("'\"`])>}");
     std::string closures;
     closures.push_back(closure_char);
     auto loc = start + 1;
@@ -233,9 +256,6 @@ CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str,
 }
 
 CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, bool removeQuotes) {
-
-    const std::string bracketChars{"'\"`[(<{"};
-    const std::string matchBracketChars("'\"`])>}");
 
     auto find_ws = [delimiter](char ch) {
         return (delimiter == '\0') ? std::isspace<char>(ch, std::locale()) : (ch == delimiter);
@@ -295,7 +315,7 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
     return offset + 1;
 }
 
-CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape) {
     // s is our escaped output string
     std::string escaped_string{};
     // loop through all characters
@@ -329,7 +349,7 @@ CLI11_INLINE std::string escape_string(const std::string &string_to_escape) {
     return escaped_string;
 }
 
-CLI11_INLINE bool is_escaped_string(const std::string &escaped_string) {
+CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string) {
     size_t ssize = escaped_string.size();
     if(escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
         return true;
@@ -337,7 +357,7 @@ CLI11_INLINE bool is_escaped_string(const std::string &escaped_string) {
     return (escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0);
 }
 
-CLI11_INLINE std::string extract_string(const std::string &escaped_string) {
+CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string) {
     std::size_t start{0};
     std::size_t tail{0};
     size_t ssize = escaped_string.size();

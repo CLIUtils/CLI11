@@ -2955,7 +2955,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
@@ -2970,7 +2970,7 @@ TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str(true);
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 // #298
@@ -3421,7 +3421,7 @@ TEST_CASE_METHOD(TApp, "IniOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
@@ -3436,5 +3436,5 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str(true);
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }

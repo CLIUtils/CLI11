@@ -216,22 +216,36 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 /// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
 CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0', bool removeQuotes = true);
 
+
+/// get the value of an environmental variable or empty string if empty
+CLI11_INLINE std::string get_environment_value(const std::string &env_name);
+
 /// This function detects an equal or colon followed by an escaped quote after an argument
 /// then modifies the string to replace the equality with a space.  This is needed
 /// to allow the split up function to work properly and is intended to be used with the find_and_modify function
 /// the return value is the offset+1 which is required by the find_and_modify function.
 CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset);
 
-/// get the value of an environmental variable or empty string if empty
-CLI11_INLINE std::string get_environment_value(const std::string &env_name);
+/// @brief  detect if a string has escapable characters
+/// @param str the string to do the detection on
+/// @return true if the string has escapable characters
+CLI11_INLINE bool has_escapable_character(const std::string& str);
+
+/// @brief escape all escapable characters
+/// @param str the string to escape
+/// @return a string with the escapble characters escaped with '\'
+CLI11_INLINE std::string add_escaped_characters(const std::string& str);
+
+/// @brief replace the escaped characters with their equivalent
+CLI11_INLINE std::string remove_escaped_characters(const std::string &str);
 
 /// generate a string with all non printable characters escaped to hex codes
-CLI11_INLINE std::string escape_string(const std::string &string_to_escape);
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape);
 
-CLI11_INLINE bool is_escaped_string(const std::string &escaped_string);
+CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string);
 
-/// extract an escaped string
-CLI11_INLINE std::string extract_string(const std::string &escaped_string);
+/// extract an escaped binary_string
+CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string);
 
 }  // namespace detail
 
