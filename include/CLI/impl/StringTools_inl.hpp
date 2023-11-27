@@ -186,7 +186,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
     out.reserve(str.size());
     for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
-            if (matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos) {
+            if(matchBracketChars.find_first_of(*(loc + 1)) != std::string::npos) {
                 out.push_back(*(loc + 1));
                 ++loc;
             } else {
