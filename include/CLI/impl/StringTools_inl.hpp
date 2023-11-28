@@ -288,8 +288,8 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
                 str.clear();
             }
         }
-        // transform any embedded quotes into the regular character
-        if(embeddedQuote) {
+        // transform any embedded quotes into the regular character if the quotes are removed
+        if(embeddedQuote && removeQuotes) {
             output.back() = remove_escaped_characters(output.back());
             embeddedQuote = false;
         }
@@ -376,7 +376,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
         if(escaped_string[loc] == '\\' && escaped_string[loc + 1] == 'x') {
             auto c1 = escaped_string[loc + 2];
             auto c2 = escaped_string[loc + 3];
-            unsigned char res{0};
+            unsigned int res{0};
             bool invalid{false};
             if(c1 >= 48 && c1 <= 57) {
                 res = (c1 - 48) * 16;
