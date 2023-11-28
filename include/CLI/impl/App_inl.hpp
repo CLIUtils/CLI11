@@ -163,6 +163,21 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
 
     if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; }) ==
        std::end(options_)) {
+        if (myopt.lnames_.empty() && myopt.snames_.empty())
+        {
+            // if the option is positional only there is additional potential for ambiguities in config files and needs to be checked
+            std::string test_name = "--" + myopt.get_single_name();
+            if (test_name.size() == 3)
+            {
+                test_name.erase(0, 1);
+            }
+
+            auto* op = get_option_no_throw(test_name);
+            if (op != nullptr)
+            {
+                throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+            }
+        }
         options_.emplace_back();
         Option_p &option = options_.back();
         option.reset(new Option(option_name, option_description, option_callback, this));
@@ -1396,17 +1411,14 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
 }
 
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
-    Option *op{nullptr};
+    
     if(level < item.parents.size()) {
-
-        if(op == nullptr) {
             try {
                 auto *subcom = get_subcommand(item.parents.at(level));
                 return subcom->_parse_single_config(item, level + 1);
             } catch(const OptionNotFound &) {
                 return false;
             }
-        }
     }
     // check for section open
     if(item.name == "++") {
@@ -1428,8 +1440,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         return true;
     }
-    if(op == nullptr) {
-        op = get_option_no_throw("--" + item.name);
+    Option *op = get_option_no_throw("--" + item.name);
         if(op == nullptr) {
             if(item.name.size() == 1) {
                 op = get_option_no_throw("-" + item.name);
@@ -1438,7 +1449,6 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op = get_option_no_throw(item.name);
             }
         }
-    }
 
     if(op == nullptr) {
         // If the option was not present

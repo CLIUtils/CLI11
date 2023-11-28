@@ -2666,6 +2666,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") 
     og->description("Option group description.\n"
                     "That has multiple lines.");
     og->add_flag("--" + flag, description);
+    args={"--" + flag};
     run();
 
     std::string str = app.config_to_str(true, true);

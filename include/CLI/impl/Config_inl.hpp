@@ -519,15 +519,35 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
+            if (!default_also && (subcom->count_all() == 0))
+            {
+                continue;
+            }
             if(write_description && !subcom->get_group().empty()) {
                 out << '\n' << commentLead << subcom->get_group() << " Options\n";
             }
+            /*if (!prefix.empty() || app->get_parent() == nullptr) {
+                out << '[' << prefix << "___"<< subcom->get_group() << "]\n";
+            } else {
+                std::string subname = app->get_name() + parentSeparatorChar + "___"+subcom->get_group();
+                const auto *p = app->get_parent();
+                while(p->get_parent() != nullptr) {
+                    subname = p->get_name() + parentSeparatorChar +subname;
+                    p = p->get_parent();
+                }
+                out << '[' << subname << "]\n";
+            }
+            */
             out << to_config(subcom, default_also, write_description, prefix);
         }
     }
 
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
+            if (!default_also && (subcom->count_all() == 0))
+            {
+                continue;
+            }
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
                     out << '[' << prefix << subcom->get_name() << "]\n";
