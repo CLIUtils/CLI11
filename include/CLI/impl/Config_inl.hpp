@@ -519,8 +519,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
-            if (!default_also && (subcom->count_all() == 0))
-            {
+            if(!default_also && (subcom->count_all() == 0)) {
                 continue;
             }
             if(write_description && !subcom->get_group().empty()) {
@@ -544,8 +543,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
-            if (!default_also && (subcom->count_all() == 0))
-            {
+            if(!default_also && (subcom->count_all() == 0)) {
                 continue;
             }
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
