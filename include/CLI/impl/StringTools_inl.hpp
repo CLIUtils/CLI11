@@ -12,6 +12,7 @@
 // [CLI11:public_includes:set]
 #include <string>
 #include <vector>
+#include <utility>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -263,7 +264,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
     while(!str.empty()) {
         if(bracketChars.find_first_of(str[0]) != std::string::npos) {
             auto bracketLoc = bracketChars.find_first_of(str[0]);
-            auto closure = close_sequence(str, 1, matchBracketChars[bracketLoc]);
+            auto closure = close_sequence(str, 0, matchBracketChars[bracketLoc]);
             auto end = closure.first;
             if(end != std::string::npos) {
                 output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
@@ -376,7 +377,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
         if(escaped_string[loc] == '\\' && escaped_string[loc + 1] == 'x') {
             auto c1 = escaped_string[loc + 2];
             auto c2 = escaped_string[loc + 3];
-            unsigned int res{0};
+            int res{0};
             bool invalid{false};
             if(c1 >= 48 && c1 <= 57) {
                 res = (c1 - 48) * 16;
