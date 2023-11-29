@@ -43,8 +43,7 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
         using CLI::detail::lexical_cast;
         double val = 0.0;
         if(lexical_cast(arg, val)) {
-            if (arg.find_first_not_of("0123456789.-+eE") == std::string::npos)
-            {
+            if(arg.find_first_not_of("0123456789.-+eE") == std::string::npos) {
                 return arg;
             }
         }
