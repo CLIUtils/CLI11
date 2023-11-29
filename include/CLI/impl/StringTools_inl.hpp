@@ -11,8 +11,8 @@
 
 // [CLI11:public_includes:set]
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {
