@@ -82,18 +82,16 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
     if(!is_printable(arg)) {
         return binary_escape_string(arg);
     }
-    if(arg.find_first_of("\n") != std::string::npos) {
+    if (arg.find_first_of('\n') != std::string::npos) {
         if(disable_multi_line) {
             return binary_escape_string(arg);
-        } else {
-            return std::string(triple_quote) + arg + triple_quote;
         }
+        return std::string(triple_quote) + arg + triple_quote;
     }
     if(detail::has_escapable_character(arg)) {
         return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
-    } else {
-        return std::string(1, stringQuote) + arg + stringQuote;
     }
+    return std::string(1, stringQuote) + arg + stringQuote;
 }
 
 CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
