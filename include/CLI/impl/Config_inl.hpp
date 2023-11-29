@@ -56,6 +56,9 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
         if(arg == "\\") {
             return std::string(1, stringQuote) + "\\\\" + stringQuote;
         }
+        if (arg == "'") {
+            return std::string(1, stringQuote) + "'" + stringQuote;
+        }
         return std::string(1, characterQuote) + arg + characterQuote;
     }
     // handle hex, binary or octal arguments
