@@ -259,7 +259,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
 
     std::vector<std::string> output;
     bool embeddedQuote = false;
-    int adjust = removeQuotes ? 1 : 0;
+    std::size_t adjust = removeQuotes ? 1 : 0;
     while(!str.empty()) {
         if(bracketChars.find_first_of(str[0]) != std::string::npos) {
             auto bracketLoc = bracketChars.find_first_of(str[0]);
