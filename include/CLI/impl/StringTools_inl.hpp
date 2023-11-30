@@ -235,8 +235,7 @@ CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str,
             inQuote = false;
         }
         if(str[loc] == '\\') {
-            if (inQuote)
-            {
+            if(inQuote) {
                 hasControlSequence = true;
             }
             ++loc;

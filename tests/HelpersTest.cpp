@@ -268,11 +268,11 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
 }
 
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
-    CHECK(CLI::detail::remove_escaped_characters("test\\\"")=="test\"");
-    CHECK(CLI::detail::remove_escaped_characters("test\\}")=="test}");
-    CHECK(CLI::detail::remove_escaped_characters("test\\\\")=="test\\");
-    CHECK(CLI::detail::remove_escaped_characters("test\\\\")=="test\\");
-    CHECK(CLI::detail::remove_escaped_characters("test\\k")=="test\\k");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\"") == "test\"");
+    CHECK(CLI::detail::remove_escaped_characters("test\\}") == "test}");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\k") == "test\\k");
 }
 
 TEST_CASE("Trim: Various", "[helpers]") {
