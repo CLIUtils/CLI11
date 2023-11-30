@@ -237,7 +237,7 @@ TEST_CASE("StringTools: Validation", "[helpers]") {
     CHECK_FALSE(CLI::detail::isalpha("test2"));
 }
 
-TEST_CASE("StringTools: escapseConversion", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
     std::string testString("string1");
     std::string estring = CLI::detail::binary_escape_string(testString);
     CHECK(testString == estring);
@@ -263,6 +263,16 @@ TEST_CASE("StringTools: escapseConversion", "[helpers]") {
 
     rstring = CLI::detail::extract_binary_string(CLI::detail::binary_escape_string(testString2));
     CHECK(rstring == testString2);
+    auto rstring2 = CLI::detail::extract_binary_string(rstring);
+    CHECK(rstring == rstring2);
+}
+
+TEST_CASE("StringTools: escapeConversion", "[helpers]") {
+    CHECK(CLI::detail::remove_escaped_characters("test\\\"")=="test\"");
+    CHECK(CLI::detail::remove_escaped_characters("test\\}")=="test}");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\")=="test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\")=="test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\k")=="test\\k");
 }
 
 TEST_CASE("Trim: Various", "[helpers]") {
@@ -933,6 +943,13 @@ TEST_CASE("SplitUp: Simple", "[helpers]") {
 TEST_CASE("SplitUp: SimpleDifferentQuotes", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one `two three`)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: SimpleMissingQuotes", "[helpers]") {
+    std::vector<std::string> oput = {"one", "two three"};
+    std::string orig{R"(one `two three)"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }

@@ -227,23 +227,25 @@ CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str,
     bool inQuote = closure_char == '"' || closure_char == '\'' || closure_char == '`';
     bool hasControlSequence{false};
     while(loc < str.size()) {
-        if(str[loc] == closures.back() && ((str[loc - 1] != '\\') || (str[loc - 2] == '\\'))) {
+        if(str[loc] == closures.back()) {
             closures.pop_back();
             if(closures.empty()) {
                 return {loc, hasControlSequence};
             }
             inQuote = false;
         }
-
+        if(str[loc] == '\\') {
+            if (inQuote)
+            {
+                hasControlSequence = true;
+            }
+            ++loc;
+        }
         if(!inQuote) {
             auto bracket_loc = bracketChars.find(str[loc]);
             if(bracket_loc != std::string::npos) {
                 closures.push_back(matchBracketChars[bracket_loc]);
                 inQuote = (bracket_loc <= 2);
-            }
-        } else {
-            if(str[loc] == '\\') {
-                hasControlSequence = true;
             }
         }
         ++loc;
