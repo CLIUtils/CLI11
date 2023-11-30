@@ -309,12 +309,22 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
-    for(const std::string &sname : snames_)
-        if(other.check_sname(sname))
+    for (const std::string& sname : snames_) {
+        if (other.check_sname(sname))
             return sname;
-    for(const std::string &lname : lnames_)
-        if(other.check_lname(lname))
+        if (other.check_lname(sname))
+            return sname;
+    }
+    for (const std::string& lname : lnames_) {
+        if (other.check_lname(lname))
             return lname;
+        if (lname.size() == 1)
+        {
+            if (other.check_sname(lname)) {
+                return lname;
+            }
+        }
+    }
     if(snames_.empty() && lnames_.empty() && !pname_.empty()) {
         if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
             return pname_;

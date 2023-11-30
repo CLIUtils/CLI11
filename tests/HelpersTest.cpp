@@ -954,6 +954,13 @@ TEST_CASE("SplitUp: SimpleMissingQuotes", "[helpers]") {
     CHECK(result == oput);
 }
 
+TEST_CASE("SplitUp: SimpleMissingQuotesEscaped", "[helpers]") {
+    std::vector<std::string> oput = {"one", "two three`"};
+    std::string orig{R"(one `two three\`)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
 TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one 'two three')"};

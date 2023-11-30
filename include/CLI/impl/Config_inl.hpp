@@ -282,9 +282,6 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 getline(input, buffer);
                 line = detail::trim_copy(buffer);
                 len = line.length();
-                if(len < 3) {
-                    continue;
-                }
             } else {
                 continue;
             }

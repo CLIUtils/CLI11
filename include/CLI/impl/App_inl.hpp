@@ -188,12 +188,6 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
                 }
             }
-            if(!myopt.pname_.empty()) {
-                auto *op = parent_->get_option_no_throw(myopt.pname_);
-                if(op != nullptr) {
-                    throw(OptionAlreadyAdded("added option matches existing positional option: " + myopt.pname_));
-                }
-            }
         }
         options_.emplace_back();
         Option_p &option = options_.back();
