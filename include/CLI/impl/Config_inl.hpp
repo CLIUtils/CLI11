@@ -82,7 +82,7 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
     if(!is_printable(arg)) {
         return binary_escape_string(arg);
     }
-    if (arg.find_first_of('\n') != std::string::npos) {
+    if(arg.find_first_of('\n') != std::string::npos) {
         if(disable_multi_line) {
             return binary_escape_string(arg);
         }

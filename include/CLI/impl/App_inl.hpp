@@ -175,29 +175,22 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             if(op != nullptr) {
                 throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
             }
-        }
-        else if (parent_ != nullptr)
-        {
-            for (auto& ln : myopt.lnames_)
-            {
-                auto* op = parent_->get_option_no_throw(ln);
-                if (op != nullptr)
-                {
+        } else if(parent_ != nullptr) {
+            for(auto &ln : myopt.lnames_) {
+                auto *op = parent_->get_option_no_throw(ln);
+                if(op != nullptr) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
                 }
             }
-            for (auto& sn : myopt.snames_)
-            {
-                auto* op = parent_->get_option_no_throw(sn);
-                if (op != nullptr)
-                {
+            for(auto &sn : myopt.snames_) {
+                auto *op = parent_->get_option_no_throw(sn);
+                if(op != nullptr) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
                 }
             }
-            if (!myopt.pname_.empty()) {
-                auto* op = parent_->get_option_no_throw(myopt.pname_);
-                if (op != nullptr)
-                {
+            if(!myopt.pname_.empty()) {
+                auto *op = parent_->get_option_no_throw(myopt.pname_);
+                if(op != nullptr) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + myopt.pname_));
                 }
             }
