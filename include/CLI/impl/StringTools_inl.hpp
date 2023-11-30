@@ -267,12 +267,12 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, 
             auto bracketLoc = bracketChars.find_first_of(str[0]);
             auto closure = close_sequence(str, 0, matchBracketChars[bracketLoc]);
             auto end = closure.first;
-                output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
-                if(end + 2 < str.size()) {
-                    str = str.substr(end + 2);
-                } else {
-                    str.clear();
-                }
+            output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
+            if(end + 2 < str.size()) {
+                str = str.substr(end + 2);
+            } else {
+                str.clear();
+            }
             embeddedQuote = embeddedQuote || closure.second;
         } else {
             auto it = std::find_if(std::begin(str), std::end(str), find_ws);
