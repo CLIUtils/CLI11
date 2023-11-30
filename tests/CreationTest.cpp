@@ -78,31 +78,25 @@ TEST_CASE_METHOD(TApp, "matchPositional2", "[creation]") {
     CHECK_THROWS_AS(app.add_option("firstoption"), CLI::OptionAlreadyAdded);
 }
 
-TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup", "[creation]") {
-    app.add_option("--firstoption");
-    auto *g1=app.add_option_group("group_b");
-    CHECK_THROWS_AS(g1->add_option("firstoption"), CLI::OptionAlreadyAdded);
-}
-
-TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup2", "[creation]") {
-   
-    auto *g1=app.add_option_group("group_b");
-    g1->add_option("firstoption");
-    CHECK_THROWS_AS( app.add_option("--firstoption"), CLI::OptionAlreadyAdded);
-}
-
-TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup3", "[creation]") {
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup1", "[creation]") {
 
     auto *g1=app.add_option_group("group_b");
     g1->add_option("--firstoption");
     CHECK_THROWS_AS( app.add_option("firstoption"), CLI::OptionAlreadyAdded);
 }
 
-TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup4", "[creation]") {
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup2", "[creation]") {
 
     app.add_option("firstoption");
     auto *g1=app.add_option_group("group_b");
     CHECK_THROWS_AS(g1->add_option("--firstoption"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup3", "[creation]") {
+
+    app.add_option("f");
+    auto *g1=app.add_option_group("group_b");
+    CHECK_THROWS_AS(g1->add_option("-f"), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "AddingMultipleInfPositionals", "[creation]") {
