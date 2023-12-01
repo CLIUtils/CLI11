@@ -40,6 +40,16 @@ TEST_CASE_METHOD(TApp, "AddingExistingWithCase", "[creation]") {
     CHECK_NOTHROW(app.add_flag("--Cat,-C"));
 }
 
+TEST_CASE_METHOD(TApp, "AddingExistingShortLong", "[creation]") {
+    app.add_flag("-c");
+    CHECK_THROWS_AS(app.add_flag("--c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "AddingExistingLongShort", "[creation]") {
+    app.add_flag("--c");
+    CHECK_THROWS_AS(app.add_option("-c"), CLI::OptionAlreadyAdded);
+}
+
 TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter", "[creation]") {
     auto *count = app.add_flag("-c,--count");
     app.add_flag("--Cat,-C");
