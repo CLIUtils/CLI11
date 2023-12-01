@@ -2018,7 +2018,6 @@ TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
     CHECK_NOTHROW(run());
 }
 
-
 TEST_CASE_METHOD(TApp, "IniFlagDisableOverrideFlagArray", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -2034,7 +2033,7 @@ TEST_CASE_METHOD(TApp, "IniFlagDisableOverrideFlagArray", "[config]") {
     }
 
     REQUIRE_NOTHROW(run());
-    CHECK(value==2);
+    CHECK(value == 2);
 }
 
 TEST_CASE_METHOD(TApp, "IniFlagInvalidDisableOverrideFlagArray", "[config]") {
@@ -2051,7 +2050,7 @@ TEST_CASE_METHOD(TApp, "IniFlagInvalidDisableOverrideFlagArray", "[config]") {
         out << "val=[1,true,false,not_valid]" << std::endl;
     }
 
-    CHECK_THROWS_AS(run(),CLI::InvalidError);
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
 }
 
 TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
