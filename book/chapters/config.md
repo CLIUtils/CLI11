@@ -208,10 +208,10 @@ and match the starting 3 quote sequence.
 
 ### Binary Strings
 
-Config files have a binar conversion capability, this is mainly to support
+Config files have a binary conversion capability, this is mainly to support
 writing config files but can be used by user generated files as well. Strings
 with the form `B"(XXXXX)"` will convert any characters inside the parenthesis
-with the form \xHH to the equivalent binary value. The HH are hexidecimal
+with the form \xHH to the equivalent binary value. The HH are hexadecimal
 characters. Characters not in this form will be translated as given. If argument
 values with unprintable characters are used to generate a config file this
 binary form will be used in the output string.

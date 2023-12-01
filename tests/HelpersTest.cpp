@@ -294,6 +294,10 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     rstring = "B\"(\\XME\\XK7)\"";
     result = CLI::detail::extract_binary_string(rstring);
     CHECK(result == "\\XME\\XK7");
+
+    rstring = "B\"(\\XEM\\X7K)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result == "\\XEM\\X7K");
 }
 
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
