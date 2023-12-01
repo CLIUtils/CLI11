@@ -370,18 +370,17 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
     std::size_t loc = start;
     while(loc < ssize - tail) {
         // ssize-2 to skip )" at the end
-        if(escaped_string[loc] == '\\' && (escaped_string[loc + 1] == 'x'||escaped_string[loc + 1] == 'X')) {
+        if(escaped_string[loc] == '\\' && (escaped_string[loc + 1] == 'x' || escaped_string[loc + 1] == 'X')) {
             auto c1 = escaped_string[loc + 2];
             auto c2 = escaped_string[loc + 3];
             int res{0};
             bool invalid{false};
-            if (c1 >= '0' && c1 <= '9') {
+            if(c1 >= '0' && c1 <= '9') {
                 res = (c1 - '0') * 16;
             } else if(c1 >= 'A' && c1 <= 'F') {
-                res = (c1 - 'A'+10) * 16;
-            }
-            else if (c1 >= 'a' && c1 <= 'f') {
-                res = (c1 - 'a'+10) * 16;
+                res = (c1 - 'A' + 10) * 16;
+            } else if(c1 >= 'a' && c1 <= 'f') {
+                res = (c1 - 'a' + 10) * 16;
             } else {
                 invalid = true;
             }
@@ -389,9 +388,9 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
             if(c2 >= '0' && c2 <= '9') {
                 res += (c2 - '0');
             } else if(c2 >= 'A' && c2 <= 'F') {
-                res += (c2 - 'A'+10);
+                res += (c2 - 'A' + 10);
             } else if(c2 >= 'a' && c2 <= 'f') {
-                res += (c2 - 'a'+10);
+                res += (c2 - 'a' + 10);
             } else {
                 invalid = true;
             }

@@ -268,32 +268,32 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
 }
 
 TEST_CASE("StringTools: binaryStrings", "[helpers]") {
-    std::string rstring="B\"()\"";
+    std::string rstring = "B\"()\"";
     CHECK(CLI::detail::extract_binary_string(rstring).empty());
 
-    rstring="B\"(\\x35\\xa7)\"";
-    auto result=CLI::detail::extract_binary_string(rstring);
-    CHECK(result[0]==static_cast<char>(0x35));
-    CHECK(result[1]==static_cast<char>(0xa7));
+    rstring = "B\"(\\x35\\xa7)\"";
+    auto result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x35));
+    CHECK(result[1] == static_cast<char>(0xa7));
 
-    rstring="B\"(\\x3e\\xf7)\"";
-    result=CLI::detail::extract_binary_string(rstring);
-    CHECK(result[0]==static_cast<char>(0x3e));
-    CHECK(result[1]==static_cast<char>(0xf7));
+    rstring = "B\"(\\x3e\\xf7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
 
-    rstring="B\"(\\x3E\\xf7)\"";
-    result=CLI::detail::extract_binary_string(rstring);
-    CHECK(result[0]==static_cast<char>(0x3e));
-    CHECK(result[1]==static_cast<char>(0xf7));
+    rstring = "B\"(\\x3E\\xf7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
 
-    rstring="B\"(\\X3E\\XF7)\"";
-    result=CLI::detail::extract_binary_string(rstring);
-    CHECK(result[0]==static_cast<char>(0x3e));
-    CHECK(result[1]==static_cast<char>(0xf7));
+    rstring = "B\"(\\X3E\\XF7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
 
-    rstring="B\"(\\XME\\XK7)\"";
-    result=CLI::detail::extract_binary_string(rstring);
-    CHECK(result=="\\XME\\XK7");
+    rstring = "B\"(\\XME\\XK7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result == "\\XME\\XK7");
 }
 
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
