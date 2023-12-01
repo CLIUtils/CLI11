@@ -581,7 +581,7 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD bool get_positional() const { return !pname_.empty(); }
 
     /// True if option has at least one non-positional name
-    CLI11_NODISCARD bool nonpositional() const { return ( !lnames_.empty()||!snames_.empty()); }
+    CLI11_NODISCARD bool nonpositional() const { return (!lnames_.empty() || !snames_.empty()); }
 
     /// True if option has description
     CLI11_NODISCARD bool has_description() const { return !description_.empty(); }
