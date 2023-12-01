@@ -2023,7 +2023,7 @@ TEST_CASE_METHOD(TApp, "IniFlagDisableOverrideFlagArray", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    int value{false};
+    int value{0};
     app.add_flag("--val", value)->configurable(true)->disable_flag_override();
 
     {
@@ -2041,7 +2041,7 @@ TEST_CASE_METHOD(TApp, "IniFlagInvalidDisableOverrideFlagArray", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
-    int value{false};
+    int value{0};
     app.add_flag("--val", value)->configurable(true)->disable_flag_override();
 
     {

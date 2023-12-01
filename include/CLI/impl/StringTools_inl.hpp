@@ -333,7 +333,7 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
             escaped_string.replace(sqLoc, sqLoc + 1, "\\x27");
             sqLoc = escaped_string.find('\'');
         }
-        escaped_string.insert(0, "'B(\"");
+        escaped_string.insert(0, "'B\"(");
         escaped_string.push_back(')');
         escaped_string.push_back('"');
         escaped_string.push_back('\'');
@@ -343,20 +343,20 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
 
 CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string) {
     size_t ssize = escaped_string.size();
-    if(escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
+    if(escaped_string.compare(0, 3, "B\"(") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
         return true;
     }
-    return (escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0);
+    return (escaped_string.compare(0, 4, "'B\"(") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0);
 }
 
 CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string) {
     std::size_t start{0};
     std::size_t tail{0};
     size_t ssize = escaped_string.size();
-    if(escaped_string.compare(0, 3, "B(\"") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
+    if(escaped_string.compare(0, 3, "B\"(") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
         start = 3;
         tail = 2;
-    } else if(escaped_string.compare(0, 4, "'B(\"") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0) {
+    } else if(escaped_string.compare(0, 4, "'B\"(") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0) {
         start = 4;
         tail = 3;
     }
@@ -370,27 +370,28 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
     std::size_t loc = start;
     while(loc < ssize - tail) {
         // ssize-2 to skip )" at the end
-        if(escaped_string[loc] == '\\' && escaped_string[loc + 1] == 'x') {
+        if(escaped_string[loc] == '\\' && (escaped_string[loc + 1] == 'x'||escaped_string[loc + 1] == 'X')) {
             auto c1 = escaped_string[loc + 2];
             auto c2 = escaped_string[loc + 3];
             int res{0};
             bool invalid{false};
-            if(c1 >= 48 && c1 <= 57) {
-                res = (c1 - 48) * 16;
-            } else if(c1 >= 65 && c1 <= 70) {
-                res = (c1 - 55) * 16;
-            } else if(c1 >= 97 && c1 <= 102) {
-                res = (c1 - 87) * 16;
+            if (c1 >= '0' && c1 <= '9') {
+                res = (c1 - '0') * 16;
+            } else if(c1 >= 'A' && c1 <= 'F') {
+                res = (c1 - 'A'+10) * 16;
+            }
+            else if (c1 >= 'a' && c1 <= 'f') {
+                res = (c1 - 'a'+10) * 16;
             } else {
                 invalid = true;
             }
 
-            if(c2 >= 48 && c2 <= 57) {
-                res += (c2 - 48);
-            } else if(c2 >= 65 && c2 <= 70) {
-                res += (c2 - 55);
-            } else if(c2 >= 97 && c2 <= 102) {
-                res += (c2 - 87);
+            if(c2 >= '0' && c2 <= '9') {
+                res += (c2 - '0');
+            } else if(c2 >= 'A' && c2 <= 'F') {
+                res += (c2 - 'A'+10);
+            } else if(c2 >= 'a' && c2 <= 'f') {
+                res += (c2 - 'a'+10);
             } else {
                 invalid = true;
             }
