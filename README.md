@@ -1003,8 +1003,8 @@ option_groups. These are:
   "prefix" to calling another app.
 - `.usage(message)`: 🚧 Replace text to appear at the start of the help string
   after description.
-- `.usage(std::string())`: 🚧 Set a callback to generate a string that will appear
-  at the start of the help string after description.
+- `.usage(std::string())`: 🚧 Set a callback to generate a string that will
+  appear at the start of the help string after description.
 - `.footer(message)`: Set text to appear at the bottom of the help string.
 - `.footer(std::string())`: Set a callback to generate a string that will appear
   at the end of the help string.
