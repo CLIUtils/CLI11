@@ -1001,9 +1001,9 @@ option_groups. These are:
 - `.prefix_command()`: Like `allow_extras`, but stop immediately on the first
   unrecognized item. It is ideal for allowing your app or subcommand to be a
   "prefix" to calling another app.
-- `.usage(message)`: Replace text to appear at the start of the help string
+- `.usage(message)`: 🚧 Replace text to appear at the start of the help string
   after description.
-- `.usage(std::string())`: Set a callback to generate a string that will appear
+- `.usage(std::string())`: 🚧 Set a callback to generate a string that will appear
   at the start of the help string after description.
 - `.footer(message)`: Set text to appear at the bottom of the help string.
 - `.footer(std::string())`: Set a callback to generate a string that will appear
