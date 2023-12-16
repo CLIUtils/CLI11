@@ -1433,19 +1433,19 @@ bad ones:
    `CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
    itself.
 
-> [!NOTE]
->
-> This approach may not work on weird OS configurations, such as when the
-> `/proc` dir is missing on Linux systems (see also
-> [#845](https://github.com/CLIUtils/CLI11/issues/845)).
->
-> ```cpp
-> int main() {
->     CLI::App app;
->     // ...
->     CLI11_PARSE(app);
-> }
-> ```
+   > [!NOTE]
+   >
+   > This approach may not work on weird OS configurations, such as when the
+   > `/proc` dir is missing on Linux systems (see also
+   > [#845](https://github.com/CLIUtils/CLI11/issues/845)).
+   >
+   > ```cpp
+   > int main() {
+   >     CLI::App app;
+   >     // ...
+   >     CLI11_PARSE(app);
+   > }
+   > ```
 
 3. Get correct arguments with which the program was originally executed using
    provided functions: `CLI::argc()` and `CLI::argv()`. These three methods are
