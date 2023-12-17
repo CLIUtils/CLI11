@@ -98,6 +98,8 @@ class ConfigBase : public Config {
     uint8_t maximumLayers{255};
     /// the separator used to separator parent layers
     char parentSeparatorChar{'.'};
+    /// the character used as prefix for default value options
+    bool commentDefaultsBool = false;
     /// Specify the configuration index to use for arrayed sections
     int16_t configIndex{-1};
     /// Specify the configuration section that should be used
@@ -143,6 +145,11 @@ class ConfigBase : public Config {
     /// Specify the separator to use for parent layers
     ConfigBase *parentSeparator(char sep) {
         parentSeparatorChar = sep;
+        return this;
+    }
+    /// Specify the character used as prefix for default value options
+    ConfigBase *commentDefaults(bool comDef = true) {
+        commentDefaultsBool = comDef;
         return this;
     }
     /// get a reference to the configuration section
