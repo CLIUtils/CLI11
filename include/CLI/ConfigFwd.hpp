@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -29,7 +30,6 @@ struct ConfigItem {
 
     /// This is the name
     std::string name{};
-
     /// Listing of inputs
     std::vector<std::string> inputs{};
 

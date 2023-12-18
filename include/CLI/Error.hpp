@@ -127,6 +127,9 @@ class BadNameString : public ConstructionError {
         return BadNameString("Long names strings require 2 dashes " + name);
     }
     static BadNameString BadLongName(std::string name) { return BadNameString("Bad long name: " + name); }
+    static BadNameString BadPositionalName(std::string name) {
+        return BadNameString("Invalid positional Name: " + name);
+    }
     static BadNameString DashesOnly(std::string name) {
         return BadNameString("Must have a name, not just dashes: " + name);
     }

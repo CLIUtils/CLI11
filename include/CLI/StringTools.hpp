@@ -140,14 +140,16 @@ CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<s
 
 /// Verify the first character of an option
 /// - is a trigger character, ! has special meaning and new lines would just be annoying to deal with
-template <typename T> bool valid_first_char(T c) { return ((c != '-') && (c != '!') && (c != ' ') && c != '\n'); }
+template <typename T> bool valid_first_char(T c) {
+    return ((c != '-') && (static_cast<unsigned char>(c) > 33));  // space and '!' not allowed
+}
 
 /// Verify following characters of an option
 template <typename T> bool valid_later_char(T c) {
     // = and : are value separators, { has special meaning for option defaults,
-    // and \n would just be annoying to deal with in many places allowing space here has too much potential for
-    // inadvertent entry errors and bugs
-    return ((c != '=') && (c != ':') && (c != '{') && (c != ' ') && c != '\n');
+    // and control codes other than tab would just be annoying to deal with in many places allowing space here has too
+    // much potential for inadvertent entry errors and bugs
+    return ((c != '=') && (c != ':') && (c != '{') && ((static_cast<unsigned char>(c) > 32) || c == '\t'));
 }
 
 /// Verify an option/subcommand name
@@ -211,8 +213,11 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 }
 
 /// Split a string '"one two" "three"' into 'one two', 'three'
-/// Quote characters can be ` ' or "
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0');
+/// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0', bool removeQuotes = true);
+
+/// get the value of an environmental variable or empty string if empty
+CLI11_INLINE std::string get_environment_value(const std::string &env_name);
 
 /// This function detects an equal or colon followed by an escaped quote after an argument
 /// then modifies the string to replace the equality with a space.  This is needed
@@ -220,8 +225,27 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter =
 /// the return value is the offset+1 which is required by the find_and_modify function.
 CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset);
 
-/// get the value of an environmental variable or empty string if empty
-CLI11_INLINE std::string get_environment_value(const std::string &env_name);
+/// @brief  detect if a string has escapable characters
+/// @param str the string to do the detection on
+/// @return true if the string has escapable characters
+CLI11_INLINE bool has_escapable_character(const std::string &str);
+
+/// @brief escape all escapable characters
+/// @param str the string to escape
+/// @return a string with the escapble characters escaped with '\'
+CLI11_INLINE std::string add_escaped_characters(const std::string &str);
+
+/// @brief replace the escaped characters with their equivalent
+CLI11_INLINE std::string remove_escaped_characters(const std::string &str);
+
+/// generate a string with all non printable characters escaped to hex codes
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape);
+
+CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string);
+
+/// extract an escaped binary_string
+CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string);
+
 }  // namespace detail
 
 // [CLI11:string_tools_hpp:end]

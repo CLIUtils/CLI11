@@ -2018,6 +2018,41 @@ TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
     CHECK_NOTHROW(run());
 }
 
+TEST_CASE_METHOD(TApp, "IniFlagDisableOverrideFlagArray", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    int value{0};
+    app.add_flag("--val", value)->configurable(true)->disable_flag_override();
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=[1,true,false,true]" << std::endl;
+    }
+
+    REQUIRE_NOTHROW(run());
+    CHECK(value == 2);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagInvalidDisableOverrideFlagArray", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    int value{0};
+    app.add_flag("--val", value)->configurable(true)->disable_flag_override();
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=[1,true,false,not_valid]" << std::endl;
+    }
+
+    CHECK_THROWS_AS(run(), CLI::InvalidError);
+}
+
 TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -2666,6 +2701,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroupMultiLineDescription", "[config]") 
     og->description("Option group description.\n"
                     "That has multiple lines.");
     og->add_flag("--" + flag, description);
+    args = {"--" + flag};
     run();
 
     std::string str = app.config_to_str(true, true);
@@ -2955,7 +2991,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
@@ -2970,7 +3006,7 @@ TEST_CASE_METHOD(TApp, "DefaultsTomlOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str(true);
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 // #298
@@ -3421,7 +3457,7 @@ TEST_CASE_METHOD(TApp, "IniOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
 TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
@@ -3436,5 +3472,5 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
 
     std::string str = app.config_to_str(true);
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
-    CHECK_THAT(str, Contains("val2='I am a \"confusing\" string'"));
+    CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }

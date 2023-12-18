@@ -163,6 +163,32 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
 
     if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; }) ==
        std::end(options_)) {
+        if(myopt.lnames_.empty() && myopt.snames_.empty()) {
+            // if the option is positional only there is additional potential for ambiguities in config files and needs
+            // to be checked
+            std::string test_name = "--" + myopt.get_single_name();
+            if(test_name.size() == 3) {
+                test_name.erase(0, 1);
+            }
+
+            auto *op = get_option_no_throw(test_name);
+            if(op != nullptr) {
+                throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+            }
+        } else if(parent_ != nullptr) {
+            for(auto &ln : myopt.lnames_) {
+                auto *op = parent_->get_option_no_throw(ln);
+                if(op != nullptr) {
+                    throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
+                }
+            }
+            for(auto &sn : myopt.snames_) {
+                auto *op = parent_->get_option_no_throw(sn);
+                if(op != nullptr) {
+                    throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
+                }
+            }
+        }
         options_.emplace_back();
         Option_p &option = options_.back();
         option.reset(new Option(option_name, option_description, option_callback, this));
@@ -371,13 +397,14 @@ CLI11_INLINE bool App::remove_option(Option *opt) {
 CLI11_INLINE App *App::add_subcommand(std::string subcommand_name, std::string subcommand_description) {
     if(!subcommand_name.empty() && !detail::valid_name_string(subcommand_name)) {
         if(!detail::valid_first_char(subcommand_name[0])) {
-            throw IncorrectConstruction("Subcommand name starts with invalid character, '!' and '-' are not allowed");
+            throw IncorrectConstruction(
+                "Subcommand name starts with invalid character, '!' and '-' and control characters");
         }
         for(auto c : subcommand_name) {
             if(!detail::valid_later_char(c)) {
                 throw IncorrectConstruction(std::string("Subcommand name contains invalid character ('") + c +
                                             "'), all characters are allowed except"
-                                            "'=',':','{','}', and ' '");
+                                            "'=',':','{','}', ' ', and control characters");
             }
         }
     }
@@ -553,7 +580,6 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     // remove all empty strings
     args.erase(std::remove(args.begin(), args.end(), std::string{}), args.end());
     std::reverse(args.begin(), args.end());
-
     parse(std::move(args));
 }
 
@@ -723,7 +749,8 @@ CLI11_NODISCARD CLI11_INLINE std::string App::help(std::string prev, AppFormatMo
 CLI11_NODISCARD CLI11_INLINE std::string App::version() const {
     std::string val;
     if(version_ptr_ != nullptr) {
-        auto rv = version_ptr_->results();
+        // copy the results for reuse later
+        results_t rv = version_ptr_->results();
         version_ptr_->clear();
         version_ptr_->add_result("true");
         try {
@@ -1395,12 +1422,11 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
 }
 
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
+
     if(level < item.parents.size()) {
         try {
             auto *subcom = get_subcommand(item.parents.at(level));
-            auto result = subcom->_parse_single_config(item, level + 1);
-
-            return result;
+            return subcom->_parse_single_config(item, level + 1);
         } catch(const OptionNotFound &) {
             return false;
         }
@@ -1430,10 +1456,11 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         if(item.name.size() == 1) {
             op = get_option_no_throw("-" + item.name);
         }
+        if(op == nullptr) {
+            op = get_option_no_throw(item.name);
+        }
     }
-    if(op == nullptr) {
-        op = get_option_no_throw(item.name);
-    }
+
     if(op == nullptr) {
         // If the option was not present
         if(get_allow_config_extras() == config_extras_mode::capture)
@@ -1475,11 +1502,39 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op->add_result(res);
                 return true;
             }
-            if(static_cast<int>(item.inputs.size()) > op->get_items_expected_max()) {
+            if(static_cast<int>(item.inputs.size()) > op->get_items_expected_max() &&
+               op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
                 if(op->get_items_expected_max() > 1) {
                     throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
                 }
-                throw ConversionError::TooManyInputsFlag(item.fullname());
+
+                if(!op->get_disable_flag_override()) {
+                    throw ConversionError::TooManyInputsFlag(item.fullname());
+                }
+                // if the disable flag override is set then we must have the flag values match a known flag value
+                // this is true regardless of the output value, so an array input is possible and must be accounted for
+                for(const auto &res : item.inputs) {
+                    bool valid_value{false};
+                    if(op->default_flag_values_.empty()) {
+                        if(res == "true" || res == "false" || res == "1" || res == "0") {
+                            valid_value = true;
+                        }
+                    } else {
+                        for(const auto &valid_res : op->default_flag_values_) {
+                            if(valid_res.second == res) {
+                                valid_value = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(valid_value) {
+                        op->add_result(res);
+                    } else {
+                        throw InvalidError("invalid flag argument given");
+                    }
+                }
+                return true;
             }
         }
         op->add_result(item.inputs);

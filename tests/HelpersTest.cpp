@@ -237,6 +237,77 @@ TEST_CASE("StringTools: Validation", "[helpers]") {
     CHECK_FALSE(CLI::detail::isalpha("test2"));
 }
 
+TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
+    std::string testString("string1");
+    std::string estring = CLI::detail::binary_escape_string(testString);
+    CHECK(testString == estring);
+    CHECK_FALSE(CLI::detail::is_binary_escaped_string(estring));
+
+    std::string testString2("\nstring1\n");
+    estring = CLI::detail::binary_escape_string(testString2);
+    CHECK_FALSE(testString == estring);
+    CHECK(CLI::detail::is_binary_escaped_string(estring));
+    std::string rstring = CLI::detail::extract_binary_string(estring);
+    CHECK(rstring == testString2);
+
+    testString2.push_back(0);
+    testString2.push_back(static_cast<char>(197));
+    testString2.push_back(78);
+    testString2.push_back(-34);
+
+    rstring = CLI::detail::extract_binary_string(CLI::detail::binary_escape_string(testString2));
+    CHECK(rstring == testString2);
+
+    testString2.push_back('b');
+    testString2.push_back('G');
+
+    rstring = CLI::detail::extract_binary_string(CLI::detail::binary_escape_string(testString2));
+    CHECK(rstring == testString2);
+    auto rstring2 = CLI::detail::extract_binary_string(rstring);
+    CHECK(rstring == rstring2);
+}
+
+TEST_CASE("StringTools: binaryStrings", "[helpers]") {
+    std::string rstring = "B\"()\"";
+    CHECK(CLI::detail::extract_binary_string(rstring).empty());
+
+    rstring = "B\"(\\x35\\xa7)\"";
+    auto result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x35));
+    CHECK(result[1] == static_cast<char>(0xa7));
+
+    rstring = "B\"(\\x3e\\xf7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
+
+    rstring = "B\"(\\x3E\\xf7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
+
+    rstring = "B\"(\\X3E\\XF7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result[0] == static_cast<char>(0x3e));
+    CHECK(result[1] == static_cast<char>(0xf7));
+
+    rstring = "B\"(\\XME\\XK7)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result == "\\XME\\XK7");
+
+    rstring = "B\"(\\XEM\\X7K)\"";
+    result = CLI::detail::extract_binary_string(rstring);
+    CHECK(result == "\\XEM\\X7K");
+}
+
+TEST_CASE("StringTools: escapeConversion", "[helpers]") {
+    CHECK(CLI::detail::remove_escaped_characters("test\\\"") == "test\"");
+    CHECK(CLI::detail::remove_escaped_characters("test\\}") == "test}");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
+    CHECK(CLI::detail::remove_escaped_characters("test\\k") == "test\\k");
+}
+
 TEST_CASE("Trim: Various", "[helpers]") {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -909,10 +980,59 @@ TEST_CASE("SplitUp: SimpleDifferentQuotes", "[helpers]") {
     CHECK(result == oput);
 }
 
+TEST_CASE("SplitUp: SimpleMissingQuotes", "[helpers]") {
+    std::vector<std::string> oput = {"one", "two three"};
+    std::string orig{R"(one `two three)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: SimpleMissingQuotesEscaped", "[helpers]") {
+    std::vector<std::string> oput = {"one", "two three`"};
+    std::string orig{R"(one `two three\`)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
 TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
     std::vector<std::string> oput = {"one", "two three"};
     std::string orig{R"(one 'two three')"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: Bracket1", "[helpers]") {
+    std::vector<std::string> oput = {"one", "[two, three]"};
+    std::string orig{"one, [two, three]"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: Bracket2", "[helpers]") {
+    std::vector<std::string> oput = {"one", "<two, three>"};
+    std::string orig{"one, <two, three>"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: Bracket3", "[helpers]") {
+    std::vector<std::string> oput = {"one", "(two, three)"};
+    std::string orig{"one, (two, three)"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: Bracket4", "[helpers]") {
+    std::vector<std::string> oput = {"one", "{two, three}"};
+    std::string orig{"one, {two, three}"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: Comment", "[helpers]") {
+    std::vector<std::string> oput = {R"(["quote1", "#"])"};
+    std::string orig{R"(["quote1", "#"])"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, '#', false);
     CHECK(result == oput);
 }
 

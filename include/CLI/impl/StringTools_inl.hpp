@@ -11,6 +11,7 @@
 
 // [CLI11:public_includes:set]
 #include <string>
+#include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
 
@@ -180,9 +181,79 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) {
+static const std::string escapedChars("'\"`])>}\\");
+static const std::string bracketChars{"'\"`[(<{"};
+static const std::string matchBracketChars("'\"`])>}");
 
-    const std::string delims("\'\"`");
+CLI11_INLINE bool has_escapable_character(const std::string &str) {
+    return (str.find_first_of(escapedChars) != std::string::npos);
+}
+
+CLI11_INLINE std::string add_escaped_characters(const std::string &str) {
+    std::string out;
+    out.reserve(str.size() + 4);
+    for(char s : str) {
+        if(escapedChars.find_first_of(s) != std::string::npos) {
+            out.push_back('\\');
+        }
+        out.push_back(s);
+    }
+    return out;
+}
+
+CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
+
+    std::string out;
+    out.reserve(str.size());
+    for(auto loc = str.begin(); loc < str.end(); ++loc) {
+        if(*loc == '\\') {
+            if(escapedChars.find_first_of(*(loc + 1)) != std::string::npos) {
+                out.push_back(*(loc + 1));
+                ++loc;
+            } else {
+                out.push_back(*loc);
+            }
+        } else {
+            out.push_back(*loc);
+        }
+    }
+    return out;
+}
+
+CLI11_INLINE std::pair<std::size_t, bool> close_sequence(const std::string &str, std::size_t start, char closure_char) {
+    std::string closures;
+    closures.push_back(closure_char);
+    auto loc = start + 1;
+    bool inQuote = closure_char == '"' || closure_char == '\'' || closure_char == '`';
+    bool hasControlSequence{false};
+    while(loc < str.size()) {
+        if(str[loc] == closures.back()) {
+            closures.pop_back();
+            if(closures.empty()) {
+                return {loc, hasControlSequence};
+            }
+            inQuote = false;
+        }
+        if(str[loc] == '\\') {
+            if(inQuote) {
+                hasControlSequence = true;
+            }
+            ++loc;
+        }
+        if(!inQuote) {
+            auto bracket_loc = bracketChars.find(str[loc]);
+            if(bracket_loc != std::string::npos) {
+                closures.push_back(matchBracketChars[bracket_loc]);
+                inQuote = (bracket_loc <= 2);
+            }
+        }
+        ++loc;
+    }
+    return {loc, hasControlSequence};
+}
+
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, bool removeQuotes) {
+
     auto find_ws = [delimiter](char ch) {
         return (delimiter == '\0') ? std::isspace<char>(ch, std::locale()) : (ch == delimiter);
     };
@@ -190,27 +261,19 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
 
     std::vector<std::string> output;
     bool embeddedQuote = false;
-    char keyChar = ' ';
+    std::size_t adjust = removeQuotes ? 1 : 0;
     while(!str.empty()) {
-        if(delims.find_first_of(str[0]) != std::string::npos) {
-            keyChar = str[0];
-            auto end = str.find_first_of(keyChar, 1);
-            while((end != std::string::npos) && (str[end - 1] == '\\')) {  // deal with escaped quotes
-                end = str.find_first_of(keyChar, end + 1);
-                embeddedQuote = true;
-            }
-            if(end != std::string::npos) {
-                output.push_back(str.substr(1, end - 1));
-                if(end + 2 < str.size()) {
-                    str = str.substr(end + 2);
-                } else {
-                    str.clear();
-                }
-
+        if(bracketChars.find_first_of(str[0]) != std::string::npos) {
+            auto bracketLoc = bracketChars.find_first_of(str[0]);
+            auto closure = close_sequence(str, 0, matchBracketChars[bracketLoc]);
+            auto end = closure.first;
+            output.push_back(str.substr(adjust, end + 1 - 2 * adjust));
+            if(end + 2 < str.size()) {
+                str = str.substr(end + 2);
             } else {
-                output.push_back(str.substr(1));
-                str = "";
+                str.clear();
             }
+            embeddedQuote = embeddedQuote || closure.second;
         } else {
             auto it = std::find_if(std::begin(str), std::end(str), find_ws);
             if(it != std::end(str)) {
@@ -219,12 +282,12 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
                 str = std::string(it + 1, str.end());
             } else {
                 output.push_back(str);
-                str = "";
+                str.clear();
             }
         }
-        // transform any embedded quotes into the regular character
-        if(embeddedQuote) {
-            output.back() = find_and_replace(output.back(), std::string("\\") + keyChar, std::string(1, keyChar));
+        // transform any embedded quotes into the regular character if the quotes are removed
+        if(embeddedQuote && removeQuotes) {
+            output.back() = remove_escaped_characters(output.back());
             embeddedQuote = false;
         }
         trim(str);
@@ -242,6 +305,105 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
         }
     }
     return offset + 1;
+}
+
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape) {
+    // s is our escaped output string
+    std::string escaped_string{};
+    // loop through all characters
+    for(char c : string_to_escape) {
+        // check if a given character is printable
+        // the cast is necessary to avoid undefined behaviour
+        if(isprint(static_cast<unsigned char>(c)) == 0) {
+            std::stringstream stream;
+            // if the character is not printable
+            // we'll convert it to a hex string using a stringstream
+            // note that since char is signed we have to cast it to unsigned first
+            stream << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(c));
+            std::string code = stream.str();
+            escaped_string += std::string("\\x") + (code.size() < 2 ? "0" : "") + code;
+
+        } else {
+            escaped_string.push_back(c);
+        }
+    }
+    if(escaped_string != string_to_escape) {
+        auto sqLoc = escaped_string.find('\'');
+        while(sqLoc != std::string::npos) {
+            escaped_string.replace(sqLoc, sqLoc + 1, "\\x27");
+            sqLoc = escaped_string.find('\'');
+        }
+        escaped_string.insert(0, "'B\"(");
+        escaped_string.push_back(')');
+        escaped_string.push_back('"');
+        escaped_string.push_back('\'');
+    }
+    return escaped_string;
+}
+
+CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string) {
+    size_t ssize = escaped_string.size();
+    if(escaped_string.compare(0, 3, "B\"(") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
+        return true;
+    }
+    return (escaped_string.compare(0, 4, "'B\"(") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0);
+}
+
+CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string) {
+    std::size_t start{0};
+    std::size_t tail{0};
+    size_t ssize = escaped_string.size();
+    if(escaped_string.compare(0, 3, "B\"(") == 0 && escaped_string.compare(ssize - 2, 2, ")\"") == 0) {
+        start = 3;
+        tail = 2;
+    } else if(escaped_string.compare(0, 4, "'B\"(") == 0 && escaped_string.compare(ssize - 3, 3, ")\"'") == 0) {
+        start = 4;
+        tail = 3;
+    }
+
+    if(start == 0) {
+        return escaped_string;
+    }
+    std::string outstring;
+
+    outstring.reserve(ssize - start - tail);
+    std::size_t loc = start;
+    while(loc < ssize - tail) {
+        // ssize-2 to skip )" at the end
+        if(escaped_string[loc] == '\\' && (escaped_string[loc + 1] == 'x' || escaped_string[loc + 1] == 'X')) {
+            auto c1 = escaped_string[loc + 2];
+            auto c2 = escaped_string[loc + 3];
+            int res{0};
+            bool invalid{false};
+            if(c1 >= '0' && c1 <= '9') {
+                res = (c1 - '0') * 16;
+            } else if(c1 >= 'A' && c1 <= 'F') {
+                res = (c1 - 'A' + 10) * 16;
+            } else if(c1 >= 'a' && c1 <= 'f') {
+                res = (c1 - 'a' + 10) * 16;
+            } else {
+                invalid = true;
+            }
+
+            if(c2 >= '0' && c2 <= '9') {
+                res += (c2 - '0');
+            } else if(c2 >= 'A' && c2 <= 'F') {
+                res += (c2 - 'A' + 10);
+            } else if(c2 >= 'a' && c2 <= 'f') {
+                res += (c2 - 'a' + 10);
+            } else {
+                invalid = true;
+            }
+            if(!invalid) {
+                loc += 4;
+                outstring.push_back(static_cast<char>(res));
+                continue;
+            }
+        }
+        outstring.push_back(escaped_string[loc]);
+        ++loc;
+    }
+    return outstring;
 }
 
 std::string get_environment_value(const std::string &env_name) {

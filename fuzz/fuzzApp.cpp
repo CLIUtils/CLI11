@@ -68,9 +68,9 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     auto *vgroup = fApp->add_option_group("vectors");
 
     vgroup->add_option("--vopt1", vv1);
-    vgroup->add_option("--vopt2", vvs);
+    vgroup->add_option("--vopt2", vvs)->inject_separator();
     vgroup->add_option("--vopt3", vstr);
-    vgroup->add_option("--vopt4", vecvecd);
+    vgroup->add_option("--vopt4", vecvecd)->inject_separator();
 
     fApp->add_option("--oopt1", od1);
     fApp->add_option("--oopt2", ods);
@@ -121,6 +121,30 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     sub->add_option("--sdwrap", dwrap);
     sub->add_option("--siwrap", iwrap);
 
+    auto *resgroup = fApp->add_option_group("outputOrder");
+
+    resgroup->add_option("--vA", vstrA)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+    resgroup->add_option("--vB", vstrB)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+    resgroup->add_option("--vC", vstrC)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
+    resgroup->add_option("--vD", vstrD)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::Reverse);
+    resgroup->add_option("--vS", val32)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+    resgroup->add_option("--vM", mergeBuffer)->expected(0, 2)->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    resgroup->add_option("--vE", vstrE)->expected(2, 4)->delimiter(',');
+
+    auto *vldtr = fApp->add_option_group("validators");
+
+    validator_strings.resize(10);
+    vldtr->add_option("--vdtr1", validator_strings[0])->join()->check(CLI::PositiveNumber);
+    vldtr->add_option("--vdtr2", validator_strings[1])->join()->check(CLI::NonNegativeNumber);
+    vldtr->add_option("--vdtr3", validator_strings[2])->join()->check(CLI::NonexistentPath);
+    vldtr->add_option("--vdtr4", validator_strings[3])->join()->check(CLI::Range(7, 3456));
+    vldtr->add_option("--vdtr5", validator_strings[4])
+        ->join()
+        ->check(CLI::Range(std::string("aa"), std::string("zz"), "string range"));
+    vldtr->add_option("--vdtr6", validator_strings[5])->join()->check(CLI::TypeValidator<double>());
+    vldtr->add_option("--vdtr7", validator_strings[6])->join()->check(CLI::TypeValidator<bool>());
+    vldtr->add_option("--vdtr8", validator_strings[7])->join()->check(CLI::ValidIPV4);
+    vldtr->add_option("--vdtr9", validator_strings[8])->join()->transform(CLI::Bound(2, 255));
     return fApp;
 }
 

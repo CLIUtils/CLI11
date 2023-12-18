@@ -550,11 +550,11 @@ class Option : public OptionBase<Option> {
         if(!lnames_.empty()) {
             return lnames_[0];
         }
-        if(!pname_.empty()) {
-            return pname_;
-        }
         if(!snames_.empty()) {
             return snames_[0];
+        }
+        if(!pname_.empty()) {
+            return pname_;
         }
         return envname_;
     }
@@ -578,13 +578,13 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD int get_items_expected() const { return get_items_expected_min(); }
 
     /// True if the argument can be given directly
-    CLI11_NODISCARD bool get_positional() const { return pname_.length() > 0; }
+    CLI11_NODISCARD bool get_positional() const { return !pname_.empty(); }
 
     /// True if option has at least one non-positional name
-    CLI11_NODISCARD bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
+    CLI11_NODISCARD bool nonpositional() const { return (!lnames_.empty() || !snames_.empty()); }
 
     /// True if option has description
-    CLI11_NODISCARD bool has_description() const { return description_.length() > 0; }
+    CLI11_NODISCARD bool has_description() const { return !description_.empty(); }
 
     /// Get the description
     CLI11_NODISCARD const std::string &get_description() const { return description_; }

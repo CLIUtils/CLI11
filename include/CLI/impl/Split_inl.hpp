@@ -106,7 +106,6 @@ get_names(const std::vector<std::string> &input) {
     std::vector<std::string> short_names;
     std::vector<std::string> long_names;
     std::string pos_name;
-
     for(std::string name : input) {
         if(name.length() == 0) {
             continue;
@@ -127,12 +126,15 @@ get_names(const std::vector<std::string> &input) {
         } else if(name == "-" || name == "--") {
             throw BadNameString::DashesOnly(name);
         } else {
-            if(pos_name.length() > 0)
+            if(!pos_name.empty())
                 throw BadNameString::MultiPositionalNames(name);
-            pos_name = name;
+            if(valid_name_string(name)) {
+                pos_name = name;
+            } else {
+                throw BadNameString::BadPositionalName(name);
+            }
         }
     }
-
     return std::make_tuple(short_names, long_names, pos_name);
 }
 

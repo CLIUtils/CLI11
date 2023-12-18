@@ -80,28 +80,6 @@ TEST_CASE_METHOD(TApp, "OneFlagShortWindows", "[app]") {
     CHECK(app.count("--count") == 1u);
 }
 
-TEST_CASE_METHOD(TApp, "WindowsLongShortMix1", "[app]") {
-    app.allow_windows_style_options();
-
-    auto *a = app.add_flag("-c");
-    auto *b = app.add_flag("--c");
-    args = {"/c"};
-    run();
-    CHECK(a->count() == 1u);
-    CHECK(b->count() == 0u);
-}
-
-TEST_CASE_METHOD(TApp, "WindowsLongShortMix2", "[app]") {
-    app.allow_windows_style_options();
-
-    auto *a = app.add_flag("--c");
-    auto *b = app.add_flag("-c");
-    args = {"/c"};
-    run();
-    CHECK(a->count() == 1u);
-    CHECK(b->count() == 0u);
-}
-
 TEST_CASE_METHOD(TApp, "CountNonExist", "[app]") {
     app.add_flag("-c,--count");
     args = {"-c"};

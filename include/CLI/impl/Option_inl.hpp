@@ -309,13 +309,29 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
-    for(const std::string &sname : snames_)
+    for(const std::string &sname : snames_) {
         if(other.check_sname(sname))
             return sname;
-    for(const std::string &lname : lnames_)
+        if(other.check_lname(sname))
+            return sname;
+    }
+    for(const std::string &lname : lnames_) {
         if(other.check_lname(lname))
             return lname;
-
+        if(lname.size() == 1) {
+            if(other.check_sname(lname)) {
+                return lname;
+            }
+        }
+    }
+    if(snames_.empty() && lnames_.empty() && !pname_.empty()) {
+        if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
+            return pname_;
+    }
+    if(other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
+        if(check_sname(other.pname_) || check_lname(other.pname_) || (pname_ == other.pname_))
+            return other.pname_;
+    }
     if(ignore_case_ ||
        ignore_underscore_) {  // We need to do the inverse, in case we are ignore_case or ignore underscore
         for(const std::string &sname : other.snames_)
@@ -369,6 +385,9 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
             if(default_ind >= 0) {
                 // We can static cast this to std::size_t because it is more than 0 in this block
                 if(default_flag_values_[static_cast<std::size_t>(default_ind)].second != input_value) {
+                    if(input_value == default_str_ && force_callback_) {
+                        return input_value;
+                    }
                     throw(ArgumentMismatch::FlagOverride(name));
                 }
             } else {

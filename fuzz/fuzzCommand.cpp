@@ -20,5 +20,6 @@ int main(int argc, char **argv) {
         (app)->exit(e);
         // this just indicates we caught an error known by CLI
     }
+
     return 0;
 }
