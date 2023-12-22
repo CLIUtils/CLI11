@@ -19,7 +19,7 @@ jobs:
         std: ["11", "14", "17", "20"]
         precompile: ["ON", "OFF"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     container: silkeh/clang:14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Configure
         run: >
@@ -80,7 +80,7 @@ jobs:
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
@@ -95,7 +95,7 @@ jobs:
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
@@ -107,7 +107,7 @@ jobs:
     name: Boost build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Add boost
@@ -126,7 +126,7 @@ jobs:
     name: Meson build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Prepare commands
         run: |
@@ -143,7 +143,7 @@ jobs:
     name: install tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
@@ -160,7 +160,7 @@ jobs:
     name: install tests precompiled
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
@@ -177,7 +177,7 @@ jobs:
     name: install tests single file
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
@@ -194,7 +194,7 @@ jobs:
     name: CMake config check (Ubuntu 20.04)
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check CMake 3.5
         uses: ./.github/actions/quick_cmake
@@ -273,7 +273,7 @@ jobs:
     name: CMake config check (Ubuntu 22.04)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check CMake 3.17
         uses: ./.github/actions/quick_cmake
