@@ -13,11 +13,11 @@ jobs:
     name: Single header
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -39,12 +39,12 @@ jobs:
       - name: Copy file to main folder
         run: cp build/include/CLI11.hpp CLI11.hpp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: CLI11.hpp
           path: CLI11.hpp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: CLI11-Source
           path: CLI11-Source
