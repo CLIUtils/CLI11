@@ -92,8 +92,8 @@ class ConfigBase : public Config {
     char valueDelimiter = '=';
     /// the character to use around strings
     char stringQuote = '"';
-    /// the character to use around single characters
-    char characterQuote = '\'';
+    /// the character to use around single characters and literal strings
+    char literalQuote = '\'';
     /// the maximum number of layers to allow
     uint8_t maximumLayers{255};
     /// the separator used to separator parent layers
@@ -132,7 +132,7 @@ class ConfigBase : public Config {
     /// Specify the quote characters used around strings and characters
     ConfigBase *quoteCharacter(char qString, char qChar) {
         stringQuote = qString;
-        characterQuote = qChar;
+        literalQuote = qChar;
         return this;
     }
     /// Specify the maximum number of parents

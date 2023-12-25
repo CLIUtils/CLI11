@@ -19,18 +19,19 @@
 namespace CLI {
 // [CLI11:config_inl_hpp:verbatim]
 
-static constexpr auto triple_quote = R"(""")";
+    static constexpr auto multiline_literal_quote = R"(''')";
+    static constexpr auto multiline_string_quote = R"(""")";
 
 namespace detail {
 
 CLI11_INLINE bool is_printable(const std::string &test_string) {
     return std::all_of(test_string.begin(), test_string.end(), [](char x) {
-        return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n');
+        return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n'||x=='\t');
     });
 }
 
 CLI11_INLINE std::string
-convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuote, bool disable_multi_line) {
+convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote, bool disable_multi_line) {
     if(arg.empty()) {
         return std::string(2, stringQuote);
     }
@@ -54,12 +55,12 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
             return binary_escape_string(arg);
         }
         if(arg == "\\") {
-            return std::string(1, stringQuote) + "\\\\" + stringQuote;
+            return std::string(1, literalQuote) + "\\" + literalQuote;
         }
         if(arg == "'") {
             return std::string(1, stringQuote) + "'" + stringQuote;
         }
-        return std::string(1, characterQuote) + arg + characterQuote;
+        return std::string(1, literalQuote) + arg + literalQuote;
     }
     // handle hex, binary or octal arguments
     if(arg.front() == '0') {
@@ -82,13 +83,11 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char characterQuot
     if(!is_printable(arg)) {
         return binary_escape_string(arg);
     }
-    if(arg.find_first_of('\n') != std::string::npos) {
-        if(disable_multi_line) {
-            return binary_escape_string(arg);
-        }
-        return std::string(triple_quote) + arg + triple_quote;
-    }
     if(detail::has_escapable_character(arg)) {
+        if (arg.size() > 100 && !disable_multi_line)
+        {
+            return std::string(multiline_literal_quote) + arg + multiline_literal_quote;
+        }
         return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
     }
     return std::string(1, stringQuote) + arg + stringQuote;
@@ -99,7 +98,7 @@ CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
                                   char arrayStart,
                                   char arrayEnd,
                                   char stringQuote,
-                                  char characterQuote) {
+                                  char literalQuote) {
     bool disable_multi_line{false};
     std::string joined;
     if(args.size() > 1 && arrayStart != '\0') {
@@ -114,7 +113,7 @@ CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
                 joined.push_back(' ');
             }
         }
-        joined.append(convert_arg_for_ini(arg, stringQuote, characterQuote, disable_multi_line));
+        joined.append(convert_arg_for_ini(arg, stringQuote, literalQuote, disable_multi_line));
     }
     if(args.size() > 1 && arrayEnd != '\0') {
         joined.push_back(arrayEnd);
@@ -233,7 +232,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         if(len < 3) {
             continue;
         }
-        if(line.compare(0, 3, triple_quote) == 0 || line.compare(0, 3, "'''") == 0) {
+        if(line.compare(0, 3, multiline_string_quote) == 0 || line.compare(0, 3, multiline_literal_quote) == 0) {
             inMLineComment = true;
             auto cchar = line.front();
             while(inMLineComment) {
@@ -277,19 +276,16 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
         // comment lines
         if(line.front() == ';' || line.front() == '#' || line.front() == commentChar) {
-            if(line.compare(2, 13, "cli11:literal") == 0) {
-                literalName = true;
-                getline(input, buffer);
-                line = detail::trim_copy(buffer);
-            } else {
-                continue;
-            }
+             continue;
         }
-
+        std::size_t search_start=0;
+        if (line.front() == stringQuote ||line.front()==literalQuote||line.front()=='`')
+        {
+            search_start=detail::close_sequence(line,1,line.front());
+        }
         // Find = in string, split and recombine
-        auto delimiter_pos = line.find_first_of(valueDelimiter, 1);
-        auto comment_pos = (literalName) ? std::string::npos : line.find_first_of(commentChar);
-
+        auto delimiter_pos = line.find_first_of(valueDelimiter, search_start+1);
+        auto comment_pos = line.find_first_of(commentChar,search_start);
         if(comment_pos < delimiter_pos) {
             delimiter_pos = std::string::npos;
         }
@@ -297,9 +293,9 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            bool mlquote = (item.compare(0, 3, "'''") == 0 || item.compare(0, 3, triple_quote) == 0);
+            bool mlquote = (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos && !literalName) {
-                auto citems = detail::split_up(item, commentChar, false);
+                auto citems = detail::split_up(item, commentChar);
                 item = detail::trim_copy(citems.front());
             }
             if(mlquote) {
@@ -337,6 +333,9 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                         if(!item.empty() && item.back() == '\n') {
                             item.pop_back();
                         }
+                        if (keyChar == '\"') {
+                            item=detail::remove_escaped_characters(item);
+                        }
                     } else {
                         if(lineExtension) {
                             detail::trim(l2);
@@ -358,11 +357,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                     detail::trim(multiline);
                     item += multiline;
                 }
-                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep, false);
+                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
-                items_buffer = detail::split_up(item, aSep, false);
+                items_buffer = detail::split_up(item, aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
-                items_buffer = detail::split_up(item, '\0', false);
+                items_buffer = detail::split_up(item, '\0');
             } else {
                 items_buffer = {item};
             }
@@ -370,17 +369,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
-        if(name.find(parentSeparatorChar) == std::string::npos) {
-            if(!literalName) {
-                detail::remove_quotes(name);
-            }
-        }
+        literalName=detail::process_quoted_string(name,stringQuote,literalQuote);
+        
         // clean up quotes on the items and check for escaped strings
         for(auto &it : items_buffer) {
-            detail::remove_quotes(it);
-            if(detail::is_binary_escaped_string(it)) {
-                it = detail::extract_binary_string(it);
-            }
+            detail::process_quoted_string(it,stringQuote,literalQuote);
         }
         std::vector<std::string> parents;
         if(literalName) {
@@ -461,16 +454,36 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         continue;
                     }
                 }
-                std::string name = prefix + opt->get_single_name();
-                if(name == prefix) {
+                std::string single_name=opt->get_single_name();
+                if(single_name.empty()) {
                     continue;
                 }
+                if(single_name.find_first_of(commentTest) != std::string::npos || single_name.compare(0, 3, multiline_string_quote) == 0 ||
+                    single_name.compare(0, 3, multiline_literal_quote) == 0 || (single_name.front() == '[' && single_name.back() == ']') ||
+                    (single_name.find_first_of(stringQuote)!=std::string::npos )||
+                    (single_name.find_first_of(literalQuote)!=std::string::npos )||
+                    (single_name.find_first_of('`') != std::string::npos)) {
+                    if (single_name.find_first_of(literalQuote) == std::string::npos)
+                    {
+                        single_name.insert(0,1,literalQuote);
+                        single_name.push_back(literalQuote);
+                    }
+                    else
+                    {
+                        single_name.insert(0,1,stringQuote);
+                        single_name.push_back(stringQuote);
+                    }
+
+                }
+
+                std::string name = prefix + single_name;
+                
                 std::string value = detail::ini_join(
-                    opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, characterQuote);
+                    opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
 
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
-                        value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, characterQuote, false);
+                        value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
                     } else if(opt->get_run_callback_for_default()) {
@@ -495,7 +508,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                             }
                             if(!valid) {
                                 value = detail::ini_join(
-                                    opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, characterQuote);
+                                    opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
                             }
                         }
                     }
@@ -503,13 +516,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    if(name.find_first_of(commentTest) != std::string::npos || name.compare(0, 3, triple_quote) == 0 ||
-                       name.compare(0, 3, "'''") == 0 || (name.front() == '[' && name.back() == ']') ||
-                       (name.front() == stringQuote && name.back() == stringQuote) ||
-                       (name.front() == characterQuote && name.back() == characterQuote) ||
-                       (name.front() == '`' && name.back() == '`')) {
-                        out << commentChar << " cli11:literal\n";
-                    }
+                    
                     out << name << valueDelimiter << value << '\n';
                 }
             }
