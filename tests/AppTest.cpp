@@ -415,9 +415,9 @@ TEST_CASE_METHOD(TApp, "OneStringEqualVersionSingleStringQuotedEscapedCharacters
     app.add_option("-t,--tstr", str2);
     app.add_option("-m,--mstr", str3);
     app.parse(R"raw(--string="this is my \n\"quoted\" string" -t 'qst\ring 2' -m=`"quoted\n string"`")raw");
-    CHECK("this is my \n\"quoted\" string" == str);  //escaped
-    CHECK("qst\\ring 2" == str2);  //literal
-    CHECK("\"quoted\\n string\"" == str3); //double quoted literal
+    CHECK("this is my \n\"quoted\" string" == str);  // escaped
+    CHECK("qst\\ring 2" == str2);                    // literal
+    CHECK("\"quoted\\n string\"" == str3);           // double quoted literal
 }
 
 TEST_CASE_METHOD(TApp, "OneStringEqualVersionSingleStringQuotedMultipleWithEqual", "[app]") {

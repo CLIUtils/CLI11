@@ -2713,7 +2713,8 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultilineString", "[config]") {
     std::string desc = "flag";
     app.add_option("--opt", desc);
 
-    std::string argString = "this is a very long string \n that covers multiple lines \nand should be longer than 100 characters \nto trigger the multiline string";
+    std::string argString = "this is a very long string \n that covers multiple lines \nand should be longer than 100 "
+                            "characters \nto trigger the multiline string";
     args = {"--opt", argString};
 
     run();

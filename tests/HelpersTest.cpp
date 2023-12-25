@@ -302,16 +302,10 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
 }
 
 /// these are provided for compatibility with the char8_t for C++20 that breaks stuff
-std::string from_u8string(const std::string &s) {
-    return s;
-}
-std::string from_u8string(std::string &&s) {
-    return std::move(s);
-}
+std::string from_u8string(const std::string &s) { return s; }
+std::string from_u8string(std::string &&s) { return std::move(s); }
 #if defined(__cpp_lib_char8_t)
-std::string from_u8string(const std::u8string &s) {
-    return std::string(s.begin(), s.end());
-}
+std::string from_u8string(const std::u8string &s) { return std::string(s.begin(), s.end()); }
 #endif
 
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
@@ -324,18 +318,18 @@ TEST_CASE("StringTools: escapeConversion", "[helpers]") {
     CHECK(CLI::detail::remove_escaped_characters("test\\f") == "test\f");
     CHECK(CLI::detail::remove_escaped_characters("test\\ttest\\n") == "test\ttest\n");
 
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\m_bad"),std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\m_bad"), std::invalid_argument);
 }
 
 TEST_CASE("StringTools: unicode_literals", "[helpers]") {
 
     CHECK(CLI::detail::remove_escaped_characters("test\\u03C0\\u00e9") == from_u8string(u8"test\u03C0\u00E9"));
-    
+
     CHECK(CLI::detail::remove_escaped_characters("test\\U0001F600\\u00E9") == from_u8string(u8"test\U0001F600\u00E9"));
 
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001M600\\u00E9"),std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\u00M9"),std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8E9"),std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001M600\\u00E9"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\u00M9"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8E9"), std::invalid_argument);
 }
 
 TEST_CASE("Trim: Various", "[helpers]") {
@@ -1018,7 +1012,7 @@ TEST_CASE("SplitUp: SimpleMissingQuotes", "[helpers]") {
 }
 
 TEST_CASE("SplitUp: SimpleMissingQuotesEscaped", "[helpers]") {
-    std::vector<std::string> oput = { "one", "\"two three\\\"\""};
+    std::vector<std::string> oput = {"one", "\"two three\\\"\""};
     std::string orig{R"(one "two three\"")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
