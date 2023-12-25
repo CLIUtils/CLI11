@@ -215,8 +215,8 @@ CLI11_INLINE std::string add_escaped_characters(const std::string &str) {
     return out;
 }
 
-CLI11_INLINE int hexConvert(char hc) {
-    int res{0};
+CLI11_INLINE std::uint32_t hexConvert(char hc) {
+    std::uint32_t res{0};
     if(hc >= '0' && hc <= '9') {
         res = (hc - '0');
     } else if(hc >= 'A' && hc <= 'F') {
@@ -224,7 +224,7 @@ CLI11_INLINE int hexConvert(char hc) {
     } else if(hc >= 'a' && hc <= 'f') {
         res = (hc - 'a' + 10);
     } else {
-        res = -1;
+        res = 0xFFFF'FFFF;
     }
     return res;
 }
@@ -274,10 +274,10 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 if(str.end() - loc < 5) {
                     throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
                 }
-                int code{0};
-                int mplier{16 * 16 * 16};
+                std::uint32_t code{0};
+                std::uint32_t mplier{16 * 16 * 16};
                 for(int ii = 2; ii < 6; ++ii) {
-                    int res = hexConvert(*(loc + ii));
+                    std::uint32_t res = hexConvert(*(loc + ii));
                     if(res < 0) {
                         throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
                     }
@@ -291,10 +291,10 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 if(str.end() - loc < 9) {
                     throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
                 }
-                int code{0};
-                int mplier{16 * 16 * 16 * 16 * 16 * 16 * 16};
+                std::uint32_t code{0};
+                std::uint32_t mplier{16 * 16 * 16 * 16 * 16 * 16 * 16};
                 for(int ii = 2; ii < 10; ++ii) {
-                    int res = hexConvert(*(loc + ii));
+                    std::uint32_t res = hexConvert(*(loc + ii));
                     if(res < 0) {
                         throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
                     }
@@ -317,7 +317,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
 }
 
 CLI11_INLINE std::size_t close_string_quote(const std::string &str, std::size_t start, char closure_char) {
-    std::size_t loc = start + 1;
+    std::size_t loc{0};
     for(loc = start + 1; loc < str.size(); ++loc) {
         if(str[loc] == closure_char) {
             break;
