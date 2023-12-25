@@ -579,12 +579,9 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     auto args = detail::split_up(std::move(commandline));
     // remove all empty strings
     args.erase(std::remove(args.begin(), args.end(), std::string{}), args.end());
-    try
-    {
+    try {
         detail::remove_quotes(args);
-    }
-    catch (const  std::invalid_argument& arg)
-    {
+    } catch(const std::invalid_argument &arg) {
         throw CLI::ParseError(arg.what(), CLI::ExitCodes::InvalidError);
     }
     std::reverse(args.begin(), args.end());
