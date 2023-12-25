@@ -1570,7 +1570,7 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::SHORT:
     case detail::Classifier::WINDOWS_STYLE:
         // If already parsed a subcommand, don't accept options_
-        retval=_parse_arg(args, classifier, false);
+        retval = _parse_arg(args, classifier, false);
         break;
     case detail::Classifier::NONE:
         // Probably a positional or something for a parent (sub)command

@@ -278,7 +278,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 std::uint32_t mplier{16 * 16 * 16};
                 for(int ii = 2; ii < 6; ++ii) {
                     std::uint32_t res = hexConvert(*(loc + ii));
-                    if(res >0x0F) {
+                    if(res > 0x0F) {
                         throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
                     }
                     code += res * mplier;
@@ -295,7 +295,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 std::uint32_t mplier{16 * 16 * 16 * 16 * 16 * 16 * 16};
                 for(int ii = 2; ii < 10; ++ii) {
                     std::uint32_t res = hexConvert(*(loc + ii));
-                    if(res >0x0F) {
+                    if(res > 0x0F) {
                         throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
                     }
                     code += res * mplier;
@@ -502,7 +502,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
 
             std::uint32_t res1 = hexConvert(c1);
             std::uint32_t res2 = hexConvert(c2);
-            if (res1 <= 0x0F && res2 <= 0x0F) {
+            if(res1 <= 0x0F && res2 <= 0x0F) {
                 loc += 4;
                 outstring.push_back(static_cast<char>(res1 * 16 + res2));
                 continue;
