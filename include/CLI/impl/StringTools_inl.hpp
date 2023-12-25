@@ -216,32 +216,29 @@ CLI11_INLINE std::string add_escaped_characters(const std::string &str) {
 }
 
 CLI11_INLINE std::uint32_t hexConvert(char hc) {
-    std::uint32_t res{0};
+    int hcode{ 0 };
     if(hc >= '0' && hc <= '9') {
-        res = (hc - '0');
+        hcode = (hc - '0');
     } else if(hc >= 'A' && hc <= 'F') {
-        res = (hc - 'A' + 10);
+        hcode = (hc - 'A' + 10);
     } else if(hc >= 'a' && hc <= 'f') {
-        res = (hc - 'a' + 10);
+        hcode = (hc - 'a' + 10);
     } else {
-        res = 0xFFFF'FFFF;
+        hcode = -1;
     }
-    return res;
+    return static_cast<uint32_t>(hcode);
 }
 
 CLI11_INLINE char make_char(std::uint32_t code) { return static_cast<char>(static_cast<unsigned char>(code)); }
 
 CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
-    if(code < 0x80)  // ascii code equivalent
-    {
+    if(code < 0x80)  {// ascii code equivalent
         str.push_back(static_cast<char>(code));
-    } else if(code < 0x800)  //\u0080 to \u07FF
-    {
+    } else if(code < 0x800) { //\u0080 to \u07FF
         // 110yyyyx 10xxxxxx; 0x3f == 0b0011'1111
         str.push_back(make_char(0xC0 | code >> 6));
         str.push_back(make_char(0x80 | (code & 0x3F)));
-    } else if(code < 0x10000)  // U+0800...U+FFFF
-    {
+    } else if(code < 0x10000)  {// U+0800...U+FFFF
         if(0xD800 <= code && code <= 0xDFFF) {
             throw std::invalid_argument("[0xD800, 0xDFFF] are not valid UTF-8.");
         }
@@ -249,8 +246,7 @@ CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
         str.push_back(make_char(0xE0 | code >> 12));
         str.push_back(make_char(0x80 | (code >> 6 & 0x3F)));
         str.push_back(make_char(0x80 | (code & 0x3F)));
-    } else if(code < 0x110000)  // U+010000 ... U+10FFFF
-    {
+    } else if(code < 0x110000)  {// U+010000 ... U+10FFFF
         // 11110yyy 10yyxxxx 10xxxxxx 10xxxxxx
         str.push_back(make_char(0xF0 | code >> 18));
         str.push_back(make_char(0x80 | (code >> 12 & 0x3F)));
@@ -518,6 +514,7 @@ CLI11_INLINE void remove_quotes(std::vector<std::string> &args) {
     for(auto &arg : args) {
         if(arg.front() == '\"' && arg.back() == '\"') {
             remove_quotes(arg);
+            //only remove escaped for string arguments not literal strings
             arg = remove_escaped_characters(arg);
         } else {
             remove_quotes(arg);
