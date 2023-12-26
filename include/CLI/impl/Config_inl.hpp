@@ -468,8 +468,8 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         single_name.insert(0, 1, literalQuote);
                         single_name.push_back(literalQuote);
                     } else {
-                        if (detail::has_escapable_character(single_name)) {
-                            single_name=detail::add_escaped_characters(single_name);
+                        if(detail::has_escapable_character(single_name)) {
+                            single_name = detail::add_escaped_characters(single_name);
                         }
                         single_name.insert(0, 1, stringQuote);
                         single_name.push_back(stringQuote);
