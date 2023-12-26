@@ -390,7 +390,7 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
             auto bracketLoc = bracketChars.find_first_of(str[0]);
             auto end = close_sequence(str, 0, matchBracketChars[bracketLoc]);
             if(end >= std::string::npos - 1) {
-                output.push_back(str.substr(0));
+                output.push_back(std::move(str));
                 str.clear();
             } else {
                 output.push_back(str.substr(0, end + 1));

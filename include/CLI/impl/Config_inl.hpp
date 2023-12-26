@@ -279,7 +279,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         }
         std::size_t search_start = 0;
         if(line.front() == stringQuote || line.front() == literalQuote || line.front() == '`') {
-            search_start = detail::close_sequence(line, 1, line.front());
+            search_start = detail::close_sequence(line, 0, line.front());
         }
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter, search_start + 1);
@@ -457,26 +457,6 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 if(single_name.empty()) {
                     continue;
                 }
-                if(single_name.find_first_of(commentTest) != std::string::npos ||
-                   single_name.compare(0, 3, multiline_string_quote) == 0 ||
-                   single_name.compare(0, 3, multiline_literal_quote) == 0 ||
-                   (single_name.front() == '[' && single_name.back() == ']') ||
-                   (single_name.find_first_of(stringQuote) != std::string::npos) ||
-                   (single_name.find_first_of(literalQuote) != std::string::npos) ||
-                   (single_name.find_first_of('`') != std::string::npos)) {
-                    if(single_name.find_first_of(literalQuote) == std::string::npos) {
-                        single_name.insert(0, 1, literalQuote);
-                        single_name.push_back(literalQuote);
-                    } else {
-                        if(detail::has_escapable_character(single_name)) {
-                            single_name = detail::add_escaped_characters(single_name);
-                        }
-                        single_name.insert(0, 1, stringQuote);
-                        single_name.push_back(stringQuote);
-                    }
-                }
-
-                std::string name = prefix + single_name;
 
                 std::string value = detail::ini_join(
                     opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
@@ -492,15 +472,16 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 if(!value.empty()) {
+                    
                     if(!opt->get_fnames().empty()) {
                         try {
-                            value = opt->get_flag_value(name, value);
+                            value = opt->get_flag_value(single_name, value);
                         } catch(const CLI::ArgumentMismatch &) {
                             bool valid{false};
                             for(const auto &test_name : opt->get_fnames()) {
                                 try {
                                     value = opt->get_flag_value(test_name, value);
-                                    name = test_name;
+                                    single_name = test_name;
                                     valid = true;
                                 } catch(const CLI::ArgumentMismatch &) {
                                     continue;
@@ -516,6 +497,26 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
+                    if(single_name.find_first_of(commentTest) != std::string::npos ||
+                        single_name.compare(0, 3, multiline_string_quote) == 0 ||
+                        single_name.compare(0, 3, multiline_literal_quote) == 0 ||
+                        (single_name.front() == '[' && single_name.back() == ']') ||
+                        (single_name.find_first_of(stringQuote) != std::string::npos) ||
+                        (single_name.find_first_of(literalQuote) != std::string::npos) ||
+                        (single_name.find_first_of('`') != std::string::npos)) {
+                        if(single_name.find_first_of(literalQuote) == std::string::npos) {
+                            single_name.insert(0, 1, literalQuote);
+                            single_name.push_back(literalQuote);
+                        } else {
+                            if(detail::has_escapable_character(single_name)) {
+                                single_name = detail::add_escaped_characters(single_name);
+                            }
+                            single_name.insert(0, 1, stringQuote);
+                            single_name.push_back(stringQuote);
+                        }
+                    }
+
+                    std::string name = prefix + single_name;
 
                     out << name << valueDelimiter << value << '\n';
                 }
