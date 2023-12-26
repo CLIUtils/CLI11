@@ -234,7 +234,7 @@ CLI11_INLINE char make_char(std::uint32_t code) { return static_cast<char>(stati
 CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
     if(code < 0x80) {  // ascii code equivalent
         str.push_back(static_cast<char>(code));
-    } else if(code < 0x800) {  //\u0080 to \u07FF
+    } else if(code < 0x800) {  // \u0080 to \u07FF
         // 110yyyyx 10xxxxxx; 0x3f == 0b0011'1111
         str.push_back(make_char(0xC0 | code >> 6));
         str.push_back(make_char(0x80 | (code & 0x3F)));

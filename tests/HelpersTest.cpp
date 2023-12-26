@@ -306,6 +306,8 @@ std::string from_u8string(const std::string &s) { return s; }
 std::string from_u8string(std::string &&s) { return std::move(s); }
 #if defined(__cpp_lib_char8_t)
 std::string from_u8string(const std::u8string &s) { return std::string(s.begin(), s.end()); }
+#elif defined(__cpp_char8_t)
+std::string from_u8string(const char8_t *s) { return std::string(reinterpret_cast<const char *>(s)); }
 #endif
 
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
