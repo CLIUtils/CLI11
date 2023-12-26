@@ -472,7 +472,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 if(!value.empty()) {
-                    
+
                     if(!opt->get_fnames().empty()) {
                         try {
                             value = opt->get_flag_value(single_name, value);
@@ -498,12 +498,12 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
                     if(single_name.find_first_of(commentTest) != std::string::npos ||
-                        single_name.compare(0, 3, multiline_string_quote) == 0 ||
-                        single_name.compare(0, 3, multiline_literal_quote) == 0 ||
-                        (single_name.front() == '[' && single_name.back() == ']') ||
-                        (single_name.find_first_of(stringQuote) != std::string::npos) ||
-                        (single_name.find_first_of(literalQuote) != std::string::npos) ||
-                        (single_name.find_first_of('`') != std::string::npos)) {
+                       single_name.compare(0, 3, multiline_string_quote) == 0 ||
+                       single_name.compare(0, 3, multiline_literal_quote) == 0 ||
+                       (single_name.front() == '[' && single_name.back() == ']') ||
+                       (single_name.find_first_of(stringQuote) != std::string::npos) ||
+                       (single_name.find_first_of(literalQuote) != std::string::npos) ||
+                       (single_name.find_first_of('`') != std::string::npos)) {
                         if(single_name.find_first_of(literalQuote) == std::string::npos) {
                             single_name.insert(0, 1, literalQuote);
                             single_name.push_back(literalQuote);
