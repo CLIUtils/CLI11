@@ -215,6 +215,10 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
     return str;
 }
 
+/// close a sequence of characters indicated by a closure character.  Brackets allows sub sequences
+/// recognized bracket sequences include "'`[(<{  other closure characters are assumed to be literal strings
+CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char);
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
 CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0');
