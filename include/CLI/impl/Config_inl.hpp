@@ -368,17 +368,14 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
-        try
-        {
+        try {
             literalName = detail::process_quoted_string(name, stringQuote, literalQuote);
 
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
                 detail::process_quoted_string(it, stringQuote, literalQuote);
             }
-        }
-        catch (const std::invalid_argument& ia)
-        {
+        } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
         }
         std::vector<std::string> parents;
