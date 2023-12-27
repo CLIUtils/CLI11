@@ -34,7 +34,7 @@ TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
     std::string tstring1;
     tstring1.push_back('\0');
-    //binary string conversion single character
+    // binary string conversion single character
     CHECK("'B\"(\\x00)\"'" == CLI::detail::convert_arg_for_ini(tstring1));
     // hex
     CHECK("0x5461FAED" == CLI::detail::convert_arg_for_ini("0x5461FAED"));
