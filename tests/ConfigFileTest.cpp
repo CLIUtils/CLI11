@@ -27,6 +27,15 @@ TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
     CHECK("-22E14" == CLI::detail::convert_arg_for_ini("-22E14"));
 
     CHECK("'a'" == CLI::detail::convert_arg_for_ini("a"));
+
+    CHECK("'\\'" == CLI::detail::convert_arg_for_ini("\\"));
+
+    CHECK("\"'\"" == CLI::detail::convert_arg_for_ini("'"));
+
+    std::string tstring1;
+    tstring1.push_back('\0');
+    //binary string conversion single character
+    CHECK("'B\"(\\x00)\"'" == CLI::detail::convert_arg_for_ini(tstring1));
     // hex
     CHECK("0x5461FAED" == CLI::detail::convert_arg_for_ini("0x5461FAED"));
     // hex fail

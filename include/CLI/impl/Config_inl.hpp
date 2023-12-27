@@ -54,9 +54,6 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
         if(isprint(static_cast<unsigned char>(arg.front())) == 0) {
             return binary_escape_string(arg);
         }
-        if(arg == "\\") {
-            return std::string(1, literalQuote) + "\\" + literalQuote;
-        }
         if(arg == "'") {
             return std::string(1, stringQuote) + "'" + stringQuote;
         }
