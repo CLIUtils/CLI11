@@ -259,7 +259,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
 
     std::string out;
     out.reserve(str.size());
-    for(auto loc = str.begin(); loc != str.end(); ++loc) {
+    for (auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
             if(str.end() - loc < 2) {
                 throw std::invalid_argument("invalid escape sequence " + str);
@@ -270,7 +270,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 ++loc;
             } else if(*(loc + 1) == 'u') {
                 // must have 4 hex characters
-                if(str.end() - loc < 5) {
+                if(str.end() - loc < 6) {
                     throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
                 }
                 std::uint32_t code{0};
@@ -287,7 +287,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
                 loc += 5;
             } else if(*(loc + 1) == 'U') {
                 // must have 8 hex characters
-                if(str.end() - loc < 9) {
+                if(str.end() - loc < 10) {
                     throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
                 }
                 std::uint32_t code{0};
@@ -371,9 +371,6 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
                 closures.push_back(matchBracketChars[bracket_loc]);
                 break;
             }
-        }
-        if(loc == std::string::npos) {
-            return loc;
         }
         ++loc;
     }
@@ -540,12 +537,8 @@ CLI11_INLINE bool process_quoted_string(std::string &str, char string_char, char
         }
         return true;
     }
-    if(str.front() == literal_char && str.back() == literal_char) {
-        detail::remove_outer(str, literal_char);
-        return true;
-    }
-    if(str.front() == '`' && str.back() == '`') {
-        detail::remove_outer(str, literal_char);
+    if((str.front() == literal_char || str.front() == '`') && str.back() == str.front()) {
+        detail::remove_outer(str, str.front());
         return true;
     }
     return false;
