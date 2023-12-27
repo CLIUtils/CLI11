@@ -330,7 +330,8 @@ CLI11_INLINE std::size_t close_string_quote(const std::string &str, std::size_t 
 }
 
 CLI11_INLINE std::size_t close_literal_quote(const std::string &str, std::size_t start, char closure_char) {
-    return str.find_first_of(closure_char, start + 1);
+    auto loc=str.find_first_of(closure_char, start + 1);
+    return (loc!=std::string::npos?loc:str.size());
 }
 
 CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char) {
@@ -373,6 +374,10 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
             }
         }
         ++loc;
+    }
+    if (loc > str.size())
+    {
+        loc = str.size();
     }
     return loc;
 }
