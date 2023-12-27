@@ -325,7 +325,7 @@ TEST_CASE("StringTools: escapeConversion", "[helpers]") {
     CHECK(CLI::detail::remove_escaped_characters("test\\n\\r\\t\\f") == "test\n\r\t\f");
     CHECK(CLI::detail::remove_escaped_characters("test\\r") == "test\r");
     CHECK(CLI::detail::remove_escaped_characters("test\\f") == "test\f");
-    std::string zstring="test";
+    std::string zstring = "test";
     zstring.push_back('\0');
     zstring.append("test\n");
     CHECK(CLI::detail::remove_escaped_characters("test\\0test\\n") == zstring);
@@ -337,76 +337,73 @@ TEST_CASE("StringTools: escapeConversion", "[helpers]") {
 TEST_CASE("StringTools: quotedString", "[helpers]") {
 
     std::string rstring = "'B\"(\\x35\\xa7)\"'";
-    auto s2=rstring;
+    auto s2 = rstring;
     CLI::detail::process_quoted_string(s2);
     CHECK(s2[0] == static_cast<char>(0x35));
     CHECK(s2[1] == static_cast<char>(0xa7));
-    s2=rstring;
+    s2 = rstring;
     CLI::detail::remove_quotes(s2);
     CLI::detail::process_quoted_string(s2);
     CHECK(s2[0] == static_cast<char>(0x35));
     CHECK(s2[1] == static_cast<char>(0xa7));
 
-    std::string qbase=R"("this\nis\na\nfour\tline test")";
-    std::string qresult="this\nis\na\nfour\tline test";
+    std::string qbase = R"("this\nis\na\nfour\tline test")";
+    std::string qresult = "this\nis\na\nfour\tline test";
 
-    std::string q1=qbase;
+    std::string q1 = qbase;
 
-    //test remove quotes and escape processing
+    // test remove quotes and escape processing
     CLI::detail::process_quoted_string(q1);
-    CHECK(q1==qresult);
+    CHECK(q1 == qresult);
 
-
-    std::string q2=qbase;
-    q2.front()='\'';
+    std::string q2 = qbase;
+    q2.front() = '\'';
     q2.pop_back();
     q2.push_back('\'');
-    std::string qliteral=qbase.substr(1);
+    std::string qliteral = qbase.substr(1);
     qliteral.pop_back();
 
-    //test remove quotes for literal string
+    // test remove quotes for literal string
     CHECK(CLI::detail::process_quoted_string(q2));
-    CHECK(q2==qliteral);
+    CHECK(q2 == qliteral);
 
-    std::string q3=qbase;
-    q3.front()='`';
+    std::string q3 = qbase;
+    q3.front() = '`';
     q3.pop_back();
     q3.push_back('`');
-   
-    //test remove quotes for literal string
+
+    // test remove quotes for literal string
     CHECK(CLI::detail::process_quoted_string(q3));
-    CHECK(q3==qliteral);
+    CHECK(q3 == qliteral);
 
-
-    std::string q4=qbase;
-    q4.front()='|';
+    std::string q4 = qbase;
+    q4.front() = '|';
     q4.pop_back();
     q4.push_back('|');
 
-    //check that it doesn't process
+    // check that it doesn't process
     CHECK_FALSE(CLI::detail::process_quoted_string(q4));
-    //test custom string quote character
-    CHECK(CLI::detail::process_quoted_string(q4,'|'));
-    CHECK(q4==qresult);
+    // test custom string quote character
+    CHECK(CLI::detail::process_quoted_string(q4, '|'));
+    CHECK(q4 == qresult);
 
-    std::string q5=qbase;
-    q5.front()='?';
+    std::string q5 = qbase;
+    q5.front() = '?';
     q5.pop_back();
     q5.push_back('?');
 
-    //test custom literal quote character
-    CHECK(CLI::detail::process_quoted_string(q5,'|','?'));
-    CHECK(q5==qliteral);
+    // test custom literal quote character
+    CHECK(CLI::detail::process_quoted_string(q5, '|', '?'));
+    CHECK(q5 == qliteral);
 
-    q3=qbase;
-    q3.front()='`';
+    q3 = qbase;
+    q3.front() = '`';
     q3.pop_back();
     q3.push_back('`');
 
-    //test that '`' still works regardless of the other specified characters
+    // test that '`' still works regardless of the other specified characters
     CHECK(CLI::detail::process_quoted_string(q3));
-    CHECK(q3==qliteral);
-
+    CHECK(q3 == qliteral);
 }
 
 TEST_CASE("StringTools: unicode_literals", "[helpers]") {
@@ -424,12 +421,11 @@ TEST_CASE("StringTools: unicode_literals", "[helpers]") {
     CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E60"), std::invalid_argument);
 }
 
-
 TEST_CASE("StringTools: close_sequence", "[helpers]") {
-    CHECK(CLI::detail::close_sequence("[test]",0,']')==5U);
-    CHECK(CLI::detail::close_sequence("[\"test]\"]",0,']')==8U);
-    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]",0,']')==8U);
-    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]",10,']')==13U);
+    CHECK(CLI::detail::close_sequence("[test]", 0, ']') == 5U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"]", 0, ']') == 8U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]", 0, ']') == 8U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]", 10, ']') == 13U);
     CHECK(CLI::detail::close_sequence("{\"test]\"],[t2]", 0, '}') == 14U);
     CHECK(CLI::detail::close_sequence("[(),(),{},\"]]52{}\",[],[54],[[],[],()]]", 0, ']') == 37U);
 }

@@ -259,7 +259,7 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
 
     std::string out;
     out.reserve(str.size());
-    for (auto loc = str.begin(); loc < str.end(); ++loc) {
+    for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
             if(str.end() - loc < 2) {
                 throw std::invalid_argument("invalid escape sequence " + str);
