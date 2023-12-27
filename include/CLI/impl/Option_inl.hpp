@@ -609,7 +609,15 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
             throw ArgumentMismatch::AtLeast(get_name(), static_cast<int>(num_min), original.size());
         }
         if(original.size() > num_max) {
-            throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
+            if (original.size() == 2 && num_max == 1 && original[1] == "%%" && original[0] == "{}")
+            {
+                //this condition is a trap for the following empty indicator check on config files
+                out=original;
+            }
+            else
+            {
+                throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
+            }
         }
         break;
     }
@@ -617,12 +625,11 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
     // this check is to allow an empty vector in certain circumstances but not if expected is not zero.
     // {} is the indicator for an empty container
     if(out.empty()) {
-        if(original.size() == 1 && original[0] == "{}" && get_items_expected_min() > 0 &&
-           get_items_expected_max() > 1) {
+        if(original.size() == 1 && original[0] == "{}" && get_items_expected_min() > 0) {
             out.push_back("{}");
             out.push_back("%%");
         }
-    } else if(out.size() == 1 && out[0] == "{}" && get_items_expected_min() > 0 && get_items_expected_max() > 1) {
+    } else if(out.size() == 1 && out[0] == "{}" && get_items_expected_min() > 0 ) {
         out.push_back("%%");
     }
 }
