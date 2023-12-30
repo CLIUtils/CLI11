@@ -272,14 +272,12 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         }
         std::size_t search_start = 0;
         if(line.find_first_of("\"'`") != std::string::npos) {
-            bool name_ended{false};
-            while(!name_ended && search_start < line.size()) {
+            while(search_start < line.size()) {
                 auto test_char = line[search_start];
                 if(test_char == '\"' || test_char == '\'' || test_char == '`') {
                     search_start = detail::close_sequence(line, search_start, line[search_start]);
                     ++search_start;
                 } else if(test_char == valueDelimiter || test_char == commentChar) {
-                    name_ended = true;
                     --search_start;
                     break;
                 } else if(test_char == ' ' || test_char == '\t' || test_char == parentSeparatorChar) {
