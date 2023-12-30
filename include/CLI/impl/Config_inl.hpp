@@ -214,7 +214,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
 
-    std::string line_sep_chars{parentSeparatorChar,commentChar,valueDelimiter};
+    std::string line_sep_chars{parentSeparatorChar, commentChar, valueDelimiter};
     while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
         std::string name;
@@ -271,32 +271,22 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             continue;
         }
         std::size_t search_start = 0;
-        if (line.find_first_of("\"'`") != std::string::npos)
-        {
+        if(line.find_first_of("\"'`") != std::string::npos) {
             bool name_ended{false};
-            while (!name_ended && search_start<line.size())
-            {
-                auto test_char=line[search_start];
-                if (test_char == '\"' || test_char == '\'' || test_char == '`')
-                {
+            while(!name_ended && search_start < line.size()) {
+                auto test_char = line[search_start];
+                if(test_char == '\"' || test_char == '\'' || test_char == '`') {
                     search_start = detail::close_sequence(line, search_start, line[search_start]);
                     ++search_start;
-                }
-                else if (test_char == valueDelimiter||test_char==commentChar)
-                {
-                    name_ended=true;
+                } else if(test_char == valueDelimiter || test_char == commentChar) {
+                    name_ended = true;
                     --search_start;
                     break;
-                }
-                else if (test_char == ' ' || test_char == '\t'||test_char==parentSeparatorChar)
-                {
+                } else if(test_char == ' ' || test_char == '\t' || test_char == parentSeparatorChar) {
                     ++search_start;
+                } else {
+                    search_start = line.find_first_of(line_sep_chars, search_start);
                 }
-                else
-                {
-                    search_start=line.find_first_of(line_sep_chars,search_start);
-                }
-                
             }
         }
         // Find = in string, split and recombine
@@ -311,7 +301,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
             bool mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
-            if(!mlquote && comment_pos != std::string::npos ) {
+            if(!mlquote && comment_pos != std::string::npos) {
                 auto citems = detail::split_up(item, commentChar);
                 item = detail::trim_copy(citems.front());
             }
@@ -388,7 +378,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         }
         std::vector<std::string> parents;
         try {
-            parents= detail::generate_parents(currentSection, name, parentSeparatorChar);
+            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
             detail::process_quoted_string(name);
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
@@ -397,7 +387,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
         }
-         
+
         if(parents.size() > maximumLayers) {
             continue;
         }
