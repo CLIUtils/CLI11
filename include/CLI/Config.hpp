@@ -37,7 +37,7 @@ std::string ini_join(const std::vector<std::string> &args,
                      char stringQuote = '"',
                      char literalQuote = '\'');
 
-void clean_name_string(std::string& name,const std::string &keyChars);
+void clean_name_string(std::string &name, const std::string &keyChars);
 
 std::vector<std::string> generate_parents(const std::string &section, std::string &name, char parentSeparator);
 

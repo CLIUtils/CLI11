@@ -1854,8 +1854,6 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
     CHECK(0U == subcom2->count());
 }
 
-
-
 TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -3638,7 +3636,7 @@ TEST_CASE_METHOD(TApp, "IniOutputSubsubcomCustomSepWithInternalQuote", "[config]
     app.add_flag("--simple");
     auto *subcom = app.add_subcommand("other");
     subcom->add_flag("--newer");
-    auto* subsubcom = subcom->add_subcommand("sub2'BB");
+    auto *subsubcom = subcom->add_subcommand("sub2'BB");
     subsubcom->add_flag("--newest");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
     app.get_config_formatter_base()->parentSeparator('|');

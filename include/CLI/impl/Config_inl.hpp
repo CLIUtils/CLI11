@@ -415,12 +415,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     return output;
 }
 
-CLI11_INLINE std::string& clean_name_string(std::string& name,const std::string &keyChars)
-{
-    if(name.find_first_of(keyChars) != std::string::npos ||
-        (name.front() == '[' && name.back() == ']') ||
-        (name.find_first_of("'`\"") != std::string::npos)) {
-        if (name.find_first_of('\'') == std::string::npos) {
+CLI11_INLINE std::string &clean_name_string(std::string &name, const std::string &keyChars) {
+    if(name.find_first_of(keyChars) != std::string::npos || (name.front() == '[' && name.back() == ']') ||
+       (name.find_first_of("'`\"") != std::string::npos)) {
+        if(name.find_first_of('\'') == std::string::npos) {
             name.insert(0, 1, '\'');
             name.push_back('\'');
         } else {
@@ -445,7 +443,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     commentTest.push_back(commentChar);
     commentTest.push_back(parentSeparatorChar);
 
-    std::string keyChars=commentTest;
+    std::string keyChars = commentTest;
     keyChars.push_back(literalQuote);
     keyChars.push_back(stringQuote);
     keyChars.push_back(arrayStart);
@@ -522,7 +520,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    clean_name_string(single_name,keyChars);
+                    clean_name_string(single_name, keyChars);
 
                     std::string name = prefix + single_name;
 
@@ -561,21 +559,21 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             if(!default_also && (subcom->count_all() == 0)) {
                 continue;
             }
-            std::string subname=subcom->get_name();
-            clean_name_string(subname,keyChars);
+            std::string subname = subcom->get_name();
+            clean_name_string(subname, keyChars);
 
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
-                    
+
                     out << '[' << prefix << subname << "]\n";
                 } else {
-                    std::string appname=app->get_name();
-                    clean_name_string(appname,keyChars);
+                    std::string appname = app->get_name();
+                    clean_name_string(appname, keyChars);
                     subname = appname + parentSeparatorChar + subname;
                     const auto *p = app->get_parent();
                     while(p->get_parent() != nullptr) {
-                        std::string pname=p->get_name();
-                        clean_name_string(pname,keyChars);
+                        std::string pname = p->get_name();
+                        clean_name_string(pname, keyChars);
                         subname = pname + parentSeparatorChar + subname;
                         p = p->get_parent();
                     }
@@ -583,8 +581,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
                 out << to_config(subcom, default_also, write_description, "");
             } else {
-                out << to_config(
-                    subcom, default_also, write_description, prefix + subname + parentSeparatorChar);
+                out << to_config(subcom, default_also, write_description, prefix + subname + parentSeparatorChar);
             }
         }
     }
