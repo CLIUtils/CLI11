@@ -130,7 +130,6 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
     if(name.find(parentSeparator) != std::string::npos) {
         std::vector<std::string> plist = detail::split_up(name, parentSeparator);
         name = plist.back();
-        detail::process_quoted_string(name);
         plist.pop_back();
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
@@ -215,10 +214,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
 
+    std::string line_sep_chars{parentSeparatorChar,commentChar,valueDelimiter};
     while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
         std::string name;
-        bool literalName{false};
         line = detail::trim_copy(buffer);
         std::size_t len = line.length();
         // lines have to be at least 3 characters to have any meaning to CLI just skip the rest
@@ -272,8 +271,33 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             continue;
         }
         std::size_t search_start = 0;
-        if(line.front() == stringQuote || line.front() == literalQuote || line.front() == '`') {
-            search_start = detail::close_sequence(line, 0, line.front());
+        if (line.find_first_of("\"'`") != std::string::npos)
+        {
+            bool name_ended{false};
+            while (!name_ended && search_start<line.size())
+            {
+                auto test_char=line[search_start];
+                if (test_char == '\"' || test_char == '\'' || test_char == '`')
+                {
+                    search_start = detail::close_sequence(line, search_start, line[search_start]);
+                    ++search_start;
+                }
+                else if (test_char == valueDelimiter||test_char==commentChar)
+                {
+                    name_ended=true;
+                    --search_start;
+                    break;
+                }
+                else if (test_char == ' ' || test_char == '\t'||test_char==parentSeparatorChar)
+                {
+                    ++search_start;
+                }
+                else
+                {
+                    search_start=line.find_first_of(line_sep_chars,search_start);
+                }
+                
+            }
         }
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter, search_start + 1);
@@ -287,7 +311,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
             bool mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
-            if(!mlquote && comment_pos != std::string::npos && !literalName) {
+            if(!mlquote && comment_pos != std::string::npos ) {
                 auto citems = detail::split_up(item, commentChar);
                 item = detail::trim_copy(citems.front());
             }
@@ -362,9 +386,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
+        std::vector<std::string> parents;
         try {
-            literalName = detail::process_quoted_string(name, stringQuote, literalQuote);
-
+            parents= detail::generate_parents(currentSection, name, parentSeparatorChar);
+            detail::process_quoted_string(name);
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
                 detail::process_quoted_string(it, stringQuote, literalQuote);
@@ -372,13 +397,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
         }
-        std::vector<std::string> parents;
-        if(literalName) {
-            std::string noname{};
-            parents = detail::generate_parents(currentSection, noname, parentSeparatorChar);
-        } else {
-            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
-        }
+         
         if(parents.size() > maximumLayers) {
             continue;
         }
@@ -417,7 +436,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
 
 CLI11_INLINE std::string &clean_name_string(std::string &name, const std::string &keyChars) {
     if(name.find_first_of(keyChars) != std::string::npos || (name.front() == '[' && name.back() == ']') ||
-       (name.find_first_of("'`\"") != std::string::npos)) {
+       (name.find_first_of("'`\"\\") != std::string::npos)) {
         if(name.find_first_of('\'') == std::string::npos) {
             name.insert(0, 1, '\'');
             name.push_back('\'');

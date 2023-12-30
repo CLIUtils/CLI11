@@ -1791,7 +1791,7 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAlias", "[config]") {
         out << "val=1" << std::endl;
         out << "[subcom]" << std::endl;
         out << "val=2" << std::endl;
-        out << "\"sub\\tsub\\t.com\".'val'=3" << std::endl;
+        out << R"("sub\tsub\t.com".'val'=3)" << std::endl;
     }
 
     int one{0}, two{0}, three{0};
@@ -1811,6 +1811,70 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAlias", "[config]") {
     CHECK(1U == subcom->count());
     CHECK(*subcom);
     CHECK(app.got_subcommand(subcom));
+}
+
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithEquals", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << R"("sub=sub=.com".'val'=3)" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->configurable();
+    subcom->add_option("--val", two);
+    auto *subsubcom = subcom->add_subcommand("subsubcom")->alias("sub=sub=.com");
+    subsubcom->add_option("--val", three);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
+
+    CHECK(1U == subcom->count());
+    CHECK(*subcom);
+    CHECK(app.got_subcommand(subcom));
+}
+
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithComment", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << std::endl;
+        out << "val=1" << std::endl;
+        out << "[subcom]" << std::endl;
+        out << "val=2" << std::endl;
+        out << R"("sub#sub;.com".'val'=3)" << std::endl;
+    }
+
+    int one{0}, two{0}, three{0};
+    app.add_option("--val", one);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->configurable();
+    subcom->add_option("--val", two);
+    auto *subsubcom = subcom->add_subcommand("subsubcom")->alias("sub#sub;.com");
+    subsubcom->add_option("--val", three);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+    CHECK(three == 3);
 }
 
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
