@@ -122,23 +122,20 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
     std::vector<std::string> parents;
     if(detail::to_lower(section) != "default") {
         if(section.find(parentSeparator) != std::string::npos) {
-            parents = detail::split(section, parentSeparator);
+            parents = detail::split_up(section, parentSeparator);
         } else {
             parents = {section};
         }
     }
     if(name.find(parentSeparator) != std::string::npos) {
-        std::vector<std::string> plist = detail::split(name, parentSeparator);
+        std::vector<std::string> plist = detail::split_up(name, parentSeparator);
         name = plist.back();
-        detail::remove_quotes(name);
+        detail::process_quoted_string(name);
         plist.pop_back();
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
-
     // clean up quotes on the parents
-    for(auto &parent : parents) {
-        detail::remove_quotes(parent);
-    }
+    detail::remove_quotes(parents);
     return parents;
 }
 
@@ -418,6 +415,25 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     return output;
 }
 
+CLI11_INLINE std::string& clean_name_string(std::string& name,const std::string &keyChars)
+{
+    if(name.find_first_of(keyChars) != std::string::npos ||
+        (name.front() == '[' && name.back() == ']') ||
+        (name.find_first_of("'`\"") != std::string::npos)) {
+        if (name.find_first_of('\'') == std::string::npos) {
+            name.insert(0, 1, '\'');
+            name.push_back('\'');
+        } else {
+            if(detail::has_escapable_character(name)) {
+                name = detail::add_escaped_characters(name);
+            }
+            name.insert(0, 1, '\"');
+            name.push_back('\"');
+        }
+    }
+    return name;
+}
+
 CLI11_INLINE std::string
 ConfigBase::to_config(const App *app, bool default_also, bool write_description, std::string prefix) const {
     std::stringstream out;
@@ -428,6 +444,14 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::string commentTest = "#;";
     commentTest.push_back(commentChar);
     commentTest.push_back(parentSeparatorChar);
+
+    std::string keyChars=commentTest;
+    keyChars.push_back(literalQuote);
+    keyChars.push_back(stringQuote);
+    keyChars.push_back(arrayStart);
+    keyChars.push_back(arrayEnd);
+    keyChars.push_back(valueDelimiter);
+    keyChars.push_back(arraySeparator);
 
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
@@ -498,24 +522,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    if(single_name.find_first_of(commentTest) != std::string::npos ||
-                       single_name.compare(0, 3, multiline_string_quote) == 0 ||
-                       single_name.compare(0, 3, multiline_literal_quote) == 0 ||
-                       (single_name.front() == '[' && single_name.back() == ']') ||
-                       (single_name.find_first_of(stringQuote) != std::string::npos) ||
-                       (single_name.find_first_of(literalQuote) != std::string::npos) ||
-                       (single_name.find_first_of('`') != std::string::npos)) {
-                        if(single_name.find_first_of(literalQuote) == std::string::npos) {
-                            single_name.insert(0, 1, literalQuote);
-                            single_name.push_back(literalQuote);
-                        } else {
-                            if(detail::has_escapable_character(single_name)) {
-                                single_name = detail::add_escaped_characters(single_name);
-                            }
-                            single_name.insert(0, 1, stringQuote);
-                            single_name.push_back(stringQuote);
-                        }
-                    }
+                    clean_name_string(single_name,keyChars);
 
                     std::string name = prefix + single_name;
 
@@ -554,14 +561,22 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             if(!default_also && (subcom->count_all() == 0)) {
                 continue;
             }
+            std::string subname=subcom->get_name();
+            clean_name_string(subname,keyChars);
+
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
-                    out << '[' << prefix << subcom->get_name() << "]\n";
+                    
+                    out << '[' << prefix << subname << "]\n";
                 } else {
-                    std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
+                    std::string appname=app->get_name();
+                    clean_name_string(appname,keyChars);
+                    subname = appname + parentSeparatorChar + subname;
                     const auto *p = app->get_parent();
                     while(p->get_parent() != nullptr) {
-                        subname = p->get_name() + parentSeparatorChar + subname;
+                        std::string pname=p->get_name();
+                        clean_name_string(pname,keyChars);
+                        subname = pname + parentSeparatorChar + subname;
                         p = p->get_parent();
                     }
                     out << '[' << subname << "]\n";
@@ -569,7 +584,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 out << to_config(subcom, default_also, write_description, "");
             } else {
                 out << to_config(
-                    subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
+                    subcom, default_also, write_description, prefix + subname + parentSeparatorChar);
             }
         }
     }
