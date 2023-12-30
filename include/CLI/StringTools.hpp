@@ -120,6 +120,9 @@ inline std::string trim_copy(const std::string &str) {
 /// remove quotes at the front and back of a string either '"' or '\''
 CLI11_INLINE std::string &remove_quotes(std::string &str);
 
+/// remove quotes from all elements of a string vector and process escaped components
+CLI11_INLINE void remove_quotes(std::vector<std::string> &args);
+
 /// Add a leader to the beginning of all new lines (nothing is added
 /// at the start of the first line). `"; "` would be for ini files
 ///
@@ -212,9 +215,13 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
     return str;
 }
 
+/// close a sequence of characters indicated by a closure character.  Brackets allows sub sequences
+/// recognized bracket sequences include "'`[(<{  other closure characters are assumed to be literal strings
+CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char);
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be ` ' or " or bracket characters [{(< with matching to the matching bracket
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0', bool removeQuotes = true);
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0');
 
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
@@ -245,6 +252,9 @@ CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string);
 
 /// extract an escaped binary_string
 CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string);
+
+/// process a quoted string, remove the quotes and if appropriate handle escaped characters
+CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"', char literal_char = '\'');
 
 }  // namespace detail
 

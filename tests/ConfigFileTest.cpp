@@ -27,6 +27,15 @@ TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
     CHECK("-22E14" == CLI::detail::convert_arg_for_ini("-22E14"));
 
     CHECK("'a'" == CLI::detail::convert_arg_for_ini("a"));
+
+    CHECK("'\\'" == CLI::detail::convert_arg_for_ini("\\"));
+
+    CHECK("\"'\"" == CLI::detail::convert_arg_for_ini("'"));
+
+    std::string tstring1;
+    tstring1.push_back('\0');
+    // binary string conversion single character
+    CHECK("'B\"(\\x00)\"'" == CLI::detail::convert_arg_for_ini(tstring1));
     // hex
     CHECK("0x5461FAED" == CLI::detail::convert_arg_for_ini("0x5461FAED"));
     // hex fail
@@ -2713,7 +2722,8 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultilineString", "[config]") {
     std::string desc = "flag";
     app.add_option("--opt", desc);
 
-    std::string argString = "this is a very long string \n that covers multiple lines \n and should be long";
+    std::string argString = "this is a very long string \n that covers multiple lines \nand should be longer than 100 "
+                            "characters \nto trigger the multiline string";
     args = {"--opt", argString};
 
     run();

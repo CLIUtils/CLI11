@@ -579,6 +579,11 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     auto args = detail::split_up(std::move(commandline));
     // remove all empty strings
     args.erase(std::remove(args.begin(), args.end(), std::string{}), args.end());
+    try {
+        detail::remove_quotes(args);
+    } catch(const std::invalid_argument &arg) {
+        throw CLI::ParseError(arg.what(), CLI::ExitCodes::InvalidError);
+    }
     std::reverse(args.begin(), args.end());
     parse(std::move(args));
 }
@@ -1569,7 +1574,7 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::SHORT:
     case detail::Classifier::WINDOWS_STYLE:
         // If already parsed a subcommand, don't accept options_
-        _parse_arg(args, classifier, false);
+        retval = _parse_arg(args, classifier, false);
         break;
     case detail::Classifier::NONE:
         // Probably a positional or something for a parent (sub)command

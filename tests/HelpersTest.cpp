@@ -165,6 +165,7 @@ TEST_CASE("String: InvalidName", "[helpers]") {
     CHECK(CLI::detail::valid_name_string("b@d2?"));
     CHECK(CLI::detail::valid_name_string("2vali?d"));
     CHECK_FALSE(CLI::detail::valid_name_string("!valid"));
+    CHECK_FALSE(CLI::detail::valid_name_string("!va\nlid"));
 }
 
 TEST_CASE("StringTools: Modify", "[helpers]") {
@@ -250,6 +251,11 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
     std::string rstring = CLI::detail::extract_binary_string(estring);
     CHECK(rstring == testString2);
 
+    CLI::detail::remove_quotes(estring);
+    CHECK(CLI::detail::is_binary_escaped_string(estring));
+    std::string rstringrq = CLI::detail::extract_binary_string(estring);
+    CHECK(rstringrq == testString2);
+
     testString2.push_back(0);
     testString2.push_back(static_cast<char>(197));
     testString2.push_back(78);
@@ -272,11 +278,13 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     CHECK(CLI::detail::extract_binary_string(rstring).empty());
 
     rstring = "B\"(\\x35\\xa7)\"";
+    CHECK(CLI::detail::is_binary_escaped_string(rstring));
     auto result = CLI::detail::extract_binary_string(rstring);
     CHECK(result[0] == static_cast<char>(0x35));
     CHECK(result[1] == static_cast<char>(0xa7));
 
-    rstring = "B\"(\\x3e\\xf7)\"";
+    rstring = "'B\"(\\x3e\\xf7)\"'";
+    CHECK(CLI::detail::is_binary_escaped_string(rstring));
     result = CLI::detail::extract_binary_string(rstring);
     CHECK(result[0] == static_cast<char>(0x3e));
     CHECK(result[1] == static_cast<char>(0xf7));
@@ -300,12 +308,126 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     CHECK(result == "\\XEM\\X7K");
 }
 
+/// these are provided for compatibility with the char8_t for C++20 that breaks stuff
+std::string from_u8string(const std::string &s) { return s; }
+std::string from_u8string(std::string &&s) { return std::move(s); }
+#if defined(__cpp_lib_char8_t)
+std::string from_u8string(const std::u8string &s) { return std::string(s.begin(), s.end()); }
+#elif defined(__cpp_char8_t)
+std::string from_u8string(const char8_t *s) { return std::string(reinterpret_cast<const char *>(s)); }
+#endif
+
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
     CHECK(CLI::detail::remove_escaped_characters("test\\\"") == "test\"");
-    CHECK(CLI::detail::remove_escaped_characters("test\\}") == "test}");
     CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
-    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
-    CHECK(CLI::detail::remove_escaped_characters("test\\k") == "test\\k");
+    CHECK(CLI::detail::remove_escaped_characters("test\\b") == "test\b");
+    CHECK(CLI::detail::remove_escaped_characters("test\\t") == "test\t");
+    CHECK(CLI::detail::remove_escaped_characters("test\\n\\r\\t\\f") == "test\n\r\t\f");
+    CHECK(CLI::detail::remove_escaped_characters("test\\r") == "test\r");
+    CHECK(CLI::detail::remove_escaped_characters("test\\f") == "test\f");
+    std::string zstring = "test";
+    zstring.push_back('\0');
+    zstring.append("test\n");
+    CHECK(CLI::detail::remove_escaped_characters("test\\0test\\n") == zstring);
+
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\m_bad"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\"), std::invalid_argument);
+}
+
+TEST_CASE("StringTools: quotedString", "[helpers]") {
+
+    std::string rstring = "'B\"(\\x35\\xa7)\"'";
+    auto s2 = rstring;
+    CLI::detail::process_quoted_string(s2);
+    CHECK(s2[0] == static_cast<char>(0x35));
+    CHECK(s2[1] == static_cast<char>(0xa7));
+    s2 = rstring;
+    CLI::detail::remove_quotes(s2);
+    CLI::detail::process_quoted_string(s2);
+    CHECK(s2[0] == static_cast<char>(0x35));
+    CHECK(s2[1] == static_cast<char>(0xa7));
+
+    std::string qbase = R"("this\nis\na\nfour\tline test")";
+    std::string qresult = "this\nis\na\nfour\tline test";
+
+    std::string q1 = qbase;
+
+    // test remove quotes and escape processing
+    CLI::detail::process_quoted_string(q1);
+    CHECK(q1 == qresult);
+
+    std::string q2 = qbase;
+    q2.front() = '\'';
+    q2.pop_back();
+    q2.push_back('\'');
+    std::string qliteral = qbase.substr(1);
+    qliteral.pop_back();
+
+    // test remove quotes for literal string
+    CHECK(CLI::detail::process_quoted_string(q2));
+    CHECK(q2 == qliteral);
+
+    std::string q3 = qbase;
+    q3.front() = '`';
+    q3.pop_back();
+    q3.push_back('`');
+
+    // test remove quotes for literal string
+    CHECK(CLI::detail::process_quoted_string(q3));
+    CHECK(q3 == qliteral);
+
+    std::string q4 = qbase;
+    q4.front() = '|';
+    q4.pop_back();
+    q4.push_back('|');
+
+    // check that it doesn't process
+    CHECK_FALSE(CLI::detail::process_quoted_string(q4));
+    // test custom string quote character
+    CHECK(CLI::detail::process_quoted_string(q4, '|'));
+    CHECK(q4 == qresult);
+
+    std::string q5 = qbase;
+    q5.front() = '?';
+    q5.pop_back();
+    q5.push_back('?');
+
+    // test custom literal quote character
+    CHECK(CLI::detail::process_quoted_string(q5, '|', '?'));
+    CHECK(q5 == qliteral);
+
+    q3 = qbase;
+    q3.front() = '`';
+    q3.pop_back();
+    q3.push_back('`');
+
+    // test that '`' still works regardless of the other specified characters
+    CHECK(CLI::detail::process_quoted_string(q3));
+    CHECK(q3 == qliteral);
+}
+
+TEST_CASE("StringTools: unicode_literals", "[helpers]") {
+
+    CHECK(CLI::detail::remove_escaped_characters("test\\u03C0\\u00e9") == from_u8string(u8"test\u03C0\u00E9"));
+    CHECK(CLI::detail::remove_escaped_characters("test\\u73C0\\u0057") == from_u8string(u8"test\u73C0\u0057"));
+
+    CHECK(CLI::detail::remove_escaped_characters("test\\U0001F600\\u00E9") == from_u8string(u8"test\U0001F600\u00E9"));
+
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001M600\\u00E9"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\u00M9"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8E9"), std::invalid_argument);
+
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E60"), std::invalid_argument);
+}
+
+TEST_CASE("StringTools: close_sequence", "[helpers]") {
+    CHECK(CLI::detail::close_sequence("[test]", 0, ']') == 5U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"]", 0, ']') == 8U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]", 0, ']') == 8U);
+    CHECK(CLI::detail::close_sequence("[\"test]\"],[t2]", 10, ']') == 13U);
+    CHECK(CLI::detail::close_sequence("{\"test]\"],[t2]", 0, '}') == 14U);
+    CHECK(CLI::detail::close_sequence("[(),(),{},\"]]52{}\",[],[54],[[],[],()]]", 0, ']') == 37U);
 }
 
 TEST_CASE("Trim: Various", "[helpers]") {
@@ -967,35 +1089,35 @@ TEST_CASE("Join: Backward", "[helpers]") {
 }
 
 TEST_CASE("SplitUp: Simple", "[helpers]") {
-    std::vector<std::string> oput = {"one", "two three"};
+    std::vector<std::string> oput = {"one", "\"two three\""};
     std::string orig{R"(one "two three")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: SimpleDifferentQuotes", "[helpers]") {
-    std::vector<std::string> oput = {"one", "two three"};
+    std::vector<std::string> oput = {"one", "`two three`"};
     std::string orig{R"(one `two three`)"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: SimpleMissingQuotes", "[helpers]") {
-    std::vector<std::string> oput = {"one", "two three"};
+    std::vector<std::string> oput = {"one", "`two three"};
     std::string orig{R"(one `two three)"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: SimpleMissingQuotesEscaped", "[helpers]") {
-    std::vector<std::string> oput = {"one", "two three`"};
-    std::string orig{R"(one `two three\`)"};
+    std::vector<std::string> oput = {"one", R"("two three\"")"};
+    std::string orig{R"(one "two three\"")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
-    std::vector<std::string> oput = {"one", "two three"};
+    std::vector<std::string> oput = {"one", "'two three'"};
     std::string orig{R"(one 'two three')"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
@@ -1004,59 +1126,59 @@ TEST_CASE("SplitUp: SimpleDifferentQuotes2", "[helpers]") {
 TEST_CASE("SplitUp: Bracket1", "[helpers]") {
     std::vector<std::string> oput = {"one", "[two, three]"};
     std::string orig{"one, [two, three]"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket2", "[helpers]") {
     std::vector<std::string> oput = {"one", "<two, three>"};
     std::string orig{"one, <two, three>"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket3", "[helpers]") {
     std::vector<std::string> oput = {"one", "(two, three)"};
     std::string orig{"one, (two, three)"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Bracket4", "[helpers]") {
     std::vector<std::string> oput = {"one", "{two, three}"};
     std::string orig{"one, {two, three}"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, ',', false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Comment", "[helpers]") {
     std::vector<std::string> oput = {R"(["quote1", "#"])"};
     std::string orig{R"(["quote1", "#"])"};
-    std::vector<std::string> result = CLI::detail::split_up(orig, '#', false);
+    std::vector<std::string> result = CLI::detail::split_up(orig, '#');
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: Layered", "[helpers]") {
-    std::vector<std::string> output = {R"(one 'two three')"};
+    std::vector<std::string> output = {R"("one 'two three'")"};
     std::string orig{R"("one 'two three'")"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == output);
 }
 
 TEST_CASE("SplitUp: Spaces", "[helpers]") {
-    std::vector<std::string> oput = {"one", "  two three"};
+    std::vector<std::string> oput = {"one", "\"  two three\""};
     std::string orig{R"(  one  "  two three" )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 }
 
 TEST_CASE("SplitUp: BadStrings", "[helpers]") {
-    std::vector<std::string> oput = {"one", "  two three"};
+    std::vector<std::string> oput = {"one", "\"  two three"};
     std::string orig{R"(  one  "  two three )"};
     std::vector<std::string> result = CLI::detail::split_up(orig);
     CHECK(result == oput);
 
-    oput = {"one", "  two three"};
+    oput = {"one", "'  two three"};
     orig = R"(  one  '  two three )";
     result = CLI::detail::split_up(orig);
     CHECK(result == oput);
