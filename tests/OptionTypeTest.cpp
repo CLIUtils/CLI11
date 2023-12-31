@@ -232,7 +232,7 @@ static const std::map<std::string, double> testValuesDouble{
     {"6.626e+34", 6.626e34},
     {"-6.626e-34", -6.626e-34},
     {"224_617.445_991", 224617.445991},
-    {"224'617.445'991", 224'617.445'991},
+    {"224'617.445'991", 224617.445991},
     {"inf", std::numeric_limits<double>::infinity()},
     {"+inf", std::numeric_limits<double>::infinity()},
     {"-inf", -std::numeric_limits<double>::infinity()},
