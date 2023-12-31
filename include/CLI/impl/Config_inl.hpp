@@ -122,23 +122,19 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
     std::vector<std::string> parents;
     if(detail::to_lower(section) != "default") {
         if(section.find(parentSeparator) != std::string::npos) {
-            parents = detail::split(section, parentSeparator);
+            parents = detail::split_up(section, parentSeparator);
         } else {
             parents = {section};
         }
     }
     if(name.find(parentSeparator) != std::string::npos) {
-        std::vector<std::string> plist = detail::split(name, parentSeparator);
+        std::vector<std::string> plist = detail::split_up(name, parentSeparator);
         name = plist.back();
-        detail::remove_quotes(name);
         plist.pop_back();
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
-
     // clean up quotes on the parents
-    for(auto &parent : parents) {
-        detail::remove_quotes(parent);
-    }
+    detail::remove_quotes(parents);
     return parents;
 }
 
@@ -218,10 +214,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     char aSep = (isINIArray && arraySeparator == ' ') ? ',' : arraySeparator;
     int currentSectionIndex{0};
 
+    std::string line_sep_chars{parentSeparatorChar, commentChar, valueDelimiter};
     while(getline(input, buffer)) {
         std::vector<std::string> items_buffer;
         std::string name;
-        bool literalName{false};
         line = detail::trim_copy(buffer);
         std::size_t len = line.length();
         // lines have to be at least 3 characters to have any meaning to CLI just skip the rest
@@ -275,8 +271,21 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             continue;
         }
         std::size_t search_start = 0;
-        if(line.front() == stringQuote || line.front() == literalQuote || line.front() == '`') {
-            search_start = detail::close_sequence(line, 0, line.front());
+        if(line.find_first_of("\"'`") != std::string::npos) {
+            while(search_start < line.size()) {
+                auto test_char = line[search_start];
+                if(test_char == '\"' || test_char == '\'' || test_char == '`') {
+                    search_start = detail::close_sequence(line, search_start, line[search_start]);
+                    ++search_start;
+                } else if(test_char == valueDelimiter || test_char == commentChar) {
+                    --search_start;
+                    break;
+                } else if(test_char == ' ' || test_char == '\t' || test_char == parentSeparatorChar) {
+                    ++search_start;
+                } else {
+                    search_start = line.find_first_of(line_sep_chars, search_start);
+                }
+            }
         }
         // Find = in string, split and recombine
         auto delimiter_pos = line.find_first_of(valueDelimiter, search_start + 1);
@@ -290,7 +299,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
             bool mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
-            if(!mlquote && comment_pos != std::string::npos && !literalName) {
+            if(!mlquote && comment_pos != std::string::npos) {
                 auto citems = detail::split_up(item, commentChar);
                 item = detail::trim_copy(citems.front());
             }
@@ -365,9 +374,10 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
+        std::vector<std::string> parents;
         try {
-            literalName = detail::process_quoted_string(name, stringQuote, literalQuote);
-
+            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
+            detail::process_quoted_string(name);
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
                 detail::process_quoted_string(it, stringQuote, literalQuote);
@@ -375,13 +385,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
         }
-        std::vector<std::string> parents;
-        if(literalName) {
-            std::string noname{};
-            parents = detail::generate_parents(currentSection, noname, parentSeparatorChar);
-        } else {
-            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
-        }
+
         if(parents.size() > maximumLayers) {
             continue;
         }
@@ -418,6 +422,23 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
     return output;
 }
 
+CLI11_INLINE std::string &clean_name_string(std::string &name, const std::string &keyChars) {
+    if(name.find_first_of(keyChars) != std::string::npos || (name.front() == '[' && name.back() == ']') ||
+       (name.find_first_of("'`\"\\") != std::string::npos)) {
+        if(name.find_first_of('\'') == std::string::npos) {
+            name.insert(0, 1, '\'');
+            name.push_back('\'');
+        } else {
+            if(detail::has_escapable_character(name)) {
+                name = detail::add_escaped_characters(name);
+            }
+            name.insert(0, 1, '\"');
+            name.push_back('\"');
+        }
+    }
+    return name;
+}
+
 CLI11_INLINE std::string
 ConfigBase::to_config(const App *app, bool default_also, bool write_description, std::string prefix) const {
     std::stringstream out;
@@ -428,6 +449,14 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::string commentTest = "#;";
     commentTest.push_back(commentChar);
     commentTest.push_back(parentSeparatorChar);
+
+    std::string keyChars = commentTest;
+    keyChars.push_back(literalQuote);
+    keyChars.push_back(stringQuote);
+    keyChars.push_back(arrayStart);
+    keyChars.push_back(arrayEnd);
+    keyChars.push_back(valueDelimiter);
+    keyChars.push_back(arraySeparator);
 
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
@@ -498,24 +527,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         out << '\n';
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
-                    if(single_name.find_first_of(commentTest) != std::string::npos ||
-                       single_name.compare(0, 3, multiline_string_quote) == 0 ||
-                       single_name.compare(0, 3, multiline_literal_quote) == 0 ||
-                       (single_name.front() == '[' && single_name.back() == ']') ||
-                       (single_name.find_first_of(stringQuote) != std::string::npos) ||
-                       (single_name.find_first_of(literalQuote) != std::string::npos) ||
-                       (single_name.find_first_of('`') != std::string::npos)) {
-                        if(single_name.find_first_of(literalQuote) == std::string::npos) {
-                            single_name.insert(0, 1, literalQuote);
-                            single_name.push_back(literalQuote);
-                        } else {
-                            if(detail::has_escapable_character(single_name)) {
-                                single_name = detail::add_escaped_characters(single_name);
-                            }
-                            single_name.insert(0, 1, stringQuote);
-                            single_name.push_back(stringQuote);
-                        }
-                    }
+                    clean_name_string(single_name, keyChars);
 
                     std::string name = prefix + single_name;
 
@@ -554,22 +566,29 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             if(!default_also && (subcom->count_all() == 0)) {
                 continue;
             }
+            std::string subname = subcom->get_name();
+            clean_name_string(subname, keyChars);
+
             if(subcom->get_configurable() && app->got_subcommand(subcom)) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
-                    out << '[' << prefix << subcom->get_name() << "]\n";
+
+                    out << '[' << prefix << subname << "]\n";
                 } else {
-                    std::string subname = app->get_name() + parentSeparatorChar + subcom->get_name();
+                    std::string appname = app->get_name();
+                    clean_name_string(appname, keyChars);
+                    subname = appname + parentSeparatorChar + subname;
                     const auto *p = app->get_parent();
                     while(p->get_parent() != nullptr) {
-                        subname = p->get_name() + parentSeparatorChar + subname;
+                        std::string pname = p->get_name();
+                        clean_name_string(pname, keyChars);
+                        subname = pname + parentSeparatorChar + subname;
                         p = p->get_parent();
                     }
                     out << '[' << subname << "]\n";
                 }
                 out << to_config(subcom, default_also, write_description, "");
             } else {
-                out << to_config(
-                    subcom, default_also, write_description, prefix + subcom->get_name() + parentSeparatorChar);
+                out << to_config(subcom, default_also, write_description, prefix + subname + parentSeparatorChar);
             }
         }
     }
