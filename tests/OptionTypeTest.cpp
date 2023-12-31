@@ -296,6 +296,20 @@ TEST_CASE_METHOD(TApp, "intConversions", "[optiontype]") {
     CHECK(val == test.second);
 }
 
+TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
+
+    std::int64_t val{0};
+    app.add_option("--val", val);
+
+    args = { "--val", "0o11545241241415151512312415123125667"};
+
+    CHECK_THROWS_AS(run(),CLI::ParseError);
+
+    args = { "--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(),CLI::ParseError);
+}
+
 static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"+99", 99},
     {"99", 99},
@@ -329,6 +343,20 @@ TEST_CASE_METHOD(TApp, "uintConversions", "[optiontype]") {
     run();
 
     CHECK(val == test.second);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsErange", "[optiontype]") {
+
+    std::uint64_t val{0};
+    app.add_option("--val", val);
+
+    args = { "--val", "0o11545241241415151512312415123125667"};
+
+    CHECK_THROWS_AS(run(),CLI::ParseError);
+
+    args = { "--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(),CLI::ParseError);
 }
 
 TEST_CASE_METHOD(TApp, "CharOption", "[optiontype]") {
