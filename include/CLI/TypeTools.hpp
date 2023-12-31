@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <algorithm>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -877,6 +878,36 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         output = (output_sll < 0) ? static_cast<T>(0) : static_cast<T>(output_sll);
         return (static_cast<std::int64_t>(output) == output_sll);
     }
+    // remove separators
+    if (input.find_first_of("_'") != std::string::npos)
+    {
+        std::string nstring=input;
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'_'),nstring.end());
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'\''),nstring.end());
+        return integral_conversion(nstring,output);
+    }
+    if (input.compare(0, 2, "0o") == 0)
+    {
+        val=nullptr;
+        errno = 0;
+        output_ll = std::strtoull(input.c_str()+2, &val, 8);
+        if(errno == ERANGE) {
+            return false;
+        }
+        output = static_cast<T>(output_ll);
+        return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
+    }
+    if (input.compare(0, 2, "0b")==0)
+    {
+        val=nullptr;
+        errno = 0;
+        output_ll = std::strtoull(input.c_str()+2, &val, 2);
+        if(errno == ERANGE) {
+            return false;
+        }
+        output = static_cast<T>(output_ll);
+        return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
+    }
     return false;
 }
 
@@ -900,6 +931,36 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         // this is to deal with a few oddities with flags and wrapper int types
         output = static_cast<T>(1);
         return true;
+    }
+    // remove separators
+    if (input.find_first_of("_'") != std::string::npos)
+    {
+        std::string nstring=input;
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'_'),nstring.end());
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'\''),nstring.end());
+        return integral_conversion(nstring,output);
+    }
+    if (input.compare(0, 2, "0o") == 0)
+    {
+        val=nullptr;
+        errno = 0;
+        output_ll = std::strtoll(input.c_str()+2, &val, 8);
+        if(errno == ERANGE) {
+            return false;
+        }
+        output = static_cast<T>(output_ll);
+        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+    }
+    if (input.compare(0, 2, "0b")==0)
+    {
+        val=nullptr;
+        errno = 0;
+        output_ll = std::strtoll(input.c_str()+2, &val, 2);
+        if(errno == ERANGE) {
+            return false;
+        }
+        output = static_cast<T>(output_ll);
+        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
     }
     return false;
 }
@@ -998,7 +1059,19 @@ bool lexical_cast(const std::string &input, T &output) {
     char *val = nullptr;
     auto output_ld = std::strtold(input.c_str(), &val);
     output = static_cast<T>(output_ld);
-    return val == (input.c_str() + input.size());
+    if (val == (input.c_str() + input.size()))
+    {
+        return true;
+    }
+    // remove separators
+    if (input.find_first_of("_'") != std::string::npos)
+    {
+        std::string nstring=input;
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'_'),nstring.end());
+        nstring.erase(std::remove(nstring.begin(),nstring.end(),'\''),nstring.end());
+        return lexical_cast(nstring,output);
+    }
+    return false;
 }
 
 /// complex
