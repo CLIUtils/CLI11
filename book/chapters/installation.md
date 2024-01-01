@@ -97,19 +97,17 @@ An example CMake file would include:
 
 ```cmake
 include(FetchContent)
-FetchContent_Populate(
+FetchContent_Declare(
     cli11_proj
     QUIET
     GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
     GIT_TAG v2.3.2
-    SOURCE_DIR     cli11_proj
 )
 
-FetchContent_MakeAvailable(cli11)
+FetchContent_MakeAvailable(cli11_proj)
 
 # And now you can use it
-add_subdirectory(${cli11_proj_SOURCE_DIR} ${cli11_proj_SOURCE_DIR}/build)
-target_link_libraries(<your project> CLI11::CLI11)
+target_link_libraries(<your project> PRIVATE CLI11::CLI11)
 ```
 
 And use
