@@ -244,19 +244,19 @@ static const std::map<std::string, double> testValuesDouble{
 
 TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
 
-    auto test = GENERATE(from_range(testValuesDouble));
+    auto test_data = GENERATE(from_range(testValuesDouble));
 
     double val{0};
     app.add_option("--val", val);
 
-    args = {"--val", test.first};
+    args = {"--val", test_data.first};
 
     run();
-    if(std::isnan(test.second)) {
+    if(std::isnan(test_data.second)) {
         CHECK(std::isnan(val));
     } else {
 
-        CHECK_THAT(val, Catch::WithinRel(test.second, 1e-11));
+        CHECK_THAT(val, Catch::WithinRel(test_data.second, 1e-11));
     }
 }
 
@@ -284,16 +284,16 @@ static const std::map<std::string, std::int64_t> testValuesInt{
 
 TEST_CASE_METHOD(TApp, "intConversions", "[optiontype]") {
 
-    auto test = GENERATE(from_range(testValuesInt));
+    auto test_data = GENERATE(from_range(testValuesInt));
 
     std::int64_t val{0};
     app.add_option("--val", val);
 
-    args = {"--val", test.first};
+    args = {"--val", test_data.first};
 
     run();
 
-    CHECK(val == test.second);
+    CHECK(val == test_data.second);
 }
 
 TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
@@ -333,16 +333,16 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
 
 TEST_CASE_METHOD(TApp, "uintConversions", "[optiontype]") {
 
-    auto test = GENERATE(from_range(testValuesUInt));
+    auto test_data = GENERATE(from_range(testValuesUInt));
 
     std::uint64_t val{0};
     app.add_option("--val", val);
 
-    args = {"--val", test.first};
+    args = {"--val", test_data.first};
 
     run();
 
-    CHECK(val == test.second);
+    CHECK(val == test_data.second);
 }
 
 TEST_CASE_METHOD(TApp, "uintConversionsErange", "[optiontype]") {
