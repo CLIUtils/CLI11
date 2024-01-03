@@ -339,7 +339,13 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                             item.pop_back();
                         }
                         if(keyChar == '\"') {
-                            item = detail::remove_escaped_characters(item);
+                            try {
+                                item = detail::remove_escaped_characters(item);
+                            }
+                            catch (const std::invalid_argument& ia)
+                            {
+                                throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
+                            }
                         }
                     } else {
                         if(lineExtension) {

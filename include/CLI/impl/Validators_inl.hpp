@@ -237,13 +237,20 @@ CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer()
 {
     func_ = [](std::string &str) {
         try {
-            if (str.front() == '\"' || str.front() == '\'' || str.front() == '`')
+            if (str.size()>1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&str.front()==str.back())
             {
                 process_quoted_string(str);
             }
             else if (str.find_first_of('\\') != std::string::npos)
             {
-                str = remove_escaped_characters(str);
+                if (detail::is_binary_escaped_string(str))
+                {
+                    str=detail::extract_binary_string(str);
+                }
+                else
+                {
+                    str = remove_escaped_characters(str);
+                }
             }
             return std::string{};
         }

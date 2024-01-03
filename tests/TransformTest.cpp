@@ -706,66 +706,52 @@ TEST_CASE_METHOD(TApp, "NumberWithUnitBadInput", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-TEST_CASE_METHOD(TApp, "StringEscape", "[transform]") {
+static const std::map<std::string,std::string> validValues =
+{ {"test\\u03C0\\u00e9",from_u8string(u8"test\u03C0\u00E9")},
+{"test\\u03C0\\u00e9",from_u8string(u8"test\u73C0\u0057")},
+{"test\\U0001F600\\u00E9",from_u8string(u8"test\U0001F600\u00E9")},
+    {R"("this\nis\na\nfour\tline test")","this\nis\na\nfour\tline test"},
+    {"'B\"(\\x35\\xa7\\x46)\"'",std::string{0x35,static_cast<char>(0xa7),0x46} },
+    {"B\"(\\x35\\xa7\\x46)\"",std::string{0x35,static_cast<char>(0xa7),0x46} },
+    {"test\\ntest","test\ntest"},
+    {"\"test\\ntest","\"test\ntest"},
+    {R"('this\nis\na\nfour\tline test')",R"(this\nis\na\nfour\tline test)"},
+    {R"("this\nis\na\nfour\tline test")","this\nis\na\nfour\tline test"},
+    {R"(`this\nis\na\nfour\tline test`)",R"(this\nis\na\nfour\tline test)"}
+};
+
+TEST_CASE_METHOD(TApp,"StringEscapeValid", "[transform]") {
+
+    auto test_data = GENERATE(from_range(validValues));
+
     std::string value{};
 
     app.add_option("-n", value)->transform(CLI::EscapedString);
-    args = {"-n", "test\\ntest"};
-    run();
-    CHECK("test\ntest" == value);
 
-    std::string rstring = "'B\"(\\x35\\xa7)\"'";
-
-    args={"-n",rstring};
+    args={"-n",test_data.first};
 
     run();
-    CHECK(value[0] == static_cast<char>(0x35));
-    CHECK(value[1] == static_cast<char>(0xa7));
-   
-    rstring = "B\"(\\x35\\xa7)\"";
-    args={"-n",rstring};
-
-    run();
-    CHECK(value[0] == static_cast<char>(0x35));
-    CHECK(value[1] == static_cast<char>(0xa7));
-
-    const std::string qbase = R"("this\nis\na\nfour\tline test")";
-    const std::string qresult = "this\nis\na\nfour\tline test";
-
-    args={"-n",qbase};
-
-    run();
-    CHECK(qresult == value);
-
-    const std::string qbase2 = R"('this\nis\na\nfour\tline test')";
-    const std::string qresult2 =  R"(this\nis\na\nfour\tline test)";
-
-    args={"-n",qbase2};
-
-    run();
-    CHECK(qresult2 == value);
+    CHECK(test_data.second == value);
+    
 }
 
-static const std::map<std::string,std::string> values =
-{ {"test\\u03C0\\u00e9",from_u8string(u8"test\u03C0\u00E9")},
-{"test\\u03C0\\u00e9",from_u8string(u8"test\u73C0\u0057")},
-{"test\\U0001F600\\u00E9",from_u8string(u8"test\U0001F600\u00E9")}
-};
+static const std::vector<std::string> invalidValues =
+{ "test\\U0001M600\\u00E9","test\\U0001E600\\u00M9","test\\U0001E600\\uD8E9",
+"test\\U0001E600\\uD8","test\\U0001E60" "test\\qbad"};
 
-TEST_CASE_METHOD(TApp,"StringEscapeUnicode", "[transform]") {
 
-    std::string test=;
-    //CHECK(CLI::detail::remove_escaped_characters() == );
-    //CHECK(CLI::detail::remove_escaped_characters("test\\u73C0\\u0057") == );
+TEST_CASE_METHOD(TApp,"StringEscapeInvalid", "[transform]") {
 
-   //CHECK(CLI::detail::remove_escaped_characters() == );
+    auto test_data = GENERATE(from_range(invalidValues));
+
+    std::string value{};
+
+    app.add_option("-n", value)->transform(CLI::EscapedString);
+
+    args={"-n",test_data};
+
+    CHECK_THROWS_AS(run(),CLI::ValidationError);
     
-    CHECK_FALSE(CLI::EscapedString("test\\U0001M600\\u00E9").empty());
-    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\u00M9"), std::invalid_argument);
-    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\uD8E9"), std::invalid_argument);
-
-    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\uD8"), std::invalid_argument);
-    CHECK_FALSE(CLI::EscapedString("test\\U0001E60"), std::invalid_argument);
 }
 
 
