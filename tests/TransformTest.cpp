@@ -706,6 +706,69 @@ TEST_CASE_METHOD(TApp, "NumberWithUnitBadInput", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "StringEscape", "[transform]") {
+    std::string value{};
+
+    app.add_option("-n", value)->transform(CLI::EscapedString);
+    args = {"-n", "test\\ntest"};
+    run();
+    CHECK("test\ntest" == value);
+
+    std::string rstring = "'B\"(\\x35\\xa7)\"'";
+
+    args={"-n",rstring};
+
+    run();
+    CHECK(value[0] == static_cast<char>(0x35));
+    CHECK(value[1] == static_cast<char>(0xa7));
+   
+    rstring = "B\"(\\x35\\xa7)\"";
+    args={"-n",rstring};
+
+    run();
+    CHECK(value[0] == static_cast<char>(0x35));
+    CHECK(value[1] == static_cast<char>(0xa7));
+
+    const std::string qbase = R"("this\nis\na\nfour\tline test")";
+    const std::string qresult = "this\nis\na\nfour\tline test";
+
+    args={"-n",qbase};
+
+    run();
+    CHECK(qresult == value);
+
+    const std::string qbase2 = R"('this\nis\na\nfour\tline test')";
+    const std::string qresult2 =  R"(this\nis\na\nfour\tline test)";
+
+    args={"-n",qbase2};
+
+    run();
+    CHECK(qresult2 == value);
+}
+
+static const std::map<std::string,std::string> values =
+{ {"test\\u03C0\\u00e9",from_u8string(u8"test\u03C0\u00E9")},
+{"test\\u03C0\\u00e9",from_u8string(u8"test\u73C0\u0057")},
+{"test\\U0001F600\\u00E9",from_u8string(u8"test\U0001F600\u00E9")}
+};
+
+TEST_CASE_METHOD(TApp,"StringEscapeUnicode", "[transform]") {
+
+    std::string test=;
+    //CHECK(CLI::detail::remove_escaped_characters() == );
+    //CHECK(CLI::detail::remove_escaped_characters("test\\u73C0\\u0057") == );
+
+   //CHECK(CLI::detail::remove_escaped_characters() == );
+    
+    CHECK_FALSE(CLI::EscapedString("test\\U0001M600\\u00E9").empty());
+    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\u00M9"), std::invalid_argument);
+    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\uD8E9"), std::invalid_argument);
+
+    CHECK_FALSE(CLI::EscapedString("test\\U0001E600\\uD8"), std::invalid_argument);
+    CHECK_FALSE(CLI::EscapedString("test\\U0001E60"), std::invalid_argument);
+}
+
+
 TEST_CASE_METHOD(TApp, "NumberWithUnitIntOverflow", "[transform]") {
     std::map<std::string, int> mapping{{"a", 1000000}, {"b", 100}, {"c", 101}};
 
