@@ -204,7 +204,11 @@ str3 = """\
 ```
 
 The key is that the closing of the multiline string must be at the end of a line
-and match the starting 3 quote sequence.  Multiline sequences using `"""` allow escape sequences.  Following [TOML](https://toml.io/en/v1.0.0#string)  with the addition of allowing '\0' for a null character, and binary Strings described in the next section.  This same formatting also applies to single line strings.  Multiline strings are not allowed as part of an array.  
+and match the starting 3 quote sequence. Multiline sequences using `"""` allow
+escape sequences. Following [TOML](https://toml.io/en/v1.0.0#string) with the
+addition of allowing '\0' for a null character, and binary Strings described in
+the next section. This same formatting also applies to single line strings.
+Multiline strings are not allowed as part of an array.
 
 ### Binary Strings
 
@@ -296,8 +300,8 @@ These can be modified via setter functions
   an array
 - `ConfigBase *valueSeparator(char vSep)`: Specify the delimiter between a name
   and value
-- `ConfigBase *quoteCharacter(char qString, char literalChar)` :specify the characters
-  to use around strings and single characters
+- `ConfigBase *quoteCharacter(char qString, char literalChar)` :specify the
+  characters to use around strings and single characters
 - `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent
   layers to process. This is useful to limit processing for larger config files
 - `ConfigBase *parentSeparator(char sep)` : specify the character to separate
@@ -411,4 +415,5 @@ will create an option name in following priority.
 3. First short name
 4. Environment name
 
-In config files the name will be enclosed in quotes if there is any potential ambiguities in parsing the name.  
+In config files the name will be enclosed in quotes if there is any potential
+ambiguities in parsing the name.

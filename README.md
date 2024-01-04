@@ -705,9 +705,13 @@ filters on the key values is performed.
 - `CLI::EscapedString`: 🚧 can be used to process an escaped string. The
   processing is equivalent to that used for TOML config files, see
   [TOML strings](https://toml.io/en/v1.0.0#string). With 2 notable exceptions.
-  '\`' can also be used as a literal string notation, and it also allows binary string notation see [binary strings](https://cliutils.github.io/CLI11/book/chapters/config.html).  The escaped string processing will remove outer quotes if present,  '"' will indicate a string with potential escape sequences, `'` and '\`'
-  will indicate a literal string and the quotes removed but no escape sequences
-  will be processed. This is the same escape processing as used in config files.
+  '\`' can also be used as a literal string notation, and it also allows binary
+  string notation see
+  [binary strings](https://cliutils.github.io/CLI11/book/chapters/config.html).
+  The escaped string processing will remove outer quotes if present, '"' will
+  indicate a string with potential escape sequences, `'` and '\`' will indicate
+  a literal string and the quotes removed but no escape sequences will be
+  processed. This is the same escape processing as used in config files.
 
 ##### Validator operations
 
