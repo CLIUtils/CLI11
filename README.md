@@ -709,8 +709,8 @@ filters on the key values is performed.
   string notation see
   [binary strings](https://cliutils.github.io/CLI11/book/chapters/config.html).
   The escaped string processing will remove outer quotes if present, `"` will
-  indicate a string with potential escape sequences, `'` and \` will indicate
-  a literal string and the quotes removed but no escape sequences will be
+  indicate a string with potential escape sequences, `'` and \` will indicate a
+  literal string and the quotes removed but no escape sequences will be
   processed. This is the same escape processing as used in config files.
 
 ##### Validator operations
