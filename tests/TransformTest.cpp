@@ -706,21 +706,20 @@ TEST_CASE_METHOD(TApp, "NumberWithUnitBadInput", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-static const std::map<std::string,std::string> validValues =
-{ {"test\\u03C0\\u00e9",from_u8string(u8"test\u03C0\u00E9")},
-{"test\\u03C0\\u00e9",from_u8string(u8"test\u73C0\u0057")},
-{"test\\U0001F600\\u00E9",from_u8string(u8"test\U0001F600\u00E9")},
-    {R"("this\nis\na\nfour\tline test")","this\nis\na\nfour\tline test"},
-    {"'B\"(\\x35\\xa7\\x46)\"'",std::string{0x35,static_cast<char>(0xa7),0x46} },
-    {"B\"(\\x35\\xa7\\x46)\"",std::string{0x35,static_cast<char>(0xa7),0x46} },
-    {"test\\ntest","test\ntest"},
-    {"\"test\\ntest","\"test\ntest"},
-    {R"('this\nis\na\nfour\tline test')",R"(this\nis\na\nfour\tline test)"},
-    {R"("this\nis\na\nfour\tline test")","this\nis\na\nfour\tline test"},
-    {R"(`this\nis\na\nfour\tline test`)",R"(this\nis\na\nfour\tline test)"}
-};
+static const std::map<std::string, std::string> validValues = {
+    {"test\\u03C0\\u00e9", from_u8string(u8"test\u03C0\u00E9")},
+    {"test\\u03C0\\u00e9", from_u8string(u8"test\u73C0\u0057")},
+    {"test\\U0001F600\\u00E9", from_u8string(u8"test\U0001F600\u00E9")},
+    {R"("this\nis\na\nfour\tline test")", "this\nis\na\nfour\tline test"},
+    {"'B\"(\\x35\\xa7\\x46)\"'", std::string{0x35, static_cast<char>(0xa7), 0x46}},
+    {"B\"(\\x35\\xa7\\x46)\"", std::string{0x35, static_cast<char>(0xa7), 0x46}},
+    {"test\\ntest", "test\ntest"},
+    {"\"test\\ntest", "\"test\ntest"},
+    {R"('this\nis\na\nfour\tline test')", R"(this\nis\na\nfour\tline test)"},
+    {R"("this\nis\na\nfour\tline test")", "this\nis\na\nfour\tline test"},
+    {R"(`this\nis\na\nfour\tline test`)", R"(this\nis\na\nfour\tline test)"}};
 
-TEST_CASE_METHOD(TApp,"StringEscapeValid", "[transform]") {
+TEST_CASE_METHOD(TApp, "StringEscapeValid", "[transform]") {
 
     auto test_data = GENERATE(from_range(validValues));
 
@@ -728,19 +727,20 @@ TEST_CASE_METHOD(TApp,"StringEscapeValid", "[transform]") {
 
     app.add_option("-n", value)->transform(CLI::EscapedString);
 
-    args={"-n",test_data.first};
+    args = {"-n", test_data.first};
 
     run();
     CHECK(test_data.second == value);
-    
 }
 
-static const std::vector<std::string> invalidValues =
-{ "test\\U0001M600\\u00E9","test\\U0001E600\\u00M9","test\\U0001E600\\uD8E9",
-"test\\U0001E600\\uD8","test\\U0001E60" "test\\qbad"};
+static const std::vector<std::string> invalidValues = {"test\\U0001M600\\u00E9",
+                                                       "test\\U0001E600\\u00M9",
+                                                       "test\\U0001E600\\uD8E9",
+                                                       "test\\U0001E600\\uD8",
+                                                       "test\\U0001E60"
+                                                       "test\\qbad"};
 
-
-TEST_CASE_METHOD(TApp,"StringEscapeInvalid", "[transform]") {
+TEST_CASE_METHOD(TApp, "StringEscapeInvalid", "[transform]") {
 
     auto test_data = GENERATE(from_range(invalidValues));
 
@@ -748,12 +748,10 @@ TEST_CASE_METHOD(TApp,"StringEscapeInvalid", "[transform]") {
 
     app.add_option("-n", value)->transform(CLI::EscapedString);
 
-    args={"-n",test_data};
+    args = {"-n", test_data};
 
-    CHECK_THROWS_AS(run(),CLI::ValidationError);
-    
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
-
 
 TEST_CASE_METHOD(TApp, "NumberWithUnitIntOverflow", "[transform]") {
     std::map<std::string, int> mapping{{"a", 1000000}, {"b", 100}, {"c", 101}};

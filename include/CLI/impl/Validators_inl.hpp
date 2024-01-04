@@ -233,29 +233,21 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
     };
 }
 
-CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer()
-{
+CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer() {
     func_ = [](std::string &str) {
         try {
-            if (str.size()>1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&str.front()==str.back())
-            {
+            if(str.size() > 1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&
+               str.front() == str.back()) {
                 process_quoted_string(str);
-            }
-            else if (str.find_first_of('\\') != std::string::npos)
-            {
-                if (detail::is_binary_escaped_string(str))
-                {
-                    str=detail::extract_binary_string(str);
-                }
-                else
-                {
+            } else if(str.find_first_of('\\') != std::string::npos) {
+                if(detail::is_binary_escaped_string(str)) {
+                    str = detail::extract_binary_string(str);
+                } else {
                     str = remove_escaped_characters(str);
                 }
             }
             return std::string{};
-        }
-        catch (const std::invalid_argument& ia)
-        {
+        } catch(const std::invalid_argument &ia) {
             return std::string(ia.what());
         }
     };

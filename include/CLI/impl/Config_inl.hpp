@@ -341,9 +341,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                         if(keyChar == '\"') {
                             try {
                                 item = detail::remove_escaped_characters(item);
-                            }
-                            catch (const std::invalid_argument& ia)
-                            {
+                            } catch(const std::invalid_argument &ia) {
                                 throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
                             }
                         }

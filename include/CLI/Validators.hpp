@@ -218,8 +218,8 @@ class IPV4Validator : public Validator {
     IPV4Validator();
 };
 
-class EscapedStringTransformer :public Validator {
-public:
+class EscapedStringTransformer : public Validator {
+  public:
     EscapedStringTransformer();
 };
 

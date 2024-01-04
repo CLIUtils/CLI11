@@ -605,7 +605,7 @@ TEST_CASE_METHOD(TApp, "IntegerOverFlowInt", "[optiontype]") {
 
     args = {"-a", "262625424225252"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
-  
+
     args = {"-b", "262625424225252"};
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 

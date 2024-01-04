@@ -702,7 +702,12 @@ filters on the key values is performed.
   `CLI::FileOnDefaultPath(default_path, false)`. This allows multiple paths to
   be chained using multiple transform calls.
 
-- `CLI::EscapedString`:  🚧 can be used to process an escaped string.  The processing is equivalent to that used for TOML config files, see [TOML strings](https://toml.io/en/v1.0.0#string).  With 2 notable exceptions.  `\`` can also be used as a literal string notation, and it also allows binary string notation see [binary strings](TO ADD).  The escaped string processing will remove outer quotes if present,  `"` will indicate a string with potential escape sequences,  `'` and `\`` will indicate a literal string and the quotes removed but no escape sequences will be processed.  This is the same escape processing as used in config files. 
+- `CLI::EscapedString`: 🚧 can be used to process an escaped string. The
+  processing is equivalent to that used for TOML config files, see
+  [TOML strings](https://toml.io/en/v1.0.0#string). With 2 notable exceptions.
+  `\`` can also be used as a literal string notation, and it also allows binary string notation see [binary strings](TO ADD).  The escaped string processing will remove outer quotes if present,  `"`will indicate a string with potential escape sequences, `'`and`\``
+  will indicate a literal string and the quotes removed but no escape sequences
+  will be processed. This is the same escape processing as used in config files.
 
 ##### Validator operations
 
@@ -875,9 +880,11 @@ through the `add_subcommand` method have the same restrictions as option names.
 - `--subcommand1.subsub.f val` (short form nested subcommand option)
 
 The use of dot notation in this form is equivalent `--subcommand.long <args>` =>
-`subcommand --long <args> ++`. Nested subcommands also work `sub1.subsub`
-would trigger the subsub subcommand in `sub1`. This is equivalent to "sub1
-subsub".  Quotes around the subcommand names are permitted 🚧 following the TOML standard for such specification.  This includes allowing escape sequences.  For example `"subcommand".'f'` or `"subcommand.with.dots".arg1 = value`.
+`subcommand --long <args> ++`. Nested subcommands also work `sub1.subsub` would
+trigger the subsub subcommand in `sub1`. This is equivalent to "sub1 subsub".
+Quotes around the subcommand names are permitted 🚧 following the TOML standard
+for such specification. This includes allowing escape sequences. For example
+`"subcommand".'f'` or `"subcommand.with.dots".arg1 = value`.
 
 #### Subcommand options
 
@@ -1211,10 +1218,12 @@ option (like `set_help_flag`). Setting a configuration option is special. If it
 is present, it will be read along with the normal command line arguments. The
 file will be read if it exists, and does not throw an error unless `required` is
 `true`. Configuration files are in [TOML][] format by default, though the
-default reader can also accept files in INI format as well. The config reader can read most aspects of TOML files including strings both literal 🚧 and with potential escape sequences 🚧, digit separators 🚧, and multi-line strings 🚧, and run them through the CLI11
-parser. Other formats can be added by an adept user, some variations are
-available through customization points in the default formatter. An example of a
-TOML file:
+default reader can also accept files in INI format as well. The config reader
+can read most aspects of TOML files including strings both literal 🚧 and with
+potential escape sequences 🚧, digit separators 🚧, and multi-line strings 🚧,
+and run them through the CLI11 parser. Other formats can be added by an adept
+user, some variations are available through customization points in the default
+formatter. An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #
