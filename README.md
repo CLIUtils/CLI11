@@ -451,8 +451,8 @@ Before parsing, you can set the following options:
   This equivalent to calling `->delimiter(delim)` and `->join()`. Valid values
   are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::Throw`,
   `CLI::MultiOptionPolicy::TakeLast`, `CLI::MultiOptionPolicy::TakeFirst`,
-  `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`, and
-  `CLI::MultiOptionPolicy::Sum` 🆕, `CLI::MultiOptionPolicy::Reverse` 🚧.
+  `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`,
+  `CLI::MultiOptionPolicy::Sum` 🆕, and `CLI::MultiOptionPolicy::Reverse` 🚧.
 - `->check(std::string(const std::string &), validator_name="",validator_description="")`:
   Define a check function. The function should return a non empty string with
   the error message if the check fails
