@@ -737,7 +737,7 @@ static const std::vector<std::string> invalidValues = {"test\\U0001M600\\u00E9",
                                                        "test\\U0001E600\\u00M9",
                                                        "test\\U0001E600\\uD8E9",
                                                        "test\\U0001E600\\uD8",
-                                                       "test\\U0001E60"
+                                                       "test\\U0001E60",
                                                        "test\\qbad"};
 
 TEST_CASE_METHOD(TApp, "StringEscapeInvalid", "[transform]") {
