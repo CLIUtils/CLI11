@@ -569,6 +569,37 @@ std::string get_environment_value(const std::string &env_name) {
     return ename_string;
 }
 
+CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
+                                                const std::string &text,
+                                                std::size_t paragraphWidth,
+                                                const std::string &linePrefix,
+                                                bool skipPrefixOnFirstLine) {
+    if(!skipPrefixOnFirstLine)
+        out << linePrefix;  // First line prefix
+
+    std::istringstream lss(text);
+    std::string line = "";
+    while(std::getline(lss, line)) {
+        std::istringstream iss(line);
+        std::string word = "";
+        std::size_t charsWritten = 0;
+
+        while(iss >> word) {
+            if(word.length() + charsWritten > paragraphWidth) {
+                out << std::endl << linePrefix;
+                charsWritten = 0;
+            }
+
+            out << word << " ";
+            charsWritten += word.length() + 1;
+        }
+
+        if(!lss.eof())
+            out << std::endl << linePrefix;
+    }
+    return out;
+}
+
 }  // namespace detail
 // [CLI11:string_tools_inl_hpp:end]
 }  // namespace CLI
