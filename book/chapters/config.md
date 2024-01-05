@@ -113,7 +113,9 @@ app.set_config("--config")
 
 will read the files in the order given, which may be useful in some
 circumstances. Using `CLI::MultiOptionPolicy::TakeLast` would work similarly
-getting the last `N` files given.  The default policy for config options is `CLI::MultiOptionPolicy::Reverse` which takes the last expected `N` and reverses them so the last option given is given precedence.
+getting the last `N` files given. The default policy for config options is
+`CLI::MultiOptionPolicy::Reverse` which takes the last expected `N` and reverses
+them so the last option given is given precedence.
 
 ## Configure file format
 
