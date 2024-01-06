@@ -23,7 +23,7 @@ using DoubleValues = Values<double>;
 
 // the lexical cast operator should be in the same namespace as the type for ADL to work properly
 bool lexical_cast(const std::string &input, Values<double> & /*v*/) {
-    std::cout << "called correct lexical_cast function ! val: " << input << std::endl;
+    std::cout << "called correct lexical_cast function ! val: " << input << '\n';
     return true;
 }
 

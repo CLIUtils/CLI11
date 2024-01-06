@@ -366,7 +366,14 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                     detail::trim(multiline);
                     item += multiline;
                 }
-                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                if (item.back() == aEnd)
+                {
+                    items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                }
+                else
+                {
+                    items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep);
+                }
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
                 items_buffer = detail::split_up(item, aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {

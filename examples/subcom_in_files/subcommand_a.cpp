@@ -30,8 +30,8 @@ void setup_subcommand_a(CLI::App &app) {
 /// but having a separate function is cleaner.
 void run_subcommand_a(SubcommandAOptions const &opt) {
     // Do stuff...
-    std::cout << "Working on file: " << opt.file << std::endl;
+    std::cout << "Working on file: " << opt.file << '\n';
     if(opt.with_foo) {
-        std::cout << "Using foo!" << std::endl;
+        std::cout << "Using foo!" << '\n';
     }
 }

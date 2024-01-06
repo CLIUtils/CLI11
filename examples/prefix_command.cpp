@@ -25,11 +25,11 @@ int main(int argc, char **argv) {
     for(int v : vals)
         std::cout << ": " << v << " ";
 
-    std::cout << std::endl << "Remaining commands: ";
+    std::cout << '\n' << "Remaining commands: ";
 
     for(const auto &com : more_comms)
         std::cout << com << " ";
-    std::cout << std::endl;
+    std::cout << '\n';
 
     return 0;
 }

@@ -16,6 +16,6 @@ int main(int argc, char **argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "value = " << val << std::endl;
+    std::cout << "value = " << val << '\n';
     return 0;
 }

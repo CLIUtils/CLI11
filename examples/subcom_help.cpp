@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     cli_sub.add_option("sub_arg", sub_arg, "Argument for subcommand")->required();
     CLI11_PARSE(cli_global, argc, argv);
     if(cli_sub) {
-        std::cout << "Got: " << sub_arg << std::endl;
+        std::cout << "Got: " << sub_arg << '\n';
     }
     return 0;
 }

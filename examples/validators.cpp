@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     app.add_option("-v,--value", count, "Value in range")->check(CLI::Range(3, 6));
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "Try printing help or failing the validator" << std::endl;
+    std::cout << "Try printing help or failing the validator" << '\n';
 
     return 0;
 }

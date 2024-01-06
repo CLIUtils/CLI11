@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "This app was meant to show off the formatter, run with -h" << std::endl;
+    std::cout << "This app was meant to show off the formatter, run with -h" << '\n';
 
     return 0;
 }

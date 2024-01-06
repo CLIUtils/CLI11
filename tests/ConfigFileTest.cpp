@@ -614,9 +614,9 @@ TEST_CASE_METHOD(TApp, "IniNotRequired", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     int one = 0, two = 0, three = 0;
@@ -651,8 +651,8 @@ TEST_CASE_METHOD(TApp, "IniSuccessOnUnknownOption", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "three=3" << std::endl;
-        out << "two=99" << std::endl;
+        out << "three=3" << '\n';
+        out << "two=99" << '\n';
     }
 
     int two{0};
@@ -671,8 +671,8 @@ TEST_CASE_METHOD(TApp, "IniGetRemainingOption", "[config]") {
     std::string ExtraOptionValue = "3";
     {
         std::ofstream out{tmpini};
-        out << ExtraOption << "=" << ExtraOptionValue << std::endl;
-        out << "two=99" << std::endl;
+        out << ExtraOption << "=" << ExtraOptionValue << '\n';
+        out << "two=99" << '\n';
     }
 
     int two{0};
@@ -694,7 +694,7 @@ TEST_CASE_METHOD(TApp, "IniRemainingSub", "[config]") {
         out << "[map]\n";
         out << "a = 1\n";
         out << "b=[1,2,3]\n";
-        out << "c = 3" << std::endl;
+        out << "c = 3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -727,7 +727,7 @@ TEST_CASE_METHOD(TApp, "IniGetNoRemaining", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "two=99" << std::endl;
+        out << "two=99" << '\n';
     }
 
     int two{0};
@@ -773,9 +773,9 @@ TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     app.set_config("--config", tmpini)->required();
@@ -791,9 +791,9 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     app.set_config("--config", tmpini);
@@ -814,16 +814,16 @@ TEST_CASE_METHOD(TApp, "IniNotRequiredNotDefault", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "two=98" << std::endl;
-        out << "three=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=98" << '\n';
+        out << "three=4" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -852,9 +852,9 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -883,16 +883,16 @@ TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "one=55" << std::endl;
-        out << "three=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "one=55" << '\n';
+        out << "three=4" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -924,16 +924,16 @@ TEST_CASE_METHOD(TApp, "MultiConfig_takelast", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "one=55" << std::endl;
-        out << "three=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "one=55" << '\n';
+        out << "three=4" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -966,16 +966,16 @@ TEST_CASE_METHOD(TApp, "MultiConfig_takeAll", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "one=55" << std::endl;
-        out << "three=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "one=55" << '\n';
+        out << "three=4" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1008,16 +1008,16 @@ TEST_CASE_METHOD(TApp, "MultiConfig_single", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "one=55" << std::endl;
-        out << "three=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "one=55" << '\n';
+        out << "three=4" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1063,8 +1063,8 @@ TEST_CASE_METHOD(TApp, "IniOverwrite", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
     }
 
     std::string orig = "filename_not_exist.ini";
@@ -1088,9 +1088,9 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1131,9 +1131,9 @@ TEST_CASE_METHOD(TApp, "IniInlineComment", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99 ; this is a two" << std::endl;
-        out << "three=3; this is a three" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99 ; this is a two" << '\n';
+        out << "three=3; this is a three" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1173,9 +1173,9 @@ TEST_CASE_METHOD(TApp, "TomlInlineComment", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99 # this is a two" << std::endl;
-        out << "three=3# this is a three" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99 # this is a two" << '\n';
+        out << "three=3# this is a three" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1215,12 +1215,12 @@ TEST_CASE_METHOD(TApp, "TomlDocStringComment", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
-        out << R"(""")" << std::endl;
-        out << "one=35" << std::endl;
-        out << R"(""")" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
+        out << R"(""")" << '\n';
+        out << "one=35" << '\n';
+        out << R"(""")" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1242,12 +1242,12 @@ TEST_CASE_METHOD(TApp, "TomlDocStringComment2", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "'''" << std::endl;
-        out << "one=35" << std::endl;
-        out << "last comment line three=6 '''" << std::endl;
-        out << "three=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "'''" << '\n';
+        out << "one=35" << '\n';
+        out << "last comment line three=6 '''" << '\n';
+        out << "three=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1269,11 +1269,11 @@ TEST_CASE_METHOD(TApp, "TomlDocStringComment3", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=99" << std::endl;
-        out << "three=3" << std::endl;
-        out << "'''" << std::endl;
-        out << "one=35" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=99" << '\n';
+        out << "three=3" << '\n';
+        out << "'''" << '\n';
+        out << "one=35" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1318,9 +1318,9 @@ TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2 3" << std::endl;
-        out << "three=1 2 3" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2 3" << '\n';
+        out << "three=1 2 3" << '\n';
     }
 
     std::vector<int> two, three;
@@ -1519,11 +1519,11 @@ TEST_CASE_METHOD(TApp, "IniLayered", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1551,11 +1551,11 @@ TEST_CASE_METHOD(TApp, "IniLayeredStream", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1584,12 +1584,12 @@ TEST_CASE_METHOD(TApp, "IniLayeredDotSection", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "[subcom.subsubcom]" << std::endl;
-        out << "val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "[subcom.subsubcom]" << '\n';
+        out << "val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1623,12 +1623,12 @@ TEST_CASE_METHOD(TApp, "IniLayeredDotSectionInQuotes", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "['subcom']" << std::endl;
-        out << "val=2" << std::endl;
-        out << "['subcom'.\"subsubcom\"]" << std::endl;
-        out << "val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "['subcom']" << '\n';
+        out << "val=2" << '\n';
+        out << "['subcom'.\"subsubcom\"]" << '\n';
+        out << "val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1662,12 +1662,12 @@ TEST_CASE_METHOD(TApp, "IniLayeredCustomSectionSeparator", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "[subcom|subsubcom]" << std::endl;
-        out << "val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "[subcom|subsubcom]" << '\n';
+        out << "val=3" << '\n';
     }
     app.get_config_formatter_base()->parentSeparator('|');
     int one{0}, two{0}, three{0};
@@ -1695,10 +1695,10 @@ TEST_CASE_METHOD(TApp, "IniLayeredOptionGroupAlias", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[ogroup]" << std::endl;
-        out << "val2=2" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[ogroup]" << '\n';
+        out << "val2=2" << '\n';
     }
     int one{0}, two{0};
     app.add_option("--val", one);
@@ -1719,11 +1719,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurable", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1753,11 +1753,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotes", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "\"subsubcom\".'val'=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "\"subsubcom\".'val'=3" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1787,11 +1787,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAlias", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << R"("sub\tsub\t.com".'val'=3)" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << R"("sub\tsub\t.com".'val'=3)" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1821,11 +1821,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithEquals", "[con
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << R"("sub=sub=.com".'val'=3)" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << R"("sub=sub=.com".'val'=3)" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1855,11 +1855,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithComment", "[co
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << R"("sub#sub;.com".'val'=3)" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << R"("sub#sub;.com".'val'=3)" << '\n';
     }
 
     int one{0}, two{0}, three{0};
@@ -1885,11 +1885,11 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurablePreParse", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0}, four{0};
@@ -1927,11 +1927,11 @@ TEST_CASE_METHOD(TApp, "IniSection", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[config]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[config]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
     }
 
     int val{0};
@@ -1951,11 +1951,11 @@ TEST_CASE_METHOD(TApp, "IniSection2", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[config]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[config]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int val{0};
@@ -1975,11 +1975,11 @@ TEST_CASE_METHOD(TApp, "jsonLikeParsing", "[config]") {
 
     {
         std::ofstream out{tmpjson};
-        out << "{" << std::endl;
-        out << "\"val\":1," << std::endl;
-        out << R"("val2":"test",)" << std::endl;
-        out << "\"flag\":true" << std::endl;
-        out << "}" << std::endl;
+        out << "{" << '\n';
+        out << "\"val\":1," << '\n';
+        out << R"("val2":"test",)" << '\n';
+        out << "\"flag\":true" << '\n';
+        out << "}" << '\n';
     }
 
     int val{0};
@@ -2006,17 +2006,17 @@ TEST_CASE_METHOD(TApp, "TomlSectionNumber", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[[config]]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
-        out << "[[config]]" << std::endl;
-        out << "val=4" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
-        out << "[[config]]" << std::endl;
-        out << "val=6" << std::endl;
-        out << "subsubcom.val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[[config]]" << '\n';
+        out << "val=2" << '\n';
+        out << "subsubcom.val=3" << '\n';
+        out << "[[config]]" << '\n';
+        out << "val=4" << '\n';
+        out << "subsubcom.val=3" << '\n';
+        out << "[[config]]" << '\n';
+        out << "val=6" << '\n';
+        out << "subsubcom.val=3" << '\n';
     }
 
     int val{0};
@@ -2050,12 +2050,12 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableParseComplete", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "[subcom.subsubcom]" << std::endl;
-        out << "val=3" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "[subcom.subsubcom]" << '\n';
+        out << "val=3" << '\n';
     }
 
     int one{0}, two{0}, three{0}, four{0};
@@ -2095,14 +2095,14 @@ TEST_CASE_METHOD(TApp, "IniSubcommandMultipleSections", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
-        out << "[subcom]" << std::endl;
-        out << "val=2" << std::endl;
-        out << "[subcom.subsubcom]" << std::endl;
-        out << "val=3" << std::endl;
-        out << "[subcom2]" << std::endl;
-        out << "val=4" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+        out << "[subcom.subsubcom]" << '\n';
+        out << "val=3" << '\n';
+        out << "[subcom2]" << '\n';
+        out << "val=4" << '\n';
     }
 
     int one{0}, two{0}, three{0}, four{0};
@@ -2143,9 +2143,9 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[config]") {
 
     {
         std::ofstream out{tmptoml};
-        out << "[[foo]]" << std::endl;
-        out << "[[foo]]" << std::endl;
-        out << "[[foo]]" << std::endl;
+        out << "[[foo]]" << '\n';
+        out << "[[foo]]" << '\n';
+        out << "[[foo]]" << '\n';
     }
 
     auto *foo = app.add_subcommand("foo");
@@ -2167,7 +2167,7 @@ TEST_CASE_METHOD(TApp, "SubcommandCallbackSingle", "[config]") {
 
     {
         std::ofstream out{tmptoml};
-        out << "[foo]" << std::endl;
+        out << "[foo]" << '\n';
     }
     int count{0};
     auto *foo = app.add_subcommand("foo");
@@ -2186,8 +2186,8 @@ TEST_CASE_METHOD(TApp, "IniFailure", "[config]") {
     app.allow_config_extras(false);
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ConfigError);
@@ -2203,8 +2203,8 @@ TEST_CASE_METHOD(TApp, "IniConfigurable", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2221,8 +2221,8 @@ TEST_CASE_METHOD(TApp, "IniNotConfigurable", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ConfigError);
@@ -2240,8 +2240,8 @@ TEST_CASE_METHOD(TApp, "IniFlagDisableOverrideFlagArray", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=[1,true,false,true]" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=[1,true,false,true]" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2258,8 +2258,8 @@ TEST_CASE_METHOD(TApp, "IniFlagInvalidDisableOverrideFlagArray", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "val=[1,true,false,not_valid]" << std::endl;
+        out << "[default]" << '\n';
+        out << "val=[1,true,false,not_valid]" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::InvalidError);
@@ -2274,8 +2274,8 @@ TEST_CASE_METHOD(TApp, "IniSubFailure", "[config]") {
     app.allow_config_extras(false);
     {
         std::ofstream out{tmpini};
-        out << "[other]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[other]" << '\n';
+        out << "val=1" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ConfigError);
@@ -2289,8 +2289,8 @@ TEST_CASE_METHOD(TApp, "IniNoSubFailure", "[config]") {
     app.allow_config_extras(CLI::config_extras_mode::error);
     {
         std::ofstream out{tmpini};
-        out << "[other]" << std::endl;
-        out << "val=1" << std::endl;
+        out << "[other]" << '\n';
+        out << "val=1" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ConfigError);
@@ -2305,7 +2305,7 @@ TEST_CASE_METHOD(TApp, "IniFlagConvertFailure", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "flag=moobook" << std::endl;
+        out << "flag=moobook" << '\n';
     }
     run();
     bool result{false};
@@ -2326,7 +2326,7 @@ TEST_CASE_METHOD(TApp, "IniFlagNumbers", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "flag=3" << std::endl;
+        out << "flag=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2344,7 +2344,7 @@ TEST_CASE_METHOD(TApp, "IniFlagDual", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "flag=1 1" << std::endl;
+        out << "flag=1 1" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
@@ -2361,7 +2361,7 @@ TEST_CASE_METHOD(TApp, "IniVectorMax", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "vec=[a,b,c]" << std::endl;
+        out << "vec=[a,b,c]" << '\n';
     }
 
     CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
@@ -2377,7 +2377,7 @@ TEST_CASE_METHOD(TApp, "IniShort", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "f=3" << std::endl;
+        out << "f=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2394,7 +2394,7 @@ TEST_CASE_METHOD(TApp, "IniShortQuote1", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "\"f\"=3" << std::endl;
+        out << "\"f\"=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2411,7 +2411,7 @@ TEST_CASE_METHOD(TApp, "IniShortQuote2", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "'f'=3" << std::endl;
+        out << "'f'=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2428,7 +2428,7 @@ TEST_CASE_METHOD(TApp, "IniShortQuote3", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "`f`=3" << std::endl;
+        out << "`f`=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2445,7 +2445,7 @@ TEST_CASE_METHOD(TApp, "IniDefaultPath", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "f=3" << std::endl;
+        out << "f=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2464,7 +2464,7 @@ TEST_CASE_METHOD(TApp, "IniMultipleDefaultPath", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "f=3" << std::endl;
+        out << "f=3" << '\n';
     }
 
     args = {"--config", "TestIniTmp.ini"};
@@ -2484,7 +2484,7 @@ TEST_CASE_METHOD(TApp, "IniMultipleDefaultPathAlternate", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "f=3" << std::endl;
+        out << "f=3" << '\n';
     }
 
     args = {"--config", "TestIniTmp.ini"};
@@ -2503,7 +2503,7 @@ TEST_CASE_METHOD(TApp, "IniPositional", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "key=3" << std::endl;
+        out << "key=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2520,7 +2520,7 @@ TEST_CASE_METHOD(TApp, "IniEnvironmental", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "CLI11_TEST_ENV_KEY_TMP=3" << std::endl;
+        out << "CLI11_TEST_ENV_KEY_TMP=3" << '\n';
     }
 
     REQUIRE_NOTHROW(run());
@@ -2540,10 +2540,10 @@ TEST_CASE_METHOD(TApp, "IniFlagText", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "flag1=true" << std::endl;
-        out << "flag2=on" << std::endl;
-        out << "flag3=off" << std::endl;
-        out << "flag4=1" << std::endl;
+        out << "flag1=true" << '\n';
+        out << "flag2=on" << '\n';
+        out << "flag3=off" << '\n';
+        out << "flag4=1" << '\n';
     }
 
     run();
@@ -2560,11 +2560,11 @@ TEST_CASE_METHOD(TApp, "IniFlags", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2" << std::endl;
-        out << "three=true" << std::endl;
-        out << "four=on" << std::endl;
-        out << "five" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2" << '\n';
+        out << "three=true" << '\n';
+        out << "four=on" << '\n';
+        out << "five" << '\n';
     }
 
     int two{0};
@@ -2588,12 +2588,12 @@ TEST_CASE_METHOD(TApp, "IniFlagsComment", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2 # comment 1" << std::endl;
-        out << "three=true" << std::endl;
-        out << "four=on #comment 2" << std::endl;
-        out << "five #comment 3" << std::endl;
-        out << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2 # comment 1" << '\n';
+        out << "three=true" << '\n';
+        out << "four=on #comment 2" << '\n';
+        out << "five #comment 3" << '\n';
+        out << '\n';
     }
 
     int two{0};
@@ -2617,12 +2617,12 @@ TEST_CASE_METHOD(TApp, "IniFlagsAltComment", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2 % comment 1" << std::endl;
-        out << "three=true" << std::endl;
-        out << "four=on %% comment 2" << std::endl;
-        out << "five %= 3" << std::endl;
-        out << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2 % comment 1" << '\n';
+        out << "three=true" << '\n';
+        out << "four=on %% comment 2" << '\n';
+        out << "five %= 3" << '\n';
+        out << '\n';
     }
 
     auto config = app.get_config_formatter_base();
@@ -2648,11 +2648,11 @@ TEST_CASE_METHOD(TApp, "IniFalseFlags", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=-2" << std::endl;
-        out << "three=false" << std::endl;
-        out << "four=1" << std::endl;
-        out << "five" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=-2" << '\n';
+        out << "three=false" << '\n';
+        out << "four=1" << '\n';
+        out << "five" << '\n';
     }
 
     int two{0};
@@ -2676,11 +2676,11 @@ TEST_CASE_METHOD(TApp, "IniFalseFlagsDef", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2" << std::endl;
-        out << "three=true" << std::endl;
-        out << "four=on" << std::endl;
-        out << "five" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2" << '\n';
+        out << "three=true" << '\n';
+        out << "four=on" << '\n';
+        out << "five" << '\n';
     }
 
     int two{0};
@@ -2704,10 +2704,10 @@ TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideError", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2" << std::endl;
-        out << "four=on" << std::endl;
-        out << "five" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2" << '\n';
+        out << "four=on" << '\n';
+        out << "five" << '\n';
     }
 
     int two{0};
@@ -2725,10 +2725,10 @@ TEST_CASE_METHOD(TApp, "IniFalseFlagsDefDisableOverrideSuccess", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2" << std::endl;
-        out << "four={}" << std::endl;
-        out << "val=15" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2" << '\n';
+        out << "four={}" << '\n';
+        out << "val=15" << '\n';
     }
 
     int two{0}, four{0}, val{0};
@@ -2755,20 +2755,20 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "[default]" << std::endl;
-        out << "two=2" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=2" << '\n';
     }
 
     {
         std::ofstream out{tmpini2};
-        out << "[default]" << std::endl;
-        out << "two=7" << std::endl;
+        out << "[default]" << '\n';
+        out << "two=7" << '\n';
     }
 
     {
         std::ofstream out{tmpini3};
-        out << "[default]" << std::endl;
-        out << "three=true" << std::endl;
+        out << "[default]" << '\n';
+        out << "three=true" << '\n';
     }
 
     int val{0};
@@ -3284,7 +3284,7 @@ TEST_CASE_METHOD(TApp, "StopReadingConfigOnClear", "[config]") {
 
     {
         std::ofstream out{tmpini};
-        out << "volume=1" << std::endl;
+        out << "volume=1" << '\n';
     }
 
     int volume{0};
@@ -3306,7 +3306,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
     std::string config1 = app.config_to_str(true, true);
     {
         std::ofstream out{tmpini};
-        out << config1 << std::endl;
+        out << config1 << '\n';
     }
 
     app.set_config("--config", tmpini, "Read an ini file", true);
@@ -3329,7 +3329,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
     std::string config1 = app.config_to_str(false, false);
     {
         std::ofstream out{tmpini};
-        out << config1 << std::endl;
+        out << config1 << '\n';
     }
     CHECK_FALSE(flag);
     args.clear();
