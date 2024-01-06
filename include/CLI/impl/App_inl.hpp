@@ -658,7 +658,7 @@ CLI11_INLINE int App::exit(const Error &e, std::ostream &out, std::ostream &err)
     }
 
     if(e.get_name() == "CallForVersion") {
-        out << e.what() << std::endl;
+        out << e.what() << '\n';
         return e.get_exit_code();
     }
 

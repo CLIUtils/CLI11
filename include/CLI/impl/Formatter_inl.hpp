@@ -132,7 +132,7 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
             << (app->get_require_subcommand_min() == 0 ? "]" : "");
     }
 
-    out << std::endl;
+    out << '\n';
 
     return out.str();
 }

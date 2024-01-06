@@ -39,6 +39,7 @@ Checks: |
   -modernize-return-braced-init-list,
   -modernize-make-unique,
   -modernize-type-traits,
+  -modernize-macro-to-enum,
   *performance*,
   -performance-unnecessary-value-param,
   -performance-inefficient-string-concatenation,

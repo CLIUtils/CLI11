@@ -126,7 +126,7 @@ class AutoTimer : public Timer {
     // GCC 4.7 does not support using inheriting constructors.
 
     /// This destructor prints the string
-    ~AutoTimer() { std::cout << to_string() << std::endl; }
+    ~AutoTimer() { std::cout << to_string() << '\n'; }
 };
 
 }  // namespace CLI
