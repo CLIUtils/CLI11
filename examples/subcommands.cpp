@@ -25,8 +25,7 @@ int main(int argc, char **argv) {
     CLI11_PARSE(app, argc, argv);
 
     std::cout << "Working on --file from start: " << file << '\n';
-    std::cout << "Working on --count from stop: " << s->count() << ", direct count: " << stop->count("--count")
-              << '\n';
+    std::cout << "Working on --count from stop: " << s->count() << ", direct count: " << stop->count("--count") << '\n';
     std::cout << "Count of --random flag: " << app.count("--random") << '\n';
     for(auto *subcom : app.get_subcommands())
         std::cout << "Subcommand: " << subcom->get_name() << '\n';
