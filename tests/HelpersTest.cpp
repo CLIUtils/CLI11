@@ -308,15 +308,6 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     CHECK(result == "\\XEM\\X7K");
 }
 
-/// these are provided for compatibility with the char8_t for C++20 that breaks stuff
-std::string from_u8string(const std::string &s) { return s; }
-std::string from_u8string(std::string &&s) { return std::move(s); }
-#if defined(__cpp_lib_char8_t)
-std::string from_u8string(const std::u8string &s) { return std::string(s.begin(), s.end()); }
-#elif defined(__cpp_char8_t)
-std::string from_u8string(const char8_t *s) { return std::string(reinterpret_cast<const char *>(s)); }
-#endif
-
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
     CHECK(CLI::detail::remove_escaped_characters("test\\\"") == "test\"");
     CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
