@@ -134,11 +134,9 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
     // clean up quotes on the parents
-    try
-    {
+    try {
         detail::remove_quotes(parents);
-    }
-    catch(const std::invalid_argument &iarg) {
+    } catch(const std::invalid_argument &iarg) {
         throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
     }
     return parents;
