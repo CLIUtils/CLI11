@@ -143,7 +143,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalbool", "[optional]") {
     args = {"--no-opt"};
     run();
     REQUIRE(opt);
-    if (opt) {
+    if(opt) {
         CHECK_FALSE(*opt);
     }
     static_assert(CLI::detail::classify_object<std::optional<bool>>::value ==
