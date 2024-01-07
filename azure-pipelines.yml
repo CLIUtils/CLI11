@@ -147,8 +147,8 @@ jobs:
           cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
         clang17_20:
           containerImage: silkeh/clang:17
-          cli11.std: 20
-          cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
+          cli11.std: 23
+          cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++23
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake.yml
