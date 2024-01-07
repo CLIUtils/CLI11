@@ -41,8 +41,10 @@ TEST_CASE("app_fail") {
         try {
             app->parse(parseData);
         } catch(const CLI::ParseError & /*e*/) {
+            CHECK(true);
         }
     } catch(const CLI::ConstructionError & /*e*/) {
+        CHECK(true);
     }
 }
 
@@ -56,6 +58,7 @@ TEST_CASE("file_fail") {
     try {
         app->parse_from_stream(out);
     } catch(const CLI::ParseError & /*e*/) {
+        CHECK(true);
     }
 }
 

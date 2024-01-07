@@ -70,12 +70,12 @@ TEST_CASE_METHOD(TApp, "StdOptionalTest", "[optional]") {
 
     args = {"-c", "1"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(1 == *opt);
 
     args = {"--count", "3"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(3 == *opt);
 }
 
@@ -91,7 +91,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalVectorEmptyDirect", "[optional]") {
     CHECK(!opt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -125,6 +125,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalUint", "[optional]") {
 
     args = {"-i", "15"};
     run();
+    REQUIRE(opt);
     CHECK(15U == *opt);
     static_assert(CLI::detail::classify_object<std::optional<std::uint64_t>>::value ==
                   CLI::detail::object_category::wrapper_value);
@@ -140,12 +141,12 @@ TEST_CASE_METHOD(TApp, "StdOptionalbool", "[optional]") {
 
     args = {"--opt"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(*opt);
 
     args = {"--no-opt"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK_FALSE(*opt);
     static_assert(CLI::detail::classify_object<std::optional<bool>>::value ==
                   CLI::detail::object_category::wrapper_value);
