@@ -25,10 +25,10 @@ int main(int argc, const char *argv[]) {
     subcom->alias("--sub");
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "value=" << value << std::endl;
+    std::cout << "value=" << value << '\n';
     std::cout << "after Args:";
     for(const auto &aarg : subcom->remaining()) {
         std::cout << aarg << " ";
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 }

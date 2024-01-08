@@ -696,7 +696,7 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     TempFile myfile{"program_name1.exe"};
     {
         std::ofstream out{myfile};
-        out << "useless string doesn't matter" << std::endl;
+        out << "useless string doesn't matter" << '\n';
     }
     auto res =
         CLI::detail::split_program_name(std::string("./") + std::string(myfile) + " this is a bunch of extra stuff  ");
@@ -706,7 +706,7 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     TempFile myfile2{"program name1.exe"};
     {
         std::ofstream out{myfile2};
-        out << "useless string doesn't matter" << std::endl;
+        out << "useless string doesn't matter" << '\n';
     }
     res = CLI::detail::split_program_name(std::string("   ") + std::string("./") + std::string(myfile2) +
                                           "      this is a bunch of extra stuff  ");
@@ -972,7 +972,7 @@ TEST_CASE("AppHelper: Ofstream", "[helpers]") {
 
         {
             std::ofstream out{myfile};
-            out << "this is output" << std::endl;
+            out << "this is output" << '\n';
         }
 
         CHECK(CLI::ExistingFile(myfile).empty());

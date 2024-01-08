@@ -46,6 +46,6 @@ int main(int argc, char **argv) {
 
     // Prove the vector is correct
     for(auto &pair : keyval) {
-        std::cout << pair.first << " : " << pair.second << std::endl;
+        std::cout << pair.first << " : " << pair.second << '\n';
     }
 }

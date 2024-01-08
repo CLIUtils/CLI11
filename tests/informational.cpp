@@ -52,5 +52,5 @@ int main() {
     std::cout << "  boost::optional support active\n";
 #endif
 
-    std::cout << std::endl;
+    std::cout << '\n';
 }

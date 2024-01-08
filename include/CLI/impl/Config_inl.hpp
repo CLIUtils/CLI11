@@ -134,7 +134,11 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
     // clean up quotes on the parents
-    detail::remove_quotes(parents);
+    try {
+        detail::remove_quotes(parents);
+    } catch(const std::invalid_argument &iarg) {
+        throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+    }
     return parents;
 }
 
@@ -341,8 +345,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                         if(keyChar == '\"') {
                             try {
                                 item = detail::remove_escaped_characters(item);
-                            } catch(const std::invalid_argument &ia) {
-                                throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
+                            } catch(const std::invalid_argument &iarg) {
+                                throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
                             }
                         }
                     } else {
@@ -366,7 +370,11 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                     detail::trim(multiline);
                     item += multiline;
                 }
-                items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                if(item.back() == aEnd) {
+                    items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                } else {
+                    items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep);
+                }
             } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
                 items_buffer = detail::split_up(item, aSep);
             } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {

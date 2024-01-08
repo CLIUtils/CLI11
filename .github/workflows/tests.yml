@@ -60,7 +60,7 @@ jobs:
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:14
+    container: silkeh/clang:17
     steps:
       - uses: actions/checkout@v4
 
@@ -91,7 +91,7 @@ jobs:
   cuda12-build:
     name: CUDA 12 build only
     runs-on: ubuntu-latest
-    container: nvidia/cuda:12.1.0-devel-ubuntu22.04
+    container: nvidia/cuda:12.3.1-devel-ubuntu22.04
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
@@ -336,9 +336,15 @@ jobs:
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
-      - name: Check CMake 3.27 (full)
+      - name: Check CMake 3.27
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.27"
+        if: success() || failure()
+        
+      - name: Check CMake 3.28 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.28"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()

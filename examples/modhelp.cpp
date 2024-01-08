@@ -26,10 +26,10 @@ Note that this will not shortcut `->required` and other similar options.)raw"};
         if(*help)
             throw CLI::CallForHelp();
     } catch(const CLI::Error &e) {
-        std::cout << "Option -a string in help: " << some_option << std::endl;
+        std::cout << "Option -a string in help: " << some_option << '\n';
         return test.exit(e);
     }
 
-    std::cout << "Option -a string: " << some_option << std::endl;
+    std::cout << "Option -a string: " << some_option << '\n';
     return 0;
 }

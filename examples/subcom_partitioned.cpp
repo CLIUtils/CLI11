@@ -37,10 +37,10 @@ int main(int argc, char **argv) {
     }
 
     std::cout << "Working on file: " << file << ", direct count: " << impOpt->count("--file")
-              << ", opt count: " << opt->count() << std::endl;
+              << ", opt count: " << opt->count() << '\n';
     std::cout << "Working on count: " << count << ", direct count: " << impOpt->count("--count")
-              << ", opt count: " << copt->count() << std::endl;
-    std::cout << "Some value: " << value << std::endl;
+              << ", opt count: " << copt->count() << '\n';
+    std::cout << "Some value: " << value << '\n';
 
     return 0;
 }

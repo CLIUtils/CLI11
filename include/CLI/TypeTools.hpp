@@ -1384,9 +1384,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &outp
     FirstType v1;
     SecondType v2;
     bool retval = lexical_assign<FirstType, FirstType>(strings[0], v1);
-    if(strings.size() > 1) {
-        retval = retval && lexical_assign<SecondType, SecondType>(strings[1], v2);
-    }
+    retval = retval && lexical_assign<SecondType, SecondType>((strings.size() > 1) ? strings[1] : std::string{}, v2);
     if(retval) {
         output = AssignTo{v1, v2};
     }

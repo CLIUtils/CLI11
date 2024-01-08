@@ -20,7 +20,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheck", "[stringparse]") {
 
     {
         std::ofstream out{tmpexe};
-        out << "useless string doesn't matter" << std::endl;
+        out << "useless string doesn't matter" << '\n';
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +
@@ -42,7 +42,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithSpace", "[stringparse]") {
 
     {
         std::ofstream out{tmpexe};
-        out << "useless string doesn't matter" << std::endl;
+        out << "useless string doesn't matter" << '\n';
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +
@@ -66,7 +66,7 @@ TEST_CASE_METHOD(TApp, "ExistingExeCheckWithLotsOfSpace", "[stringparse]") {
 
     {
         std::ofstream out{tmpexe};
-        out << "useless string doesn't matter" << std::endl;
+        out << "useless string doesn't matter" << '\n';
     }
 
     app.parse(std::string("./") + std::string(tmpexe) +

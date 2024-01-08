@@ -150,3 +150,28 @@ jobs:
       - template: .ci/azure-cmake.yml
       - template: .ci/azure-build.yml
       - template: .ci/azure-test.yml
+
+  - job: Docker_new
+    variables:
+      cli11.single: OFF
+    pool:
+      vmImage: "ubuntu-latest"
+    strategy:
+      matrix:
+        gcc13:
+          containerImage: gcc:13
+          cli11.std: 17
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+        gcc12:
+          containerImage: gcc:12
+          cli11.std: 20
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+        clang17_20:
+          containerImage: silkeh/clang:17
+          cli11.std: 23
+          cli11.options: -DCMAKE_CXX_FLAGS=-std=c++23
+    container: $[ variables['containerImage'] ]
+    steps:
+      - template: .ci/azure-cmake-new.yml
+      - template: .ci/azure-build.yml
+      - template: .ci/azure-test.yml

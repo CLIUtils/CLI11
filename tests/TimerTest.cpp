@@ -63,6 +63,6 @@ TEST_CASE("Timer: PrintTimer", "[timer]") {
 TEST_CASE("Timer: TimeItTimer", "[timer]") {
     CLI::Timer timer;
     std::string output = timer.time_it([]() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }, .1);
-    std::cout << output << std::endl;
+    std::cout << output << '\n';
     CHECK_THAT(output, Contains("ms"));
 }

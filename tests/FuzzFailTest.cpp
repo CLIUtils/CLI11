@@ -41,8 +41,10 @@ TEST_CASE("app_fail") {
         try {
             app->parse(parseData);
         } catch(const CLI::ParseError & /*e*/) {
+            CHECK(true);
         }
     } catch(const CLI::ConstructionError & /*e*/) {
+        CHECK(true);
     }
 }
 
@@ -50,12 +52,13 @@ TEST_CASE("file_fail") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    int index = GENERATE(range(1, 7));
+    int index = GENERATE(range(1, 9));
     auto parseData = loadFailureFile("fuzz_file_fail", index);
     std::stringstream out(parseData);
     try {
         app->parse_from_stream(out);
     } catch(const CLI::ParseError & /*e*/) {
+        CHECK(true);
     }
 }
 
