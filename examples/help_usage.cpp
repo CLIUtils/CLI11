@@ -7,24 +7,29 @@
 #include <CLI/CLI.hpp>
 #include <string>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     std::string input_file_name, output_file_name;
     int level, subopt;
 
     // app caption
-    CLI::App app{ "CLI11 help" };
+    CLI::App app{"CLI11 help"};
 
     app.require_subcommand(1);
     // subcommands options and flags
-    CLI::App* const encode = app.add_subcommand("e", "encode")->ignore_case(); // ignore case
-    encode->add_option("input", input_file_name, "input file")->option_text(" ")->required()->check(CLI::ExistingFile); // file must exist
-    encode->add_option("output", output_file_name, "output file")->option_text(" ")->required(); // required option
-    encode->add_option("-l, --level", level, "encoding level")->option_text("[1..9]")->check(CLI::Range(1, 9))->default_val(5); // limit parameter range
-    encode->add_option("-R, --remove", level, "remove input file"); // no parameter option
+    CLI::App *const encode = app.add_subcommand("e", "encode")->ignore_case();  // ignore case
+    encode->add_option("input", input_file_name, "input file")
+        ->option_text(" ")
+        ->required()
+        ->check(CLI::ExistingFile);                                                               // file must exist
+    encode->add_option("output", output_file_name, "output file")->option_text(" ")->required();  // required option
+    encode->add_option("-l, --level", level, "encoding level")
+        ->option_text("[1..9]")
+        ->check(CLI::Range(1, 9))
+        ->default_val(5);                                            // limit parameter range
+    encode->add_option("-R, --remove", level, "remove input file");  // no parameter option
     encode->add_flag("-s, --suboption", subopt, "suboption")->option_text(" ");
 
-    CLI::App* const decode = app.add_subcommand("d", "decode")->ignore_case();
+    CLI::App *const decode = app.add_subcommand("d", "decode")->ignore_case();
     decode->add_option("input", input_file_name, "input file")->option_text(" ")->required()->check(CLI::ExistingFile);
     decode->add_option("output", output_file_name, "output file")->option_text(" ")->required();
 
