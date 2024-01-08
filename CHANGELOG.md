@@ -1,5 +1,66 @@
 # Changelog
 
+## Version 2.4: Unicode, TOML support, and fuzzing
+
+This version adds unicode support, support for TOML standard including multiline
+strings, digit separators, string escape sequences,and dot notation. An initial
+round of a fuzzer which has caught several bugs related to config file
+processing, and a few other edge cases not previously observed.
+
+- Add: Escape String Transform. [#970][]
+- Add: Match TOML standard for string and numerical entries, multiline strings
+  [#968][], [#967][],[#964][], [#935][]
+- Bugfix: Fuzzing tests and fixes [#930][], [#905][], [#874][], [#846][]
+- Bugfix: Missing coverage tests [#928][],
+- Bugfix: CMake package and package config tests and fixes [#916][]
+- Bugfix: Support for Windows ARM compilation and tests [#913][], [#914][]
+- Bugfix: Environmental variable checks in non-triggered subcommands [#904][]
+- Bugfix: Environmental variables were not being correctly process by config
+  pointer [#891][]
+- Bugfix: Undefined behavior in sum_string_vector [#893][]
+- Bugfix: warnings and updates for Cuda 11 support [#851][]
+- Add: Validation for Environmental variables [#926][]
+- Add: Unicode Support and bug fixes [#804][], [#923][], [#876][], [#848][],
+  [#832][]
+- Add: A REVERSE multi-option policy to support multiple config files and other
+  applications [#918][]
+- Add: Usage message replacement [#768][]
+- Add: Allow using dot notation for subcommand arguments such as --sub1.field
+  [#789][]
+- Backend: add tests for newer compilers (lost with Travis CI) [#972][]
+- Backend: minimum CMake to 3.5 [#898][]
+- Backend: remove conan support [#853][]
+
+[#970]: https://github.com/CLIUtils/CLI11/pull/970
+[#968]: https://github.com/CLIUtils/CLI11/pull/968
+[#967]: https://github.com/CLIUtils/CLI11/pull/967
+[#964]: https://github.com/CLIUtils/CLI11/pull/964
+[#935]: https://github.com/CLIUtils/CLI11/pull/935
+[#930]: https://github.com/CLIUtils/CLI11/pull/930
+[#905]: https://github.com/CLIUtils/CLI11/pull/905
+[#874]: https://github.com/CLIUtils/CLI11/pull/874
+[#846]: https://github.com/CLIUtils/CLI11/pull/846
+[#928]: https://github.com/CLIUtils/CLI11/pull/928
+[#916]: https://github.com/CLIUtils/CLI11/pull/916
+[#914]: https://github.com/CLIUtils/CLI11/pull/914
+[#913]: https://github.com/CLIUtils/CLI11/pull/913
+[#904]: https://github.com/CLIUtils/CLI11/pull/904
+[#891]: https://github.com/CLIUtils/CLI11/pull/891
+[#893]: https://github.com/CLIUtils/CLI11/pull/893
+[#851]: https://github.com/CLIUtils/CLI11/pull/851
+[#926]: https://github.com/CLIUtils/CLI11/pull/926
+[#804]: https://github.com/CLIUtils/CLI11/pull/804
+[#923]: https://github.com/CLIUtils/CLI11/pull/923
+[#876]: https://github.com/CLIUtils/CLI11/pull/876
+[#848]: https://github.com/CLIUtils/CLI11/pull/848
+[#832]: https://github.com/CLIUtils/CLI11/pull/832
+[#918]: https://github.com/CLIUtils/CLI11/pull/918
+[#768]: https://github.com/CLIUtils/CLI11/pull/768
+[#789]: https://github.com/CLIUtils/CLI11/pull/789
+[#972]: https://github.com/CLIUtils/CLI11/pull/972
+[#898]: https://github.com/CLIUtils/CLI11/pull/898
+[#853]: https://github.com/CLIUtils/CLI11/pull/853
+
 ## Version 2.3: Precompilation Support
 
 This version adds a pre-compiled mode to CLI11, which allows you to precompile
@@ -7,7 +68,7 @@ the library, saving time on incremental rebuilds, making CLI11 more competitive
 on compile time with classic compiled CLI libraries. The header-only mode is
 still default, and is not yet distributed via binaries.
 
-- Add `CLI11_PRECOMPILED` as an option. [#762][]
+- Add `CLI11_PRECOMPILED` as an option [#762][]
 - Bugfix: Include `<functional>` in `FormatterFwd` [#727][]
 - Bugfix: Add missing `Macros.hpp` to `Error.hpp` [#755][]
 - Bugfix: Fix subcommand callback trigger [#733][]
