@@ -849,8 +849,9 @@ class App {
     void clear();
 
     /// Parse the command-line arguments passed to the main function of the executable.
-    /// This overload will correctly parse unicode arguments on Windows.
-    void parse();
+    /// This method will extract the arguments given to the main from the command line and parse them
+    /// It will correctly support unicode wide string arguments on Windows
+    void parse_from_cli_args();
 
     /// Parses the command line - throws errors.
     /// This must be called after the options are in but before the rest of the program.

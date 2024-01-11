@@ -196,7 +196,6 @@ this:
 ```cpp
 int main(int argc, char** argv) {
     CLI::App app{"App description"};
-    argv = app.ensure_utf8(argv);
 
     std::string filename = "default";
     app.add_option("-f,--file", filename, "A help string");
@@ -206,9 +205,8 @@ int main(int argc, char** argv) {
 }
 ```
 
-For more information about 🚧`ensure_utf8` the section on
-[Unicode support](#unicode-support) below. The 🚧`ensure_utf8` function is only
-available in main currently and not in a release.
+For more information about unicode and operations with CLI11 see
+[Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
@@ -1411,9 +1409,9 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
     });
 ```
 
-### Unicode support
+### Unicode support 
 
-CLI11 supports Unicode and wide strings as defined in the
+🆕 CLI11 supports Unicode and wide strings as defined in the
 [UTF-8 Everywhere](http://utf8everywhere.org/) manifesto. In particular:
 
 - The library can parse a wide version of command-line arguments on Windows,
@@ -1445,10 +1443,9 @@ int main(int argc, char** argv) {
 }
 ```
 
-2\. If you pass unmodified command-line arguments to CLI11, call `app.parse()`
-instead of `app.parse(argc, argv)` (or `CLI11_PARSE(app)` instead of
-`CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
-itself.
+2\. If you pass unmodified command-line arguments to CLI11, call `app.parse_from_cli_args()`
+instead of `app.parse(argc, argv)`. The library will find correct arguments by
+itself, through OS calls and operations.
 
 > [!NOTE]
 >
@@ -1460,7 +1457,11 @@ itself.
 > int main() {
 >     CLI::App app;
 >     // ...
->     CLI11_PARSE(app);
+>     try{
+>        app.parse_from_cli_args();
+>     catch (const CLI::ParseError &e) {
+>        return app.exit(e);
+>     }
 > }
 > ```
 
