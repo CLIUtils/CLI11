@@ -1750,6 +1750,7 @@ thanks to all the contributors
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://profiles.sussex.ac.uk/p281168-alex-dewar/publications"><img src="https://avatars.githubusercontent.com/u/23149834?v=4?s=100" width="100px;" alt="Alex Dewar"/><br /><sub><b>Alex Dewar</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=alexdewar" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/trokhymchuk"><img src="https://avatars.githubusercontent.com/u/66204814?v=4?s=100" width="100px;" alt="Artem Trokhymchuk "/><br /><sub><b>Artem Trokhymchuk </b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=trokhymchuk" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/dherrera-fb"><img src="https://avatars.githubusercontent.com/u/89840711?v=4?s=100" width="100px;" alt="dherrera-fb"/><br /><sub><b>dherrera-fb</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=dherrera-fb" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
