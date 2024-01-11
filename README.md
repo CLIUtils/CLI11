@@ -1758,6 +1758,7 @@ thanks to all the contributors
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/SherlockInSpace"><img src="https://avatars.githubusercontent.com/u/5507786?v=4?s=100" width="100px;" alt="Ryan Sherlock"/><br /><sub><b>Ryan Sherlock</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=SherlockInSpace" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Krzmbrzl"><img src="https://avatars.githubusercontent.com/u/12751591?v=4?s=100" width="100px;" alt="Robert Adam"/><br /><sub><b>Robert Adam</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=Krzmbrzl" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
