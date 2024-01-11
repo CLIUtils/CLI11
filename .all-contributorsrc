@@ -674,6 +674,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "cetius",
+      "name": "Marcin Ropa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6552472?v=4",
+      "profile": "https://github.com/cetius",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
