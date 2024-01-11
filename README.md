@@ -1756,6 +1756,9 @@ thanks to all the contributors
       <td align="center" valign="top" width="14.28%"><a href="http://polistern.i2p/"><img src="https://avatars.githubusercontent.com/u/55511995?v=4?s=100" width="100px;" alt="polistern"/><br /><sub><b>polistern</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=polistern" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/andreasxp"><img src="https://avatars.githubusercontent.com/u/28830446?v=4?s=100" width="100px;" alt="Andrey Zhukov"/><br /><sub><b>Andrey Zhukov</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=andreasxp" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/SherlockInSpace"><img src="https://avatars.githubusercontent.com/u/5507786?v=4?s=100" width="100px;" alt="Ryan Sherlock"/><br /><sub><b>Ryan Sherlock</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=SherlockInSpace" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
