@@ -512,6 +512,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "polistern",
+      "name": "polistern",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55511995?v=4",
+      "profile": "http://polistern.i2p/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
