@@ -611,6 +611,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ayum",
+      "name": "ayum",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6747040?v=4",
+      "profile": "https://github.com/ayum",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
