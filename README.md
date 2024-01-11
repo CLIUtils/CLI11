@@ -1767,6 +1767,7 @@ thanks to all the contributors
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/djerius"><img src="https://avatars.githubusercontent.com/u/196875?v=4?s=100" width="100px;" alt="djerius"/><br /><sub><b>djerius</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=djerius" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/shameekganguly"><img src="https://avatars.githubusercontent.com/u/2412842?v=4?s=100" width="100px;" alt="shameekganguly"/><br /><sub><b>shameekganguly</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=shameekganguly" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
