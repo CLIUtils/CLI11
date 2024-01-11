@@ -1765,6 +1765,9 @@ thanks to all the contributors
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/PeteAudinate"><img src="https://avatars.githubusercontent.com/u/99274874?v=4?s=100" width="100px;" alt="PeteAudinate"/><br /><sub><b>PeteAudinate</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=PeteAudinate" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/captainurist"><img src="https://avatars.githubusercontent.com/u/73941350?v=4?s=100" width="100px;" alt="captainurist"/><br /><sub><b>captainurist</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=captainurist" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/djerius"><img src="https://avatars.githubusercontent.com/u/196875?v=4?s=100" width="100px;" alt="djerius"/><br /><sub><b>djerius</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=djerius" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
