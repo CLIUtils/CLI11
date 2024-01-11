@@ -4,32 +4,33 @@
 
 This version adds unicode support, support for TOML standard including multiline
 strings, digit separators, string escape sequences,and dot notation. An initial
-round of a fuzzer which has caught several bugs related to config file
-processing, and a few other edge cases not previously observed.
+round of a fuzzer was added to teseting which has caught several bugs related to
+config file processing, and a few other edge cases not previously observed.
 
-- Add: Escape String Transform. [#970][]
-- Add: Match TOML standard for string and numerical entries, multiline strings
+- Add unicode support and bug fixes [#804][], [#923][], [#876][], [#848][],
+  [#832][]
+- Match TOML standard for string and numerical entries, multiline strings
   [#968][], [#967][],[#964][], [#935][]
+- Add validation for environmental variables [#926][]
+- Add an escape string transform [#970][]
+- Add A REVERSE multi-option policy to support multiple config files and other
+  applications [#918][]
+- Add usage message replacement [#768][]
+- Allow using dot notation for subcommand arguments such as `--sub1.field`
+  [#789][]
 - Bugfix: Fuzzing tests and fixes [#930][], [#905][], [#874][], [#846][]
-- Bugfix: Missing coverage tests [#928][],
+- Bugfix: Missing coverage tests [#928][]
 - Bugfix: CMake package and package config tests and fixes [#916][]
 - Bugfix: Support for Windows ARM compilation and tests [#913][], [#914][]
 - Bugfix: Environmental variable checks in non-triggered subcommands [#904][]
 - Bugfix: Environmental variables were not being correctly process by config
   pointer [#891][]
 - Bugfix: Undefined behavior in sum_string_vector [#893][]
-- Bugfix: warnings and updates for Cuda 11 support [#851][]
-- Add: Validation for Environmental variables [#926][]
-- Add: Unicode Support and bug fixes [#804][], [#923][], [#876][], [#848][],
-  [#832][]
-- Add: A REVERSE multi-option policy to support multiple config files and other
-  applications [#918][]
-- Add: Usage message replacement [#768][]
-- Add: Allow using dot notation for subcommand arguments such as --sub1.field
-  [#789][]
-- Backend: add tests for newer compilers (lost with Travis CI) [#972][]
-- Backend: minimum CMake to 3.5 [#898][]
-- Backend: remove conan support [#853][]
+- Bugfix: Warnings and updates for Cuda 11 support [#851][]
+- Backend: Add tests for newer compilers (lost with Travis CI) [#972][]
+- Backend: Increaase minimum CMake to 3.5 [#898][]
+- Backend: Remove integrated Conan support (provided now by Conan center)
+  [#853][]
 
 [#970]: https://github.com/CLIUtils/CLI11/pull/970
 [#968]: https://github.com/CLIUtils/CLI11/pull/968
