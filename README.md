@@ -1761,6 +1761,7 @@ thanks to all the contributors
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Krzmbrzl"><img src="https://avatars.githubusercontent.com/u/12751591?v=4?s=100" width="100px;" alt="Robert Adam"/><br /><sub><b>Robert Adam</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=Krzmbrzl" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/RangeMachine"><img src="https://avatars.githubusercontent.com/u/11577601?v=4?s=100" width="100px;" alt="RangeMachine"/><br /><sub><b>RangeMachine</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=RangeMachine" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://ptheywood.uk/"><img src="https://avatars.githubusercontent.com/u/628937?v=4?s=100" width="100px;" alt="Peter Heywood"/><br /><sub><b>Peter Heywood</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=ptheywood" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/peterh"><img src="https://avatars.githubusercontent.com/u/79339?v=4?s=100" width="100px;" alt="Peter Harris"/><br /><sub><b>Peter Harris</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=peterh" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
