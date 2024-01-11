@@ -557,6 +557,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ptheywood",
+      "name": "Peter Heywood",
+      "avatar_url": "https://avatars.githubusercontent.com/u/628937?v=4",
+      "profile": "http://ptheywood.uk/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
