@@ -1754,6 +1754,7 @@ thanks to all the contributors
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/VolkerChristian"><img src="https://avatars.githubusercontent.com/u/18554540?v=4?s=100" width="100px;" alt="Volker Christian"/><br /><sub><b>Volker Christian</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=VolkerChristian" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.mmmccormick.com/"><img src="https://avatars.githubusercontent.com/u/25432?v=4?s=100" width="100px;" alt="Matt McCormick"/><br /><sub><b>Matt McCormick</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=thewtex" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://polistern.i2p/"><img src="https://avatars.githubusercontent.com/u/55511995?v=4?s=100" width="100px;" alt="polistern"/><br /><sub><b>polistern</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=polistern" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/andreasxp"><img src="https://avatars.githubusercontent.com/u/28830446?v=4?s=100" width="100px;" alt="Andrey Zhukov"/><br /><sub><b>Andrey Zhukov</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=andreasxp" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

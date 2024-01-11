@@ -521,6 +521,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "andreasxp",
+      "name": "Andrey Zhukov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28830446?v=4",
+      "profile": "https://github.com/andreasxp",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
