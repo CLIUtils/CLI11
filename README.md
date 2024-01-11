@@ -1776,6 +1776,7 @@ thanks to all the contributors
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/j-rivero"><img src="https://avatars.githubusercontent.com/u/2098802?v=4?s=100" width="100px;" alt="Jose Luis Rivero"/><br /><sub><b>Jose Luis Rivero</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=j-rivero" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/looopTools"><img src="https://avatars.githubusercontent.com/u/1943536?v=4?s=100" width="100px;" alt="Lars Nielsen"/><br /><sub><b>Lars Nielsen</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=looopTools" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

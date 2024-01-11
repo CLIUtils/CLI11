@@ -665,6 +665,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "looopTools",
+      "name": "Lars Nielsen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1943536?v=4",
+      "profile": "https://github.com/looopTools",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
