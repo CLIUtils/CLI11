@@ -548,6 +548,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "RangeMachine",
+      "name": "RangeMachine",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11577601?v=4",
+      "profile": "https://github.com/RangeMachine",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
