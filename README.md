@@ -1409,7 +1409,7 @@ app.add_option("--fancy-count", [](std::vector<std::string> val){
     });
 ```
 
-### Unicode support 
+### Unicode support
 
 🆕 CLI11 supports Unicode and wide strings as defined in the
 [UTF-8 Everywhere](http://utf8everywhere.org/) manifesto. In particular:
@@ -1443,9 +1443,9 @@ int main(int argc, char** argv) {
 }
 ```
 
-2\. If you pass unmodified command-line arguments to CLI11, call `app.parse_from_cli_args()`
-instead of `app.parse(argc, argv)`. The library will find correct arguments by
-itself, through OS calls and operations.
+2\. If you pass unmodified command-line arguments to CLI11, call
+`app.parse_from_cli_args()` instead of `app.parse(argc, argv)`. The library will
+find correct arguments by itself, through OS calls and operations.
 
 > [!NOTE]
 >
