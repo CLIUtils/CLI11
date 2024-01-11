@@ -647,6 +647,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "bruxisma",
+      "name": "Izzy Muerte",
+      "avatar_url": "https://avatars.githubusercontent.com/u/63051?v=4",
+      "profile": "https://izzys.casa/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

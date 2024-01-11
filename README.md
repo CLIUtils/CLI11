@@ -1772,6 +1772,7 @@ thanks to all the contributors
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/BenjaminBeichler"><img src="https://avatars.githubusercontent.com/u/1441492?v=4?s=100" width="100px;" alt="Benjamin Beichler"/><br /><sub><b>Benjamin Beichler</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=BenjaminBeichler" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/DarkWingMcQuack"><img src="https://avatars.githubusercontent.com/u/38857302?v=4?s=100" width="100px;" alt="DarkWingMcQuack"/><br /><sub><b>DarkWingMcQuack</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=DarkWingMcQuack" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/eli-schwartz"><img src="https://avatars.githubusercontent.com/u/6551424?v=4?s=100" width="100px;" alt="Eli Schwartz"/><br /><sub><b>Eli Schwartz</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=eli-schwartz" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://izzys.casa/"><img src="https://avatars.githubusercontent.com/u/63051?v=4?s=100" width="100px;" alt="Izzy Muerte"/><br /><sub><b>Izzy Muerte</b></sub></a><br /><a href="https://github.com/CLIUtils/CLI11/commits?author=bruxisma" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
