@@ -15,13 +15,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
-using Catch::Approx;                 // NOLINT(google-global-names-in-headers)
-using Catch::Matchers::Equals;       // NOLINT(google-global-names-in-headers)
-using Catch::Matchers::WithinRel;    // NOLINT(google-global-names-in-headers)
-using Catch::Generators::from_range; // NOLINT(google-global-names-in-headers)
+using Catch::Approx;                  // NOLINT(google-global-names-in-headers)
+using Catch::Generators::from_range;  // NOLINT(google-global-names-in-headers)
+using Catch::Matchers::Equals;        // NOLINT(google-global-names-in-headers)
+using Catch::Matchers::WithinRel;     // NOLINT(google-global-names-in-headers)
 
 inline auto Contains(const std::string &x) { return Catch::Matchers::ContainsSubstring(x); }
 
@@ -29,8 +29,8 @@ inline auto Contains(const std::string &x) { return Catch::Matchers::ContainsSub
 
 #include <catch2/catch.hpp>
 
-using Catch::Equals;                 // NOLINT(google-global-names-in-headers)
-using Catch::Matchers::Contains;     // NOLINT(google-global-names-in-headers)
-using Catch::WithinRel;              // NOLINT(google-global-names-in-headers)
+using Catch::Equals;              // NOLINT(google-global-names-in-headers)
+using Catch::WithinRel;           // NOLINT(google-global-names-in-headers)
+using Catch::Matchers::Contains;  // NOLINT(google-global-names-in-headers)
 
 #endif
