@@ -694,6 +694,7 @@
       ]
     }
   ],
+  "contributorsSortAlphabetically": true,
   "contributorsPerLine": 7,
   "skipCi": true,
   "commitType": "docs"
