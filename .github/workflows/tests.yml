@@ -57,6 +57,30 @@ jobs:
           files: build/coverage.info
           functionalities: fixes
 
+  catch2-3:
+    name: Catch 2 3.x
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Catch 2
+        run: brew install catch2
+      
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=14 \
+            -DCLI11_SINGLE_FILE_TESTS=OFF \
+            -DCLI11_BUILD_EXAMPLES=OFF \
+            -DCLI11_PRECOMPILED=ON
+
+      - name: Build
+        run: cmake --build build -j4
+
+      - name: Test
+        run: cmake --build build --target test
+
+
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
