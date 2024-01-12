@@ -53,6 +53,8 @@
 #endif
 // [CLI11:verbatim]
 
+TEST_CASE("OptionalNoEmpty") { CHECK(1 == 1); }
+
 #if CLI11_STD_OPTIONAL
 
 #ifdef _MSC_VER
