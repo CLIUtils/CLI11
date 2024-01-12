@@ -6,6 +6,8 @@
 
 #include "app_helper.hpp"
 
+#include "catch.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -243,7 +245,6 @@ static const std::map<std::string, double> testValuesDouble{
 };
 
 TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
-
     auto test_data = GENERATE(from_range(testValuesDouble));
 
     double val{0};
@@ -256,7 +257,7 @@ TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
         CHECK(std::isnan(val));
     } else {
 
-        CHECK_THAT(val, Catch::WithinRel(test_data.second, 1e-11));
+        CHECK_THAT(val, WithinRel(test_data.second, 1e-11));
     }
 }
 
