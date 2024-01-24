@@ -21,13 +21,6 @@ namespace detail {
 CLI11_INLINE std::vector<std::string> compute_win32_argv();
 #endif
 }  // namespace detail
-
-/// argc as passed in to this executable.
-CLI11_INLINE int argc();
-
-/// argv as passed in to this executable, converted to utf-8 on Windows.
-CLI11_INLINE const char *const *argv();
-
 // [CLI11:argv_hpp:end]
 }  // namespace CLI
 

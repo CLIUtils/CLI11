@@ -529,8 +529,6 @@ CLI11_INLINE void App::clear() {
     }
 }
 
-CLI11_INLINE void App::parse() { parse(argc(), argv()); }  // LCOV_EXCL_LINE
-
 CLI11_INLINE void App::parse(int argc, const char *const *argv) { parse_char_t(argc, argv); }
 CLI11_INLINE void App::parse(int argc, const wchar_t *const *argv) { parse_char_t(argc, argv); }
 

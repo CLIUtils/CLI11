@@ -848,10 +848,6 @@ class App {
     /// Reset the parsed data
     void clear();
 
-    /// Parse the command-line arguments passed to the main function of the executable.
-    /// This overload will correctly parse unicode arguments on Windows.
-    void parse();
-
     /// Parses the command line - throws errors.
     /// This must be called after the options are in but before the rest of the program.
     void parse(int argc, const char *const *argv);
