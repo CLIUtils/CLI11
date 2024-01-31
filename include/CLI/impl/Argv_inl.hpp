@@ -51,9 +51,6 @@
 // third
 #include <processthreadsapi.h>
 #include <shellapi.h>
-
-#elif defined(__APPLE__)
-#include <crt_externs.h>
 #endif
 // [CLI11:argv_inl_includes:end]
 
@@ -61,33 +58,6 @@ namespace CLI {
 // [CLI11:argv_inl_hpp:verbatim]
 
 namespace detail {
-
-#ifdef __APPLE__
-// Copy argc and argv as early as possible to avoid modification
-static const std::vector<const char *> static_args = [] {
-    static const std::vector<std::string> static_args_as_strings = [] {
-        std::vector<std::string> args_as_strings;
-        int argc = *_NSGetArgc();
-        char **argv = *_NSGetArgv();
-
-        args_as_strings.reserve(static_cast<size_t>(argc));
-        for(size_t i = 0; i < static_cast<size_t>(argc); i++) {
-            args_as_strings.push_back(argv[i]);
-        }
-
-        return args_as_strings;
-    }();
-
-    std::vector<const char *> static_args_result;
-    static_args_result.reserve(static_args_as_strings.size());
-
-    for(const auto &arg : static_args_as_strings) {
-        static_args_result.push_back(arg.data());
-    }
-
-    return static_args_result;
-}();
-#endif
 
 #ifdef _WIN32
 CLI11_INLINE std::vector<std::string> compute_win32_argv() {
@@ -112,78 +82,7 @@ CLI11_INLINE std::vector<std::string> compute_win32_argv() {
 }
 #endif
 
-/// Command-line arguments, as passed in to this executable, converted to utf-8 on Windows.
-CLI11_INLINE const std::vector<const char *> &args() {
-    // This function uses initialization via lambdas extensively to take advantage of the thread safety of static
-    // variable initialization [stmt.dcl.3]
-
-#ifdef _WIN32
-    static const std::vector<const char *> static_args = [] {
-        static const std::vector<std::string> static_args_as_strings = compute_win32_argv();
-
-        std::vector<const char *> static_args_result;
-        static_args_result.reserve(static_args_as_strings.size());
-
-        for(const auto &arg : static_args_as_strings) {
-            static_args_result.push_back(arg.data());
-        }
-
-        return static_args_result;
-    }();
-
-    return static_args;
-
-#elif defined(__APPLE__)
-
-    return static_args;
-
-#else
-    static const std::vector<const char *> static_args = [] {
-        static const std::vector<char> static_cmdline = [] {
-            // On posix, retrieve arguments from /proc/self/cmdline, separated by null terminators.
-            std::vector<char> cmdline;
-
-            auto deleter = [](FILE *f) { std::fclose(f); };
-            std::unique_ptr<FILE, decltype(deleter)> fp_unique(std::fopen("/proc/self/cmdline", "r"), deleter);
-            FILE *fp = fp_unique.get();
-            if(!fp) {
-                throw std::runtime_error("could not open /proc/self/cmdline for reading");  // LCOV_EXCL_LINE
-            }
-
-            size_t size = 0;
-            while(std::feof(fp) == 0) {
-                cmdline.resize(size + 128);
-                size += std::fread(cmdline.data() + size, 1, 128, fp);
-
-                if(std::ferror(fp) != 0) {
-                    throw std::runtime_error("error during reading /proc/self/cmdline");  // LCOV_EXCL_LINE
-                }
-            }
-            cmdline.resize(size);
-
-            return cmdline;
-        }();
-
-        std::size_t argc = static_cast<std::size_t>(std::count(static_cmdline.begin(), static_cmdline.end(), '\0'));
-        std::vector<const char *> static_args_result;
-        static_args_result.reserve(argc);
-
-        for(auto it = static_cmdline.begin(); it != static_cmdline.end();
-            it = std::find(it, static_cmdline.end(), '\0') + 1) {
-            static_args_result.push_back(static_cmdline.data() + (it - static_cmdline.begin()));
-        }
-
-        return static_args_result;
-    }();
-
-    return static_args;
-#endif
-}
-
 }  // namespace detail
-
-CLI11_INLINE const char *const *argv() { return detail::args().data(); }
-CLI11_INLINE int argc() { return static_cast<int>(detail::args().size()); }
 
 // [CLI11:argv_inl_hpp:end]
 }  // namespace CLI

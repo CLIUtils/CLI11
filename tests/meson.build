@@ -65,7 +65,6 @@ testnames = [
 ]
 
 dependent_applications = [
-    'system_args',
     'ensure_utf8',
     'ensure_utf8_twice',
 ]
