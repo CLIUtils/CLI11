@@ -55,7 +55,7 @@ jobs:
           lcov --list coverage.info
         working-directory: build
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           files: build/coverage.info
           functionalities: fixes
