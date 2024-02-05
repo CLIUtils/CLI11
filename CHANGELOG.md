@@ -1,14 +1,14 @@
 # Changelog
 
-## Version 2.4: Unicode, TOML support, and fuzzing
+## Version 2.4: Unicode and TOML support
 
-This version adds unicode support, support for TOML standard including multiline
+This version adds Unicode support, support for TOML standard including multiline
 strings, digit separators, string escape sequences,and dot notation. An initial
-round of a fuzzer was added to teseting which has caught several bugs related to
+round of a fuzzer was added to testing which has caught several bugs related to
 config file processing, and a few other edge cases not previously observed.
 
-- Add unicode support and bug fixes [#804][], [#923][], [#876][], [#848][],
-  [#832][]
+- Add Unicode support and bug fixes [#804][], [#923][], [#876][], [#848][],
+  [#832][], [#987][]
 - Match TOML standard for string and numerical entries, multiline strings
   [#968][], [#967][],[#964][], [#935][]
 - Add validation for environmental variables [#926][]
@@ -25,42 +25,46 @@ config file processing, and a few other edge cases not previously observed.
 - Bugfix: Environmental variable checks in non-triggered subcommands [#904][]
 - Bugfix: Environmental variables were not being correctly process by config
   pointer [#891][]
-- Bugfix: Undefined behavior in sum_string_vector [#893][]
-- Bugfix: Warnings and updates for Cuda 11 support [#851][]
+- Bugfix: Undefined behavior in `sum_string_vector` [#893][]
+- Bugfix: Warnings and updates for CUDA 11 support [#851][]
 - Backend: Add tests for newer compilers (lost with Travis CI) [#972][]
-- Backend: Increaase minimum CMake to 3.5 [#898][]
+- Backend: Increase minimum CMake to 3.5 [#898][]
 - Backend: Remove integrated Conan support (provided now by Conan center)
   [#853][]
+- Tests: Support Catch2 Version 3 [#896][], [#980][]
 
-[#970]: https://github.com/CLIUtils/CLI11/pull/970
-[#968]: https://github.com/CLIUtils/CLI11/pull/968
-[#967]: https://github.com/CLIUtils/CLI11/pull/967
-[#964]: https://github.com/CLIUtils/CLI11/pull/964
-[#935]: https://github.com/CLIUtils/CLI11/pull/935
-[#930]: https://github.com/CLIUtils/CLI11/pull/930
-[#905]: https://github.com/CLIUtils/CLI11/pull/905
-[#874]: https://github.com/CLIUtils/CLI11/pull/874
-[#846]: https://github.com/CLIUtils/CLI11/pull/846
-[#928]: https://github.com/CLIUtils/CLI11/pull/928
-[#916]: https://github.com/CLIUtils/CLI11/pull/916
-[#914]: https://github.com/CLIUtils/CLI11/pull/914
-[#913]: https://github.com/CLIUtils/CLI11/pull/913
-[#904]: https://github.com/CLIUtils/CLI11/pull/904
-[#891]: https://github.com/CLIUtils/CLI11/pull/891
-[#893]: https://github.com/CLIUtils/CLI11/pull/893
-[#851]: https://github.com/CLIUtils/CLI11/pull/851
-[#926]: https://github.com/CLIUtils/CLI11/pull/926
-[#804]: https://github.com/CLIUtils/CLI11/pull/804
-[#923]: https://github.com/CLIUtils/CLI11/pull/923
-[#876]: https://github.com/CLIUtils/CLI11/pull/876
-[#848]: https://github.com/CLIUtils/CLI11/pull/848
-[#832]: https://github.com/CLIUtils/CLI11/pull/832
-[#918]: https://github.com/CLIUtils/CLI11/pull/918
 [#768]: https://github.com/CLIUtils/CLI11/pull/768
 [#789]: https://github.com/CLIUtils/CLI11/pull/789
-[#972]: https://github.com/CLIUtils/CLI11/pull/972
-[#898]: https://github.com/CLIUtils/CLI11/pull/898
+[#804]: https://github.com/CLIUtils/CLI11/pull/804
+[#832]: https://github.com/CLIUtils/CLI11/pull/832
+[#846]: https://github.com/CLIUtils/CLI11/pull/846
+[#848]: https://github.com/CLIUtils/CLI11/pull/848
+[#851]: https://github.com/CLIUtils/CLI11/pull/851
 [#853]: https://github.com/CLIUtils/CLI11/pull/853
+[#874]: https://github.com/CLIUtils/CLI11/pull/874
+[#876]: https://github.com/CLIUtils/CLI11/pull/876
+[#891]: https://github.com/CLIUtils/CLI11/pull/891
+[#893]: https://github.com/CLIUtils/CLI11/pull/893
+[#896]: https://github.com/CLIUtils/CLI11/pull/896
+[#898]: https://github.com/CLIUtils/CLI11/pull/898
+[#904]: https://github.com/CLIUtils/CLI11/pull/904
+[#905]: https://github.com/CLIUtils/CLI11/pull/905
+[#913]: https://github.com/CLIUtils/CLI11/pull/913
+[#914]: https://github.com/CLIUtils/CLI11/pull/914
+[#916]: https://github.com/CLIUtils/CLI11/pull/916
+[#918]: https://github.com/CLIUtils/CLI11/pull/918
+[#923]: https://github.com/CLIUtils/CLI11/pull/923
+[#926]: https://github.com/CLIUtils/CLI11/pull/926
+[#928]: https://github.com/CLIUtils/CLI11/pull/928
+[#930]: https://github.com/CLIUtils/CLI11/pull/930
+[#935]: https://github.com/CLIUtils/CLI11/pull/935
+[#964]: https://github.com/CLIUtils/CLI11/pull/964
+[#967]: https://github.com/CLIUtils/CLI11/pull/967
+[#968]: https://github.com/CLIUtils/CLI11/pull/968
+[#970]: https://github.com/CLIUtils/CLI11/pull/970
+[#972]: https://github.com/CLIUtils/CLI11/pull/972
+[#980]: https://github.com/CLIUtils/CLI11/pull/980
+[#987]: https://github.com/CLIUtils/CLI11/pull/987
 
 ## Version 2.3: Precompilation Support
 
