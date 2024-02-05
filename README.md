@@ -1427,8 +1427,8 @@ CLI11 supports Unicode and wide strings as defined in the
 
 When using the command line on Windows with unicode arguments, your `main`
 function may already receive broken Unicode. Parsing `argv` at that point will
-not give you a correct string. To fix this, you have three good options and two
-bad ones:
+not give you a correct string. To fix this, you have three options; the first is
+recommended for cross-platform support:
 
 1\. Replace `argv` with `app.ensure_utf8(argv)` before any arguments are parsed.
 `ensure_utf8` will do nothing on systems where `argv` is already in UTF-8 (Such
@@ -1445,40 +1445,13 @@ int main(int argc, char** argv) {
 }
 ```
 
-2\. If you pass unmodified command-line arguments to CLI11, call `app.parse()`
-instead of `app.parse(argc, argv)` (or `CLI11_PARSE(app)` instead of
-`CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
-itself.
+Be sure you do not modify `argv` before this function call, as the correct
+values will be reconstructed using Windows APIs and produced by this call. It
+has no effect on other platforms and just passes through `argv`.
 
-> [!NOTE]
->
-> This approach may not work on weird OS configurations, such as when the
-> `/proc` dir is missing on Linux systems (see also
-> [#845](https://github.com/CLIUtils/CLI11/issues/845)).
->
-> ```cpp
-> int main() {
->     CLI::App app;
->     // ...
->     CLI11_PARSE(app);
-> }
-> ```
+<details><summary>Other options (click to expand)</summary><p>
 
-3\. Get correct arguments with which the program was originally executed using
-provided functions: `CLI::argc()` and `CLI::argv()`. These three methods are the
-only cross-platform ways of handling unicode correctly.
-
-```cpp
-int main() {
-    CLI::App app;
-    // ...
-    CLI11_PARSE(app, CLI::argc(), CLI::argv());
-}
-```
-
-<details><summary>Bad options (click to expand)</summary><p>
-
-4\. Use the Windows-only non-standard `wmain` function, which accepts
+2\. Use the Windows-only non-standard `wmain` function, which accepts
 `wchar_t *argv[]` instead of `char* argv[]`. Parsing this will allow CLI to
 convert wide strings to UTF-8 without losing information.
 
@@ -1490,10 +1463,10 @@ int wmain(int argc, wchar_t *argv[]) {
 }
 ```
 
-5\. Retrieve arguments yourself by using Windows APIs like
+3\. Retrieve arguments yourself by using Windows APIs like
 [`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
 and pass them to CLI. This is what the library is doing under the hood in
-`CLI::argv()`.
+`ensure_utf8`.
 
 </p></details>
 </br>
