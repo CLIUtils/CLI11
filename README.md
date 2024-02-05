@@ -14,7 +14,7 @@
 [![Latest release][repology-badge]][repology]
 [![Conan.io][conan-badge]][conan-link]
 [![Conda Version][conda-badge]][conda-link]
-[![Try CLI11 2.1 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 2.4 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) • [Documentation][gitbook] • [API
 Reference][api-docs]
@@ -1832,7 +1832,7 @@ try! Feedback is always welcome.
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
 [version 2.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-20/
 [wandbox-badge]: https://img.shields.io/badge/try_2.1-online-blue.svg
-[wandbox-link]: https://wandbox.org/permlink/CA5bymNHh0AczdeN
+[wandbox-link]: https://wandbox.org/permlink/9eQyaD1DchlzukRv
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:
   https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/
