@@ -10,6 +10,7 @@
 #include <CLI/StringTools.hpp>
 
 // [CLI11:public_includes:set]
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>

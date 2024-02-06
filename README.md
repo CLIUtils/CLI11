@@ -4,7 +4,6 @@
 
 [![Build Status Azure][azure-badge]][azure]
 [![Actions Status][actions-badge]][actions-link]
-[![Build Status AppVeyor][appveyor-badge]][appveyor]
 [![Code Coverage][codecov-badge]][codecov]
 [![Codacy Badge][codacy-badge]][codacy-link]
 [![License: BSD][license-badge]](./LICENSE) [![DOI][doi-badge]][doi-link]
@@ -14,7 +13,7 @@
 [![Latest release][repology-badge]][repology]
 [![Conan.io][conan-badge]][conan-link]
 [![Conda Version][conda-badge]][conda-link]
-[![Try CLI11 2.1 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 2.4 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) • [Documentation][gitbook] • [API
 Reference][api-docs]
@@ -206,8 +205,8 @@ int main(int argc, char** argv) {
 }
 ```
 
-For more information about 🚧`ensure_utf8` the section on
-[Unicode support](#unicode-support) below. The 🚧`ensure_utf8` function is only
+For more information about 🆕`ensure_utf8` the section on
+[Unicode support](#unicode-support) below. The 🆕`ensure_utf8` function is only
 available in main currently and not in a release.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
@@ -416,7 +415,7 @@ Before parsing, you can set the following options:
   option. Options can be removed from the excludes list with
   `->remove_excludes(opt)`
 - `->envname(name)`: Gets the value from the environment if present and not
-  passed on the command line. 🚧 The value must also pass any validators to be
+  passed on the command line. 🆕 The value must also pass any validators to be
   used.
 - `->group(name)`: The help group to put the option in. No effect for positional
   options. Defaults to `"Options"`. Options given an empty string will not show
@@ -452,7 +451,7 @@ Before parsing, you can set the following options:
   are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::Throw`,
   `CLI::MultiOptionPolicy::TakeLast`, `CLI::MultiOptionPolicy::TakeFirst`,
   `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`,
-  `CLI::MultiOptionPolicy::Sum` 🆕, and `CLI::MultiOptionPolicy::Reverse` 🚧.
+  `CLI::MultiOptionPolicy::Sum`, and `CLI::MultiOptionPolicy::Reverse` 🆕.
 - `->check(std::string(const std::string &), validator_name="",validator_description="")`:
   Define a check function. The function should return a non empty string with
   the error message if the check fails
@@ -694,7 +693,7 @@ NOTES: If the container used in `IsMember`, `Transformer`, or
 fast search is performed first, and if that fails a linear search with the
 filters on the key values is performed.
 
-- `CLI::FileOnDefaultPath(default_path)`: 🆕 can be used to check for files in a
+- `CLI::FileOnDefaultPath(default_path)`: can be used to check for files in a
   default path. If used as a transform it will first check that a file exists,
   if it does nothing further is done, if it does not it tries to add a default
   Path to the file and search there again. If the file does not exist an error
@@ -702,7 +701,7 @@ filters on the key values is performed.
   `CLI::FileOnDefaultPath(default_path, false)`. This allows multiple paths to
   be chained using multiple transform calls.
 
-- `CLI::EscapedString`: 🚧 can be used to process an escaped string. The
+- `CLI::EscapedString`: 🆕 can be used to process an escaped string. The
   processing is equivalent to that used for TOML config files, see
   [TOML strings](https://toml.io/en/v1.0.0#string). With 2 notable exceptions.
   \` can also be used as a literal string notation, and it also allows binary
@@ -874,7 +873,7 @@ nameless subcommands are allowed. Callbacks for nameless subcommands are only
 triggered if any options from the subcommand were parsed. Subcommand names given
 through the `add_subcommand` method have the same restrictions as option names.
 
-🚧 Options or flags in a subcommand may be directly specified using dot notation
+🆕 Options or flags in a subcommand may be directly specified using dot notation
 
 - `--subcommand.long=val` (long subcommand option)
 - `--subcommand.long val` (long subcommand option)
@@ -886,7 +885,7 @@ through the `add_subcommand` method have the same restrictions as option names.
 The use of dot notation in this form is equivalent `--subcommand.long <args>` =>
 `subcommand --long <args> ++`. Nested subcommands also work `sub1.subsub` would
 trigger the subsub subcommand in `sub1`. This is equivalent to "sub1 subsub".
-Quotes around the subcommand names are permitted 🚧 following the TOML standard
+Quotes around the subcommand names are permitted 🆕 following the TOML standard
 for such specification. This includes allowing escape sequences. For example
 `"subcommand".'f'` or `"subcommand.with.dots".arg1 = value`.
 
@@ -926,9 +925,9 @@ option_groups. These are:
   before matching. Validation is specified through `transform`, `check`, and
   `each` for an option. If an argument fails validation it is not an error and
   matching proceeds to the next available positional or extra arguments.
-- `.validate_optional_arguments()`:🆕 Specify that optional arguments should
-  pass validation before being assigned to an option. Validation is specified
-  through `transform`, `check`, and `each` for an option. If an argument fails
+- `.validate_optional_arguments()`: Specify that optional arguments should pass
+  validation before being assigned to an option. Validation is specified through
+  `transform`, `check`, and `each` for an option. If an argument fails
   validation it is not an error and matching proceeds to the next available
   positional subcommand or extra arguments.
 - `.excludes(option_or_subcommand)`: If given an option pointer or pointer to
@@ -1014,9 +1013,9 @@ option_groups. These are:
 - `.prefix_command()`: Like `allow_extras`, but stop immediately on the first
   unrecognized item. It is ideal for allowing your app or subcommand to be a
   "prefix" to calling another app.
-- `.usage(message)`: 🚧 Replace text to appear at the start of the help string
+- `.usage(message)`: 🆕 Replace text to appear at the start of the help string
   after description.
-- `.usage(std::string())`: 🚧 Set a callback to generate a string that will
+- `.usage(std::string())`: 🆕 Set a callback to generate a string that will
   appear at the start of the help string after description.
 - `.footer(message)`: Set text to appear at the bottom of the help string.
 - `.footer(std::string())`: Set a callback to generate a string that will appear
@@ -1223,8 +1222,8 @@ is present, it will be read along with the normal command line arguments. The
 file will be read if it exists, and does not throw an error unless `required` is
 `true`. Configuration files are in [TOML][] format by default, though the
 default reader can also accept files in INI format as well. The config reader
-can read most aspects of TOML files including strings both literal 🚧 and with
-potential escape sequences 🚧, digit separators 🚧, and multi-line strings 🚧,
+can read most aspects of TOML files including strings both literal 🆕 and with
+potential escape sequences 🆕, digit separators 🆕, and multi-line strings 🆕,
 and run them through the CLI11 parser. Other formats can be added by an adept
 user, some variations are available through customization points in the default
 formatter. An example of a TOML file:
@@ -1297,9 +1296,9 @@ boolean values are not quoted.
 
 For options or flags which allow 0 arguments to be passed using an empty string
 in the config file, `{}`, or `[]` will convert the result to the default value
-specified via `default_str` or `default_val` on the option 🆕. If no user
-specified default is given the result is an empty string or the converted value
-of an empty string.
+specified via `default_str` or `default_val` on the option. If no user specified
+default is given the result is an empty string or the converted value of an
+empty string.
 
 NOTE: Transforms and checks can be used with the option pointer returned from
 set_config like any other option to validate the input if needed. It can also be
@@ -1427,8 +1426,8 @@ CLI11 supports Unicode and wide strings as defined in the
 
 When using the command line on Windows with unicode arguments, your `main`
 function may already receive broken Unicode. Parsing `argv` at that point will
-not give you a correct string. To fix this, you have three good options and two
-bad ones:
+not give you a correct string. To fix this, you have three options; the first is
+recommended for cross-platform support:
 
 1\. Replace `argv` with `app.ensure_utf8(argv)` before any arguments are parsed.
 `ensure_utf8` will do nothing on systems where `argv` is already in UTF-8 (Such
@@ -1445,40 +1444,13 @@ int main(int argc, char** argv) {
 }
 ```
 
-2\. If you pass unmodified command-line arguments to CLI11, call `app.parse()`
-instead of `app.parse(argc, argv)` (or `CLI11_PARSE(app)` instead of
-`CLI11_PARSE(app, argc, argv)`). The library will find correct arguments by
-itself.
+Be sure you do not modify `argv` before this function call, as the correct
+values will be reconstructed using Windows APIs and produced by this call. It
+has no effect on other platforms and just passes through `argv`.
 
-> [!NOTE]
->
-> This approach may not work on weird OS configurations, such as when the
-> `/proc` dir is missing on Linux systems (see also
-> [#845](https://github.com/CLIUtils/CLI11/issues/845)).
->
-> ```cpp
-> int main() {
->     CLI::App app;
->     // ...
->     CLI11_PARSE(app);
-> }
-> ```
+<details><summary>Other options (click to expand)</summary><p>
 
-3\. Get correct arguments with which the program was originally executed using
-provided functions: `CLI::argc()` and `CLI::argv()`. These three methods are the
-only cross-platform ways of handling unicode correctly.
-
-```cpp
-int main() {
-    CLI::App app;
-    // ...
-    CLI11_PARSE(app, CLI::argc(), CLI::argv());
-}
-```
-
-<details><summary>Bad options (click to expand)</summary><p>
-
-4\. Use the Windows-only non-standard `wmain` function, which accepts
+2\. Use the Windows-only non-standard `wmain` function, which accepts
 `wchar_t *argv[]` instead of `char* argv[]`. Parsing this will allow CLI to
 convert wide strings to UTF-8 without losing information.
 
@@ -1490,10 +1462,10 @@ int wmain(int argc, wchar_t *argv[]) {
 }
 ```
 
-5\. Retrieve arguments yourself by using Windows APIs like
+3\. Retrieve arguments yourself by using Windows APIs like
 [`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
 and pass them to CLI. This is what the library is doing under the hood in
-`CLI::argv()`.
+`ensure_utf8`.
 
 </p></details>
 </br>
@@ -1810,9 +1782,6 @@ try! Feedback is always welcome.
 [actions-link]: https://github.com/CLIUtils/CLI11/actions
 [actions-badge]:
   https://github.com/CLIUtils/CLI11/actions/workflows/tests.yml/badge.svg
-[appveyor-badge]:
-  https://ci.appveyor.com/api/projects/status/82niaxpaa28dwbms/branch/main?svg=true
-[appveyor]: https://ci.appveyor.com/project/HenrySchreiner/cli11
 [repology-badge]: https://repology.org/badge/latest-versions/cli11.svg
 [repology]: https://repology.org/project/cli11/versions
 [codecov-badge]:
@@ -1859,7 +1828,7 @@ try! Feedback is always welcome.
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
 [version 2.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-20/
 [wandbox-badge]: https://img.shields.io/badge/try_2.1-online-blue.svg
-[wandbox-link]: https://wandbox.org/permlink/CA5bymNHh0AczdeN
+[wandbox-link]: https://wandbox.org/permlink/9eQyaD1DchlzukRv
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:
   https://iscinumpy.gitlab.io/post/comparing-cli11-and-boostpo/

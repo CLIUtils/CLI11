@@ -227,7 +227,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       /.travis.yml
       .swp
       /.all-contributorsrc
-      /.appveyor.yml
       /.pre-commit.*yaml)
 
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")

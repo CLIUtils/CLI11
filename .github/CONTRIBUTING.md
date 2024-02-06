@@ -82,7 +82,7 @@ ones in all-contributors if any overlap.
 Steps:
 
 - Update changelog if needed
-- Update the version in `.appveyor.yml` and `include/CLI/Version.hpp`.
+- Update the version in `include/CLI/Version.hpp`.
 - Find and replace in README (new minor/major release only):
   - Replace " 🆕" and "🆕 " with "" (ignores the description line)
   - Check for `\/\/$` (vi syntax) to catch leftover `// 🆕`
