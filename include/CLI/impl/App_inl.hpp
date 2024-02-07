@@ -1100,7 +1100,7 @@ CLI11_INLINE void App::_process_config_file() {
         config_ptr_->run_callback();
 
         auto config_files = config_ptr_->as<std::vector<std::string>>();
-        std::vector<std::string> used_files;
+        bool files_used{file_given};
         if(config_files.empty() || config_files.front().empty()) {
             if(config_required) {
                 throw FileError("config file is required but none was given");
@@ -1110,12 +1110,17 @@ CLI11_INLINE void App::_process_config_file() {
         for(const auto &config_file : config_files) {
             if (_process_config_file(config_file, config_required || file_given))
             {
-                used_files.push_back(config_file);
+                files_used=true;
             }
         }
-        if (!file_given && used_files.empty())
+        if (!files_used)
         {
+            //this is done so the count shows as 0 if no callbacks were processed
             config_ptr_->clear();
+            bool force=config_ptr_->force_callback_;
+            config_ptr_->force_callback_=false;
+            config_ptr_->run_callback();
+            config_ptr_->force_callback_=force;
         }
     }
 }
