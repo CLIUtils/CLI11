@@ -1231,7 +1231,7 @@ class App {
     void _process_config_file();
 
     /// Read and process a particular configuration file
-    void _process_config_file(const std::string &config_file, bool throw_error);
+    bool _process_config_file(const std::string &config_file, bool throw_error);
 
     /// Get envname options if not yet passed. Runs on *all* subcommands.
     void _process_env();
