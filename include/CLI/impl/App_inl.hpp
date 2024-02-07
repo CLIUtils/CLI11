@@ -1065,18 +1065,25 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
     return detail::Classifier::NONE;
 }
 
-CLI11_INLINE void App::_process_config_file(const std::string &config_file, bool throw_error) {
+CLI11_INLINE bool App::_process_config_file(const std::string &config_file, bool throw_error) {
     auto path_result = detail::check_path(config_file.c_str());
     if(path_result == detail::path_type::file) {
         try {
             std::vector<ConfigItem> values = config_formatter_->from_file(config_file);
             _parse_config(values);
+            return true;
         } catch(const FileError &) {
-            if(throw_error)
+            if (throw_error) {
                 throw;
+            }
+            return false;
         }
     } else if(throw_error) {
         throw FileError::Missing(config_file);
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -1093,6 +1100,7 @@ CLI11_INLINE void App::_process_config_file() {
         config_ptr_->run_callback();
 
         auto config_files = config_ptr_->as<std::vector<std::string>>();
+        std::vector<std::string> used_files;
         if(config_files.empty() || config_files.front().empty()) {
             if(config_required) {
                 throw FileError("config file is required but none was given");
@@ -1100,7 +1108,14 @@ CLI11_INLINE void App::_process_config_file() {
             return;
         }
         for(const auto &config_file : config_files) {
-            _process_config_file(config_file, config_required || file_given);
+            if (_process_config_file(config_file, config_required || file_given))
+            {
+                used_files.push_back(config_file);
+            }
+        }
+        if (!file_given && used_files.empty())
+        {
+            config_ptr_->clear();
         }
     }
 }
