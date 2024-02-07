@@ -1052,11 +1052,11 @@ TEST_CASE_METHOD(TApp, "IniRequiredNotFound", "[config]") {
 TEST_CASE_METHOD(TApp, "IniDefaultNotExist", "[config]") {
 
     std::string noini = "TestIniNotExist.ini";
-    auto *cfg=app.set_config("--config", noini);
+    auto *cfg = app.set_config("--config", noini);
 
     CHECK_NOTHROW(run());
 
-    CHECK(cfg->count()==0);
+    CHECK(cfg->count() == 0);
 }
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredPassedNotFound", "[config]") {
@@ -1094,7 +1094,7 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
-    auto *cfg=app.set_config("--config", tmpini, "", true);
+    auto *cfg = app.set_config("--config", tmpini, "", true);
 
     {
         std::ofstream out{tmpini};
@@ -1119,7 +1119,7 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
     args = {"--one=1", "--two=2"};
 
     CHECK_NOTHROW(run());
-    CHECK(cfg->count()==1);
+    CHECK(cfg->count() == 1);
     CHECK(1 == one);
     CHECK(2 == two);
     CHECK(3 == three);

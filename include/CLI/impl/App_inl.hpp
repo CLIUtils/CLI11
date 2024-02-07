@@ -1073,16 +1073,14 @@ CLI11_INLINE bool App::_process_config_file(const std::string &config_file, bool
             _parse_config(values);
             return true;
         } catch(const FileError &) {
-            if (throw_error) {
+            if(throw_error) {
                 throw;
             }
             return false;
         }
     } else if(throw_error) {
         throw FileError::Missing(config_file);
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
@@ -1108,19 +1106,17 @@ CLI11_INLINE void App::_process_config_file() {
             return;
         }
         for(const auto &config_file : config_files) {
-            if (_process_config_file(config_file, config_required || file_given))
-            {
-                files_used=true;
+            if(_process_config_file(config_file, config_required || file_given)) {
+                files_used = true;
             }
         }
-        if (!files_used)
-        {
-            //this is done so the count shows as 0 if no callbacks were processed
+        if(!files_used) {
+            // this is done so the count shows as 0 if no callbacks were processed
             config_ptr_->clear();
-            bool force=config_ptr_->force_callback_;
-            config_ptr_->force_callback_=false;
+            bool force = config_ptr_->force_callback_;
+            config_ptr_->force_callback_ = false;
             config_ptr_->run_callback();
-            config_ptr_->force_callback_=force;
+            config_ptr_->force_callback_ = force;
         }
     }
 }
