@@ -66,6 +66,22 @@ config file processing, and a few other edge cases not previously observed.
 [#980]: https://github.com/CLIUtils/CLI11/pull/980
 [#987]: https://github.com/CLIUtils/CLI11/pull/987
 
+### Version 2.4.1: Missing header
+
+A transitive include that might be present in some standard libraries is now
+included directly. This also fixes a test on architectures that need libatomic
+linked and fix an inadvertent breaking change regarding unused defaults for
+config files
+
+- Bugfix: Include cstdint [#996][]
+- Bugfix: Fix change in operation of config_ptr with unused default in the count
+  method [#1003][]
+- Tests: Include libatomic if required for fuzzing test [#1000][]
+
+[#996]: https://github.com/CLIUtils/CLI11/pull/996
+[#1000]: https://github.com/CLIUtils/CLI11/pull/1000
+[#1003]: https://github.com/CLIUtils/CLI11/pull/1003
+
 ## Version 2.3: Precompilation Support
 
 This version adds a pre-compiled mode to CLI11, which allows you to precompile
