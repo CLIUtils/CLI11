@@ -70,10 +70,12 @@ config file processing, and a few other edge cases not previously observed.
 
 A transitive include that might be present in some standard libraries is now
 included directly. This also fixes a test on architectures that need libatomic
-linked and fix an inadvertant breaking change regarding unused defaults for config files
+linked and fix an inadvertant breaking change regarding unused defaults for
+config files
 
 - Bugfix: Include cstdint [#996][]
-- Bugfix: Fix change in operation of config_ptr with unused default in the count method [#1003][]
+- Bugfix: Fix change in operation of config_ptr with unused default in the count
+  method [#1003][]
 - Tests: Include libatomic if required for fuzzing test [#1000][]
 
 [#996]: https://github.com/CLIUtils/CLI11/pull/996
