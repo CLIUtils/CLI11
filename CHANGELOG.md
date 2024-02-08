@@ -70,7 +70,7 @@ config file processing, and a few other edge cases not previously observed.
 
 A transitive include that might be present in some standard libraries is now
 included directly. This also fixes a test on architectures that need libatomic
-linked and fix an inadvertant breaking change regarding unused defaults for
+linked and fix an inadvertent breaking change regarding unused defaults for
 config files
 
 - Bugfix: Include cstdint [#996][]
