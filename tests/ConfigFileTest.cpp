@@ -682,6 +682,27 @@ TEST_CASE_METHOD(TApp, "IniGetRemainingOption", "[config]") {
     CHECK(ExpectedRemaining == app.remaining());
 }
 
+TEST_CASE_METHOD(TApp, "IniIgnoreRemainingOption", "[config]") {
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+    app.allow_config_extras(CLI::config_extras_mode::ignore);
+
+    std::string ExtraOption = "three";
+    std::string ExtraOptionValue = "3";
+    {
+        std::ofstream out{tmpini};
+        out << ExtraOption << "=" << ExtraOptionValue << '\n';
+        out << "two=99" << '\n';
+    }
+
+    int two{0};
+    app.add_option("--two", two);
+    REQUIRE_NOTHROW(run());
+    std::vector<std::string> ExpectedRemaining = {};
+    CHECK(ExpectedRemaining == app.remaining());
+}
+
 TEST_CASE_METHOD(TApp, "IniRemainingSub", "[config]") {
     TempFile tmpini{"TestIniTmp.ini"};
 

@@ -1136,11 +1136,9 @@ CLI11_INLINE void App::_process_env() {
     }
 
     for(App_p &sub : subcommands_) {
-        if(sub->get_name().empty() || !sub->parse_complete_callback_) {
-            if(sub->count_all() > 0) {
-                // only process environment variables if the callback has actually been triggered already
-                sub->_process_env();
-            }
+        if(sub->get_name().empty() || (sub->count_all() > 0 && !sub->parse_complete_callback_)) {
+            // only process environment variables if the callback has actually been triggered already
+            sub->_process_env();
         }
     }
 }
@@ -1482,11 +1480,12 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
     if(op == nullptr) {
         // If the option was not present
-        if(get_allow_config_extras() == config_extras_mode::capture)
+        if (get_allow_config_extras() == config_extras_mode::capture) {
             // Should we worry about classifying the extras properly?
             missing_.emplace_back(detail::Classifier::NONE, item.fullname());
-        for(const auto &input : item.inputs) {
-            missing_.emplace_back(detail::Classifier::NONE, input);
+            for (const auto& input : item.inputs) {
+                missing_.emplace_back(detail::Classifier::NONE, input);
+            }
         }
         return false;
     }
