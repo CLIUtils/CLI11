@@ -678,7 +678,7 @@ TEST_CASE_METHOD(TApp, "IniGetRemainingOption", "[config]") {
     int two{0};
     app.add_option("--two", two);
     REQUIRE_NOTHROW(run());
-    std::vector<std::string> ExpectedRemaining = {ExtraOption, "3"};
+    std::vector<std::string> ExpectedRemaining = {ExtraOption, ExtraOptionValue};
     CHECK(ExpectedRemaining == app.remaining());
 }
 
@@ -688,12 +688,10 @@ TEST_CASE_METHOD(TApp, "IniIgnoreRemainingOption", "[config]") {
     app.set_config("--config", tmpini);
     app.allow_config_extras(CLI::config_extras_mode::ignore);
 
-    std::string ExtraOption = "three";
-    std::string ExtraOptionValue = "3";
     {
         std::ofstream out{tmpini};
-        out << ExtraOption << "=" << ExtraOptionValue << '\n';
-        out << "two=99" << '\n';
+        out << "three=3\n";
+        out << "two=99\n";
     }
 
     int two{0};
