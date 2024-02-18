@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 #include <CLI/Validators.hpp>
 
 #include <CLI/Encoding.hpp>

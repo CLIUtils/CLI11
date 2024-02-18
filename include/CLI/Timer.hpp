@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // On GCC < 4.8, the following define is often missing. Due to the
 // fact that this library only uses sleep_for, this should be safe
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 5 && __GNUC_MINOR__ < 8
