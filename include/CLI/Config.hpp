@@ -51,5 +51,5 @@ void checkParentSegments(std::vector<ConfigItem> &output, const std::string &cur
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Config_inl.hpp" // IWYU pragma: export
+#include "impl/Config_inl.hpp"  // IWYU pragma: export
 #endif

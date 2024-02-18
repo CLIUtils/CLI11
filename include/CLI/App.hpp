@@ -1439,5 +1439,5 @@ struct AppFriend {
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/App_inl.hpp" // IWYU pragma: export
+#include "impl/App_inl.hpp"  // IWYU pragma: export
 #endif

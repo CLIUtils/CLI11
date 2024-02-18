@@ -23,5 +23,5 @@ namespace CLI {
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Formatter_inl.hpp" // IWYU pragma: export
+#include "impl/Formatter_inl.hpp"  // IWYU pragma: export
 #endif

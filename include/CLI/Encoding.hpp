@@ -52,5 +52,5 @@ CLI11_INLINE std::filesystem::path to_path(std::string_view str);
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Encoding_inl.hpp" // IWYU pragma: export
+#include "impl/Encoding_inl.hpp"  // IWYU pragma: export
 #endif

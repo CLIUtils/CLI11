@@ -46,5 +46,5 @@ get_names(const std::vector<std::string> &input);
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Split_inl.hpp" // IWYU pragma: export
+#include "impl/Split_inl.hpp"  // IWYU pragma: export
 #endif
