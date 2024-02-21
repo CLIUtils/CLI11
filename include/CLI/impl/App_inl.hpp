@@ -7,10 +7,10 @@
 #pragma once
 
 // This include is only needed for IDEs to discover symbols
-#include <CLI/App.hpp>
+#include "../App.hpp"
 
-#include <CLI/Argv.hpp>
-#include <CLI/Encoding.hpp>
+#include "../Argv.hpp"
+#include "../Encoding.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>

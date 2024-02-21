@@ -7,7 +7,7 @@
 #pragma once
 
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Config.hpp>
+#include "../Config.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
