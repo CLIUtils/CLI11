@@ -1,4 +1,4 @@
 needs changelog:
-  - all: ['!CHANGELOG.md']
+  - all: ["!CHANGELOG.md"]
 needs README:
-  - all: ['!README.md']
+  - all: ["!README.md"]

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -7,6 +7,7 @@
 #pragma once
 
 // [CLI11:public_includes:set]
+#include <functional>
 #include <map>
 #include <string>
 #include <utility>
@@ -56,6 +57,8 @@ class FormatterBase {
     FormatterBase() = default;
     FormatterBase(const FormatterBase &) = default;
     FormatterBase(FormatterBase &&) = default;
+    FormatterBase &operator=(const FormatterBase &) = default;
+    FormatterBase &operator=(FormatterBase &&) = default;
 
     /// Adding a destructor in this form to work around bug in GCC 4.7
     virtual ~FormatterBase() noexcept {}  // NOLINT(modernize-use-equals-default)
@@ -78,15 +81,14 @@ class FormatterBase {
     ///@{
 
     /// Get the current value of a name (REQUIRED, etc.)
-    std::string get_label(std::string key) const {
+    CLI11_NODISCARD std::string get_label(std::string key) const {
         if(labels_.find(key) == labels_.end())
             return key;
-        else
-            return labels_.at(key);
+        return labels_.at(key);
     }
 
     /// Get the current column width
-    std::size_t get_column_width() const { return column_width_; }
+    CLI11_NODISCARD std::size_t get_column_width() const { return column_width_; }
 
     ///@}
 };
@@ -118,13 +120,16 @@ class Formatter : public FormatterBase {
     Formatter() = default;
     Formatter(const Formatter &) = default;
     Formatter(Formatter &&) = default;
+    Formatter &operator=(const Formatter &) = default;
+    Formatter &operator=(Formatter &&) = default;
 
     /// @name Overridables
     ///@{
 
     /// This prints out a group of options with title
     ///
-    virtual std::string make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const;
+    CLI11_NODISCARD virtual std::string
+    make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const;
 
     /// This prints out just the positionals "group"
     virtual std::string make_positionals(const App *app) const;

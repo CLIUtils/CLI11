@@ -1,5 +1,5 @@
 function(add_cli_exe T)
-  add_executable(${T} ${ARGN} ${CLI11_headers})
+  add_executable(${T} ${ARGN})
   target_link_libraries(${T} PUBLIC CLI11)
   set_property(TARGET ${T} PROPERTY FOLDER "Examples")
   if(CLI11_FORCE_LIBCXX)
@@ -7,9 +7,6 @@ function(add_cli_exe T)
       TARGET ${T}
       APPEND_STRING
       PROPERTY LINK_FLAGS -stdlib=libc++)
-  endif()
-  if(CLI11_CLANG_TIDY)
-    set_property(TARGET ${T} PROPERTY CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
   endif()
 endfunction()
 
@@ -192,6 +189,12 @@ add_test(NAME prefix_command COMMAND prefix_command -v 3 2 1 -- other one two 3)
 set_property(TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION "Prefix: 3 : 2 : 1"
                                           "Remaining commands: other one two 3")
 
+add_cli_exe(arg_capture arg_capture.cpp)
+add_test(NAME arg_capture COMMAND arg_capture -v 27 --sub -v 13 --val prefix)
+set_property(TEST arg_capture PROPERTY PASS_REGULAR_EXPRESSION "value=27")
+add_test(NAME arg_capture2 COMMAND arg_capture -v 27 --sub -v 13 --val prefix)
+set_property(TEST arg_capture2 PROPERTY PASS_REGULAR_EXPRESSION "after Args:-v 13 --val prefix")
+
 add_cli_exe(callback_passthrough callback_passthrough.cpp)
 add_test(NAME callback_passthrough1 COMMAND callback_passthrough --argname t2 --t2 test)
 set_property(TEST callback_passthrough1 PROPERTY PASS_REGULAR_EXPRESSION "the value is now test")
@@ -247,3 +250,8 @@ set_property(TEST retired_deprecated PROPERTY PASS_REGULAR_EXPRESSION "deprecate
 add_cli_exe(custom_parse custom_parse.cpp)
 add_test(NAME cp_test COMMAND custom_parse --dv 1.7)
 set_property(TEST cp_test PROPERTY PASS_REGULAR_EXPRESSION "called correct")
+
+#------------------------------------------------
+# This executable is for manual testing and is expected to change regularly
+
+add_cli_exe(tester testEXE.cpp)

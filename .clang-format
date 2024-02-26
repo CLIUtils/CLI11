@@ -1,5 +1,5 @@
-Language:        Cpp
-BasedOnStyle:  LLVM
+Language: Cpp
+BasedOnStyle: LLVM
 # AccessModifierOffset: -2
 # AlignAfterOpenBracket: Align
 # AlignConsecutiveAssignments: false
@@ -37,7 +37,7 @@ BinPackParameters: false
 # BreakConstructorInitializersBeforeComma: false
 # BreakAfterJavaFieldAnnotations: false
 # BreakStringLiterals: true
-ColumnLimit:     120
+ColumnLimit: 120
 # CommentPragmas:  '^ IWYU pragma:'
 # ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ConstructorInitializerIndentWidth: 4
@@ -49,7 +49,7 @@ ColumnLimit:     120
 # ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 # IncludeIsMainRegex: '$'
 # IndentCaseLabels: false
-IndentWidth:     4
+IndentWidth: 4
 # IndentWrappedFunctionNames: false
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
@@ -69,7 +69,7 @@ IndentWidth:     4
 # PenaltyReturnTypeOnItsOwnLine: 60
 # PointerAlignment: Right
 # ReflowComments:  true
-SortIncludes:    true
+SortIncludes: true
 # SpaceAfterCStyleCast: false
 # SpaceAfterTemplateKeyword: true
 # SpaceBeforeAssignmentOperators: true
@@ -81,6 +81,6 @@ SpacesBeforeTrailingComments: 2
 # SpacesInCStyleCastParentheses: false
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
-Standard:        Cpp11
-TabWidth:        4
-UseTab:          Never
+Standard: Cpp11
+TabWidth: 4
+UseTab: Never

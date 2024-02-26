@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -15,7 +15,7 @@
 void setup_subcommand_a(CLI::App &app) {
     // Create the option and subcommand objects.
     auto opt = std::make_shared<SubcommandAOptions>();
-    auto sub = app.add_subcommand("subcommand_a", "performs subcommand a");
+    auto *sub = app.add_subcommand("subcommand_a", "performs subcommand a");
 
     // Add options to sub, binding them to opt.
     sub->add_option("-f,--file", opt->file, "File name")->required();
@@ -30,8 +30,8 @@ void setup_subcommand_a(CLI::App &app) {
 /// but having a separate function is cleaner.
 void run_subcommand_a(SubcommandAOptions const &opt) {
     // Do stuff...
-    std::cout << "Working on file: " << opt.file << std::endl;
+    std::cout << "Working on file: " << opt.file << '\n';
     if(opt.with_foo) {
-        std::cout << "Using foo!" << std::endl;
+        std::cout << "Using foo!" << '\n';
     }
 }

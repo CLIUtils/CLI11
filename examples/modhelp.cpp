@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -16,7 +16,7 @@ Note that this will not shortcut `->required` and other similar options.)raw"};
     test.set_help_flag();
 
     // Add custom flag that activates help
-    auto help = test.add_flag("-h,--help", "Request help");
+    auto *help = test.add_flag("-h,--help", "Request help");
 
     std::string some_option;
     test.add_option("-a", some_option, "Some description");
@@ -26,10 +26,10 @@ Note that this will not shortcut `->required` and other similar options.)raw"};
         if(*help)
             throw CLI::CallForHelp();
     } catch(const CLI::Error &e) {
-        std::cout << "Option -a string in help: " << some_option << std::endl;
+        std::cout << "Option -a string in help: " << some_option << '\n';
         return test.exit(e);
     }
 
-    std::cout << "Option -a string: " << some_option << std::endl;
+    std::cout << "Option -a string: " << some_option << '\n';
     return 0;
 }

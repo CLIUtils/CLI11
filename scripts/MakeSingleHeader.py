@@ -4,7 +4,7 @@ from __future__ import print_function, unicode_literals
 
 import os
 import re
-from argparse import ArgumentParser
+import argparse
 from subprocess import Popen, PIPE
 import warnings
 
@@ -80,7 +80,7 @@ class HeaderGroups(dict):
         """
         for key in self:
             if isinstance(self[key], set):
-                self[key] = "\n".join(self[key])
+                self[key] = "\n".join(sorted(self[key]))
 
 
 def make_header(output, main_header, files, tag, namespace, macro=None, version=None):
@@ -100,6 +100,8 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
         groups["git"] = ""
 
     for f in files:
+        if os.path.isdir(f):
+            continue
         groups.read_header(f)
 
     groups["namespace"] = namespace
@@ -115,6 +117,9 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
         print("Converting macros", before, "->", after)
         single_header.replace(before, after)
 
+    new_namespace = namespace + "::"
+    single_header = re.sub(r"\bCLI::\b", new_namespace, single_header)
+
     if output is not None:
         with open(output, "w") as f:
             f.write(single_header)
@@ -125,8 +130,9 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(
-        usage="Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros)."
+    parser = argparse.ArgumentParser(
+        usage="Convert source to single header include. Can optionally add namespace and search-replace replacements (for macros).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--output", default=None, help="Single header file output")
     parser.add_argument(
@@ -134,7 +140,7 @@ if __name__ == "__main__":
         default="CLI11.hpp.in",
         help="The main include file that defines the other files",
     )
-    parser.add_argument("files", nargs="*", help="The header files")
+    parser.add_argument("files", nargs="+", help="The header files")
     parser.add_argument("--namespace", default="CLI", help="Set the namespace")
     parser.add_argument("--tag", default="CLI11", help="Tag to look up")
     parser.add_argument(

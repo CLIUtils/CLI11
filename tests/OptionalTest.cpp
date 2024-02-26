@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -53,6 +53,8 @@
 #endif
 // [CLI11:verbatim]
 
+TEST_CASE("OptionalNoEmpty") { CHECK(1 == 1); }
+
 #if CLI11_STD_OPTIONAL
 
 #ifdef _MSC_VER
@@ -70,13 +72,11 @@ TEST_CASE_METHOD(TApp, "StdOptionalTest", "[optional]") {
 
     args = {"-c", "1"};
     run();
-    CHECK(opt);
-    CHECK(1 == *opt);
+    CHECK((opt && (1 == *opt)));
 
     args = {"--count", "3"};
     run();
-    CHECK(opt);
-    CHECK(3 == *opt);
+    CHECK((opt && (3 == *opt)));
 }
 
 TEST_CASE_METHOD(TApp, "StdOptionalVectorEmptyDirect", "[optional]") {
@@ -91,7 +91,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalVectorEmptyDirect", "[optional]") {
     CHECK(!opt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -125,8 +125,30 @@ TEST_CASE_METHOD(TApp, "StdOptionalUint", "[optional]") {
 
     args = {"-i", "15"};
     run();
-    CHECK(15U == *opt);
+    CHECK((opt && (15U == *opt)));
     static_assert(CLI::detail::classify_object<std::optional<std::uint64_t>>::value ==
+                  CLI::detail::object_category::wrapper_value);
+}
+
+TEST_CASE_METHOD(TApp, "StdOptionalbool", "[optional]") {
+    std::optional<bool> opt{};
+    CHECK(!opt);
+    app.add_flag("--opt,!--no-opt", opt);
+    CHECK(!opt);
+    run();
+    CHECK(!opt);
+
+    args = {"--opt"};
+    run();
+    CHECK((opt && *opt));
+
+    args = {"--no-opt"};
+    run();
+    REQUIRE(opt);
+    if(opt) {
+        CHECK_FALSE(*opt);
+    }
+    static_assert(CLI::detail::classify_object<std::optional<bool>>::value ==
                   CLI::detail::object_category::wrapper_value);
 }
 
@@ -165,12 +187,12 @@ TEST_CASE_METHOD(TApp, "BoostOptionalTest", "[optional]") {
 
     args = {"-c", "1"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(1 == *opt);
     opt = {};
     args = {"--count", "3"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(3 == *opt);
 }
 
@@ -182,7 +204,7 @@ TEST_CASE_METHOD(TApp, "BoostOptionalTestZarg", "[optional]") {
 
     args = {"-c", "1"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(1 == *opt);
     opt = {};
     args = {"--count"};
@@ -198,12 +220,12 @@ TEST_CASE_METHOD(TApp, "BoostOptionalint64Test", "[optional]") {
 
     args = {"-c", "1"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(1 == *opt);
     opt = {};
     args = {"--count", "3"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK(3 == *opt);
 }
 
@@ -215,12 +237,12 @@ TEST_CASE_METHOD(TApp, "BoostOptionalStringTest", "[optional]") {
 
     args = {"-s", "strval"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK("strval" == *opt);
     opt = {};
     args = {"--string", "strv"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     CHECK("strv" == *opt);
 }
 namespace boost {
@@ -239,16 +261,19 @@ TEST_CASE_METHOD(TApp, "BoostOptionalEnumTest", "[optional]") {
     auto dstring = optptr->get_default_str();
     CHECK(dstring.empty());
     run();
-    CHECK(!opt);
+    auto checkOpt = static_cast<bool>(opt);
+    CHECK_FALSE(checkOpt);
 
     args = {"-v", "3"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    REQUIRE(checkOpt);
     CHECK(*opt == eval::val3);
     opt = {};
     args = {"--val", "1"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    REQUIRE(checkOpt);
     CHECK(*opt == eval::val1);
 }
 
@@ -258,11 +283,13 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVector", "[optional]") {
            "-v,--vec", [&opt](const std::vector<int> &v) { opt = v; }, "some vector")
         ->expected(3);
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
 
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    REQUIRE(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -272,14 +299,17 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmpty", "[optional]") {
     app.add_option<decltype(opt), std::vector<int>>("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    CHECK(!opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    REQUIRE(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -289,14 +319,17 @@ TEST_CASE_METHOD(TApp, "BoostOptionalVectorEmptyDirect", "[optional]") {
     app.add_option_no_stream("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     // app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
     run();
-    CHECK(!opt);
+    bool checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v"};
     opt = std::vector<int>{4, 3};
     run();
-    CHECK(!opt);
+    checkOpt = static_cast<bool>(opt);
+    CHECK(!checkOpt);
     args = {"-v", "1", "4", "5"};
     run();
-    CHECK(opt);
+    checkOpt = static_cast<bool>(opt);
+    REQUIRE(checkOpt);
     std::vector<int> expV{1, 4, 5};
     CHECK(expV == *opt);
 }
@@ -312,12 +345,12 @@ TEST_CASE_METHOD(TApp, "BoostOptionalComplexDirect", "[optional]") {
     CHECK(!opt);
     args = {"-c", "1+2j"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     std::complex<double> val{1, 2};
     CHECK(val == *opt);
     args = {"-c", "3", "-4"};
     run();
-    CHECK(opt);
+    REQUIRE(opt);
     std::complex<double> val2{3, -4};
     CHECK(val2 == *opt);
 }
