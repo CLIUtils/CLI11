@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <CLI/Macros.hpp>
+#include "Macros.hpp"
 
 // [CLI11:public_includes:set]
 #include <string>

@@ -11,7 +11,7 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
-#include <CLI/Macros.hpp>
+#include "Macros.hpp"
 
 namespace CLI {
 // [CLI11:argv_hpp:verbatim]

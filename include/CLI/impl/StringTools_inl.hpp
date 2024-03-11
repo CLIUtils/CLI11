@@ -7,7 +7,7 @@
 #pragma once
 
 // This include is only needed for IDEs to discover symbols
-#include <CLI/StringTools.hpp>
+#include "../StringTools.hpp"
 
 // [CLI11:public_includes:set]
 #include <cstdint>
