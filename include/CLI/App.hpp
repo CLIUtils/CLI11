@@ -911,9 +911,9 @@ class App {
     }
 
     /// Check with name instead of pointer to see if subcommand was selected
-    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const noexcept{
-        App *sub=get_subcommand_no_throw(subcommand_name);
-        return (sub!=nullptr)?(sub->parsed_ > 0):false;
+    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const noexcept {
+        App *sub = get_subcommand_no_throw(subcommand_name);
+        return (sub != nullptr) ? (sub->parsed_ > 0) : false;
     }
 
     /// Sets excluded options for the subcommand

@@ -19,7 +19,7 @@ TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
     CHECK(app.get_subcommand_no_throw("sub1") == sub1);
     CHECK_THROWS_AS(app.get_subcommand("sub3"), CLI::OptionNotFound);
     CHECK_NOTHROW(app.get_subcommand_no_throw("sub3"));
-    CHECK(app.get_subcommand_no_throw("sub3")==nullptr);
+    CHECK(app.get_subcommand_no_throw("sub3") == nullptr);
     run();
     CHECK(app.get_subcommands().empty());
 

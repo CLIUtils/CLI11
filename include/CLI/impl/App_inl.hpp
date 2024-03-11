@@ -1446,7 +1446,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
     if(level < item.parents.size()) {
         auto *subcom = get_subcommand_no_throw(item.parents.at(level));
-        return (subcom!=nullptr)?subcom->_parse_single_config(item, level + 1):false;
+        return (subcom != nullptr) ? subcom->_parse_single_config(item, level + 1) : false;
     }
     // check for section open
     if(item.name == "++") {
