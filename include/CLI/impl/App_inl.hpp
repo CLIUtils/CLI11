@@ -457,6 +457,10 @@ CLI11_NODISCARD CLI11_INLINE App *App::get_subcommand(std::string subcom) const 
     return subc;
 }
 
+CLI11_NODISCARD CLI11_INLINE App *App::get_subcommand_no_throw(std::string subcom) const noexcept {
+    return _find_subcommand(subcom, false, false);
+}
+
 CLI11_NODISCARD CLI11_INLINE App *App::get_subcommand(int index) const {
     if(index >= 0) {
         auto uindex = static_cast<unsigned>(index);
@@ -796,7 +800,7 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
     return options;
 }
 
-CLI11_INLINE Option *App::get_option_no_throw(std::string option_name) noexcept {
+CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option_name) noexcept {
     for(Option_p &opt : options_) {
         if(opt->check_name(option_name)) {
             return opt.get();
@@ -1441,12 +1445,8 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
 
     if(level < item.parents.size()) {
-        try {
-            auto *subcom = get_subcommand(item.parents.at(level));
-            return subcom->_parse_single_config(item, level + 1);
-        } catch(const OptionNotFound &) {
-            return false;
-        }
+        auto *subcom = get_subcommand_no_throw(item.parents.at(level));
+        return (subcom != nullptr) ? subcom->_parse_single_config(item, level + 1) : false;
     }
     // check for section open
     if(item.name == "++") {

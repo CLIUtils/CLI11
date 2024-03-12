@@ -733,6 +733,10 @@ class App {
     /// Check to see if a subcommand is part of this command (text version)
     CLI11_NODISCARD App *get_subcommand(std::string subcom) const;
 
+    /// Get a subcommand by name (noexcept non-const version)
+    /// returns null if subcommand doesn't exist
+    CLI11_NODISCARD App *get_subcommand_no_throw(std::string subcom) const noexcept;
+
     /// Get a pointer to subcommand by index
     CLI11_NODISCARD App *get_subcommand(int index = 0) const;
 
@@ -907,8 +911,9 @@ class App {
     }
 
     /// Check with name instead of pointer to see if subcommand was selected
-    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const {
-        return get_subcommand(subcommand_name)->parsed_ > 0;
+    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const noexcept {
+        App *sub = get_subcommand_no_throw(subcommand_name);
+        return (sub != nullptr) ? (sub->parsed_ > 0) : false;
     }
 
     /// Sets excluded options for the subcommand
@@ -1038,7 +1043,7 @@ class App {
     std::vector<Option *> get_options(const std::function<bool(Option *)> filter = {});
 
     /// Get an option by name (noexcept non-const version)
-    Option *get_option_no_throw(std::string option_name) noexcept;
+    CLI11_NODISCARD Option *get_option_no_throw(std::string option_name) noexcept;
 
     /// Get an option by name (noexcept const version)
     CLI11_NODISCARD const Option *get_option_no_throw(std::string option_name) const noexcept;
