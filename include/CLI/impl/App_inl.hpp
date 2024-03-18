@@ -279,8 +279,8 @@ App::set_version_flag(std::string flag_name, std::function<std::string()> vfunc,
 
     // Empty name will simply remove the version flag
     if(!flag_name.empty()) {
-        version_ptr_ = add_flag_callback(
-            flag_name, [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); }, version_help);
+        version_ptr_ =
+            add_flag_callback(flag_name, [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); }, version_help);
         version_ptr_->configurable(false);
     }
 
