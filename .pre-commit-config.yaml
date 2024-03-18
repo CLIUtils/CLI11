@@ -5,7 +5,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 24.3.0
     hooks:
       - id: black
 
@@ -26,7 +26,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.6
+    rev: v18.1.1
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
