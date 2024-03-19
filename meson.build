@@ -14,6 +14,8 @@ CLI11_dep = declare_dependency(
   version             : meson.project_version(),
 )
 
+meson.override_dependency('CLI11', CLI11_dep)
+
 if get_option('tests')
     warnings = ['-Wshadow', '-Wsign-conversion', '-Wswitch-enum']
     if cxx.get_id() == 'gcc' and cxx.version().version_compare('>=4.9')
