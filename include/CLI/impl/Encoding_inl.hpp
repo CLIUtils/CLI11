@@ -9,8 +9,8 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Encoding.hpp>
-#include <CLI/Macros.hpp>
+#include "../Encoding.hpp"
+#include "../Macros.hpp"
 
 // [CLI11:public_includes:set]
 #include <array>

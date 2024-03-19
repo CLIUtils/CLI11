@@ -16,8 +16,10 @@ TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
 
     CHECK(app.get_subcommand(sub1) == sub1);
     CHECK(app.get_subcommand("sub1") == sub1);
+    CHECK(app.get_subcommand_no_throw("sub1") == sub1);
     CHECK_THROWS_AS(app.get_subcommand("sub3"), CLI::OptionNotFound);
-
+    CHECK_NOTHROW(app.get_subcommand_no_throw("sub3"));
+    CHECK(app.get_subcommand_no_throw("sub3") == nullptr);
     run();
     CHECK(app.get_subcommands().empty());
 
@@ -90,7 +92,7 @@ TEST_CASE_METHOD(TApp, "MultiSubFallthrough", "[subcom]") {
     CHECK(!sub2->parsed());
     CHECK(0u == sub2->count());
 
-    CHECK_THROWS_AS(app.got_subcommand("sub3"), CLI::OptionNotFound);
+    CHECK(!app.got_subcommand("sub3"));
 }
 
 TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {

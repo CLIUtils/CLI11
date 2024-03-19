@@ -7,8 +7,8 @@
 #pragma once
 
 // IWYU pragma: private, include "CLI/CLI.hpp"
+#include "Macros.hpp"
 
-#include <CLI/Macros.hpp>
 
 // [CLI11:public_includes:set]
 #include <string>
