@@ -1,5 +1,6 @@
 project('CLI11', ['cpp'],
   version         : run_command(find_program('scripts/ExtractVersion.py'), check: true).stdout().strip(),
+  license         : 'BSD-3-clause',
   default_options : ['cpp_std=c++11', 'warning_level=3']
 )
 
