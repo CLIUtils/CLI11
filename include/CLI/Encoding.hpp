@@ -9,7 +9,6 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "Macros.hpp"
 
-
 // [CLI11:public_includes:set]
 #include <string>
 // [CLI11:public_includes:end]
