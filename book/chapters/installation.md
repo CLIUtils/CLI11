@@ -206,11 +206,11 @@ required. If it installed in a non-default search path, then setting the
 ### Using Meson's subprojects
 
 Meson has a system called
-[wraps](https://mesonbuild.com/Wrap-dependency-system-manual.html), which
-allow Meson to fetch sources, configure, and build dependencies as part of a
-main project. This is the mechanism that Meson recommends for projects to use,
-as it allows updating the dependency transparently, and allows packagers to have
-fine grained control on the use of subprojects vs system provided dependencies.
+[wraps](https://mesonbuild.com/Wrap-dependency-system-manual.html), which allow
+Meson to fetch sources, configure, and build dependencies as part of a main
+project. This is the mechanism that Meson recommends for projects to use, as it
+allows updating the dependency transparently, and allows packagers to have fine
+grained control on the use of subprojects vs system provided dependencies.
 Simply run `meson wrap install cli11` to install the `cli11.wrap` file, and
 commit it, if desired.
 
