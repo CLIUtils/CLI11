@@ -22,6 +22,16 @@ warnings = ['-Wshadow', '-Wsign-conversion', '-Wswitch-enum']
 if cxx.get_id() == 'gcc' and cxx.version().version_compare('>=4.9')
   warnings += '-Weffc++'
 endif
+if cxx.get_id() == 'clang'
+  warnings += [
+    '-Wcast-align',
+    '-Wimplicit-atomic-properties',
+    '-Wmissing-declarations',
+    '-Woverlength-strings',
+    '-Wstrict-selector-match',
+    '-Wundeclared-selector',
+  ]
+endif
 add_project_arguments(cxx.get_supported_arguments(warnings), language: 'cpp')
 
 if use_precompiled
