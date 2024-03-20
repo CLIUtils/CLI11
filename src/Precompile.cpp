@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+// IWYU pragma: begin_keep
+
 #include <CLI/impl/App_inl.hpp>
 #include <CLI/impl/Argv_inl.hpp>
 #include <CLI/impl/Config_inl.hpp>
@@ -13,3 +15,5 @@
 #include <CLI/impl/Split_inl.hpp>
 #include <CLI/impl/StringTools_inl.hpp>
 #include <CLI/impl/Validators_inl.hpp>
+
+// IWYU pragma: end_keep

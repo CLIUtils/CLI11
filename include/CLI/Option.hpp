@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <functional>
@@ -804,5 +806,5 @@ class Option : public OptionBase<Option> {
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Option_inl.hpp"
+#include "impl/Option_inl.hpp"  // IWYU pragma: export
 #endif

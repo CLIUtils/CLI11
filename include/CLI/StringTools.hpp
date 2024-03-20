@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <iomanip>
@@ -263,5 +265,5 @@ CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/StringTools_inl.hpp"
+#include "impl/StringTools_inl.hpp"  // IWYU pragma: export
 #endif

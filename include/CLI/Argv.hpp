@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <string>
 #include <vector>
@@ -25,5 +27,5 @@ CLI11_INLINE std::vector<std::string> compute_win32_argv();
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Argv_inl.hpp"
+#include "impl/Argv_inl.hpp"  // IWYU pragma: export
 #endif

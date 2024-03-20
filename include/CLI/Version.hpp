@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:version_hpp:verbatim]
 
 #define CLI11_VERSION_MAJOR 2

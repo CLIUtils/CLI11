@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <string>
 #include <tuple>
@@ -44,5 +46,5 @@ get_names(const std::vector<std::string> &input);
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Split_inl.hpp"
+#include "impl/Split_inl.hpp"  // IWYU pragma: export
 #endif

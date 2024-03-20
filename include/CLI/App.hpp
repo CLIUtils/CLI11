@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cstdint>
@@ -1442,5 +1444,5 @@ struct AppFriend {
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/App_inl.hpp"
+#include "impl/App_inl.hpp"  // IWYU pragma: export
 #endif
