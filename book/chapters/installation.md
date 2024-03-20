@@ -51,7 +51,7 @@ If the CMake option `CLI11_PRECOMPILED` is set then the library is compiled into
 a static library. This can be used to improve compile times if CLI11 is included
 in many different parts of a project.
 
-### Global Headers
+#### Global Headers
 
 Use `CLI/*.hpp` files stored in a shared folder. You could check out the git
 repository to a system-wide folder, for example `/opt/`. With CMake, you could
