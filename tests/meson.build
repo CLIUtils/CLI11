@@ -69,14 +69,16 @@ dependent_applications = [
     'ensure_utf8_twice',
 ]
 dependent_applications_definitions = []
-#dependent_applications_targets = []
+dependent_applications_targets = []
 foreach app: dependent_applications
-    app_target = executable(app, 'applications'/app + '.cpp',
-        build_by_default: false
+    app_target = executable(
+        app, 'applications'/app + '.cpp',
+        dependencies: CLI11_dep,
     )
 
-    #dependent_applications_targets += dependency(app_target)
-    dependent_applications_definitions += '-DCLI11_@0@_EXE="@1@"'.format(app.to_upper(), app_target)
+    dependent_applications_targets += app_target
+    dependent_applications_definitions += '-DCLI11_@0@_EXE="@1@/@2@"'.format(
+        app.to_upper(), meson.current_build_dir(), app_target)
 endforeach
 
 if host_machine.system() == 'windows'
@@ -96,5 +98,5 @@ foreach n: testnames
         dependencies: [testdep] + kwargs.get('dependencies', []),
         link_with: kwargs.get('link_with', [])
     )
-    test(name, t)
+    test(name, t, depends: dependent_applications_targets)
 endforeach

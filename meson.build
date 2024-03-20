@@ -1,5 +1,7 @@
 project('CLI11', ['cpp'],
   version         : run_command(find_program('scripts/ExtractVersion.py'), check: true).stdout().strip(),
+  license         : 'BSD-3-clause',
+  meson_version   : '>= 0.60',
   default_options : ['cpp_std=c++11', 'warning_level=3']
 )
 
@@ -11,6 +13,8 @@ CLI11_dep = declare_dependency(
   include_directories : CLI11_inc,
   version             : meson.project_version(),
 )
+
+meson.override_dependency('CLI11', CLI11_dep)
 
 if get_option('tests')
     warnings = ['-Wshadow', '-Wsign-conversion', '-Wswitch-enum']

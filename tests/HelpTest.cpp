@@ -1308,8 +1308,7 @@ TEST_CASE("TVersion: help", "[help]") {
     auto hvers = app.help();
     CHECK_THAT(hvers, Contains("help_for_version"));
 
-    app.set_version_flag(
-        "-v", []() { return std::string("VERSION2 " CLI11_VERSION); }, "help_for_version2");
+    app.set_version_flag("-v", []() { return std::string("VERSION2 " CLI11_VERSION); }, "help_for_version2");
     hvers = app.help();
     CHECK_THAT(hvers, Contains("help_for_version2"));
 }
