@@ -58,6 +58,7 @@ testnames = [
     ['ComplexTypeTest', {}],
     ['TrueFalseTest', {}],
     ['OptionGroupTest', {}],
+    ['EncodingTest', {}],
     # multi-only
     ['TimerTest', {}],
     # link_test
