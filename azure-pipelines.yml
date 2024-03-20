@@ -100,7 +100,8 @@ jobs:
         displayName: generate test directories
       - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
         displayName: generate CLI11 symlink
-      - script: meson build
+        # Ensure that Meson doesn't use cmake or pkgconfig to find CLI11
+      - script: meson setup build --force-fallback-for=CLI11
         displayName: Run meson to generate build
         workingDirectory: tests/mesonTest
       - script: ninja -C tests/mesonTest/build
