@@ -1,1 +1,2 @@
 option('tests', type: 'boolean', value: false, description: 'Build CLI11 tests')
+option('single-file-header', type: 'boolean', value: false, description : 'Generate a single header file.')
