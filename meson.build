@@ -7,9 +7,20 @@ project('CLI11', ['cpp'],
 
 cxx = meson.get_compiler('cpp')
 
+if get_option('single-file-header')
+  subdir('include/CLI')
+else
+  # the `declare_dependency` needs to have the single_header source as a source
+  # dependency, to ensure that the generator runs before any attempts to include
+  # the header happen. Adding an empty list is an idiomatic way to ensure the
+  # variable exists but does nothing
+  single_header = []
+endif
+
 CLI11_inc = include_directories(['include'])
 
 CLI11_dep = declare_dependency(
+  sources             : single_header,
   include_directories : CLI11_inc,
   version             : meson.project_version(),
 )
