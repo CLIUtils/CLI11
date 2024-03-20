@@ -166,6 +166,9 @@ jobs:
       - name: Build
         run: meson compile -C build-meson
 
+      - name: Test
+        run: meson test -C build-meson
+
   install:
     name: install tests
     runs-on: ubuntu-latest
