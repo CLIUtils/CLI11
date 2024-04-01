@@ -72,7 +72,7 @@ jobs:
       && github.ref == 'refs/heads/main'
       && github.repository == 'CLIUtils/CLI11'
     steps:
-      - uses: actions/configure-pages@v4
+      - uses: actions/configure-pages@v5
         id: pages
 
       - uses: actions/download-artifact@v4
