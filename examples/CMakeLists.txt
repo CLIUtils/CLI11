@@ -99,7 +99,7 @@ add_test(NAME option_groups_missing COMMAND option_groups)
 set_property(TEST option_groups_missing PROPERTY PASS_REGULAR_EXPRESSION "Exactly 1 option from"
                                                  "is required")
 add_test(NAME option_groups_extra COMMAND option_groups --csv --binary)
-set_property(TEST option_groups_extra PROPERTY PASS_REGULAR_EXPRESSION "and 2 were given")
+set_property(TEST option_groups_extra PROPERTY PASS_REGULAR_EXPRESSION "but 2 were given")
 add_test(NAME option_groups_extra2 COMMAND option_groups --csv --address "192.168.1.1" -o
                                            "test.out")
 set_property(TEST option_groups_extra2 PROPERTY PASS_REGULAR_EXPRESSION "at most 1")
