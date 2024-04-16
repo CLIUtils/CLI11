@@ -10,6 +10,8 @@ a.out*
 /html/*
 !/meson.build
 /CMakeUserPresets.json
+/bazel-*
+/MODULE.bazel.lock
 
 /node_modules/*
 /package.json
