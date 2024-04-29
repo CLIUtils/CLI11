@@ -24,7 +24,7 @@ namespace CLI {
 class intWrapper64 {
   public:
     intWrapper64() = default;
-    explicit intWrapper64(int64_t v) : val(v){};
+    explicit intWrapper64(int64_t v) : val(v) {};
     CLI11_NODISCARD int64_t value() const { return val; }
 
   private:
@@ -34,7 +34,7 @@ class intWrapper64 {
 class doubleWrapper {
   public:
     doubleWrapper() = default;
-    explicit doubleWrapper(double v) : val(v){};
+    explicit doubleWrapper(double v) : val(v) {};
     CLI11_NODISCARD double value() const { return val; }
 
   private:
@@ -44,7 +44,7 @@ class doubleWrapper {
 class stringWrapper {
   public:
     stringWrapper() = default;
-    explicit stringWrapper(std::string_view v) : val(v){};
+    explicit stringWrapper(std::string_view v) : val(v) {};
     CLI11_NODISCARD std::string value() const { return val; }
 
   private:
