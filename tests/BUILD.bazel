@@ -29,7 +29,6 @@ cc_test(
         "ensure_utf8_twice",
     ],
     local_defines = [
-        "BAZEL",
         'CLI11_ENSURE_UTF8_EXE=\\"$(rootpath ensure_utf8)\\"',
         'CLI11_ENSURE_UTF8_TWICE_EXE=\\"$(rootpath ensure_utf8_twice)\\"',
     ],
@@ -47,7 +46,6 @@ cc_test(
             test + ".cpp",
             "app_helper.hpp",
         ],
-        local_defines = ["BAZEL"],
         deps = [
             "catch_main",
             "//:cli11",

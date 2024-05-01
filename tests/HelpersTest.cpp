@@ -522,11 +522,7 @@ TEST_CASE("Validators: FileIsDir", "[helpers]") {
 }
 
 TEST_CASE("Validators: DirectoryExists", "[helpers]") {
-#ifdef BAZEL
     std::string mydir{"tests"};
-#else
-    std::string mydir{"../tests"};
-#endif
     CHECK(CLI::ExistingDirectory(mydir).empty());
 }
 
@@ -547,11 +543,7 @@ TEST_CASE("Validators: DirectoryIsFile", "[helpers]") {
 }
 
 TEST_CASE("Validators: PathExistsDir", "[helpers]") {
-#ifdef BAZEL
     std::string mydir{"tests"};
-#else
-    std::string mydir{"../tests"};
-#endif
     CHECK(CLI::ExistingPath(mydir).empty());
 }
 
@@ -673,11 +665,7 @@ TEST_CASE("Validators: CombinedPaths", "[helpers]") {
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     CHECK(ok);
 
-#ifdef BAZEL
     std::string dir{"tests"};
-#else
-    std::string dir{"../tests"};
-#endif
     std::string notpath{"nondirectory"};
 
     auto path_or_dir = CLI::ExistingPath | CLI::ExistingDirectory;
