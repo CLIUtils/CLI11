@@ -137,7 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", default=None, help="Single header file output")
     parser.add_argument(
         "--main",
-        default="CLI11.hpp.in",
+        default="single-include/CLI11.hpp.in",
         help="The main include file that defines the other files",
     )
     parser.add_argument("files", nargs="+", help="The header files")
