@@ -19,7 +19,8 @@ if(CLI11_SINGLE_FILE)
       Python::Interpreter "${PROJECT_SOURCE_DIR}/scripts/MakeSingleHeader.py" ${CLI11_headers}
       ${CLI11_impl_headers} --main "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.hpp.in" --output
       "${PROJECT_BINARY_DIR}/single-include/CLI11.hpp" --version "${CLI11_VERSION}"
-      DEPENDS "${PROJECT_SOURCE_DIR}/include/CLI/CLI.hpp" CLI11.hpp.in ${CLI11_headers} ${CLI11_impl_headers})
+    DEPENDS "${PROJECT_SOURCE_DIR}/include/CLI/CLI.hpp" CLI11.hpp.in ${CLI11_headers}
+            ${CLI11_impl_headers})
   add_custom_target(CLI11-generate-single-file ALL
                     DEPENDS "${PROJECT_BINARY_DIR}/single-include/CLI11.hpp")
   set_property(TARGET CLI11-generate-single-file PROPERTY FOLDER "Scripts")
