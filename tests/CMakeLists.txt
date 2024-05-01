@@ -124,8 +124,6 @@ if(CLI11_SINGLE_FILE AND CLI11_INSTALL_PACKAGE_TESTS)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/test_single/CLI/CLI.hpp" DESTINATION include/CLI)
 endif()
 
-
-
 # Build dependent applications which are launched from test code
 set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 
