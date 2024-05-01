@@ -169,6 +169,18 @@ jobs:
       - name: Test
         run: meson test -C build-meson
 
+  bazel-build:
+    name: Bazel build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: bazel build //...
+
+      - name: Test
+        run: bazel test --test_output=errors //...
+
   install:
     name: install tests
     runs-on: ubuntu-latest
