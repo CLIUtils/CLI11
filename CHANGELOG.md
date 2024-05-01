@@ -88,16 +88,16 @@ This version improves support for alternative build systems, like Meson and
 Bazel. The single-include file now is in its own subdirectory. Several smaller
 fixes as well.
 
-* Meson: fixes, cleanups, and modernizations [#1024][] & [#1025][]
-* Support building with Bazel [#1033][]
-* Restore non-arch dependant path for the pkgconfig file [#1012][]
-* Add `get_subcommand_no_throw` [#1016][]
-* Move single file to `single-include` folder [#1030][] & [#1036][]
-* Fixed `app.set_failure_message(...)` -> `app.failure_message(...)` [#1018][]
-* Add IWYU pragmas [#1008][]
-* Fix internal header include paths [#1011][]
-* Improved clarity in `RequiredError` [#1029][]
-* Bug fixes in latest release [#1005][]
+- Meson: fixes, cleanups, and modernizations [#1024][] & [#1025][]
+- Support building with Bazel [#1033][]
+- Restore non-arch dependant path for the pkgconfig file [#1012][]
+- Add `get_subcommand_no_throw` [#1016][]
+- Move single file to `single-include` folder [#1030][] & [#1036][]
+- Fixed `app.set_failure_message(...)` -> `app.failure_message(...)` [#1018][]
+- Add IWYU pragmas [#1008][]
+- Fix internal header include paths [#1011][]
+- Improved clarity in `RequiredError` [#1029][]
+- Bug fixes in latest release [#1005][]
 
 [#1005]: https://github.com/CLIUtils/CLI11/pull/1005
 [#1008]: https://github.com/CLIUtils/CLI11/pull/1008
@@ -110,7 +110,6 @@ fixes as well.
 [#1030]: https://github.com/CLIUtils/CLI11/pull/1030
 [#1033]: https://github.com/CLIUtils/CLI11/pull/1033
 [#1036]: https://github.com/CLIUtils/CLI11/pull/1036
-
 
 ## Version 2.3: Precompilation Support
 
