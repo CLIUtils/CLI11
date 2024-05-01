@@ -132,10 +132,45 @@ endif()
 
 include(CLI11Warnings)
 
+# Sources
+
+set(CLI11_headerLoc "${PROJECT_SOURCE_DIR}/include/CLI")
+
+set(CLI11_headers
+    ${CLI11_headerLoc}/App.hpp
+    ${CLI11_headerLoc}/Config.hpp
+    ${CLI11_headerLoc}/ConfigFwd.hpp
+    ${CLI11_headerLoc}/Error.hpp
+    ${CLI11_headerLoc}/Formatter.hpp
+    ${CLI11_headerLoc}/FormatterFwd.hpp
+    ${CLI11_headerLoc}/Macros.hpp
+    ${CLI11_headerLoc}/Option.hpp
+    ${CLI11_headerLoc}/Split.hpp
+    ${CLI11_headerLoc}/StringTools.hpp
+    ${CLI11_headerLoc}/TypeTools.hpp
+    ${CLI11_headerLoc}/Validators.hpp
+    ${CLI11_headerLoc}/Version.hpp
+    ${CLI11_headerLoc}/Encoding.hpp
+    ${CLI11_headerLoc}/Argv.hpp)
+
+set(CLI11_impl_headers
+    ${CLI11_headerLoc}/impl/App_inl.hpp
+    ${CLI11_headerLoc}/impl/Config_inl.hpp
+    ${CLI11_headerLoc}/impl/Formatter_inl.hpp
+    ${CLI11_headerLoc}/impl/Option_inl.hpp
+    ${CLI11_headerLoc}/impl/Split_inl.hpp
+    ${CLI11_headerLoc}/impl/StringTools_inl.hpp
+    ${CLI11_headerLoc}/impl/Validators_inl.hpp
+    ${CLI11_headerLoc}/impl/Encoding_inl.hpp
+    ${CLI11_headerLoc}/impl/Argv_inl.hpp)
+
+set(CLI11_library_headers ${CLI11_headerLoc}/CLI.hpp ${CLI11_headerLoc}/Timer.hpp)
+
 # build the fuzzing example or fuzz entry point
 add_subdirectory(fuzz)
 
 add_subdirectory(src)
+add_subdirectory(single-include)
 
 # Allow tests to be run on CUDA
 if(CLI11_CUDA_TESTS)

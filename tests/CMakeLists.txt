@@ -118,6 +118,12 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
 endforeach()
 add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
 
+# Make a shim if we are building single file tests
+if(CLI11_SINGLE_FILE AND CLI11_INSTALL_PACKAGE_TESTS)
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/test_single/CLI/CLI.hpp" "#include <CLI11.hpp>")
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/test_single/CLI/CLI.hpp" DESTINATION include/CLI)
+endif()
+
 # Build dependent applications which are launched from test code
 set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 
