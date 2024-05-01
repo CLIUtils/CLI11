@@ -14,7 +14,38 @@ if use_precompiled and use_single_header
   error('Options "single-file"header" and "precompiled" are mutually exclusive')
 endif
 
-subdir('include/CLI')
+cli11_headers = files(
+  'include/CLI/App.hpp',
+  'include/CLI/Argv.hpp',
+  'include/CLI/CLI.hpp',
+  'include/CLI/Config.hpp',
+  'include/CLI/ConfigFwd.hpp',
+  'include/CLI/Encoding.hpp',
+  'include/CLI/Error.hpp',
+  'include/CLI/Formatter.hpp',
+  'include/CLI/FormatterFwd.hpp',
+  'include/CLI/Macros.hpp',
+  'include/CLI/Option.hpp',
+  'include/CLI/Split.hpp',
+  'include/CLI/StringTools.hpp',
+  'include/CLI/TypeTools.hpp',
+  'include/CLI/Validators.hpp',
+  'include/CLI/Version.hpp',
+)
+
+cli11_impl_headers = files(
+  'include/CLI/impl/App_inl.hpp',
+  'include/CLI/impl/Argv_inl.hpp',
+  'include/CLI/impl/Config_inl.hpp',
+  'include/CLI/impl/Encoding_inl.hpp',
+  'include/CLI/impl/Formatter_inl.hpp',
+  'include/CLI/impl/Option_inl.hpp',
+  'include/CLI/impl/Split_inl.hpp',
+  'include/CLI/impl/StringTools_inl.hpp',
+  'include/CLI/impl/Validators_inl.hpp',
+)
+
+subdir('single-include')
 
 CLI11_inc = include_directories(['include'])
 
