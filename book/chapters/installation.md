@@ -51,7 +51,7 @@ If the CMake option `CLI11_PRECOMPILED` is set then the library is compiled into
 a static library. This can be used to improve compile times if CLI11 is included
 in many different parts of a project.
 
-### Global Headers
+#### Global Headers
 
 Use `CLI/*.hpp` files stored in a shared folder. You could check out the git
 repository to a system-wide folder, for example `/opt/`. With CMake, you could
@@ -193,6 +193,32 @@ default to off if CLI11 is used as a subdirectory in another project.
     Docker is being used to create a pristine disposable environment; there is
     nothing special about this container. Alpine is being used because it is
     small, modern, and fast. Commands are similar on any other platform.
+
+## Meson support
+
+### Global Headers from pkg-config
+
+If CLI11 is installed globally, then nothing more than `dependency('CLI11')` is
+required. If it installed in a non-default search path, then setting the
+`PKG_CONFIG_PATH` environment variable of the `--pkg-config-path` option to
+`meson setup` is all that's required.
+
+### Using Meson's subprojects
+
+Meson has a system called
+[wraps](https://mesonbuild.com/Wrap-dependency-system-manual.html), which allow
+Meson to fetch sources, configure, and build dependencies as part of a main
+project. This is the mechanism that Meson recommends for projects to use, as it
+allows updating the dependency transparently, and allows packagers to have fine
+grained control on the use of subprojects vs system provided dependencies.
+Simply run `meson wrap install cli11` to install the `cli11.wrap` file, and
+commit it, if desired.
+
+It is also possible to use git submodules. This is generally discouraged by
+Meson upstream, but may be appropriate if a project needs to build with multiple
+build systems and wishes to share subprojects between them. As long as the
+submodule is in the parent project's subproject directory nothing additional is
+needed.
 
 ## Installing cli11 using vcpkg
 
