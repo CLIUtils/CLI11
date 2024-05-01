@@ -701,6 +701,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "dcbaker",
+      "name": "Dylan Baker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1779595?v=4",
+      "profile": "https://recursiveascent.blogspot.com/",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
