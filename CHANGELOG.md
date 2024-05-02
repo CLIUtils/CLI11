@@ -97,7 +97,8 @@ fixes as well.
 - Add IWYU pragmas [#1008][]
 - Fix internal header include paths [#1011][]
 - Improved clarity in `RequiredError` [#1029][]
-- Bug fixes in latest release [#1005][]
+- Added ability to use lexical_cast overloads constrained with enable_if [#1021][]
+- Bug fixes in latest release related to environmental variable parsing from option groups and unrecognized fields in a config file [#1005][]
 
 [#1005]: https://github.com/CLIUtils/CLI11/pull/1005
 [#1008]: https://github.com/CLIUtils/CLI11/pull/1008
@@ -105,6 +106,7 @@ fixes as well.
 [#1012]: https://github.com/CLIUtils/CLI11/pull/1012
 [#1016]: https://github.com/CLIUtils/CLI11/pull/1016
 [#1018]: https://github.com/CLIUtils/CLI11/pull/1018
+[#1021]: https://github.com/CLIUtils/CLI11/pull/1021
 [#1025]: https://github.com/CLIUtils/CLI11/pull/1025
 [#1029]: https://github.com/CLIUtils/CLI11/pull/1029
 [#1030]: https://github.com/CLIUtils/CLI11/pull/1030
