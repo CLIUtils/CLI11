@@ -87,6 +87,23 @@ template <> struct IsMemberType<const char *> {
     using type = std::string;
 };
 
+namespace adl_detail {
+/// Check for existence of user-supplied lexical_cast.
+///
+/// This struct has to be in a separate namespace so that it doesn't see our lexical_cast overloads in CLI::detail.
+/// Standard says it shouldn't see them if it's defined before the corresponding lexical_cast declarations, but this
+/// requires a working implementation of two-phase lookup, and not all compilers can boast that (msvc, ahem).
+template <typename T, typename S = std::string> class is_lexical_castable {
+    template <typename TT, typename SS>
+    static auto test(int) -> decltype(lexical_cast(std::declval<const SS &>(), std::declval<TT &>()), std::true_type());
+
+    template <typename, typename> static auto test(...) -> std::false_type;
+
+  public:
+    static constexpr bool value = decltype(test<T, S>(0))::value;
+};
+}  // namespace adl_detail
+
 namespace detail {
 
 // These are utilities for IsMember and other transforming objects
@@ -1247,13 +1264,24 @@ bool lexical_cast(const std::string &input, T &output) {
 
 /// Non-string parsable by a stream
 template <typename T,
-          enable_if_t<classify_object<T>::value == object_category::other && !std::is_assignable<T &, int>::value,
+          enable_if_t<classify_object<T>::value == object_category::other && !std::is_assignable<T &, int>::value &&
+                          is_istreamable<T>::value,
                       detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
-    static_assert(is_istreamable<T>::value,
+    return from_stream(input, output);
+}
+
+/// Fallback overload that prints a human-readable error for types that we don't recognize and that don't have a
+/// user-supplied lexical_cast overload.
+template <typename T,
+          enable_if_t<classify_object<T>::value == object_category::other && !std::is_assignable<T &, int>::value &&
+                          !is_istreamable<T>::value && !adl_detail::is_lexical_castable<T>::value,
+                      detail::enabler> = detail::dummy>
+bool lexical_cast(const std::string & /*input*/, T & /*output*/) {
+    static_assert(!std::is_same<T, T>::value,  // Can't just write false here.
                   "option object type must have a lexical cast overload or streaming input operator(>>) defined, if it "
                   "is convertible from another type use the add_option<T, XC>(...) with XC being the known type");
-    return from_stream(input, output);
+    return false;
 }
 
 /// Assign a value through lexical cast operations
