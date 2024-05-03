@@ -90,7 +90,7 @@ fixes as well.
 
 - Meson: fixes, cleanups, and modernizations [#1024][] & [#1025][]
 - Support building with Bazel [#1033][]
-- Restore non-arch dependant path for the pkgconfig file [#1012][]
+- Restore non-arch dependent path for the pkgconfig file [#1012][]
 - Add `get_subcommand_no_throw` [#1016][]
 - Move single file to `single-include` folder [#1030][] & [#1036][]
 - Fixed `app.set_failure_message(...)` -> `app.failure_message(...)` [#1018][]
