@@ -82,6 +82,39 @@ config files
 [#1000]: https://github.com/CLIUtils/CLI11/pull/1000
 [#1003]: https://github.com/CLIUtils/CLI11/pull/1003
 
+### Version 2.4.2: Build systems
+
+This version improves support for alternative build systems, like Meson and
+Bazel. The single-include file now is in its own subdirectory. Several smaller
+fixes as well.
+
+- Meson: fixes, cleanups, and modernizations [#1024][] & [#1025][]
+- Support building with Bazel [#1033][]
+- Restore non-arch dependent path for the pkgconfig file [#1012][]
+- Add `get_subcommand_no_throw` [#1016][]
+- Move single file to `single-include` folder [#1030][] & [#1036][]
+- Fixed `app.set_failure_message(...)` -> `app.failure_message(...)` [#1018][]
+- Add IWYU pragmas [#1008][]
+- Fix internal header include paths [#1011][]
+- Improved clarity in `RequiredError` [#1029][]
+- Added ability to use lexical_cast overloads constrained with enable_if
+  [#1021][]
+- Bug fixes in latest release related to environmental variable parsing from
+  option groups and unrecognized fields in a config file [#1005][]
+
+[#1005]: https://github.com/CLIUtils/CLI11/pull/1005
+[#1008]: https://github.com/CLIUtils/CLI11/pull/1008
+[#1011]: https://github.com/CLIUtils/CLI11/pull/1011
+[#1012]: https://github.com/CLIUtils/CLI11/pull/1012
+[#1016]: https://github.com/CLIUtils/CLI11/pull/1016
+[#1018]: https://github.com/CLIUtils/CLI11/pull/1018
+[#1021]: https://github.com/CLIUtils/CLI11/pull/1021
+[#1025]: https://github.com/CLIUtils/CLI11/pull/1025
+[#1029]: https://github.com/CLIUtils/CLI11/pull/1029
+[#1030]: https://github.com/CLIUtils/CLI11/pull/1030
+[#1033]: https://github.com/CLIUtils/CLI11/pull/1033
+[#1036]: https://github.com/CLIUtils/CLI11/pull/1036
+
 ## Version 2.3: Precompilation Support
 
 This version adds a pre-compiled mode to CLI11, which allows you to precompile

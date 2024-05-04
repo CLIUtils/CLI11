@@ -1,4 +1,4 @@
-exclude: ^(.github/workflows/|docs/img/)
+exclude: ^(.github/workflows/|docs/img/|tests/fuzzFail)
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"

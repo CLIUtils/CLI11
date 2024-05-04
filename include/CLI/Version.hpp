@@ -12,7 +12,7 @@
 
 #define CLI11_VERSION_MAJOR 2
 #define CLI11_VERSION_MINOR 4
-#define CLI11_VERSION_PATCH 1
-#define CLI11_VERSION "2.4.1"
+#define CLI11_VERSION_PATCH 2
+#define CLI11_VERSION "2.4.2"
 
 // [CLI11:version_hpp:end]

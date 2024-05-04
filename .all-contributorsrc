@@ -692,6 +692,51 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "krico",
+      "name": "Christian Asmussen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6952185?v=4",
+      "profile": "https://github.com/krico",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "dcbaker",
+      "name": "Dylan Baker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1779595?v=4",
+      "profile": "https://recursiveascent.blogspot.com/",
+      "contributions": [
+        "platform"
+      ]
+    },
+    {
+      "login": "calebzulawski",
+      "name": "Caleb Zulawski",
+      "avatar_url": "https://avatars.githubusercontent.com/u/563826?v=4",
+      "profile": "https://github.com/calebzulawski",
+      "contributions": [
+        "platform"
+      ]
+    },
+    {
+      "login": "gostefan",
+      "name": "gostefan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2479455?v=4",
+      "profile": "https://github.com/gostefan",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "sifferman",
+      "name": "Ethan Sifferman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43790149?v=4",
+      "profile": "https://github.com/sifferman",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
