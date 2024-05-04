@@ -109,6 +109,7 @@ fixes as well.
 [#1016]: https://github.com/CLIUtils/CLI11/pull/1016
 [#1018]: https://github.com/CLIUtils/CLI11/pull/1018
 [#1021]: https://github.com/CLIUtils/CLI11/pull/1021
+[#1024]: https://github.com/CLIUtils/CLI11/pull/1024
 [#1025]: https://github.com/CLIUtils/CLI11/pull/1025
 [#1029]: https://github.com/CLIUtils/CLI11/pull/1029
 [#1030]: https://github.com/CLIUtils/CLI11/pull/1030
