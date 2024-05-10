@@ -807,7 +807,7 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
     }
     for(auto &subc : subcommands_) {
         // also check down into nameless subcommands
-        if(subc->get_name().empty() && !subc-get_group().empty() && subc->get_group().front()=='+') {
+        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front()=='+') {
             auto subcopts=subc->get_options(filter);
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- add mechanism to allow option groups to be hidden and all options be considered part of the parent for help display
+
 ## Version 2.4: Unicode and TOML support
 
 This version adds Unicode support, support for TOML standard including multiline

@@ -1205,7 +1205,13 @@ auto hidden_group=app.add_option_group("");
 ```
 
 will create a group such that no options in that group are displayed in the help
-string.
+string.  For the purposes of help display,  if the option group name starts with a '+' it is treated as if it were not in a group for help and get_options.   For example:
+
+```cpp
+auto added_group=app.add_option_group("+sub");
+```
+
+In this case the help output will not reference the option group and options inside of it will be treated for most purposes as if they were part of the parent.
 
 ### Configuration file
 
