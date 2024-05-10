@@ -18,16 +18,16 @@ int main(int argc, const char *argv[]) {
     std::optional<bool> optional_flag = std::nullopt;
 
     app.add_option("--tester");
-    auto *m1=app.add_option_group("+tester");
+    auto *m1 = app.add_option_group("+tester");
 
     m1->add_option("--flag", flag, "description");
     m1->add_option("--optional_flag", optional_flag, "description");
 
-    CLI11_PARSE(app,argc, argv);
+    CLI11_PARSE(app, argc, argv);
 
     std::cout << "flag: " << flag << std::endl;
 
-    if(optional_flag){
+    if(optional_flag) {
         std::cout << "optional flag: " << optional_flag.value() << std::endl;
     }
 }

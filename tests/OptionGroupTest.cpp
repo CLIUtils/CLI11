@@ -237,11 +237,11 @@ TEST_CASE_METHOD(TApp, "integratedOptionGroup", "[optiongroup]") {
     args = {"--test1", "5", "--test2", "4", "--test3=5"};
     CHECK_NOTHROW(run());
 
-    auto options=app.get_options();
-    CHECK(options.size()==5);
-    const CLI::App *capp=&app;
-    auto coptions=capp->get_options();
-    CHECK(coptions.size()==5);
+    auto options = app.get_options();
+    CHECK(options.size() == 5);
+    const CLI::App *capp = &app;
+    auto coptions = capp->get_options();
+    CHECK(coptions.size() == 5);
     std::string help = app.help();
     auto exactloc = help.find("clusters");
     CHECK(std::string::npos == exactloc);

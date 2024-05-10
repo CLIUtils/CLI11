@@ -1340,9 +1340,8 @@ class Option_group : public App {
         : App(std::move(group_description), "", parent) {
         group(group_name);
         // option groups should have automatic fallthrough
-        if (group_name.empty() || group_name.front() == '+')
-        {
-            //help will not be used by default in these contexts
+        if(group_name.empty() || group_name.front() == '+') {
+            // help will not be used by default in these contexts
             set_help_flag("");
             set_help_all_flag("");
         }
