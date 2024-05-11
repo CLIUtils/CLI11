@@ -8,26 +8,21 @@
 
 #include <CLI/CLI.hpp>
 #include <iostream>
-#include <optional>
+#include <string>
 
 int main(int argc, const char *argv[]) {
 
-    CLI::App app;
+    int value{0};
+    CLI::App app{"Test App"};
+    app.add_option("-v", value, "value");
 
-    bool flag = false;
-    std::optional<bool> optional_flag = std::nullopt;
-
-    app.add_option("--tester");
-    auto *m1 = app.add_option_group("+tester");
-
-    m1->add_option("--flag", flag, "description");
-    m1->add_option("--optional_flag", optional_flag, "description");
-
+    auto *subcom = app.add_subcommand("sub", "")->prefix_command();
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "flag: " << flag << std::endl;
-
-    if(optional_flag) {
-        std::cout << "optional flag: " << optional_flag.value() << std::endl;
+    std::cout << "value =" << value << '\n';
+    std::cout << "after Args:";
+    for(const auto &aarg : subcom->remaining()) {
+        std::cout << aarg << " ";
     }
+    std::cout << '\n';
 }
