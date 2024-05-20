@@ -221,6 +221,32 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMin", "[optiongroup]") {
     CHECK(std::string::npos != exactloc);
 }
 
+TEST_CASE_METHOD(TApp, "integratedOptionGroup", "[optiongroup]") {
+    auto *ogroup = app.add_option_group("+clusters");
+    int res{0};
+    ogroup->add_option("--test1", res);
+    ogroup->add_option("--test2", res);
+    ogroup->add_option("--test3", res);
+    int val2{0};
+    app.add_option("--option", val2);
+    ogroup->require_option();
+
+    args = {"--option", "9"};
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+
+    args = {"--test1", "5", "--test2", "4", "--test3=5"};
+    CHECK_NOTHROW(run());
+
+    auto options = app.get_options();
+    CHECK(options.size() == 5);
+    const CLI::App *capp = &app;
+    auto coptions = capp->get_options();
+    CHECK(coptions.size() == 5);
+    std::string help = app.help();
+    auto exactloc = help.find("clusters");
+    CHECK(std::string::npos == exactloc);
+}
+
 TEST_CASE_METHOD(TApp, "BasicOptionGroupExact2", "[optiongroup]") {
     auto *ogroup = app.add_option_group("clusters");
     int res{0};

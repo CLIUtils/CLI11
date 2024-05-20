@@ -784,7 +784,14 @@ CLI11_INLINE std::vector<const Option *> App::get_options(const std::function<bo
                                      [&filter](const Option *opt) { return !filter(opt); }),
                       std::end(options));
     }
-
+    for(const auto &subcp : subcommands_) {
+        // also check down into nameless subcommands
+        const App *subc = subcp.get();
+        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front() == '+') {
+            std::vector<const Option *> subcopts = subc->get_options(filter);
+            options.insert(options.end(), subcopts.begin(), subcopts.end());
+        }
+    }
     return options;
 }
 
@@ -798,7 +805,13 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             std::remove_if(std::begin(options), std::end(options), [&filter](Option *opt) { return !filter(opt); }),
             std::end(options));
     }
-
+    for(auto &subc : subcommands_) {
+        // also check down into nameless subcommands
+        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front() == '+') {
+            auto subcopts = subc->get_options(filter);
+            options.insert(options.end(), subcopts.begin(), subcopts.end());
+        }
+    }
     return options;
 }
 
