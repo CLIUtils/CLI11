@@ -311,7 +311,7 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
-    bool configurable=configurable_ && other.configurable_;
+    bool configurable = configurable_ && other.configurable_;
     for(const std::string &sname : snames_) {
         if(other.check_sname(sname))
             return sname;

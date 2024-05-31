@@ -558,11 +558,11 @@ TEST_CASE_METHOD(TApp, "NumberFlags", "[app]") {
 TEST_CASE_METHOD(TApp, "doubleDashH", "[app]") {
 
     int val{0};
-    //test you can add a --h option and it doesn't conflict with the help 
+    // test you can add a --h option and it doesn't conflict with the help
     CHECK_NOTHROW(app.add_flag("--h", val));
 
-    auto *topt=app.add_flag("-t");
-    CHECK_THROWS_AS(app.add_flag("--t"),CLI::OptionAlreadyAdded);
+    auto *topt = app.add_flag("-t");
+    CHECK_THROWS_AS(app.add_flag("--t"), CLI::OptionAlreadyAdded);
     topt->configurable(false);
     CHECK_NOTHROW(app.add_flag("--t"));
 }
