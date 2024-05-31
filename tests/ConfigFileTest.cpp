@@ -1162,11 +1162,11 @@ TEST_CASE_METHOD(TApp, "notConfigurableOptionOverload2", "[config]") {
     app.set_config("--conf", next);
     int two{7};
     int three{5};
-    app.add_option("-m",three)->configurable(false);
+    app.add_option("-m", three)->configurable(false);
     app.add_option("m", two);
 
     run();
-    CHECK(three==5);
+    CHECK(three == 5);
     CHECK(two == 99);
 }
 
