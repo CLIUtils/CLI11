@@ -1128,7 +1128,7 @@ TEST_CASE_METHOD(TApp, "hInConfig", "[config]") {
     CHECK(two == 99);
 }
 
-TEST_CASE_METHOD(TApp, "oddConfig", "[config]") {
+TEST_CASE_METHOD(TApp, "notConfigurableOptionOverload", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     {
@@ -1146,6 +1146,27 @@ TEST_CASE_METHOD(TApp, "oddConfig", "[config]") {
 
     run();
     CHECK(three == 5);
+    CHECK(two == 99);
+}
+
+TEST_CASE_METHOD(TApp, "notConfigurableOptionOverload2", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "m=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    int three{5};
+    app.add_option("-m",three)->configurable(false);
+    app.add_option("m", two);
+
+    run();
+    CHECK(three==5);
     CHECK(two == 99);
 }
 
