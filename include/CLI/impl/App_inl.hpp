@@ -1492,6 +1492,23 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
             op = get_option_no_throw(item.name);
         }
     }
+    else if (!op->get_configurable())
+    {
+        if(item.name.size() == 1) {
+            auto testop = get_option_no_throw("-" + item.name);
+            if (testop != nullptr && testop->get_configurable())
+            {
+                op=testop;
+            }
+        }
+        if(!op->get_configurable()) {
+            auto testop = get_option_no_throw(item.name);
+            if (testop != nullptr && testop->get_configurable())
+            {
+                op=testop;
+            }
+        }
+    }
 
     if(op == nullptr) {
         // If the option was not present

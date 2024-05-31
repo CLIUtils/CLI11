@@ -1109,6 +1109,46 @@ TEST_CASE_METHOD(TApp, "IniOverwrite", "[config]") {
     CHECK(two == 99);
 }
 
+TEST_CASE_METHOD(TApp, "hInConfig", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "h=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    app.add_option("--h", two);
+
+    run();
+
+    CHECK(two == 99);
+}
+
+TEST_CASE_METHOD(TApp, "oddConfig", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "m=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    int three{5};
+    app.add_option("--m",three)->configurable(false);
+    app.add_option("-m", two);
+
+    run();
+    CHECK(three==5);
+    CHECK(two == 99);
+}
+
 TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
