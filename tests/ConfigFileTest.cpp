@@ -2818,14 +2818,11 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
     CHECK(tmpini3.c_str() == app.get_config_ptr()->as<std::string>());
 }
 
-
-TEST_CASE("fclear", "[config]")
-{
-    //mainly to clear up some warnings
+TEST_CASE("fclear", "[config]") {
+    // mainly to clear up some warnings
     (void)fclear1;
     (void)fclear2;
     (void)fclear3;
-
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputSimple", "[config]") {
