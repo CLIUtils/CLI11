@@ -174,19 +174,19 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             }
 
             auto *op = get_option_no_throw(test_name);
-            if(op != nullptr) {
+            if(op != nullptr && op->get_configurable()) {
                 throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
             }
         } else if(parent_ != nullptr) {
             for(auto &ln : myopt.lnames_) {
                 auto *op = parent_->get_option_no_throw(ln);
-                if(op != nullptr) {
+                if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
                 }
             }
             for(auto &sn : myopt.snames_) {
                 auto *op = parent_->get_option_no_throw(sn);
-                if(op != nullptr) {
+                if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
                 }
             }
@@ -1490,6 +1490,24 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         if(op == nullptr) {
             op = get_option_no_throw(item.name);
+        } else if(!op->get_configurable()) {
+            auto *testop = get_option_no_throw(item.name);
+            if(testop != nullptr && testop->get_configurable()) {
+                op = testop;
+            }
+        }
+    } else if(!op->get_configurable()) {
+        if(item.name.size() == 1) {
+            auto *testop = get_option_no_throw("-" + item.name);
+            if(testop != nullptr && testop->get_configurable()) {
+                op = testop;
+            }
+        }
+        if(!op->get_configurable()) {
+            auto *testop = get_option_no_throw(item.name);
+            if(testop != nullptr && testop->get_configurable()) {
+                op = testop;
+            }
         }
     }
 

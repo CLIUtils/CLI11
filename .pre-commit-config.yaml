@@ -90,4 +90,4 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        args: ["-L", "atleast,ans,doub,inout"]
+        args: ["-L", "atleast,ans,doub,inout,AtMost"]

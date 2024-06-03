@@ -1109,6 +1109,67 @@ TEST_CASE_METHOD(TApp, "IniOverwrite", "[config]") {
     CHECK(two == 99);
 }
 
+TEST_CASE_METHOD(TApp, "hInConfig", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "h=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    app.add_option("--h", two);
+
+    run();
+
+    CHECK(two == 99);
+}
+
+TEST_CASE_METHOD(TApp, "notConfigurableOptionOverload", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "m=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    int three{5};
+    app.add_option("--m", three)->configurable(false);
+    app.add_option("-m", two);
+
+    run();
+    CHECK(three == 5);
+    CHECK(two == 99);
+}
+
+TEST_CASE_METHOD(TApp, "notConfigurableOptionOverload2", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "m=99" << '\n';
+    }
+
+    std::string next = "TestIniTmp.ini";
+    app.set_config("--conf", next);
+    int two{7};
+    int three{5};
+    app.add_option("-m", three)->configurable(false);
+    app.add_option("m", two);
+
+    run();
+    CHECK(three == 5);
+    CHECK(two == 99);
+}
+
 TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -2816,6 +2877,13 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
 
     CHECK(val == 3);
     CHECK(tmpini3.c_str() == app.get_config_ptr()->as<std::string>());
+}
+
+TEST_CASE("fclear", "[config]") {
+    // mainly to clear up some warnings
+    (void)fclear1;
+    (void)fclear2;
+    (void)fclear3;
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputSimple", "[config]") {
