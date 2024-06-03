@@ -311,26 +311,27 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
+    bool bothConfigurable = configurable_ && other.configurable_;
     for(const std::string &sname : snames_) {
         if(other.check_sname(sname))
             return sname;
-        if(other.check_lname(sname))
+        if(bothConfigurable && other.check_lname(sname))
             return sname;
     }
     for(const std::string &lname : lnames_) {
         if(other.check_lname(lname))
             return lname;
-        if(lname.size() == 1) {
+        if(lname.size() == 1 && bothConfigurable) {
             if(other.check_sname(lname)) {
                 return lname;
             }
         }
     }
-    if(snames_.empty() && lnames_.empty() && !pname_.empty()) {
+    if(bothConfigurable && snames_.empty() && lnames_.empty() && !pname_.empty()) {
         if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
             return pname_;
     }
-    if(other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
+    if(bothConfigurable && other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
         if(check_sname(other.pname_) || check_lname(other.pname_) || (pname_ == other.pname_))
             return other.pname_;
     }

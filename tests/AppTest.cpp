@@ -555,6 +555,18 @@ TEST_CASE_METHOD(TApp, "NumberFlags", "[app]") {
     CHECK(7 == val);
 }
 
+TEST_CASE_METHOD(TApp, "doubleDashH", "[app]") {
+
+    int val{0};
+    // test you can add a --h option and it doesn't conflict with the help
+    CHECK_NOTHROW(app.add_flag("--h", val));
+
+    auto *topt = app.add_flag("-t");
+    CHECK_THROWS_AS(app.add_flag("--t"), CLI::OptionAlreadyAdded);
+    topt->configurable(false);
+    CHECK_NOTHROW(app.add_flag("--t"));
+}
+
 TEST_CASE_METHOD(TApp, "DisableFlagOverrideTest", "[app]") {
 
     int val{0};
@@ -2180,7 +2192,7 @@ TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {
     args = {"--string", "val_with_opt1", "--opt1"};
     run();
 
-    args = {"--opt1", "--string", "val_with_opt1"};  // order is not revelant
+    args = {"--opt1", "--string", "val_with_opt1"};  // order is not relevant
     run();
 }
 
