@@ -61,13 +61,7 @@ CLI11_DIAGNOSTIC_IGNORE_DEPRECATED
 
 CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
 #if CLI11_HAS_CODECVT
-#ifdef _WIN32
-    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(str, str + str_size);
-
-#else
-    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(str, str + str_size);
-
-#endif  // _WIN32
+    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(str, str + str_size); // UCS-2 on Windows, UTF-32 otherwise
 #else   // CLI11_HAS_CODECVT
     (void)str_size;
     std::mbstate_t state = std::mbstate_t();
@@ -92,13 +86,7 @@ CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
 
 CLI11_INLINE std::wstring widen_impl(const char *str, std::size_t str_size) {
 #if CLI11_HAS_CODECVT
-#ifdef _WIN32
-    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(str, str + str_size);
-
-#else
-    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(str, str + str_size);
-
-#endif  // _WIN32
+    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(str, str + str_size); // UCS-2 on Windows, UTF-32 otherwise
 #else   // CLI11_HAS_CODECVT
     (void)str_size;
     std::mbstate_t state = std::mbstate_t();
