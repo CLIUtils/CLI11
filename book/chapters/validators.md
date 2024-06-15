@@ -6,9 +6,11 @@ There are two forms of validators:
 - `check` validators: non-mutating (recommended unless the parsed string must be
   mutated)
 
-A transform validator comes in one form, a function with the signature `std::string(std::string&)`. The function will
-take a string and return an error message, or an empty string if input is valid. If there is an error, the function
-should throw a `CLI::ValidationError` with the appropriate reason as a message.
+A transform validator comes in one form, a function with the signature
+`std::string(std::string&)`. The function will take a string and return an error
+message, or an empty string if input is valid. If there is an error, the
+function should throw a `CLI::ValidationError` with the appropriate reason as a
+message.
 
 An example of a mutating validator:
 
@@ -27,14 +29,17 @@ auto transform_validator = CLI::Validator(
 cli_global.add_option("option")->transform(transform_validator);
 ```
 
-However, `check` validators come in two forms; either a simple function with the const version of the above
-signature, `std::string(const std::string &)`, or a subclass of `struct CLI::Validator`. This structure has two members
-that a user should set; one (`func_`) is the function to add to the Option
-(exactly matching the above function signature, since it will become that function), and the other is
-`name_`, and is the type name to set on the Option (unless empty, in which case the typename will be left unchanged).
+However, `check` validators come in two forms; either a simple function with the
+const version of the above signature, `std::string(const std::string &)`, or a
+subclass of `struct CLI::Validator`. This structure has two members that a user
+should set; one (`func_`) is the function to add to the Option (exactly matching
+the above function signature, since it will become that function), and the other
+is `name_`, and is the type name to set on the Option (unless empty, in which
+case the typename will be left unchanged).
 
-Validators can be combined with `&` and `|`, and they have an `operator()` so that you can call them as if they were a
-function. In CLI11, const static versions of the validators are provided so that the user does not have to call a
+Validators can be combined with `&` and `|`, and they have an `operator()` so
+that you can call them as if they were a function. In CLI11, const static
+versions of the validators are provided so that the user does not have to call a
 constructor also.
 
 An example of a custom validator:
