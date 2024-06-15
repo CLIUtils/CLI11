@@ -9,12 +9,15 @@ std::string opt;
 app.add_option("--my_option", opt)->envname("MY_OPTION");
 ```
 
-If not given on the command line, the environment variable will be checked and read from if it exists. All the standard tools, like default and required, work as expected.
-If passed on the command line, this will ignore the environment variable.
+If not given on the command line, the environment variable will be checked and
+read from if it exists. All the standard tools, like default and required, work
+as expected. If passed on the command line, this will ignore the environment
+variable.
 
 ## Needs/excludes
 
-You can set a network of requirements. For example, if flag a needs flag b but cannot be given with flag c, that would be:
+You can set a network of requirements. For example, if flag a needs flag b but
+cannot be given with flag c, that would be:
 
 ```cpp
 auto a = app.add_flag("-a");
@@ -25,11 +28,14 @@ a->needs(b);
 a->excludes(c);
 ```
 
-CLI11 will make sure your network of requirements makes sense, and will throw an error immediately if it does not.
+CLI11 will make sure your network of requirements makes sense, and will throw an
+error immediately if it does not.
 
 ## Custom option callbacks
 
-You can make a completely generic option with a custom callback. For example, if you wanted to add a complex number (already exists, so please don't actually do this):
+You can make a completely generic option with a custom callback. For example, if
+you wanted to add a complex number (already exists, so please don't actually do
+this):
 
 ```cpp
 CLI::Option *
@@ -62,7 +68,13 @@ add_option(app, "-c,--complex", comp);
 
 ## Custom converters
 
-You can add your own converters to allow CLI11 to accept more option types in the standard calls. These can only be used for "single" size options (so complex, vector, etc. are a separate topic). If you set up a custom `istringstream& operator <<` overload before include CLI11, you can support different conversions. If you place this in the CLI namespace, you can even keep this from affecting the rest of your code. Here's how you could add `boost::optional` for a compiler that does not have `__has_include`:
+You can add your own converters to allow CLI11 to accept more option types in
+the standard calls. These can only be used for "single" size options (so
+complex, vector, etc. are a separate topic). If you set up a custom
+`istringstream& operator <<` overload before include CLI11, you can support
+different conversions. If you place this in the CLI namespace, you can even keep
+this from affecting the rest of your code. Here's how you could add
+`boost::optional` for a compiler that does not have `__has_include`:
 
 ```cpp
 // CLI11 already does this if __has_include is defined
@@ -87,7 +99,10 @@ template <typename T> std::istringstream &operator>>(std::istringstream &in, boo
 #include <CLI11.hpp>
 ```
 
-This is an example of how to use the system only; if you are just looking for a way to activate `boost::optional` support on older compilers, you should define `CLI11_BOOST_OPTIONAL` before including a CLI11 file, you'll get the `boost::optional` support.
+This is an example of how to use the system only; if you are just looking for a
+way to activate `boost::optional` support on older compilers, you should define
+`CLI11_BOOST_OPTIONAL` before including a CLI11 file, you'll get the
+`boost::optional` support.
 
 ## Custom converters and type names: std::chrono example
 

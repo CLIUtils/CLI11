@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
     CLI::App app{"An app to practice mixing unlimited arguments, but still recover the original order."};
 
     std::vector<int> foos;
-    auto foo = app.add_option("--foo,-f", foos, "Some unlimited argument");
+    auto *foo = app.add_option("--foo,-f", foos, "Some unlimited argument");
 
     std::vector<int> bars;
-    auto bar = app.add_option("--bar", bars, "Some unlimited argument");
+    auto *bar = app.add_option("--bar", bars, "Some unlimited argument");
 
     app.add_flag("--z,--x", "Random other flags");
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     std::reverse(std::begin(bars), std::end(bars));
 
     std::vector<std::pair<std::string, int>> keyval;
-    for(auto option : app.parse_order()) {
+    for(auto *option : app.parse_order()) {
         if(option == foo) {
             keyval.emplace_back("foo", foos.back());
             foos.pop_back();
@@ -46,6 +46,6 @@ int main(int argc, char **argv) {
 
     // Prove the vector is correct
     for(auto &pair : keyval) {
-        std::cout << pair.first << " : " << pair.second << std::endl;
+        std::cout << pair.first << " : " << pair.second << '\n';
     }
 }

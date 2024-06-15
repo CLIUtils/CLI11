@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -9,9 +9,15 @@
 // CLI Library includes
 // Order is important for combiner script
 
+// IWYU pragma: begin_exports
+
 #include "Version.hpp"
 
 #include "Macros.hpp"
+
+#include "Encoding.hpp"
+
+#include "Argv.hpp"
 
 #include "StringTools.hpp"
 
@@ -34,3 +40,5 @@
 #include "Config.hpp"
 
 #include "Formatter.hpp"
+
+// IWYU pragma: end_exports

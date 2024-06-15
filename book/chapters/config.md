@@ -2,36 +2,79 @@
 
 ## Reading a configure file
 
-You can tell your app to allow configure files with `set_config("--config")`. There are arguments: the first is the option name. If empty, it will clear the config flag. The second item is the default file name. If that is specified, the config will try to read that file. The third item is the help string, with a reasonable default, and the final argument is a boolean (default: false) that indicates that the configuration file is required and an error will be thrown if the file is not found and this is set to true.
+You can tell your app to allow configure files with `set_config("--config")`.
+There are arguments: the first is the option name. If empty, it will clear the
+config flag. The second item is the default file name. If that is specified, the
+config will try to read that file. The third item is the help string, with a
+reasonable default, and the final argument is a boolean (default: false) that
+indicates that the configuration file is required and an error will be thrown if
+the file is not found and this is set to true. The option pointer returned by
+`set_config` is the same type as returned by `add_option` and all modifiers
+including validators, and checks are valid.
+
+### Adding a default path
+
+if it is desired that config files be searched for a in a default path the
+`CLI::FileOnDefaultPath` transform can be used.
+
+```cpp
+app.set_config("--config")->transform(CLI::FileOnDefaultPath("/default_path/"));
+```
+
+This will allow specified files to either exist as given or on a specified
+default path.
+
+```cpp
+app.set_config("--config")
+    ->transform(CLI::FileOnDefaultPath("/default_path/"))
+    ->transform(CLI::FileOnDefaultPath("/default_path2/",false));
+```
+
+Multiple default paths can be specified through this mechanism. The last
+transform given is executed first so the error return must be disabled so it can
+be chained to the first. The same effect can be achieved though the or(`|`)
+operation with validators
+
+```cpp
+app.set_config("--config")
+    ->transform(CLI::FileOnDefaultPath("/default_path2/") | CLI::FileOnDefaultPath("/default_path/"));
+```
 
 ### Extra fields
 
-Sometimes configuration files are used for multiple purposes so CLI11 allows options on how to deal with extra fields
+Sometimes configuration files are used for multiple purposes so CLI11 allows
+options on how to deal with extra fields
 
 ```cpp
 app.allow_config_extras(true);
 ```
 
-will allow capture the extras in the extras field of the app. (NOTE:  This also sets the `allow_extras` in the app to true)
+will allow capture the extras in the extras field of the app. (NOTE: This also
+sets the `allow_extras` in the app to true)
 
 ```cpp
 app.allow_config_extras(false);
 ```
 
-will generate an error if there are any extra fields
-for slightly finer control there is a scoped enumeration of the modes or
+will generate an error if there are any extra fields for slightly finer control
+there is a scoped enumeration of the modes or
 
 ```cpp
 app.allow_config_extras(CLI::config_extras_mode::ignore);
 ```
 
-will completely ignore extra parameters in the config file.   This mode is the default.
+will completely ignore extra parameters in the config file. This mode is the
+default.
 
 ```cpp
 app.allow_config_extras(CLI::config_extras_mode::capture);
 ```
 
-will store the unrecognized options in the app extras fields. This option is the closest equivalent to `app.allow_config_extras(true);` with the exception that it does not also set the `allow_extras` flag so using this option without also setting `allow_extras(true)` will generate an error which may or may not be the desired behavior.
+will store the unrecognized options in the app extras fields. This option is the
+closest equivalent to `app.allow_config_extras(true);` with the exception that
+it does not also set the `allow_extras` flag so using this option without also
+setting `allow_extras(true)` will generate an error which may or may not be the
+desired behavior.
 
 ```cpp
 app.allow_config_extras(CLI::config_extras_mode::error);
@@ -43,19 +86,43 @@ is equivalent to `app.allow_config_extras(false);`
 app.allow_config_extras(CLI::config_extras_mode::ignore_all);
 ```
 
-will completely ignore any mismatches, extras, or other issues with the config file
+will completely ignore any mismatches, extras, or other issues with the config
+file
+
+Config file extras are stored in the remaining output as two components. The
+first is the name of the field including subcommands using dot notation the
+second (or more) are the argument fields.
 
 ### Getting the used configuration file name
 
 If it is needed to get the configuration file name used this can be obtained via
-`app.get_config_ptr()->as<std::string>()`  or
-`app["--config"]->as<std::string>()` assuming `--config` was the configuration option name.
+`app.get_config_ptr()->as<std::string>()` or
+`app["--config"]->as<std::string>()` assuming `--config` was the configuration
+option name.
+
+### Order of precedence
+
+By default if multiple configuration files are given they are read in reverse
+order. With the last one given taking precedence over the earlier ones. This
+behavior can be changed through the `multi_option_policy`. For example:
+
+```cpp
+app.set_config("--config")
+    ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+```
+
+will read the files in the order given, which may be useful in some
+circumstances. Using `CLI::MultiOptionPolicy::TakeLast` would work similarly
+getting the last `N` files given. The default policy for config options is
+`CLI::MultiOptionPolicy::Reverse` which takes the last expected `N` and reverses
+them so the last option given is given precedence.
 
 ## Configure file format
 
-Here is an example configuration file, in [TOML](https://github.com/toml-lang/toml) format:
+Here is an example configuration file, in
+[TOML](https://github.com/toml-lang/toml) format:
 
-```ini
+```toml
 # Comments are supported, using a #
 # The default section is [default], case insensitive
 
@@ -70,7 +137,15 @@ in_subcommand = Wow
 subcommand = true # could also be give as sub.subcommand=true
 ```
 
-Spaces before and after the name and argument are ignored. Multiple arguments are separated by spaces. One set of quotes will be removed, preserving spaces (the same way the command line works). Boolean options can be `true`, `on`, `1`, `y`, `t`, `+`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `n`, `f`, `-`, `disable`, (case insensitive). Sections (and `.` separated names) are treated as subcommands (note: this does not necessarily mean that subcommand was passed, it just sets the "defaults". If a subcommand is set to `configurable` then passing the subcommand using `[sub]` in a configuration file will trigger the subcommand.)
+Spaces before and after the name and argument are ignored. Multiple arguments
+are separated by spaces. One set of quotes will be removed, preserving spaces
+(the same way the command line works). Boolean options can be `true`, `on`, `1`,
+`y`, `t`, `+`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `n`, `f`, `-`,
+`disable`, (case insensitive). Sections (and `.` separated names) are treated as
+subcommands (note: this does not necessarily mean that subcommand was passed, it
+just sets the "defaults". If a subcommand is set to `configurable` then passing
+the subcommand using `[sub]` in a configuration file will trigger the
+subcommand.)
 
 CLI11 also supports configuration file in INI format.
 
@@ -88,21 +163,82 @@ in_subcommand = Wow
 sub.subcommand = true
 ```
 
-The main differences are in vector notation and comment character.  Note: CLI11 is not a full TOML parser as it just reads values as strings.  It is possible (but not recommended) to mix notation.
+The main differences are in vector notation and comment character. Note: CLI11
+is not a full TOML parser as it just reads values as strings. It is possible
+(but not recommended) to mix notation.
+
+### Multi-line strings
+
+The default config file parser supports multi-line strings like the toml
+standard [TOML](https://toml.io/en/). It also supports multiline comments like
+python doc strings.
+
+```toml
+"""
+this is a multine
+comment
+"""
+
+""" this is also
+a multiline comment"""
+
+''' and so is
+this
+'''
+
+value = 1
+str = """
+this is a multiline string value
+the first \n is removed and so is the last
+"""
+
+str2 = ''' this is also a mu-
+ltiline value '''
+
+str3 = """\
+    a line continuation \
+    will skip \
+    all white space between the '\' \
+    and the next non-whitespace character \
+    making this into a single line
+"""
+
+```
+
+The key is that the closing of the multiline string must be at the end of a line
+and match the starting 3 quote sequence. Multiline sequences using `"""` allow
+escape sequences. Following [TOML](https://toml.io/en/v1.0.0#string) with the
+addition of allowing '\0' for a null character, and binary Strings described in
+the next section. This same formatting also applies to single line strings.
+Multiline strings are not allowed as part of an array.
+
+### Binary Strings
+
+Config files have a binary conversion capability, this is mainly to support
+writing config files but can be used by user generated files as well. Strings
+with the form `B"(XXXXX)"` will convert any characters inside the parenthesis
+with the form `\xHH` to the equivalent binary value. The HH are hexadecimal
+characters. Characters not in this form will be translated as given. If argument
+values with unprintable characters are used to generate a config file this
+binary form will be used in the output string.
 
 ## Multiple configuration files
 
-If it is desired that multiple configuration be allowed.  Use
+If it is desired that multiple configuration be allowed. Use
 
 ```cpp
 app.set_config("--config")->expected(1, X);
 ```
 
-Where X is some positive integer and will allow up to `X` configuration files to be specified by separate `--config` arguments.
+Where X is some positive integer and will allow up to `X` configuration files to
+be specified by separate `--config` arguments.
 
 ## Writing out a configure file
 
-To print a configuration file from the passed arguments, use `.config_to_str(default_also=false, write_description=false)`, where `default_also` will also show any defaulted arguments, and `write_description` will include option descriptions and the App description
+To print a configuration file from the passed arguments, use
+`.config_to_str(default_also=false, write_description=false)`, where
+`default_also` will also show any defaulted arguments, and `write_description`
+will include option descriptions and the App description
 
 ```cpp
  CLI::App app;
@@ -113,7 +249,8 @@ To print a configuration file from the passed arguments, use `.config_to_str(def
  std::cout<<app.config_to_str(true,true);
 ```
 
-if a prefix is needed to print before the options, for example to print a config for just a subcommand, the config formatter can be obtained directly.
+if a prefix is needed to print before the options, for example to print a config
+for just a subcommand, the config formatter can be obtained directly.
 
 ```cpp
   auto fmtr=app.get_config_formatter();
@@ -124,7 +261,11 @@ if a prefix is needed to print before the options, for example to print a config
 
 ### Customization of configure file output
 
-The default config parser/generator has some customization points that allow variations on the TOML format.  The default formatter has a base configuration that matches the TOML format.  It defines 5 characters that define how different aspects of the configuration are handled.  You must use `get_config_formatter_base()` to have access to these fields
+The default config parser/generator has some customization points that allow
+variations on the TOML format. The default formatter has a base configuration
+that matches the TOML format. It defines 5 characters that define how different
+aspects of the configuration are handled. You must use
+`get_config_formatter_base()` to have access to these fields
 
 ```cpp
 /// the character used for comments
@@ -139,8 +280,8 @@ char arraySeparator = ',';
 char valueDelimiter = '=';
 /// the character to use around strings
 char stringQuote = '"';
-/// the character to use around single characters
-char characterQuote = '\'';
+/// the character to use around single characters and literal strings
+char literalQuote = '\'';
 /// the maximum number of layers to allow
 uint8_t maximumLayers{255};
 /// the separator used to separator parent layers
@@ -153,41 +294,62 @@ std::string configSection;
 
 These can be modified via setter functions
 
-* `ConfigBase *comment(char cchar)`: Specify the character to start a comment block
-* `ConfigBase *arrayBounds(char aStart, char aEnd)`: Specify the start and end characters for an array
-* `ConfigBase *arrayDelimiter(char aSep)`: Specify the delimiter character for an array
-* `ConfigBase *valueSeparator(char vSep)`: Specify the delimiter between a name and value
-* `ConfigBase *quoteCharacter(char qString, char qChar)` :specify the characters to use around strings and single characters
-* `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent layers to process. This is useful to limit processing for larger config files
-* `ConfigBase *parentSeparator(char sep)` : specify the character to separate parent layers from options
-* `ConfigBase *section(const std::string &sectionName)` : specify the section name to use to get the option values, only this section will be processed
-* `ConfigBase *index(uint16_t sectionIndex)` : specify an index section to use for processing if multiple TOML sections of the same name are present `[[section]]`
+- `ConfigBase *comment(char cchar)`: Specify the character to start a comment
+  block
+- `ConfigBase *arrayBounds(char aStart, char aEnd)`: Specify the start and end
+  characters for an array
+- `ConfigBase *arrayDelimiter(char aSep)`: Specify the delimiter character for
+  an array
+- `ConfigBase *valueSeparator(char vSep)`: Specify the delimiter between a name
+  and value
+- `ConfigBase *quoteCharacter(char qString, char literalChar)` :specify the
+  characters to use around strings and single characters
+- `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent
+  layers to process. This is useful to limit processing for larger config files
+- `ConfigBase *parentSeparator(char sep)` : specify the character to separate
+  parent layers from options
+- `ConfigBase *section(const std::string &sectionName)` : specify the section
+  name to use to get the option values, only this section will be processed
+- `ConfigBase *index(uint16_t sectionIndex)` : specify an index section to use
+  for processing if multiple TOML sections of the same name are present
+  `[[section]]`
 
-For example, to specify reading a configure file that used `:` to separate name and values:
+For example, to specify reading a configure file that used `:` to separate name
+and values:
 
 ```cpp
 auto config_base=app.get_config_formatter_base();
 config_base->valueSeparator(':');
 ```
 
-The default configuration file will read INI files, but will write out files in the TOML format.  To specify outputting INI formatted files use
+The default configuration file will read INI files, but will write out files in
+the TOML format. To specify outputting INI formatted files use
 
 ```cpp
 app.config_formatter(std::make_shared<CLI::ConfigINI>());
 ```
 
-which makes use of a predefined modification of the ConfigBase class which TOML also uses. If a custom formatter is used that is not inheriting from the from ConfigBase class `get_config_formatter_base() will return a nullptr if RTTI is on (usually the default), or garbage if RTTI is off, so some care must be exercised in its use with custom configurations.
+which makes use of a predefined modification of the ConfigBase class which TOML
+also uses. If a custom formatter is used that is not inheriting from the from
+ConfigBase class `get_config_formatter_base() will return a nullptr if RTTI is
+on (usually the default), or garbage if RTTI is off, so some care must be
+exercised in its use with custom configurations.
 
 ## Custom formats
 
-You can invent a custom format and set that instead of the default INI formatter. You need to inherit from `CLI::Config` and implement the following two functions:
+You can invent a custom format and set that instead of the default INI
+formatter. You need to inherit from `CLI::Config` and implement the following
+two functions:
 
 ```cpp
 std::string to_config(const CLI::App *app, bool default_also, bool, std::string) const;
 std::vector<CLI::ConfigItem> from_config(std::istream &input) const;
 ```
 
-The `CLI::ConfigItem`s that you return are simple structures with a name, a vector of parents, and a vector of results. A optionally customizable `to_flag` method on the formatter lets you change what happens when a ConfigItem turns into a flag.
+The `CLI::ConfigItem`s that you return are simple structures with a name, a
+vector of parents, and a vector of results. A optionally customizable `to_flag`
+method on the formatter lets you change what happens when a ConfigItem turns
+into a flag.
 
 Finally, set your new class as new config formatter:
 
@@ -195,7 +357,9 @@ Finally, set your new class as new config formatter:
 app.config_formatter(std::make_shared<NewConfig>());
 ```
 
-See [`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/main/examples/json.cpp) for a complete JSON config example.
+See
+[`examples/json.cpp`](https://github.com/CLIUtils/CLI11/blob/main/examples/json.cpp)
+for a complete JSON config example.
 
 ### Trivial JSON configuration example
 
@@ -213,23 +377,45 @@ The parser can handle these structures with only a minor tweak
 app.get_config_formatter_base()->valueSeparator(':');
 ```
 
-The open and close brackets must be on a separate line and the comma gets interpreted as an array separator but since no values are after the comma they get ignored as well.  This will not support multiple layers or sections or any other moderately complex JSON, but can work if the input file is simple.
+The open and close brackets must be on a separate line and the comma gets
+interpreted as an array separator but since no values are after the comma they
+get ignored as well. This will not support multiple layers or sections or any
+other moderately complex JSON, but can work if the input file is simple.
 
 ## Triggering Subcommands
 
-Configuration files can be used to trigger subcommands if a subcommand is set to configure.  By default configuration file just set the default values of a subcommand.  But if the `configure()` option is set on a subcommand then the if the subcommand is utilized via a `[subname]` block in the configuration file it will act as if it were called from the command line.  Subsubcommands can be triggered via `[subname.subsubname]`.  Using the `[[subname]]` will be as if the subcommand were triggered multiple times from the command line.  This functionality can allow the configuration file to act as a scripting file.
+Configuration files can be used to trigger subcommands if a subcommand is set to
+configure. By default configuration file just set the default values of a
+subcommand. But if the `configure()` option is set on a subcommand then the if
+the subcommand is utilized via a `[subname]` block in the configuration file it
+will act as if it were called from the command line. Subsubcommands can be
+triggered via `[subname.subsubname]`. Using the `[[subname]]` will be as if the
+subcommand were triggered multiple times from the command line. This
+functionality can allow the configuration file to act as a scripting file.
 
-For custom configuration files this behavior can be triggered by specifying the parent subcommands in the structure and `++` as the name to open a new subcommand scope and `--` to close it.  These names trigger the different callbacks of configurable subcommands.
+For custom configuration files this behavior can be triggered by specifying the
+parent subcommands in the structure and `++` as the name to open a new
+subcommand scope and `--` to close it. These names trigger the different
+callbacks of configurable subcommands.
 
 ## Stream parsing
 
-In addition to the regular parse functions a `parse_from_stream(std::istream &input)` is available to directly parse a stream operator.  For example to process some arguments in an already open file stream.  The stream is fed directly in the config parser so bypasses the normal command line parsing.
+In addition to the regular parse functions a
+`parse_from_stream(std::istream &input)` is available to directly parse a stream
+operator. For example to process some arguments in an already open file stream.
+The stream is fed directly in the config parser so bypasses the normal command
+line parsing.
 
 ## Implementation Notes
 
-The config file input works with any form of the option given:  Long, short, positional, or the environment variable name.  When generating a config file it will create an option name in following priority.
+The config file input works with any form of the option given: Long, short,
+positional, or the environment variable name. When generating a config file it
+will create an option name in following priority.
 
 1. First long name
 2. Positional name
 3. First short name
 4. Environment name
+
+In config files the name will be enclosed in quotes if there is any potential
+ambiguities in parsing the name.

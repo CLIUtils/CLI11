@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
+
+// IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
 #include <exception>
@@ -15,6 +17,7 @@
 // [CLI11:public_includes:end]
 
 // CLI library includes
+#include "Macros.hpp"
 #include "StringTools.hpp"
 
 namespace CLI {
@@ -72,9 +75,9 @@ class Error : public std::runtime_error {
     std::string error_name{"Error"};
 
   public:
-    int get_exit_code() const { return actual_exit_code; }
+    CLI11_NODISCARD int get_exit_code() const { return actual_exit_code; }
 
-    std::string get_name() const { return error_name; }
+    CLI11_NODISCARD std::string get_name() const { return error_name; }
 
     Error(std::string name, std::string msg, int exit_code = static_cast<int>(ExitCodes::BaseClass))
         : runtime_error(msg), actual_exit_code(exit_code), error_name(std::move(name)) {}
@@ -122,7 +125,13 @@ class BadNameString : public ConstructionError {
     CLI11_ERROR_DEF(ConstructionError, BadNameString)
     CLI11_ERROR_SIMPLE(BadNameString)
     static BadNameString OneCharName(std::string name) { return BadNameString("Invalid one char name: " + name); }
+    static BadNameString MissingDash(std::string name) {
+        return BadNameString("Long names strings require 2 dashes " + name);
+    }
     static BadNameString BadLongName(std::string name) { return BadNameString("Bad long name: " + name); }
+    static BadNameString BadPositionalName(std::string name) {
+        return BadNameString("Invalid positional Name: " + name);
+    }
     static BadNameString DashesOnly(std::string name) {
         return BadNameString("Must have a name, not just dashes: " + name);
     }
@@ -137,10 +146,10 @@ class OptionAlreadyAdded : public ConstructionError {
     explicit OptionAlreadyAdded(std::string name)
         : OptionAlreadyAdded(name + " is already added", ExitCodes::OptionAlreadyAdded) {}
     static OptionAlreadyAdded Requires(std::string name, std::string other) {
-        return OptionAlreadyAdded(name + " requires " + other, ExitCodes::OptionAlreadyAdded);
+        return {name + " requires " + other, ExitCodes::OptionAlreadyAdded};
     }
     static OptionAlreadyAdded Excludes(std::string name, std::string other) {
-        return OptionAlreadyAdded(name + " excludes " + other, ExitCodes::OptionAlreadyAdded);
+        return {name + " excludes " + other, ExitCodes::OptionAlreadyAdded};
     }
 };
 
@@ -223,32 +232,30 @@ class RequiredError : public ParseError {
         if(min_subcom == 1) {
             return RequiredError("A subcommand");
         }
-        return RequiredError("Requires at least " + std::to_string(min_subcom) + " subcommands",
-                             ExitCodes::RequiredError);
+        return {"Requires at least " + std::to_string(min_subcom) + " subcommands", ExitCodes::RequiredError};
     }
     static RequiredError
     Option(std::size_t min_option, std::size_t max_option, std::size_t used, const std::string &option_list) {
         if((min_option == 1) && (max_option == 1) && (used == 0))
             return RequiredError("Exactly 1 option from [" + option_list + "]");
         if((min_option == 1) && (max_option == 1) && (used > 1)) {
-            return RequiredError("Exactly 1 option from [" + option_list + "] is required and " + std::to_string(used) +
-                                     " were given",
-                                 ExitCodes::RequiredError);
+            return {"Exactly 1 option from [" + option_list + "] is required but " + std::to_string(used) +
+                        " were given",
+                    ExitCodes::RequiredError};
         }
         if((min_option == 1) && (used == 0))
             return RequiredError("At least 1 option from [" + option_list + "]");
         if(used < min_option) {
-            return RequiredError("Requires at least " + std::to_string(min_option) + " options used and only " +
-                                     std::to_string(used) + "were given from [" + option_list + "]",
-                                 ExitCodes::RequiredError);
+            return {"Requires at least " + std::to_string(min_option) + " options used but only " +
+                        std::to_string(used) + " were given from [" + option_list + "]",
+                    ExitCodes::RequiredError};
         }
         if(max_option == 1)
-            return RequiredError("Requires at most 1 options be given from [" + option_list + "]",
-                                 ExitCodes::RequiredError);
+            return {"Requires at most 1 options be given from [" + option_list + "]", ExitCodes::RequiredError};
 
-        return RequiredError("Requires at most " + std::to_string(max_option) + " options be used and " +
-                                 std::to_string(used) + "were given from [" + option_list + "]",
-                             ExitCodes::RequiredError);
+        return {"Requires at most " + std::to_string(max_option) + " options be used but " + std::to_string(used) +
+                    " were given from [" + option_list + "]",
+                ExitCodes::RequiredError};
     }
 };
 

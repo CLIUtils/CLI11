@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,6 +6,9 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
+#include "Error.hpp"
 #include "Macros.hpp"
 #include "StringTools.hpp"
 #include "TypeTools.hpp"
@@ -24,34 +27,6 @@
 // [CLI11:public_includes:end]
 
 // [CLI11:validators_hpp_filesystem:verbatim]
-
-// C standard library
-// Only needed for existence checking
-#if defined CLI11_CPP17 && defined __has_include && !defined CLI11_HAS_FILESYSTEM
-#if __has_include(<filesystem>)
-// Filesystem cannot be used if targeting macOS < 10.15
-#if defined __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 101500
-#define CLI11_HAS_FILESYSTEM 0
-#elif defined(__wasi__)
-// As of wasi-sdk-14, filesystem is not implemented
-#define CLI11_HAS_FILESYSTEM 0
-#else
-#include <filesystem>
-#if defined __cpp_lib_filesystem && __cpp_lib_filesystem >= 201703
-#if defined _GLIBCXX_RELEASE && _GLIBCXX_RELEASE >= 9
-#define CLI11_HAS_FILESYSTEM 1
-#elif defined(__GLIBCXX__)
-// if we are using gcc and Version <9 default to no filesystem
-#define CLI11_HAS_FILESYSTEM 0
-#else
-#define CLI11_HAS_FILESYSTEM 1
-#endif
-#else
-#define CLI11_HAS_FILESYSTEM 0
-#endif
-#endif
-#endif
-#endif
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>  // NOLINT(build/include)
@@ -94,6 +69,9 @@ class Validator {
     /// specify that a validator should not modify the input
     bool non_modifying_{false};
 
+    Validator(std::string validator_desc, std::function<std::string(std::string &)> func)
+        : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(func)) {}
+
   public:
     Validator() = default;
     /// Construct a Validator with just the description string
@@ -109,18 +87,7 @@ class Validator {
     }
     /// This is the required operator for a Validator - provided to help
     /// users (CLI11 uses the member `func` directly)
-    std::string operator()(std::string &str) const {
-        std::string retstring;
-        if(active_) {
-            if(non_modifying_) {
-                std::string value = str;
-                retstring = func_(value);
-            } else {
-                retstring = func_(str);
-            }
-        }
-        return retstring;
-    }
+    std::string operator()(std::string &str) const;
 
     /// This is the required operator for a Validator - provided to help
     /// users (CLI11 uses the member `func` directly)
@@ -135,13 +102,10 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    Validator description(std::string validator_desc) const {
-        Validator newval(*this);
-        newval.desc_function_ = [validator_desc]() { return validator_desc; };
-        return newval;
-    }
+    CLI11_NODISCARD Validator description(std::string validator_desc) const;
+
     /// Generate type description information for the Validator
-    std::string get_description() const {
+    CLI11_NODISCARD std::string get_description() const {
         if(active_) {
             return desc_function_();
         }
@@ -153,20 +117,20 @@ class Validator {
         return *this;
     }
     /// Specify the type string
-    Validator name(std::string validator_name) const {
+    CLI11_NODISCARD Validator name(std::string validator_name) const {
         Validator newval(*this);
         newval.name_ = std::move(validator_name);
         return newval;
     }
     /// Get the name of the Validator
-    const std::string &get_name() const { return name_; }
+    CLI11_NODISCARD const std::string &get_name() const { return name_; }
     /// Specify whether the Validator is active or not
     Validator &active(bool active_val = true) {
         active_ = active_val;
         return *this;
     }
     /// Specify whether the Validator is active or not
-    Validator active(bool active_val = true) const {
+    CLI11_NODISCARD Validator active(bool active_val = true) const {
         Validator newval(*this);
         newval.active_ = active_val;
         return newval;
@@ -183,107 +147,33 @@ class Validator {
         return *this;
     }
     /// Specify the application index of a validator
-    Validator application_index(int app_index) const {
+    CLI11_NODISCARD Validator application_index(int app_index) const {
         Validator newval(*this);
         newval.application_index_ = app_index;
         return newval;
     }
     /// Get the current value of the application index
-    int get_application_index() const { return application_index_; }
+    CLI11_NODISCARD int get_application_index() const { return application_index_; }
     /// Get a boolean if the validator is active
-    bool get_active() const { return active_; }
+    CLI11_NODISCARD bool get_active() const { return active_; }
 
     /// Get a boolean if the validator is allowed to modify the input returns true if it can modify the input
-    bool get_modifying() const { return !non_modifying_; }
+    CLI11_NODISCARD bool get_modifying() const { return !non_modifying_; }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
-    Validator operator&(const Validator &other) const {
-        Validator newval;
-
-        newval._merge_description(*this, other, " AND ");
-
-        // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & filename)> &f1 = func_;
-        const std::function<std::string(std::string & filename)> &f2 = other.func_;
-
-        newval.func_ = [f1, f2](std::string &input) {
-            std::string s1 = f1(input);
-            std::string s2 = f2(input);
-            if(!s1.empty() && !s2.empty())
-                return std::string("(") + s1 + ") AND (" + s2 + ")";
-            else
-                return s1 + s2;
-        };
-
-        newval.active_ = (active_ & other.active_);
-        newval.application_index_ = application_index_;
-        return newval;
-    }
+    Validator operator&(const Validator &other) const;
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.
-    Validator operator|(const Validator &other) const {
-        Validator newval;
-
-        newval._merge_description(*this, other, " OR ");
-
-        // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string &)> &f1 = func_;
-        const std::function<std::string(std::string &)> &f2 = other.func_;
-
-        newval.func_ = [f1, f2](std::string &input) {
-            std::string s1 = f1(input);
-            std::string s2 = f2(input);
-            if(s1.empty() || s2.empty())
-                return std::string();
-
-            return std::string("(") + s1 + ") OR (" + s2 + ")";
-        };
-        newval.active_ = (active_ & other.active_);
-        newval.application_index_ = application_index_;
-        return newval;
-    }
+    Validator operator|(const Validator &other) const;
 
     /// Create a validator that fails when a given validator succeeds
-    Validator operator!() const {
-        Validator newval;
-        const std::function<std::string()> &dfunc1 = desc_function_;
-        newval.desc_function_ = [dfunc1]() {
-            auto str = dfunc1();
-            return (!str.empty()) ? std::string("NOT ") + str : std::string{};
-        };
-        // Give references (will make a copy in lambda function)
-        const std::function<std::string(std::string & res)> &f1 = func_;
-
-        newval.func_ = [f1, dfunc1](std::string &test) -> std::string {
-            std::string s1 = f1(test);
-            if(s1.empty()) {
-                return std::string("check ") + dfunc1() + " succeeded improperly";
-            }
-            return std::string{};
-        };
-        newval.active_ = active_;
-        newval.application_index_ = application_index_;
-        return newval;
-    }
+    Validator operator!() const;
 
   private:
-    void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger) {
-
-        const std::function<std::string()> &dfunc1 = val1.desc_function_;
-        const std::function<std::string()> &dfunc2 = val2.desc_function_;
-
-        desc_function_ = [=]() {
-            std::string f1 = dfunc1();
-            std::string f2 = dfunc2();
-            if((f1.empty()) || (f2.empty())) {
-                return f1 + f2;
-            }
-            return std::string(1, '(') + f1 + ')' + merger + '(' + f2 + ')';
-        };
-    }
-};  // namespace CLI
+    void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger);
+};
 
 /// Class wrapping some of the accessors of Validator
 class CustomValidator : public Validator {
@@ -297,132 +187,42 @@ namespace detail {
 /// CLI enumeration of different file types
 enum class path_type { nonexistent, file, directory };
 
-#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 /// get the type of the path from a file name
-inline path_type check_path(const char *file) noexcept {
-    std::error_code ec;
-    auto stat = std::filesystem::status(file, ec);
-    if(ec) {
-        return path_type::nonexistent;
-    }
-    switch(stat.type()) {
-    case std::filesystem::file_type::none:
-    case std::filesystem::file_type::not_found:
-        return path_type::nonexistent;
-    case std::filesystem::file_type::directory:
-        return path_type::directory;
-    case std::filesystem::file_type::symlink:
-    case std::filesystem::file_type::block:
-    case std::filesystem::file_type::character:
-    case std::filesystem::file_type::fifo:
-    case std::filesystem::file_type::socket:
-    case std::filesystem::file_type::regular:
-    case std::filesystem::file_type::unknown:
-    default:
-        return path_type::file;
-    }
-}
-#else
-/// get the type of the path from a file name
-inline path_type check_path(const char *file) noexcept {
-#if defined(_MSC_VER)
-    struct __stat64 buffer;
-    if(_stat64(file, &buffer) == 0) {
-        return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
-    }
-#else
-    struct stat buffer;
-    if(stat(file, &buffer) == 0) {
-        return ((buffer.st_mode & S_IFDIR) != 0) ? path_type::directory : path_type::file;
-    }
-#endif
-    return path_type::nonexistent;
-}
-#endif
+CLI11_INLINE path_type check_path(const char *file) noexcept;
+
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
   public:
-    ExistingFileValidator() : Validator("FILE") {
-        func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str());
-            if(path_result == path_type::nonexistent) {
-                return "File does not exist: " + filename;
-            }
-            if(path_result == path_type::directory) {
-                return "File is actually a directory: " + filename;
-            }
-            return std::string();
-        };
-    }
+    ExistingFileValidator();
 };
 
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
   public:
-    ExistingDirectoryValidator() : Validator("DIR") {
-        func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str());
-            if(path_result == path_type::nonexistent) {
-                return "Directory does not exist: " + filename;
-            }
-            if(path_result == path_type::file) {
-                return "Directory is actually a file: " + filename;
-            }
-            return std::string();
-        };
-    }
+    ExistingDirectoryValidator();
 };
 
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
   public:
-    ExistingPathValidator() : Validator("PATH(existing)") {
-        func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str());
-            if(path_result == path_type::nonexistent) {
-                return "Path does not exist: " + filename;
-            }
-            return std::string();
-        };
-    }
+    ExistingPathValidator();
 };
 
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
   public:
-    NonexistentPathValidator() : Validator("PATH(non-existing)") {
-        func_ = [](std::string &filename) {
-            auto path_result = check_path(filename.c_str());
-            if(path_result != path_type::nonexistent) {
-                return "Path already exists: " + filename;
-            }
-            return std::string();
-        };
-    }
+    NonexistentPathValidator();
 };
 
 /// Validate the given string is a legal ipv4 address
 class IPV4Validator : public Validator {
   public:
-    IPV4Validator() : Validator("IPV4") {
-        func_ = [](std::string &ip_addr) {
-            auto result = CLI::detail::split(ip_addr, '.');
-            if(result.size() != 4) {
-                return std::string("Invalid IPV4 address must have four parts (") + ip_addr + ')';
-            }
-            int num;
-            for(const auto &var : result) {
-                bool retval = detail::lexical_cast(var, num);
-                if(!retval) {
-                    return std::string("Failed parsing number (") + var + ')';
-                }
-                if(num < 0 || num > 255) {
-                    return std::string("Each IP number must be between 0 and 255 ") + var;
-                }
-            }
-            return std::string();
-        };
-    }
+    IPV4Validator();
+};
+
+class EscapedStringTransformer : public Validator {
+  public:
+    EscapedStringTransformer();
 };
 
 }  // namespace detail
@@ -444,23 +244,33 @@ const detail::NonexistentPathValidator NonexistentPath;
 /// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;
 
+/// convert escaped characters into their associated values
+const detail::EscapedStringTransformer EscapedString;
+
 /// Validate the input as a particular type
 template <typename DesiredType> class TypeValidator : public Validator {
   public:
-    explicit TypeValidator(const std::string &validator_name) : Validator(validator_name) {
-        func_ = [](std::string &input_string) {
-            auto val = DesiredType();
-            if(!detail::lexical_cast(input_string, val)) {
-                return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
-            }
-            return std::string();
-        };
-    }
+    explicit TypeValidator(const std::string &validator_name)
+        : Validator(validator_name, [](std::string &input_string) {
+              using CLI::detail::lexical_cast;
+              auto val = DesiredType();
+              if(!lexical_cast(input_string, val)) {
+                  return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
+              }
+              return std::string();
+          }) {}
     TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
 };
 
 /// Check for a number
 const TypeValidator<double> Number("NUMBER");
+
+/// Modify a path if the file is a particular default location, can be used as Check or transform
+/// with the error return optionally disabled
+class FileOnDefaultPath : public Validator {
+  public:
+    explicit FileOnDefaultPath(std::string default_path, bool enableErrorReturn = true);
+};
 
 /// Produce a range (factory). Min and max are inclusive.
 class Range : public Validator {
@@ -478,12 +288,15 @@ class Range : public Validator {
         }
 
         func_ = [min_val, max_val](std::string &input) {
+            using CLI::detail::lexical_cast;
             T val;
-            bool converted = detail::lexical_cast(input, val);
-            if((!converted) || (val < min_val || val > max_val))
-                return std::string("Value ") + input + " not in range " + std::to_string(min_val) + " to " +
-                       std::to_string(max_val);
-
+            bool converted = lexical_cast(input, val);
+            if((!converted) || (val < min_val || val > max_val)) {
+                std::stringstream out;
+                out << "Value " << input << " not in range [";
+                out << min_val << " - " << max_val << "]";
+                return out.str();
+            }
             return std::string{};
         };
     }
@@ -497,7 +310,7 @@ class Range : public Validator {
 /// Check for a non negative number
 const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
-/// Check for a positive valued number (val>0.0), min() her is the smallest positive number
+/// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 /// Produce a bounded range (factory). Min and max are inclusive.
@@ -513,8 +326,9 @@ class Bound : public Validator {
         description(out.str());
 
         func_ = [min_val, max_val](std::string &input) {
+            using CLI::detail::lexical_cast;
             T val;
-            bool converted = detail::lexical_cast(input, val);
+            bool converted = lexical_cast(input, val);
             if(!converted) {
                 return std::string("Value ") + input + " could not be converted";
             }
@@ -634,9 +448,8 @@ template <typename T>
 inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
     if((a > 0) == (b > 0)) {
         return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
-    } else {
-        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
     }
+    return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
 }
 /// Do a check for overflow on unsigned numbers
 template <typename T>
@@ -706,8 +519,9 @@ class IsMember : public Validator {
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func_ = [set, filter_fn](std::string &input) {
+            using CLI::detail::lexical_cast;
             local_item_t b;
-            if(!detail::lexical_cast(input, b)) {
+            if(!lexical_cast(input, b)) {
                 throw ValidationError(input);  // name is added later
             }
             if(filter_fn) {
@@ -774,8 +588,9 @@ class Transformer : public Validator {
         desc_function_ = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
 
         func_ = [mapping, filter_fn](std::string &input) {
+            using CLI::detail::lexical_cast;
             local_item_t b;
-            if(!detail::lexical_cast(input, b)) {
+            if(!lexical_cast(input, b)) {
                 return std::string();
                 // there is no possible way we can match anything in the mapping if we can't convert so just return
             }
@@ -843,8 +658,9 @@ class CheckedTransformer : public Validator {
         desc_function_ = tfunc;
 
         func_ = [mapping, tfunc, filter_fn](std::string &input) {
+            using CLI::detail::lexical_cast;
             local_item_t b;
-            bool converted = detail::lexical_cast(input, b);
+            bool converted = lexical_cast(input, b);
             if(converted) {
                 if(filter_fn) {
                     b = filter_fn(b);
@@ -922,7 +738,7 @@ class AsNumberWithUnit : public Validator {
 
         // transform function
         func_ = [mapping, opts](std::string &input) -> std::string {
-            Number num;
+            Number num{};
 
             detail::rtrim(input);
             if(input.empty()) {
@@ -946,7 +762,8 @@ class AsNumberWithUnit : public Validator {
                 unit = detail::to_lower(unit);
             }
             if(unit.empty()) {
-                if(!detail::lexical_cast(input, num)) {
+                using CLI::detail::lexical_cast;
+                if(!lexical_cast(input, num)) {
                     throw ValidationError(std::string("Value ") + input + " could not be converted to " +
                                           detail::type_name<Number>());
                 }
@@ -964,7 +781,8 @@ class AsNumberWithUnit : public Validator {
             }
 
             if(!input.empty()) {
-                bool converted = detail::lexical_cast(input, num);
+                using CLI::detail::lexical_cast;
+                bool converted = lexical_cast(input, num);
                 if(!converted) {
                     throw ValidationError(std::string("Value ") + input + " could not be converted to " +
                                           detail::type_name<Number>());
@@ -1026,6 +844,10 @@ class AsNumberWithUnit : public Validator {
     }
 };
 
+inline AsNumberWithUnit::Options operator|(const AsNumberWithUnit::Options &a, const AsNumberWithUnit::Options &b) {
+    return static_cast<AsNumberWithUnit::Options>(static_cast<int>(a) | static_cast<int>(b));
+}
+
 /// Converts a human-readable size string (with unit literal) to uin64_t size.
 /// Example:
 ///   "100" => 100
@@ -1048,44 +870,14 @@ class AsSizeValue : public AsNumberWithUnit {
     /// The first option is formally correct, but
     /// the second interpretation is more wide-spread
     /// (see https://en.wikipedia.org/wiki/Binary_prefix).
-    explicit AsSizeValue(bool kb_is_1000) : AsNumberWithUnit(get_mapping(kb_is_1000)) {
-        if(kb_is_1000) {
-            description("SIZE [b, kb(=1000b), kib(=1024b), ...]");
-        } else {
-            description("SIZE [b, kb(=1024b), ...]");
-        }
-    }
+    explicit AsSizeValue(bool kb_is_1000);
 
   private:
     /// Get <size unit, factor> mapping
-    static std::map<std::string, result_t> init_mapping(bool kb_is_1000) {
-        std::map<std::string, result_t> m;
-        result_t k_factor = kb_is_1000 ? 1000 : 1024;
-        result_t ki_factor = 1024;
-        result_t k = 1;
-        result_t ki = 1;
-        m["b"] = 1;
-        for(std::string p : {"k", "m", "g", "t", "p", "e"}) {
-            k *= k_factor;
-            ki *= ki_factor;
-            m[p] = k;
-            m[p + "b"] = k;
-            m[p + "i"] = ki;
-            m[p + "ib"] = ki;
-        }
-        return m;
-    }
+    static std::map<std::string, result_t> init_mapping(bool kb_is_1000);
 
     /// Cache calculated mapping
-    static std::map<std::string, result_t> get_mapping(bool kb_is_1000) {
-        if(kb_is_1000) {
-            static auto m = init_mapping(true);
-            return m;
-        } else {
-            static auto m = init_mapping(false);
-            return m;
-        }
-    }
+    static std::map<std::string, result_t> get_mapping(bool kb_is_1000);
 };
 
 namespace detail {
@@ -1093,53 +885,14 @@ namespace detail {
 /// the string is assumed to contain a file name followed by other arguments
 /// the return value contains is a pair with the first argument containing the program name and the second
 /// everything else.
-inline std::pair<std::string, std::string> split_program_name(std::string commandline) {
-    // try to determine the programName
-    std::pair<std::string, std::string> vals;
-    trim(commandline);
-    auto esp = commandline.find_first_of(' ', 1);
-    while(detail::check_path(commandline.substr(0, esp).c_str()) != path_type::file) {
-        esp = commandline.find_first_of(' ', esp + 1);
-        if(esp == std::string::npos) {
-            // if we have reached the end and haven't found a valid file just assume the first argument is the
-            // program name
-            if(commandline[0] == '"' || commandline[0] == '\'' || commandline[0] == '`') {
-                bool embeddedQuote = false;
-                auto keyChar = commandline[0];
-                auto end = commandline.find_first_of(keyChar, 1);
-                while((end != std::string::npos) && (commandline[end - 1] == '\\')) {  // deal with escaped quotes
-                    end = commandline.find_first_of(keyChar, end + 1);
-                    embeddedQuote = true;
-                }
-                if(end != std::string::npos) {
-                    vals.first = commandline.substr(1, end - 1);
-                    esp = end + 1;
-                    if(embeddedQuote) {
-                        vals.first = find_and_replace(vals.first, std::string("\\") + keyChar, std::string(1, keyChar));
-                    }
-                } else {
-                    esp = commandline.find_first_of(' ', 1);
-                }
-            } else {
-                esp = commandline.find_first_of(' ', 1);
-            }
-
-            break;
-        }
-    }
-    if(vals.first.empty()) {
-        vals.first = commandline.substr(0, esp);
-        rtrim(vals.first);
-    }
-
-    // strip the program name
-    vals.second = (esp != std::string::npos) ? commandline.substr(esp + 1) : std::string{};
-    ltrim(vals.second);
-    return vals;
-}
+CLI11_INLINE std::pair<std::string, std::string> split_program_name(std::string commandline);
 
 }  // namespace detail
 /// @}
 
 // [CLI11:validators_hpp:end]
 }  // namespace CLI
+
+#ifndef CLI11_COMPILE
+#include "impl/Validators_inl.hpp"  // IWYU pragma: export
+#endif

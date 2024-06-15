@@ -2,8 +2,9 @@
 
 There are two forms of validators:
 
-* `transform` validators: mutating
-* `check` validators: non-mutating (recommended unless the parsed string must be mutated)
+- `transform` validators: mutating
+- `check` validators: non-mutating (recommended unless the parsed string must be
+  mutated)
 
 A transform validator comes in one form, a function with the signature `std::string(std::string&)`. The function will
 take a string and return an error message, or an empty string if input is valid. If there is an error, the function
@@ -53,26 +54,26 @@ struct LowerCaseValidator : public Validator {
 const static LowerCaseValidator Lowercase;
 ```
 
-If you were not interested in the extra features of Validator, you could simply pass the lambda function above to
-the `->check()` method of `Option`.
+If you were not interested in the extra features of Validator, you could simply
+pass the lambda function above to the `->check()` method of `Option`.
 
 The built-in validators for CLI11 are:
 
-| Validator           | Description |
-|---------------------|-------------|
-| `ExistingFile`      | Check for existing file (returns error message if check fails) |
+| Validator           | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| `ExistingFile`      | Check for existing file (returns error message if check fails)         |
 | `ExistingDirectory` | Check for an existing directory (returns error message if check fails) |
-| `ExistingPath`      | Check for an existing path |
-| `NonexistentPath`   | Check for an non-existing path |
-| `Range(min=0, max)` |  Produce a range (factory). Min and max are inclusive. |
+| `ExistingPath`      | Check for an existing path                                             |
+| `NonexistentPath`   | Check for an non-existing path                                         |
+| `Range(min=0, max)` | Produce a range (factory). Min and max are inclusive.                  |
 
 And, the protected members that you can set when you make your own are:
 
-| Type | Member | Description |
-|------|--------|-------------|
-| `std::function<std::string(std::string &)>` | `func_` | Core validation function - modifies input and returns "" if successful |
-| `std::function<std::string()>` | `desc_function` | Optional description function (uses `description_` instead if not set) |
-| `std::string` | `name_` | The name for search purposes |
-| `int` (`-1`) | `application_index_` | The element this validator applies to (-1 for all) |
-| `bool` (`true`) | `active_` | This can be disabled |
-| `bool` (`false`) | `non_modifying_` | Specify that this is a Validator instead of a Transformer |
+| Type                                        | Member               | Description                                                            |
+| ------------------------------------------- | -------------------- | ---------------------------------------------------------------------- |
+| `std::function<std::string(std::string &)>` | `func_`              | Core validation function - modifies input and returns "" if successful |
+| `std::function<std::string()>`              | `desc_function`      | Optional description function (uses `description_` instead if not set) |
+| `std::string`                               | `name_`              | The name for search purposes                                           |
+| `int` (`-1`)                                | `application_index_` | The element this validator applies to (-1 for all)                     |
+| `bool` (`true`)                             | `active_`            | This can be disabled                                                   |
+| `bool` (`false`)                            | `non_modifying_`     | Specify that this is a Validator instead of a Transformer              |

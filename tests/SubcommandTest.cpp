@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,22 +6,22 @@
 
 #include "app_helper.hpp"
 
-using Catch::Matchers::Contains;
-
 using vs_t = std::vector<std::string>;
 
 TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
 
     CHECK(&app == sub1->get_parent());
 
     CHECK(app.get_subcommand(sub1) == sub1);
     CHECK(app.get_subcommand("sub1") == sub1);
+    CHECK(app.get_subcommand_no_throw("sub1") == sub1);
     CHECK_THROWS_AS(app.get_subcommand("sub3"), CLI::OptionNotFound);
-
+    CHECK_NOTHROW(app.get_subcommand_no_throw("sub3"));
+    CHECK(app.get_subcommand_no_throw("sub3") == nullptr);
     run();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
 
     args = {"sub1"};
     run();
@@ -29,7 +29,7 @@ TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
     CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
 
     args = {"sub2"};
     run();
@@ -57,8 +57,8 @@ TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
 TEST_CASE_METHOD(TApp, "MultiSubFallthrough", "[subcom]") {
 
     // No explicit fallthrough
-    auto sub1 = app.add_subcommand("sub1");
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
 
     args = {"sub1", "sub2"};
     run();
@@ -92,11 +92,11 @@ TEST_CASE_METHOD(TApp, "MultiSubFallthrough", "[subcom]") {
     CHECK(!sub2->parsed());
     CHECK(0u == sub2->count());
 
-    CHECK_THROWS_AS(app.got_subcommand("sub3"), CLI::OptionNotFound);
+    CHECK(!app.got_subcommand("sub3"));
 }
 
 TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
+    auto *sub1 = app.add_subcommand("sub1");
     // name can be set to whatever
     CHECK_NOTHROW(sub1->name("crazy name with spaces"));
     args = {"crazy name with spaces"};
@@ -110,8 +110,8 @@ TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {
 
     std::string baz;
     app.add_option("baz", baz, "Baz Description")->required()->capture_default_str();
-    auto foo = app.add_subcommand("foo");
-    auto bar = app.add_subcommand("bar");
+    auto *foo = app.add_subcommand("foo");
+    auto *bar = app.add_subcommand("bar");
 
     args = {"bar", "foo"};
     REQUIRE_NOTHROW(run());
@@ -138,7 +138,7 @@ TEST_CASE_METHOD(TApp, "RequiredAndSubcomFallthrough", "[subcom]") {
     std::string baz;
     app.add_option("baz", baz)->required();
     app.add_subcommand("foo");
-    auto bar = app.add_subcommand("bar");
+    auto *bar = app.add_subcommand("bar");
     app.fallthrough();
 
     args = {"other", "bar"};
@@ -153,16 +153,16 @@ TEST_CASE_METHOD(TApp, "RequiredAndSubcomFallthrough", "[subcom]") {
 TEST_CASE_METHOD(TApp, "FooFooProblem", "[subcom]") {
 
     std::string baz_str, other_str;
-    auto baz = app.add_option("baz", baz_str);
-    auto foo = app.add_subcommand("foo");
-    auto other = foo->add_option("other", other_str);
+    auto *baz = app.add_option("baz", baz_str);
+    auto *foo = app.add_subcommand("foo");
+    auto *other = foo->add_option("other", other_str);
 
     args = {"foo", "foo"};
     run();
     CHECK(*foo);
     CHECK(!*baz);
     CHECK(*other);
-    CHECK("" == baz_str);
+    CHECK(baz_str.empty());
     CHECK("foo" == other_str);
 
     baz_str = "";
@@ -173,12 +173,12 @@ TEST_CASE_METHOD(TApp, "FooFooProblem", "[subcom]") {
     CHECK(*baz);
     CHECK(!*other);
     CHECK("foo" == baz_str);
-    CHECK("" == other_str);
+    CHECK(other_str.empty());
 }
 
 TEST_CASE_METHOD(TApp, "DuplicateSubcommands", "[subcom]") {
 
-    auto foo = app.add_subcommand("foo");
+    auto *foo = app.add_subcommand("foo");
 
     args = {"foo", "foo"};
     run();
@@ -189,11 +189,15 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommands", "[subcom]") {
     run();
     CHECK(*foo);
     CHECK(3u == foo->count());
+
+    auto subs = app.get_subcommands();
+    // subcommands only get triggered once
+    CHECK(subs.size() == 1U);
 }
 
 TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[subcom]") {
 
-    auto foo = app.add_subcommand("foo");
+    auto *foo = app.add_subcommand("foo");
     int count{0};
     foo->callback([&count]() { ++count; });
     foo->immediate_callback();
@@ -209,7 +213,7 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacksValues", "[subcom]") {
 
-    auto foo = app.add_subcommand("foo");
+    auto *foo = app.add_subcommand("foo");
     int val{0};
     foo->add_option("--val", val);
     std::vector<int> vals;
@@ -230,9 +234,9 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacksValues", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "Callbacks", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
+    auto *sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::Success(); });
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub2 = app.add_subcommand("sub2");
     bool val{false};
     sub2->callback([&val]() { val = true; });
 
@@ -245,15 +249,15 @@ TEST_CASE_METHOD(TApp, "Callbacks", "[subcom]") {
 TEST_CASE_METHOD(TApp, "CallbackOrder", "[subcom]") {
 
     std::vector<std::string> cb;
-    app.parse_complete_callback([&cb]() { cb.push_back("ac1"); });
-    app.final_callback([&cb]() { cb.push_back("ac2"); });
-    auto sub1 =
+    app.parse_complete_callback([&cb]() { cb.emplace_back("ac1"); });
+    app.final_callback([&cb]() { cb.emplace_back("ac2"); });
+    auto *sub1 =
         app.add_subcommand("sub1")
-            ->parse_complete_callback([&cb]() { cb.push_back("c1"); })
+            ->parse_complete_callback([&cb]() { cb.emplace_back("c1"); })
             ->preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pc1-") + std::to_string(v1)); });
-    auto sub2 =
+    auto *sub2 =
         app.add_subcommand("sub2")
-            ->final_callback([&cb]() { cb.push_back("c2"); })
+            ->final_callback([&cb]() { cb.emplace_back("c2"); })
             ->preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pc2-") + std::to_string(v1)); });
     app.preparse_callback([&cb](std::size_t v1) { cb.push_back(std::string("pa-") + std::to_string(v1)); });
 
@@ -291,9 +295,9 @@ TEST_CASE_METHOD(TApp, "CallbackOrder", "[subcom]") {
 TEST_CASE_METHOD(TApp, "CallbackOrder2", "[subcom]") {
 
     std::vector<std::string> cb;
-    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.push_back("sub1"); });
-    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.push_back("sub2"); });
-    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.push_back("sub3"); });
+    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.emplace_back("sub1"); });
+    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.emplace_back("sub2"); });
+    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.emplace_back("sub3"); });
 
     args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
     run();
@@ -311,9 +315,9 @@ TEST_CASE_METHOD(TApp, "CallbackOrder2_withFallthrough", "[subcom]") {
 
     std::vector<std::string> cb;
 
-    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.push_back("sub1"); })->fallthrough();
-    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.push_back("sub2"); });
-    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.push_back("sub3"); });
+    app.add_subcommand("sub1")->parse_complete_callback([&cb]() { cb.emplace_back("sub1"); })->fallthrough();
+    app.add_subcommand("sub2")->parse_complete_callback([&cb]() { cb.emplace_back("sub2"); });
+    app.add_subcommand("sub3")->parse_complete_callback([&cb]() { cb.emplace_back("sub3"); });
 
     args = {"sub1", "sub2", "sub3", "sub1", "sub1", "sub2", "sub1"};
     run();
@@ -328,9 +332,9 @@ TEST_CASE_METHOD(TApp, "CallbackOrder2_withFallthrough", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "RuntimeErrorInCallback", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
+    auto *sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::RuntimeError(); });
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub2 = app.add_subcommand("sub2");
     sub2->callback([]() { throw CLI::RuntimeError(2); });
 
     args = {"sub1"};
@@ -403,7 +407,7 @@ TEST_CASE_METHOD(TApp, "NoFallThroughPositionalsWithTerminator", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "NamelessSubComPositionals", "[subcom]") {
 
-    auto sub = app.add_subcommand();
+    auto *sub = app.add_subcommand();
     int val{1};
     sub->add_option("val", val);
 
@@ -414,8 +418,8 @@ TEST_CASE_METHOD(TApp, "NamelessSubComPositionals", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "NamelessSubWithSub", "[subcom]") {
 
-    auto sub = app.add_subcommand();
-    auto subsub = sub->add_subcommand("val");
+    auto *sub = app.add_subcommand();
+    auto *subsub = sub->add_subcommand("val");
 
     args = {"val"};
     run();
@@ -425,12 +429,12 @@ TEST_CASE_METHOD(TApp, "NamelessSubWithSub", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "NamelessSubWithMultipleSub", "[subcom]") {
 
-    auto sub1 = app.add_subcommand();
-    auto sub2 = app.add_subcommand();
-    auto sub1sub1 = sub1->add_subcommand("val1");
-    auto sub1sub2 = sub1->add_subcommand("val2");
-    auto sub2sub1 = sub2->add_subcommand("val3");
-    auto sub2sub2 = sub2->add_subcommand("val4");
+    auto *sub1 = app.add_subcommand();
+    auto *sub2 = app.add_subcommand();
+    auto *sub1sub1 = sub1->add_subcommand("val1");
+    auto *sub1sub2 = sub1->add_subcommand("val2");
+    auto *sub2sub1 = sub2->add_subcommand("val3");
+    auto *sub2sub2 = sub2->add_subcommand("val4");
     args = {"val1"};
     run();
     CHECK(sub1sub1->parsed());
@@ -461,12 +465,12 @@ TEST_CASE_METHOD(TApp, "NamelessSubWithMultipleSub", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "Nameless4LayerDeep", "[subcom]") {
 
-    auto sub = app.add_subcommand();
-    auto ssub = sub->add_subcommand();
-    auto sssub = ssub->add_subcommand();
+    auto *sub = app.add_subcommand();
+    auto *ssub = sub->add_subcommand();
+    auto *sssub = ssub->add_subcommand();
 
-    auto ssssub = sssub->add_subcommand();
-    auto sssssub = ssssub->add_subcommand("val");
+    auto *ssssub = sssub->add_subcommand();
+    auto *sssssub = ssssub->add_subcommand("val");
 
     args = {"val"};
     run();
@@ -477,13 +481,13 @@ TEST_CASE_METHOD(TApp, "Nameless4LayerDeep", "[subcom]") {
 /// Put subcommands in some crazy pattern and make everything still works
 TEST_CASE_METHOD(TApp, "Nameless4LayerDeepMulti", "[subcom]") {
 
-    auto sub1 = app.add_subcommand();
-    auto sub2 = app.add_subcommand();
-    auto ssub1 = sub1->add_subcommand();
-    auto ssub2 = sub2->add_subcommand();
+    auto *sub1 = app.add_subcommand();
+    auto *sub2 = app.add_subcommand();
+    auto *ssub1 = sub1->add_subcommand();
+    auto *ssub2 = sub2->add_subcommand();
 
-    auto sssub1 = ssub1->add_subcommand();
-    auto sssub2 = ssub2->add_subcommand();
+    auto *sssub1 = ssub1->add_subcommand();
+    auto *sssub2 = ssub2->add_subcommand();
     sssub1->add_subcommand("val1");
     ssub2->add_subcommand("val2");
     sub2->add_subcommand("val3");
@@ -568,7 +572,7 @@ TEST_CASE_METHOD(TApp, "EvilParseFallthrough", "[subcom]") {
     int val1{0}, val2{0};
     app.add_option("--val1", val1);
 
-    auto sub = app.add_subcommand("sub");
+    auto *sub = app.add_subcommand("sub");
     sub->add_option("val2", val2);
 
     args = {"sub", "--val1", "1", "2"};
@@ -584,7 +588,7 @@ TEST_CASE_METHOD(TApp, "CallbackOrdering", "[subcom]") {
     int val{1}, sub_val{0};
     app.add_option("--val", val);
 
-    auto sub = app.add_subcommand("sub");
+    auto *sub = app.add_subcommand("sub");
     sub->callback([&val, &sub_val]() { sub_val = val; });
 
     args = {"sub", "--val=2"};
@@ -603,7 +607,7 @@ TEST_CASE_METHOD(TApp, "CallbackOrderingImmediate", "[subcom]") {
     int val{1}, sub_val{0};
     app.add_option("--val", val);
 
-    auto sub = app.add_subcommand("sub")->immediate_callback();
+    auto *sub = app.add_subcommand("sub")->immediate_callback();
     sub->callback([&val, &sub_val]() { sub_val = val; });
 
     args = {"sub", "--val=2"};
@@ -621,7 +625,7 @@ TEST_CASE_METHOD(TApp, "CallbackOrderingImmediateMain", "[subcom]") {
     app.fallthrough();
     int val{0}, sub_val{0};
 
-    auto sub = app.add_subcommand("sub");
+    auto *sub = app.add_subcommand("sub");
     sub->callback([&val, &sub_val]() {
         sub_val = val;
         val = 2;
@@ -652,7 +656,7 @@ TEST_CASE_METHOD(TApp, "CallbackOrderingImmediateModeOrder", "[subcom]") {
     std::vector<int> v;
     app.callback([&v]() { v.push_back(1); })->immediate_callback(true);
 
-    auto sub = app.add_subcommand("hello")->callback([&v]() { v.push_back(2); })->immediate_callback(false);
+    auto *sub = app.add_subcommand("hello")->callback([&v]() { v.push_back(2); })->immediate_callback(false);
     args = {"hello"};
     run();
     // immediate_callback inherited
@@ -682,21 +686,21 @@ TEST_CASE_METHOD(TApp, "RequiredSubCom", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "SubComExtras", "[subcom]") {
     app.allow_extras();
-    auto sub = app.add_subcommand("sub");
+    auto *sub = app.add_subcommand("sub");
 
     args = {"extra", "sub"};
     run();
     CHECK(std::vector<std::string>({"extra"}) == app.remaining());
-    CHECK(std::vector<std::string>() == sub->remaining());
+    CHECK(sub->remaining().empty());
 
     args = {"extra1", "extra2", "sub"};
     run();
     CHECK(std::vector<std::string>({"extra1", "extra2"}) == app.remaining());
-    CHECK(std::vector<std::string>() == sub->remaining());
+    CHECK(sub->remaining().empty());
 
     args = {"sub", "extra1", "extra2"};
     run();
-    CHECK(std::vector<std::string>() == app.remaining());
+    CHECK(app.remaining().empty());
     CHECK(std::vector<std::string>({"extra1", "extra2"}) == sub->remaining());
 
     args = {"extra1", "extra2", "sub", "extra3", "extra4"};
@@ -723,8 +727,8 @@ TEST_CASE_METHOD(TApp, "Required1SubCom", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "BadSubcommandSearch", "[subcom]") {
 
-    auto one = app.add_subcommand("one");
-    auto two = one->add_subcommand("two");
+    auto *one = app.add_subcommand("one");
+    auto *two = one->add_subcommand("two");
 
     CHECK_THROWS_AS(app.get_subcommand(two), CLI::OptionNotFound);
     CHECK_THROWS_AS(app.get_subcommand_ptr(two), CLI::OptionNotFound);
@@ -770,7 +774,7 @@ TEST_CASE_METHOD(TApp, "PrefixSeparation", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "PrefixSubcom", "[subcom]") {
-    auto subc = app.add_subcommand("subc");
+    auto *subc = app.add_subcommand("subc");
     subc->prefix_command();
 
     app.add_flag("--simple");
@@ -785,7 +789,7 @@ TEST_CASE_METHOD(TApp, "PrefixSubcom", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "InheritHelpAllFlag", "[subcom]") {
     app.set_help_all_flag("--help-all");
-    auto subc = app.add_subcommand("subc");
+    auto *subc = app.add_subcommand("subc");
     auto help_opt_list = subc->get_options([](const CLI::Option *opt) { return opt->get_name() == "--help-all"; });
     CHECK(1u == help_opt_list.size());
 }
@@ -908,13 +912,17 @@ TEST_CASE_METHOD(SubcommandProgram, "Subcommand CaseCheck", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "SubcomInheritCaseCheck", "[subcom]") {
     app.ignore_case();
-    auto sub1 = app.add_subcommand("sub1");
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
 
     run();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
     CHECK(app.get_subcommands({}).size() == 2u);
     CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
+
+    // check the const version of get_subcommands
+    const auto &app_const = app;
+    CHECK(app_const.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub1"; }).size() == 1u);
 
     args = {"SuB1"};
     run();
@@ -922,7 +930,7 @@ TEST_CASE_METHOD(TApp, "SubcomInheritCaseCheck", "[subcom]") {
     CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
 
     args = {"sUb2"};
     run();
@@ -945,11 +953,11 @@ TEST_CASE_METHOD(SubcommandProgram, "Subcommand UnderscoreCheck", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "SubcomInheritUnderscoreCheck", "[subcom]") {
     app.ignore_underscore();
-    auto sub1 = app.add_subcommand("sub_option1");
-    auto sub2 = app.add_subcommand("sub_option2");
+    auto *sub1 = app.add_subcommand("sub_option1");
+    auto *sub2 = app.add_subcommand("sub_option2");
 
     run();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
     CHECK(app.get_subcommands({}).size() == 2u);
     CHECK(app.get_subcommands([](const CLI::App *s) { return s->get_name() == "sub_option1"; }).size() == 1u);
 
@@ -959,7 +967,7 @@ TEST_CASE_METHOD(TApp, "SubcomInheritUnderscoreCheck", "[subcom]") {
     CHECK(app.get_subcommands().size() == 1u);
 
     app.clear();
-    CHECK(app.get_subcommands().size() == 0u);
+    CHECK(app.get_subcommands().empty());
 
     args = {"_suboption2"};
     run();
@@ -1160,23 +1168,23 @@ TEST_CASE_METHOD(ManySubcommands, "RemoveSub", "[subcom]") {
 }
 
 TEST_CASE_METHOD(ManySubcommands, "RemoveSubFail", "[subcom]") {
-    auto sub_sub = sub1->add_subcommand("subsub");
+    auto *sub_sub = sub1->add_subcommand("subsub");
     CHECK(!app.remove_subcommand(sub_sub));
     CHECK(sub1->remove_subcommand(sub_sub));
     CHECK(!app.remove_subcommand(nullptr));
 }
 
 TEST_CASE_METHOD(ManySubcommands, "manyIndexQuery", "[subcom]") {
-    auto s1 = app.get_subcommand(0);
-    auto s2 = app.get_subcommand(1);
-    auto s3 = app.get_subcommand(2);
-    auto s4 = app.get_subcommand(3);
+    auto *s1 = app.get_subcommand(0);
+    auto *s2 = app.get_subcommand(1);
+    auto *s3 = app.get_subcommand(2);
+    auto *s4 = app.get_subcommand(3);
     CHECK(sub1 == s1);
     CHECK(sub2 == s2);
     CHECK(sub3 == s3);
     CHECK(sub4 == s4);
     CHECK_THROWS_AS(app.get_subcommand(4), CLI::OptionNotFound);
-    auto s0 = app.get_subcommand();
+    auto *s0 = app.get_subcommand();
     CHECK(sub1 == s0);
 }
 
@@ -1190,6 +1198,18 @@ TEST_CASE_METHOD(ManySubcommands, "manyIndexQueryPtr", "[subcom]") {
     CHECK(sub3 == s3.get());
     CHECK(sub4 == s4.get());
     CHECK_THROWS_AS(app.get_subcommand_ptr(4), CLI::OptionNotFound);
+}
+
+TEST_CASE_METHOD(ManySubcommands, "manyIndexQueryPtrByName", "[subcom]") {
+    auto s1 = app.get_subcommand_ptr("sub1");
+    auto s2 = app.get_subcommand_ptr("sub2");
+    auto s3 = app.get_subcommand_ptr("sub3");
+    auto s4 = app.get_subcommand_ptr("sub4");
+    CHECK(sub1 == s1.get());
+    CHECK(sub2 == s2.get());
+    CHECK(sub3 == s3.get());
+    CHECK(sub4 == s4.get());
+    CHECK_THROWS_AS(app.get_subcommand_ptr("sub5"), CLI::OptionNotFound);
 }
 
 TEST_CASE_METHOD(ManySubcommands, "Required1Fuzzy", "[subcom]") {
@@ -1220,17 +1240,17 @@ TEST_CASE_METHOD(ManySubcommands, "Required2Fuzzy", "[subcom]") {
 
 TEST_CASE_METHOD(ManySubcommands, "Unlimited", "[subcom]") {
     run();
-    CHECK(vs_t() == app.remaining(true));
+    CHECK(app.remaining(true).empty());
 
     app.require_subcommand();
 
     run();
-    CHECK(vs_t() == app.remaining(true));
+    CHECK(app.remaining(true).empty());
 
     app.require_subcommand(2, 0);  // 2 or more
 
     run();
-    CHECK(vs_t() == app.remaining(true));
+    CHECK(app.remaining(true).empty());
 }
 
 TEST_CASE_METHOD(ManySubcommands, "HelpFlags", "[subcom]") {
@@ -1296,7 +1316,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandExclusion", "[subcom]") {
 
 TEST_CASE_METHOD(ManySubcommands, "SubcommandOptionExclusion", "[subcom]") {
 
-    auto excluder_flag = app.add_flag("--exclude");
+    auto *excluder_flag = app.add_flag("--exclude");
     sub1->excludes(excluder_flag)->fallthrough();
     sub2->excludes(excluder_flag)->fallthrough();
     sub3->fallthrough();
@@ -1347,7 +1367,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeeds", "[subcom]") {
 
 TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptions", "[subcom]") {
 
-    auto opt = app.add_flag("--subactive");
+    auto *opt = app.add_flag("--subactive");
     sub1->needs(opt);
     sub1->fallthrough();
     args = {"sub1", "--subactive"};
@@ -1359,7 +1379,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptions", "[subcom]") {
     args = {"--subactive"};
     CHECK_NOTHROW(run());
 
-    auto opt2 = app.add_flag("--subactive2");
+    auto *opt2 = app.add_flag("--subactive2");
 
     sub1->needs(opt2);
     args = {"sub1", "--subactive"};
@@ -1375,7 +1395,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptions", "[subcom]") {
 
 TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptionsCallbackOrdering", "[subcom]") {
     int count{0};
-    auto opt = app.add_flag("--subactive");
+    auto *opt = app.add_flag("--subactive");
     app.add_flag("--flag1");
     sub1->needs(opt);
     sub1->fallthrough();
@@ -1394,10 +1414,19 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsOptionsCallbackOrdering", "[su
     CHECK_NOTHROW(run());
 }
 
+TEST_CASE_METHOD(ManySubcommands, "SubcommandParseCompleteDotNotation", "[subcom]") {
+    int count{0};
+    sub1->add_flag("--flag1");
+    sub1->parse_complete_callback([&count]() { ++count; });
+    args = {"--sub1.flag1", "--sub1.flag1"};
+    run();
+    CHECK(count == 2);
+}
+
 TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {
 
-    auto opt = app.add_flag("--subactive");
-    auto opt2 = app.add_flag("--dummy");
+    auto *opt = app.add_flag("--subactive");
+    auto *opt2 = app.add_flag("--dummy");
     sub1->needs(opt);
     CHECK_THROWS_AS(sub1->needs((CLI::Option *)nullptr), CLI::OptionNotFound);
     CHECK_THROWS_AS(sub1->needs((CLI::App *)nullptr), CLI::OptionNotFound);
@@ -1491,20 +1520,20 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandSilence", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
     double val{0.0};
-    auto sub = app.add_subcommand("", "empty name");
-    auto opt = sub->add_option("-v,--value", val);
+    auto *sub = app.add_subcommand("", "empty name");
+    auto *opt = sub->add_option("-v,--value", val);
     args = {"-v", "4.56"};
 
     run();
     CHECK(4.56 == val);
     // make sure unnamed sub options can be found from the main app
-    auto opt2 = app.get_option("-v");
+    auto *opt2 = app.get_option("-v");
     CHECK(opt2 == opt);
 
     CHECK_THROWS_AS(app.get_option("--vvvv"), CLI::OptionNotFound);
     // now test in the constant context
     const auto &appC = app;
-    auto opt3 = appC.get_option("-v");
+    const auto *opt3 = appC.get_option("-v");
     CHECK("--value" == opt3->get_name());
     CHECK_THROWS_AS(appC.get_option("--vvvv"), CLI::OptionNotFound);
 }
@@ -1512,9 +1541,9 @@ TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
 TEST_CASE_METHOD(TApp, "UnnamedSubMix", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0};
     app.add_option("-t", val2);
-    auto sub1 = app.add_subcommand("", "empty name");
+    auto *sub1 = app.add_subcommand("", "empty name");
     sub1->add_option("-v,--value", val);
-    auto sub2 = app.add_subcommand("", "empty name2");
+    auto *sub2 = app.add_subcommand("", "empty name2");
     sub2->add_option("-m,--mix", val3);
     args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
 
@@ -1528,7 +1557,7 @@ TEST_CASE_METHOD(TApp, "UnnamedSubMix", "[subcom]") {
 TEST_CASE_METHOD(TApp, "UnnamedSubMixExtras", "[subcom]") {
     double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
-    auto sub = app.add_subcommand("", "empty name");
+    auto *sub = app.add_subcommand("", "empty name");
     sub->add_option("-v,--value", val);
     args = {"-m", "4.56", "-t", "5.93", "-v", "-3"};
     app.allow_extras();
@@ -1542,7 +1571,7 @@ TEST_CASE_METHOD(TApp, "UnnamedSubMixExtras", "[subcom]") {
 TEST_CASE_METHOD(TApp, "UnnamedSubNoExtras", "[subcom]") {
     double val{0.0}, val2{0.0};
     app.add_option("-t", val2);
-    auto sub = app.add_subcommand();
+    auto *sub = app.add_subcommand();
     sub->add_option("-v,--value", val);
     args = {"-t", "5.93", "-v", "-3"};
     run();
@@ -1554,7 +1583,7 @@ TEST_CASE_METHOD(TApp, "UnnamedSubNoExtras", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "SubcommandAlias", "[subcom]") {
     double val{0.0};
-    auto sub = app.add_subcommand("sub1");
+    auto *sub = app.add_subcommand("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
     sub->add_option("-v,--value", val);
@@ -1570,7 +1599,7 @@ TEST_CASE_METHOD(TApp, "SubcommandAlias", "[subcom]") {
     run();
     CHECK(7 == val);
 
-    auto &al = sub->get_aliases();
+    const auto &al = sub->get_aliases();
     REQUIRE(2U <= al.size());
 
     CHECK("sub2" == al[0]);
@@ -1582,7 +1611,7 @@ TEST_CASE_METHOD(TApp, "SubcommandAlias", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "SubcommandAliasIgnoreCaseUnderscore", "[subcom]") {
     double val{0.0};
-    auto sub = app.add_subcommand("sub1");
+    auto *sub = app.add_subcommand("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
     sub->ignore_case();
@@ -1625,7 +1654,7 @@ TEST_CASE_METHOD(TApp, "SubcommandAliasIgnoreCaseUnderscore", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "OptionGroupAlias", "[subcom]") {
     double val{0.0};
-    auto sub = app.add_option_group("sub1");
+    auto *sub = app.add_option_group("sub1");
     sub->alias("sub2");
     sub->alias("sub3");
     sub->add_option("-v,--value", val);
@@ -1647,7 +1676,7 @@ TEST_CASE_METHOD(TApp, "OptionGroupAlias", "[subcom]") {
 
 TEST_CASE_METHOD(TApp, "OptionGroupAliasWithSpaces", "[subcom]") {
     double val{0.0};
-    auto sub = app.add_option_group("sub1");
+    auto *sub = app.add_option_group("sub1");
     sub->alias("sub2 bb");
     sub->alias("sub3/b");
     sub->add_option("-v,--value", val);
@@ -1668,7 +1697,7 @@ TEST_CASE_METHOD(TApp, "OptionGroupAliasWithSpaces", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "subcommand_help", "[subcom]") {
-    auto sub1 = app.add_subcommand("help")->silent();
+    auto *sub1 = app.add_subcommand("help")->silent();
     bool flag{false};
     app.add_flag("--one", flag, "FLAGGER");
     sub1->parse_complete_callback([]() { throw CLI::CallForHelp(); });
@@ -1685,8 +1714,8 @@ TEST_CASE_METHOD(TApp, "subcommand_help", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
-    auto sub2 = app.add_subcommand("sub2");
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
 
     CHECK_THROWS_AS(sub2->alias("this is a not\n a valid alias"), CLI::IncorrectConstruction);
     CHECK_NOTHROW(sub2->alias("-alias"));  // this is allowed but would be unusable on command line parsers
@@ -1743,9 +1772,9 @@ TEST_CASE_METHOD(TApp, "ExistingSubcommandMatch", "[subcom]") {
 }
 
 TEST_CASE_METHOD(TApp, "AliasErrorsInOptionGroup", "[subcom]") {
-    auto sub1 = app.add_subcommand("sub1");
-    auto g2 = app.add_option_group("g1");
-    auto sub2 = g2->add_subcommand("sub2");
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *g2 = app.add_option_group("g1");
+    auto *sub2 = g2->add_subcommand("sub2");
 
     // cannot alias to an existing subcommand even if it is in an option group
     CHECK_THROWS_AS(sub2->alias("sub1"), CLI::OptionAlreadyAdded);
@@ -1765,7 +1794,7 @@ TEST_CASE("SharedSubTests: SharedSubcommand", "[subcom]") {
     CLI::App app1{"test program1"};
 
     app1.add_option("-t", val2);
-    auto sub = app1.add_subcommand("", "empty name");
+    auto *sub = app1.add_subcommand("", "empty name");
     sub->add_option("-v,--value", val);
     sub->add_option("-g", val4);
     CLI::App app2{"test program2"};
@@ -1795,7 +1824,7 @@ TEST_CASE("SharedSubTests: SharedSubIndependent", "[subcom]") {
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
     app1->add_option("-t", val2);
-    auto sub = app1->add_subcommand("", "empty name");
+    auto *sub = app1->add_subcommand("", "empty name");
     sub->add_option("-v,--value", val);
     sub->add_option("-g", val4);
 
@@ -1823,7 +1852,7 @@ TEST_CASE("SharedSubTests: SharedSubIndependentReuse", "[subcom]") {
     CLI::App_p app1 = std::make_shared<CLI::App>("test program1");
     app1->allow_extras();
     app1->add_option("-t", val2);
-    auto sub = app1->add_subcommand("", "empty name");
+    auto *sub = app1->add_subcommand("", "empty name");
     sub->add_option("-v,--value", val);
     sub->add_option("-g", val4);
 
@@ -1884,14 +1913,14 @@ TEST_CASE_METHOD(ManySubcommands, "defaultEnabledSubcommand", "[subcom]") {
     sub2->enabled_by_default();
     run();
     auto rem = app.remaining();
-    CHECK(0u == rem.size());
+    CHECK(rem.empty());
     CHECK(sub2->get_enabled_by_default());
     sub2->disabled();
     CHECK(sub2->get_disabled());
     run();
     // this should disable it again even though it was disabled
     rem = app.remaining();
-    CHECK(0u == rem.size());
+    CHECK(rem.empty());
     CHECK(sub2->get_enabled_by_default());
     CHECK(!sub2->get_disabled());
 }
@@ -1960,11 +1989,157 @@ TEST_CASE_METHOD(TApp, "MultiFinalCallbackCounts", "[subcom]") {
 TEST_CASE_METHOD(TApp, "SubcommandInOptionGroupCallbackCount", "[subcom]") {
 
     int subcount{0};
-    auto group1 = app.add_option_group("FirstGroup");
+    auto *group1 = app.add_option_group("FirstGroup");
 
     group1->add_subcommand("g1c1")->callback([&subcount]() { ++subcount; });
 
     args = {"g1c1"};
     run();
     CHECK(subcount == 1);
+}
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommand", "[subcom]") {
+    std::string v1, v2, vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
+    sub1->add_option("--value", v1);
+    sub2->add_option("--value", v2);
+    app.add_option("--value", vbase);
+    args = {"--sub1.value", "val1"};
+    run();
+    CHECK(v1 == "val1");
+
+    args = {"--sub2.value", "val2", "--value", "base"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+    v1.clear();
+    v2.clear();
+    vbase.clear();
+
+    args = {"--sub2.value=val2", "--value=base"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+
+    auto subs = app.get_subcommands();
+    REQUIRE(!subs.empty());
+    CHECK(subs.front()->get_name() == "sub2");
+}
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandSingleChar", "[subcom]") {
+    std::string v1, v2, vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
+    sub1->add_option("-v", v1);
+    sub2->add_option("-v", v2);
+    app.add_option("-v", vbase);
+    args = {"--sub1.v", "val1"};
+    run();
+    CHECK(v1 == "val1");
+
+    args = {"--sub2.v", "val2", "-v", "base"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+    v1.clear();
+    v2.clear();
+    vbase.clear();
+
+    args = {"--sub2.v=val2", "-vbase"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+
+    auto subs = app.get_subcommands();
+    REQUIRE(!subs.empty());
+    CHECK(subs.front()->get_name() == "sub2");
+}
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive", "[subcom]") {
+    std::string v1, v2, v3, vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = sub1->add_subcommand("sub2");
+    auto *sub3 = sub2->add_subcommand("sub3");
+
+    sub1->add_option("--value", v1);
+    sub2->add_option("--value", v2);
+    sub3->add_option("--value", v3);
+    app.add_option("--value", vbase);
+    args = {"--sub1.sub2.sub3.value", "val1"};
+    run();
+    CHECK(v3 == "val1");
+
+    args = {"--sub1.sub2.value", "val2"};
+    run();
+    CHECK(v2 == "val2");
+
+    args = {"--sub1.sub2.bob", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    app.allow_extras();
+    CHECK_NOTHROW(run());
+    auto extras = app.remaining();
+    CHECK(extras.size() == 2);
+    CHECK(extras.front() == "--sub1.sub2.bob");
+}
+
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive2", "[subcom]") {
+    std::string v1, v2, v3, vbase;
+
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = sub1->add_subcommand("sub2");
+    auto *sub3 = sub2->add_subcommand("sub3");
+
+    sub1->add_option("--value", v1);
+    sub2->add_option("--value", v2);
+    sub3->add_option("--value", v3);
+    app.add_option("--value", vbase);
+    args = {"sub1.sub2.sub3", "--value", "val1"};
+    run();
+    CHECK(v3 == "val1");
+
+    args = {"sub1.sub2", "--value", "val2"};
+    run();
+    CHECK(v2 == "val2");
+
+    args = {"sub1.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"sub1.sub2.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"sub1.sub2.sub3.bob", "--value", "val2"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    app.allow_extras();
+    CHECK_NOTHROW(run());
+    auto extras = app.remaining();
+    CHECK(extras.size() == 1);
+    CHECK(extras.front() == "sub1.sub2.sub3.bob");
+}
+
+// Reported bug #903 on github
+TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
+    auto *sub1 = app.add_subcommand("sub1");
+    std::string someFile;
+    int sub1value{0};
+    sub1->add_option("-f,--file", someFile)->envname("SOME_FILE")->required()->check(CLI::ExistingFile);
+    sub1->add_option("-v", sub1value);
+    auto *sub2 = app.add_subcommand("sub2");
+    int completelyUnrelatedToSub1 = 0;
+    sub2->add_option("-v,--value", completelyUnrelatedToSub1)->required();
+
+    args = {"sub2", "-v", "111"};
+    CHECK_NOTHROW(run());
+
+    put_env("SOME_FILE", "notafile.txt");
+
+    CHECK_NOTHROW(run());
+
+    args = {"sub1", "-v", "111"};
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+    unset_env("SOME_FILE");
 }
