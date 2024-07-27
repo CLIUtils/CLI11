@@ -2143,3 +2143,4 @@ TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
     unset_env("SOME_FILE");
 }
+
