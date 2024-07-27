@@ -180,10 +180,9 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
     std::vector<std::string> subcmd_groups_seen;
     for(const App *com : subcommands) {
         if(com->get_name().empty()) {
-            if(com->get_group().empty() || com->get_group().front() == '+') {
-                continue;
+            if(!com->get_group().empty() && com->get_group().front() != '+') {
+                out << make_expanded(com);
             }
-            out << make_expanded(com);
             continue;
         }
         std::string group_key = com->get_group();
