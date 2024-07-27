@@ -55,8 +55,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     app->clear();
     std::stringstream out(configOut);
     app2->parse_from_stream(out);
-    auto result=fuzzdata2.compare(fuzzdata);
-    if (!result) {
+    auto result = fuzzdata2.compare(fuzzdata);
+    if(!result) {
         throw CLI::ParseError("file input doesn't match");
     }
     return 0;

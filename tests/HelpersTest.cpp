@@ -287,7 +287,6 @@ TEST_CASE("StringTools: binaryEscapseConversion2", "[helpers]") {
     CHECK(CLI::detail::is_binary_escaped_string(estring));
     std::string rstring = CLI::detail::extract_binary_string(estring);
     CHECK(rstring == testString);
-
 }
 
 TEST_CASE("StringTools: binaryStrings", "[helpers]") {

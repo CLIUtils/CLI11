@@ -2073,17 +2073,16 @@ TEST_CASE_METHOD(TApp, "EnvOnly", "[app]") {
 }
 
 // reported bug #1013 on github
-TEST_CASE_METHOD(TApp,"groupEnvRequired", "[app]") {
+TEST_CASE_METHOD(TApp, "groupEnvRequired", "[app]") {
     std::string str;
     auto group1 = app.add_option_group("group1");
     put_env("CLI11_TEST_GROUP_REQUIRED", "string_abc");
     group1->add_option("-f", str, "f")->envname("CLI11_TEST_GROUP_REQUIRED")->required();
 
     run();
-    CHECK(str=="string_abc");
+    CHECK(str == "string_abc");
     unset_env("CLI11_TEST_GROUP_REQUIRED");
 }
-
 
 TEST_CASE_METHOD(TApp, "RangeInt", "[app]") {
     int x{0};
