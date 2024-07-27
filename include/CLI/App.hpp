@@ -442,7 +442,8 @@ class App {
         return this;
     }
 
-    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in remaining args
+    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
+    /// remaining args
     App *prefix_command(bool is_prefix = true) {
         prefix_command_ = is_prefix;
         return this;
