@@ -184,6 +184,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
                 continue;
             }
             out << make_expanded(com);
+            continue;
         }
         std::string group_key = com->get_group();
         if(!group_key.empty() &&
