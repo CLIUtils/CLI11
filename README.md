@@ -1010,8 +1010,9 @@ option_groups. These are:
 - `.allow_extras()`: Do not throw an error if extra arguments are left over.
 - `.positionals_at_end()`: Specify that positional arguments occur as the last
   arguments and throw an error if an unexpected positional is encountered.
-- `.prefix_command()`: Like `allow_extras`, but stop immediately on the first
-  unrecognized item. It is ideal for allowing your app or subcommand to be a
+- `.prefix_command()`: Like `allow_extras`, but stop processing immediately on the first
+  unrecognized item. All subsequent arguments are placed in the remaining_arg list.
+  It is ideal for allowing your app or subcommand to be a
   "prefix" to calling another app.
 - `.usage(message)`: 🆕 Replace text to appear at the start of the help string
   after description.

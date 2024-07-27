@@ -1027,8 +1027,7 @@ functionality for tricky parsing situations.
 - Added `app.parse_order()` with original parse order
   ([#13](https://github.com/CLIUtils/CLI11/issues/13),
   [#16](https://github.com/CLIUtils/CLI11/pull/16))
-- Added `prefix_command()`, which is like `allow_extras` but instantly stops and
-  returns. ([#8](https://github.com/CLIUtils/CLI11/issues/8),
+- Added `prefix_command()`, which is like `allow_extras` but ceases processing and puts all remaining args in the remaining_args structure. [#8](https://github.com/CLIUtils/CLI11/issues/8),
   [#17](https://github.com/CLIUtils/CLI11/pull/17))
 - Removed Windows warning ([#10](https://github.com/CLIUtils/CLI11/issues/10),
   [#20](https://github.com/CLIUtils/CLI11/pull/20))
