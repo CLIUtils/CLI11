@@ -228,8 +228,6 @@ TEST_CASE("THelp: retiredOptions2", "[help]") {
     CHECK_NOTHROW(app.parse("--something old"));
 }
 
-
-
 TEST_CASE("THelp: retiredOptions3", "[help]") {
     CLI::App app{"My prog"};
 
@@ -276,42 +274,33 @@ TEST_CASE("THelp: HiddenGroup", "[help]") {
 }
 
 // from https://github.com/CLIUtils/CLI11/issues/1045
-TEST_CASE("THelp: multiple_group", "[help]")
-{
+TEST_CASE("THelp: multiple_group", "[help]") {
     CLI::App app{"test_group"};
     auto *group1 = app.add_option_group("outGroup");
     auto *group2 = app.add_option_group("inGroup");
 
     std::string outFile("");
-    group1->add_option("--outfile,-o", outFile,
-        "specify the file location of the output")->required();
+    group1->add_option("--outfile,-o", outFile, "specify the file location of the output")->required();
 
     std::string inFile("");
-    group2
-        ->add_option("--infile,-i", inFile,
-            "specify the file location of the input")
-        ->required();
+    group2->add_option("--infile,-i", inFile, "specify the file location of the input")->required();
 
     auto help = app.help();
-    int inCount=0;
-    int outCount=0;
-    auto iFind=help.find("inGroup");
-    while (iFind != std::string::npos)
-    {
+    int inCount = 0;
+    int outCount = 0;
+    auto iFind = help.find("inGroup");
+    while(iFind != std::string::npos) {
         ++inCount;
-        iFind=help.find("inGroup",iFind+6);
+        iFind = help.find("inGroup", iFind + 6);
     }
-    auto oFind=help.find("outGroup");
-    while (oFind != std::string::npos)
-    {
+    auto oFind = help.find("outGroup");
+    while(oFind != std::string::npos) {
         ++outCount;
-        oFind=help.find("outGroup",oFind+6);
+        oFind = help.find("outGroup", oFind + 6);
     }
-    CHECK(inCount==1);
-    CHECK(outCount==1);
-        
+    CHECK(inCount == 1);
+    CHECK(outCount == 1);
 }
-
 
 TEST_CASE("THelp: OptionalPositionalAndOptions", "[help]") {
     CLI::App app{"My prog", "AnotherProgram"};
