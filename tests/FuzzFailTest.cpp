@@ -138,9 +138,12 @@ TEST_CASE("app_file_roundtrip") {
     std::stringstream out(configOut);
     app2->parse_from_stream(out);
     bool result = fuzzdata2.compare(fuzzdata);
-    if(!result) {
-        std::string configOut = app->config_to_str();
+    /*
+    if (!result)
+    {
+        configOut = app->config_to_str();
         result = fuzzdata2.compare(fuzzdata);
     }
+    */
     CHECK(result);
 }
