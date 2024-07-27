@@ -57,7 +57,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
     if(!result) {
-        throw CLI::ValidationError("fuzzer","file input results don't match parse results");
+        throw CLI::ValidationError("fuzzer", "file input results don't match parse results");
     }
     return 0;
 }
