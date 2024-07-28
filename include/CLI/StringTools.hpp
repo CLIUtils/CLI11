@@ -59,10 +59,9 @@ template <typename T> std::string join(const T &v, std::string delim = ",") {
     while(beg != end) {
         s << delim << *beg++;
     }
-    auto rval=s.str();
-    if (!rval.empty() && delim.size()==1 && rval.back() == delim[0])
-    {
-        //remove trailing delimiter if the last entry was empty
+    auto rval = s.str();
+    if(!rval.empty() && delim.size() == 1 && rval.back() == delim[0]) {
+        // remove trailing delimiter if the last entry was empty
         rval.pop_back();
     }
     return rval;
