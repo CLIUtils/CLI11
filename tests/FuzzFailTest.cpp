@@ -148,8 +148,6 @@ TEST_CASE("app_file_roundtrip") {
     CHECK(result);
 }
 
-
-
 // this test uses the same tests as above just with a full roundtrip test
 TEST_CASE("app_roundtrip") {
     CLI::FuzzApp fuzzdata;
