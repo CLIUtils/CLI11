@@ -272,7 +272,7 @@ bool FuzzApp::compare(const FuzzApp &other) const {
     }
     if(vstrD != other.vstrD) {
         // the return result if reversed so it can alternate
-        auto res = vstrD;
+        std::vector<std::string> res = vstrD;
         std::reverse(res.begin(), res.end());
         if(res != other.vstrD) {
             return false;

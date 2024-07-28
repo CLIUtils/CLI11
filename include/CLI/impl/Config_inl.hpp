@@ -504,7 +504,16 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
                 std::string value = detail::ini_join(
                     opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
-
+                if (value == "\"{}\"" || value == "\"[]\"")
+                {
+                    if (opt->get_expected_min() == 0)
+                    {
+                        value.push_back(arraySeparator);
+                        value.append("\"\"");
+                        value.push_back(arrayEnd);
+                        value.insert(value.begin(),arrayStart);
+                    }
+                }
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
                         value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
