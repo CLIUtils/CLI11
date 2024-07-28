@@ -147,3 +147,54 @@ TEST_CASE("app_file_roundtrip") {
     */
     CHECK(result);
 }
+
+
+
+// this test uses the same tests as above just with a full roundtrip test
+TEST_CASE("app_roundtrip") {
+    CLI::FuzzApp fuzzdata;
+    CLI::FuzzApp fuzzdata2;
+    auto app = fuzzdata.generateApp();
+    auto app2 = fuzzdata2.generateApp();
+    int index = GENERATE(range(1, 2));
+    std::string optionString, flagString;
+    auto parseData = loadFailureFile("round_trip_fail", index);
+    if(parseData.size() > 25) {
+        optionString = parseData.substr(0, 25);
+        parseData.erase(0, 25);
+    }
+    if(parseData.size() > 25) {
+        flagString = parseData.substr(0, 25);
+        parseData.erase(0, 25);
+    }
+    try {
+
+        if(!optionString.empty()) {
+            app->add_option(optionString, fuzzdata.buffer);
+            app2->add_option(optionString, fuzzdata2.buffer);
+        }
+        if(!flagString.empty()) {
+            app->add_flag(flagString, fuzzdata.intbuffer);
+            app2->add_flag(flagString, fuzzdata2.intbuffer);
+        }
+        try {
+            app->parse(parseData);
+        } catch(const CLI::ParseError & /*e*/) {
+            return;
+        }
+    } catch(const CLI::ConstructionError & /*e*/) {
+        return;
+    }
+    std::string configOut = app->config_to_str();
+    std::stringstream out(configOut);
+    app2->parse_from_stream(out);
+    bool result = fuzzdata2.compare(fuzzdata);
+    /*
+    if (!result)
+    {
+    configOut = app->config_to_str();
+    result = fuzzdata2.compare(fuzzdata);
+    }
+    */
+    CHECK(result);
+}
