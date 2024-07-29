@@ -321,10 +321,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 if(!item.empty() && item.back() == '\\') {
                     item.pop_back();
                     lineExtension = true;
-                }
-                else if (detail::hasMLString(item,keyChar))
-                {
-                    //deal with the first line closing the multiline literal
+                } else if(detail::hasMLString(item, keyChar)) {
+                    // deal with the first line closing the multiline literal
                     item.pop_back();
                     item.pop_back();
                     item.pop_back();
@@ -335,7 +333,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                             throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
                         }
                     }
-                    inMLineValue=false;
+                    inMLineValue = false;
                 }
                 while(inMLineValue) {
                     std::string l2;
