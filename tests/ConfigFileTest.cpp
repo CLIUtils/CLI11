@@ -349,6 +349,19 @@ TEST_CASE("StringBased: TomlMultiLineString6", "[config]") {
     CHECK(output.at(2).inputs.at(0) == "7");
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringError", "[config]") {
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "two = \"\"\" mline this\\7 is a long line \"\"\"\n";
+    ofile << "three=7    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    CHECK_THROWS(CLI::ConfigINI().from_config(ofile));
+
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
