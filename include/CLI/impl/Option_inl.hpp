@@ -296,7 +296,6 @@ CLI11_INLINE void Option::run_callback() {
 
     if(current_option_state_ < option_state::reduced) {
         _reduce_results(proc_results_, results_);
-        current_option_state_ = option_state::reduced;
     }
 
     current_option_state_ = option_state::callback_run;

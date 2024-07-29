@@ -326,6 +326,29 @@ TEST_CASE("StringBased: TomlMultiLineString5", "[config]") {
     CHECK(output.at(2).inputs.at(0) == "7");
 }
 
+TEST_CASE("StringBased: TomlMultiLineString6", "[config]") {
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "two = \"\"\" mline this is a long line \"\"\"\n";
+    ofile << "three=7    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
+
+    CHECK(output.size() == 3u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == " mline this is a long line ");
+    CHECK(output.at(2).name == "three");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "7");
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
