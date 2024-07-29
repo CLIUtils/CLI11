@@ -110,7 +110,7 @@ class App {
     /// if error error on an extra argument, and if capture feed it to the app
     config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
-    ///  If true, return immediately on an unrecognized option (implies allow_extras) INHERITABLE
+    ///  If true, cease processing on an unrecognized option (implies allow_extras) INHERITABLE
     bool prefix_command_{false};
 
     /// If set to true the name was automatically generated from the command line vs a user set name
@@ -442,9 +442,10 @@ class App {
         return this;
     }
 
-    /// Do not parse anything after the first unrecognized option and return
-    App *prefix_command(bool allow = true) {
-        prefix_command_ = allow;
+    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
+    /// remaining args
+    App *prefix_command(bool is_prefix = true) {
+        prefix_command_ = is_prefix;
         return this;
     }
 

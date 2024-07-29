@@ -583,7 +583,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             std::string subname = subcom->get_name();
             clean_name_string(subname, keyChars);
 
-            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
+            if(subcom->get_configurable() && (default_also || app->got_subcommand(subcom))) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
 
                     out << '[' << prefix << subname << "]\n";
