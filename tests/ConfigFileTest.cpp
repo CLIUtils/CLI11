@@ -359,7 +359,6 @@ TEST_CASE("StringBased: TomlMultiLineStringError", "[config]") {
     ofile.seekg(0, std::ios::beg);
 
     CHECK_THROWS(CLI::ConfigINI().from_config(ofile));
-
 }
 
 TEST_CASE("StringBased: Spaces", "[config]") {
