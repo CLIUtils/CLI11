@@ -284,9 +284,9 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool 
 }
 
 CLI11_INLINE void Option::run_callback() {
-    bool used_default_str=false;
+    bool used_default_str = false;
     if(force_callback_ && results_.empty()) {
-        used_default_str=true;
+        used_default_str = true;
         add_result(default_str_);
     }
     if(current_option_state_ == option_state::parsing) {
@@ -298,22 +298,20 @@ CLI11_INLINE void Option::run_callback() {
         _reduce_results(proc_results_, results_);
         current_option_state_ = option_state::reduced;
     }
-    
+
     current_option_state_ = option_state::callback_run;
     if(callback_) {
-         const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
-         bool local_result = callback_(send_results);
-         if (used_default_str)
-         {
-             //we only clear the results if the callback was actually used
-             //otherwise the callback is the storage of the default
-             results_.clear();
-             proc_results_.clear();
-         }
-         if(!local_result)
-             throw ConversionError(get_name(), results_);
+        const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
+        bool local_result = callback_(send_results);
+        if(used_default_str) {
+            // we only clear the results if the callback was actually used
+            // otherwise the callback is the storage of the default
+            results_.clear();
+            proc_results_.clear();
+        }
+        if(!local_result)
+            throw ConversionError(get_name(), results_);
     }
-    
 }
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
