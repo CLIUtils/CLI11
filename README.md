@@ -182,7 +182,7 @@ details are available at [installation][]:
 - All-in-one global header: Like above, but copying the file to a shared folder
   location like `/opt/CLI11`. Then, the C++ include path has to be extended to
   point at this folder. With CMake 3.5+, use `include_directories(/opt/CLI11)`
-- For other methods including using CMake or vcpkg and some specific
+- For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
 
 ## Usage
