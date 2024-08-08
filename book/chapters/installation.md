@@ -238,6 +238,20 @@ community contributors. If the version is out of date, please
 [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the
 vcpkg repository.
 
+## Installing CLI11 using Conan
+
+You can install pre-built binaries for CLI11 or build it from source using
+[Conan](https://conan.io/). Use the following command:
+
+```bash
+conan install --requires="cli11/[*]" --build=missing
+```
+
+The CLI11 Conan recipe is kept up to date by Conan maintainers and community
+contributors. If the version is out of date, please
+[create an issue or pull request](https://github.com/conan-io/conan-center-index)
+on the ConanCenterIndex repository.
+
 ## Special instructions for GCC 8, Some clang, and WASI
 
 If you are using GCC 8 and using it in C++17 mode with CLI11. CLI11 makes use of
