@@ -1896,7 +1896,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
             // using dot notation is equivalent to single argument subcommand
             auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
             if(sub != nullptr) {
-                auto v = args.back();
+                std::string v = args.back();
                 args.pop_back();
                 arg_name = arg_name.substr(dotloc + 1);
                 if(arg_name.size() > 1) {

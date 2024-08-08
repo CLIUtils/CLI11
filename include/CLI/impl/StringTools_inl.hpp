@@ -459,7 +459,8 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
     if(escaped_string != string_to_escape) {
         auto sqLoc = escaped_string.find('\'');
         while(sqLoc != std::string::npos) {
-            escaped_string.replace(sqLoc, sqLoc + 1, "\\x27");
+            escaped_string[sqLoc] = '\\';
+            escaped_string.insert(sqLoc + 1, "x27");
             sqLoc = escaped_string.find('\'');
         }
         escaped_string.insert(0, "'B\"(");

@@ -26,13 +26,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         parseString.erase(0, 25);
     }
     CLI::FuzzApp fuzzdata;
+    CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
+    auto app2 = fuzzdata2.generateApp();
     try {
         if(!optionString.empty()) {
             app->add_option(optionString, fuzzdata.buffer);
+            app2->add_option(optionString, fuzzdata2.buffer);
         }
         if(!flagString.empty()) {
             app->add_flag(flagString, fuzzdata.intbuffer);
+            app2->add_flag(flagString, fuzzdata2.intbuffer);
         }
     } catch(const CLI::ConstructionError &e) {
         return 0;  // Non-zero return values are reserved for future use.
@@ -50,6 +54,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
-    app->parse_from_stream(out);
+    app2->parse_from_stream(out);
+    auto result = fuzzdata2.compare(fuzzdata);
+    if(!result) {
+        throw CLI::ValidationError("fuzzer", "file input results don't match parse results");
+    }
     return 0;
 }

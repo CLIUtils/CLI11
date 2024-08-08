@@ -54,8 +54,10 @@ class stringWrapper {
 class FuzzApp {
   public:
     FuzzApp() = default;
-
+    /** generate a fuzzing application with a bunch of different interfaces*/
     std::shared_ptr<CLI::App> generateApp();
+    /** compare two fuzz apps for equality*/
+    CLI11_NODISCARD bool compare(const FuzzApp &other) const;
 
     int32_t val32{0};
     int16_t val16{0};

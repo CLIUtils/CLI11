@@ -321,6 +321,19 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 if(!item.empty() && item.back() == '\\') {
                     item.pop_back();
                     lineExtension = true;
+                } else if(detail::hasMLString(item, keyChar)) {
+                    // deal with the first line closing the multiline literal
+                    item.pop_back();
+                    item.pop_back();
+                    item.pop_back();
+                    if(keyChar == '\"') {
+                        try {
+                            item = detail::remove_escaped_characters(item);
+                        } catch(const std::invalid_argument &iarg) {
+                            throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+                        }
+                    }
+                    inMLineValue = false;
                 }
                 while(inMLineValue) {
                     std::string l2;
@@ -504,7 +517,14 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
                 std::string value = detail::ini_join(
                     opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
-
+                if(value == "\"{}\"" || value == "\"[]\"") {
+                    if(opt->get_expected_min() == 0) {
+                        value.push_back(arraySeparator);
+                        value.append("\"\"");
+                        value.push_back(arrayEnd);
+                        value.insert(value.begin(), arrayStart);
+                    }
+                }
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
                         value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
