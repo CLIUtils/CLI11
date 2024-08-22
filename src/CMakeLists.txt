@@ -4,7 +4,8 @@ if(CLI11_PRECOMPILED)
   add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
                            ${CLI11_precompile_sources})
   if(MSVC)
-    set_property(TARGET CLI11 PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(TARGET CLI11 PROPERTY MSVC_RUNTIME_LIBRARY
+                                       "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
   target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
 
