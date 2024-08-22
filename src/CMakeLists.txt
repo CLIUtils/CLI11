@@ -3,6 +3,9 @@ if(CLI11_PRECOMPILED)
   file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
   add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
                            ${CLI11_precompile_sources})
+  if(MSVC)
+    set_property(TARGET CLI11 PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif()
   target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
 
   set(PUBLIC_OR_INTERFACE PUBLIC)
