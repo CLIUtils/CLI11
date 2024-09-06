@@ -414,6 +414,14 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             inSection = true;
         }
         if(!output.empty() && name == output.back().name && parents == output.back().parents) {
+            if (output.back().inputs.size() > 1 && items_buffer.size() > 1)
+            {
+                //insert a separator if one is not already present
+                if (output.back().inputs.back() != "" && items_buffer.front()!="")
+                {
+                    output.back().inputs.push_back("");
+                }
+            }
             output.back().inputs.insert(output.back().inputs.end(), items_buffer.begin(), items_buffer.end());
         } else {
             output.emplace_back();

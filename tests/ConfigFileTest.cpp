@@ -1499,6 +1499,32 @@ TEST_CASE_METHOD(TApp, "TOMLVectordirect", "[config]") {
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
+TEST_CASE_METHOD(TApp, "TOMLVectorVector", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+
+    {
+        std::ofstream out{tmpini};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=1,2,3\n";
+        out << "two= 4, 5, 6\n";
+        out << "three=1\n";
+    }
+
+    std::vector<std::vector<int>> two,three;
+    app.add_option("--two", two)->delimiter(',');
+    //args = {"--two", "1,2,3", "--two", "3,4,5"};
+    run();
+
+    auto str=app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({ {1,2, 3},{4,5,6} }));
+}
+
 TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
