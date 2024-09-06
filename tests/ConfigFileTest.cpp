@@ -1516,13 +1516,13 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVector", "[config]") {
         out << "three=1\n";
     }
 
-    std::vector<std::vector<int>> two,three;
+    std::vector<std::vector<int>> two, three;
     app.add_option("--two", two)->delimiter(',');
-    //args = {"--two", "1,2,3", "--two", "3,4,5"};
+    // args = {"--two", "1,2,3", "--two", "3,4,5"};
     run();
 
-    auto str=app.config_to_str();
-    CHECK(two == std::vector<std::vector<int>>({ {1,2, 3},{4,5,6} }));
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
 }
 
 TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
