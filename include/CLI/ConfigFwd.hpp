@@ -41,7 +41,7 @@ struct ConfigItem {
         std::vector<std::string> tmp = parents;
         tmp.emplace_back(name);
         return detail::join(tmp, ".");
-        (void)multiline; //suppression for cppcheck false positive
+        (void)multiline;  // suppression for cppcheck false positive
     }
 };
 

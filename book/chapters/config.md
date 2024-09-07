@@ -224,8 +224,8 @@ binary form will be used in the output string.
 
 ### vector of vector inputs
 
-It is possible to specify vector of vector inputs in config file. This can be done in a couple different ways
-
+It is possible to specify vector of vector inputs in config file. This can be
+done in a couple different ways
 
 ```toml
 # Examples of vector of vector inputs in config
@@ -242,9 +242,13 @@ vector3 = [4,5,6]
 
 ```
 
-The `%%` is ignored in multiline format if the inject_separator modifier on the option is set to false, thus for vector 3 if the option is storing to a single vector all the elements will be in that vector.
+The `%%` is ignored in multiline format if the inject_separator modifier on the
+option is set to false, thus for vector 3 if the option is storing to a single
+vector all the elements will be in that vector.
 
-For config file multiple sequential duplicate variable names are treated as if they are a vector input, with possible separator insertion in the case of multiple input vectors. Separators are not injected for single values.
+For config file multiple sequential duplicate variable names are treated as if
+they are a vector input, with possible separator insertion in the case of
+multiple input vectors. Separators are not injected for single values.
 
 ## Multiple configuration files
 
