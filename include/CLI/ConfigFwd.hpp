@@ -34,7 +34,8 @@ struct ConfigItem {
     std::string name{};
     /// Listing of inputs
     std::vector<std::string> inputs{};
-
+    /// @brief indicator if a multiline vector separator was inserted
+    bool multiline{false};
     /// The list of parents and name joined by "."
     CLI11_NODISCARD std::string fullname() const {
         std::vector<std::string> tmp = parents;
