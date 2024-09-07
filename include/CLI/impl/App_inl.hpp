@@ -1535,7 +1535,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         if(item.multiline) {
             if(!op->get_inject_separator()) {
                 buffer = item.inputs;
-                buffer.erase(std::remove(buffer.begin(), buffer.end(), "%%"));
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), "%%"), buffer.end());
                 useBuffer = true;
             }
         }
