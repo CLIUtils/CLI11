@@ -1524,9 +1524,9 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVector", "[config]") {
 
     run();
 
-    auto str=app.config_to_str();
-    CHECK(two == std::vector<std::vector<int>>({ {1,2, 3},{4,5,6} }));
-    CHECK(three == std::vector<int>({ 1,2, 3,4,5,6 }));
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
+    CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
 }
 
 TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {

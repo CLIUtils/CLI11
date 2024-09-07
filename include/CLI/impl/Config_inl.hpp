@@ -418,7 +418,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 // insert a separator if one is not already present
                 if(!output.back().inputs.back().empty() && !items_buffer.front().empty()) {
                     output.back().inputs.emplace_back("%%");
-                    output.back().multiline=true;
+                    output.back().multiline = true;
                 }
             }
             output.back().inputs.insert(output.back().inputs.end(), items_buffer.begin(), items_buffer.end());
