@@ -104,6 +104,8 @@ class ConfigBase : public Config {
     char parentSeparatorChar{'.'};
     /// Specify the configuration index to use for arrayed sections
     int16_t configIndex{-1};
+    /// specify the config reader should collapse repeated field names to a single vector
+    bool combineDuplicateArguments{false};
     /// Specify the configuration section that should be used
     std::string configSection{};
 
@@ -166,6 +168,11 @@ class ConfigBase : public Config {
     /// specify a particular index in the section to use (-1) for all sections to use
     ConfigBase *index(int16_t sectionIndex) {
         configIndex = sectionIndex;
+        return this;
+    }
+    /// specify that multiple duplicate arguments should be merged even if not sequential
+    ConfigBase* combineArguments(bool value = true) {
+        combineDuplicateArguments=value;
         return this;
     }
 };
