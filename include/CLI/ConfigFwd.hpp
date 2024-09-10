@@ -171,8 +171,8 @@ class ConfigBase : public Config {
         return this;
     }
     /// specify that multiple duplicate arguments should be merged even if not sequential
-    ConfigBase* combineArguments(bool value = true) {
-        combineDuplicateArguments=value;
+    ConfigBase *combineArguments(bool value = true) {
+        combineDuplicateArguments = value;
         return this;
     }
 };
