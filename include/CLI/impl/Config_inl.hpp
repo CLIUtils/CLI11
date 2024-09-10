@@ -201,23 +201,29 @@ CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
     auto it = fullString.rbegin();
     return (*it == check) && (*(it + 1) == check) && (*(it + 2) == check);
 }
-}  // namespace detail
-inline int find_matching_config(const std::vector<ConfigItem> &items,
-                                const std::vector<std::string> &parents,
-                                const std::string &name,
-                                bool fullSearch) {
+
+/// @brief  find a matching configItem in a list
+inline auto find_matching_config(std::vector<ConfigItem> &items,
+    const std::vector<std::string> &parents,
+    const std::string &name,
+    bool fullSearch)->decltype(items.begin()) {
     if(items.empty()) {
-        return -1;
+        return items.end();
     }
-    int search_index = static_cast<int>(items.size()) - 1;
+    auto search = items.end()-1;
     do {
-        if(items[search_index].parents == parents && items[search_index].name == name) {
-            return search_index;
+        if (search->parents == parents && search->name == name) {
+            return search;
         }
-        --search_index;
-    } while(fullSearch && search_index >= 0);
-    return -1;
+        if (search == items.begin()){
+            break;
+        }
+        --search;
+    } while(fullSearch);
+    return items.end();
 }
+}  // namespace detail
+
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
@@ -429,18 +435,18 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             parents.erase(parents.begin());
             inSection = true;
         }
-        int match_index = find_matching_config(output, parents, name, combineDuplicateArguments);
-        if(match_index >= 0) {
-            if(output[match_index].inputs.size() > 1 && items_buffer.size() > 1) {
+        auto match = detail::find_matching_config(output, parents, name, combineDuplicateArguments);
+        if(match != output.end()) {
+            if(match->inputs.size() > 1 && items_buffer.size() > 1) {
                 // insert a separator if one is not already present
-                if(!(output[match_index].inputs.back().empty() || items_buffer.front().empty() ||
-                     output[match_index].inputs.back() == "%%" || items_buffer.front() == "%%")) {
-                    output[match_index].inputs.emplace_back("%%");
-                    output[match_index].multiline = true;
+                if(!(match->inputs.back().empty() || items_buffer.front().empty() ||
+                    match->inputs.back() == "%%" || items_buffer.front() == "%%")) {
+                    match->inputs.emplace_back("%%");
+                    match->multiline = true;
                 }
             }
-            output[match_index].inputs.insert(
-                output[match_index].inputs.end(), items_buffer.begin(), items_buffer.end());
+            match->inputs.insert(
+                match->inputs.end(), items_buffer.begin(), items_buffer.end());
         } else {
             output.emplace_back();
             output.back().parents = std::move(parents);
