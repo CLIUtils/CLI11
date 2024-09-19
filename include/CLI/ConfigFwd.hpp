@@ -105,7 +105,7 @@ class ConfigBase : public Config {
     /// Specify the configuration index to use for arrayed sections
     int16_t configIndex{-1};
     /// specify the config reader should collapse repeated field names to a single vector
-    bool combineDuplicateArguments{false};
+    bool allowMultipleDuplicateFields{false};
     /// Specify the configuration section that should be used
     std::string configSection{};
 
@@ -171,8 +171,8 @@ class ConfigBase : public Config {
         return this;
     }
     /// specify that multiple duplicate arguments should be merged even if not sequential
-    ConfigBase *combineArguments(bool value = true) {
-        combineDuplicateArguments = value;
+    ConfigBase *allowDuplicateFields(bool value = true) {
+        allowMultipleDuplicateFields = value;
         return this;
     }
 };

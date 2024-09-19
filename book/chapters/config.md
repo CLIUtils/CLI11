@@ -248,7 +248,16 @@ vector all the elements will be in that vector.
 
 For config file multiple sequential duplicate variable names are treated as if
 they are a vector input, with possible separator insertion in the case of
-multiple input vectors. Separators are not injected for single values.
+multiple input vectors.
+
+The config parser has a modifier
+
+```C++
+ app.get_config_formatter_base()->allowDuplicateFields();
+```
+
+This modification will insert the separator between each line even if not sequential.
+This allows an input option to be configured with multiple lines.  
 
 ## Multiple configuration files
 

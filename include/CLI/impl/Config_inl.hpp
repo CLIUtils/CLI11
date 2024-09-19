@@ -434,9 +434,9 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             parents.erase(parents.begin());
             inSection = true;
         }
-        auto match = detail::find_matching_config(output, parents, name, combineDuplicateArguments);
+        auto match = detail::find_matching_config(output, parents, name, allowMultipleDuplicateFields);
         if(match != output.end()) {
-            if(match->inputs.size() > 1 && items_buffer.size() > 1) {
+            if((match->inputs.size() > 1 && items_buffer.size() > 1)||allowMultipleDuplicateFields) {
                 // insert a separator if one is not already present
                 if(!(match->inputs.back().empty() || items_buffer.front().empty() || match->inputs.back() == "%%" ||
                      items_buffer.front() == "%%")) {

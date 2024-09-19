@@ -1542,7 +1542,7 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparated", "[config]") {
     app.set_config("--config", tmpini);
 
     app.config_formatter(std::make_shared<CLI::ConfigTOML>());
-    app.get_config_formatter_base()->combineArguments();
+    app.get_config_formatter_base()->allowDuplicateFields();
     {
         std::ofstream out{tmpini};
         out << "#this is a comment line\n";
@@ -1563,6 +1563,38 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparated", "[config]") {
     auto str = app.config_to_str();
     CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
     CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
+}
+
+TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparatedSingleElement", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+    app.get_config_formatter_base()->allowDuplicateFields();
+    {
+        std::ofstream out{tmpini};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=1\n";
+        out << "three=1\n";
+        out << "three= 4\n";
+        out << "three= 5\n";
+        out << "two= 2\n";
+        out << "two=3\n";
+    }
+
+    std::vector<std::vector<int>> two;
+    std::vector<int> three;
+    app.add_option("--two", two)->delimiter(',');
+    app.add_option("--three", three)->delimiter(',');
+
+    run();
+
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({ {1}, {2},{3} }));
+    CHECK(three == std::vector<int>({1, 4, 5}));
 }
 
 TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
