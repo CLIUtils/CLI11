@@ -256,8 +256,8 @@ The config parser has a modifier
  app.get_config_formatter_base()->allowDuplicateFields();
 ```
 
-This modification will insert the separator between each line even if not sequential.
-This allows an input option to be configured with multiple lines.  
+This modification will insert the separator between each line even if not
+sequential. This allows an input option to be configured with multiple lines.
 
 ## Multiple configuration files
 
