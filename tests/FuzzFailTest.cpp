@@ -197,8 +197,6 @@ TEST_CASE("app_roundtrip") {
     CHECK(result);
 }
 
-
-
 // same as above but just a single test for debugging
 TEST_CASE("app_roundtrip_single") {
     CLI::FuzzApp fuzzdata;

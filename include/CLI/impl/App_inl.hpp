@@ -1547,11 +1547,9 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
                 if(!converted) {
                     errno = 0;
-                    if (res != "{}" || op->get_expected_max() <= 1)
-                    {
+                    if(res != "{}" || op->get_expected_max() <= 1) {
                         res = op->get_flag_value(item.name, res);
                     }
-                    
                 }
 
                 op->add_result(res);

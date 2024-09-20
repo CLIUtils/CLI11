@@ -579,12 +579,10 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
         }
     } break;
     case MultiOptionPolicy::Reverse: {
-        
-        if (get_items_expected_min() == 0)
-        {
-            if (original.size() == 2 && original[0] == "{}" && original[1].empty())
-            {
-                out=original;
+
+        if(get_items_expected_min() == 0) {
+            if(original.size() == 2 && original[0] == "{}" && original[1].empty()) {
+                out = original;
                 break;
             }
         }

@@ -3925,13 +3925,11 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
     CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
 
-
-
 TEST_CASE_METHOD(TApp, "RoundTripEmptyVector", "[config]") {
     std::vector<std::string> cv{};
     app.add_option("-c", cv)->expected(0, 2);
 
-    args = { "-c", "{}"};
+    args = {"-c", "{}"};
 
     run();
     CHECK(cv.empty());
@@ -3942,5 +3940,3 @@ TEST_CASE_METHOD(TApp, "RoundTripEmptyVector", "[config]") {
     app.parse_from_stream(out);
     CHECK(cv.empty());
 }
-
-
