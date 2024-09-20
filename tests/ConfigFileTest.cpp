@@ -1569,7 +1569,7 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
 
     CHECK(zero1 == std::vector<std::string>({}));
     CHECK(zero2 == std::vector<std::string>({}));
-    CHECK(zero3 == std::vector<std::string>({""}));
+    CHECK(zero3 == std::vector<std::string>({}));
     CHECK(zero4 == std::vector<std::string>({"{}"}));
     CHECK(nzero == std::vector<std::string>({"{}"}));
     CHECK(one == std::vector<std::string>({"1"}));
@@ -3924,3 +3924,23 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
     CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
 }
+
+
+
+TEST_CASE_METHOD(TApp, "RoundTripEmptyVector", "[config]") {
+    std::vector<std::string> cv{};
+    app.add_option("-c", cv)->expected(0, 2);
+
+    args = { "-c", "{}"};
+
+    run();
+    CHECK(cv.empty());
+    cv.clear();
+    std::string configOut = app.config_to_str();
+    app.clear();
+    std::stringstream out(configOut);
+    app.parse_from_stream(out);
+    CHECK(cv.empty());
+}
+
+

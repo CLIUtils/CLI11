@@ -199,7 +199,7 @@ TEST_CASE("app_roundtrip") {
 
 
 
-// this test uses the same tests as above just with a full roundtrip test
+// same as above but just a single test for debugging
 TEST_CASE("app_roundtrip_single") {
     CLI::FuzzApp fuzzdata;
     CLI::FuzzApp fuzzdata2;

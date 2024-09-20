@@ -579,6 +579,15 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
         }
     } break;
     case MultiOptionPolicy::Reverse: {
+        
+        if (get_items_expected_min() == 0)
+        {
+            if (original.size() == 2 && original[0] == "{}" && original[1].empty())
+            {
+                out=original;
+                break;
+            }
+        }
         // Allow multi-option sizes (including 0)
         std::size_t trim_size = std::min<std::size_t>(
             static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
