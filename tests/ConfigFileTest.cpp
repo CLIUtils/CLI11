@@ -1461,7 +1461,7 @@ TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
 
 TEST_CASE_METHOD(TApp, "IniFlagOverride", "[config]") {
 
-    TempFile tmpini{ "TestIniTmp.ini" };
+    TempFile tmpini{"TestIniTmp.ini"};
 
     app.set_config("--config", tmpini);
 
@@ -1476,7 +1476,7 @@ TEST_CASE_METHOD(TApp, "IniFlagOverride", "[config]") {
 
     run();
 
-    CHECK(flag==0);
+    CHECK(flag == 0);
 }
 
 TEST_CASE_METHOD(TApp, "TOMLVector", "[config]") {
