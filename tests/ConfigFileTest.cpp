@@ -1458,6 +1458,27 @@ TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
     CHECK(two == std::vector<int>({2, 3}));
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
+
+TEST_CASE_METHOD(TApp, "IniFlagOverride", "[config]") {
+
+    TempFile tmpini{ "TestIniTmp.ini" };
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "three=0" << '\n';
+    }
+
+    int flag{45};
+    app.add_flag("--two{2},--three{3},--four{4}", flag)->disable_flag_override()->force_callback()->default_str("0");
+
+    run();
+
+    CHECK(flag==0);
+}
+
 TEST_CASE_METHOD(TApp, "TOMLVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
