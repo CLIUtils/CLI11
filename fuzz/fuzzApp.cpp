@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "fuzzApp.hpp"
+#include <algorithm>
 
 namespace CLI {
 /*
@@ -148,4 +149,147 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     return fApp;
 }
 
+bool FuzzApp::compare(const FuzzApp &other) const {
+    if(val32 != other.val32) {
+        return false;
+    }
+    if(val16 != other.val16) {
+        return false;
+    }
+    if(val8 != other.val8) {
+        return false;
+    }
+    if(val64 != other.val64) {
+        return false;
+    }
+
+    if(uval32 != other.uval32) {
+        return false;
+    }
+    if(uval16 != other.uval16) {
+        return false;
+    }
+    if(uval8 != other.uval8) {
+        return false;
+    }
+    if(uval64 != other.uval64) {
+        return false;
+    }
+
+    if(atomicval64 != other.atomicval64) {
+        return false;
+    }
+    if(atomicuval64 != other.atomicuval64) {
+        return false;
+    }
+
+    if(v1 != other.v1) {
+        return false;
+    }
+    if(v2 != other.v2) {
+        return false;
+    }
+
+    if(vv1 != other.vv1) {
+        return false;
+    }
+    if(vstr != other.vstr) {
+        return false;
+    }
+
+    if(vecvecd != other.vecvecd) {
+        return false;
+    }
+    if(vvs != other.vvs) {
+        return false;
+    }
+    if(od1 != other.od1) {
+        return false;
+    }
+    if(ods != other.ods) {
+        return false;
+    }
+    if(p1 != other.p1) {
+        return false;
+    }
+    if(p2 != other.p2) {
+        return false;
+    }
+    if(t1 != other.t1) {
+        return false;
+    }
+    if(tcomplex != other.tcomplex) {
+        return false;
+    }
+    if(tcomplex2 != other.tcomplex2) {
+        return false;
+    }
+    if(vectup != other.vectup) {
+        return false;
+    }
+    if(vstrv != other.vstrv) {
+        return false;
+    }
+
+    if(flag1 != other.flag1) {
+        return false;
+    }
+    if(flagCnt != other.flagCnt) {
+        return false;
+    }
+    if(flagAtomic != other.flagAtomic) {
+        return false;
+    }
+
+    if(iwrap.value() != other.iwrap.value()) {
+        return false;
+    }
+    if(dwrap.value() != other.dwrap.value()) {
+        return false;
+    }
+    if(swrap.value() != other.swrap.value()) {
+        return false;
+    }
+    if(buffer != other.buffer) {
+        return false;
+    }
+    if(intbuffer != other.intbuffer) {
+        return false;
+    }
+    if(doubleAtomic != other.doubleAtomic) {
+        return false;
+    }
+
+    // for testing restrictions and reduction methods
+    if(vstrA != other.vstrA) {
+        return false;
+    }
+    if(vstrB != other.vstrB) {
+        return false;
+    }
+    if(vstrC != other.vstrC) {
+        return false;
+    }
+    if(vstrD != other.vstrD) {
+        // the return result if reversed so it can alternate
+        std::vector<std::string> res = vstrD;
+        std::reverse(res.begin(), res.end());
+        if(res != other.vstrD) {
+            return false;
+        }
+    }
+    if(vstrE != other.vstrE) {
+        return false;
+    }
+    if(vstrF != other.vstrF) {
+        return false;
+    }
+    if(mergeBuffer != other.mergeBuffer) {
+        return false;
+    }
+    if(validator_strings != other.validator_strings) {
+        return false;
+    }
+    return true;
+}
 }  // namespace CLI

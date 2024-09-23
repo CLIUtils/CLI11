@@ -125,8 +125,8 @@ get_names(const std::vector<std::string> &input) {
                 long_names.push_back(name);
             else
                 throw BadNameString::BadLongName(name);
-        } else if(name == "-" || name == "--") {
-            throw BadNameString::DashesOnly(name);
+        } else if(name == "-" || name == "--" || name == "++") {
+            throw BadNameString::ReservedName(name);
         } else {
             if(!pos_name.empty())
                 throw BadNameString::MultiPositionalNames(name);

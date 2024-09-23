@@ -287,7 +287,9 @@ string, with the dash or dashes. An option or flag can have as many names as you
 want, and afterward, using `count`, you can use any of the names, with dashes as
 needed, to count the options. One of the names is allowed to be given without
 proceeding dash(es); if present the option is a positional option, and that name
-will be used on the help line for its positional form.
+will be used on the help line for its positional form. The string `++` is also
+not allowed as option name due to its use as an array separator and marker on
+config files.
 
 The `add_option_function<type>(...` function will typically require the template
 parameter be given unless a `std::function` object with an exact match is

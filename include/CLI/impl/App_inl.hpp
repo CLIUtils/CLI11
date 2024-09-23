@@ -1547,7 +1547,9 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
 
                 if(!converted) {
                     errno = 0;
-                    res = op->get_flag_value(item.name, res);
+                    if(res != "{}" || op->get_expected_max() <= 1) {
+                        res = op->get_flag_value(item.name, res);
+                    }
                 }
 
                 op->add_result(res);
@@ -1896,7 +1898,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
             // using dot notation is equivalent to single argument subcommand
             auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
             if(sub != nullptr) {
-                auto v = args.back();
+                std::string v = args.back();
                 args.pop_back();
                 arg_name = arg_name.substr(dotloc + 1);
                 if(arg_name.size() > 1) {

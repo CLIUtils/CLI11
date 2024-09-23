@@ -326,6 +326,41 @@ TEST_CASE("StringBased: TomlMultiLineString5", "[config]") {
     CHECK(output.at(2).inputs.at(0) == "7");
 }
 
+TEST_CASE("StringBased: TomlMultiLineString6", "[config]") {
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "two = \"\"\" mline this is a long line \"\"\"\n";
+    ofile << "three=7    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
+
+    CHECK(output.size() == 3u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == " mline this is a long line ");
+    CHECK(output.at(2).name == "three");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "7");
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringError", "[config]") {
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "two = \"\"\" mline this\\7 is a long line \"\"\"\n";
+    ofile << "three=7    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    CHECK_THROWS(CLI::ConfigINI().from_config(ofile));
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
@@ -1423,6 +1458,27 @@ TEST_CASE_METHOD(TApp, "IniVector", "[config]") {
     CHECK(two == std::vector<int>({2, 3}));
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
+
+TEST_CASE_METHOD(TApp, "IniFlagOverride", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "three=0" << '\n';
+    }
+
+    int flag{45};
+    app.add_flag("--two{2},--three{3},--four{4}", flag)->disable_flag_override()->force_callback()->default_str("0");
+
+    run();
+
+    CHECK(flag == 0);
+}
+
 TEST_CASE_METHOD(TApp, "TOMLVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
@@ -1534,7 +1590,7 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
 
     CHECK(zero1 == std::vector<std::string>({}));
     CHECK(zero2 == std::vector<std::string>({}));
-    CHECK(zero3 == std::vector<std::string>({""}));
+    CHECK(zero3 == std::vector<std::string>({}));
     CHECK(zero4 == std::vector<std::string>({"{}"}));
     CHECK(nzero == std::vector<std::string>({"{}"}));
     CHECK(one == std::vector<std::string>({"1"}));
@@ -3888,4 +3944,20 @@ TEST_CASE_METHOD(TApp, "DefaultsIniOutputQuoted", "[config]") {
     std::string str = app.config_to_str(true);
     CHECK_THAT(str, Contains("val1=\"I am a string\""));
     CHECK_THAT(str, Contains("val2=\"I am a \\\"confusing\\\" string\""));
+}
+
+TEST_CASE_METHOD(TApp, "RoundTripEmptyVector", "[config]") {
+    std::vector<std::string> cv{};
+    app.add_option("-c", cv)->expected(0, 2);
+
+    args = {"-c", "{}"};
+
+    run();
+    CHECK(cv.empty());
+    cv.clear();
+    std::string configOut = app.config_to_str();
+    app.clear();
+    std::stringstream out(configOut);
+    app.parse_from_stream(out);
+    CHECK(cv.empty());
 }

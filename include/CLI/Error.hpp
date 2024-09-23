@@ -132,8 +132,8 @@ class BadNameString : public ConstructionError {
     static BadNameString BadPositionalName(std::string name) {
         return BadNameString("Invalid positional Name: " + name);
     }
-    static BadNameString DashesOnly(std::string name) {
-        return BadNameString("Must have a name, not just dashes: " + name);
+    static BadNameString ReservedName(std::string name) {
+        return BadNameString("Names '-','--','++' are reserved and not allowed as option names " + name);
     }
     static BadNameString MultiPositionalNames(std::string name) {
         return BadNameString("Only one positional name allowed, remove: " + name);
