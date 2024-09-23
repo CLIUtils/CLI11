@@ -182,7 +182,7 @@ details are available at [installation][]:
 - All-in-one global header: Like above, but copying the file to a shared folder
   location like `/opt/CLI11`. Then, the C++ include path has to be extended to
   point at this folder. With CMake 3.5+, use `include_directories(/opt/CLI11)`
-- For other methods including using CMake or vcpkg and some specific
+- For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
 
 ## Usage
@@ -287,7 +287,9 @@ string, with the dash or dashes. An option or flag can have as many names as you
 want, and afterward, using `count`, you can use any of the names, with dashes as
 needed, to count the options. One of the names is allowed to be given without
 proceeding dash(es); if present the option is a positional option, and that name
-will be used on the help line for its positional form.
+will be used on the help line for its positional form. The string `++` is also
+not allowed as option name due to its use as an array separator and marker on
+config files.
 
 The `add_option_function<type>(...` function will typically require the template
 parameter be given unless a `std::function` object with an exact match is
@@ -1010,8 +1012,9 @@ option_groups. These are:
 - `.allow_extras()`: Do not throw an error if extra arguments are left over.
 - `.positionals_at_end()`: Specify that positional arguments occur as the last
   arguments and throw an error if an unexpected positional is encountered.
-- `.prefix_command()`: Like `allow_extras`, but stop immediately on the first
-  unrecognized item. It is ideal for allowing your app or subcommand to be a
+- `.prefix_command()`: Like `allow_extras`, but stop processing immediately on
+  the first unrecognized item. All subsequent arguments are placed in the
+  remaining_arg list. It is ideal for allowing your app or subcommand to be a
   "prefix" to calling another app.
 - `.usage(message)`: 🆕 Replace text to appear at the start of the help string
   after description.

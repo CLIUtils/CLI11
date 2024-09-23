@@ -1223,6 +1223,17 @@ TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
     CHECK(2U == extras.size());
 }
 
+TEST_CASE_METHOD(TApp, "vectorEmpty", "[optiontype]") {
+
+    std::vector<std::string> cv{};
+    app.add_option("-c", cv)->expected(0, 2);
+
+    args = {"-c", "{}"};
+
+    run();
+    CHECK(cv.empty());
+}
+
 TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {
 
     int cnt{0};
