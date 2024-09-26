@@ -1529,9 +1529,17 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         throw ConfigError::NotConfigurable(item.fullname());
     }
-
     if(op->empty()) {
-
+        std::vector<std::string> buffer;  // a buffer to use for copying an modifying inputs in a few cases
+        bool useBuffer{false};
+        if(item.multiline) {
+            if(!op->get_inject_separator()) {
+                buffer = item.inputs;
+                buffer.erase(std::remove(buffer.begin(), buffer.end(), "%%"), buffer.end());
+                useBuffer = true;
+            }
+        }
+        const std::vector<std::string> &inputs = (useBuffer) ? buffer : item.inputs;
         if(op->get_expected_min() == 0) {
             if(item.inputs.size() <= 1) {
                 // Flag parsing
@@ -1555,10 +1563,10 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op->add_result(res);
                 return true;
             }
-            if(static_cast<int>(item.inputs.size()) > op->get_items_expected_max() &&
+            if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
                op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
                 if(op->get_items_expected_max() > 1) {
-                    throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), item.inputs.size());
+                    throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
                 }
 
                 if(!op->get_disable_flag_override()) {
@@ -1566,7 +1574,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 }
                 // if the disable flag override is set then we must have the flag values match a known flag value
                 // this is true regardless of the output value, so an array input is possible and must be accounted for
-                for(const auto &res : item.inputs) {
+                for(const auto &res : inputs) {
                     bool valid_value{false};
                     if(op->default_flag_values_.empty()) {
                         if(res == "true" || res == "false" || res == "1" || res == "0") {
@@ -1590,7 +1598,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 return true;
             }
         }
-        op->add_result(item.inputs);
+        op->add_result(inputs);
         op->run_callback();
     }
 

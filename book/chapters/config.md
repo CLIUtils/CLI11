@@ -222,6 +222,43 @@ characters. Characters not in this form will be translated as given. If argument
 values with unprintable characters are used to generate a config file this
 binary form will be used in the output string.
 
+### vector of vector inputs
+
+It is possible to specify vector of vector inputs in config file. This can be
+done in a couple different ways
+
+```toml
+# Examples of vector of vector inputs in config
+
+# this example is how config_to_str writes it out
+vector1 = [1,2,3,"",4,5,6]
+
+# alternative with vector separator sequence
+vector2 = [1,2,3,"%%",4,5,6]
+
+# multiline format
+vector3 = [1,2,3]
+vector3 = [4,5,6]
+
+```
+
+The `%%` is ignored in multiline format if the inject_separator modifier on the
+option is set to false, thus for vector 3 if the option is storing to a single
+vector all the elements will be in that vector.
+
+For config file multiple sequential duplicate variable names are treated as if
+they are a vector input, with possible separator insertion in the case of
+multiple input vectors.
+
+The config parser has a modifier
+
+```C++
+ app.get_config_formatter_base()->allowDuplicateFields();
+```
+
+This modification will insert the separator between each line even if not
+sequential. This allows an input option to be configured with multiple lines.
+
 ## Multiple configuration files
 
 If it is desired that multiple configuration be allowed. Use

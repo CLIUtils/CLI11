@@ -1555,6 +1555,104 @@ TEST_CASE_METHOD(TApp, "TOMLVectordirect", "[config]") {
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
+TEST_CASE_METHOD(TApp, "TOMLVectorVector", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+
+    {
+        std::ofstream out{tmpini};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=1,2,3\n";
+        out << "two= 4, 5, 6\n";
+        out << "three=1,2,3\n";
+        out << "three= 4, 5, 6\n";
+        out << "four=1,2\n";
+        out << "four= 3,4\n";
+        out << "four=5,6\n";
+        out << "four= 7,8\n";
+    }
+
+    std::vector<std::vector<int>> two;
+    std::vector<int> three, four;
+    app.add_option("--two", two)->delimiter(',');
+    app.add_option("--three", three)->delimiter(',');
+    app.add_option("--four", four)->delimiter(',');
+
+    run();
+
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
+    CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
+    CHECK(four == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8}));
+}
+
+TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparated", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+    app.get_config_formatter_base()->allowDuplicateFields();
+    {
+        std::ofstream out{tmpini};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=1,2,3\n";
+        out << "three=1,2,3\n";
+        out << "three= 4, 5, 6\n";
+        out << "two= 4, 5, 6\n";
+    }
+
+    std::vector<std::vector<int>> two;
+    std::vector<int> three;
+    app.add_option("--two", two)->delimiter(',');
+    app.add_option("--three", three)->delimiter(',');
+
+    run();
+
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
+    CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
+}
+
+TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparatedSingleElement", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    app.config_formatter(std::make_shared<CLI::ConfigTOML>());
+    app.get_config_formatter_base()->allowDuplicateFields();
+    {
+        std::ofstream out{tmpini};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=1\n";
+        out << "three=1\n";
+        out << "three= 4\n";
+        out << "three= 5\n";
+        out << "two= 2\n";
+        out << "two=3\n";
+    }
+
+    std::vector<std::vector<int>> two;
+    std::vector<int> three;
+    app.add_option("--two", two)->delimiter(',');
+    app.add_option("--three", three)->delimiter(',');
+
+    run();
+
+    auto str = app.config_to_str();
+    CHECK(two == std::vector<std::vector<int>>({{1}, {2}, {3}}));
+    CHECK(three == std::vector<int>({1, 4, 5}));
+}
+
 TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
 
     TempFile tmptoml{"TestTomlTmp.toml"};
