@@ -741,13 +741,13 @@ TEST_CASE("THelp: NextLineShouldBeAlignmentInMultilineDescription", "[help]") {
 
     const std::string help = app.help();
     const auto width = app.get_formatter()->get_column_width();
-    auto first_loc=help.find("first");
-    auto first_new_line=help.find_last_of('\n',first_loc);
-    auto second_loc=help.find("second");
-    auto second_new_line=help.find_last_of('\n',second_loc);
-    CHECK(first_loc-first_new_line-1==width);
-    CHECK(second_loc-second_new_line-1==width);
-    CHECK(second_new_line>first_loc);
+    auto first_loc = help.find("first");
+    auto first_new_line = help.find_last_of('\n', first_loc);
+    auto second_loc = help.find("second");
+    auto second_new_line = help.find_last_of('\n', second_loc);
+    CHECK(first_loc - first_new_line - 1 == width);
+    CHECK(second_loc - second_new_line - 1 == width);
+    CHECK(second_new_line > first_loc);
 }
 
 TEST_CASE("THelp: NiceName", "[help]") {
@@ -858,7 +858,6 @@ TEST_CASE_METHOD(CapturedHelp, "CallForAllHelpOutput", "[help]") {
     CHECK_THAT(out.str(), Contains("SUBCOMMANDS:"));
     CHECK_THAT(out.str(), Contains("--help-all"));
     CHECK_THAT(out.str(), Contains("My Test Program"));
-
 }
 TEST_CASE_METHOD(CapturedHelp, "NewFormattedHelp", "[help]") {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });

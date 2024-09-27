@@ -75,8 +75,8 @@ set_property(
            "Working on count: 2, direct count: 2, opt count: 2" "Some value: 1.2")
 # test shows that the help prints out for unnamed subcommands
 add_test(NAME subcom_partitioned_help COMMAND subcom_partitioned --help)
-set_property(TEST subcom_partitioned_help PROPERTY PASS_REGULAR_EXPRESSION
-                                                   "-f,[ \\t]*--file TEXT REQUIRED" "-d,--double FLOAT")
+set_property(TEST subcom_partitioned_help
+             PROPERTY PASS_REGULAR_EXPRESSION "-f,[ \\t]*--file TEXT REQUIRED" "-d,--double FLOAT")
 
 ####################################################
 add_cli_exe(config_app config_app.cpp)

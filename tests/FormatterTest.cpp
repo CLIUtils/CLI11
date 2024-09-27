@@ -60,7 +60,6 @@ TEST_CASE("Formatter: OptCustomize", "[formatter]") {
     CHECK_THAT(help, Contains("Something"));
     CHECK_THAT(help, Contains("--opt INT"));
     CHECK_THAT(help, Contains("-h,   --help           Print"));
-    
 }
 
 TEST_CASE("Formatter: OptCustomizeSimple", "[formatter]") {
@@ -145,7 +144,6 @@ TEST_CASE("Formatter: AppCustomizeSimple", "[formatter]") {
     CHECK_THAT(help, Contains("\nSUBCOMMANDS:\n"));
     CHECK_THAT(help, Contains("  subcom2           This\n"));
     CHECK_THAT(help, Contains("  subcom2           This\n"));
-
 }
 
 TEST_CASE("Formatter: AllSub", "[formatter]") {
