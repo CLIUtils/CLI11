@@ -1013,18 +1013,18 @@ TEST_CASE_METHOD(SubcommandProgram, "Subcommand Groups", "[subcom]") {
 
     std::string help = app.help();
     CHECK_THAT(help, !Contains("More Commands:"));
-    CHECK_THAT(help, Contains("Subcommands:"));
+    CHECK_THAT(help, Contains("SUBCOMMANDS:"));
 
     start->group("More Commands");
     help = app.help();
     CHECK_THAT(help, Contains("More Commands:"));
-    CHECK_THAT(help, Contains("Subcommands:"));
+    CHECK_THAT(help, Contains("SUBCOMMANDS:"));
 
     // Case is ignored but for the first subcommand in a group.
     stop->group("more commands");
     help = app.help();
     CHECK_THAT(help, Contains("More Commands:"));
-    CHECK_THAT(help, !Contains("Subcommands:"));
+    CHECK_THAT(help, !Contains("SUBCOMMANDS:"));
 }
 
 TEST_CASE_METHOD(SubcommandProgram, "Subcommand ExtrasErrors", "[subcom]") {

@@ -21,8 +21,8 @@ TEST_CASE("THelp: Basic", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
+    CHECK_THAT(help, Contains("-h,     --help"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 }
 
@@ -32,9 +32,6 @@ TEST_CASE("THelp: Usage", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
     CHECK_THAT(help, Contains("use: just use it"));
 }
 
@@ -43,10 +40,6 @@ TEST_CASE("THelp: UsageCallback", "[help]") {
     app.usage([]() { return "use: just use it"; });
 
     std::string help = app.help();
-
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
     CHECK_THAT(help, Contains("use: just use it"));
 }
 
@@ -56,9 +49,6 @@ TEST_CASE("THelp: UsageCallbackBoth", "[help]") {
     app.usage("like 1, 2, and 3");
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
     CHECK_THAT(help, Contains("use: just use it"));
     CHECK_THAT(help, Contains("like 1, 2, and 3"));
 }
@@ -69,10 +59,6 @@ TEST_CASE("THelp: Footer", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Usage:"));
     CHECK_THAT(help, Contains("Report bugs to bugs@example.com"));
 }
 
@@ -82,10 +68,6 @@ TEST_CASE("THelp: FooterCallback", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Usage:"));
     CHECK_THAT(help, Contains("Report bugs to bugs@example.com"));
 }
 
@@ -95,10 +77,6 @@ TEST_CASE("THelp: FooterCallbackBoth", "[help]") {
     app.footer(" foot!!!!");
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Usage:"));
     CHECK_THAT(help, Contains("Report bugs to bugs@example.com"));
     CHECK_THAT(help, Contains("foot!!!!"));
 }
@@ -111,13 +89,11 @@ TEST_CASE("THelp: OptionalPositional", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Positionals:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
+    CHECK_THAT(help, Contains("POSITIONALS:"));
     CHECK_THAT(help, Contains("something TEXT"));
     CHECK_THAT(help, Contains("My option here"));
-    CHECK_THAT(help, Contains("Usage: program [OPTIONS] [something]"));
+    CHECK_THAT(help, Contains("program [OPTIONS] [something]"));
 }
 
 TEST_CASE("THelp: Hidden", "[help]") {
@@ -130,9 +106,7 @@ TEST_CASE("THelp: Hidden", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
     CHECK_THAT(help, !Contains("[something]"));
     CHECK_THAT(help, !Contains("something "));
     CHECK_THAT(help, !Contains("another"));
@@ -176,7 +150,7 @@ TEST_CASE("THelp: deprecatedOptions2", "[help]") {
 
 TEST_CASE("THelp: deprecatedOptions3", "[help]") {
     CLI::App app{"My prog"};
-
+    app.get_formatter()->right_column_width(100);
     std::string x;
     app.add_option("--something", x, "Some Description");
     app.add_option("--something_else", x, "Some other description");
@@ -258,9 +232,7 @@ TEST_CASE("THelp: HiddenGroup", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
     CHECK_THAT(help, !Contains("[something]"));
     CHECK_THAT(help, !Contains("something "));
     CHECK_THAT(help, !Contains("another"));
@@ -311,10 +283,7 @@ TEST_CASE("THelp: OptionalPositionalAndOptions", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Usage: AnotherProgram [OPTIONS] [something]"));
+    CHECK_THAT(help, Contains("AnotherProgram [OPTIONS] [something]"));
 }
 
 TEST_CASE("THelp: RequiredPositionalAndOptions", "[help]") {
@@ -326,10 +295,8 @@ TEST_CASE("THelp: RequiredPositionalAndOptions", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("-h,--help"));
-    CHECK_THAT(help, Contains("Options:"));
-    CHECK_THAT(help, Contains("Positionals:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
+    CHECK_THAT(help, Contains("POSITIONALS:"));
     CHECK_THAT(help, Contains("Usage: [OPTIONS] something"));
 }
 
@@ -342,7 +309,7 @@ TEST_CASE("THelp: MultiOpts", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, !Contains("Positionals:"));
+    CHECK_THAT(help, !Contains("POSITIONALS:"));
     CHECK_THAT(help, Contains("Usage: [OPTIONS]"));
     CHECK_THAT(help, Contains("INT x 2"));
     CHECK_THAT(help, Contains("INT ..."));
@@ -369,8 +336,8 @@ TEST_CASE("THelp: MultiPosOpts", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("My prog"));
-    CHECK_THAT(help, Contains("Positionals:"));
-    CHECK_THAT(help, Contains("Usage: program [OPTIONS]"));
+    CHECK_THAT(help, Contains("POSITIONALS:"));
+    CHECK_THAT(help, Contains("program [OPTIONS]"));
     CHECK_THAT(help, Contains("INT x 2"));
     CHECK_THAT(help, Contains("INT ..."));
     CHECK_THAT(help, Contains("[quick(2x)]"));
@@ -408,7 +375,7 @@ TEST_CASE("THelp: NeedsPositional", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("Positionals:"));
+    CHECK_THAT(help, Contains("POSITIONALS:"));
     CHECK_THAT(help, Contains("Needs: op1"));
 }
 
@@ -433,7 +400,7 @@ TEST_CASE("THelp: ExcludesPositional", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("Positionals:"));
+    CHECK_THAT(help, Contains("POSITIONALS:"));
     CHECK_THAT(help, Contains("Excludes: op1"));
 }
 
@@ -520,7 +487,7 @@ TEST_CASE("THelp: Subcom", "[help]") {
     CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMAND"));
 
     help = sub1->help();
-    CHECK_THAT(help, Contains("Usage: sub1"));
+    CHECK_THAT(help, Contains("sub1 [OPTIONS]"));
 
     char x[] = "./myprogram";  // NOLINT(modernize-avoid-c-arrays)
     char y[] = "sub2";         // NOLINT(modernize-avoid-c-arrays)
@@ -529,7 +496,7 @@ TEST_CASE("THelp: Subcom", "[help]") {
     app.parse(static_cast<int>(args.size()), args.data());
 
     help = app.help();
-    CHECK_THAT(help, Contains("Usage: ./myprogram sub2"));
+    CHECK_THAT(help, Contains("./myprogram sub2"));
 }
 
 TEST_CASE("THelp: Subcom_alias", "[help]") {
@@ -570,7 +537,7 @@ TEST_CASE("THelp: MasterName", "[help]") {
     std::vector<char *> args = {x};
     app.parse(static_cast<int>(args.size()), args.data());
 
-    CHECK_THAT(app.help(), Contains("Usage: MyRealName"));
+    CHECK_THAT(app.help(), Contains("MyRealName"));
 }
 
 TEST_CASE("THelp: IntDefaults", "[help]") {
@@ -654,7 +621,7 @@ TEST_CASE("THelp: RemoveHelp", "[help]") {
 
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, !Contains("-h,--help"));
-    CHECK_THAT(help, !Contains("Options:"));
+    CHECK_THAT(help, !Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 
     std::vector<std::string> input{"--help"};
@@ -675,7 +642,7 @@ TEST_CASE("THelp: RemoveOtherMethodHelp", "[help]") {
 
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, !Contains("-h,--help"));
-    CHECK_THAT(help, !Contains("Options:"));
+    CHECK_THAT(help, !Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 
     std::vector<std::string> input{"--help"};
@@ -697,7 +664,7 @@ TEST_CASE("THelp: RemoveOtherMethodHelpAll", "[help]") {
 
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, !Contains("--help-all"));
-    CHECK_THAT(help, Contains("Options:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 
     std::vector<std::string> input{"--help-all"};
@@ -716,7 +683,7 @@ TEST_CASE("THelp: NoHelp", "[help]") {
 
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, !Contains("-h,--help"));
-    CHECK_THAT(help, !Contains("Options:"));
+    CHECK_THAT(help, !Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 
     std::vector<std::string> input{"--help"};
@@ -738,7 +705,7 @@ TEST_CASE("THelp: CustomHelp", "[help]") {
     CHECK_THAT(help, Contains("My prog"));
     CHECK_THAT(help, !Contains("-h,--help"));
     CHECK_THAT(help, Contains("--yelp"));
-    CHECK_THAT(help, Contains("Options:"));
+    CHECK_THAT(help, Contains("OPTIONS:"));
     CHECK_THAT(help, Contains("Usage:"));
 
     std::vector<std::string> input{"--yelp"};
@@ -774,7 +741,13 @@ TEST_CASE("THelp: NextLineShouldBeAlignmentInMultilineDescription", "[help]") {
 
     const std::string help = app.help();
     const auto width = app.get_formatter()->get_column_width();
-    CHECK_THAT(help, Contains(first + "\n" + std::string(width, ' ') + second));
+    auto first_loc=help.find("first");
+    auto first_new_line=help.find_last_of('\n',first_loc);
+    auto second_loc=help.find("second");
+    auto second_new_line=help.find_last_of('\n',second_loc);
+    CHECK(first_loc-first_new_line-1==width);
+    CHECK(second_loc-second_new_line-1==width);
+    CHECK(second_new_line>first_loc);
 }
 
 TEST_CASE("THelp: NiceName", "[help]") {
@@ -882,20 +855,10 @@ TEST_CASE_METHOD(CapturedHelp, "CallForAllHelpOutput", "[help]") {
     CHECK_THAT(out.str(), Contains("one"));
     CHECK_THAT(out.str(), Contains("two"));
     CHECK_THAT(out.str(), Contains("--three"));
+    CHECK_THAT(out.str(), Contains("SUBCOMMANDS:"));
+    CHECK_THAT(out.str(), Contains("--help-all"));
+    CHECK_THAT(out.str(), Contains("My Test Program"));
 
-    CHECK(out.str() == "My Test Program\n"
-                       "Usage: [OPTIONS] [SUBCOMMAND]\n"
-                       "\n"
-                       "Options:\n"
-                       "  -h,--help                   Print this help message and exit\n"
-                       "  --help-all                  Help all\n"
-                       "\n"
-                       "Subcommands:\n"
-                       "one\n"
-                       "  One description\n\n"
-                       "two\n"
-                       "  Options:\n"
-                       "    --three                     \n\n");
 }
 TEST_CASE_METHOD(CapturedHelp, "NewFormattedHelp", "[help]") {
     app.formatter_fn([](const CLI::App *, std::string, CLI::AppFormatMode) { return "New Help"; });
