@@ -284,10 +284,10 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         std::string longNames = detail::join(vlongNames, ", ");
 
         // Calculate setw sizes
-        const auto shortNamesColumnWidth = static_cast<std::streamsize>(column_width_ / 3);  // 33% left for short names
-        const auto longNamesColumnWidth = static_cast<std::streamsize>(std::ceil(
+        const auto shortNamesColumnWidth = static_cast<int>(column_width_ / 3);  // 33% left for short names
+        const auto longNamesColumnWidth = static_cast<int>(std::ceil(
             static_cast<float>(column_width_) / 3.0f * 2.0f));  // 66% right for long names and options, ceil result
-        std::streamsize shortNamesOverSize = 0;
+        int shortNamesOverSize = 0;
 
         // Print short names
         if(shortNames.length() > 0) {
@@ -296,9 +296,9 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
                 shortNames += opts;  // Add opts if only short names and no long names
             if(longNames.length() > 0)
                 shortNames += ",";
-            if(static_cast<std::streamsize>(shortNames.length()) >= shortNamesColumnWidth) {
+            if(static_cast<int>(shortNames.length()) >= shortNamesColumnWidth) {
                 shortNames += " ";
-                shortNamesOverSize = shortNames.length() - shortNamesColumnWidth;
+                shortNamesOverSize = static_cast<int>(shortNames.length()) - shortNamesColumnWidth;
             }
             out << std::setw(shortNamesColumnWidth) << std::left << shortNames;
         } else {
@@ -314,7 +314,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         if(longNames.length() > 0) {
             if(opts.length() > 0)
                 longNames += opts;
-            if(static_cast<std::streamsize>(longNames.length()) >= adjustedLongNamesColumnWidth)
+            if(static_cast<int>(longNames.length()) >= adjustedLongNamesColumnWidth)
                 longNames += " ";
 
             out << std::setw(adjustedLongNamesColumnWidth) << std::left << longNames;
