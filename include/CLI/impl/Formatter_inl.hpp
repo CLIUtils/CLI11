@@ -100,10 +100,10 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     }
 
     std::stringstream out;
-    out << std::endl;
+    out << '\n';
 
     if(name.empty())
-        out << get_label("Usage") << ":";
+        out << get_label("Usage") << ':';
     else
         out << name;
 
@@ -133,13 +133,13 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     if(!app->get_subcommands(
                [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
             .empty()) {
-        out << " " << (app->get_require_subcommand_min() == 0 ? "[" : "")
+        out << ' ' << (app->get_require_subcommand_min() == 0 ? "[" : "")
             << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
                                                                                                         : "SUBCOMMANDS")
             << (app->get_require_subcommand_min() == 0 ? "]" : "");
     }
 
-    out << std::endl << std::endl;
+    out << "\n\n";
 
     return out.str();
 }
@@ -149,7 +149,7 @@ CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
     if(footer.empty()) {
         return std::string{};
     }
-    return "\n" + footer + "\n\n";
+    return '\n' + footer + "\n\n";
 }
 
 CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, AppFormatMode mode) const {
@@ -200,7 +200,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
     // For each group, filter out and print subcommands
     for(const std::string &group : subcmd_groups_seen) {
-        out << "\n" << group << ":\n";
+        out << '\n' << group << ":\n";
         std::vector<const App *> subcommands_group = app->get_subcommands(
             [&group](const App *sub_app) { return detail::to_lower(sub_app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
@@ -210,7 +210,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
                 out << make_subcommand(new_com);
             } else {
                 out << new_com->help(new_com->get_name(), AppFormatMode::Sub);
-                out << "\n";
+                out << '\n';
             }
         }
     }
@@ -229,7 +229,7 @@ CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
 
 CLI11_INLINE std::string Formatter::make_expanded(const App *sub) const {
     std::stringstream out;
-    out << sub->get_display_name(true) << "\n";
+    out << sub->get_display_name(true) << '\n';
 
     out << make_description(sub);
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
@@ -257,7 +257,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         if(!desc.empty()) {
             bool skipFirstLinePrefix = true;
             if(left.length() >= column_width_) {
-                out << "\n";
+                out << '\n';
                 skipFirstLinePrefix = false;
             }
             detail::streamOutAsParagraph(
@@ -284,10 +284,10 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         std::string longNames = detail::join(vlongNames, ", ");
 
         // Calculate setw sizes
-        const std::size_t shortNamesColumnWidth = column_width_ / 3;  // 33% left for short names
-        const std::size_t longNamesColumnWidth = static_cast<std::size_t>(std::ceil(
+        const auto shortNamesColumnWidth = static_cast<std::streamsize>(column_width_ / 3);  // 33% left for short names
+        const auto longNamesColumnWidth = static_cast<std::streamsize>(std::ceil(
             static_cast<float>(column_width_) / 3.0f * 2.0f));  // 66% right for long names and options, ceil result
-        std::size_t shortNamesOverSize = 0;
+        std::streamsize shortNamesOverSize = 0;
 
         // Print short names
         if(shortNames.length() > 0) {
@@ -296,7 +296,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
                 shortNames += opts;  // Add opts if only short names and no long names
             if(longNames.length() > 0)
                 shortNames += ",";
-            if(shortNames.length() >= shortNamesColumnWidth) {
+            if(static_cast<std::streamsize>(shortNames.length()) >= shortNamesColumnWidth) {
                 shortNames += " ";
                 shortNamesOverSize = shortNames.length() - shortNamesColumnWidth;
             }
@@ -308,13 +308,13 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         // Adjust long name column width in case of short names column reaching into long names column
         shortNamesOverSize =
             (std::min)(shortNamesOverSize, longNamesColumnWidth);  // Prevent negative result with unsigned integers
-        const std::size_t adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
+        const auto adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
 
         // Print long names
         if(longNames.length() > 0) {
             if(opts.length() > 0)
                 longNames += opts;
-            if(longNames.length() >= adjustedLongNamesColumnWidth)
+            if(static_cast<std::streamsize>(longNames.length()) >= adjustedLongNamesColumnWidth)
                 longNames += " ";
 
             out << std::setw(adjustedLongNamesColumnWidth) << std::left << longNames;
@@ -325,7 +325,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         if(!desc.empty()) {
             bool skipFirstLinePrefix = true;
             if(out.str().length() > column_width_) {
-                out << "\n";
+                out << '\n';
                 skipFirstLinePrefix = false;
             }
             detail::streamOutAsParagraph(
@@ -333,7 +333,7 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         }
     }
 
-    out << "\n";
+    out << '\n';
     return out.str();
 }
 

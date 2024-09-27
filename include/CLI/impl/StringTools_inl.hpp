@@ -590,7 +590,7 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
 
         while(iss >> word) {
             if(word.length() + charsWritten > paragraphWidth) {
-                out << std::endl << linePrefix;
+                out << '\n' << linePrefix;
                 charsWritten = 0;
             }
 
@@ -599,7 +599,7 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
         }
 
         if(!lss.eof())
-            out << std::endl << linePrefix;
+            out << '\n' << linePrefix;
     }
     return out;
 }
