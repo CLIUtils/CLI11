@@ -53,15 +53,15 @@
 
 /** detection of rtti */
 #ifndef CLI11_USE_STATIC_RTTI
-#if(defined(_HAS_STATIC_RTTI) && _HAS_STATIC_RTTI)
+#if (defined(_HAS_STATIC_RTTI) && _HAS_STATIC_RTTI)
 #define CLI11_USE_STATIC_RTTI 1
 #elif defined(__cpp_rtti)
-#if(defined(_CPPRTTI) && _CPPRTTI == 0)
+#if (defined(_CPPRTTI) && _CPPRTTI == 0)
 #define CLI11_USE_STATIC_RTTI 1
 #else
 #define CLI11_USE_STATIC_RTTI 0
 #endif
-#elif(defined(__GCC_RTTI) && __GXX_RTTI)
+#elif (defined(__GCC_RTTI) && __GXX_RTTI)
 #define CLI11_USE_STATIC_RTTI 0
 #else
 #define CLI11_USE_STATIC_RTTI 1
