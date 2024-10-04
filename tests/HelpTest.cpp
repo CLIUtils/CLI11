@@ -815,21 +815,19 @@ TEST_CASE("THelp: longPositional", "[help]") {
 }
 
 TEST_CASE("THelp: SubcommandNewLineDescription", "[help]") {
-    
+
     const std::string nl_description{"this is a description with aX \n X\\n in it and just for fun \n\t another"};
 
     CLI::App app;
     int i{0};
-    app.add_option("-i,--int",
-        i);
-    app.add_subcommand("subcom1",nl_description);
+    app.add_option("-i,--int", i);
+    app.add_subcommand("subcom1", nl_description);
     std::string help = app.help();
     auto width = app.get_formatter()->get_column_width();
     auto first_X = help.find_first_of('X');
     auto first_new_line = help.find_first_of('\n', first_X);
-    auto second_X= help.find_first_of('X',first_new_line);
-    CHECK(second_X-first_new_line>width);
-    
+    auto second_X = help.find_first_of('X', first_new_line);
+    CHECK(second_X - first_new_line > width);
 }
 
 TEST_CASE("THelp: longDescription", "[help]") {
@@ -861,7 +859,7 @@ TEST_CASE("THelp: longSubcommandDescription", "[help]") {
     int i{0};
 
     app.add_option("-i,--int", i);
-    app.add_subcommand("test1",long_string);
+    app.add_subcommand("test1", long_string);
     std::string help = app.help();
     auto width = app.get_formatter()->get_right_column_width();
     auto first_loc = help.find("AAARG");
@@ -869,7 +867,7 @@ TEST_CASE("THelp: longSubcommandDescription", "[help]") {
 
     CHECK(first_new_line - first_loc - 1 < width);
     app.get_formatter()->right_column_width(30);
-    width=30;
+    width = 30;
     help = app.help();
     first_loc = help.find("AAARG");
     first_new_line = help.find_first_of('\n', first_loc);
