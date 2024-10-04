@@ -797,6 +797,23 @@ TEST_CASE("THelp: longLineAlignment", "[help]") {
     CHECK(first_new_line - first_loc - 1 < width);
 }
 
+TEST_CASE("THelp: longPositional", "[help]") {
+    CLI::App app;
+    int i{0};
+
+    app.add_option("int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_"
+        "to_infitinty",
+        i,
+        long_string);
+
+    std::string help = app.help();
+    auto width = app.get_formatter()->get_right_column_width();
+    auto first_loc = help.find("AAARG");
+    auto first_new_line = help.find_first_of('\n', first_loc);
+
+    CHECK(first_new_line - first_loc - 1 < width);
+}
+
 TEST_CASE("THelp: longDescription", "[help]") {
 
     CLI::App app(long_string, "long_desc");
