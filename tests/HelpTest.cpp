@@ -757,7 +757,7 @@ TEST_CASE("THelp: CheckRightWidth", "[help]") {
     const std::string second{"second line"};
     app.add_option("-i,--int", i, first + "\n" + second);
     app.get_formatter()->column_width(24);
-    CHECK(app.get_formatter()->get_column_width()==24);
+    CHECK(app.get_formatter()->get_column_width() == 24);
     const std::string help = app.help();
     auto first_loc = help.find("first");
     auto first_new_line = help.find_last_of('\n', first_loc);
@@ -768,36 +768,40 @@ TEST_CASE("THelp: CheckRightWidth", "[help]") {
     CHECK(second_new_line > first_loc);
 }
 
-static const std::string long_string{"AAARG this is a long line description that will span across multiple lines and still go on and on.  This is meant to test how the help handler handles things like this"};
+static const std::string long_string{
+    "AAARG this is a long line description that will span across multiple lines and still go on and on.  This is meant "
+    "to test how the help handler handles things like this"};
 
 TEST_CASE("THelp: longLineAlignment", "[help]") {
     CLI::App app;
     int i{0};
-    
-    app.add_option("-i,--int,--int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_to_infitinty,--and_another_long_name_just_for_fun", i,long_string );
+
+    app.add_option("-i,--int,--int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_"
+                   "to_infitinty,--and_another_long_name_just_for_fun",
+                   i,
+                   long_string);
 
     std::string help = app.help();
     auto width = app.get_formatter()->get_right_column_width();
     auto first_loc = help.find("AAARG");
     auto first_new_line = help.find_first_of('\n', first_loc);
-    
-    CHECK(first_new_line-first_loc - 1 < width);
+
+    CHECK(first_new_line - first_loc - 1 < width);
     app.get_formatter()->right_column_width(30);
     width = app.get_formatter()->get_right_column_width();
-    CHECK(width==30);
+    CHECK(width == 30);
     help = app.help();
     first_loc = help.find("AAARG");
     first_new_line = help.find_first_of('\n', first_loc);
 
-    CHECK(first_new_line-first_loc - 1 < width);
-    
+    CHECK(first_new_line - first_loc - 1 < width);
 }
 
 TEST_CASE("THelp: longDescription", "[help]") {
-   
-    CLI::App app(long_string,"long_desc");
+
+    CLI::App app(long_string, "long_desc");
     int i{0};
-    
+
     app.add_option("-i,--int", i);
 
     std::string help = app.help();
@@ -805,16 +809,15 @@ TEST_CASE("THelp: longDescription", "[help]") {
     auto first_loc = help.find("AAARG");
     auto first_new_line = help.find_first_of('\n', first_loc);
 
-    CHECK(first_new_line-first_loc - 1 < width);
+    CHECK(first_new_line - first_loc - 1 < width);
     app.get_formatter()->description_paragraph_width(30);
     width = app.get_formatter()->get_description_paragraph_width();
-    CHECK(width==30);
+    CHECK(width == 30);
     help = app.help();
     first_loc = help.find("AAARG");
     first_new_line = help.find_first_of('\n', first_loc);
 
-    CHECK(first_new_line-first_loc - 1 < width);
-
+    CHECK(first_new_line - first_loc - 1 < width);
 }
 
 TEST_CASE("THelp: longFooter", "[help]") {
@@ -828,16 +831,15 @@ TEST_CASE("THelp: longFooter", "[help]") {
     auto first_loc = help.find("AAARG");
     auto first_new_line = help.find_first_of('\n', first_loc);
 
-    CHECK(first_new_line-first_loc - 1 < width);
+    CHECK(first_new_line - first_loc - 1 < width);
     app.get_formatter()->footer_paragraph_width(30);
     width = app.get_formatter()->get_footer_paragraph_width();
-    CHECK(width==30);
+    CHECK(width == 30);
     help = app.help();
     first_loc = help.find("AAARG");
     first_new_line = help.find_first_of('\n', first_loc);
 
-    CHECK(first_new_line-first_loc - 1 < width);
-
+    CHECK(first_new_line - first_loc - 1 < width);
 }
 
 TEST_CASE("THelp: NiceName", "[help]") {
