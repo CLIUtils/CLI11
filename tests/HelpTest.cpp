@@ -802,9 +802,9 @@ TEST_CASE("THelp: longPositional", "[help]") {
     int i{0};
 
     app.add_option("int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_"
-        "to_infitinty",
-        i,
-        long_string);
+                   "to_infitinty",
+                   i,
+                   long_string);
 
     std::string help = app.help();
     auto width = app.get_formatter()->get_right_column_width();
