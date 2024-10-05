@@ -156,7 +156,7 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     // This immediately forwards to the make_expanded method. This is done this way so that subcommands can
     // have overridden formatters
     if(mode == AppFormatMode::Sub)
-        return make_expanded(app);
+        return make_expanded(app,AppFormatMode::Normal);
 
     std::stringstream out;
     if((app->get_name().empty()) && (app->get_parent() != nullptr)) {
@@ -186,7 +186,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
     for(const App *com : subcommands) {
         if(com->get_name().empty()) {
             if(!com->get_group().empty() && com->get_group().front() != '+') {
-                out << make_expanded(com);
+                out << make_expanded(com,mode);
             }
             continue;
         }
@@ -220,31 +220,35 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
 CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
     std::stringstream out;
-    detail::format_help(out,
-                        sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : ""),
-                        sub->get_description(),
-                        column_width_);
+    std::string name="  "+sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : "");
+
+    out << std::setw(static_cast<int>(column_width_)) << std::left << name;
+    detail::streamOutAsParagraph(
+        out, sub->get_description(), right_column_width_, std::string(column_width_, ' '), true);
+    out << '\n';
     return out.str();
 }
 
-CLI11_INLINE std::string Formatter::make_expanded(const App *sub) const {
+CLI11_INLINE std::string Formatter::make_expanded(const App *sub,AppFormatMode mode) const {
     std::stringstream out;
     out << sub->get_display_name(true) << '\n';
 
-    out << make_description(sub);
+
+    detail::streamOutAsParagraph(
+        out, make_description(sub), description_paragraph_width_, "  ");  // Format description as paragraph
+
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
         detail::format_aliases(out, sub->get_aliases(), column_width_ + 2);
     }
+
     out << make_positionals(sub);
-    out << make_groups(sub, AppFormatMode::Sub);
-    out << make_subcommands(sub, AppFormatMode::Sub);
+    out << make_groups(sub, mode);
+    out << make_subcommands(sub, mode);
+    detail::streamOutAsParagraph(out, make_footer(sub), footer_paragraph_width_);  // Format footer as paragraph
 
-    // Drop blank spaces
-    std::string tmp = detail::find_and_replace(out.str(), "\n\n", "\n");
-    tmp = tmp.substr(0, tmp.size() - 1);  // Remove the final '\n'
 
-    // Indent all but the first line (the name)
-    return detail::find_and_replace(tmp, "\n", "\n  ") + "\n";
+    out << '\n';
+    return out.str();
 }
 
 CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_positional) const {

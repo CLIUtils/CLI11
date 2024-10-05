@@ -875,6 +875,22 @@ TEST_CASE("THelp: longSubcommandDescription", "[help]") {
     CHECK(first_new_line - first_loc - 1 < width);
 }
 
+TEST_CASE("THelp: longSubcommandDescriptionExpanded", "[help]") {
+
+    CLI::App app;
+    int i{0};
+
+    app.add_option("-i,--int", i);
+    app.add_subcommand("test1", long_string);
+
+    auto help = app.help("",CLI::AppFormatMode::All);
+    auto width = app.get_formatter()->get_description_paragraph_width();
+    auto first_loc = help.find("AAARG");
+    auto first_new_line = help.find_first_of('\n', first_loc);
+
+    CHECK(first_new_line - first_loc - 1 < width);
+}
+
 TEST_CASE("THelp: longFooter", "[help]") {
     CLI::App app("test long footer", "long_desc");
     int i{0};

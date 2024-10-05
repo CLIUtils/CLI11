@@ -97,8 +97,7 @@ CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string inp
 
 CLI11_INLINE std::ostream &
 format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid) {
-    name = "  " + name;
-    out << std::setw(static_cast<int>(wid)) << std::left << name;
+  
     if(!description.empty()) {
         if(name.length() >= wid)
             out << "\n" << std::setw(static_cast<int>(wid)) << "";
