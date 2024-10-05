@@ -2297,7 +2297,7 @@ CLI11_INLINE void retire_option(App *app, const std::string &option_name) {
                                   return std::string();
                               },
                               ""};
-    //LCOV_EXCL_STOP
+    // LCOV_EXCL_STOP
     retired_warning.application_index(0);
     opt2->check(retired_warning);
 }

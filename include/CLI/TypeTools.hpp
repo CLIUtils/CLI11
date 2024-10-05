@@ -916,8 +916,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     }
     if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
         // LCOV_EXCL_START
-        // In some new compilers including the coverage testing one binary strings are handled properly in strtoull automatically
-        // so this coverage is missing but is well tested in other compilers
+        // In some new compilers including the coverage testing one binary strings are handled properly in strtoull
+        // automatically so this coverage is missing but is well tested in other compilers
         val = nullptr;
         errno = 0;
         output_ll = std::strtoull(input.c_str() + 2, &val, 2);
@@ -971,8 +971,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     }
     if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
         // LCOV_EXCL_START
-        // In some new compilers including the coverage testing one binary strings are handled properly in strtoll automatically
-        // so this coverage is missing but is well tested in other compilers
+        // In some new compilers including the coverage testing one binary strings are handled properly in strtoll
+        // automatically so this coverage is missing but is well tested in other compilers
         val = nullptr;
         errno = 0;
         output_ll = std::strtoll(input.c_str() + 2, &val, 2);
