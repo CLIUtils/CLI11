@@ -173,7 +173,7 @@ class Formatter : public FormatterBase {
     virtual std::string make_subcommand(const App *sub) const;
 
     /// This prints out a subcommand in help-all
-    virtual std::string make_expanded(const App *sub,AppFormatMode mode) const;
+    virtual std::string make_expanded(const App *sub, AppFormatMode mode) const;
 
     /// This prints out all the groups of options
     virtual std::string make_footer(const App *app) const;

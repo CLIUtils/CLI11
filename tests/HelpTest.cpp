@@ -883,7 +883,7 @@ TEST_CASE("THelp: longSubcommandDescriptionExpanded", "[help]") {
     app.add_option("-i,--int", i);
     app.add_subcommand("test1", long_string);
 
-    auto help = app.help("",CLI::AppFormatMode::All);
+    auto help = app.help("", CLI::AppFormatMode::All);
     auto width = app.get_formatter()->get_description_paragraph_width();
     auto first_loc = help.find("AAARG");
     auto first_new_line = help.find_first_of('\n', first_loc);

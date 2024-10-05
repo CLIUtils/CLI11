@@ -156,7 +156,7 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     // This immediately forwards to the make_expanded method. This is done this way so that subcommands can
     // have overridden formatters
     if(mode == AppFormatMode::Sub)
-        return make_expanded(app,AppFormatMode::Normal);
+        return make_expanded(app, AppFormatMode::Normal);
 
     std::stringstream out;
     if((app->get_name().empty()) && (app->get_parent() != nullptr)) {
@@ -186,7 +186,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
     for(const App *com : subcommands) {
         if(com->get_name().empty()) {
             if(!com->get_group().empty() && com->get_group().front() != '+') {
-                out << make_expanded(com,mode);
+                out << make_expanded(com, mode);
             }
             continue;
         }
@@ -220,7 +220,7 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
 CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
     std::stringstream out;
-    std::string name="  "+sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : "");
+    std::string name = "  " + sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : "");
 
     out << std::setw(static_cast<int>(column_width_)) << std::left << name;
     detail::streamOutAsParagraph(
@@ -229,10 +229,9 @@ CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
     return out.str();
 }
 
-CLI11_INLINE std::string Formatter::make_expanded(const App *sub,AppFormatMode mode) const {
+CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode mode) const {
     std::stringstream out;
     out << sub->get_display_name(true) << '\n';
-
 
     detail::streamOutAsParagraph(
         out, make_description(sub), description_paragraph_width_, "  ");  // Format description as paragraph
@@ -245,7 +244,6 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub,AppFormatMode m
     out << make_groups(sub, mode);
     out << make_subcommands(sub, mode);
     detail::streamOutAsParagraph(out, make_footer(sub), footer_paragraph_width_);  // Format footer as paragraph
-
 
     out << '\n';
     return out.str();
