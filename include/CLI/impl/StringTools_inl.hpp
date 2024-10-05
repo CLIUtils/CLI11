@@ -95,23 +95,6 @@ CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string inp
     return input;
 }
 
-CLI11_INLINE std::ostream &
-format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid) {
-
-    if(!description.empty()) {
-        if(name.length() >= wid)
-            out << "\n" << std::setw(static_cast<int>(wid)) << "";
-        for(const char c : description) {
-            out.put(c);
-            if(c == '\n') {
-                out << std::setw(static_cast<int>(wid)) << "";
-            }
-        }
-    }
-    out << "\n";
-    return out;
-}
-
 CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<std::string> &aliases, std::size_t wid) {
     if(!aliases.empty()) {
         out << std::setw(static_cast<int>(wid)) << "     aliases: ";
