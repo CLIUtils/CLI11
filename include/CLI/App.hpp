@@ -224,8 +224,11 @@ class App {
     /// If true, the program should ignore underscores INHERITABLE
     bool ignore_underscore_{false};
 
-    /// Allow subcommand fallthrough, so that parent commands can collect commands after subcommand.  INHERITABLE
+    /// Allow options or other arguments to fallthrough, so that parent commands can collect options after subcommand.  INHERITABLE
     bool fallthrough_{false};
+
+    /// Allow subcommands to fallthrough, so that parent commands can trigger other subcommands after subcommand.
+    bool subcommand_fallthrough_{true};
 
     /// Allow '/' for options for Windows like options. Defaults to true on Windows, false otherwise. INHERITABLE
     bool allow_windows_style_options_{
