@@ -44,8 +44,17 @@ class FormatterBase {
     /// @name Options
     ///@{
 
-    /// The width of the first column
+    /// The width of the left column (options/flags/subcommands)
     std::size_t column_width_{30};
+
+    /// The width of the right column (description of options/flags/subcommands)
+    std::size_t right_column_width_{65};
+
+    /// The width of the description paragraph at the top of help
+    std::size_t description_paragraph_width_{80};
+
+    /// The width of the footer paragraph
+    std::size_t footer_paragraph_width_{80};
 
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
@@ -75,8 +84,17 @@ class FormatterBase {
     /// Set the "REQUIRED" label
     void label(std::string key, std::string val) { labels_[key] = val; }
 
-    /// Set the column width
+    /// Set the left column width (options/flags/subcommands)
     void column_width(std::size_t val) { column_width_ = val; }
+
+    /// Set the right column width (description of options/flags/subcommands)
+    void right_column_width(std::size_t val) { right_column_width_ = val; }
+
+    /// Set the description paragraph width at the top of help
+    void description_paragraph_width(std::size_t val) { description_paragraph_width_ = val; }
+
+    /// Set the footer paragraph width
+    void footer_paragraph_width(std::size_t val) { footer_paragraph_width_ = val; }
 
     ///@}
     /// @name Getters
@@ -89,8 +107,17 @@ class FormatterBase {
         return labels_.at(key);
     }
 
-    /// Get the current column width
+    /// Get the current left column width (options/flags/subcommands)
     CLI11_NODISCARD std::size_t get_column_width() const { return column_width_; }
+
+    /// Get the current right column width (description of options/flags/subcommands)
+    CLI11_NODISCARD std::size_t get_right_column_width() const { return right_column_width_; }
+
+    /// Get the current description paragraph width at the top of help
+    CLI11_NODISCARD std::size_t get_description_paragraph_width() const { return description_paragraph_width_; }
+
+    /// Get the current footer paragraph width
+    CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
 
     ///@}
 };
@@ -146,7 +173,7 @@ class Formatter : public FormatterBase {
     virtual std::string make_subcommand(const App *sub) const;
 
     /// This prints out a subcommand in help-all
-    virtual std::string make_expanded(const App *sub) const;
+    virtual std::string make_expanded(const App *sub, AppFormatMode mode) const;
 
     /// This prints out all the groups of options
     virtual std::string make_footer(const App *app) const;
@@ -158,19 +185,14 @@ class Formatter : public FormatterBase {
     virtual std::string make_usage(const App *app, std::string name) const;
 
     /// This puts everything together
-    std::string make_help(const App * /*app*/, std::string, AppFormatMode) const override;
+    std::string make_help(const App *app, std::string, AppFormatMode mode) const override;
 
     ///@}
     /// @name Options
     ///@{
 
     /// This prints out an option help line, either positional or optional form
-    virtual std::string make_option(const Option *opt, bool is_positional) const {
-        std::stringstream out;
-        detail::format_help(
-            out, make_option_name(opt, is_positional) + make_option_opts(opt), make_option_desc(opt), column_width_);
-        return out.str();
-    }
+    virtual std::string make_option(const Option *, bool) const;
 
     /// @brief This is the name part of an option, Default: left column
     virtual std::string make_option_name(const Option *, bool) const;

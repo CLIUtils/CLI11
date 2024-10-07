@@ -44,6 +44,7 @@ std::optional<std::string>> tcomplex; std::string_view vstrv;
 std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     auto fApp = std::make_shared<CLI::App>("fuzzing App", "fuzzer");
     fApp->set_config("--config");
+    fApp->set_help_all_flag("--help-all");
     fApp->add_flag("-a,--flag");
     fApp->add_flag("-b,--flag2,!--nflag2", flag1);
     fApp->add_flag("-c{34},--flag3{1}", flagCnt)->disable_flag_override();

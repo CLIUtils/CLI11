@@ -517,18 +517,18 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
-    groups.insert(groups.begin(), std::string("Options"));
+    groups.insert(groups.begin(), std::string("OPTIONS"));
     if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
         out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
     }
     for(auto &group : groups) {
-        if(group == "Options" || group.empty()) {
+        if(group == "OPTIONS" || group.empty()) {
             if(defaultUsed) {
                 continue;
             }
             defaultUsed = true;
         }
-        if(write_description && group != "Options" && !group.empty()) {
+        if(write_description && group != "OPTIONS" && !group.empty()) {
             out << '\n' << commentLead << group << " Options\n";
         }
         for(const Option *opt : app->get_options({})) {
@@ -536,7 +536,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
-                    if(!(group == "Options" && opt->get_group().empty())) {
+                    if(!(group == "OPTIONS" && opt->get_group().empty())) {
                         continue;
                     }
                 }

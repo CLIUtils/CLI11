@@ -904,7 +904,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         nstring.erase(std::remove(nstring.begin(), nstring.end(), '\''), nstring.end());
         return integral_conversion(nstring, output);
     }
-    if(input.compare(0, 2, "0o") == 0) {
+    if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
         val = nullptr;
         errno = 0;
         output_ll = std::strtoull(input.c_str() + 2, &val, 8);
@@ -914,7 +914,10 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         output = static_cast<T>(output_ll);
         return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
     }
-    if(input.compare(0, 2, "0b") == 0) {
+    if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
+        // LCOV_EXCL_START
+        // In some new compilers including the coverage testing one binary strings are handled properly in strtoull
+        // automatically so this coverage is missing but is well tested in other compilers
         val = nullptr;
         errno = 0;
         output_ll = std::strtoull(input.c_str() + 2, &val, 2);
@@ -923,6 +926,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         }
         output = static_cast<T>(output_ll);
         return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
+        // LCOV_EXCL_STOP
     }
     return false;
 }
@@ -955,7 +959,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         nstring.erase(std::remove(nstring.begin(), nstring.end(), '\''), nstring.end());
         return integral_conversion(nstring, output);
     }
-    if(input.compare(0, 2, "0o") == 0) {
+    if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
         val = nullptr;
         errno = 0;
         output_ll = std::strtoll(input.c_str() + 2, &val, 8);
@@ -965,7 +969,10 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         output = static_cast<T>(output_ll);
         return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
     }
-    if(input.compare(0, 2, "0b") == 0) {
+    if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
+        // LCOV_EXCL_START
+        // In some new compilers including the coverage testing one binary strings are handled properly in strtoll
+        // automatically so this coverage is missing but is well tested in other compilers
         val = nullptr;
         errno = 0;
         output_ll = std::strtoll(input.c_str() + 2, &val, 2);
@@ -974,6 +981,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         }
         output = static_cast<T>(output_ll);
         return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+        // LCOV_EXCL_STOP
     }
     return false;
 }

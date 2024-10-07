@@ -438,7 +438,7 @@ TEST_CASE_METHOD(TApp, "OptionFromDefaultsSubcommands", "[creation]") {
     CHECK(!app.option_defaults()->get_ignore_underscore());
     CHECK(!app.option_defaults()->get_disable_flag_override());
     CHECK(app.option_defaults()->get_configurable());
-    CHECK("Options" == app.option_defaults()->get_group());
+    CHECK("OPTIONS" == app.option_defaults()->get_group());
 
     app.option_defaults()
         ->required()
@@ -498,7 +498,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
 
     CHECK(app.get_usage().empty());
     CHECK(app.get_footer().empty());
-    CHECK("Subcommands" == app.get_group());
+    CHECK("SUBCOMMANDS" == app.get_group());
     CHECK(0u == app.get_require_subcommand_min());
     CHECK(0u == app.get_require_subcommand_max());
 
