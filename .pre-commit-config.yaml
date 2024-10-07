@@ -1,16 +1,16 @@
-exclude: ^(.github/workflows/|docs/img/)
+exclude: ^(.github/workflows/|docs/img/|tests/fuzzFail)
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.8.0
     hooks:
       - id: black
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -26,7 +26,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.6
+    rev: v19.1.0
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
@@ -87,7 +87,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
-        args: ["-L", "atleast,ans,doub,inout"]
+        args: ["-L", "atleast,ans,doub,inout,AtMost"]

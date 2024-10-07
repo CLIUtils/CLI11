@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cctype>
@@ -49,5 +51,5 @@ void checkParentSegments(std::vector<ConfigItem> &output, const std::string &cur
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Config_inl.hpp"
+#include "impl/Config_inl.hpp"  // IWYU pragma: export
 #endif

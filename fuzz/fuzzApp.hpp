@@ -24,7 +24,7 @@ namespace CLI {
 class intWrapper64 {
   public:
     intWrapper64() = default;
-    explicit intWrapper64(int64_t v) : val(v){};
+    explicit intWrapper64(int64_t v) : val(v) {};
     CLI11_NODISCARD int64_t value() const { return val; }
 
   private:
@@ -34,7 +34,7 @@ class intWrapper64 {
 class doubleWrapper {
   public:
     doubleWrapper() = default;
-    explicit doubleWrapper(double v) : val(v){};
+    explicit doubleWrapper(double v) : val(v) {};
     CLI11_NODISCARD double value() const { return val; }
 
   private:
@@ -44,7 +44,7 @@ class doubleWrapper {
 class stringWrapper {
   public:
     stringWrapper() = default;
-    explicit stringWrapper(std::string_view v) : val(v){};
+    explicit stringWrapper(std::string_view v) : val(v) {};
     CLI11_NODISCARD std::string value() const { return val; }
 
   private:
@@ -54,8 +54,10 @@ class stringWrapper {
 class FuzzApp {
   public:
     FuzzApp() = default;
-
+    /** generate a fuzzing application with a bunch of different interfaces*/
     std::shared_ptr<CLI::App> generateApp();
+    /** compare two fuzz apps for equality*/
+    CLI11_NODISCARD bool compare(const FuzzApp &other) const;
 
     int32_t val32{0};
     int16_t val16{0};

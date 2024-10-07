@@ -6,6 +6,8 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 #include "Error.hpp"
 #include "Macros.hpp"
 #include "StringTools.hpp"
@@ -892,5 +894,5 @@ CLI11_INLINE std::pair<std::string, std::string> split_program_name(std::string 
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Validators_inl.hpp"
+#include "impl/Validators_inl.hpp"  // IWYU pragma: export
 #endif

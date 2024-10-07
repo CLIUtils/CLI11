@@ -6,6 +6,8 @@
 
 #include "app_helper.hpp"
 
+#include "catch.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -243,7 +245,6 @@ static const std::map<std::string, double> testValuesDouble{
 };
 
 TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
-
     auto test_data = GENERATE(from_range(testValuesDouble));
 
     double val{0};
@@ -256,7 +257,7 @@ TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
         CHECK(std::isnan(val));
     } else {
 
-        CHECK_THAT(val, Catch::WithinRel(test_data.second, 1e-11));
+        CHECK_THAT(val, WithinRel(test_data.second, 1e-11));
     }
 }
 
@@ -279,6 +280,8 @@ static const std::map<std::string, std::int64_t> testValuesInt{
     {"-995'862'275", -995862275},
     {"0b11010110", 0xD6},
     {"0b1101'0110", 0xD6},
+    {"0B11010110", 0xD6},
+    {"0B1101'0110", 0xD6},
     {"1_2_3_4_5", 12345},
 };
 
@@ -308,6 +311,10 @@ TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
     args = {"--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
 
     CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0B1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
 }
 
 static const std::map<std::string, std::uint64_t> testValuesUInt{
@@ -328,6 +335,8 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"995'862'275", 995862275},
     {"0b11010110", 0xD6},
     {"0b1101'0110", 0xD6},
+    {"0B11010110", 0xD6},
+    {"0B1101'0110", 0xD6},
     {"1_2_3_4_5", 12345},
 };
 
@@ -355,6 +364,10 @@ TEST_CASE_METHOD(TApp, "uintConversionsErange", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ParseError);
 
     args = {"--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0B1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
 
     CHECK_THROWS_AS(run(), CLI::ParseError);
 }
@@ -1220,6 +1233,17 @@ TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
     run();
     CHECK(2U == cv.size());
     CHECK(2U == extras.size());
+}
+
+TEST_CASE_METHOD(TApp, "vectorEmpty", "[optiontype]") {
+
+    std::vector<std::string> cv{};
+    app.add_option("-c", cv)->expected(0, 2);
+
+    args = {"-c", "{}"};
+
+    run();
+    CHECK(cv.empty());
 }
 
 TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {

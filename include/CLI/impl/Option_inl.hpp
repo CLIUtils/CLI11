@@ -6,8 +6,10 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Option.hpp>
+#include "../Option.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
@@ -282,7 +284,9 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool 
 }
 
 CLI11_INLINE void Option::run_callback() {
+    bool used_default_str = false;
     if(force_callback_ && results_.empty()) {
+        used_default_str = true;
         add_result(default_str_);
     }
     if(current_option_state_ == option_state::parsing) {
@@ -292,16 +296,18 @@ CLI11_INLINE void Option::run_callback() {
 
     if(current_option_state_ < option_state::reduced) {
         _reduce_results(proc_results_, results_);
-        current_option_state_ = option_state::reduced;
     }
-    if(current_option_state_ >= option_state::reduced) {
-        current_option_state_ = option_state::callback_run;
-        if(!(callback_)) {
-            return;
-        }
+
+    current_option_state_ = option_state::callback_run;
+    if(callback_) {
         const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
         bool local_result = callback_(send_results);
-
+        if(used_default_str) {
+            // we only clear the results if the callback was actually used
+            // otherwise the callback is the storage of the default
+            results_.clear();
+            proc_results_.clear();
+        }
         if(!local_result)
             throw ConversionError(get_name(), results_);
     }
@@ -309,26 +315,27 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
+    bool bothConfigurable = configurable_ && other.configurable_;
     for(const std::string &sname : snames_) {
         if(other.check_sname(sname))
             return sname;
-        if(other.check_lname(sname))
+        if(bothConfigurable && other.check_lname(sname))
             return sname;
     }
     for(const std::string &lname : lnames_) {
         if(other.check_lname(lname))
             return lname;
-        if(lname.size() == 1) {
+        if(lname.size() == 1 && bothConfigurable) {
             if(other.check_sname(lname)) {
                 return lname;
             }
         }
     }
-    if(snames_.empty() && lnames_.empty() && !pname_.empty()) {
+    if(bothConfigurable && snames_.empty() && lnames_.empty() && !pname_.empty()) {
         if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
             return pname_;
     }
-    if(other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
+    if(bothConfigurable && other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
         if(check_sname(other.pname_) || check_lname(other.pname_) || (pname_ == other.pname_))
             return other.pname_;
     }

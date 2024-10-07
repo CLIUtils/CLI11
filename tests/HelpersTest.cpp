@@ -273,6 +273,22 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
     CHECK(rstring == rstring2);
 }
 
+TEST_CASE("StringTools: binaryEscapseConversion2", "[helpers]") {
+    std::string testString;
+    testString.push_back(0);
+    testString.push_back(0);
+    testString.push_back(0);
+    testString.push_back(56);
+    testString.push_back(-112);
+    testString.push_back(-112);
+    testString.push_back(39);
+    testString.push_back(97);
+    std::string estring = CLI::detail::binary_escape_string(testString);
+    CHECK(CLI::detail::is_binary_escaped_string(estring));
+    std::string rstring = CLI::detail::extract_binary_string(estring);
+    CHECK(rstring == testString);
+}
+
 TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     std::string rstring = "B\"()\"";
     CHECK(CLI::detail::extract_binary_string(rstring).empty());
@@ -522,7 +538,7 @@ TEST_CASE("Validators: FileIsDir", "[helpers]") {
 }
 
 TEST_CASE("Validators: DirectoryExists", "[helpers]") {
-    std::string mydir{"../tests"};
+    std::string mydir{"tests"};
     CHECK(CLI::ExistingDirectory(mydir).empty());
 }
 
@@ -543,7 +559,7 @@ TEST_CASE("Validators: DirectoryIsFile", "[helpers]") {
 }
 
 TEST_CASE("Validators: PathExistsDir", "[helpers]") {
-    std::string mydir{"../tests"};
+    std::string mydir{"tests"};
     CHECK(CLI::ExistingPath(mydir).empty());
 }
 
@@ -665,7 +681,7 @@ TEST_CASE("Validators: CombinedPaths", "[helpers]") {
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     CHECK(ok);
 
-    std::string dir{"../tests"};
+    std::string dir{"tests"};
     std::string notpath{"nondirectory"};
 
     auto path_or_dir = CLI::ExistingPath | CLI::ExistingDirectory;
@@ -1058,11 +1074,8 @@ TEST_CASE("RegEx: SplittingNew", "[helpers]") {
     CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}); }(), CLI::BadNameString);
     CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}); }(),
                     CLI::BadNameString);
-    CHECK_THROWS_AS(
-        [&]() {
-            std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"});
-        }(),
-        CLI::BadNameString);
+    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"}); }(),
+                    CLI::BadNameString);
 }
 
 TEST_CASE("String: ToLower", "[helpers]") { CHECK("one and two" == CLI::detail::to_lower("one And TWO")); }

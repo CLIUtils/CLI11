@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CTEST_OUTPUT_ON_FAILURE: "1"
+
 jobs:
   coverage:
     name: Coverage
@@ -52,10 +55,34 @@ jobs:
           lcov --list coverage.info
         working-directory: build
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           files: build/coverage.info
           functionalities: fixes
+
+  catch2-3:
+    name: Catch 2 3.x
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Catch 2
+        run: brew install catch2
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=14 \
+            -DCLI11_SINGLE_FILE_TESTS=OFF \
+            -DCLI11_BUILD_EXAMPLES=OFF \
+            -DCLI11_PRECOMPILED=ON
+
+      - name: Build
+        run: cmake --build build -j4
+
+      - name: Test
+        run: cmake --build build --target test
+
 
   clang-tidy:
     name: Clang-Tidy
@@ -138,7 +165,22 @@ jobs:
 
       - name: Build
         run: meson compile -C build-meson
-        
+
+      - name: Test
+        run: meson test -C build-meson
+
+  bazel-build:
+    name: Bazel build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: bazel build //...
+
+      - name: Test
+        run: bazel test --test_output=errors //...
+
   install:
     name: install tests
     runs-on: ubuntu-latest
@@ -155,7 +197,7 @@ jobs:
       - name: Run tests
         run: ctest --output-on-failure -L Packaging
         working-directory: build
-        
+
   install-precompiled:
     name: install tests precompiled
     runs-on: ubuntu-latest
@@ -172,7 +214,7 @@ jobs:
       - name: Run tests
         run: ctest --output-on-failure -L Packaging
         working-directory: build
-        
+
   install-single_file:
     name: install tests single file
     runs-on: ubuntu-latest
@@ -341,7 +383,7 @@ jobs:
         with:
           cmake-version: "3.27"
         if: success() || failure()
-        
+
       - name: Check CMake 3.28 (full)
         uses: ./.github/actions/quick_cmake
         with:

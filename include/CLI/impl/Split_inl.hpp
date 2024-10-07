@@ -6,8 +6,10 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Split.hpp>
+#include "../Split.hpp"
 
 // [CLI11:public_includes:set]
 #include <string>
@@ -16,8 +18,8 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
-#include <CLI/Error.hpp>
-#include <CLI/StringTools.hpp>
+#include "../Error.hpp"
+#include "../StringTools.hpp"
 
 namespace CLI {
 // [CLI11:split_inl_hpp:verbatim]
@@ -123,8 +125,8 @@ get_names(const std::vector<std::string> &input) {
                 long_names.push_back(name);
             else
                 throw BadNameString::BadLongName(name);
-        } else if(name == "-" || name == "--") {
-            throw BadNameString::DashesOnly(name);
+        } else if(name == "-" || name == "--" || name == "++") {
+            throw BadNameString::ReservedName(name);
         } else {
             if(!pos_name.empty())
                 throw BadNameString::MultiPositionalNames(name);

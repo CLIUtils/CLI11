@@ -6,12 +6,13 @@
 
 #pragma once
 
-#include <CLI/Validators.hpp>
+// IWYU pragma: private, include "CLI/CLI.hpp"
+#include "../Validators.hpp"
 
-#include <CLI/Encoding.hpp>
-#include <CLI/Macros.hpp>
-#include <CLI/StringTools.hpp>
-#include <CLI/TypeTools.hpp>
+#include "../Encoding.hpp"
+#include "../Macros.hpp"
+#include "../StringTools.hpp"
+#include "../TypeTools.hpp"
 
 // [CLI11:public_includes:set]
 #include <map>

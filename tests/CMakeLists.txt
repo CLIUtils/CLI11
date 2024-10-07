@@ -106,7 +106,7 @@ file(
   GLOB_RECURSE DATA_FILES
   LIST_DIRECTORIES false
   RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+  "${CMAKE_CURRENT_SOURCE_DIR}/data/*" "${CMAKE_CURRENT_SOURCE_DIR}/tests/.gitkeep")
 
 foreach(DATA_FILE IN LISTS DATA_FILES)
   add_custom_command(
@@ -118,8 +118,14 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
 endforeach()
 add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
 
+# Make a shim if we are building single file tests
+if(CLI11_SINGLE_FILE AND CLI11_INSTALL_PACKAGE_TESTS)
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/test_single/CLI/CLI.hpp" "#include <CLI11.hpp>")
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/test_single/CLI/CLI.hpp" DESTINATION include/CLI)
+endif()
+
 # Build dependent applications which are launched from test code
-set(CLI11_DEPENDENT_APPLICATIONS system_args ensure_utf8 ensure_utf8_twice)
+set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
@@ -188,6 +194,18 @@ if(CMAKE_CXX_STANDARD GREATER 16)
     target_compile_definitions(FuzzFailTest_Single PUBLIC -DTEST_FILE_FOLDER="${TEST_FILE_FOLDER}")
     target_sources(FuzzFailTest_Single PUBLIC ${PROJECT_SOURCE_DIR}/fuzz/fuzzApp.cpp)
   endif()
+
+  # Some platforms need to link to atomic
+  file(WRITE "${CMAKE_BINARY_DIR}/test_atomic.cpp"
+       "#include <atomic>\n" "int main() { std::atomic<int64_t> i(0); i++; return 0; }\n")
+  try_compile(ATOMIC_BUILD_SUCCEEDED "${CMAKE_BINARY_DIR}" "${CMAKE_BINARY_DIR}/test_atomic.cpp")
+  if(NOT ATOMIC_BUILD_SUCCEEDED)
+    target_link_libraries(FuzzFailTest PRIVATE atomic)
+    if(CLI11_SINGLE_FILE AND CLI11_SINGLE_FILE_TESTS)
+      target_link_libraries(FuzzFailTestSingle PRIVATE atomic)
+    endif()
+  endif()
+  file(REMOVE ${CMAKE_BINARY_DIR}/test_atomic.cpp)
 endif()
 
 # Add -Wno-deprecated-declarations to DeprecatedTest

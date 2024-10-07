@@ -49,14 +49,17 @@ jobs:
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
+        macOS20:
+          vmImage: "macOS-14"
+          cli11.std: 20
         macOS17:
-          vmImage: "macOS-12"
+          vmImage: "macOS-13"
           cli11.std: 17
         macOS11:
-          vmImage: "macOS-11"
+          vmImage: "macOS-12"
           cli11.std: 11
-        macOS11PC:
-          vmImage: "macOS-11"
+        macOS12PC:
+          vmImage: "macOS-12"
           cli11.std: 11
           cli11.precompile: ON
         Windows17:
@@ -100,7 +103,8 @@ jobs:
         displayName: generate test directories
       - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
         displayName: generate CLI11 symlink
-      - script: meson build
+        # Ensure that Meson doesn't use cmake or pkgconfig to find CLI11
+      - script: meson setup build --force-fallback-for=CLI11
         displayName: Run meson to generate build
         workingDirectory: tests/mesonTest
       - script: ninja -C tests/mesonTest/build

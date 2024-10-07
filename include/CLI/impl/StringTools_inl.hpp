@@ -6,10 +6,13 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // This include is only needed for IDEs to discover symbols
-#include <CLI/StringTools.hpp>
+#include "../StringTools.hpp"
 
 // [CLI11:public_includes:set]
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -90,24 +93,6 @@ CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string inp
         }
     }
     return input;
-}
-
-CLI11_INLINE std::ostream &
-format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid) {
-    name = "  " + name;
-    out << std::setw(static_cast<int>(wid)) << std::left << name;
-    if(!description.empty()) {
-        if(name.length() >= wid)
-            out << "\n" << std::setw(static_cast<int>(wid)) << "";
-        for(const char c : description) {
-            out.put(c);
-            if(c == '\n') {
-                out << std::setw(static_cast<int>(wid)) << "";
-            }
-        }
-    }
-    out << "\n";
-    return out;
 }
 
 CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<std::string> &aliases, std::size_t wid) {
@@ -456,7 +441,8 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
     if(escaped_string != string_to_escape) {
         auto sqLoc = escaped_string.find('\'');
         while(sqLoc != std::string::npos) {
-            escaped_string.replace(sqLoc, sqLoc + 1, "\\x27");
+            escaped_string[sqLoc] = '\\';
+            escaped_string.insert(sqLoc + 1, "x27");
             sqLoc = escaped_string.find('\'');
         }
         escaped_string.insert(0, "'B\"(");
@@ -567,6 +553,37 @@ std::string get_environment_value(const std::string &env_name) {
     }
 #endif
     return ename_string;
+}
+
+CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
+                                                const std::string &text,
+                                                std::size_t paragraphWidth,
+                                                const std::string &linePrefix,
+                                                bool skipPrefixOnFirstLine) {
+    if(!skipPrefixOnFirstLine)
+        out << linePrefix;  // First line prefix
+
+    std::istringstream lss(text);
+    std::string line = "";
+    while(std::getline(lss, line)) {
+        std::istringstream iss(line);
+        std::string word = "";
+        std::size_t charsWritten = 0;
+
+        while(iss >> word) {
+            if(word.length() + charsWritten > paragraphWidth) {
+                out << '\n' << linePrefix;
+                charsWritten = 0;
+            }
+
+            out << word << " ";
+            charsWritten += word.length() + 1;
+        }
+
+        if(!lss.eof())
+            out << '\n' << linePrefix;
+    }
+    return out;
 }
 
 }  // namespace detail

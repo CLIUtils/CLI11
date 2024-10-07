@@ -6,8 +6,10 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Config.hpp>
+#include "../Config.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
@@ -199,6 +201,27 @@ CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
     auto it = fullString.rbegin();
     return (*it == check) && (*(it + 1) == check) && (*(it + 2) == check);
 }
+
+/// @brief  find a matching configItem in a list
+inline auto find_matching_config(std::vector<ConfigItem> &items,
+                                 const std::vector<std::string> &parents,
+                                 const std::string &name,
+                                 bool fullSearch) -> decltype(items.begin()) {
+    if(items.empty()) {
+        return items.end();
+    }
+    auto search = items.end() - 1;
+    do {
+        if(search->parents == parents && search->name == name) {
+            return search;
+        }
+        if(search == items.begin()) {
+            break;
+        }
+        --search;
+    } while(fullSearch);
+    return items.end();
+}
 }  // namespace detail
 
 inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
@@ -319,6 +342,19 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 if(!item.empty() && item.back() == '\\') {
                     item.pop_back();
                     lineExtension = true;
+                } else if(detail::hasMLString(item, keyChar)) {
+                    // deal with the first line closing the multiline literal
+                    item.pop_back();
+                    item.pop_back();
+                    item.pop_back();
+                    if(keyChar == '\"') {
+                        try {
+                            item = detail::remove_escaped_characters(item);
+                        } catch(const std::invalid_argument &iarg) {
+                            throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+                        }
+                    }
+                    inMLineValue = false;
                 }
                 while(inMLineValue) {
                     std::string l2;
@@ -411,8 +447,17 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             parents.erase(parents.begin());
             inSection = true;
         }
-        if(!output.empty() && name == output.back().name && parents == output.back().parents) {
-            output.back().inputs.insert(output.back().inputs.end(), items_buffer.begin(), items_buffer.end());
+        auto match = detail::find_matching_config(output, parents, name, allowMultipleDuplicateFields);
+        if(match != output.end()) {
+            if((match->inputs.size() > 1 && items_buffer.size() > 1) || allowMultipleDuplicateFields) {
+                // insert a separator if one is not already present
+                if(!(match->inputs.back().empty() || items_buffer.front().empty() || match->inputs.back() == "%%" ||
+                     items_buffer.front() == "%%")) {
+                    match->inputs.emplace_back("%%");
+                    match->multiline = true;
+                }
+            }
+            match->inputs.insert(match->inputs.end(), items_buffer.begin(), items_buffer.end());
         } else {
             output.emplace_back();
             output.back().parents = std::move(parents);
@@ -472,18 +517,18 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
 
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
-    groups.insert(groups.begin(), std::string("Options"));
+    groups.insert(groups.begin(), std::string("OPTIONS"));
     if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
         out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
     }
     for(auto &group : groups) {
-        if(group == "Options" || group.empty()) {
+        if(group == "OPTIONS" || group.empty()) {
             if(defaultUsed) {
                 continue;
             }
             defaultUsed = true;
         }
-        if(write_description && group != "Options" && !group.empty()) {
+        if(write_description && group != "OPTIONS" && !group.empty()) {
             out << '\n' << commentLead << group << " Options\n";
         }
         for(const Option *opt : app->get_options({})) {
@@ -491,7 +536,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
-                    if(!(group == "Options" && opt->get_group().empty())) {
+                    if(!(group == "OPTIONS" && opt->get_group().empty())) {
                         continue;
                     }
                 }
@@ -581,7 +626,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             std::string subname = subcom->get_name();
             clean_name_string(subname, keyChars);
 
-            if(subcom->get_configurable() && app->got_subcommand(subcom)) {
+            if(subcom->get_configurable() && (default_also || app->got_subcommand(subcom))) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
 
                     out << '[' << prefix << subname << "]\n";

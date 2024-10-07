@@ -555,6 +555,18 @@ TEST_CASE_METHOD(TApp, "NumberFlags", "[app]") {
     CHECK(7 == val);
 }
 
+TEST_CASE_METHOD(TApp, "doubleDashH", "[app]") {
+
+    int val{0};
+    // test you can add a --h option and it doesn't conflict with the help
+    CHECK_NOTHROW(app.add_flag("--h", val));
+
+    auto *topt = app.add_flag("-t");
+    CHECK_THROWS_AS(app.add_flag("--t"), CLI::OptionAlreadyAdded);
+    topt->configurable(false);
+    CHECK_NOTHROW(app.add_flag("--t"));
+}
+
 TEST_CASE_METHOD(TApp, "DisableFlagOverrideTest", "[app]") {
 
     int val{0};
@@ -2060,6 +2072,18 @@ TEST_CASE_METHOD(TApp, "EnvOnly", "[app]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+// reported bug #1013 on github
+TEST_CASE_METHOD(TApp, "groupEnvRequired", "[app]") {
+    std::string str;
+    auto *group1 = app.add_option_group("group1");
+    put_env("CLI11_TEST_GROUP_REQUIRED", "string_abc");
+    group1->add_option("-f", str, "f")->envname("CLI11_TEST_GROUP_REQUIRED")->required();
+
+    run();
+    CHECK(str == "string_abc");
+    unset_env("CLI11_TEST_GROUP_REQUIRED");
+}
+
 TEST_CASE_METHOD(TApp, "RangeInt", "[app]") {
     int x{0};
     app.add_option("--one", x)->check(CLI::Range(3, 6));
@@ -2180,7 +2204,7 @@ TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {
     args = {"--string", "val_with_opt1", "--opt1"};
     run();
 
-    args = {"--opt1", "--string", "val_with_opt1"};  // order is not revelant
+    args = {"--opt1", "--string", "val_with_opt1"};  // order is not relevant
     run();
 }
 
@@ -2626,24 +2650,6 @@ TEST_CASE("C20_compile", "simple") {
 
     app.parse("--flag");
     CHECK_FALSE(flag->empty());
-}
-
-// #14
-TEST_CASE("System Args", "[app]") {
-    const char *commandline = CLI11_SYSTEM_ARGS_EXE " 1234 false \"hello world\"";
-    int retval = std::system(commandline);
-
-    if(retval == -1) {
-        FAIL("Executable '" << commandline << "' reported different argc count");
-    }
-
-    if(retval > 0) {
-        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
-    }
-
-    if(retval != 0) {
-        FAIL("Executable '" << commandline << "' failed with an unknown return code");
-    }
 }
 
 // #845

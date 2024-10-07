@@ -9,6 +9,8 @@
 // CLI Library includes
 // Order is important for combiner script
 
+// IWYU pragma: begin_exports
+
 #include "Version.hpp"
 
 #include "Macros.hpp"
@@ -38,3 +40,5 @@
 #include "Config.hpp"
 
 #include "Formatter.hpp"
+
+// IWYU pragma: end_exports
