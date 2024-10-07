@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     encode->add_option("-l, --level", level, "encoding level")
         ->option_text("[1..9]")
         ->check(CLI::Range(1, 9))
-        ->default_val(5);                                            // limit parameter range
+        ->default_val(5);                                   // limit parameter range
     encode->add_flag("-R, --remove", "remove input file");  // no parameter option
     encode->add_flag("-s, --suboption", subopt, "suboption")->option_text(" ");
 
