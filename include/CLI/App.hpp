@@ -224,7 +224,8 @@ class App {
     /// If true, the program should ignore underscores INHERITABLE
     bool ignore_underscore_{false};
 
-    /// Allow options or other arguments to fallthrough, so that parent commands can collect options after subcommand.  INHERITABLE
+    /// Allow options or other arguments to fallthrough, so that parent commands can collect options after subcommand.
+    /// INHERITABLE
     bool fallthrough_{false};
 
     /// Allow subcommands to fallthrough, so that parent commands can trigger other subcommands after subcommand.
@@ -838,7 +839,7 @@ class App {
         return this;
     }
 
-    /// Set subcommand fallthrough, set to true so that subcommands on parents are recognized 
+    /// Set subcommand fallthrough, set to true so that subcommands on parents are recognized
     App *subcommand_fallthrough(bool value = true) {
         subcommand_fallthrough_ = value;
         return this;
