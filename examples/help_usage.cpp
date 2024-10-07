@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         ->option_text("[1..9]")
         ->check(CLI::Range(1, 9))
         ->default_val(5);                                            // limit parameter range
-    encode->add_option("-R, --remove", level, "remove input file");  // no parameter option
+    encode->add_flag("-R, --remove", "remove input file");  // no parameter option
     encode->add_flag("-s, --suboption", subopt, "suboption")->option_text(" ");
 
     CLI::App *const decode = app.add_subcommand("d", "decode")->ignore_case();
