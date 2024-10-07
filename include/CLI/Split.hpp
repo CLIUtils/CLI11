@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
+
+// IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
 #include <string>
@@ -44,5 +46,5 @@ get_names(const std::vector<std::string> &input);
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Split_inl.hpp"
+#include "impl/Split_inl.hpp"  // IWYU pragma: export
 #endif

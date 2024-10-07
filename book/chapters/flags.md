@@ -21,7 +21,7 @@ passing something like `./my_app -f -f` or `./my_app -ff` will throw a
 `ParseError` with a nice help description. A flag name may start with any
 character except ('-', ' ', '\n', and '!'). For long flags, after the first
 character all characters are allowed except ('=',':','{',' ', '\n'). Names are
-given as a comma separated string, with the dash or dashes. An flag can have as
+given as a comma separated string, with the dash or dashes. A flag can have as
 many names as you want, and afterward, using `count`, you can use any of the
 names, with dashes as needed.
 

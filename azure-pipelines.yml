@@ -9,7 +9,6 @@ trigger:
 
 pr:
   - main
-  - "v*"
 
 variables:
   cli11.single: ON
@@ -28,7 +27,20 @@ jobs:
       - bash: cpplint --counting=detailed --recursive examples include/CLI tests
         displayName: Checking against google style guide
 
-  # TODO: Fix macOS error and windows warning in c++17 mode
+  - job: build_only
+    strategy:
+      matrix:
+        visual_studio_arm64:
+          vmImage: "windows-2022"
+          cli11.std: 17
+          cli11.build_type: Debug
+          cli11.options: -G "Visual Studio 17 2022" -A ARM64
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - template: .ci/azure-build.yml
+
   - job: Native
     strategy:
       matrix:
@@ -37,14 +49,17 @@ jobs:
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
+        macOS20:
+          vmImage: "macOS-14"
+          cli11.std: 20
         macOS17:
-          vmImage: "macOS-latest"
+          vmImage: "macOS-13"
           cli11.std: 17
         macOS11:
-          vmImage: "macOS-latest"
+          vmImage: "macOS-12"
           cli11.std: 11
-        macOS11PC:
-          vmImage: "macOS-latest"
+        macOS12PC:
+          vmImage: "macOS-12"
           cli11.std: 11
           cli11.precompile: ON
         Windows17:
@@ -88,7 +103,8 @@ jobs:
         displayName: generate test directories
       - script: ln -s  "$(pwd)" tests/mesonTest/subprojects/CLI11
         displayName: generate CLI11 symlink
-      - script: meson build
+        # Ensure that Meson doesn't use cmake or pkgconfig to find CLI11
+      - script: meson setup build --force-fallback-for=CLI11
         displayName: Run meson to generate build
         workingDirectory: tests/mesonTest
       - script: ninja -C tests/mesonTest/build
@@ -136,5 +152,30 @@ jobs:
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake.yml
+      - template: .ci/azure-build.yml
+      - template: .ci/azure-test.yml
+
+  - job: Docker_new
+    variables:
+      cli11.single: OFF
+    pool:
+      vmImage: "ubuntu-latest"
+    strategy:
+      matrix:
+        gcc13:
+          containerImage: gcc:13
+          cli11.std: 17
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+        gcc12:
+          containerImage: gcc:12
+          cli11.std: 20
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+        clang17_20:
+          containerImage: silkeh/clang:17
+          cli11.std: 23
+          cli11.options: -DCMAKE_CXX_FLAGS=-std=c++23
+    container: $[ variables['containerImage'] ]
+    steps:
+      - template: .ci/azure-cmake-new.yml
       - template: .ci/azure-build.yml
       - template: .ci/azure-test.yml

@@ -1,12 +1,10 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-
-using Catch::Matchers::Contains;
 
 using vs_t = std::vector<std::string>;
 
@@ -18,8 +16,10 @@ TEST_CASE_METHOD(TApp, "BasicSubcommands", "[subcom]") {
 
     CHECK(app.get_subcommand(sub1) == sub1);
     CHECK(app.get_subcommand("sub1") == sub1);
+    CHECK(app.get_subcommand_no_throw("sub1") == sub1);
     CHECK_THROWS_AS(app.get_subcommand("sub3"), CLI::OptionNotFound);
-
+    CHECK_NOTHROW(app.get_subcommand_no_throw("sub3"));
+    CHECK(app.get_subcommand_no_throw("sub3") == nullptr);
     run();
     CHECK(app.get_subcommands().empty());
 
@@ -92,7 +92,7 @@ TEST_CASE_METHOD(TApp, "MultiSubFallthrough", "[subcom]") {
     CHECK(!sub2->parsed());
     CHECK(0u == sub2->count());
 
-    CHECK_THROWS_AS(app.got_subcommand("sub3"), CLI::OptionNotFound);
+    CHECK(!app.got_subcommand("sub3"));
 }
 
 TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {
@@ -189,6 +189,10 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommands", "[subcom]") {
     run();
     CHECK(*foo);
     CHECK(3u == foo->count());
+
+    auto subs = app.get_subcommands();
+    // subcommands only get triggered once
+    CHECK(subs.size() == 1U);
 }
 
 TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacks", "[subcom]") {
@@ -1009,18 +1013,18 @@ TEST_CASE_METHOD(SubcommandProgram, "Subcommand Groups", "[subcom]") {
 
     std::string help = app.help();
     CHECK_THAT(help, !Contains("More Commands:"));
-    CHECK_THAT(help, Contains("Subcommands:"));
+    CHECK_THAT(help, Contains("SUBCOMMANDS:"));
 
     start->group("More Commands");
     help = app.help();
     CHECK_THAT(help, Contains("More Commands:"));
-    CHECK_THAT(help, Contains("Subcommands:"));
+    CHECK_THAT(help, Contains("SUBCOMMANDS:"));
 
     // Case is ignored but for the first subcommand in a group.
     stop->group("more commands");
     help = app.help();
     CHECK_THAT(help, Contains("More Commands:"));
-    CHECK_THAT(help, !Contains("Subcommands:"));
+    CHECK_THAT(help, !Contains("SUBCOMMANDS:"));
 }
 
 TEST_CASE_METHOD(SubcommandProgram, "Subcommand ExtrasErrors", "[subcom]") {
@@ -2115,4 +2119,27 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive2", "[subcom]") {
     auto extras = app.remaining();
     CHECK(extras.size() == 1);
     CHECK(extras.front() == "sub1.sub2.sub3.bob");
+}
+
+// Reported bug #903 on github
+TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
+    auto *sub1 = app.add_subcommand("sub1");
+    std::string someFile;
+    int sub1value{0};
+    sub1->add_option("-f,--file", someFile)->envname("SOME_FILE")->required()->check(CLI::ExistingFile);
+    sub1->add_option("-v", sub1value);
+    auto *sub2 = app.add_subcommand("sub2");
+    int completelyUnrelatedToSub1 = 0;
+    sub2->add_option("-v,--value", completelyUnrelatedToSub1)->required();
+
+    args = {"sub2", "-v", "111"};
+    CHECK_NOTHROW(run());
+
+    put_env("SOME_FILE", "notafile.txt");
+
+    CHECK_NOTHROW(run());
+
+    args = {"sub1", "-v", "111"};
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+    unset_env("SOME_FILE");
 }

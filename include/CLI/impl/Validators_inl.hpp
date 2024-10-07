@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,12 +6,13 @@
 
 #pragma once
 
-#include <CLI/Validators.hpp>
+// IWYU pragma: private, include "CLI/CLI.hpp"
+#include "../Validators.hpp"
 
-#include <CLI/Encoding.hpp>
-#include <CLI/Macros.hpp>
-#include <CLI/StringTools.hpp>
-#include <CLI/TypeTools.hpp>
+#include "../Encoding.hpp"
+#include "../Macros.hpp"
+#include "../StringTools.hpp"
+#include "../TypeTools.hpp"
 
 // [CLI11:public_includes:set]
 #include <map>
@@ -135,7 +136,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
     switch(stat.type()) {
     case std::filesystem::file_type::none:  // LCOV_EXCL_LINE
     case std::filesystem::file_type::not_found:
-        return path_type::nonexistent;
+        return path_type::nonexistent;  // LCOV_EXCL_LINE
     case std::filesystem::file_type::directory:
         return path_type::directory;
     case std::filesystem::file_type::symlink:
@@ -229,10 +230,29 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
                 return std::string("Each IP number must be between 0 and 255 ") + var;
             }
         }
-        return std::string();
+        return std::string{};
     };
 }
 
+CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer() {
+    func_ = [](std::string &str) {
+        try {
+            if(str.size() > 1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&
+               str.front() == str.back()) {
+                process_quoted_string(str);
+            } else if(str.find_first_of('\\') != std::string::npos) {
+                if(detail::is_binary_escaped_string(str)) {
+                    str = detail::extract_binary_string(str);
+                } else {
+                    str = remove_escaped_characters(str);
+                }
+            }
+            return std::string{};
+        } catch(const std::invalid_argument &ia) {
+            return std::string(ia.what());
+        }
+    };
+}
 }  // namespace detail
 
 CLI11_INLINE FileOnDefaultPath::FileOnDefaultPath(std::string default_path, bool enableErrorReturn)

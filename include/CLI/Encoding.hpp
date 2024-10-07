@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,7 +6,8 @@
 
 #pragma once
 
-#include <CLI/Macros.hpp>
+// IWYU pragma: private, include "CLI/CLI.hpp"
+#include "Macros.hpp"
 
 // [CLI11:public_includes:set]
 #include <string>
@@ -50,5 +51,5 @@ CLI11_INLINE std::filesystem::path to_path(std::string_view str);
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Encoding_inl.hpp"
+#include "impl/Encoding_inl.hpp"  // IWYU pragma: export
 #endif

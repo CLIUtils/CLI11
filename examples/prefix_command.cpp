@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -25,11 +25,11 @@ int main(int argc, char **argv) {
     for(int v : vals)
         std::cout << ": " << v << " ";
 
-    std::cout << std::endl << "Remaining commands: ";
+    std::cout << '\n' << "Remaining commands: ";
 
     for(const auto &com : more_comms)
         std::cout << com << " ";
-    std::cout << std::endl;
+    std::cout << '\n';
 
     return 0;
 }

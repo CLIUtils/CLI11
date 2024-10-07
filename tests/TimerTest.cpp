@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -11,8 +11,6 @@
 #include <sstream>
 #include <string>
 #include <thread>
-
-using Catch::Matchers::Contains;
 
 TEST_CASE("Timer: MSTimes", "[timer]") {
     CLI::Timer timer{"My Timer"};
@@ -65,6 +63,6 @@ TEST_CASE("Timer: PrintTimer", "[timer]") {
 TEST_CASE("Timer: TimeItTimer", "[timer]") {
     CLI::Timer timer;
     std::string output = timer.time_it([]() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }, .1);
-    std::cout << output << std::endl;
+    std::cout << output << '\n';
     CHECK_THAT(output, Contains("ms"));
 }

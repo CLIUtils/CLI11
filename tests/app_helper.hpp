@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -70,6 +70,15 @@ inline void unset_env(std::string name) {
     unsetenv(name.c_str());
 #endif
 }
+
+/// these are provided for compatibility with the char8_t for C++20 that breaks stuff
+CLI11_INLINE std::string from_u8string(const std::string &s) { return s; }
+CLI11_INLINE std::string from_u8string(std::string &&s) { return std::move(s); }
+#if defined(__cpp_lib_char8_t)
+CLI11_INLINE std::string from_u8string(const std::u8string &s) { return std::string(s.begin(), s.end()); }
+#elif defined(__cpp_char8_t)
+CLI11_INLINE std::string from_u8string(const char8_t *s) { return std::string(reinterpret_cast<const char *>(s)); }
+#endif
 
 CLI11_INLINE void check_identical_files(const char *path1, const char *path2) {
     std::string err1 = CLI::ExistingFile(path1);

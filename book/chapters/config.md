@@ -8,7 +8,9 @@ config flag. The second item is the default file name. If that is specified, the
 config will try to read that file. The third item is the help string, with a
 reasonable default, and the final argument is a boolean (default: false) that
 indicates that the configuration file is required and an error will be thrown if
-the file is not found and this is set to true.
+the file is not found and this is set to true. The option pointer returned by
+`set_config` is the same type as returned by `add_option` and all modifiers
+including validators, and checks are valid.
 
 ### Adding a default path
 
@@ -87,6 +89,10 @@ app.allow_config_extras(CLI::config_extras_mode::ignore_all);
 will completely ignore any mismatches, extras, or other issues with the config
 file
 
+Config file extras are stored in the remaining output as two components. The
+first is the name of the field including subcommands using dot notation the
+second (or more) are the argument fields.
+
 ### Getting the used configuration file name
 
 If it is needed to get the configuration file name used this can be obtained via
@@ -94,12 +100,29 @@ If it is needed to get the configuration file name used this can be obtained via
 `app["--config"]->as<std::string>()` assuming `--config` was the configuration
 option name.
 
+### Order of precedence
+
+By default if multiple configuration files are given they are read in reverse
+order. With the last one given taking precedence over the earlier ones. This
+behavior can be changed through the `multi_option_policy`. For example:
+
+```cpp
+app.set_config("--config")
+    ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+```
+
+will read the files in the order given, which may be useful in some
+circumstances. Using `CLI::MultiOptionPolicy::TakeLast` would work similarly
+getting the last `N` files given. The default policy for config options is
+`CLI::MultiOptionPolicy::Reverse` which takes the last expected `N` and reverses
+them so the last option given is given precedence.
+
 ## Configure file format
 
 Here is an example configuration file, in
 [TOML](https://github.com/toml-lang/toml) format:
 
-```ini
+```toml
 # Comments are supported, using a #
 # The default section is [default], case insensitive
 
@@ -143,6 +166,98 @@ sub.subcommand = true
 The main differences are in vector notation and comment character. Note: CLI11
 is not a full TOML parser as it just reads values as strings. It is possible
 (but not recommended) to mix notation.
+
+### Multi-line strings
+
+The default config file parser supports multi-line strings like the toml
+standard [TOML](https://toml.io/en/). It also supports multiline comments like
+python doc strings.
+
+```toml
+"""
+this is a multine
+comment
+"""
+
+""" this is also
+a multiline comment"""
+
+''' and so is
+this
+'''
+
+value = 1
+str = """
+this is a multiline string value
+the first \n is removed and so is the last
+"""
+
+str2 = ''' this is also a mu-
+ltiline value '''
+
+str3 = """\
+    a line continuation \
+    will skip \
+    all white space between the '\' \
+    and the next non-whitespace character \
+    making this into a single line
+"""
+
+```
+
+The key is that the closing of the multiline string must be at the end of a line
+and match the starting 3 quote sequence. Multiline sequences using `"""` allow
+escape sequences. Following [TOML](https://toml.io/en/v1.0.0#string) with the
+addition of allowing '\0' for a null character, and binary Strings described in
+the next section. This same formatting also applies to single line strings.
+Multiline strings are not allowed as part of an array.
+
+### Binary Strings
+
+Config files have a binary conversion capability, this is mainly to support
+writing config files but can be used by user generated files as well. Strings
+with the form `B"(XXXXX)"` will convert any characters inside the parenthesis
+with the form `\xHH` to the equivalent binary value. The HH are hexadecimal
+characters. Characters not in this form will be translated as given. If argument
+values with unprintable characters are used to generate a config file this
+binary form will be used in the output string.
+
+### vector of vector inputs
+
+It is possible to specify vector of vector inputs in config file. This can be
+done in a couple different ways
+
+```toml
+# Examples of vector of vector inputs in config
+
+# this example is how config_to_str writes it out
+vector1 = [1,2,3,"",4,5,6]
+
+# alternative with vector separator sequence
+vector2 = [1,2,3,"%%",4,5,6]
+
+# multiline format
+vector3 = [1,2,3]
+vector3 = [4,5,6]
+
+```
+
+The `%%` is ignored in multiline format if the inject_separator modifier on the
+option is set to false, thus for vector 3 if the option is storing to a single
+vector all the elements will be in that vector.
+
+For config file multiple sequential duplicate variable names are treated as if
+they are a vector input, with possible separator insertion in the case of
+multiple input vectors.
+
+The config parser has a modifier
+
+```C++
+ app.get_config_formatter_base()->allowDuplicateFields();
+```
+
+This modification will insert the separator between each line even if not
+sequential. This allows an input option to be configured with multiple lines.
 
 ## Multiple configuration files
 
@@ -202,8 +317,8 @@ char arraySeparator = ',';
 char valueDelimiter = '=';
 /// the character to use around strings
 char stringQuote = '"';
-/// the character to use around single characters
-char characterQuote = '\'';
+/// the character to use around single characters and literal strings
+char literalQuote = '\'';
 /// the maximum number of layers to allow
 uint8_t maximumLayers{255};
 /// the separator used to separator parent layers
@@ -224,8 +339,8 @@ These can be modified via setter functions
   an array
 - `ConfigBase *valueSeparator(char vSep)`: Specify the delimiter between a name
   and value
-- `ConfigBase *quoteCharacter(char qString, char qChar)` :specify the characters
-  to use around strings and single characters
+- `ConfigBase *quoteCharacter(char qString, char literalChar)` :specify the
+  characters to use around strings and single characters
 - `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent
   layers to process. This is useful to limit processing for larger config files
 - `ConfigBase *parentSeparator(char sep)` : specify the character to separate
@@ -338,3 +453,6 @@ will create an option name in following priority.
 2. Positional name
 3. First short name
 4. Environment name
+
+In config files the name will be enclosed in quotes if there is any potential
+ambiguities in parsing the name.

@@ -6,6 +6,7 @@
 # modernize-avoid-c-arrays trips up in TEMPLATE_TEST_CASE catch macro
 # modernize-return-braced-init-list triggers on lambdas ?
 # modernize-make-unique requires C++14
+# modernize-type_traits requires C++17
 # readability-avoid-const-params-in-decls Affected by the pre-compile split
 
 Checks: |
@@ -37,6 +38,8 @@ Checks: |
   -modernize-concat-nested-namespaces,
   -modernize-return-braced-init-list,
   -modernize-make-unique,
+  -modernize-type-traits,
+  -modernize-macro-to-enum,
   *performance*,
   -performance-unnecessary-value-param,
   -performance-inefficient-string-concatenation,

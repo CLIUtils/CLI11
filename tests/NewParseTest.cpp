@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -9,8 +9,6 @@
 #include <complex>
 #include <cstdint>
 #include <utility>
-
-using Catch::Matchers::Contains;
 
 using cx = std::complex<double>;
 
@@ -195,7 +193,7 @@ TEST_CASE_METHOD(TApp, "custom_string_converterFail", "[newparse]") {
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
-/// Wrapper with an unconvenient interface
+/// Wrapper with an inconvenient interface
 template <class T> class badlywrapped {
   public:
     badlywrapped() : value() {}
@@ -285,6 +283,33 @@ TEST_CASE_METHOD(TApp, "custom_string_converter_specialize", "[newparse]") {
     CHECK("something!" == s.s);
 }
 
+/// Yet another wrapper to test that overloading lexical_cast with enable_if works.
+struct yetanotherstring {
+    yetanotherstring() = default;
+    std::string s{};
+};
+
+template <class T> struct is_my_lexical_cast_enabled : std::false_type {};
+
+template <> struct is_my_lexical_cast_enabled<yetanotherstring> : std::true_type {};
+
+template <class T, CLI::enable_if_t<is_my_lexical_cast_enabled<T>::value, CLI::detail::enabler> = CLI::detail::dummy>
+bool lexical_cast(const std::string &input, T &output) {
+    output.s = input;
+    return true;
+}
+
+TEST_CASE_METHOD(TApp, "custom_string_converter_adl_enable_if", "[newparse]") {
+    yetanotherstring s;
+
+    app.add_option("-s", s);
+
+    args = {"-s", "something"};
+
+    run();
+    CHECK("something" == s.s);
+}
+
 /// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
 /// option assignments
 template <class X> class objWrapper {
@@ -299,6 +324,27 @@ template <class X> class objWrapper {
     // delete all other assignment operators
     template <typename TT> void operator=(TT &&obj) = delete;
 
+    CLI11_NODISCARD const X &value() const { return val_; }
+
+  private:
+    X val_{};
+};
+
+/// simple class to wrap another  with a very specific type constructor and assignment operators to test out some of the
+/// option assignments
+template <class X> class objWrapperRestricted {
+  public:
+    objWrapperRestricted() = default;
+    explicit objWrapperRestricted(int val) : val_{val} {};
+    objWrapperRestricted(const objWrapperRestricted &) = delete;
+    objWrapperRestricted(objWrapperRestricted &&) = delete;
+    objWrapperRestricted &operator=(const objWrapperRestricted &) = delete;
+    objWrapperRestricted &operator=(objWrapperRestricted &&) = delete;
+
+    objWrapperRestricted &operator=(int val) {
+        val_ = val;
+        return *this;
+    }
     CLI11_NODISCARD const X &value() const { return val_; }
 
   private:
@@ -345,6 +391,26 @@ TEST_CASE_METHOD(TApp, "doubleWrapper", "[newparse]") {
     args = {"-v", "thing"};
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "intWrapperRestricted", "[newparse]") {
+    objWrapperRestricted<double> dWrapper;
+    app.add_option("-v", dWrapper);
+    args = {"-v", "4"};
+
+    run();
+
+    CHECK(4.0 == dWrapper.value());
+
+    args = {"-v", "thing"};
+
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+
+    args = {"-v", ""};
+
+    run();
+
+    CHECK(0.0 == dWrapper.value());
 }
 
 static_assert(CLI::detail::is_direct_constructible<objWrapper<int>, int>::value,

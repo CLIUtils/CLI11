@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -40,6 +40,16 @@ TEST_CASE_METHOD(TApp, "AddingExistingWithCase", "[creation]") {
     CHECK_NOTHROW(app.add_flag("--Cat,-C"));
 }
 
+TEST_CASE_METHOD(TApp, "AddingExistingShortLong", "[creation]") {
+    app.add_flag("-c");
+    CHECK_THROWS_AS(app.add_flag("--c"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "AddingExistingLongShort", "[creation]") {
+    app.add_flag("--c");
+    CHECK_THROWS_AS(app.add_option("-c"), CLI::OptionAlreadyAdded);
+}
+
 TEST_CASE_METHOD(TApp, "AddingExistingWithCaseAfter", "[creation]") {
     auto *count = app.add_flag("-c,--count");
     app.add_flag("--Cat,-C");
@@ -66,6 +76,37 @@ TEST_CASE_METHOD(TApp, "AddingExistingWithUnderscoreAfter2", "[creation]") {
     app.add_flag("--underscore");
 
     CHECK_THROWS_AS(count->ignore_underscore(), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositional", "[creation]") {
+    app.add_option("firstoption");
+    CHECK_THROWS_AS(app.add_option("--firstoption"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositional2", "[creation]") {
+    app.add_option("--firstoption");
+    CHECK_THROWS_AS(app.add_option("firstoption"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup1", "[creation]") {
+
+    auto *g1 = app.add_option_group("group_b");
+    g1->add_option("--firstoption");
+    CHECK_THROWS_AS(app.add_option("firstoption"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup2", "[creation]") {
+
+    app.add_option("firstoption");
+    auto *g1 = app.add_option_group("group_b");
+    CHECK_THROWS_AS(g1->add_option("--firstoption"), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "matchPositionalInOptionGroup3", "[creation]") {
+
+    app.add_option("f");
+    auto *g1 = app.add_option_group("group_b");
+    CHECK_THROWS_AS(g1->add_option("-f"), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "AddingMultipleInfPositionals", "[creation]") {
@@ -397,7 +438,7 @@ TEST_CASE_METHOD(TApp, "OptionFromDefaultsSubcommands", "[creation]") {
     CHECK(!app.option_defaults()->get_ignore_underscore());
     CHECK(!app.option_defaults()->get_disable_flag_override());
     CHECK(app.option_defaults()->get_configurable());
-    CHECK("Options" == app.option_defaults()->get_group());
+    CHECK("OPTIONS" == app.option_defaults()->get_group());
 
     app.option_defaults()
         ->required()
@@ -457,7 +498,7 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
 
     CHECK(app.get_usage().empty());
     CHECK(app.get_footer().empty());
-    CHECK("Subcommands" == app.get_group());
+    CHECK("SUBCOMMANDS" == app.get_group());
     CHECK(0u == app.get_require_subcommand_min());
     CHECK(0u == app.get_require_subcommand_max());
 

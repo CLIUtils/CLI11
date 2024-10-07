@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     app.add_option("-v,--value", count, "Value in range")->check(CLI::Range(3, 6));
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "Try printing help or failing the validator" << std::endl;
+    std::cout << "Try printing help or failing the validator" << '\n';
 
     return 0;
 }

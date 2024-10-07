@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,6 +6,9 @@
 
 #include "app_helper.hpp"
 
+#include "catch.hpp"
+
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <complex>
@@ -218,6 +221,157 @@ TEST_CASE_METHOD(TApp, "atomic_int_option", "[optiontype]") {
     CHECK(0 == i);
 }
 
+static const std::map<std::string, double> testValuesDouble{
+    {"3.14159", 3.14159},
+    {"-3.14159", -3.14159},
+    {"+1.0", 1.0},
+    {"-0.01", -0.01},
+    {"5e22", 5e22},
+    {"-2E-2", -2e-2},
+    {"5e+22", 5e22},
+    {"1e06", 1e6},
+    {"6.626e-34", 6.626e-34},
+    {"6.626e+34", 6.626e34},
+    {"-6.626e-34", -6.626e-34},
+    {"224_617.445_991", 224617.445991},
+    {"224'617.445'991", 224617.445991},
+    {"inf", std::numeric_limits<double>::infinity()},
+    {"+inf", std::numeric_limits<double>::infinity()},
+    {"-inf", -std::numeric_limits<double>::infinity()},
+    {"nan", std::numeric_limits<double>::signaling_NaN()},
+    {"+nan", std::numeric_limits<double>::signaling_NaN()},
+    {"-nan", -std::numeric_limits<double>::signaling_NaN()},
+
+};
+
+TEST_CASE_METHOD(TApp, "floatingConversions", "[optiontype]") {
+    auto test_data = GENERATE(from_range(testValuesDouble));
+
+    double val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", test_data.first};
+
+    run();
+    if(std::isnan(test_data.second)) {
+        CHECK(std::isnan(val));
+    } else {
+
+        CHECK_THAT(val, WithinRel(test_data.second, 1e-11));
+    }
+}
+
+static const std::map<std::string, std::int64_t> testValuesInt{
+    {"+99", 99},
+    {"99", 99},
+    {"-99", -99},
+    {"0xDEADBEEF", 0xDEADBEEF},
+    {"0xdeadbeef", 0xDEADBEEF},
+    {"0XDEADBEEF", 0xDEADBEEF},
+    {"0Xdeadbeef", 0xDEADBEEF},
+    {"0xdead_beef", 0xDEADBEEF},
+    {"0xdead'beef", 0xDEADBEEF},
+    {"0o01234567", 001234567},
+    {"0o755", 0755},
+    {"0755", 0755},
+    {"995862_262", 995862262},
+    {"995862262", 995862262},
+    {"-995862275", -995862275},
+    {"-995'862'275", -995862275},
+    {"0b11010110", 0xD6},
+    {"0b1101'0110", 0xD6},
+    {"0B11010110", 0xD6},
+    {"0B1101'0110", 0xD6},
+    {"1_2_3_4_5", 12345},
+};
+
+TEST_CASE_METHOD(TApp, "intConversions", "[optiontype]") {
+
+    auto test_data = GENERATE(from_range(testValuesInt));
+
+    std::int64_t val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", test_data.first};
+
+    run();
+
+    CHECK(val == test_data.second);
+}
+
+TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
+
+    std::int64_t val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", "0o11545241241415151512312415123125667"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0B1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+}
+
+static const std::map<std::string, std::uint64_t> testValuesUInt{
+    {"+99", 99},
+    {"99", 99},
+    {"0xDEADBEEF", 0xDEADBEEF},
+    {"0xdeadbeef", 0xDEADBEEF},
+    {"0XDEADBEEF", 0xDEADBEEF},
+    {"0Xdeadbeef", 0xDEADBEEF},
+    {"0xdead_beef", 0xDEADBEEF},
+    {"0xdead'beef", 0xDEADBEEF},
+    {"0o01234567", 001234567},
+    {"0o755", 0755},
+    {"0755", 0755},
+    {"995862_262", 995862262},
+    {"995862262", 995862262},
+    {"+995862275", +995862275},
+    {"995'862'275", 995862275},
+    {"0b11010110", 0xD6},
+    {"0b1101'0110", 0xD6},
+    {"0B11010110", 0xD6},
+    {"0B1101'0110", 0xD6},
+    {"1_2_3_4_5", 12345},
+};
+
+TEST_CASE_METHOD(TApp, "uintConversions", "[optiontype]") {
+
+    auto test_data = GENERATE(from_range(testValuesUInt));
+
+    std::uint64_t val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", test_data.first};
+
+    run();
+
+    CHECK(val == test_data.second);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsErange", "[optiontype]") {
+
+    std::uint64_t val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", "0o11545241241415151512312415123125667"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0b1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+
+    args = {"--val", "0B1011000001101011001100110011111000101010101011111111111111111111111001010111011100"};
+
+    CHECK_THROWS_AS(run(), CLI::ParseError);
+}
+
 TEST_CASE_METHOD(TApp, "CharOption", "[optiontype]") {
     char c1{'t'};
     app.add_option("-c", c1);
@@ -326,6 +480,36 @@ TEST_CASE_METHOD(TApp, "pair_check", "[optiontype]") {
 
     CHECK(myfile == findex.first);
     CHECK(2 == findex.second);
+
+    args = {"--file", myfile, "-3"};
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--file", myfile, "2"};
+    std::remove(myfile.c_str());
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "pair_check_string", "[optiontype]") {
+    std::string myfile{"pair_check_file.txt"};
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
+
+    CHECK(CLI::ExistingFile(myfile).empty());
+    std::pair<std::string, std::string> findex;
+
+    auto v0 = CLI::ExistingFile;
+    v0.application_index(0);
+    auto v1 = CLI::PositiveNumber;
+    v1.application_index(1);
+    app.add_option("--file", findex)->check(v0)->check(v1);
+
+    args = {"--file", myfile, "2"};
+
+    CHECK_NOTHROW(run());
+
+    CHECK(myfile == findex.first);
+    CHECK("2" == findex.second);
 
     args = {"--file", myfile, "-3"};
 
@@ -1049,6 +1233,17 @@ TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
     run();
     CHECK(2U == cv.size());
     CHECK(2U == extras.size());
+}
+
+TEST_CASE_METHOD(TApp, "vectorEmpty", "[optiontype]") {
+
+    std::vector<std::string> cv{};
+    app.add_option("-c", cv)->expected(0, 2);
+
+    args = {"-c", "{}"};
+
+    run();
+    CHECK(cv.empty());
 }
 
 TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {

@@ -1,12 +1,10 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-
-using Catch::Matchers::Contains;
 
 using vs_t = std::vector<std::string>;
 
@@ -221,6 +219,32 @@ TEST_CASE_METHOD(TApp, "BasicOptionGroupMin", "[optiongroup]") {
     std::string help = ogroup->help();
     auto exactloc = help.find("[At least 1");
     CHECK(std::string::npos != exactloc);
+}
+
+TEST_CASE_METHOD(TApp, "integratedOptionGroup", "[optiongroup]") {
+    auto *ogroup = app.add_option_group("+clusters");
+    int res{0};
+    ogroup->add_option("--test1", res);
+    ogroup->add_option("--test2", res);
+    ogroup->add_option("--test3", res);
+    int val2{0};
+    app.add_option("--option", val2);
+    ogroup->require_option();
+
+    args = {"--option", "9"};
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+
+    args = {"--test1", "5", "--test2", "4", "--test3=5"};
+    CHECK_NOTHROW(run());
+
+    auto options = app.get_options();
+    CHECK(options.size() == 5);
+    const CLI::App *capp = &app;
+    auto coptions = capp->get_options();
+    CHECK(coptions.size() == 5);
+    std::string help = app.help();
+    auto exactloc = help.find("clusters");
+    CHECK(std::string::npos == exactloc);
 }
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroupExact2", "[optiongroup]") {

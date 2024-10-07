@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -12,15 +12,17 @@
 
 int main(int argc, const char *argv[]) {
 
-    int logLevel{0};
+    int value{0};
     CLI::App app{"Test App"};
+    app.add_option("-v", value, "value");
 
-    app.add_option("-v", logLevel, "level");
-
-    auto *subcom = app.add_subcommand("sub", "")->fallthrough();
-    subcom->preparse_callback([&app](size_t) { app.get_subcommand("sub")->add_option_group("group"); });
-
+    auto *subcom = app.add_subcommand("sub", "")->prefix_command();
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "level: " << logLevel << std::endl;
+    std::cout << "value =" << value << '\n';
+    std::cout << "after Args:";
+    for(const auto &aarg : subcom->remaining()) {
+        std::cout << aarg << " ";
+    }
+    std::cout << '\n';
 }

@@ -1,15 +1,15 @@
-cmake_minimum_required(VERSION 3.4)
-# Note: this is a header only library. If you have an older CMake than 3.4,
+cmake_minimum_required(VERSION 3.5)
+# Note: this is a header only library. If you have an older CMake than 3.5,
 # just add the CLI11/include directory and that's all you need to do.
 
-# Make sure users don't get warnings on a tested (3.4 to 3.24) version
+# Make sure users don't get warnings on a tested (3.5 to 3.28) version
 # of CMake. For most of the policies, the new version is better (hence the change).
-# We don't use the 3.4...3.24 syntax because of a bug in an older MSVC's
+# We don't use the 3.5...3.28 syntax because of a bug in an older MSVC's
 # built-in and modified CMake 3.11
-if(${CMAKE_VERSION} VERSION_LESS 3.24)
+if(${CMAKE_VERSION} VERSION_LESS 3.28)
   cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
-  cmake_policy(VERSION 3.24)
+  cmake_policy(VERSION 3.28)
 endif()
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -81,7 +81,7 @@ option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only" OFF)
 cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
-                       "NOT CMAKE_VERSION VERSION_LESS 3.11" OFF)
+                       "NOT CMAKE_VERSION VERSION_LESS 3.13" OFF)
 
 cmake_dependent_option(CLI11_BUILD_DOCS "Build CLI11 documentation" ON "${build-docs}" OFF)
 
@@ -132,7 +132,45 @@ endif()
 
 include(CLI11Warnings)
 
+# Sources
+
+set(CLI11_headerLoc "${PROJECT_SOURCE_DIR}/include/CLI")
+
+set(CLI11_headers
+    ${CLI11_headerLoc}/App.hpp
+    ${CLI11_headerLoc}/Config.hpp
+    ${CLI11_headerLoc}/ConfigFwd.hpp
+    ${CLI11_headerLoc}/Error.hpp
+    ${CLI11_headerLoc}/Formatter.hpp
+    ${CLI11_headerLoc}/FormatterFwd.hpp
+    ${CLI11_headerLoc}/Macros.hpp
+    ${CLI11_headerLoc}/Option.hpp
+    ${CLI11_headerLoc}/Split.hpp
+    ${CLI11_headerLoc}/StringTools.hpp
+    ${CLI11_headerLoc}/TypeTools.hpp
+    ${CLI11_headerLoc}/Validators.hpp
+    ${CLI11_headerLoc}/Version.hpp
+    ${CLI11_headerLoc}/Encoding.hpp
+    ${CLI11_headerLoc}/Argv.hpp)
+
+set(CLI11_impl_headers
+    ${CLI11_headerLoc}/impl/App_inl.hpp
+    ${CLI11_headerLoc}/impl/Config_inl.hpp
+    ${CLI11_headerLoc}/impl/Formatter_inl.hpp
+    ${CLI11_headerLoc}/impl/Option_inl.hpp
+    ${CLI11_headerLoc}/impl/Split_inl.hpp
+    ${CLI11_headerLoc}/impl/StringTools_inl.hpp
+    ${CLI11_headerLoc}/impl/Validators_inl.hpp
+    ${CLI11_headerLoc}/impl/Encoding_inl.hpp
+    ${CLI11_headerLoc}/impl/Argv_inl.hpp)
+
+set(CLI11_library_headers ${CLI11_headerLoc}/CLI.hpp ${CLI11_headerLoc}/Timer.hpp)
+
+# build the fuzzing example or fuzz entry point
+add_subdirectory(fuzz)
+
 add_subdirectory(src)
+add_subdirectory(single-include)
 
 # Allow tests to be run on CUDA
 if(CLI11_CUDA_TESTS)
@@ -195,39 +233,40 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND EXISTS "${CMAKE_CURRENT_SOURCE_D
 endif()
 
 # Packaging support
-set(CPACK_PACKAGE_VENDOR "github.com/CLIUtils/CLI11")
-set(CPACK_PACKAGE_CONTACT "https://${CPACK_PACKAGE_VENDOR}")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH}) # Automatic in CMake 3.12+
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Command line parser with simple and intuitive interface")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.CPack.Description.txt")
-set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  set(CPACK_PACKAGE_VENDOR "github.com/CLIUtils/CLI11")
+  set(CPACK_PACKAGE_CONTACT "https://${CPACK_PACKAGE_VENDOR}")
+  set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH}) # Automatic in CMake 3.12+
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Command line parser with simple and intuitive interface")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CLI11.CPack.Description.txt")
+  set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
 
-# CPack collects *everything* except what's listed here.
-set(CPACK_SOURCE_IGNORE_FILES
-    /.git
-    /dist
-    /.*build.*
-    /\\\\.DS_Store
-    /.*\\\\.egg-info
-    /var
-    /azure-pipelines.yml
-    /.ci
-    /docs
-    /examples
-    /test_package
-    /book
-    /.travis.yml
-    .swp
-    /.all-contributorsrc
-    /.appveyor.yml
-    /.pre-commit.*yaml)
+  # CPack collects *everything* except what's listed here.
+  set(CPACK_SOURCE_IGNORE_FILES
+      /.git
+      /dist
+      /.*build.*
+      /\\\\.DS_Store
+      /.*\\\\.egg-info
+      /var
+      /azure-pipelines.yml
+      /.ci
+      /docs
+      /examples
+      /test_package
+      /book
+      /.travis.yml
+      .swp
+      /.all-contributorsrc
+      /.pre-commit.*yaml)
 
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
-set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
-set(CPACK_DEBIAN_PACKAGE_NAME "libcli11-dev")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
+  set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
+  set(CPACK_DEBIAN_PACKAGE_NAME "libcli11-dev")
 
-include(CPack)
+  include(CPack)
+endif()

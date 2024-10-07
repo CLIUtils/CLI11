@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -30,10 +30,10 @@ int main(int argc, char **argv) {
     }
 
     std::cout << "Working on file: " << file << ", direct count: " << app.count("--file")
-              << ", opt count: " << opt->count() << std::endl;
+              << ", opt count: " << opt->count() << '\n';
     std::cout << "Working on count: " << count << ", direct count: " << app.count("--count")
-              << ", opt count: " << copt->count() << std::endl;
-    std::cout << "Some value: " << value << std::endl;
+              << ", opt count: " << copt->count() << '\n';
+    std::cout << "Some value: " << value << '\n';
 
     return 0;
 }

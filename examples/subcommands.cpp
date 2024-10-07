@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -24,12 +24,11 @@ int main(int argc, char **argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "Working on --file from start: " << file << std::endl;
-    std::cout << "Working on --count from stop: " << s->count() << ", direct count: " << stop->count("--count")
-              << std::endl;
-    std::cout << "Count of --random flag: " << app.count("--random") << std::endl;
+    std::cout << "Working on --file from start: " << file << '\n';
+    std::cout << "Working on --count from stop: " << s->count() << ", direct count: " << stop->count("--count") << '\n';
+    std::cout << "Count of --random flag: " << app.count("--random") << '\n';
     for(auto *subcom : app.get_subcommands())
-        std::cout << "Subcommand: " << subcom->get_name() << std::endl;
+        std::cout << "Subcommand: " << subcom->get_name() << '\n';
 
     return 0;
 }

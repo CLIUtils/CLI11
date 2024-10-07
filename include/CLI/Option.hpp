@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
+
+// IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
@@ -41,7 +43,8 @@ enum class MultiOptionPolicy : char {
     TakeFirst,  //!< take only the first Expected number of arguments
     Join,       //!< merge all the arguments together into a single string via the delimiter character default('\n')
     TakeAll,    //!< just get all the passed argument regardless
-    Sum         //!< sum all the arguments together if numerical or concatenate directly without delimiter
+    Sum,        //!< sum all the arguments together if numerical or concatenate directly without delimiter
+    Reverse,    //!< take only the last Expected number of arguments in reverse order
 };
 
 /// This is the CRTP base class for Option and OptionDefaults. It was designed this way
@@ -51,7 +54,7 @@ template <typename CRTP> class OptionBase {
 
   protected:
     /// The group membership
-    std::string group_ = std::string("Options");
+    std::string group_ = std::string("OPTIONS");
 
     /// True if this is a required option
     bool required_{false};
@@ -549,11 +552,11 @@ class Option : public OptionBase<Option> {
         if(!lnames_.empty()) {
             return lnames_[0];
         }
-        if(!pname_.empty()) {
-            return pname_;
-        }
         if(!snames_.empty()) {
             return snames_[0];
+        }
+        if(!pname_.empty()) {
+            return pname_;
         }
         return envname_;
     }
@@ -577,13 +580,13 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD int get_items_expected() const { return get_items_expected_min(); }
 
     /// True if the argument can be given directly
-    CLI11_NODISCARD bool get_positional() const { return pname_.length() > 0; }
+    CLI11_NODISCARD bool get_positional() const { return !pname_.empty(); }
 
     /// True if option has at least one non-positional name
-    CLI11_NODISCARD bool nonpositional() const { return (snames_.size() + lnames_.size()) > 0; }
+    CLI11_NODISCARD bool nonpositional() const { return (!lnames_.empty() || !snames_.empty()); }
 
     /// True if option has description
-    CLI11_NODISCARD bool has_description() const { return description_.length() > 0; }
+    CLI11_NODISCARD bool has_description() const { return !description_.empty(); }
 
     /// Get the description
     CLI11_NODISCARD const std::string &get_description() const { return description_; }
@@ -803,5 +806,5 @@ class Option : public OptionBase<Option> {
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Option_inl.hpp"
+#include "impl/Option_inl.hpp"  // IWYU pragma: export
 #endif

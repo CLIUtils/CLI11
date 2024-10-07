@@ -16,11 +16,10 @@ can do with an `App`, however.
 
 You are given a lot of control the help output. You can set a footer with
 `app.footer("My Footer")`. You can replace the default help print when a
-`ParseError` is thrown with
-`app.set_failure_message(CLI::FailureMessage::help)`. The default is
-`CLI:::FailureMessage::simple`, and you can easily define a new one. Just make a
-(lambda) function that takes an App pointer and a reference to an error code
-(even if you don't use them), and returns a string.
+`ParseError` is thrown with `app.failure_message(CLI::FailureMessage::help)`.
+The default is `CLI:::FailureMessage::simple`, and you can easily define a new
+one. Just make a (lambda) function that takes an App pointer and a reference to
+an error code (even if you don't use them), and returns a string.
 
 ## Adding a subcommand
 

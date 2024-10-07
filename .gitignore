@@ -10,8 +10,13 @@ a.out*
 /html/*
 !/meson.build
 /CMakeUserPresets.json
+/bazel-*
+/MODULE.bazel.lock
 
 /node_modules/*
 /package.json
 /yarn.lock
 /CLI11.hpp
+
+/subprojects/Catch2-*
+/subprojects/packagecache

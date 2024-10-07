@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     cli_sub.add_option("sub_arg", sub_arg, "Argument for subcommand")->required();
     CLI11_PARSE(cli_global, argc, argv);
     if(cli_sub) {
-        std::cout << "Got: " << sub_arg << std::endl;
+        std::cout << "Got: " << sub_arg << '\n';
     }
     return 0;
 }

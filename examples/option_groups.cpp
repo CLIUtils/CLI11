@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -33,13 +33,13 @@ int main(int argc, char **argv) {
     CLI11_PARSE(app, argc, argv);
 
     std::string format_type = (csv) ? std::string("CSV") : ((human) ? "human readable" : "binary");
-    std::cout << "Selected " << format_type << " format" << std::endl;
+    std::cout << "Selected " << format_type << " format\n";
     if(!fileLoc.empty()) {
-        std::cout << " sent to file " << fileLoc << std::endl;
+        std::cout << " sent to file " << fileLoc << '\n';
     } else if(!networkAddress.empty()) {
-        std::cout << " sent over network to " << networkAddress << std::endl;
+        std::cout << " sent over network to " << networkAddress << '\n';
     } else {
-        std::cout << " sent to std::cout" << std::endl;
+        std::cout << " sent to std::cout\n";
     }
 
     return 0;

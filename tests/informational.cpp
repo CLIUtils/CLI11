@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -52,5 +52,5 @@ int main() {
     std::cout << "  boost::optional support active\n";
 #endif
 
-    std::cout << std::endl;
+    std::cout << '\n';
 }

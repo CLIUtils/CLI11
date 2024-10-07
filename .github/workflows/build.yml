@@ -13,11 +13,11 @@ jobs:
     name: Single header
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -36,24 +36,19 @@ jobs:
       - name: Make header
         run: cmake --build build --target CLI11-generate-single-file
 
-      - name: Copy file to main folder
-        run: cp build/include/CLI11.hpp CLI11.hpp
-
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: CLI11.hpp
-          path: CLI11.hpp
+          path: build/single-include/CLI11.hpp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: CLI11-Source
           path: CLI11-Source
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            CLI11.hpp
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            build/single-include/CLI11.hpp

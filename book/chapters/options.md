@@ -26,18 +26,18 @@ app.add_option("-i", int_option, "Optional description")->capture_default_str();
 You can use any C++ int-like type, not just `int`. CLI11 understands the
 following categories of types:
 
-| Type           | CLI11                                                                                                                                                                             |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number. Accepts common numerical strings like `0xFF` as well as octal, and decimal |
-| string-like    | std::string, or anything that can be constructed from or assigned a std::string                                                                                                   |
-| char           | For a single char, single string values are accepted, otherwise longer strings are treated as integral values and a conversion is attempted                                       |
-| complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2"                           |
-| enumeration    | any enum or enum class type is supported through conversion from the underlying type(typically int, though it can be specified otherwise)                                         |
-| container-like | a container(like vector) of any available types including other containers                                                                                                        |
-| wrapper        | any other object with a `value_type` static definition where the type specified by `value_type` is one of the type in this list, including `std::atomic<>`                        |
-| tuple          | a tuple, pair, or array, or other type with a tuple size and tuple_type operations defined and the members being a type contained in this list                                    |
-| function       | A function that takes an array of strings and returns a string that describes the conversion failure or empty for success. May be the empty function. (`{}`)                      |
-| streamable     | any other type with a `<<` operator will also work                                                                                                                                |
+| Type           | CLI11                                                                                                                                                                                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| number like    | Integers, floats, bools, or any type that can be constructed from an integer or floating point number. Accepts common numerical strings like `0xFF` as well as octal[\0755, or \o755], decimal, and binary(0b011111100), supports value separators including `_` and `'` |
+| string-like    | std::string, or anything that can be constructed from or assigned a std::string                                                                                                                                                                                          |
+| char           | For a single char, single string values are accepted, otherwise longer strings are treated as integral values and a conversion is attempted                                                                                                                              |
+| complex-number | std::complex or any type which has a real(), and imag() operations available, will allow 1 or 2 string definitions like "1+2j" or two arguments "1","2"                                                                                                                  |
+| enumeration    | any enum or enum class type is supported through conversion from the underlying type(typically int, though it can be specified otherwise)                                                                                                                                |
+| container-like | a container(like vector) of any available types including other containers                                                                                                                                                                                               |
+| wrapper        | any other object with a `value_type` static definition where the type specified by `value_type` is one of the type in this list, including `std::atomic<>`                                                                                                               |
+| tuple          | a tuple, pair, or array, or other type with a tuple size and tuple_type operations defined and the members being a type contained in this list                                                                                                                           |
+| function       | A function that takes an array of strings and returns a string that describes the conversion failure or empty for success. May be the empty function. (`{}`)                                                                                                             |
+| streamable     | any other type with a `<<` operator will also work                                                                                                                                                                                                                       |
 
 By default, CLI11 will assume that an option is optional, and one value is
 expected if you do not use a vector. You can change this on a specific option
@@ -214,15 +214,15 @@ that to add option modifiers. A full listing of the option modifiers:
 | `->type_size(Nmin,Nmax)`                                | specify that each block of values would consist of between Nmin and Nmax elements                                                                                                                                                                                                                                                                                                                                                                         |
 | `->needs(opt)`                                          | This option requires another option to also be present, opt is an `Option` pointer or a string with the name of the option. Can be removed with `->remove_needs(opt)`                                                                                                                                                                                                                                                                                     |
 | `->excludes(opt)`                                       | This option cannot be given with `opt` present, opt is an `Option` pointer or a string with the name of the option. Can be removed with `->remove_excludes(opt)`                                                                                                                                                                                                                                                                                          |
-| `->envname(name)`                                       | Gets the value from the environment if present and not passed on the command line.                                                                                                                                                                                                                                                                                                                                                                        |
-| `->group(name)`                                         | The help group to put the option in. No effect for positional options. Defaults to `"Options"`. `"Hidden"` will not show up in the help print.                                                                                                                                                                                                                                                                                                            |
+| `->envname(name)`                                       | Gets the value from the environment if present and not passed on the command line and passes any validators.                                                                                                                                                                                                                                                                                                                                              |
+| `->group(name)`                                         | The help group to put the option in. No effect for positional options. Defaults to `"Options"`. Options given an empty string for the group name will not show up in the help print.                                                                                                                                                                                                                                                                      |
 | `->description(string)`                                 | Set/change the description                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `->ignore_case()`                                       | Ignore the case on the command line (also works on subcommands, does not affect arguments).                                                                                                                                                                                                                                                                                                                                                               |
 | `->ignore_underscore()`                                 | Ignore any underscores on the command line (also works on subcommands, does not affect arguments).                                                                                                                                                                                                                                                                                                                                                        |
 | `->allow_extra_args()`                                  | Allow extra argument values to be included when an option is passed. Enabled by default for vector options.                                                                                                                                                                                                                                                                                                                                               |
 | `->disable_flag_override()`                             | specify that flag options cannot be overridden on the command line use `=<newval>`                                                                                                                                                                                                                                                                                                                                                                        |
 | `->delimiter('<CH>')`                                   | specify a character that can be used to separate elements in a command line argument, default is <none>, common values are ',', and ';'                                                                                                                                                                                                                                                                                                                   |
-| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily.                                                                                                                                                            |
+| `->multi_option_policy( CLI::MultiOptionPolicy::Throw)` | Sets the policy for handling multiple arguments if the option was received on the command line several times. `Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`, `Join`, `Reverse`, and `Sum` are also available. See the next four lines for shortcuts to set this more easily.                                                                                                                                                 |
 | `->take_last()`                                         | Only use the last option if passed several times. This is always true by default for bool options, regardless of the app default, but can be set to false explicitly with `->multi_option_policy()`.                                                                                                                                                                                                                                                      |
 | `->take_first()`                                        | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst)`                                                                                                                                                                                                                                                                                                                                                                                           |
 | `->take_all()`                                          | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)`                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -246,6 +246,28 @@ function of the form `bool function(std::string)` that runs on every value that
 the option receives, and returns a value that tells CLI11 whether the check
 passed or failed.
 
+### Multi Option policy
+
+The Multi option policy can be used to instruct CLI11 what to do when an option
+is called multiple times and how to return those values in a meaningful way.
+There are several options can be set through the
+`->multi_option_policy( CLI::MultiOptionPolicy::Throw)` option modifier.
+`Throw`ing an error is the default, but `TakeLast`, `TakeFirst`, `TakeAll`,
+`Join`, `Reverse`, and `Sum`
+
+| Value     | Description                                                                       |
+| --------- | --------------------------------------------------------------------------------- |
+| Throw     | Throws an error if more values are given then expected                            |
+| TakeLast  | Selects the last expected number of values given                                  |
+| TakeFirst | Selects the first expected number of of values given                              |
+| Join      | Joins the strings together using the `delimiter` given                            |
+| TakeAll   | Takes all the values                                                              |
+| Sum       | If the values are numeric, it sums them and returns the result                    |
+| Reverse   | Selects the last expected number of values given and return them in reverse order |
+
+NOTE: For reverse, the index used for an indexed validator is also applied in
+reverse order index 1 will be the last element and 2 second from last and so on.
+
 ## Using the `CLI::Option` pointer
 
 Each of the option creation mechanisms returns a pointer to the internally
@@ -261,7 +283,7 @@ CLI::Option* opt = app.add_flag("--opt");
 CLI11_PARSE(app, argv, argc);
 
 if(* opt)
-    std::cout << "Flag received " << opt->count() << " times." << std::endl;
+    std::cout << "Flag received " << opt->count() << " times." << '\n';
 ```
 
 ## Inheritance of defaults

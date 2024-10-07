@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
+
+// IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
@@ -24,7 +26,10 @@ namespace CLI {
 // [CLI11:config_hpp:verbatim]
 namespace detail {
 
-std::string convert_arg_for_ini(const std::string &arg, char stringQuote = '"', char characterQuote = '\'');
+std::string convert_arg_for_ini(const std::string &arg,
+                                char stringQuote = '"',
+                                char literalQuote = '\'',
+                                bool disable_multi_line = false);
 
 /// Comma separated join, adds quotes if needed
 std::string ini_join(const std::vector<std::string> &args,
@@ -32,7 +37,9 @@ std::string ini_join(const std::vector<std::string> &args,
                      char arrayStart = '[',
                      char arrayEnd = ']',
                      char stringQuote = '"',
-                     char characterQuote = '\'');
+                     char literalQuote = '\'');
+
+void clean_name_string(std::string &name, const std::string &keyChars);
 
 std::vector<std::string> generate_parents(const std::string &section, std::string &name, char parentSeparator);
 
@@ -44,5 +51,5 @@ void checkParentSegments(std::vector<ConfigItem> &output, const std::string &cur
 }  // namespace CLI
 
 #ifndef CLI11_COMPILE
-#include "impl/Config_inl.hpp"
+#include "impl/Config_inl.hpp"  // IWYU pragma: export
 #endif

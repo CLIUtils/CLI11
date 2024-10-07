@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
     // CLI11's built in enum streaming can be used outside CLI11 like this:
     using CLI::enums::operator<<;
-    std::cout << "Enum received: " << level << std::endl;
+    std::cout << "Enum received: " << level << '\n';
 
     return 0;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     int circle_counter{0};
     circle->callback([&radius, &circle_counter] {
         ++circle_counter;
-        std::cout << "circle" << circle_counter << " with radius " << radius << std::endl;
+        std::cout << "circle" << circle_counter << " with radius " << radius << '\n';
     });
 
     circle->add_option("radius", radius, "the radius of the circle")->required();
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
         if(edge2 == 0) {
             edge2 = edge1;
         }
-        std::cout << "rectangle" << rect_counter << " with edges [" << edge1 << ',' << edge2 << "]" << std::endl;
+        std::cout << "rectangle" << rect_counter << " with edges [" << edge1 << ',' << edge2 << "]\n";
         edge2 = 0;
     });
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     tri->callback([&sides, &tri_counter] {
         ++tri_counter;
 
-        std::cout << "triangle" << tri_counter << " with sides [" << CLI::detail::join(sides) << "]" << std::endl;
+        std::cout << "triangle" << tri_counter << " with sides [" << CLI::detail::join(sides) << "]\n";
     });
 
     tri->add_option("sides", sides, "the side lengths of the triangle");

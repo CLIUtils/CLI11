@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -6,8 +6,10 @@
 
 #pragma once
 
+// IWYU pragma: private, include "CLI/CLI.hpp"
+
 // This include is only needed for IDEs to discover symbols
-#include <CLI/Option.hpp>
+#include "../Option.hpp"
 
 // [CLI11:public_includes:set]
 #include <algorithm>
@@ -282,7 +284,9 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool 
 }
 
 CLI11_INLINE void Option::run_callback() {
+    bool used_default_str = false;
     if(force_callback_ && results_.empty()) {
+        used_default_str = true;
         add_result(default_str_);
     }
     if(current_option_state_ == option_state::parsing) {
@@ -292,16 +296,18 @@ CLI11_INLINE void Option::run_callback() {
 
     if(current_option_state_ < option_state::reduced) {
         _reduce_results(proc_results_, results_);
-        current_option_state_ = option_state::reduced;
     }
-    if(current_option_state_ >= option_state::reduced) {
-        current_option_state_ = option_state::callback_run;
-        if(!(callback_)) {
-            return;
-        }
+
+    current_option_state_ = option_state::callback_run;
+    if(callback_) {
         const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
         bool local_result = callback_(send_results);
-
+        if(used_default_str) {
+            // we only clear the results if the callback was actually used
+            // otherwise the callback is the storage of the default
+            results_.clear();
+            proc_results_.clear();
+        }
         if(!local_result)
             throw ConversionError(get_name(), results_);
     }
@@ -309,13 +315,30 @@ CLI11_INLINE void Option::run_callback() {
 
 CLI11_NODISCARD CLI11_INLINE const std::string &Option::matching_name(const Option &other) const {
     static const std::string estring;
-    for(const std::string &sname : snames_)
+    bool bothConfigurable = configurable_ && other.configurable_;
+    for(const std::string &sname : snames_) {
         if(other.check_sname(sname))
             return sname;
-    for(const std::string &lname : lnames_)
+        if(bothConfigurable && other.check_lname(sname))
+            return sname;
+    }
+    for(const std::string &lname : lnames_) {
         if(other.check_lname(lname))
             return lname;
-
+        if(lname.size() == 1 && bothConfigurable) {
+            if(other.check_sname(lname)) {
+                return lname;
+            }
+        }
+    }
+    if(bothConfigurable && snames_.empty() && lnames_.empty() && !pname_.empty()) {
+        if(other.check_sname(pname_) || other.check_lname(pname_) || pname_ == other.pname_)
+            return pname_;
+    }
+    if(bothConfigurable && other.snames_.empty() && other.fnames_.empty() && !other.pname_.empty()) {
+        if(check_sname(other.pname_) || check_lname(other.pname_) || (pname_ == other.pname_))
+            return other.pname_;
+    }
     if(ignore_case_ ||
        ignore_underscore_) {  // We need to do the inverse, in case we are ignore_case or ignore underscore
         for(const std::string &sname : other.snames_)
@@ -369,6 +392,9 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
             if(default_ind >= 0) {
                 // We can static cast this to std::size_t because it is more than 0 in this block
                 if(default_flag_values_[static_cast<std::size_t>(default_ind)].second != input_value) {
+                    if(input_value == default_str_ && force_callback_) {
+                        return input_value;
+                    }
                     throw(ArgumentMismatch::FlagOverride(name));
                 }
             } else {
@@ -389,15 +415,15 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
         return input_value;
     }
     if(default_flag_values_[static_cast<std::size_t>(ind)].second == falseString) {
-        try {
-            auto val = detail::to_flag_value(input_value);
-            return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
-        } catch(const std::invalid_argument &) {
+        errno = 0;
+        auto val = detail::to_flag_value(input_value);
+        if(errno != 0) {
+            errno = 0;
             return input_value;
         }
-    } else {
-        return input_value;
+        return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
     }
+    return input_value;
 }
 
 CLI11_INLINE Option *Option::add_result(std::string s) {
@@ -500,7 +526,8 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
         if(type_size_max_ > 1) {  // in this context index refers to the index in the type
             int index = 0;
             if(get_items_expected_max() < static_cast<int>(res.size()) &&
-               multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+               (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast ||
+                multi_option_policy_ == CLI::MultiOptionPolicy::Reverse)) {
                 // create a negative index for the earliest ones
                 index = get_items_expected_max() - static_cast<int>(res.size());
             }
@@ -518,7 +545,8 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
         } else {
             int index = 0;
             if(expected_max_ < static_cast<int>(res.size()) &&
-               multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast) {
+               (multi_option_policy_ == CLI::MultiOptionPolicy::TakeLast ||
+                multi_option_policy_ == CLI::MultiOptionPolicy::Reverse)) {
                 // create a negative index for the earliest ones
                 index = expected_max_ - static_cast<int>(res.size());
             }
@@ -550,6 +578,15 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
             out.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
         }
     } break;
+    case MultiOptionPolicy::Reverse: {
+        // Allow multi-option sizes (including 0)
+        std::size_t trim_size = std::min<std::size_t>(
+            static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
+        if(original.size() != trim_size || trim_size > 1) {
+            out.assign(original.end() - static_cast<results_t::difference_type>(trim_size), original.end());
+        }
+        std::reverse(out.begin(), out.end());
+    } break;
     case MultiOptionPolicy::TakeFirst: {
         std::size_t trim_size = std::min<std::size_t>(
             static_cast<std::size_t>(std::max<int>(get_items_expected_max(), 1)), original.size());
@@ -579,7 +616,12 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
             throw ArgumentMismatch::AtLeast(get_name(), static_cast<int>(num_min), original.size());
         }
         if(original.size() > num_max) {
-            throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
+            if(original.size() == 2 && num_max == 1 && original[1] == "%%" && original[0] == "{}") {
+                // this condition is a trap for the following empty indicator check on config files
+                out = original;
+            } else {
+                throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
+            }
         }
         break;
     }
@@ -588,11 +630,11 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
     // {} is the indicator for an empty container
     if(out.empty()) {
         if(original.size() == 1 && original[0] == "{}" && get_items_expected_min() > 0) {
-            out.push_back("{}");
-            out.push_back("%%");
+            out.emplace_back("{}");
+            out.emplace_back("%%");
         }
     } else if(out.size() == 1 && out[0] == "{}" && get_items_expected_min() > 0) {
-        out.push_back("%%");
+        out.emplace_back("%%");
     }
 }
 
