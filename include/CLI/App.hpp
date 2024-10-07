@@ -831,10 +831,16 @@ class App {
         return this;
     }
 
-    /// Stop subcommand fallthrough, so that parent commands cannot collect commands after subcommand.
+    /// Set fallthrough, set to true so that options will fallthrough to parent if not recognized in a subcommand
     /// Default from parent, usually set on parent.
     App *fallthrough(bool value = true) {
         fallthrough_ = value;
+        return this;
+    }
+
+    /// Set subcommand fallthrough, set to true so that subcommands on parents are recognized 
+    App *subcommand_fallthrough(bool value = true) {
+        subcommand_fallthrough_ = value;
         return this;
     }
 
@@ -1086,6 +1092,9 @@ class App {
 
     /// Check the status of fallthrough
     CLI11_NODISCARD bool get_fallthrough() const { return fallthrough_; }
+
+    /// Check the status of subcommand fallthrough
+    CLI11_NODISCARD bool get_subcommand_fallthrough() const { return subcommand_fallthrough_; }
 
     /// Check the status of the allow windows style options
     CLI11_NODISCARD bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
