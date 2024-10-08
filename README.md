@@ -908,8 +908,8 @@ option_groups. These are:
   through" and be matched on a parent option. Subcommands by default are allowed
   to "fall through" as in they will first attempt to match on the current
   subcommand and if they fail will progressively check parents for matching
-  subcommands. This can be disabled through `subcommand_fallthrough(false)`
-- `.subcommand_fallthrough()`: Allow subcommands to "fall through" and be
+  subcommands. This can be disabled through `subcommand_fallthrough(false)` 🚧.
+- `.subcommand_fallthrough()`: 🚧 Allow subcommands to "fall through" and be
   matched on a parent option. Disabling this prevents additional subcommands at
   the same level from being matched. It can be useful in certain circumstances
   where there might be ambiguity between subcommands and positionals. The
