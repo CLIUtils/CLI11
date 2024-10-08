@@ -279,7 +279,7 @@ class App {
     App *parent_{nullptr};
 
     /// The group membership INHERITABLE
-    std::string group_{"Subcommands"};
+    std::string group_{"SUBCOMMANDS"};
 
     /// Alias names for the subcommand
     std::vector<std::string> aliases_{};

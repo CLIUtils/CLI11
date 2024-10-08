@@ -75,8 +75,8 @@ set_property(
            "Working on count: 2, direct count: 2, opt count: 2" "Some value: 1.2")
 # test shows that the help prints out for unnamed subcommands
 add_test(NAME subcom_partitioned_help COMMAND subcom_partitioned --help)
-set_property(TEST subcom_partitioned_help PROPERTY PASS_REGULAR_EXPRESSION
-                                                   "-f,--file TEXT REQUIRED" "-d,--double FLOAT")
+set_property(TEST subcom_partitioned_help
+             PROPERTY PASS_REGULAR_EXPRESSION "-f,[ \\t]*--file TEXT REQUIRED" "-d,--double FLOAT")
 
 ####################################################
 add_cli_exe(config_app config_app.cpp)
@@ -145,8 +145,8 @@ add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
 set_property(
   TEST validators_help
-  PROPERTY PASS_REGULAR_EXPRESSION "  -f,--file TEXT:FILE[\\r\\n\\t ]+File name"
-           "  -v,--value INT:INT in [3 - 6][\\r\\n\\t ]+Value in range")
+  PROPERTY PASS_REGULAR_EXPRESSION "  -f,[ \\t]*--file TEXT:FILE[\\r\\n\\t ]+File name"
+           "  -v,[ \\t]*--value INT:INT in [3 - 6][\\r\\n\\t ]+Value in range")
 add_test(NAME validators_file COMMAND validators --file nonex.xxx)
 set_property(
   TEST validators_file PROPERTY PASS_REGULAR_EXPRESSION "--file: File does not exist: nonex.xxx"

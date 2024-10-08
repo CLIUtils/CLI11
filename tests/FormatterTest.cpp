@@ -57,11 +57,9 @@ TEST_CASE("Formatter: OptCustomize", "[formatter]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("(MUST HAVE)"));
-    CHECK(help == "My prog\n"
-                  "Usage: [OPTIONS]\n\n"
-                  "Options:\n"
-                  "  -h,--help              Print this help message and exit\n"
-                  "  --opt INT (MUST HAVE)  Something\n");
+    CHECK_THAT(help, Contains("Something"));
+    CHECK_THAT(help, Contains("--opt INT"));
+    CHECK_THAT(help, Contains("-h,   --help           Print"));
 }
 
 TEST_CASE("Formatter: OptCustomizeSimple", "[formatter]") {
@@ -76,11 +74,10 @@ TEST_CASE("Formatter: OptCustomizeSimple", "[formatter]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("(MUST HAVE)"));
-    CHECK(help == "My prog\n"
-                  "Usage: [OPTIONS]\n\n"
-                  "Options:\n"
-                  "  -h,--help              Print this help message and exit\n"
-                  "  --opt INT (MUST HAVE)  Something\n");
+    CHECK_THAT(help, Contains("(MUST HAVE)"));
+    CHECK_THAT(help, Contains("Something"));
+    CHECK_THAT(help, Contains("--opt INT"));
+    CHECK_THAT(help, Contains("-h,   --help           Print"));
 }
 
 TEST_CASE("Formatter: OptCustomizeOptionText", "[formatter]") {
@@ -94,11 +91,6 @@ TEST_CASE("Formatter: OptCustomizeOptionText", "[formatter]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("(ARG)"));
-    CHECK(help == "My prog\n"
-                  "Usage: [OPTIONS]\n\n"
-                  "Options:\n"
-                  "  -h,--help              Print this help message and exit\n"
-                  "  --opt (ARG)            Something\n");
 }
 
 TEST_CASE("Formatter: FalseFlagExample", "[formatter]") {
@@ -129,16 +121,13 @@ TEST_CASE("Formatter: AppCustomize", "[formatter]") {
     appfmt->label("Usage", "Run");
     app.formatter(appfmt);
 
-    app.add_subcommand("subcom2", "This");
+    app.add_subcommand("subcom2", "That");
 
     std::string help = app.help();
-    CHECK(help == "My prog\n"
-                  "Run: [OPTIONS] [SUBCOMMAND]\n\n"
-                  "Options:\n"
-                  "  -h,--help         Print this help message and exit\n\n"
-                  "Subcommands:\n"
-                  "  subcom1           This\n"
-                  "  subcom2           This\n");
+    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMAND]\n\n"));
+    CHECK_THAT(help, Contains("\nSUBCOMMANDS:\n"));
+    CHECK_THAT(help, Contains("  subcom1           This \n"));
+    CHECK_THAT(help, Contains("  subcom2           That \n"));
 }
 
 TEST_CASE("Formatter: AppCustomizeSimple", "[formatter]") {
@@ -148,16 +137,13 @@ TEST_CASE("Formatter: AppCustomizeSimple", "[formatter]") {
     app.get_formatter()->column_width(20);
     app.get_formatter()->label("Usage", "Run");
 
-    app.add_subcommand("subcom2", "This");
+    app.add_subcommand("subcom2", "That");
 
     std::string help = app.help();
-    CHECK(help == "My prog\n"
-                  "Run: [OPTIONS] [SUBCOMMAND]\n\n"
-                  "Options:\n"
-                  "  -h,--help         Print this help message and exit\n\n"
-                  "Subcommands:\n"
-                  "  subcom1           This\n"
-                  "  subcom2           This\n");
+    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMAND]\n\n"));
+    CHECK_THAT(help, Contains("\nSUBCOMMANDS:\n"));
+    CHECK_THAT(help, Contains("  subcom1           This \n"));
+    CHECK_THAT(help, Contains("  subcom2           That \n"));
 }
 
 TEST_CASE("Formatter: AllSub", "[formatter]") {

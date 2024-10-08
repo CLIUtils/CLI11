@@ -141,9 +141,6 @@ inline std::string trim_copy(const std::string &str, const std::string &filter) 
     std::string s = str;
     return trim(s, filter);
 }
-/// Print a two part "help" string
-CLI11_INLINE std::ostream &
-format_help(std::ostream &out, std::string name, const std::string &description, std::size_t wid);
 
 /// Print subcommand aliases
 CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<std::string> &aliases, std::size_t wid);
@@ -262,6 +259,14 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
 
 /// process a quoted string, remove the quotes and if appropriate handle escaped characters
 CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"', char literal_char = '\'');
+
+/// This function formats the given text as a paragraph with fixed width and applies correct line wrapping
+/// with a custom line prefix. The paragraph will get streamed to the given ostrean.
+CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
+                                                const std::string &text,
+                                                std::size_t paragraphWidth,
+                                                const std::string &linePrefix = "",
+                                                bool skipPrefixOnFirstLine = false);
 
 }  // namespace detail
 
