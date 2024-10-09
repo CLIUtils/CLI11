@@ -292,10 +292,10 @@ jobs:
           cmake-version: "3.13"
         if: success() || failure()
 
-      - name: Check CMake 3.14
+      - name: Check CMake 3.14.7
         uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "3.14"
+          cmake-version: "3.14.7"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
@@ -387,6 +387,6 @@ jobs:
       - name: Check CMake 3.28 (full)
         uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "3.28"
+          cmake-version: "3.28.X"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
