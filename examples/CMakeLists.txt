@@ -251,6 +251,11 @@ add_cli_exe(custom_parse custom_parse.cpp)
 add_test(NAME cp_test COMMAND custom_parse --dv 1.7)
 set_property(TEST cp_test PROPERTY PASS_REGULAR_EXPRESSION "called correct")
 
+#-----------------------------------------------------
+add_cli_exe(help_usage help_usage.cpp)
+add_test(NAME help_use COMMAND help_usage --help)
+set_property(TEST help_use PROPERTY PASS_REGULAR_EXPRESSION "[1..9]")
+
 #------------------------------------------------
 # This executable is for manual testing and is expected to change regularly
 

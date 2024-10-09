@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv) {
     std::string input_file_name, output_file_name;
-    int level, subopt;
+    int level{5}, subopt{0};
 
     // app caption
     CLI::App app{"CLI11 help"};
@@ -47,26 +47,29 @@ int main(int argc, char **argv) {
 
 /*
 $ ./help_usage -h
-CLI11 help
-Usage: help_usage <command> [options] <input-file> <output-file>
+  CLI11 help
 
-Options:
-  -h,--help
+OPTIONS:
+  -h,     --help
 
-Subcommands:
+SUBCOMMANDS:
 e
   encode
-  Positionals:
-    input                       input file
-    output                      output file
-  Options:
-    -l,--level [1..9]           encoding level
-    -K,--remove INT             remove input file
-    -s,--suboption              suboption
+
+POSITIONALS:
+  input                       input file
+  output                      output file
+
+OPTIONS:
+  -l,     --level [1..9]      encoding level
+  -R,     --remove            remove input file
+  -s,     --suboption         suboption
+
 
 d
   decode
-  Positionals:
-    input                       input file
-    output                      output file
+
+POSITIONALS:
+  input                       input file
+  output                      output file
 */

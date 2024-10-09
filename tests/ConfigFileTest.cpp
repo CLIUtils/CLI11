@@ -3189,6 +3189,9 @@ TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
 TEST_CASE_METHOD(TApp, "TomlOutputAppMultiLineDescription", "[config]") {
     app.description("Some short app description.\n"
                     "That has multiple lines.");
+    // for descriptions to show up needs an option that was set
+    app.add_option("--test");
+    args = {"--test", "55"};
     run();
 
     std::string str = app.config_to_str(true, true);
@@ -3376,6 +3379,24 @@ TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
 
     str = app.config_to_str(true);
     CHECK_THAT(str, Contains("simple=7"));
+
+    app.get_config_formatter_base()->commentDefaults();
+    str = app.config_to_str(true);
+    CHECK_THAT(str, Contains("#simple=7"));
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputDefaultRequired", "[config]") {
+
+    int v{7};
+    auto *opt = app.add_option("--simple", v);
+    opt->required()->run_callback_for_default(false);
+
+    std::string str = app.config_to_str(true);
+    CHECK_THAT(str, Contains("simple=\"<REQUIRED>\""));
+
+    opt->required(false);
+    str = app.config_to_str(true);
+    CHECK_THAT(str, Contains("simple=\"\""));
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputSubcom", "[config]") {
@@ -3690,6 +3711,10 @@ TEST_CASE_METHOD(TApp, "IniOutputAppMultiLineDescription", "[config]") {
     app.description("Some short app description.\n"
                     "That has multiple lines.");
     app.config_formatter(std::make_shared<CLI::ConfigINI>());
+
+    // for descriptions to show up needs an option that was set
+    app.add_option("--test");
+    args = {"--test", "66"};
     run();
 
     std::string str = app.config_to_str(true, true);

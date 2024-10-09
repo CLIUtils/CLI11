@@ -551,12 +551,10 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
-                    } else if(opt->get_run_callback_for_default()) {
+                    } else if(opt->get_run_callback_for_default() || !opt->get_required()) {
                         value = "\"\"";  // empty string default value
-                    } else if(opt->get_required()) {
-                        value = "\"<REQUIRED>\"";
                     } else {
-                        value = "\"\"";
+                        value = "\"<REQUIRED>\"";
                     }
                     isDefault = true;
                 }
@@ -584,6 +582,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         }
                     }
                     if(write_description && opt->has_description()) {
+                        if(out.tellp() != std::streampos(0)) {
+                            out << '\n';
+                        }
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
                     clean_name_string(single_name, keyChars);
@@ -592,14 +593,12 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     if(commentDefaultsBool && isDefault) {
                         name = commentChar + name;
                     }
-                    out << name << valueDelimiter << value << "\n\n";
+                    out << name << valueDelimiter << value << '\n';
                 }
             }
         }
     }
-    if(write_description && !out.str().empty()) {
-        out << '\n';
-    }
+
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
@@ -657,13 +656,12 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 
-    std::string outString;
     if(write_description && !out.str().empty()) {
-        outString =
+        std::string outString =
             commentChar + commentLead + detail::fix_newlines(commentChar + commentLead, app->get_description()) + '\n';
+        return outString + out.str();
     }
-
-    return outString + out.str();
+    return out.str();
 }
 // [CLI11:config_inl_hpp:end]
 }  // namespace CLI
