@@ -102,10 +102,12 @@ class ConfigBase : public Config {
     uint8_t maximumLayers{255};
     /// the separator used to separator parent layers
     char parentSeparatorChar{'.'};
-    /// Specify the configuration index to use for arrayed sections
-    int16_t configIndex{-1};
+    /// comment default values
+    bool commentDefaultsBool = false;
     /// specify the config reader should collapse repeated field names to a single vector
     bool allowMultipleDuplicateFields{false};
+    /// Specify the configuration index to use for arrayed sections
+    int16_t configIndex{-1};
     /// Specify the configuration section that should be used
     std::string configSection{};
 
@@ -149,6 +151,11 @@ class ConfigBase : public Config {
     /// Specify the separator to use for parent layers
     ConfigBase *parentSeparator(char sep) {
         parentSeparatorChar = sep;
+        return this;
+    }
+    /// comment default value options
+    ConfigBase *commentDefaults(bool comDef = true) {
+        commentDefaultsBool = comDef;
         return this;
     }
     /// get a reference to the configuration section

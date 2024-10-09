@@ -323,6 +323,10 @@ char literalQuote = '\'';
 uint8_t maximumLayers{255};
 /// the separator used to separator parent layers
 char parentSeparatorChar{'.'};
+/// comment default values
+bool commentDefaultsBool = false;
+/// specify the config reader should collapse repeated field names to a single vector
+bool allowMultipleDuplicateFields{false};
 /// Specify the configuration index to use for arrayed sections
 uint16_t configIndex{0};
 /// Specify the configuration section that should be used
@@ -341,6 +345,10 @@ These can be modified via setter functions
   and value
 - `ConfigBase *quoteCharacter(char qString, char literalChar)` :specify the
   characters to use around strings and single characters
+- `ConfigBase *commentDefaults(bool comDef)` : set to true to comment lines with
+  a default value
+- `ConfigBase *allowDuplicateFields(bool value)` :set to true to allow duplicate
+  fields to be merged even if not sequential
 - `ConfigBase *maxLayers(uint8_t layers)` : specify the maximum number of parent
   layers to process. This is useful to limit processing for larger config files
 - `ConfigBase *parentSeparator(char sep)` : specify the character to separate
@@ -450,8 +458,8 @@ positional, or the environment variable name. When generating a config file it
 will create an option name in following priority.
 
 1. First long name
-2. Positional name
-3. First short name
+2. First short name
+3. Positional name
 4. Environment name
 
 In config files the name will be enclosed in quotes if there is any potential

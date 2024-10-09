@@ -518,9 +518,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     std::vector<std::string> groups = app->get_groups();
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("OPTIONS"));
-    if(write_description && (app->get_configurable() || app->get_parent() == nullptr || app->get_name().empty())) {
-        out << commentLead << detail::fix_newlines(commentLead, app->get_description()) << '\n';
-    }
+
     for(auto &group : groups) {
         if(group == "OPTIONS" || group.empty()) {
             if(defaultUsed) {
@@ -529,10 +527,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
             defaultUsed = true;
         }
         if(write_description && group != "OPTIONS" && !group.empty()) {
-            out << '\n' << commentLead << group << " Options\n";
+            out << '\n' << commentChar << commentLead << group << " Options\n";
         }
         for(const Option *opt : app->get_options({})) {
-
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
@@ -548,14 +545,18 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 std::string value = detail::ini_join(
                     opt->reduced_results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
 
+                bool isDefault = false;
                 if(value.empty() && default_also) {
                     if(!opt->get_default_str().empty()) {
                         value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
-                    } else if(opt->get_run_callback_for_default()) {
+                    } else if(opt->get_run_callback_for_default() || !opt->get_required()) {
                         value = "\"\"";  // empty string default value
+                    } else {
+                        value = "\"<REQUIRED>\"";
                     }
+                    isDefault = true;
                 }
 
                 if(!value.empty()) {
@@ -581,18 +582,23 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         }
                     }
                     if(write_description && opt->has_description()) {
-                        out << '\n';
+                        if(out.tellp() != std::streampos(0)) {
+                            out << '\n';
+                        }
                         out << commentLead << detail::fix_newlines(commentLead, opt->get_description()) << '\n';
                     }
                     clean_name_string(single_name, keyChars);
 
                     std::string name = prefix + single_name;
-
+                    if(commentDefaultsBool && isDefault) {
+                        name = commentChar + name;
+                    }
                     out << name << valueDelimiter << value << '\n';
                 }
             }
         }
     }
+
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
@@ -650,6 +656,11 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
         }
     }
 
+    if(write_description && !out.str().empty()) {
+        std::string outString =
+            commentChar + commentLead + detail::fix_newlines(commentChar + commentLead, app->get_description()) + '\n';
+        return outString + out.str();
+    }
     return out.str();
 }
 // [CLI11:config_inl_hpp:end]
