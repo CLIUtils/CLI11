@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: CMake ${{ inputs.cmake-version }}
-      uses: jwlawson/actions-setup-cmake@v1.14
+      uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: "${{ inputs.cmake-version }}"
     - run: |

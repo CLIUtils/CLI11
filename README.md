@@ -905,10 +905,15 @@ option_groups. These are:
   options are specified in the `add_option` calls or the ability to process
   options in the form of `-s --long --file=file_name.ext`.
 - `.fallthrough()`: Allow extra unmatched options and positionals to "fall
-  through" and be matched on a parent option. Subcommands always are allowed to
-  "fall through" as in they will first attempt to match on the current
+  through" and be matched on a parent option. Subcommands by default are allowed
+  to "fall through" as in they will first attempt to match on the current
   subcommand and if they fail will progressively check parents for matching
-  subcommands.
+  subcommands. This can be disabled through `subcommand_fallthrough(false)` 🚧.
+- `.subcommand_fallthrough()`: 🚧 Allow subcommands to "fall through" and be
+  matched on a parent option. Disabling this prevents additional subcommands at
+  the same level from being matched. It can be useful in certain circumstances
+  where there might be ambiguity between subcommands and positionals. The
+  default is true.
 - `.configurable()`: Allow the subcommand to be triggered from a configuration
   file. By default subcommand options in a configuration file do not trigger a
   subcommand but will just update default values.

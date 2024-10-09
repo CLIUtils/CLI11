@@ -719,10 +719,23 @@ TEST_CASE_METHOD(TApp, "Required1SubCom", "[subcom]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 
     args = {"sub1"};
-    run();
+    CHECK_NOTHROW(run());
 
     args = {"sub1", "sub2"};
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
+TEST_CASE_METHOD(TApp, "subcomNoSubComfallthrough", "[subcom]") {
+    auto *sub1 = app.add_subcommand("sub1");
+    std::vector<std::string> pos;
+    sub1->add_option("args", pos);
+    app.add_subcommand("sub2");
+    app.add_subcommand("sub3");
+    sub1->subcommand_fallthrough(false);
+    CHECK_FALSE(sub1->get_subcommand_fallthrough());
+    args = {"sub1", "sub2", "sub3"};
+    run();
+    CHECK(pos.size() == 2);
 }
 
 TEST_CASE_METHOD(TApp, "BadSubcommandSearch", "[subcom]") {
