@@ -7,9 +7,27 @@ There are two forms of validators:
   mutated)
 
 A transform validator comes in one form, a function with the signature
-`std::string(std::string)`. The function will take a string and return the
-modified version of the string. If there is an error, the function should throw
-a `CLI::ValidationError` with the appropriate reason as a message.
+`std::string(std::string&)`. The function will take a string and return an error
+message, or an empty string if input is valid. If there is an error, the
+function should throw a `CLI::ValidationError` with the appropriate reason as a
+message.
+
+An example of a mutating validator:
+
+```cpp
+auto transform_validator = CLI::Validator(
+        [](std::string &input) {
+            if (input == "error") {
+                return "error is not a valid value";
+            } else if (input == "unexpected") {
+                throw CLI::ValidationError{"Unexpected error"};
+            }
+            input = "new string";
+            return "";
+        }, "VALIDATOR DESCRIPTION", "Validator name");
+
+cli_global.add_option("option")->transform(transform_validator);
+```
 
 However, `check` validators come in two forms; either a simple function with the
 const version of the above signature, `std::string(const std::string &)`, or a
