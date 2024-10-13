@@ -2,7 +2,8 @@
 # meson.build here when generating the single file header so that it is placced
 # in the correct location.
 
-prog_python = find_program('python')
+pymod = import('python')
+prog_python = pymod.find_installation()
 
 single_main_file = files('CLI11.hpp.in')
 
