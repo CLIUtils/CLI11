@@ -28,7 +28,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     }
 
     try {
-        app->parse(parseString.substr(pstring_start, std::string::npos));
+        if (pstring_start > 0)
+        {
+            app->parse(parseString.substr(pstring_start, std::string::npos));
+        }
+        else
+        {
+            app->parse(parseString);
+        }
 
     } catch(const CLI::ParseError &e) {
         //(app)->exit(e);
@@ -39,7 +46,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
-    fuzzdata2.add_custom_options(app2.get(), parseString);
+    if (pstring_start > 0)
+    {
+        fuzzdata2.add_custom_options(app2.get(), parseString);
+    }
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
     if(!result) {

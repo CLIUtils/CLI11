@@ -835,7 +835,7 @@ TEST_CASE_METHOD(TApp, "ForcedSubcommandExclude", "[subcom]") {
     subcommand_1->add_flag_function("-f", [&forced](bool f) { forced = f ? "got true" : "got false"; })
         ->force_callback();
 
-    auto subcommand_2 = app.add_subcommand("sub2");
+    auto* subcommand_2 = app.add_subcommand("sub2");
 
     subcommand_1->excludes(subcommand_2);
 
