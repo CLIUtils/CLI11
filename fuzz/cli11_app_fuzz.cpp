@@ -20,14 +20,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
+    std::size_t pstring_start{0};
     try {
-        auto nstring = fuzzdata.add_custom_options(app.get(), parseString);
+        pstring_start=fuzzdata.add_custom_options(app.get(),parseString);
     } catch(const CLI::ConstructionError &e) {
         return 0;  // Non-zero return values are reserved for future use.
     }
 
     try {
-        app->parse(parseString.substr(nstring,std::string::npos);
+        app->parse(parseString.substr(pstring_start,std::string::npos);
 
     } catch(const CLI::ParseError &e) {
         //(app)->exit(e);
