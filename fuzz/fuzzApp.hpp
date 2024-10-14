@@ -117,7 +117,7 @@ class FuzzApp {
     std::vector<std::string> vstrF{};
     std::string mergeBuffer{};
     std::vector<std::string> validator_strings{};
-    std::vector<std::shared_ptr<std::string>> custom_string_options;
-    std::vector<std::shared_ptr<std::vector<std::string>>> custom_vector_options;
+    std::vector<std::shared_ptr<std::string>> custom_string_options{};
+    std::vector<std::shared_ptr<std::vector<std::string>>> custom_vector_options{};
 };
 }  // namespace CLI
