@@ -252,7 +252,7 @@ TEST_CASE("fuzz_config_test1") {
 
     std::string config_string = "<option>--new_option</option><flag>--new_flag</flag><vector>--new_vector</vector>";
     auto loc = fuzzdata.add_custom_options(app.get(), config_string);
-    config_string = config_string.substr(loc, std::string::npos);
+    config_string = config_string.substr(loc);
     CHECK(config_string.empty());
     CHECK(app->get_option_no_throw("--new_option") != nullptr);
     CHECK(app->get_option_no_throw("--new_flag") != nullptr);
