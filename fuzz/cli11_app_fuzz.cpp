@@ -21,20 +21,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
     try {
-        if(!optionString.empty()) {
-            app->add_option(optionString, fuzzdata.buffer);
-            app2->add_option(optionString, fuzzdata2.buffer);
-        }
-        if(!flagString.empty()) {
-            app->add_flag(flagString, fuzzdata.intbuffer);
-            app2->add_flag(flagString, fuzzdata2.intbuffer);
-        }
+       auto nstring=fuzzdata.add_custom_options(app.get(),parseString);
     } catch(const CLI::ConstructionError &e) {
         return 0;  // Non-zero return values are reserved for future use.
     }
 
     try {
-        app->parse(parseString);
+        app->parse(parseString.substr(nstring,std::string::npos);
 
     } catch(const CLI::ParseError &e) {
         //(app)->exit(e);
@@ -45,6 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
+    fuzzdata2.add_custom_options(app2.get(),parseString);
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
     if(!result) {
