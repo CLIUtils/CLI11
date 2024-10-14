@@ -15,7 +15,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         return 0;
     }
     std::string parseString(reinterpret_cast<const char *>(Data), Size);
-    
+
     CLI::FuzzApp fuzzdata;
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();

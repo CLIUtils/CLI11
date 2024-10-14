@@ -246,17 +246,15 @@ TEST_CASE("app_roundtrip_single") {
     CHECK(result);
 }
 
-
-TEST_CASE("fuzz_config_test1")
-{
+TEST_CASE("fuzz_config_test1") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    std::string config_string="<option>--new_option</option><flag>--new_flag</flag><vector>--new_vector</vector>";
-    auto loc=fuzzdata.add_custom_options(app.get(), config_string);
-    config_string=config_string.substr(loc,std::string::npos);
+    std::string config_string = "<option>--new_option</option><flag>--new_flag</flag><vector>--new_vector</vector>";
+    auto loc = fuzzdata.add_custom_options(app.get(), config_string);
+    config_string = config_string.substr(loc, std::string::npos);
     CHECK(config_string.empty());
-    CHECK(app->get_option_no_throw("--new_option")!=nullptr);
-    CHECK(app->get_option_no_throw("--new_flag")!=nullptr);
-    CHECK(app->get_option_no_throw("--new_vector")!=nullptr);
+    CHECK(app->get_option_no_throw("--new_option") != nullptr);
+    CHECK(app->get_option_no_throw("--new_flag") != nullptr);
+    CHECK(app->get_option_no_throw("--new_vector") != nullptr);
 }

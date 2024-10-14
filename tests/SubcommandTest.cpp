@@ -832,21 +832,16 @@ TEST_CASE_METHOD(TApp, "RequiredPosInSubcommand", "[subcom]") {
 TEST_CASE_METHOD(TApp, "ForcedSubcommandExclude", "[subcom]") {
     auto *subcommand_1 = app.add_subcommand("sub_1");
     std::string forced;
-    subcommand_1
-        ->add_flag_function(
-            "-f",
-            [&forced](bool f) {
-                forced=f?"got true":"got false";
-            })
+    subcommand_1->add_flag_function("-f", [&forced](bool f) { forced = f ? "got true" : "got false"; })
         ->force_callback();
 
     auto subcommand_2 = app.add_subcommand("sub2");
 
     subcommand_1->excludes(subcommand_2);
 
-    args={"sub2"};
+    args = {"sub2"};
     CHECK_NOTHROW(run());
-    CHECK(forced=="got false");
+    CHECK(forced == "got false");
 }
 
 TEST_CASE_METHOD(TApp, "invalidSubcommandName", "[subcom]") {
