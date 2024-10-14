@@ -15,16 +15,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         return 0;
     }
     std::string parseString(reinterpret_cast<const char *>(Data), Size);
-    std::string optionString;
-    std::string flagString;
-    if(parseString.size() > 25) {
-        optionString = parseString.substr(0, 25);
-        parseString.erase(0, 25);
-    }
-    if(parseString.size() > 25) {
-        flagString = parseString.substr(0, 25);
-        parseString.erase(0, 25);
-    }
+    
     CLI::FuzzApp fuzzdata;
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
