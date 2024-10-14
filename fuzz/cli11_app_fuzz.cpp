@@ -21,7 +21,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
     try {
-       auto nstring=fuzzdata.add_custom_options(app.get(),parseString);
+        auto nstring = fuzzdata.add_custom_options(app.get(), parseString);
     } catch(const CLI::ConstructionError &e) {
         return 0;  // Non-zero return values are reserved for future use.
     }
@@ -38,7 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
-    fuzzdata2.add_custom_options(app2.get(),parseString);
+    fuzzdata2.add_custom_options(app2.get(), parseString);
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
     if(!result) {
