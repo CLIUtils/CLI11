@@ -58,7 +58,8 @@ class FuzzApp {
     std::shared_ptr<CLI::App> generateApp();
     /** compare two fuzz apps for equality*/
     CLI11_NODISCARD bool compare(const FuzzApp &other) const;
-
+    /** generate additional options based on a string config*/
+    std::size_t add_custom_options(CLI::App *app, std::string &description_string);
     int32_t val32{0};
     int16_t val16{0};
     int8_t val8{0};
@@ -116,5 +117,7 @@ class FuzzApp {
     std::vector<std::string> vstrF{};
     std::string mergeBuffer{};
     std::vector<std::string> validator_strings{};
+    std::vector<std::shared_ptr<std::string>> custom_string_options{};
+    std::vector<std::shared_ptr<std::vector<std::string>>> custom_vector_options{};
 };
 }  // namespace CLI

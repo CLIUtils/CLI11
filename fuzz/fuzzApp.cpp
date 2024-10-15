@@ -291,6 +291,82 @@ bool FuzzApp::compare(const FuzzApp &other) const {
     if(validator_strings != other.validator_strings) {
         return false;
     }
+    // now test custom string_options
+    if(custom_string_options.size() != other.custom_string_options.size()) {
+        return false;
+    }
+    for(std::size_t ii = 0; ii < custom_string_options.size(); ++ii) {
+        if(*custom_string_options[ii] != *other.custom_string_options[ii]) {
+            return false;
+        }
+    }
+    // now test custom vector_options
+    if(custom_vector_options.size() != other.custom_vector_options.size()) {
+        return false;
+    }
+    for(std::size_t ii = 0; ii < custom_vector_options.size(); ++ii) {
+        if(*custom_vector_options[ii] != *other.custom_vector_options[ii]) {
+            return false;
+        }
+    }
     return true;
 }
+
+//<option>name_string</option>
+//<vector>name_string</vector>
+//<flag>name_string</flag>
+/** generate additional options based on a string config*/
+std::size_t FuzzApp::add_custom_options(CLI::App *app, std::string &description_string) {
+    std::size_t current_index{0};
+    while(description_string.size() - 5 > current_index && description_string[current_index] == '<') {
+        if(description_string.compare(current_index, 7, "<option") == 0) {
+            auto end_option = description_string.find("</option>", current_index + 8);
+            if(end_option == std::string::npos) {
+                break;
+            }
+            auto header_close = description_string.find_last_of('>', end_option);
+            if(header_close == std::string::npos || header_close < current_index) {
+                break;
+            }
+            std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
+            custom_string_options.push_back(std::make_shared<std::string>());
+            app->add_option(name, *(custom_string_options.back()));
+            current_index = end_option + 9;
+        } else if(description_string.compare(current_index, 5, "<flag") == 0) {
+            auto end_option = description_string.find("</flag>", current_index + 6);
+            if(end_option == std::string::npos) {
+                break;
+            }
+            auto header_close = description_string.find_last_of('>', end_option);
+            if(header_close == std::string::npos || header_close < current_index) {
+                break;
+            }
+            std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
+            custom_string_options.push_back(std::make_shared<std::string>());
+            app->add_option(name, *(custom_string_options.back()));
+            current_index = end_option + 7;
+        } else if(description_string.compare(current_index, 7, "<vector") == 0) {
+            auto end_option = description_string.find("</vector>", current_index + 8);
+            if(end_option == std::string::npos) {
+                break;
+            }
+            auto header_close = description_string.find_last_of('>', end_option);
+            if(header_close == std::string::npos || header_close < current_index) {
+                break;
+            }
+            std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
+            custom_vector_options.push_back(std::make_shared<std::vector<std::string>>());
+            app->add_option(name, *(custom_string_options.back()));
+            current_index = end_option + 9;
+        } else {
+            if(isspace(description_string[current_index]) != 0) {
+                ++current_index;
+            } else {
+                break;
+            }
+        }
+    }
+    return current_index;
+}
+
 }  // namespace CLI
