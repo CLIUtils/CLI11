@@ -260,6 +260,9 @@ class App {
     /// This is potentially useful as a modifier subcommand
     bool silent_{false};
 
+    /// indicator that the subcommand should allow non-standard option arguments, such as -single_dash_flag
+    bool allow_non_standard_options_{false};
+
     /// Counts the number of times this command/subcommand was parsed
     std::uint32_t parsed_{0U};
 
@@ -389,6 +392,12 @@ class App {
     /// silence the subcommand from showing up in the processed list
     App *silent(bool silence = true) {
         silent_ = silence;
+        return this;
+    }
+
+    /// allow non standard option names
+    App *allow_non_standard_option_names(bool allowed = true) {
+        allow_non_standard_options_ = allowed;
         return this;
     }
 
@@ -1145,6 +1154,9 @@ class App {
 
     /// Get the status of silence
     CLI11_NODISCARD bool get_silent() const { return silent_; }
+
+    /// Get the status of silence
+    CLI11_NODISCARD bool get_allow_non_standard_option_names() const { return allow_non_standard_options_; }
 
     /// Get the status of disabled
     CLI11_NODISCARD bool get_immediate_callback() const { return immediate_callback_; }
