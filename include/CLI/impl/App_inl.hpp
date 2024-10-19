@@ -16,11 +16,11 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -213,8 +213,8 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                         std::string test_name;
                         test_name.push_back(osn.front());
                         if(myopt.check_sname(test_name)) {
-                            throw(
-                                OptionAlreadyAdded("added option interferes with existing non standard option: " + osn));
+                            throw(OptionAlreadyAdded("added option interferes with existing non standard option: " +
+                                                     osn));
                         }
                     }
                 }

@@ -18,11 +18,11 @@
 
 #include <array>
 #include <chrono>
+#include <cstdio>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <utility>
-#include <cstdio>
 
 namespace CLI {
 

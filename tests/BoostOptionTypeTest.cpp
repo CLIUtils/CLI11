@@ -13,9 +13,9 @@
 #include <boost/container/static_vector.hpp>
 #include <boost/container/vector.hpp>
 #include <string>
-#include <vector>
-#include <utility>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace boost::container;
 
