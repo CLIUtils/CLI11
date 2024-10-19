@@ -161,7 +161,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                                      std::string option_description,
                                      bool defaulted,
                                      std::function<std::string()> func) {
-    Option myopt{option_name, option_description, option_callback, this,allow_non_standard_options_};
+    Option myopt{option_name, option_description, option_callback, this, allow_non_standard_options_};
 
     if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; }) ==
        std::end(options_)) {
@@ -191,12 +191,9 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                 }
             }
         }
-        if (allow_non_standard_options_ && !myopt.snames_.empty())
-        {
-            for (auto& sname : myopt.snames_)
-            {
-                if (sname.length() > 1)
-                {
+        if(allow_non_standard_options_ && !myopt.snames_.empty()) {
+            for(auto &sname : myopt.snames_) {
+                if(sname.length() > 1) {
                     std::string test_name;
                     test_name.push_back('-');
                     test_name.push_back(sname.front());
@@ -206,20 +203,17 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                     }
                 }
             }
-            for (auto& opt : options_)
-            {
-                if (opt->snames_.empty()) {
+            for(auto &opt : options_) {
+                if(opt->snames_.empty()) {
                     continue;
                 }
-                for (auto osn : opt->snames_)
-                {
-                    if (osn.size() > 1)
-                    {
+                for(auto osn : opt->snames_) {
+                    if(osn.size() > 1) {
                         std::string test_name;
                         test_name.push_back(osn.front());
-                        if (myopt.check_sname(test_name))
-                        {
-                            throw(OptionAlreadyAdded("added option interfers with existing non standard option: " + osn));
+                        if(myopt.check_sname(test_name)) {
+                            throw(
+                                OptionAlreadyAdded("added option interfers with existing non standard option: " + osn));
                         }
                     }
                 }
@@ -227,7 +221,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
         }
         options_.emplace_back();
         Option_p &option = options_.back();
-        option.reset(new Option(option_name, option_description, option_callback, this,allow_non_standard_options_));
+        option.reset(new Option(option_name, option_description, option_callback, this, allow_non_standard_options_));
 
         // Set the default string capture function
         option->default_function(func);
@@ -1923,7 +1917,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
 
     // Option not found
     while(op_ptr == std::end(options_)) {
-        //using while so we can break
+        // using while so we can break
         for(auto &subc : subcommands_) {
             if(subc->name_.empty() && !subc->disabled_) {
                 if(subc->_parse_arg(args, current_type, local_processing_only)) {
@@ -1934,17 +1928,16 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                 }
             }
         }
-        if (allow_non_standard_options_ && current_type == detail::Classifier::SHORT && current.size() > 2)
-        {
+        if(allow_non_standard_options_ && current_type == detail::Classifier::SHORT && current.size() > 2) {
             std::string narg_name;
             std::string nvalue;
             detail::split_long(std::string{'-'} + current, narg_name, nvalue);
             op_ptr = std::find_if(std::begin(options_), std::end(options_), [narg_name](const Option_p &opt) {
                 return opt->check_sname(narg_name);
-                });
-            if (op_ptr != std::end(options_)) {
-                arg_name=narg_name;
-                value=nvalue;
+            });
+            if(op_ptr != std::end(options_)) {
+                arg_name = narg_name;
+                value = nvalue;
                 rest.clear();
                 break;
             }

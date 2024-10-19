@@ -2392,7 +2392,7 @@ TEST_CASE_METHOD(TApp, "OrderedModifyingTransforms", "[app]") {
 // non standard options
 TEST_CASE_METHOD(TApp, "nonStandardOptions", "[app]") {
     std::string string1;
-    CHECK_THROWS_AS( app.add_option("-single", string1),CLI::BadNameString);
+    CHECK_THROWS_AS(app.add_option("-single", string1), CLI::BadNameString);
     app.allow_non_standard_option_names();
     CHECK(app.get_allow_non_standard_option_names());
     app.add_option("-single", string1);
@@ -2400,36 +2400,32 @@ TEST_CASE_METHOD(TApp, "nonStandardOptions", "[app]") {
 
     run();
 
-    CHECK(string1=="string1");
-   
+    CHECK(string1 == "string1");
 }
 
 TEST_CASE_METHOD(TApp, "nonStandardOptions2", "[app]") {
     std::vector<std::string> strings;
     app.allow_non_standard_option_names();
     app.add_option("-single,--single,-m", strings);
-    args = {"-single", "string1","--single","string2"};
+    args = {"-single", "string1", "--single", "string2"};
 
     run();
 
     CHECK(strings == std::vector<std::string>{"string1", "string2"});
-
 }
 
 TEST_CASE_METHOD(TApp, "nonStandardOptionsIntersect", "[app]") {
     std::vector<std::string> strings;
     app.allow_non_standard_option_names();
     app.add_option("-s,-t");
-    CHECK_THROWS_AS(app.add_option("-single,--single", strings),CLI::OptionAlreadyAdded);
-   
+    CHECK_THROWS_AS(app.add_option("-single,--single", strings), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "nonStandardOptionsIntersect2", "[app]") {
     std::vector<std::string> strings;
     app.allow_non_standard_option_names();
     app.add_option("-single,--single", strings);
-    CHECK_THROWS_AS( app.add_option("-s,-t"),CLI::OptionAlreadyAdded);
-
+    CHECK_THROWS_AS(app.add_option("-s,-t"), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "ThrowingTransform", "[app]") {
