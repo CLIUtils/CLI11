@@ -22,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <cstdio>
 
 namespace CLI {
 

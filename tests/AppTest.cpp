@@ -13,6 +13,9 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
+#include <string>
+#include <vector>
+#include <utility>
 
 TEST_CASE_METHOD(TApp, "OneFlagShort", "[app]") {
     app.add_flag("-c,--count");

@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -199,7 +200,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                     test_name.push_back(sname.front());
                     auto *op = get_option_no_throw(test_name);
                     if(op != nullptr) {
-                        throw(OptionAlreadyAdded("added option interfers with existing short option: " + sname));
+                        throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
                     }
                 }
             }
@@ -213,7 +214,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                         test_name.push_back(osn.front());
                         if(myopt.check_sname(test_name)) {
                             throw(
-                                OptionAlreadyAdded("added option interfers with existing non standard option: " + osn));
+                                OptionAlreadyAdded("added option interferes with existing non standard option: " + osn));
                         }
                     }
                 }

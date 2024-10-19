@@ -9,6 +9,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 // example file to demonstrate a custom lexical cast function
 
