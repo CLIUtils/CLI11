@@ -16,8 +16,8 @@
 #include <fstream>
 #include <set>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 TEST_CASE("THelp: Basic", "[help]") {
     CLI::App app{"My prog"};

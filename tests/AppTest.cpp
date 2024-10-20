@@ -677,7 +677,6 @@ TEST_CASE_METHOD(TApp, "singledash", "[app]") {
     }
 }
 
-
 TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {
     bool val{false};
     auto *opt = app.add_option("--flag", val)->type_size(0)->default_str("true");

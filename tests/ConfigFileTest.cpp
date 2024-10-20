@@ -8,11 +8,11 @@
 
 #include <cstdio>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <set>
 
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
