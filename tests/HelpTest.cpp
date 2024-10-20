@@ -17,6 +17,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 
 TEST_CASE("THelp: Basic", "[help]") {
     CLI::App app{"My prog"};

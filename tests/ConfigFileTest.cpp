@@ -12,6 +12,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <set>
 
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 

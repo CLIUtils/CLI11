@@ -666,7 +666,17 @@ TEST_CASE_METHOD(TApp, "singledash", "[app]") {
     } catch(...) {
         CHECK(false);
     }
+    app.allow_non_standard_option_names();
+    try {
+        app.add_option("-!I{am}bad");
+    } catch(const CLI::BadNameString &e) {
+        std::string str = e.what();
+        CHECK_THAT(str, Contains("!I{am}bad"));
+    } catch(...) {
+        CHECK(false);
+    }
 }
+
 
 TEST_CASE_METHOD(TApp, "FlagLikeOption", "[app]") {
     bool val{false};

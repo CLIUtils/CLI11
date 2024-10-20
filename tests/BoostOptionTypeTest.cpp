@@ -17,21 +17,14 @@
 #include <utility>
 #include <vector>
 
-using small_vector = boost::container::small_vector;
-using flat_set = boost::container::flat_set;
-using flat_map = boost::container::flat_map;
-using slist = boost::container::slist;
-using stable_vector = boost::container::stable_vector;
-using static_vector = boost::container::static_vector;
-using vector = boost::container::vector;
 
 TEMPLATE_TEST_CASE("Boost container single",
                    "[boost][optional]",
-                   (small_vector<int, 2>),
-                   (small_vector<int, 3>),
-                   flat_set<int>,
-                   stable_vector<int>,
-                   slist<int>) {
+                   (boost::container::small_vector<int, 2>),
+                   (boost::container::small_vector<int, 3>),
+    boost::container::flat_set<int>,
+    boost::container::stable_vector<int>,
+    boost::container::slist<int>) {
     TApp tapp;
     TestType cv;
     CLI::Option *opt = tapp.app.add_option("-v", cv);
@@ -53,12 +46,12 @@ using isp = std::pair<int, std::string>;
 
 TEMPLATE_TEST_CASE("Boost container pair",
                    "[boost][optional]",
-                   stable_vector<isp>,
-                   (small_vector<isp, 2>),
-                   flat_set<isp>,
-                   slist<isp>,
-                   vector<isp>,
-                   (flat_map<int, std::string>)) {
+    boost::container::stable_vector<isp>,
+                   (boost::container::small_vector<isp, 2>),
+    boost::container::flat_set<isp>,
+    boost::container::slist<isp>,
+    boost::container::vector<isp>,
+                   (boost::container::flat_map<int, std::string>)) {
 
     TApp tapp;
     TestType cv;
@@ -79,10 +72,10 @@ using tup_obj = std::tuple<int, std::string, double>;
 
 TEMPLATE_TEST_CASE("Boost container tuple",
                    "[boost][optional]",
-                   (small_vector<tup_obj, 3>),
-                   stable_vector<tup_obj>,
-                   flat_set<tup_obj>,
-                   slist<tup_obj>) {
+                   (boost::container::small_vector<tup_obj, 3>),
+    boost::container::stable_vector<tup_obj>,
+    boost::container::flat_set<tup_obj>,
+    boost::container::slist<tup_obj>) {
     TApp tapp;
     TestType cv;
 
@@ -98,24 +91,24 @@ TEMPLATE_TEST_CASE("Boost container tuple",
     CHECK(3u == cv.size());
 }
 
-using icontainer1 = vector<int>;
-using icontainer2 = flat_set<int>;
-using icontainer3 = slist<int>;
+using icontainer1 = boost::container::vector<int>;
+using icontainer2 = boost::container::flat_set<int>;
+using icontainer3 = boost::container::slist<int>;
 
 TEMPLATE_TEST_CASE("Boost container container",
                    "[boost][optional]",
                    std::vector<icontainer1>,
-                   slist<icontainer1>,
-                   flat_set<icontainer1>,
-                   (small_vector<icontainer1, 2>),
+    boost::container::slist<icontainer1>,
+    boost::container::flat_set<icontainer1>,
+                   (boost::container::small_vector<icontainer1, 2>),
                    std::vector<icontainer2>,
-                   slist<icontainer2>,
-                   flat_set<icontainer2>,
-                   stable_vector<icontainer2>,
-                   (static_vector<icontainer2, 10>),
-                   slist<icontainer3>,
-                   flat_set<icontainer3>,
-                   (static_vector<icontainer3, 10>)) {
+    boost::container::slist<icontainer2>,
+    boost::container::flat_set<icontainer2>,
+    boost::container::stable_vector<icontainer2>,
+                   (boost::container::static_vector<icontainer2, 10>),
+    boost::container::slist<icontainer3>,
+    boost::container::flat_set<icontainer3>,
+                   (boost::container::static_vector<icontainer3, 10>)) {
 
     TApp tapp;
     TestType cv;
