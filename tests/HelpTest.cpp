@@ -290,6 +290,21 @@ TEST_CASE("THelp: OptionalPositionalAndOptions", "[help]") {
     CHECK_THAT(help, Contains("AnotherProgram [OPTIONS] [something]"));
 }
 
+
+TEST_CASE("THelp: NonStandardOptions", "[help]") {
+    CLI::App app{"My prog", "nonstandard"};
+    app.allow_non_standard_option_names();
+    app.add_flag("-q,--quick");
+    app.add_flag("-slow");
+    app.add_option("--fast,-not-slow","a description of what is");
+    std::string x;
+    app.add_option("something", x, "My option here");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("-not-slow"));
+}
+
 TEST_CASE("THelp: RequiredPositionalAndOptions", "[help]") {
     CLI::App app{"My prog"};
     app.add_flag("-q,--quick");
