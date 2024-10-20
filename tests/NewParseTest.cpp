@@ -9,6 +9,8 @@
 #include <complex>
 #include <cstdint>
 #include <utility>
+#include <string>
+#include <vector>
 
 using cx = std::complex<double>;
 

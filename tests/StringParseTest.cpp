@@ -8,6 +8,7 @@
 
 #include <cstdio>
 #include <sstream>
+#include <string>
 
 TEST_CASE_METHOD(TApp, "ExistingExeCheck", "[stringparse]") {
 

@@ -17,7 +17,14 @@
 #include <utility>
 #include <vector>
 
-using namespace boost::container;
+
+using small_vector=boost::container::small_vector;
+using flat_set=boost::container::flat_set;
+using flat_map=boost::container::flat_map;
+using slist=boost::container::slist;
+using stable_vector=boost::container::stable_vector;
+using static_vector=boost::container::static_vector;
+using vector=boost::container::vector;
 
 TEMPLATE_TEST_CASE("Boost container single",
                    "[boost][optional]",

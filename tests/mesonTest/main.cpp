@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include <CLI/CLI.hpp>
+#include <string>
 
 int main(int argc, char **argv) {
     CLI::App app{"App description"};

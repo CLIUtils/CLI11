@@ -6,6 +6,8 @@
 
 #include "app_helper.hpp"
 #include <cstdlib>
+#include <string>
+#include <vector>
 
 TEST_CASE_METHOD(TApp, "AddingExistingShort", "[creation]") {
     CLI::Option *opt = app.add_flag("-c,--count");

@@ -14,6 +14,9 @@
 
 #include "catch.hpp"
 #include <fstream>
+#include <set>
+#include <vector>
+#include <string>
 
 TEST_CASE("THelp: Basic", "[help]") {
     CLI::App app{"My prog"};

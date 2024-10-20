@@ -24,6 +24,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <string>
+#include <tuple>
+#include <limits>
 
 using Catch::literals::operator"" _a;
 

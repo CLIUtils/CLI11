@@ -12,6 +12,12 @@
 #include <chrono>
 #include <cstdint>
 #include <unordered_map>
+#include <string>
+#include <utility>
+#include <map>
+#include <vector>
+#include <memory>
+
 
 #if defined(CLI11_CPP17)
 #if defined(__has_include)
@@ -78,7 +84,7 @@ TEST_CASE_METHOD(TApp, "EnumTransform", "[transform]") {
     // transformer doesn't do any checking so this still works
     args = {"-s", "5"};
     run();
-    CHECK(std::int16_t(5) == static_cast<std::int16_t>(value));
+    CHECK(static_cast<std::int16_t>(5) == static_cast<std::int16_t>(value));
 }
 
 TEST_CASE_METHOD(TApp, "EnumCheckedTransform", "[transform]") {

@@ -6,6 +6,8 @@
 
 #include "../fuzz/fuzzApp.hpp"
 #include "app_helper.hpp"
+#include <string>
+#include <vector>
 
 std::string loadFailureFile(const std::string &type, int index) {
     std::string fileName(TEST_FILE_FOLDER "/fuzzFail/");
