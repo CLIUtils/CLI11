@@ -208,7 +208,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                 if(opt->snames_.empty()) {
                     continue;
                 }
-                for(const auto& osn : opt->snames_) {
+                for(const auto &osn : opt->snames_) {
                     if(osn.size() > 1) {
                         std::string test_name;
                         test_name.push_back(osn.front());

@@ -11,13 +11,12 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
-#include <unordered_map>
-#include <string>
-#include <utility>
 #include <map>
-#include <vector>
 #include <memory>
-
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #if defined(CLI11_CPP17)
 #if defined(__has_include)

@@ -8,10 +8,10 @@
 
 #include "catch.hpp"
 #include <chrono>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
-#include <iostream>
 
 TEST_CASE("Timer: MSTimes", "[timer]") {
     CLI::Timer timer{"My Timer"};

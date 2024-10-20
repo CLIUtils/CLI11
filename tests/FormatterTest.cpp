@@ -12,8 +12,8 @@
 
 #include "catch.hpp"
 #include <fstream>
-#include <string>
 #include <memory>
+#include <string>
 
 class SimpleFormatter : public CLI::FormatterBase {
   public:

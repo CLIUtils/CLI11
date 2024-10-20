@@ -7,11 +7,11 @@
 #include "app_helper.hpp"
 
 #include <cstdio>
-#include <sstream>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <tuple>
 #include <vector>
-#include <string>
 
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
