@@ -158,10 +158,6 @@ installation fuss.
 There are some other possible "features" that are intentionally not supported by
 this library:
 
-- Non-standard variations on syntax, like `-long` options are not supported by
-  default. 🚧 There is a new option to allow this syntax but in general our
-  opinion is these should be avoided except for backwards compatibility with
-  existing applications.
 - Completion of partial options, such as Python's `argparse` supplies for
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
@@ -910,9 +906,9 @@ option_groups. These are:
   form option names. This is not recommended but is available to enable
   reworking of existing interfaces. If this modifier is enabled on an app or
   subcommand, options or flags can be specified like normal but instead of
-  throwing an exception long form single dash option names will be allowed. It
+  throwing an exception, long form single dash option names will be allowed. It
   is not allowed to have a single character short option starting with the same
-  character as a single dash long form name for example `-s` and `-single` are
+  character as a single dash long form name; for example, `-s` and `-single` are
   not allowed in the same application.
 - `.fallthrough()`: Allow extra unmatched options and positionals to "fall
   through" and be matched on a parent option. Subcommands by default are allowed
