@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <string>
 
 TEST_CASE_METHOD(TApp, "True Bool Option", "[bool][flag]") {
     // Strings needed here due to MSVC 2015.

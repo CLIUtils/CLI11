@@ -6,6 +6,10 @@
 
 #include "app_helper.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 using vs_t = std::vector<std::string>;
 
 TEST_CASE_METHOD(TApp, "BasicOptionGroup", "[optiongroup]") {

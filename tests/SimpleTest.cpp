@@ -11,6 +11,8 @@
 #endif
 
 #include "catch.hpp"
+#include <string>
+#include <vector>
 
 using input_t = std::vector<std::string>;
 

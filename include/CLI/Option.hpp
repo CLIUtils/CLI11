@@ -341,9 +341,13 @@ class Option : public OptionBase<Option> {
     ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
-    Option(std::string option_name, std::string option_description, callback_t callback, App *parent)
+    Option(std::string option_name,
+           std::string option_description,
+           callback_t callback,
+           App *parent,
+           bool allow_non_standard = false)
         : description_(std::move(option_description)), parent_(parent), callback_(std::move(callback)) {
-        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name));
+        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name), allow_non_standard);
     }
 
   public:

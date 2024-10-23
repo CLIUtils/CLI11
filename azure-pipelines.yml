@@ -22,7 +22,7 @@ jobs:
   - job: CppLint
     pool:
       vmImage: "ubuntu-latest"
-    container: sharaku/cpplint:latest
+    container: helics/buildenv:cpplint
     steps:
       - bash: cpplint --counting=detailed --recursive examples include/CLI tests
         displayName: Checking against google style guide

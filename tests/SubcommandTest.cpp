@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 using vs_t = std::vector<std::string>;
 

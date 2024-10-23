@@ -7,6 +7,7 @@
 #include <CLI/CLI.hpp>
 #include <algorithm>
 #include <iostream>
+#include <string>
 #include <tuple>
 #include <vector>
 

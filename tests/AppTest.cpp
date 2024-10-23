@@ -13,6 +13,9 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 TEST_CASE_METHOD(TApp, "OneFlagShort", "[app]") {
     app.add_flag("-c,--count");
@@ -660,6 +663,15 @@ TEST_CASE_METHOD(TApp, "singledash", "[app]") {
         std::string str = e.what();
         CHECK_THAT(str, Contains("one char"));
         CHECK_THAT(str, Contains("-!"));
+    } catch(...) {
+        CHECK(false);
+    }
+    app.allow_non_standard_option_names();
+    try {
+        app.add_option("-!I{am}bad");
+    } catch(const CLI::BadNameString &e) {
+        std::string str = e.what();
+        CHECK_THAT(str, Contains("!I{am}bad"));
     } catch(...) {
         CHECK(false);
     }
@@ -2387,6 +2399,45 @@ TEST_CASE_METHOD(TApp, "OrderedModifyingTransforms", "[app]") {
     run();
 
     CHECK(std::vector<std::string>({"one21", "two21"}) == val);
+}
+
+// non standard options
+TEST_CASE_METHOD(TApp, "nonStandardOptions", "[app]") {
+    std::string string1;
+    CHECK_THROWS_AS(app.add_option("-single", string1), CLI::BadNameString);
+    app.allow_non_standard_option_names();
+    CHECK(app.get_allow_non_standard_option_names());
+    app.add_option("-single", string1);
+    args = {"-single", "string1"};
+
+    run();
+
+    CHECK(string1 == "string1");
+}
+
+TEST_CASE_METHOD(TApp, "nonStandardOptions2", "[app]") {
+    std::vector<std::string> strings;
+    app.allow_non_standard_option_names();
+    app.add_option("-single,--single,-m", strings);
+    args = {"-single", "string1", "--single", "string2"};
+
+    run();
+
+    CHECK(strings == std::vector<std::string>{"string1", "string2"});
+}
+
+TEST_CASE_METHOD(TApp, "nonStandardOptionsIntersect", "[app]") {
+    std::vector<std::string> strings;
+    app.allow_non_standard_option_names();
+    app.add_option("-s,-t");
+    CHECK_THROWS_AS(app.add_option("-single,--single", strings), CLI::OptionAlreadyAdded);
+}
+
+TEST_CASE_METHOD(TApp, "nonStandardOptionsIntersect2", "[app]") {
+    std::vector<std::string> strings;
+    app.allow_non_standard_option_names();
+    app.add_option("-single,--single", strings);
+    CHECK_THROWS_AS(app.add_option("-s,-t"), CLI::OptionAlreadyAdded);
 }
 
 TEST_CASE_METHOD(TApp, "ThrowingTransform", "[app]") {

@@ -158,8 +158,6 @@ installation fuss.
 There are some other possible "features" that are intentionally not supported by
 this library:
 
-- Non-standard variations on syntax, like `-long` options. This is non-standard
-  and should be avoided, so that is enforced by this library.
 - Completion of partial options, such as Python's `argparse` supplies for
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
@@ -904,6 +902,14 @@ option_groups. These are:
   the form of `/s /long /file:file_name.ext` This option does not change how
   options are specified in the `add_option` calls or the ability to process
   options in the form of `-s --long --file=file_name.ext`.
+- `.allow_non_standard_option_names()`:🚧 Allow specification of single `-` long
+  form option names. This is not recommended but is available to enable
+  reworking of existing interfaces. If this modifier is enabled on an app or
+  subcommand, options or flags can be specified like normal but instead of
+  throwing an exception, long form single dash option names will be allowed. It
+  is not allowed to have a single character short option starting with the same
+  character as a single dash long form name; for example, `-s` and `-single` are
+  not allowed in the same application.
 - `.fallthrough()`: Allow extra unmatched options and positionals to "fall
   through" and be matched on a parent option. Subcommands by default are allowed
   to "fall through" as in they will first attempt to match on the current
