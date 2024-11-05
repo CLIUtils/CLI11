@@ -478,39 +478,40 @@ TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
 }
 
 TEST_CASE_METHOD(TApp, "PairDefault", "[app]") {
-    std::pair<double, std::string> pr{ 57.5,"test" };
-    auto *opt = app.add_option("-i", pr)->expected(0,2);
+    std::pair<double, std::string> pr{57.5, "test"};
+    auto *opt = app.add_option("-i", pr)->expected(0, 2);
     args = {"-i"};
     run();
     CHECK(app.count("-i") == 1u);
 
-    std::pair<double, std::string> pr2{ 92.5,"t2" };
+    std::pair<double, std::string> pr2{92.5, "t2"};
     opt->default_val(pr2);
     run();
     CHECK(pr == pr2);
 }
 
 TEST_CASE_METHOD(TApp, "TupleDefault", "[app]") {
-    std::tuple<double, std::string,int, std::string> pr{ 57.5,"test", 5, "total"};
+    std::tuple<double, std::string, int, std::string> pr{57.5, "test", 5, "total"};
     auto *opt = app.add_option("-i", pr)->expected(0, 4);
     args = {"-i"};
     run();
     CHECK(app.count("-i") == 1u);
 
-    std::tuple<double, std::string,int, std::string> pr2{ 99.5,"test2", 87, "total3"};
+    std::tuple<double, std::string, int, std::string> pr2{99.5, "test2", 87, "total3"};
     opt->default_val(pr2);
     run();
     CHECK(pr == pr2);
 }
 
 TEST_CASE_METHOD(TApp, "TupleComplex", "[app]") {
-    std::tuple<double, std::string, int, std::pair<std::string, std::string>> pr{ 57.5,"test", 5, {"total","total2"} };
+    std::tuple<double, std::string, int, std::pair<std::string, std::string>> pr{57.5, "test", 5, {"total", "total2"}};
     auto *opt = app.add_option("-i", pr)->expected(0, 4);
     args = {"-i"};
     run();
     CHECK(app.count("-i") == 1u);
 
-    std::tuple<double, std::string, int, std::pair<std::string, std::string>> pr2{ 99.5,"test2", 87, {"total3","total4"} };
+    std::tuple<double, std::string, int, std::pair<std::string, std::string>> pr2{
+        99.5, "test2", 87, {"total3", "total4"}};
     opt->default_val(pr2);
     run();
     CHECK(pr == pr2);

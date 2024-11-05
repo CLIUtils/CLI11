@@ -662,7 +662,7 @@ CLI11_INLINE std::string Option::_validate(std::string &result, int index) const
 
 CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::string> &res) const {
     int result_count = 0;
-    if((allow_extra_args_ || get_expected_max()>1) && !result.empty() && result.front() == '[' &&
+    if((allow_extra_args_ || get_expected_max() > 1) && !result.empty() && result.front() == '[' &&
        result.back() == ']') {  // this is now a vector string likely from the default or user entry
         result.pop_back();
 
