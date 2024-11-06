@@ -71,25 +71,24 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
     std::string desc = app->get_description();
     auto min_options = app->get_require_option_min();
     auto max_options = app->get_require_option_max();
-    if(app->get_required()) {
+
+    if (app->get_required()) {
         desc += " " + get_label("REQUIRED") + " ";
     }
-    if((max_options == min_options) && (min_options > 0)) {
-        if(min_options == 1) {
-            desc += " \n[Exactly 1 of the following options is required]";
-        } else {
-            desc += " \n[Exactly " + std::to_string(min_options) + " options from the following list are required]";
-        }
-    } else if(max_options > 0) {
-        if(min_options > 0) {
+
+    if (min_options > 0) {
+        if (max_options == min_options) {
+            desc += " \n[Exactly " + std::to_string(min_options) + " of the following options are required]";
+        } else if (max_options > 0) {
             desc += " \n[Between " + std::to_string(min_options) + " and " + std::to_string(max_options) +
-                    " of the follow options are required]";
+                    " of the following options are required]";
         } else {
-            desc += " \n[At most " + std::to_string(max_options) + " of the following options are allowed]";
+            desc += " \n[At least " + std::to_string(min_options) + " of the following options are required]";
         }
-    } else if(min_options > 0) {
-        desc += " \n[At least " + std::to_string(min_options) + " of the following options are required]";
+    } else if (max_options > 0) {
+        desc += " \n[At most " + std::to_string(max_options) + " of the following options are allowed]";
     }
+
     return (!desc.empty()) ? desc + "\n" : std::string{};
 }
 
