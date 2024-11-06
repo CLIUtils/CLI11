@@ -72,20 +72,20 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
     auto min_options = app->get_require_option_min();
     auto max_options = app->get_require_option_max();
 
-    if (app->get_required()) {
+    if(app->get_required()) {
         desc += " " + get_label("REQUIRED") + " ";
     }
 
-    if (min_options > 0) {
-        if (max_options == min_options) {
+    if(min_options > 0) {
+        if(max_options == min_options) {
             desc += " \n[Exactly " + std::to_string(min_options) + " of the following options are required]";
-        } else if (max_options > 0) {
+        } else if(max_options > 0) {
             desc += " \n[Between " + std::to_string(min_options) + " and " + std::to_string(max_options) +
                     " of the following options are required]";
         } else {
             desc += " \n[At least " + std::to_string(min_options) + " of the following options are required]";
         }
-    } else if (max_options > 0) {
+    } else if(max_options > 0) {
         desc += " \n[At most " + std::to_string(max_options) + " of the following options are allowed]";
     }
 
