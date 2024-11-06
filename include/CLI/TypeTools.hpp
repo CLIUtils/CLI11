@@ -415,7 +415,6 @@ inline std::string to_string(T &&variable) {
     return {"[" + detail::join(defaults) + "]"};
 }
 
-
 /// Empty string if the index > tuple size
 template <typename T, std::size_t I>
 inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/) {
