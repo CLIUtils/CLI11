@@ -358,20 +358,13 @@ std::string to_string(T &&value) {
 
 /// Convert a tuple like object to a string
 
-/// Empty string if the index > tuple size
+/// forward declarations for tuple_value_strings
 template <typename T, std::size_t I>
-inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/) {
-    return std::string{};
-}
+inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/);
 
 /// Recursively generate the tuple value string
 template <typename T, std::size_t I>
-inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value) {
-    auto str = std::string{to_string(std::get<I>(value))} + ',' + tuple_value_string<T, I + 1>(value);
-    if(str.back() == ',')
-        str.pop_back();
-    return str;
-}
+inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value);
 
 /// Print tuple value string for tuples of size ==1
 template <typename T,
@@ -420,6 +413,22 @@ inline std::string to_string(T &&variable) {
         ++cval;
     }
     return {"[" + detail::join(defaults) + "]"};
+}
+
+
+/// Empty string if the index > tuple size
+template <typename T, std::size_t I>
+inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/) {
+    return std::string{};
+}
+
+/// Recursively generate the tuple value string
+template <typename T, std::size_t I>
+inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value) {
+    auto str = std::string{to_string(std::get<I>(value))} + ',' + tuple_value_string<T, I + 1>(value);
+    if(str.back() == ',')
+        str.pop_back();
+    return str;
 }
 
 /// special template overload
