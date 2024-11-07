@@ -356,35 +356,21 @@ std::string to_string(T &&value) {
     return stream.str();
 }
 
-/// Convert a tuple like object to a string
-
-/// forward declarations for tuple_value_strings
-template <typename T, std::size_t I>
-inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/);
-
-/// Recursively generate the tuple value string
-template <typename T, std::size_t I>
-inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value);
+//additional forward declarations
 
 /// Print tuple value string for tuples of size ==1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
-                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
-                      detail::enabler> = detail::dummy>
-inline std::string to_string(T &&value) {
-    return to_string(std::get<0>(value));
-}
+    enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+    !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
+    detail::enabler> = detail::dummy>
+inline std::string to_string(T &&value);
 
 /// Print tuple value string for tuples of size > 1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
-                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
-                      detail::enabler> = detail::dummy>
-inline std::string to_string(T &&value) {
-    auto tname = std::string(1, '[') + tuple_value_string<T, 0>(value);
-    tname.push_back(']');
-    return tname;
-}
+    enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+    !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
+    detail::enabler> = detail::dummy>
+inline std::string to_string(T &&value);
 
 /// If conversion is not supported, return an empty string (streaming is not supported for that type)
 template <
@@ -414,6 +400,37 @@ inline std::string to_string(T &&variable) {
     }
     return {"[" + detail::join(defaults) + "]"};
 }
+
+/// Convert a tuple like object to a string
+
+/// forward declarations for tuple_value_strings
+template <typename T, std::size_t I>
+inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/);
+
+/// Recursively generate the tuple value string
+template <typename T, std::size_t I>
+inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value);
+
+/// Print tuple value string for tuples of size ==1
+template <typename T,
+    enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+    !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
+    detail::enabler>>
+inline std::string to_string(T &&value) {
+    return to_string(std::get<0>(value));
+}
+
+/// Print tuple value string for tuples of size > 1
+template <typename T,
+    enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+    !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
+    detail::enabler>>
+inline std::string to_string(T &&value) {
+    auto tname = std::string(1, '[') + tuple_value_string<T, 0>(value);
+    tname.push_back(']');
+    return tname;
+}
+
 
 /// Empty string if the index > tuple size
 template <typename T, std::size_t I>
