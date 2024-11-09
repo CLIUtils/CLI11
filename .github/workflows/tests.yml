@@ -238,36 +238,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check CMake 3.5
-        uses: ./.github/actions/quick_cmake
-        with:
-          cmake-version: "3.5"
-        if: success() || failure()
-
-      - name: Check CMake 3.6
-        uses: ./.github/actions/quick_cmake
-        with:
-          cmake-version: "3.6"
-        if: success() || failure()
-
-      - name: Check CMake 3.7
-        uses: ./.github/actions/quick_cmake
-        with:
-          cmake-version: "3.7"
-        if: success() || failure()
-
-      - name: Check CMake 3.8
-        uses: ./.github/actions/quick_cmake
-        with:
-          cmake-version: "3.8"
-        if: success() || failure()
-
-      - name: Check CMake 3.9
-        uses: ./.github/actions/quick_cmake
-        with:
-          cmake-version: "3.9"
-        if: success() || failure()
-
       - name: Check CMake 3.10
         uses: ./.github/actions/quick_cmake
         with:
@@ -390,15 +360,21 @@ jobs:
           cmake-version: "3.28.X"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
-        
+
       - name: Check CMake 3.29
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.29"
         if: success() || failure()
-        
+
       - name: Check CMake 3.30
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.30"
+        if: success() || failure()
+
+      - name: Check CMake 3.31
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.31"
         if: success() || failure()
