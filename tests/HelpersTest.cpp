@@ -49,6 +49,11 @@ TEST_CASE("TypeTools: tuple", "[helpers]") {
     CHECK(v);
 }
 
+TEST_CASE("TypeTools: tuple_to_string", "[helpers]") {
+    std::pair<double, std::string> p1{0.999, "kWh"};
+    CHECK(CLI::detail::to_string(p1) == "[0.999,kWh]");
+}
+
 TEST_CASE("TypeTools: type_size", "[helpers]") {
     auto V = CLI::detail::type_count<int>::value;
     CHECK(1 == V);

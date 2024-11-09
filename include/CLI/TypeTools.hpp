@@ -307,6 +307,30 @@ template <typename S> class is_tuple_like {
     static constexpr bool value = decltype(test<S>(0))::value;
 };
 
+/// This will only trigger for actual void type
+template <typename T, typename Enable = void> struct type_count_base {
+    static const int value{0};
+};
+
+/// Type size for regular object types that do not look like a tuple
+template <typename T>
+struct type_count_base<T,
+                       typename std::enable_if<!is_tuple_like<T>::value && !is_mutable_container<T>::value &&
+                                               !std::is_void<T>::value>::type> {
+    static constexpr int value{1};
+};
+
+/// the base tuple size
+template <typename T>
+struct type_count_base<T, typename std::enable_if<is_tuple_like<T>::value && !is_mutable_container<T>::value>::type> {
+    static constexpr int value{std::tuple_size<typename std::remove_reference<T>::type>::value};
+};
+
+/// Type count base for containers is the type_count_base of the individual element
+template <typename T> struct type_count_base<T, typename std::enable_if<is_mutable_container<T>::value>::type> {
+    static constexpr int value{type_count_base<typename T::value_type>::value};
+};
+
 /// Convert an object to a string (directly forward if this can become a string)
 template <typename T, enable_if_t<std::is_convertible<T, std::string>::value, detail::enabler> = detail::dummy>
 auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
@@ -332,12 +356,29 @@ std::string to_string(T &&value) {
     return stream.str();
 }
 
-/// If conversion is not supported, return an empty string (streaming is not supported for that type)
+// additional forward declarations
+
+/// Print tuple value string for tuples of size ==1
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value &&
-                          !is_readable_container<typename std::remove_const<T>::type>::value,
+          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
                       detail::enabler> = detail::dummy>
-std::string to_string(T &&) {
+inline std::string to_string(T &&value);
+
+/// Print tuple value string for tuples of size > 1
+template <typename T,
+          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
+                      detail::enabler> = detail::dummy>
+inline std::string to_string(T &&value);
+
+/// If conversion is not supported, return an empty string (streaming is not supported for that type)
+template <
+    typename T,
+    enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value &&
+                    !is_readable_container<typename std::remove_const<T>::type>::value && !is_tuple_like<T>::value,
+                detail::enabler> = detail::dummy>
+inline std::string to_string(T &&) {
     return {};
 }
 
@@ -346,7 +387,7 @@ template <typename T,
           enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value &&
                           is_readable_container<T>::value,
                       detail::enabler> = detail::dummy>
-std::string to_string(T &&variable) {
+inline std::string to_string(T &&variable) {
     auto cval = variable.begin();
     auto end = variable.end();
     if(cval == end) {
@@ -358,6 +399,51 @@ std::string to_string(T &&variable) {
         ++cval;
     }
     return {"[" + detail::join(defaults) + "]"};
+}
+
+/// Convert a tuple like object to a string
+
+/// forward declarations for tuple_value_strings
+template <typename T, std::size_t I>
+inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/);
+
+/// Recursively generate the tuple value string
+template <typename T, std::size_t I>
+inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value);
+
+/// Print tuple value string for tuples of size ==1
+template <typename T,
+          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
+                      detail::enabler>>
+inline std::string to_string(T &&value) {
+    return to_string(std::get<0>(value));
+}
+
+/// Print tuple value string for tuples of size > 1
+template <typename T,
+          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+                          !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
+                      detail::enabler>>
+inline std::string to_string(T &&value) {
+    auto tname = std::string(1, '[') + tuple_value_string<T, 0>(value);
+    tname.push_back(']');
+    return tname;
+}
+
+/// Empty string if the index > tuple size
+template <typename T, std::size_t I>
+inline typename std::enable_if<I == type_count_base<T>::value, std::string>::type tuple_value_string(T && /*value*/) {
+    return std::string{};
+}
+
+/// Recursively generate the tuple value string
+template <typename T, std::size_t I>
+inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::type tuple_value_string(T &&value) {
+    auto str = std::string{to_string(std::get<I>(value))} + ',' + tuple_value_string<T, I + 1>(value);
+    if(str.back() == ',')
+        str.pop_back();
+    return str;
 }
 
 /// special template overload
@@ -402,30 +488,6 @@ template <typename T, typename def, typename Enable = void> struct wrapped_type 
 /// Type size for regular object types that do not look like a tuple
 template <typename T, typename def> struct wrapped_type<T, def, typename std::enable_if<is_wrapper<T>::value>::type> {
     using type = typename T::value_type;
-};
-
-/// This will only trigger for actual void type
-template <typename T, typename Enable = void> struct type_count_base {
-    static const int value{0};
-};
-
-/// Type size for regular object types that do not look like a tuple
-template <typename T>
-struct type_count_base<T,
-                       typename std::enable_if<!is_tuple_like<T>::value && !is_mutable_container<T>::value &&
-                                               !std::is_void<T>::value>::type> {
-    static constexpr int value{1};
-};
-
-/// the base tuple size
-template <typename T>
-struct type_count_base<T, typename std::enable_if<is_tuple_like<T>::value && !is_mutable_container<T>::value>::type> {
-    static constexpr int value{std::tuple_size<T>::value};
-};
-
-/// Type count base for containers is the type_count_base of the individual element
-template <typename T> struct type_count_base<T, typename std::enable_if<is_mutable_container<T>::value>::type> {
-    static constexpr int value{type_count_base<typename T::value_type>::value};
 };
 
 /// Set of overloads to get the type size of an object
