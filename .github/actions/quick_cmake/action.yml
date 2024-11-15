@@ -1,5 +1,5 @@
 name: Quick CMake config
-description: "Runs CMake 3.5+ (if already setup)"
+description: "Runs CMake 3.10+ (if already setup)"
 inputs:
   args:
     description: "Other arguments"
