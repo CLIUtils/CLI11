@@ -124,15 +124,16 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
 
     const std::map<std::string, FooType> foo_map{
         {"a", FooType::A},
-        { "b", FooType::B },
+        {"b", FooType::B},
     };
 
     app.add_option("-f,--foo", type, "FooType")
         ->transform(CLI::CheckedTransformer(foo_map, CLI::ignore_case))
-        ->default_val(FooType::A)->force_callback();
+        ->default_val(FooType::A)
+        ->force_callback();
 
     run();
-    CHECK(type==FooType::A);
+    CHECK(type == FooType::A);
 }
 
 // from jzakrzewski Issue #330
