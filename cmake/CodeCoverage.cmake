@@ -408,15 +408,16 @@ function(setup_target_for_coverage_lcov)
   add_custom_command(
     TARGET ${Coverage_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Lcov code coverage info report saved in ${Coverage_NAME}.info."
+    COMMAND ${CMAKE_COMMAND} -E echo
+            "Lcov code coverage info report saved in ${Coverage_NAME}.info."
     COMMENT ${GCOVR_XML_CMD_COMMENT})
 
   # Show info where to find the report
   add_custom_command(
     TARGET ${Coverage_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
-)
+    COMMAND ${CMAKE_COMMAND} -E echo
+            "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report.")
 
 endfunction() # setup_target_for_coverage_lcov
 
