@@ -286,7 +286,7 @@ endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Coverage)
   include(CodeCoverage)
-  setup_target_for_coverage(
+  setup_target_for_coverage_lcov(
     NAME
     CLI11_coverage
     EXECUTABLE
