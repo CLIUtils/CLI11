@@ -117,6 +117,21 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransform", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+// from to-mas-kral Issue #1086
+TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
+    enum class FooType : std::uint8_t { A, B };
+    auto type = FooType::A;
+
+    const std::map<std::string, FooType> foo_map{
+        {"a", FooType::A},
+        { "b", FooType::B },
+    };
+
+    app.add_option("-f,--foo", type, "FooType")
+        ->transform(CLI::CheckedTransformer(foo_map, CLI::ignore_case))
+        ->default_val(FooType::A);
+}
+
 // from jzakrzewski Issue #330
 TEST_CASE_METHOD(TApp, "EnumCheckedDefaultTransform", "[transform]") {
     enum class existing : std::int16_t { abort, overwrite, remove };
