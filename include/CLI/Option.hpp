@@ -769,14 +769,17 @@ class Option : public OptionBase<Option> {
         try {
             add_result(val_str);
             // if trigger_on_result_ is set the callback already ran
-            if(run_callback_for_default_ && !trigger_on_result_) {
+            if (run_callback_for_default_ && !trigger_on_result_) {
                 run_callback();  // run callback sets the state, we need to reset it again
                 current_option_state_ = option_state::parsing;
-            } else {
+            }
+            else {
                 _validate_results(results_);
                 current_option_state_ = old_option_state;
             }
-        } catch(const CLI::Error &err) {
+        }
+        catch (const ValidationError& err)
+        {
             // this should be done
             results_ = std::move(old_results);
             current_option_state_ = old_option_state;
@@ -787,7 +790,20 @@ class Option : public OptionBase<Option> {
             }
 
             throw ValidationError(get_name(),
-                                  std::string("given default value does not pass validation :") + err.what());
+                std::string("given default value does not pass validation :") + err.what());
+        } catch(const ConversionError &err) {
+            // this should be done
+            results_ = std::move(old_results);
+            current_option_state_ = old_option_state;
+            
+             throw ConversionError(get_name(),
+                                  std::string("given default value(\"")+val_str+"\") produces an error : " + err.what());
+        }
+        catch (const CLI::Error&)
+        {
+            results_ = std::move(old_results);
+            current_option_state_ = old_option_state;
+            throw;
         }
         results_ = std::move(old_results);
         default_str_ = std::move(val_str);
