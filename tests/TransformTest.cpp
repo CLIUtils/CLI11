@@ -120,7 +120,7 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransform", "[transform]") {
 // from to-mas-kral Issue #1086
 TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
     enum class FooType : std::uint8_t { A, B };
-    auto type = FooType::A;
+    auto type = FooType::B;
 
     const std::map<std::string, FooType> foo_map{
         {"a", FooType::A},
@@ -129,7 +129,10 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
 
     app.add_option("-f,--foo", type, "FooType")
         ->transform(CLI::CheckedTransformer(foo_map, CLI::ignore_case))
-        ->default_val(FooType::A);
+        ->default_val(FooType::A)->force_callback();
+
+    run();
+    CHECK(type==FooType::A);
 }
 
 // from jzakrzewski Issue #330
