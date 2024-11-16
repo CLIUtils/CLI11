@@ -518,6 +518,12 @@ TEST_CASE_METHOD(TApp, "TupleComplex", "[app]") {
     CHECK(pr == pr2);
 }
 
+TEST_CASE_METHOD(TApp, "invalidDefault", "[app]") {
+    int pr{ 5 };
+    auto *opt=app.add_option("-i", pr)->expected(1)->multi_option_policy(CLI::MultiOptionPolicy::Throw)->delimiter(',')->force_callback();
+    CHECK_THROWS(opt->default_val("4,6,2,8"));
+}
+
 TEST_CASE_METHOD(TApp, "TogetherInt", "[app]") {
     int i{0};
     app.add_option("-i,--int", i);
