@@ -504,6 +504,19 @@ TEST_CASE_METHOD(TApp, "TupleDefault", "[app]") {
     CHECK(pr == pr2);
 }
 
+TEST_CASE_METHOD(TApp, "TupleDefaultSingle", "[app]") {
+    std::tuple<std::string> pr{"test_tuple"};
+    auto *opt = app.add_option("-i", pr)->expected(0, 1);
+    args = {"-i"};
+    run();
+    CHECK(app.count("-i") == 1u);
+
+    std::tuple<std::string> pr2{"total3"};
+    opt->default_val(pr2);
+    run();
+    CHECK(pr == pr2);
+}
+
 TEST_CASE_METHOD(TApp, "TupleComplex", "[app]") {
     std::tuple<double, std::string, int, std::pair<std::string, std::string>> pr{57.5, "test", 5, {"total", "total2"}};
     auto *opt = app.add_option("-i", pr)->expected(0, 4);
