@@ -394,30 +394,19 @@ function(setup_target_for_coverage_lcov)
     COMMAND ${LCOV_BASELINE_COUNT_CMD}
     COMMAND ${LCOV_FILTER_CMD}
     COMMAND ${LCOV_GEN_HTML_CMD} ${GCOVR_XML_CMD_COMMAND}
+    COMMAND ${CMAKE_COMMAND} -E echo "Resetting code coverage counters to zero.\nProcessing code coverage counters and generating report."
+    COMMAND ${CMAKE_COMMAND} -E echo "Lcov code coverage info report saved in ${Coverage_NAME}.info."
+    COMMAND ${CMAKE_COMMAND} -E echo  ${GCOVR_XML_CMD_COMMENT}
+    COMMAND ${CMAKE_COMMAND} -E echo "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
     # Set output files as GENERATED (will be removed on 'make clean')
     BYPRODUCTS ${Coverage_NAME}.base ${Coverage_NAME}.capture ${Coverage_NAME}.total
                ${Coverage_NAME}.info ${GCOVR_XML_CMD_BYPRODUCTS} ${Coverage_NAME}/index.html
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     DEPENDS ${Coverage_DEPENDENCIES}
     VERBATIM # Protect arguments to commands
-    COMMENT
-      "Resetting code coverage counters to zero.\nProcessing code coverage counters and generating report."
+    
+      
   )
-
-  # Show where to find the lcov info report
-  add_custom_command(
-    TARGET ${Coverage_NAME}
-    POST_BUILD
-    COMMAND ;
-    COMMENT "Lcov code coverage info report saved in ${Coverage_NAME}.info."
-            ${GCOVR_XML_CMD_COMMENT})
-
-  # Show info where to find the report
-  add_custom_command(
-    TARGET ${Coverage_NAME}
-    POST_BUILD
-    COMMAND ;
-    COMMENT "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report.")
 
 endfunction() # setup_target_for_coverage_lcov
 
