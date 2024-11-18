@@ -322,8 +322,8 @@ struct type_count_base<T,
 /// the base tuple size
 template <typename T>
 struct type_count_base<T, typename std::enable_if<is_tuple_like<T>::value && !is_mutable_container<T>::value>::type> {
-    static constexpr int value{
-        std::tuple_size<typename std::decay<T>::type>::value};  // cppcheck-suppress unusedStructMember
+    static constexpr int value{ // cppcheck-suppress unusedStructMember
+        std::tuple_size<typename std::decay<T>::type>::value};
 };
 
 /// Type count base for containers is the type_count_base of the individual element
