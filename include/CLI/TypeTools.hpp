@@ -279,9 +279,8 @@ struct is_mutable_container<
 // check to see if an object is a mutable container (fail by default)
 template <typename T, typename _ = void> struct is_readable_container : std::false_type {};
 
-/// type trait to test if a type is a container meaning it has a value_type, it has an iterator, a clear, and an end
-/// methods and an insert function.  And for our purposes we exclude std::string and types that can be constructed from
-/// a std::string
+/// type trait to test if a type is a container meaning it has a value_type, it has an iterator, and an end
+/// method.
 template <typename T>
 struct is_readable_container<
     T,
@@ -323,7 +322,8 @@ struct type_count_base<T,
 /// the base tuple size
 template <typename T>
 struct type_count_base<T, typename std::enable_if<is_tuple_like<T>::value && !is_mutable_container<T>::value>::type> {
-    static constexpr int value{std::tuple_size<typename std::remove_reference<T>::type>::value};
+    static constexpr int value{// cppcheck-suppress unusedStructMember
+                               std::tuple_size<typename std::decay<T>::type>::value};
 };
 
 /// Type count base for containers is the type_count_base of the individual element
@@ -341,13 +341,13 @@ auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
 template <typename T,
           enable_if_t<std::is_constructible<std::string, T>::value && !std::is_convertible<T, std::string>::value,
                       detail::enabler> = detail::dummy>
-std::string to_string(const T &value) {
+std::string to_string(T &&value) {
     return std::string(value);  // NOLINT(google-readability-casting)
 }
 
 /// Convert an object to a string (streaming must be supported for that type)
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
                           is_ostreamable<T>::value,
                       detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
@@ -360,14 +360,14 @@ std::string to_string(T &&value) {
 
 /// Print tuple value string for tuples of size ==1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
                           !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
                       detail::enabler> = detail::dummy>
 inline std::string to_string(T &&value);
 
 /// Print tuple value string for tuples of size > 1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
                           !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
                       detail::enabler> = detail::dummy>
 inline std::string to_string(T &&value);
@@ -375,8 +375,9 @@ inline std::string to_string(T &&value);
 /// If conversion is not supported, return an empty string (streaming is not supported for that type)
 template <
     typename T,
-    enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value &&
-                    !is_readable_container<typename std::remove_const<T>::type>::value && !is_tuple_like<T>::value,
+    enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
+                    !is_ostreamable<T>::value && !is_readable_container<typename std::remove_const<T>::type>::value &&
+                    !is_tuple_like<T>::value,
                 detail::enabler> = detail::dummy>
 inline std::string to_string(T &&) {
     return {};
@@ -384,8 +385,8 @@ inline std::string to_string(T &&) {
 
 /// convert a readable container to a string
 template <typename T,
-          enable_if_t<!std::is_constructible<std::string, T>::value && !is_ostreamable<T>::value &&
-                          is_readable_container<T>::value,
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
+                          !is_ostreamable<T>::value && is_readable_container<T>::value,
                       detail::enabler> = detail::dummy>
 inline std::string to_string(T &&variable) {
     auto cval = variable.begin();
@@ -413,7 +414,7 @@ inline typename std::enable_if<(I < type_count_base<T>::value), std::string>::ty
 
 /// Print tuple value string for tuples of size ==1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
                           !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value == 1,
                       detail::enabler>>
 inline std::string to_string(T &&value) {
@@ -422,7 +423,7 @@ inline std::string to_string(T &&value) {
 
 /// Print tuple value string for tuples of size > 1
 template <typename T,
-          enable_if_t<!std::is_convertible<std::string, T>::value && !std::is_constructible<std::string, T>::value &&
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
                           !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
                       detail::enabler>>
 inline std::string to_string(T &&value) {

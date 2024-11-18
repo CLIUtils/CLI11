@@ -52,6 +52,12 @@ TEST_CASE("TypeTools: tuple", "[helpers]") {
 TEST_CASE("TypeTools: tuple_to_string", "[helpers]") {
     std::pair<double, std::string> p1{0.999, "kWh"};
     CHECK(CLI::detail::to_string(p1) == "[0.999,kWh]");
+
+    const std::tuple<std::string> t1{"kWh"};
+    CHECK(CLI::detail::to_string(t1) == "kWh");
+
+    const std::tuple<double> td{0.999};
+    CHECK(CLI::detail::to_string(td) == "0.999");
 }
 
 TEST_CASE("TypeTools: type_size", "[helpers]") {
