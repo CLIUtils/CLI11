@@ -89,7 +89,7 @@ CLI11_INLINE std::string Formatter::make_description(const App *app) const {
         desc += " \n[At most " + std::to_string(max_options) + " of the following options are allowed]";
     }
 
-    return (!desc.empty()) ? desc + "\n" : std::string{};
+    return (!desc.empty()) ? desc + "\n\n" : std::string{};
 }
 
 CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name) const {
@@ -164,9 +164,9 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
         }
     }
 
-    out << make_usage(app, name);
     detail::streamOutAsParagraph(
-        out, make_description(app), description_paragraph_width_, "  ");  // Format description as paragraph
+        out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
+    out << make_usage(app, name);
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
