@@ -261,7 +261,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
 CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"', char literal_char = '\'');
 
 /// This function formats the given text as a paragraph with fixed width and applies correct line wrapping
-/// with a custom line prefix. The paragraph will get streamed to the given ostrean.
+/// with a custom line prefix. The paragraph will get streamed to the given ostream.
 CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 const std::string &text,
                                                 std::size_t paragraphWidth,
