@@ -218,7 +218,7 @@ class App {
     /// Storage for subcommand list
     std::vector<App_p> subcommands_{};
 
-    /// If true, the program name is not case sensitive INHERITABLE
+    /// If true, the program name is not case-sensitive INHERITABLE
     bool ignore_case_{false};
 
     /// If true, the program should ignore underscores INHERITABLE
