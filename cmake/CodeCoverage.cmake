@@ -71,7 +71,7 @@
 # - Added the option for users to set the GCOVR_ADDITIONAL_ARGS variable to supply additional
 #   flags to the gcovr command
 #
-# 2020-05-04, Mihchael Davis
+# 2020-05-04, Michael Davis
 #     - Add -fprofile-abs-path to make gcno files contain absolute paths
 #     - Fix BASE_DIRECTORY not working when defined
 #     - Change BYPRODUCT from folder to index.html to stop ninja from complaining about double defines
