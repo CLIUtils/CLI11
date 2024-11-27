@@ -243,7 +243,7 @@ CLI11_INLINE bool has_escapable_character(const std::string &str);
 
 /// @brief escape all escapable characters
 /// @param str the string to escape
-/// @return a string with the escapble characters escaped with '\'
+/// @return a string with the escapable characters escaped with '\'
 CLI11_INLINE std::string add_escaped_characters(const std::string &str);
 
 /// @brief replace the escaped characters with their equivalent
