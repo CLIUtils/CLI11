@@ -1309,7 +1309,7 @@ TEST_CASE("Types: TypeNameStrings", "[helpers]") {
     auto wsclass = CLI::detail::classify_object<std::wstring>::value;
     CHECK(CLI::detail::object_category::wstring_assignable == wsclass);
 
-#if defined CLI11_HAS_FILEYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
     auto fspclass = CLI::detail::classify_object<std::filesystem::path>::value;
     CHECK(CLI::detail::object_category::wstring_assignable == fspclass);
 #endif
