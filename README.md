@@ -514,7 +514,7 @@ On the command line, options can be given as:
 - `-ffilename` (no space required)
 - `-abcf filename` (flags and option can be combined)
 - `--long` (long flag)
-- `--long_flag=true` (long flag with equals to override default value)
+- `--long_flag=true` (long flag with equals -- to override default value)
 - `--file filename` (space)
 - `--file=filename` (equals)
 
