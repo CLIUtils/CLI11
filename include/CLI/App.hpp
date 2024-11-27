@@ -107,7 +107,7 @@ class App {
     bool allow_extras_{false};
 
     /// If ignore, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
-    /// if error error on an extra argument, and if capture feed it to the app
+    /// if error, error on an extra argument, and if capture feed it to the app
     config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
     ///  If true, cease processing on an unrecognized option (implies allow_extras) INHERITABLE
