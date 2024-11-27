@@ -1216,7 +1216,7 @@ class App {
     /// Get a display name for an app
     CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const;
 
-    /// Check the name, case insensitive and underscore insensitive if set
+    /// Check the name, case-insensitive and underscore insensitive if set
     CLI11_NODISCARD bool check_name(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)

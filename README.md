@@ -1254,7 +1254,7 @@ formatter. An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #
-# The default section is [default], case insensitive
+# The default section is [default], case-insensitive
 
 value = 1
 value2 = 123_456 # a string with separators
@@ -1275,7 +1275,7 @@ or equivalently in INI format
 
 ```ini
 ; Comments are supported, using a ;
-; The default section is [default], case insensitive
+; The default section is [default], case-insensitive
 
 value = 1
 str = "A string"
@@ -1291,7 +1291,7 @@ sub.subcommand = true
 Spaces before and after the name and argument are ignored. Multiple arguments
 are separated by spaces. One set of quotes will be removed, preserving spaces
 (the same way the command line works). Boolean options can be `true`, `on`, `1`,
-`yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case insensitive).
+`yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case-insensitive).
 Sections (and `.` separated names) are treated as subcommands (note: this does
 not necessarily mean that subcommand was passed, it just sets the "defaults").
 You cannot set positional-only arguments. Subcommands can be triggered from
