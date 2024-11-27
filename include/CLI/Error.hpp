@@ -347,7 +347,7 @@ class HorribleError : public ParseError {
 
 // After parsing
 
-/// Thrown when counting a non-existent option
+/// Thrown when counting a nonexistent option
 class OptionNotFound : public Error {
     CLI11_ERROR_DEF(Error, OptionNotFound)
     explicit OptionNotFound(std::string name) : OptionNotFound(name + " not found", ExitCodes::OptionNotFound) {}
