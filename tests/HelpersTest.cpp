@@ -250,7 +250,7 @@ TEST_CASE("StringTools: Validation", "[helpers]") {
     CHECK_FALSE(CLI::detail::isalpha("test2"));
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion", "[helpers]") {
     std::string testString("string1");
     std::string estring = CLI::detail::binary_escape_string(testString);
     CHECK(testString == estring);
@@ -285,7 +285,7 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
     CHECK(rstring == rstring2);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion2", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion2", "[helpers]") {
     std::string testString;
     testString.push_back(0);
     testString.push_back(0);
