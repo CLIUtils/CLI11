@@ -1618,7 +1618,7 @@ brief description of each is included here
 - [formatter](https://github.com/CLIUtils/CLI11/blob/main/examples/formatter.cpp):
   Illustrating usage of a custom formatter
 - [groups](https://github.com/CLIUtils/CLI11/blob/main/examples/groups.cpp):
-  Example using groups of options for help grouping and a the timer helper class
+  Example using groups of options for help grouping and a timer helper class
 - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/main/examples/inter_argument_order.cpp):
   An app to practice mixing unlimited arguments, but still recover the original
   order.
