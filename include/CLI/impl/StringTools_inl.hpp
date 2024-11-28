@@ -425,7 +425,7 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
     for(char c : string_to_escape) {
         // check if a given character is printable
         // the cast is necessary to avoid undefined behaviour
-        if(isprint(static_cast<unsigned char>(c)) == 0) {
+        if (isprint(static_cast<unsigned char>(c)) == 0) {
             std::stringstream stream;
             // if the character is not printable
             // we'll convert it to a hex string using a stringstream
@@ -433,6 +433,17 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
             stream << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(c));
             std::string code = stream.str();
             escaped_string += std::string("\\x") + (code.size() < 2 ? "0" : "") + code;
+        }else if (c=='x'||c=='X')
+        {
+            //need to check for inadvertant binary sequences
+            if (!escaped_string.empty() && escaped_string.back() == '\\')
+            {
+                escaped_string += std::string("\\x") + (c=='x' ? "78" : "58");
+            }
+            else
+            {
+                escaped_string.push_back(c);
+            }
 
         } else {
             escaped_string.push_back(c);
