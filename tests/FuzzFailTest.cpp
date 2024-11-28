@@ -273,10 +273,9 @@ TEST_CASE("app_roundtrip_custom") {
     std::size_t pstring_start{0};
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
 
-    if (pstring_start > 0) {
+    if(pstring_start > 0) {
         app->parse(parseData.substr(pstring_start, std::string::npos));
-    }
-    else {
+    } else {
         app->parse(parseData);
     }
 
@@ -284,7 +283,7 @@ TEST_CASE("app_roundtrip_custom") {
     std::string configOut = app->config_to_str();
     app->clear();
     std::stringstream out(configOut);
-    if (pstring_start > 0) {
+    if(pstring_start > 0) {
         fuzzdata2.add_custom_options(app2.get(), parseData);
     }
     app2->parse_from_stream(out);
