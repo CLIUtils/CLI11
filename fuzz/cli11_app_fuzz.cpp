@@ -29,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     try {
         if(pstring_start > 0) {
-            app->parse(parseString.substr(pstring_start, std::string::npos));
+            app->parse(parseString.substr(pstring_start));
         } else {
             app->parse(parseString);
         }

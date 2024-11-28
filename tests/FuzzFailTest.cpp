@@ -274,7 +274,7 @@ TEST_CASE("app_roundtrip_custom") {
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
 
     if(pstring_start > 0) {
-        app->parse(parseData.substr(pstring_start, std::string::npos));
+        app->parse(parseData.substr(pstring_start));
     } else {
         app->parse(parseData);
     }
