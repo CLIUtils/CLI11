@@ -267,7 +267,7 @@ TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(1, 2));
+    int index = GENERATE(range(2, 3));
     std::string optionString, flagString;
     auto parseData = loadFailureFile("round_trip_custom", index);
     std::size_t pstring_start{0};
