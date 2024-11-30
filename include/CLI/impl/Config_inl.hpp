@@ -567,7 +567,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                             // this is a condition which could be misinterpreted
                             results[0].insert(0, 1, results[0].front());
                             results[0].push_back(results[0].back());
-                            value = value = detail::ini_join(
+                            value = detail::ini_join(
                                 results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
                         }
                     }
