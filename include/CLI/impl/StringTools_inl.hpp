@@ -433,6 +433,13 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
             stream << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(c));
             std::string code = stream.str();
             escaped_string += std::string("\\x") + (code.size() < 2 ? "0" : "") + code;
+        } else if(c == 'x' || c == 'X') {
+            // need to check for inadvertent binary sequences
+            if(!escaped_string.empty() && escaped_string.back() == '\\') {
+                escaped_string += std::string("\\x") + (c == 'x' ? "78" : "58");
+            } else {
+                escaped_string.push_back(c);
+            }
 
         } else {
             escaped_string.push_back(c);

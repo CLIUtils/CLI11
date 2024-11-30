@@ -301,6 +301,42 @@ TEST_CASE("StringTools: binaryEscapseConversion2", "[helpers]") {
     CHECK(rstring == testString);
 }
 
+TEST_CASE("StringTools: binaryEscapseConversion_withX", "[helpers]") {
+    std::string testString("hippy\\x35mm\\XF3_helpX26fox19");
+    testString.push_back(0);
+    testString.push_back(0);
+    testString.push_back(0);
+    testString.push_back(56);
+    testString.push_back(-112);
+    testString.push_back(-112);
+    testString.push_back(39);
+    testString.push_back(97);
+    std::string estring = CLI::detail::binary_escape_string(testString);
+    CHECK(CLI::detail::is_binary_escaped_string(estring));
+    std::string rstring = CLI::detail::extract_binary_string(estring);
+    CHECK(rstring == testString);
+}
+
+TEST_CASE("StringTools: binaryEscapseConversion_withBrackets", "[helpers]") {
+
+    std::string vstr = R"raw('B"([\xb0\x0a\xb0/\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0])"')raw";
+    std::string testString("[");
+    testString.push_back(-80);
+    testString.push_back('\n');
+    testString.push_back(-80);
+    testString.push_back('/');
+    for(int ii = 0; ii < 13; ++ii) {
+        testString.push_back(-80);
+    }
+    testString.push_back(']');
+
+    std::string estring = CLI::detail::binary_escape_string(testString);
+    CHECK(CLI::detail::is_binary_escaped_string(estring));
+    CHECK(estring == vstr);
+    std::string rstring = CLI::detail::extract_binary_string(estring);
+    CHECK(rstring == testString);
+}
+
 TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     std::string rstring = "B\"()\"";
     CHECK(CLI::detail::extract_binary_string(rstring).empty());

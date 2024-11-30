@@ -665,13 +665,20 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
     if((allow_extra_args_ || get_expected_max() > 1) && !result.empty() && result.front() == '[' &&
        result.back() == ']') {  // this is now a vector string likely from the default or user entry
         result.pop_back();
-
-        for(auto &var : CLI::detail::split_up(result.substr(1), ',')) {
+        result.erase(result.begin());
+        bool skipSection{false};
+        for(auto &var : CLI::detail::split_up(result, ',')) {
+            if(var == result) {
+                skipSection = true;
+                break;
+            }
             if(!var.empty()) {
                 result_count += _add_result(std::move(var), res);
             }
         }
-        return result_count;
+        if(!skipSection) {
+            return result_count;
+        }
     }
     if(delimiter_ == '\0') {
         res.push_back(std::move(result));

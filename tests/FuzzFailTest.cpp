@@ -260,3 +260,33 @@ TEST_CASE("fuzz_config_test1") {
     CHECK(app->get_option_no_throw("--new_flag") != nullptr);
     CHECK(app->get_option_no_throw("--new_vector") != nullptr);
 }
+
+// this test uses the same tests as above just with a full roundtrip test
+TEST_CASE("app_roundtrip_custom") {
+    CLI::FuzzApp fuzzdata;
+    CLI::FuzzApp fuzzdata2;
+    auto app = fuzzdata.generateApp();
+    auto app2 = fuzzdata2.generateApp();
+    int index = GENERATE(range(1, 3));
+    std::string optionString, flagString;
+    auto parseData = loadFailureFile("round_trip_custom", index);
+    std::size_t pstring_start{0};
+    pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
+
+    if(pstring_start > 0) {
+        app->parse(parseData.substr(pstring_start));
+    } else {
+        app->parse(parseData);
+    }
+
+    // should be able to write the config to a file and read from it again
+    std::string configOut = app->config_to_str();
+    app->clear();
+    std::stringstream out(configOut);
+    if(pstring_start > 0) {
+        fuzzdata2.add_custom_options(app2.get(), parseData);
+    }
+    app2->parse_from_stream(out);
+    auto result = fuzzdata2.compare(fuzzdata);
+    CHECK(result);
+}
