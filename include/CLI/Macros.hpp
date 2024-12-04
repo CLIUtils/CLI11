@@ -114,7 +114,7 @@
 #endif
 #else
 #if defined(CLI11_HAS_CODECVT)
-#if CLI11_HAS_CODECVT>0
+#if CLI11_HAS_CODECVT > 0
 #include <codecvt>
 #endif
 #else
