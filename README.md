@@ -1665,10 +1665,10 @@ brief description of each is included here
 
 To contribute, open an [issue][github issues] or [pull
 request][github pull requests] on GitHub, or ask a question on [gitter][]. There
-is also a [short note to contributors](./.github/CONTRIBUTING.md). This
-readme roughly follows the [Standard Readme Style][] and includes a mention of
-almost every feature of the library. More complex features are documented in
-more detail in the [CLI11 tutorial GitBook][gitbook].
+is also a [short note to contributors](./.github/CONTRIBUTING.md). This readme
+roughly follows the [Standard Readme Style][] and includes a mention of almost
+every feature of the library. More complex features are documented in more
+detail in the [CLI11 tutorial GitBook][gitbook].
 
 This project was created by [Henry Schreiner](https://github.com/henryiii) and
 major features were added by [Philip Top](https://github.com/phlptp). Special
