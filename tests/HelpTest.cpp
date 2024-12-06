@@ -795,7 +795,7 @@ TEST_CASE("THelp: longLineAlignment", "[help]") {
     int i{0};
 
     app.add_option("-i,--int,--int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_"
-                   "to_infitinty,--and_another_long_name_just_for_fun",
+                   "to_infinity,--and_another_long_name_just_for_fun",
                    i,
                    long_string);
 
@@ -820,7 +820,7 @@ TEST_CASE("THelp: longPositional", "[help]") {
     int i{0};
 
     app.add_option("int_very_long_option_name_that_just_keeps_going_on_and_on_and_on_and_on_and_on_possibly_"
-                   "to_infitinty",
+                   "to_infinity",
                    i,
                    long_string);
 

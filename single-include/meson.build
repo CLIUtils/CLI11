@@ -1,5 +1,5 @@
 # Because Meson does not allow outputs to be placed in subfolders, we must have
-# meson.build here when generating the single file header so that it is placced
+# meson.build here when generating the single file header so that it is placed
 # in the correct location.
 
 pymod = import('python')

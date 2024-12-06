@@ -243,7 +243,7 @@ CLI11_INLINE bool has_escapable_character(const std::string &str);
 
 /// @brief escape all escapable characters
 /// @param str the string to escape
-/// @return a string with the escapble characters escaped with '\'
+/// @return a string with the escapable characters escaped with '\'
 CLI11_INLINE std::string add_escaped_characters(const std::string &str);
 
 /// @brief replace the escaped characters with their equivalent
@@ -261,7 +261,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
 CLI11_INLINE bool process_quoted_string(std::string &str, char string_char = '\"', char literal_char = '\'');
 
 /// This function formats the given text as a paragraph with fixed width and applies correct line wrapping
-/// with a custom line prefix. The paragraph will get streamed to the given ostrean.
+/// with a custom line prefix. The paragraph will get streamed to the given ostream.
 CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 const std::string &text,
                                                 std::size_t paragraphWidth,

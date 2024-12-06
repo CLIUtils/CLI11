@@ -107,7 +107,7 @@ class App {
     bool allow_extras_{false};
 
     /// If ignore, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
-    /// if error error on an extra argument, and if capture feed it to the app
+    /// if error, error on an extra argument, and if capture feed it to the app
     config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
     ///  If true, cease processing on an unrecognized option (implies allow_extras) INHERITABLE
@@ -218,7 +218,7 @@ class App {
     /// Storage for subcommand list
     std::vector<App_p> subcommands_{};
 
-    /// If true, the program name is not case sensitive INHERITABLE
+    /// If true, the program name is not case-sensitive INHERITABLE
     bool ignore_case_{false};
 
     /// If true, the program should ignore underscores INHERITABLE
@@ -1216,7 +1216,7 @@ class App {
     /// Get a display name for an app
     CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const;
 
-    /// Check the name, case insensitive and underscore insensitive if set
+    /// Check the name, case-insensitive and underscore insensitive if set
     CLI11_NODISCARD bool check_name(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)

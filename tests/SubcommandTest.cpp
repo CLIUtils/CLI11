@@ -2091,7 +2091,7 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandSingleChar", "[subcom]") {
     CHECK(subs.front()->get_name() == "sub2");
 }
 
-TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive", "[subcom]") {
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecursive", "[subcom]") {
     std::string v1, v2, v3, vbase;
 
     auto *sub1 = app.add_subcommand("sub1");
@@ -2119,7 +2119,7 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive", "[subcom]") {
     CHECK(extras.front() == "--sub1.sub2.bob");
 }
 
-TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecusive2", "[subcom]") {
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecursive2", "[subcom]") {
     std::string v1, v2, v3, vbase;
 
     auto *sub1 = app.add_subcommand("sub1");
