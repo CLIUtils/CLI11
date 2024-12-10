@@ -283,18 +283,18 @@ If you are not worried about latest features or recent bug fixes, you can
 install a stable version of CLI11 using:
 
 `sudo apt install libcli11-dev` for Ubuntu, or: `sudo dnf install cli11-devel`
-on Fedora.
+on Fedora/Almalinux.
 
 Then, in your CMake project, just call:
 
-```
+```cmake
 find_package(CLI11 CONFIG REQUIRED)
 target_link_libraries(MyTarget PRIVATE CLI11::CLI11)
 ```
 
 and in your C++ file:
 
-```
+```cpp
 #include "CLI/App.hpp"
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
