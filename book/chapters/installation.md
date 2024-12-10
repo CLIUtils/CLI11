@@ -279,10 +279,11 @@ for more details.
 
 ## Default system packages on Linux
 
-If you are not worried about latest features or recent bug fixes, you can install a stable version of CLI11 using:
+If you are not worried about latest features or recent bug fixes, you can
+install a stable version of CLI11 using:
 
-`sudo apt install libcli11-dev` for Ubuntu, or:
-`sudo dnf install cli11-devel` on Fedora.
+`sudo apt install libcli11-dev` for Ubuntu, or: `sudo dnf install cli11-devel`
+on Fedora.
 
 Then, in your CMake project, just call:
 
