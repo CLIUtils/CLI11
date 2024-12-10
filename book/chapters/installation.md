@@ -298,7 +298,7 @@ and in your C++ file:
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
 
-int main() {
+int main(int argc, char** argv)) {
     CLI::App app{"MyApp"};
     // Here your flags / options
     CLI11_PARSE(app, argc, argv);
