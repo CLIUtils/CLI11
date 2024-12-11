@@ -176,7 +176,7 @@ This would allow calling help such as:
 
 ### Positional Validation
 
-Some arguments supplied on the command line may be legitamately applied to more
+Some arguments supplied on the command line may be legitimately applied to more
 than 1 positional argument. In this context enabling `positional_validation` on
 the application or subcommand will check any validators before applying the
 command line argument to the positional option. It is not an error to fail
