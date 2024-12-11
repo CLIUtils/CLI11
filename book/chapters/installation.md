@@ -276,3 +276,32 @@ them are unknown yet.
 If building with WASI it is necessary to add the flag
 `-lc-printscan-long-double` to the build to allow long double support. See #841
 for more details.
+
+## Default system packages on Linux
+
+If you are not worried about latest features or recent bug fixes, you can
+install a stable version of CLI11 using:
+
+`sudo apt install libcli11-dev` for Ubuntu, or: `sudo dnf install cli11-devel`
+on Fedora/Almalinux.
+
+Then, in your CMake project, just call:
+
+```cmake
+find_package(CLI11 CONFIG REQUIRED)
+target_link_libraries(MyTarget PRIVATE CLI11::CLI11)
+```
+
+and in your C++ file:
+
+```cpp
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
+
+int main(int argc, char** argv)) {
+    CLI::App app{"MyApp"};
+    // Here your flags / options
+    CLI11_PARSE(app, argc, argv);
+}
+```
