@@ -115,7 +115,7 @@ command line. If you use the same name twice, or if you use the same name in
 multiple flags, CLI11 will immediately throw a `CLI::ConstructionError`
 describing your problem (it will not wait until the parsing step).
 
-If you want to make an option case insensitive, you can use the
+If you want to make an option case-insensitive, you can use the
 `->ignore_case()` method on the `CLI::Option` to do that. For example,
 
 ```cpp

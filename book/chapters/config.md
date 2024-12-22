@@ -124,7 +124,7 @@ Here is an example configuration file, in
 
 ```toml
 # Comments are supported, using a #
-# The default section is [default], case insensitive
+# The default section is [default], case-insensitive
 
 value = 1
 str = "A string"
@@ -141,7 +141,7 @@ Spaces before and after the name and argument are ignored. Multiple arguments
 are separated by spaces. One set of quotes will be removed, preserving spaces
 (the same way the command line works). Boolean options can be `true`, `on`, `1`,
 `y`, `t`, `+`, `yes`, `enable`; or `false`, `off`, `0`, `no`, `n`, `f`, `-`,
-`disable`, (case insensitive). Sections (and `.` separated names) are treated as
+`disable`, (case-insensitive). Sections (and `.` separated names) are treated as
 subcommands (note: this does not necessarily mean that subcommand was passed, it
 just sets the "defaults". If a subcommand is set to `configurable` then passing
 the subcommand using `[sub]` in a configuration file will trigger the
@@ -151,7 +151,7 @@ CLI11 also supports configuration file in INI format.
 
 ```ini
 ; Comments are supported, using a ;
-; The default section is [default], case insensitive
+; The default section is [default], case-insensitive
 
 value = 1
 str = "A string"
@@ -175,7 +175,7 @@ python doc strings.
 
 ```toml
 """
-this is a multine
+this is a multiline
 comment
 """
 

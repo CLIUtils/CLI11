@@ -514,7 +514,7 @@ On the command line, options can be given as:
 - `-ffilename` (no space required)
 - `-abcf filename` (flags and option can be combined)
 - `--long` (long flag)
-- `--long_flag=true` (long flag with equals to override default value)
+- `--long_flag=true` (long flag with equals -- to override default value)
 - `--file filename` (space)
 - `--file=filename` (equals)
 
@@ -1254,7 +1254,7 @@ formatter. An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #
-# The default section is [default], case insensitive
+# The default section is [default], case-insensitive
 
 value = 1
 value2 = 123_456 # a string with separators
@@ -1275,7 +1275,7 @@ or equivalently in INI format
 
 ```ini
 ; Comments are supported, using a ;
-; The default section is [default], case insensitive
+; The default section is [default], case-insensitive
 
 value = 1
 str = "A string"
@@ -1291,7 +1291,7 @@ sub.subcommand = true
 Spaces before and after the name and argument are ignored. Multiple arguments
 are separated by spaces. One set of quotes will be removed, preserving spaces
 (the same way the command line works). Boolean options can be `true`, `on`, `1`,
-`yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case insensitive).
+`yes`, `enable`; or `false`, `off`, `0`, `no`, `disable` (case-insensitive).
 Sections (and `.` separated names) are treated as subcommands (note: this does
 not necessarily mean that subcommand was passed, it just sets the "defaults").
 You cannot set positional-only arguments. Subcommands can be triggered from
@@ -1618,7 +1618,7 @@ brief description of each is included here
 - [formatter](https://github.com/CLIUtils/CLI11/blob/main/examples/formatter.cpp):
   Illustrating usage of a custom formatter
 - [groups](https://github.com/CLIUtils/CLI11/blob/main/examples/groups.cpp):
-  Example using groups of options for help grouping and a the timer helper class
+  Example using groups of options for help grouping and a timer helper class
 - [inter_argument_order](https://github.com/CLIUtils/CLI11/blob/main/examples/inter_argument_order.cpp):
   An app to practice mixing unlimited arguments, but still recover the original
   order.
@@ -1665,10 +1665,10 @@ brief description of each is included here
 
 To contribute, open an [issue][github issues] or [pull
 request][github pull requests] on GitHub, or ask a question on [gitter][]. There
-is also a short note to contributors [here](./.github/CONTRIBUTING.md). This
-readme roughly follows the [Standard Readme Style][] and includes a mention of
-almost every feature of the library. More complex features are documented in
-more detail in the [CLI11 tutorial GitBook][gitbook].
+is also a [short note to contributors](./.github/CONTRIBUTING.md). This readme
+roughly follows the [Standard Readme Style][] and includes a mention of almost
+every feature of the library. More complex features are documented in more
+detail in the [CLI11 tutorial GitBook][gitbook].
 
 This project was created by [Henry Schreiner](https://github.com/henryiii) and
 major features were added by [Philip Top](https://github.com/phlptp). Special

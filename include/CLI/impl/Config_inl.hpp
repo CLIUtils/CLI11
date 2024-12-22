@@ -331,7 +331,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 item = detail::trim_copy(citems.front());
             }
             if(mlquote) {
-                // mutliline string
+                // multiline string
                 auto keyChar = item.front();
                 item = buffer.substr(delimiter_pos + 1, std::string::npos);
                 detail::ltrim(item);

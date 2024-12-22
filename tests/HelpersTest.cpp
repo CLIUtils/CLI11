@@ -250,7 +250,7 @@ TEST_CASE("StringTools: Validation", "[helpers]") {
     CHECK_FALSE(CLI::detail::isalpha("test2"));
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion", "[helpers]") {
     std::string testString("string1");
     std::string estring = CLI::detail::binary_escape_string(testString);
     CHECK(testString == estring);
@@ -285,7 +285,7 @@ TEST_CASE("StringTools: binaryEscapseConversion", "[helpers]") {
     CHECK(rstring == rstring2);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion2", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion2", "[helpers]") {
     std::string testString;
     testString.push_back(0);
     testString.push_back(0);
@@ -1345,7 +1345,7 @@ TEST_CASE("Types: TypeNameStrings", "[helpers]") {
     auto wsclass = CLI::detail::classify_object<std::wstring>::value;
     CHECK(CLI::detail::object_category::wstring_assignable == wsclass);
 
-#if defined CLI11_HAS_FILEYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
     auto fspclass = CLI::detail::classify_object<std::filesystem::path>::value;
     CHECK(CLI::detail::object_category::wstring_assignable == fspclass);
 #endif
