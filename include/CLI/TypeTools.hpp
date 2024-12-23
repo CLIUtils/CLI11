@@ -1385,7 +1385,7 @@ bool lexical_assign(const std::string &input, AssignTo &output) {
     }
 
     return lexical_cast(input, output);
-} // LCOV_EXCL_LINE
+}  // LCOV_EXCL_LINE
 
 /// Assign a value through lexical cast operations
 template <typename AssignTo,
