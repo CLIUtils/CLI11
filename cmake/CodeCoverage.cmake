@@ -302,6 +302,7 @@ function(setup_target_for_coverage_lcov)
       -b
       ${BASEDIR}
       --capture
+      --ignore-errors mismatch
       --output-file
       ${Coverage_NAME}.capture)
   # add baseline counters
@@ -316,8 +317,7 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_NAME}.capture
       --output-file
       ${Coverage_NAME}.total
-      --ignore-errors
-      mismatch)
+      )
   # filter collected data to final coverage report
   set(LCOV_FILTER_CMD
       ${LCOV_PATH}
