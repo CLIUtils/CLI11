@@ -137,7 +137,7 @@
 
 include(CMakeParseArguments)
 
-option(CODE_COVERAGE_VERBOSE "Verbose information" TRUE)
+option(CODE_COVERAGE_VERBOSE "Verbose information" FALSE)
 
 # Check prereqs
 find_program(GCOV_PATH gcov)
@@ -315,7 +315,8 @@ function(setup_target_for_coverage_lcov)
       -a
       ${Coverage_NAME}.capture
       --output-file
-      ${Coverage_NAME}.total)
+      ${Coverage_NAME}.total
+      --ignore-errors mismatch)
   # filter collected data to final coverage report
   set(LCOV_FILTER_CMD
       ${LCOV_PATH}
@@ -347,7 +348,7 @@ function(setup_target_for_coverage_lcov)
         COMMENT "SonarQube code coverage info report saved in ${Coverage_NAME}_sonarqube.xml.")
   endif()
 
-  if(CODE_COVERAGE_VERBOSE)
+  if(CODE_COVERAGE_VERBOSE OR 1)
     message(STATUS "Executed command report")
     message(STATUS "Command to clean up lcov: ")
     string(REPLACE ";" " " LCOV_CLEAN_CMD_SPACED "${LCOV_CLEAN_CMD}")
