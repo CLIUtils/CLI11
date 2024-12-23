@@ -1367,7 +1367,8 @@ CLI11_INLINE void App::_process_requirements() {
 }
 
 CLI11_INLINE void App::_process() {
-    //help takes precedence over other potential errors and config and environment shouldn't be processed if help throws
+    // help takes precedence over other potential errors and config and environment shouldn't be processed if help
+    // throws
     _process_help_flags();
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
@@ -1384,7 +1385,7 @@ CLI11_INLINE void App::_process() {
     }
 
     _process_callbacks();
-    
+
     _process_requirements();
 }
 

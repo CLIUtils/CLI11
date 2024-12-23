@@ -2113,15 +2113,15 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableHelp", "[config]") {
 
     int one{0}, two{0};
     app.add_option("--val", one);
-    app.add_option("--helptest",two);
+    app.add_option("--helptest", two);
     auto *subcom = app.add_subcommand("subcom");
     subcom->configurable();
     subcom->add_option("--val", two);
 
-    args={"--help"};
-    CHECK_THROWS_AS(run(),CLI::CallForHelp);
+    args = {"--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 
-    auto helpres=app.help();
+    auto helpres = app.help();
     CHECK_THAT(helpres, Contains("--helptest"));
 }
 
