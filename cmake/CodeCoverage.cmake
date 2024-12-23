@@ -270,6 +270,8 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors
+      mismatch
       -directory
       .
       -b
@@ -281,6 +283,8 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors
+      mismatch
       -c
       -i
       -d
@@ -302,6 +306,8 @@ function(setup_target_for_coverage_lcov)
       -b
       ${BASEDIR}
       --capture
+      --ignore-errors
+      mismatch,gcov
       --output-file
       ${Coverage_NAME}.capture)
   # add baseline counters
@@ -314,6 +320,8 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_NAME}.base
       -a
       ${Coverage_NAME}.capture
+      --ignore-errors
+      mismatch,gcov
       --output-file
       ${Coverage_NAME}.total)
   # filter collected data to final coverage report
@@ -322,14 +330,23 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors
+      mismatch,mismatch,gcov
       --remove
       ${Coverage_NAME}.total
       ${LCOV_EXCLUDES}
       --output-file
       ${Coverage_NAME}.info)
   # Generate HTML output
-  set(LCOV_GEN_HTML_CMD ${GENHTML_PATH} ${GENHTML_EXTRA_ARGS} ${Coverage_GENHTML_ARGS} -o
-                        ${Coverage_NAME} ${Coverage_NAME}.info)
+  set(LCOV_GEN_HTML_CMD
+      ${GENHTML_PATH}
+      ${GENHTML_EXTRA_ARGS}
+      --ignore-errors
+      mismatch,mismatch
+      ${Coverage_GENHTML_ARGS}
+      -o
+      ${Coverage_NAME}
+      ${Coverage_NAME}.info)
   if(${Coverage_SONARQUBE})
     # Generate SonarQube output
     set(GCOVR_XML_CMD
@@ -347,7 +364,7 @@ function(setup_target_for_coverage_lcov)
         COMMENT "SonarQube code coverage info report saved in ${Coverage_NAME}_sonarqube.xml.")
   endif()
 
-  if(CODE_COVERAGE_VERBOSE)
+  if(CODE_COVERAGE_VERBOSE OR 1)
     message(STATUS "Executed command report")
     message(STATUS "Command to clean up lcov: ")
     string(REPLACE ";" " " LCOV_CLEAN_CMD_SPACED "${LCOV_CLEAN_CMD}")

@@ -301,7 +301,7 @@ TEST_CASE("StringTools: binaryEscapeConversion2", "[helpers]") {
     CHECK(rstring == testString);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion_withX", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion_withX", "[helpers]") {
     std::string testString("hippy\\x35mm\\XF3_helpX26fox19");
     testString.push_back(0);
     testString.push_back(0);
@@ -317,7 +317,7 @@ TEST_CASE("StringTools: binaryEscapseConversion_withX", "[helpers]") {
     CHECK(rstring == testString);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion_withBrackets", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion_withBrackets", "[helpers]") {
 
     std::string vstr = R"raw('B"([\xb0\x0a\xb0/\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0])"')raw";
     std::string testString("[");
