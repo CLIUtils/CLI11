@@ -270,6 +270,7 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors mismatch
       -directory
       .
       -b
@@ -281,6 +282,7 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors mismatch
       -c
       -i
       -d
@@ -316,6 +318,7 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_NAME}.base
       -a
       ${Coverage_NAME}.capture
+      --ignore-errors mismatch
       --output-file
       ${Coverage_NAME}.total)
   # filter collected data to final coverage report
@@ -324,13 +327,14 @@ function(setup_target_for_coverage_lcov)
       ${Coverage_LCOV_ARGS}
       --gcov-tool
       ${GCOV_PATH}
+      --ignore-errors mismatch
       --remove
       ${Coverage_NAME}.total
       ${LCOV_EXCLUDES}
       --output-file
       ${Coverage_NAME}.info)
   # Generate HTML output
-  set(LCOV_GEN_HTML_CMD ${GENHTML_PATH} ${GENHTML_EXTRA_ARGS} ${Coverage_GENHTML_ARGS} -o
+  set(LCOV_GEN_HTML_CMD ${GENHTML_PATH} ${GENHTML_EXTRA_ARGS} --ignore-errors mismatch ${Coverage_GENHTML_ARGS} -o
                         ${Coverage_NAME} ${Coverage_NAME}.info)
   if(${Coverage_SONARQUBE})
     # Generate SonarQube output
