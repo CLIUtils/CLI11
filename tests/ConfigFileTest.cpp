@@ -2097,6 +2097,34 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithEquals", "[con
     CHECK(app.got_subcommand(subcom));
 }
 
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableHelp", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+    }
+
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    app.add_option("--helptest",two);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->configurable();
+    subcom->add_option("--val", two);
+
+    args={"--help"};
+    CHECK_THROWS_AS(run(),CLI::CallForHelp);
+
+    auto helpres=app.help();
+    CHECK_THAT(helpres, Contains("--helptest"));
+}
+
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithComment", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
