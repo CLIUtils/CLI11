@@ -137,7 +137,7 @@
 
 include(CMakeParseArguments)
 
-option(CODE_COVERAGE_VERBOSE "Verbose information" FALSE)
+option(CODE_COVERAGE_VERBOSE "Verbose information" TRUE)
 
 # Check prereqs
 find_program(GCOV_PATH gcov)
