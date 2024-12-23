@@ -163,7 +163,7 @@ struct pair_adaptor<
     }
 };
 
-// Warning is suppressed due to "bug" in gcc<5.0 and gcc 7.0 with c++17 enabled that generates a Wnarrowing warning
+// Warning is suppressed due to "bug" in gcc<5.0 and gcc 7.0 with c++17 enabled that generates a -Wnarrowing warning
 // in the unevaluated context even if the function that was using this wasn't used.  The standard says narrowing in
 // brace initialization shouldn't be allowed but for backwards compatibility gcc allows it in some contexts.  It is a
 // little fuzzy what happens in template constructs and I think that was something GCC took a little while to work out.

@@ -131,7 +131,7 @@ add_test(NAME shapes_all COMMAND shapes circle 4.4 circle 10.7 rectangle 4 4 cir
                                  4.5 ++ rectangle 2.1 ++ circle 234.675)
 set_property(
   TEST shapes_all PROPERTY PASS_REGULAR_EXPRESSION "circle2" "circle4"
-                           "rectangle2 with edges [2.1,2.1]" "triangel1 with sides [4.5]")
+                           "rectangle2 with edges [2.1,2.1]" "triangle1 with sides [4.5]")
 
 add_cli_exe(ranges ranges.cpp)
 add_test(NAME ranges_range COMMAND ranges --range 1 2 3)
