@@ -28,10 +28,11 @@ jobs:
 
       - name: Get LCov
         run: |
-          wget https://github.com/linux-test-project/lcov/releases/download/v1.16/lcov-1.16.tar.gz
-          tar -xzf lcov-1.16.tar.gz
-          cd lcov-1.16
-          sudo make install
+          sudo apt-get install ca-certificates lcov
+          #wget https://github.com/linux-test-project/lcov/releases/download/v1.16/lcov-1.16.tar.gz
+          #tar -xzf lcov-1.16.tar.gz
+          #cd lcov-1.16
+          #sudo make install
 
       - name: Configure
         run: |
@@ -50,8 +51,8 @@ jobs:
 
       - name: Prepare coverage
         run: |
-          lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/tests/*' '*/examples/*' '/usr/*' '*/book/*' '*/fuzz/*' --output-file coverage.info
+          lcov --ignore-errors gcov,mismatch --directory . --capture --output-file coverage.info
+          lcov --remove coverage.info '*/tests/*' '/usr/*' --output-file coverage.info
           lcov --list coverage.info
         working-directory: build
 
