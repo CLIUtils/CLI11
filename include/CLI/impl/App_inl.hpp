@@ -1731,7 +1731,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
-               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
+               (static_cast<int>(opt->count()) < opt->get_items_expected_max() || opt->get_allow_extra_args())) {
                 if(validate_positionals_) {
                     std::string pos = positional;
                     pos = opt->_validate(pos, 0);

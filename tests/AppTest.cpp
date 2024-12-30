@@ -1236,6 +1236,56 @@ TEST_CASE_METHOD(TApp, "RequiredOptsDoubleNeg", "[app]") {
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
 }
 
+TEST_CASE_METHOD(TApp, "ExpectedRangeParam", "[app]") {
+
+    app.add_option("-s")->required()->expected(2, 4);
+
+    args = { "-s", "one" };
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+
+    args = { "-s", "one", "two" };
+
+    CHECK_NOTHROW(run());
+
+    args = { "-s", "one", "two","three" };
+
+    CHECK_NOTHROW(run());
+
+    args = { "-s", "one", "two", "three","four" };
+
+    CHECK_NOTHROW(run());
+
+    args = { "-s", "one", "two", "three","four","five" };
+
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
+TEST_CASE_METHOD(TApp, "ExpectedRangePositional", "[app]") {
+
+    app.add_option("arg")->required()->expected(2, 4);
+
+    args = {"one" };
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+
+    args = {"one", "two" };
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two","three" };
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two", "three","four" };
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two", "three","four","five" };
+
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
 // This makes sure unlimited option priority is
 // correct for space vs. no space #90
 TEST_CASE_METHOD(TApp, "PositionalNoSpace", "[app]") {
