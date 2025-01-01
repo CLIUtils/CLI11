@@ -1227,17 +1227,17 @@ TEST_CASE_METHOD(TApp, "vectorSingleArg", "[optiontype]") {
 
 TEST_CASE_METHOD(TApp, "vectorEmptyArg", "[optiontype]") {
 
-    std::vector<std::string> cv{ "test" };
+    std::vector<std::string> cv{"test"};
     app.add_option("-c", cv);
-    args = { "-c","test1", "[]"};
+    args = {"-c", "test1", "[]"};
 
     run();
-    CHECK(cv.size()==1);
-    args = { "-c","test1", "[[]]"};
+    CHECK(cv.size() == 1);
+    args = {"-c", "test1", "[[]]"};
 
     run();
-    CHECK(cv.size()==2);
-    CHECK(cv[1]=="[]");
+    CHECK(cv.size() == 2);
+    CHECK(cv[1] == "[]");
 }
 
 TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
