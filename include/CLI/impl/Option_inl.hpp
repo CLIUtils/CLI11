@@ -664,24 +664,19 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
     int result_count = 0;
     if((allow_extra_args_ || get_expected_max() > 1) && !result.empty() && result.front() == '[' &&
        result.back() == ']') {  // this is now a vector string likely from the default or user entry
-        if (result.size() >= 4 && result[1] == '[' && (*(result.end() - 2) == ']'))
-        {
-            //this is an escape clause for odd strings
-            std::string nstrs{ '[' };
-            bool duplicated{ true };
-            for (int ii = 2; ii < result.size() - 2; ii+=2)
-            {
-                if (result[ii] == result[ii + 1])
-                {
+        if(result.size() >= 4 && result[1] == '[' && (*(result.end() - 2) == ']')) {
+            // this is an escape clause for odd strings
+            std::string nstrs{'['};
+            bool duplicated{true};
+            for(int ii = 2; ii < result.size() - 2; ii += 2) {
+                if(result[ii] == result[ii + 1]) {
                     nstrs.push_back(result[ii]);
-                }
-                else {
-                    duplicated=false;
+                } else {
+                    duplicated = false;
                     break;
                 }
             }
-            if (duplicated)
-            {
+            if(duplicated) {
                 res.push_back(std::move(nstrs));
                 ++result_count;
                 return result_count;
