@@ -1225,6 +1225,21 @@ TEST_CASE_METHOD(TApp, "vectorSingleArg", "[optiontype]") {
     CHECK("4" == extra);
 }
 
+TEST_CASE_METHOD(TApp, "vectorEmptyArg", "[optiontype]") {
+
+    std::vector<std::string> cv{ "test" };
+    app.add_option("-c", cv);
+    args = { "-c","test1", "[]"};
+
+    run();
+    CHECK(cv.size()==1);
+    args = { "-c","test1", "[[]]"};
+
+    run();
+    CHECK(cv.size()==2);
+    CHECK(cv[1]=="[]");
+}
+
 TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> cv;

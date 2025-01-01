@@ -668,7 +668,7 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
             // this is an escape clause for odd strings
             std::string nstrs{'['};
             bool duplicated{true};
-            for(int ii = 2; ii < result.size() - 2; ii += 2) {
+            for(std::size_t ii = 2; ii < result.size() - 2; ii += 2) {
                 if(result[ii] == result[ii + 1]) {
                     nstrs.push_back(result[ii]);
                 } else {
@@ -677,6 +677,7 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
                 }
             }
             if(duplicated) {
+                nstrs.push_back(']');
                 res.push_back(std::move(nstrs));
                 ++result_count;
                 return result_count;
