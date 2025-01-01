@@ -49,12 +49,9 @@ jobs:
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
-        macOS-15_26:
-          vmImage: "macOS-15"
-          cli11.std: 23
         macOS-15_23:
           vmImage: "macOS-15"
-          cli11.std: 26
+          cli11.std: 23
         macOS-14_20:
           vmImage: "macOS-14"
           cli11.std: 20
