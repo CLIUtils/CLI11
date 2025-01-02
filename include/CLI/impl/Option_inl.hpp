@@ -693,10 +693,6 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
         result.erase(result.begin());
         bool skipSection{false};
         for(auto &var : CLI::detail::split_up(result, ',')) {
-            if(var == result) {
-                skipSection = true;
-                break;
-            }
             if(!var.empty()) {
                 result_count += _add_result(std::move(var), res);
             }
