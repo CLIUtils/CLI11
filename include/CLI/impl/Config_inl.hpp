@@ -561,15 +561,6 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 if(!value.empty()) {
-                    /*if (opt->get_expected_max() > 1 && detail::is_binary_escaped_string(value) && results.size() == 1
-                    && !results[0].empty()) { if(results[0].front() == '[' && results[0].back() == ']') {
-                            // this is a condition which could be misinterpreted
-                            results[0].insert(0, 1, results[0].front());
-                            results[0].push_back(results[0].back());
-                            value = detail::ini_join(
-                                results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
-                        }
-                    }*/
                     if(!opt->get_fnames().empty()) {
                         try {
                             value = opt->get_flag_value(single_name, value);
