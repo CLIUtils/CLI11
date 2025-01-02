@@ -519,12 +519,27 @@ CLI11_INLINE void remove_quotes(std::vector<std::string> &args) {
     }
 }
 
+CLI11_INLINE void handle_secondary_array(std::string& str)
+{
+    if (str.size() >= 2 && str.front() == '[' && str.back() == ']')
+    {
+        // handle some special array processing for arguments if it might be interpreted as a secondary array
+        std::string tstr{ "[[" };
+        for (std::size_t ii = 1; ii < str.size(); ++ii) {
+            tstr.push_back(str[ii]);
+            tstr.push_back(str[ii]);
+        }
+        str=std::move(tstr);
+    }
+}
+
 CLI11_INLINE bool process_quoted_string(std::string &str, char string_char, char literal_char) {
     if(str.size() <= 1) {
         return false;
     }
     if(detail::is_binary_escaped_string(str)) {
         str = detail::extract_binary_string(str);
+        handle_secondary_array(str);
         return true;
     }
     if(str.front() == string_char && str.back() == string_char) {
@@ -532,10 +547,12 @@ CLI11_INLINE bool process_quoted_string(std::string &str, char string_char, char
         if(str.find_first_of('\\') != std::string::npos) {
             str = detail::remove_escaped_characters(str);
         }
+        handle_secondary_array(str);
         return true;
     }
     if((str.front() == literal_char || str.front() == '`') && str.back() == str.front()) {
         detail::remove_outer(str, str.front());
+        handle_secondary_array(str);
         return true;
     }
     return false;
