@@ -519,17 +519,15 @@ CLI11_INLINE void remove_quotes(std::vector<std::string> &args) {
     }
 }
 
-CLI11_INLINE void handle_secondary_array(std::string& str)
-{
-    if (str.size() >= 2 && str.front() == '[' && str.back() == ']')
-    {
+CLI11_INLINE void handle_secondary_array(std::string &str) {
+    if(str.size() >= 2 && str.front() == '[' && str.back() == ']') {
         // handle some special array processing for arguments if it might be interpreted as a secondary array
-        std::string tstr{ "[[" };
-        for (std::size_t ii = 1; ii < str.size(); ++ii) {
+        std::string tstr{"[["};
+        for(std::size_t ii = 1; ii < str.size(); ++ii) {
             tstr.push_back(str[ii]);
             tstr.push_back(str[ii]);
         }
-        str=std::move(tstr);
+        str = std::move(tstr);
     }
 }
 

@@ -665,7 +665,8 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
 
     // Handle the vector escape possibility all characters duplicated and starting with [[ ending with ]]
     // this is always a single result
-    if(result.size() >= 4 && result[0]=='[' && result[1] == '[' && result.back()==']' && (*(result.end() - 2) == ']')) {
+    if(result.size() >= 4 && result[0] == '[' && result[1] == '[' && result.back() == ']' &&
+       (*(result.end() - 2) == ']')) {
         // this is an escape clause for odd strings
         std::string nstrs{'['};
         bool duplicated{true};
@@ -687,7 +688,7 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
 
     if((allow_extra_args_ || get_expected_max() > 1) && !result.empty() && result.front() == '[' &&
        result.back() == ']') {  // this is now a vector string likely from the default or user entry
-        
+
         result.pop_back();
         result.erase(result.begin());
         bool skipSection{false};
