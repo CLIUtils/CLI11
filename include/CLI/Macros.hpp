@@ -18,11 +18,17 @@
 #define CLI11_CPP17
 #if __cplusplus > 201703L
 #define CLI11_CPP20
+#if __cplusplus > 202002L
+#define CLI11_CPP23
+#if __cplusplus > 202302L
+#define CLI11_CPP26
+#endif
+#endif
 #endif
 #endif
 #endif
 #elif defined(_MSC_VER) && __cplusplus == 199711L
-// MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard is fully implemented)
+// MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard was fully implemented)
 // Unless you use the /Zc:__cplusplus flag on Visual Studio 2017 15.7 Preview 3 or newer
 #if _MSVC_LANG >= 201402L
 #define CLI11_CPP14
@@ -30,6 +36,9 @@
 #define CLI11_CPP17
 #if _MSVC_LANG > 201703L && _MSC_VER >= 1910
 #define CLI11_CPP20
+#if _MSVC_LANG > 202002L && _MSC_VER >= 1922
+#define CLI11_CPP23
+#endif
 #endif
 #endif
 #endif
@@ -96,11 +105,21 @@
 #endif
 
 /** <codecvt> availability */
+#if !defined(CLI11_CPP26) && !defined(CLI11_HAS_CODECVT)
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 5
 #define CLI11_HAS_CODECVT 0
 #else
 #define CLI11_HAS_CODECVT 1
 #include <codecvt>
+#endif
+#else
+#if defined(CLI11_HAS_CODECVT)
+#if CLI11_HAS_CODECVT > 0
+#include <codecvt>
+#endif
+#else
+#define CLI11_HAS_CODECVT 0
+#endif
 #endif
 
 /** disable deprecations */
