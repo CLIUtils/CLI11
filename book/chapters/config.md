@@ -266,14 +266,18 @@ sequential. This allows an input option to be configured with multiple lines.
 vector1 = [a,v,"[]"]
 ```
 
-The field insertion has a special processing for duplicate characters starting with "[[" in which case the `"[]"` gets translated to `[[]]` before getting passed into the option which converts it back into the correct string.
-This can also be used on the command line to handle unusual parsing situation with brackets.
+The field insertion has a special processing for duplicate characters starting
+with "[[" in which case the `"[]"` gets translated to `[[]]` before getting
+passed into the option which converts it back into the correct string. This can
+also be used on the command line to handle unusual parsing situation with
+brackets.
 
 ### Argument With Brackets
 
-There is an edge case with actual strings that are surrounded by brackets.  For example if the string "[]" needed to be passed. this would normally trigger the bracket processing and result in an empty vector.
-In this case it can be enclosed in quotes and should be handled correctly.
-
+There is an edge case with actual strings that are surrounded by brackets. For
+example if the string "[]" needed to be passed. this would normally trigger the
+bracket processing and result in an empty vector. In this case it can be
+enclosed in quotes and should be handled correctly.
 
 ## Multiple configuration files
 
