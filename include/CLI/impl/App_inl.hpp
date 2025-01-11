@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2025, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1367,6 +1367,9 @@ CLI11_INLINE void App::_process_requirements() {
 }
 
 CLI11_INLINE void App::_process() {
+    // help takes precedence over other potential errors and config and environment shouldn't be processed if help
+    // throws
+    _process_help_flags();
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
         // to allow for help, version and other errors to generate first.
@@ -1375,15 +1378,13 @@ CLI11_INLINE void App::_process() {
         // process env shouldn't throw but no reason to process it if config generated an error
         _process_env();
     } catch(const CLI::FileError &) {
-        // callbacks and help_flags can generate exceptions which should take priority
+        // callbacks can generate exceptions which should take priority
         // over the config file error if one exists.
         _process_callbacks();
-        _process_help_flags();
         throw;
     }
 
     _process_callbacks();
-    _process_help_flags();
 
     _process_requirements();
 }
@@ -1730,7 +1731,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         for(const Option_p &opt : options_) {
             // Eat options, one by one, until done
             if(opt->get_positional() &&
-               (static_cast<int>(opt->count()) < opt->get_items_expected_min() || opt->get_allow_extra_args())) {
+               (static_cast<int>(opt->count()) < opt->get_items_expected_max() || opt->get_allow_extra_args())) {
                 if(validate_positionals_) {
                     std::string pos = positional;
                     pos = opt->_validate(pos, 0);

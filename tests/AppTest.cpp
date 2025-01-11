@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2025, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1234,6 +1234,56 @@ TEST_CASE_METHOD(TApp, "RequiredOptsDoubleNeg", "[app]") {
     args = {"-s", "one", "two"};
     REQUIRE_NOTHROW(run());
     CHECK(std::vector<std::string>({"one", "two"}) == strs);
+}
+
+TEST_CASE_METHOD(TApp, "ExpectedRangeParam", "[app]") {
+
+    app.add_option("-s")->required()->expected(2, 4);
+
+    args = {"-s", "one"};
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+
+    args = {"-s", "one", "two"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"-s", "one", "two", "three"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"-s", "one", "two", "three", "four"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"-s", "one", "two", "three", "four", "five"};
+
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
+TEST_CASE_METHOD(TApp, "ExpectedRangePositional", "[app]") {
+
+    app.add_option("arg")->required()->expected(2, 4);
+
+    args = {"one"};
+
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
+
+    args = {"one", "two"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two", "three"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two", "three", "four"};
+
+    CHECK_NOTHROW(run());
+
+    args = {"one", "two", "three", "four", "five"};
+
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
 // This makes sure unlimited option priority is

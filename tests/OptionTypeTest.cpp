@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2025, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -1225,6 +1225,21 @@ TEST_CASE_METHOD(TApp, "vectorSingleArg", "[optiontype]") {
     CHECK("4" == extra);
 }
 
+TEST_CASE_METHOD(TApp, "vectorEmptyArg", "[optiontype]") {
+
+    std::vector<std::string> cv{"test"};
+    app.add_option("-c", cv);
+    args = {"-c", "test1", "[]"};
+
+    run();
+    CHECK(cv.size() == 1);
+    args = {"-c", "test1", "[[]]"};
+
+    run();
+    CHECK(cv.size() == 2);
+    CHECK(cv[1] == "[]");
+}
+
 TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
 
     std::vector<std::pair<int, std::string>> cv;
@@ -1247,6 +1262,18 @@ TEST_CASE_METHOD(TApp, "vectorEmpty", "[optiontype]") {
 
     run();
     CHECK(cv.empty());
+}
+
+TEST_CASE_METHOD(TApp, "vectorVectorArg", "[optiontype]") {
+
+    std::vector<std::vector<std::string>> cv{};
+    app.add_option("-c", cv);
+    args = {"-c", "[[a,b]]"};
+
+    run();
+    CHECK(cv.size() == 1);
+    CHECK(cv[0].size() == 2);
+    CHECK(cv[0][0] == "a");
 }
 
 TEST_CASE_METHOD(TApp, "OnParseCall", "[optiontype]") {

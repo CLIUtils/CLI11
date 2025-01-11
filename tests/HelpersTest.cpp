@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2025, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -301,7 +301,7 @@ TEST_CASE("StringTools: binaryEscapeConversion2", "[helpers]") {
     CHECK(rstring == testString);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion_withX", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion_withX", "[helpers]") {
     std::string testString("hippy\\x35mm\\XF3_helpX26fox19");
     testString.push_back(0);
     testString.push_back(0);
@@ -317,7 +317,7 @@ TEST_CASE("StringTools: binaryEscapseConversion_withX", "[helpers]") {
     CHECK(rstring == testString);
 }
 
-TEST_CASE("StringTools: binaryEscapseConversion_withBrackets", "[helpers]") {
+TEST_CASE("StringTools: binaryEscapeConversion_withBrackets", "[helpers]") {
 
     std::string vstr = R"raw('B"([\xb0\x0a\xb0/\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0])"')raw";
     std::string testString("[");
@@ -1520,6 +1520,7 @@ static_assert(CLI::detail::is_tuple_like<std::array<int, 10>>::value, "std::arra
 static_assert(!CLI::detail::is_tuple_like<std::string>::value, "std::string should not be like a tuple");
 static_assert(!CLI::detail::is_tuple_like<double>::value, "double should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value, "tuple should look like a tuple");
+static_assert(!CLI::detail::is_tuple_like<std::complex<double>>::value, "std::complex should not be like a tuple");
 
 TEST_CASE("Types: LexicalConversionTuple2", "[helpers]") {
     CLI::results_t input = {"9.12", "19"};

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, University of Cincinnati, developed by Henry Schreiner
+// Copyright (c) 2017-2025, University of Cincinnati, developed by Henry Schreiner
 // under NSF AWARD 1414736 and by the respective contributors.
 // All rights reserved.
 //
@@ -2095,6 +2095,34 @@ TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithEquals", "[con
     CHECK(1U == subcom->count());
     CHECK(*subcom);
     CHECK(app.got_subcommand(subcom));
+}
+
+TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableHelp", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom]" << '\n';
+        out << "val=2" << '\n';
+    }
+
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    app.add_option("--helptest", two);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->configurable();
+    subcom->add_option("--val", two);
+
+    args = {"--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
+
+    auto helpres = app.help();
+    CHECK_THAT(helpres, Contains("--helptest"));
 }
 
 TEST_CASE_METHOD(TApp, "IniSubcommandConfigurableInQuotesAliasWithComment", "[config]") {
