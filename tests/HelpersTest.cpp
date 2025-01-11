@@ -1520,6 +1520,7 @@ static_assert(CLI::detail::is_tuple_like<std::array<int, 10>>::value, "std::arra
 static_assert(!CLI::detail::is_tuple_like<std::string>::value, "std::string should not be like a tuple");
 static_assert(!CLI::detail::is_tuple_like<double>::value, "double should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::tuple<double, int, double>>::value, "tuple should look like a tuple");
+static_assert(!CLI::detail::is_tuple_like<std::complex<double>>::value, "std::complex should not be like a tuple");
 
 TEST_CASE("Types: LexicalConversionTuple2", "[helpers]") {
     CLI::results_t input = {"9.12", "19"};

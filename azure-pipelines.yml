@@ -165,18 +165,22 @@ jobs:
       vmImage: "ubuntu-latest"
     strategy:
       matrix:
-        gcc13:
+        gcc13_17:
           containerImage: gcc:13
           cli11.std: 17
           cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-        gcc12:
+        gcc12_20:
           containerImage: gcc:12
           cli11.std: 20
           cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
-        clang17_20:
+        clang17_23:
           containerImage: silkeh/clang:17
           cli11.std: 23
           cli11.options: -DCMAKE_CXX_FLAGS=-std=c++23
+        clang19_26:
+          containerImage: silkeh/clang:19
+          cli11.std: 26
+          cli11.options: -DCMAKE_CXX_FLAGS=-std=c++2c
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake-new.yml
