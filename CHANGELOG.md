@@ -11,8 +11,8 @@ and config file parsing.
 
 - add mechanism to allow option groups to be hidden and all options be
   considered part of the parent for help display [#1039][]
-- take the configurability of an option name into account when determining naming
-  conflicts [#1049][]
+- take the configurability of an option name into account when determining
+  naming conflicts [#1049][]
 - Fix an issue where an extra subcommand header was being printed in the output
   [#1058][]
 - Add additional fuzzing tests and fixes for a bug in escape string processing,
