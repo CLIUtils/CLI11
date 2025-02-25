@@ -737,6 +737,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "LostInCompilation",
+      "name": "Marc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12819635?v=4",
+      "profile": "https://github.com/LostInCompilation",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
