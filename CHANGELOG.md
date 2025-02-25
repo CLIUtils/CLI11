@@ -20,26 +20,27 @@ and config file parsing.
 - Add some polish to config file output removing some unnecessary output and add
   modifier to control output of default values [#1075][]
 - Add the ability to specify pair/tuple defaults and improved parsing [#1081][]
-- Bugfix: Take the configurability of an option name into account when determining
-  naming conflicts [#1049][]
-- Bugfix: Fix an issue where an extra subcommand header was being printed in the output
-  [#1058][]
-- Bugfix: Add additional fuzzing tests and fixes for a bug in escape string processing,
-  and resolve inconsistencies in the handing of `{}` between command line
-  parsing and config file parsing. [#1060][]
-- Bugfix: Improve handling of some ambiguities in vector input processing for config
-  files, specifically in the case of vector of vector inputs. [#1069][]
-- Bugfix: Fix an issue in the handling of uint8_t enums, and some issues related to
-  single element tuples [#1087][]
+- Bugfix: Take the configurability of an option name into account when
+  determining naming conflicts [#1049][]
+- Bugfix: Fix an issue where an extra subcommand header was being printed in the
+  output [#1058][]
+- Bugfix: Add additional fuzzing tests and fixes for a bug in escape string
+  processing, and resolve inconsistencies in the handing of `{}` between command
+  line parsing and config file parsing. [#1060][]
+- Bugfix: Improve handling of some ambiguities in vector input processing for
+  config files, specifically in the case of vector of vector inputs. [#1069][]
+- Bugfix: Fix an issue in the handling of uint8_t enums, and some issues related
+  to single element tuples [#1087][]
 - Bugfix: Fix an issue with binary strings containing a `\x` [#1097][]
-- Bugfix: Move the help generation priority so it triggers before config file processing
-  [#1106][]
-- Bugfix: Fixed an issue where max/min on positionals was not being respected and
-  optional positionals were being ignored [#1108][]
+- Bugfix: Move the help generation priority so it triggers before config file
+  processing [#1106][]
+- Bugfix: Fixed an issue where max/min on positionals was not being respected
+  and optional positionals were being ignored [#1108][]
 - Bugfix: Fix an issue with strings which started and ended with brackets being
   misinterpreted as vectors. The parsing now has special handling of strings
   which start with `[[` [#1110][]
-- Bugfix: Fix some macros for support in C++26 related to wide string parsing [#1113][]
+- Bugfix: Fix some macros for support in C++26 related to wide string parsing
+  [#1113][]
 - Bugfix: Allow trailing spaces on numeric string conversions [#1115][]
 - Docs: Update pymod.find_installation to find python in meson.build [#1076][]
 - Docs: Add example for transform validators [#689][]
