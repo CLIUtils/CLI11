@@ -348,7 +348,8 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/2119212?v=4",
       "profile": "https://github.com/jsoref",
       "contributions": [
-        "tool"
+        "tool",
+        "doc"
       ]
     },
     {
@@ -663,7 +664,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/2098802?v=4",
       "profile": "https://github.com/j-rivero",
       "contributions": [
-        "code"
+        "code",
+        "platform"
       ]
     },
     {
@@ -699,7 +701,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/6952185?v=4",
       "profile": "https://github.com/krico",
       "contributions": [
-        "doc"
+        "doc",
+        "code"
       ]
     },
     {
@@ -739,10 +742,28 @@
       ]
     },
     {
-      "login": "jmarrec",
+       "login": "jmarrec",
       "name": "Julien Marrec",
       "avatar_url": "https://avatars.githubusercontent.com/u/5479063?v=4",
       "profile": "http://www.effibem.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "nshaheed",
+      "name": "nshaheed",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6963603?v=4",
+      "profile": "https://github.com/nshaheed",
+      "contributions": [
+        "platform"
+        ]
+    },
+    {
+      "login": "LostInCompilation",
+      "name": "Marc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12819635?v=4",
+      "profile": "https://github.com/LostInCompilation",
       "contributions": [
         "code"
       ]
