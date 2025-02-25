@@ -11,7 +11,7 @@ and config file parsing.
 
 - add mechanism to allow option groups to be hidden and all options be
   considered part of the parent for help display [#1039][]
-- take the configurability of an option name into account when determing naming
+- take the configurability of an option name into account when determining naming
   conflicts [#1049][]
 - Fix an issue where an extra subcommand header was being printed in the output
   [#1058][]
@@ -23,7 +23,7 @@ and config file parsing.
 - Better help formatter [#866][], this better aligns the help generation with
   UNIX standard and allows use in help2man.
   [Marc][https://github.com/LostInCompilation]. [#1093][]
-- Add modifer for subcommands to disable fallthrough which can resolve some
+- Add modifier for subcommands to disable fallthrough which can resolve some
   issues with positional arguments [#1073][]
 - Add some polish to config file output removing some unnecessary output and add
   modifier to control output of default values [#1075][], [Christian
