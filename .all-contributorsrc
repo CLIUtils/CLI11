@@ -737,6 +737,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "jmarrec",
+      "name": "Julien Marrec",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5479063?v=4",
+      "profile": "http://www.effibem.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
