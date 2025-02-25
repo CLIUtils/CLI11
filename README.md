@@ -165,7 +165,9 @@ this library:
   option to disable it).
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
   is not supported yet.
-- While not recommended, CLI11 does now support non standard option names such as `-option`. 🆕. This is enabled through `allow_non_standard_option_names()` modifier on an app.
+- While not recommended, CLI11 does now support non standard option names such
+  as `-option`. 🆕. This is enabled through `allow_non_standard_option_names()`
+  modifier on an app.
 
 ## Install
 
@@ -205,7 +207,7 @@ int main(int argc, char** argv) {
 ```
 
 For more information about `ensure_utf8` the section on
-[Unicode support](#unicode-support) below. 
+[Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
 
@@ -415,7 +417,7 @@ Before parsing, you can set the following options:
   option. Options can be removed from the excludes list with
   `->remove_excludes(opt)`
 - `->envname(name)`: Gets the value from the environment if present and not
-  passed on the command line.  The value must also pass any validators to be
+  passed on the command line. The value must also pass any validators to be
   used.
 - `->group(name)`: The help group to put the option in. No effect for positional
   options. Defaults to `"Options"`. Options given an empty string will not show
@@ -701,8 +703,8 @@ filters on the key values is performed.
   `CLI::FileOnDefaultPath(default_path, false)`. This allows multiple paths to
   be chained using multiple transform calls.
 
-- `CLI::EscapedString`: can be used to process an escaped string. The
-  processing is equivalent to that used for TOML config files, see
+- `CLI::EscapedString`: can be used to process an escaped string. The processing
+  is equivalent to that used for TOML config files, see
   [TOML strings](https://toml.io/en/v1.0.0#string). With 2 notable exceptions.
   \` can also be used as a literal string notation, and it also allows binary
   string notation see
@@ -859,7 +861,9 @@ triggered once unless the `.immediate_callback()` flag is set or the callback is
 specified through the `parse_complete_callback()` function. The
 `final_callback()` is triggered only once. In which case the callback executes
 on completion of the subcommand arguments but after the arguments for that
-subcommand have been parsed, and can be triggered multiple times.  Note that the `parse_complete_callback()` is executed prior to processing any config files.   The `final_callback()` is executed after config file processing.
+subcommand have been parsed, and can be triggered multiple times. Note that the
+`parse_complete_callback()` is executed prior to processing any config files.
+The `final_callback()` is executed after config file processing.
 
 Subcommands may also have an empty name either by calling `add_subcommand` with
 an empty string for the name or with no arguments. Nameless subcommands function
@@ -873,7 +877,7 @@ nameless subcommands are allowed. Callbacks for nameless subcommands are only
 triggered if any options from the subcommand were parsed. Subcommand names given
 through the `add_subcommand` method have the same restrictions as option names.
 
- Options or flags in a subcommand may be directly specified using dot notation
+Options or flags in a subcommand may be directly specified using dot notation
 
 - `--subcommand.long=val` (long subcommand option)
 - `--subcommand.long val` (long subcommand option)
@@ -885,8 +889,8 @@ through the `add_subcommand` method have the same restrictions as option names.
 The use of dot notation in this form is equivalent `--subcommand.long <args>` =>
 `subcommand --long <args> ++`. Nested subcommands also work `sub1.subsub` would
 trigger the subsub subcommand in `sub1`. This is equivalent to "sub1 subsub".
-Quotes around the subcommand names are permitted following the TOML standard
-for such specification. This includes allowing escape sequences. For example
+Quotes around the subcommand names are permitted following the TOML standard for
+such specification. This includes allowing escape sequences. For example
 `"subcommand".'f'` or `"subcommand.with.dots".arg1 = value`.
 
 #### Subcommand options
@@ -1029,8 +1033,8 @@ option_groups. These are:
   "prefix" to calling another app.
 - `.usage(message)`: Replace text to appear at the start of the help string
   after description.
-- `.usage(std::string())`: Set a callback to generate a string that will
-  appear at the start of the help string after description.
+- `.usage(std::string())`: Set a callback to generate a string that will appear
+  at the start of the help string after description.
 - `.footer(message)`: Set text to appear at the bottom of the help string.
 - `.footer(std::string())`: Set a callback to generate a string that will appear
   at the end of the help string.
@@ -1113,8 +1117,8 @@ A subcommand is considered terminated when one of the following conditions are
 met.
 
 1. There are no more arguments to process
-2. Another subcommand is encountered that would not fit in an optional positional slot of
-   the subcommand
+2. Another subcommand is encountered that would not fit in an optional
+   positional slot of the subcommand
 3. The `positional_mark` (`--`) is encountered and there are no available
    positional slots in the subcommand.
 4. The `subcommand_terminator` mark (`++`) is encountered
@@ -1247,10 +1251,10 @@ file will be read if it exists, and does not throw an error unless `required` is
 `true`. Configuration files are in [TOML][] format by default, though the
 default reader can also accept files in INI format as well. The config reader
 can read most aspects of TOML files including strings both literal and with
-potential escape sequences, digit separators, and multi-line strings,
-and run them through the CLI11 parser. Other formats can be added by an adept
-user, some variations are available through customization points in the default
-formatter. An example of a TOML file:
+potential escape sequences, digit separators, and multi-line strings, and run
+them through the CLI11 parser. Other formats can be added by an adept user, some
+variations are available through customization points in the default formatter.
+An example of a TOML file:
 
 ```toml
 # Comments are supported, using a #

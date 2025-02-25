@@ -4,33 +4,51 @@
 
 ## Version 2.5: Help Formatter
 
-This version add a new formatter with improved control capabilities and output aligned with standards for help output. It also add a modifier to enable use of non-standard option names.  Along with several bug fixes for edge cases in string and config file parsing.
-
+This version add a new formatter with improved control capabilities and output
+aligned with standards for help output. It also add a modifier to enable use of
+non-standard option names. Along with several bug fixes for edge cases in string
+and config file parsing.
 
 - add mechanism to allow option groups to be hidden and all options be
   considered part of the parent for help display [#1039][]
-- take the configurability of an option name into account when determing naming conflicts [#1049][]
-- Fix an issue where an extra subcommand header was being printed in the output [#1058][]
-- Add additional fuzzing tests and fixes for a bug in escape string processing, and resolve inconsistencies in the handing of `{}` between command line parsing and config file parsing. [#1060][]
-- Improve handling of some ambiguities in vector input processing for config files, specifically in the case of vector of vector inputs. [#1069][]
-- Better help formatter [#866][], this better aligns the help generation with UNIX standard and allows use in help2man. [Marc][https://github.com/LostInCompilation]. [#1093][]
-- Add modifer for subcommands to disable fallthrough which can resolve some issues with positional arguments [#1073][]
-- Add some polish to config file output removing some unnecessary output and add modifier to control output of default values [#1075][], [Christian Volker][volker.christian@fh-hagenberg.at]
+- take the configurability of an option name into account when determing naming
+  conflicts [#1049][]
+- Fix an issue where an extra subcommand header was being printed in the output
+  [#1058][]
+- Add additional fuzzing tests and fixes for a bug in escape string processing,
+  and resolve inconsistencies in the handing of `{}` between command line
+  parsing and config file parsing. [#1060][]
+- Improve handling of some ambiguities in vector input processing for config
+  files, specifically in the case of vector of vector inputs. [#1069][]
+- Better help formatter [#866][], this better aligns the help generation with
+  UNIX standard and allows use in help2man.
+  [Marc][https://github.com/LostInCompilation]. [#1093][]
+- Add modifer for subcommands to disable fallthrough which can resolve some
+  issues with positional arguments [#1073][]
+- Add some polish to config file output removing some unnecessary output and add
+  modifier to control output of default values [#1075][], [Christian
+  Volker][volker.christian@fh-hagenberg.at]
 - Add example for transform validators [#689][]
 - Update pymod.find_installation to find python in meson.build [#1076][]
-- add a modifier to allow non-standard single flag option names such as `-option`.  [#1078][]
+- add a modifier to allow non-standard single flag option names such as
+  `-option`. [#1078][]
 - Add the ability to specify pair/tuple defaults and improved parsing [#1081][]
 - Update CMAKE minimum version to 3.10 [#1084][]
-- Fix an issue in the handling of uint8_t enums, and some issues related to single element tuples [#1087][]
+- Fix an issue in the handling of uint8_t enums, and some issues related to
+  single element tuples [#1087][]
 - Fix an issue with binary strings containing a `\x` [#1097][]
 - Fix several spelling mistakes[#1101][] Josh Soref
-- Move the help generation priority so it triggers before config file processing [#1106][]
-- Fixed an issue where max/min on positionals was not being respected and optional positionals were being ignored [#1108][]
-- Fix an issue with strings which started and ended with brackets being misinterpreted as vectors.  The parsing now has special handling of strings which start with `[[` [#1110][]
+- Move the help generation priority so it triggers before config file processing
+  [#1106][]
+- Fixed an issue where max/min on positionals was not being respected and
+  optional positionals were being ignored [#1108][]
+- Fix an issue with strings which started and ended with brackets being
+  misinterpreted as vectors. The parsing now has special handling of strings
+  which start with `[[` [#1110][]
 - Update copyright dates to 2025 [#1112][]
 - Fix some macros for support in C++26 related to wide string parsing [#1113][]
 - Allow trailing spaces on numeric string conversions [#1115][]
-  
+
 [#1039]: https://github.com/CLIUtils/CLI11/pull/1039
 [#1049]: https://github.com/CLIUtils/CLI11/pull/1049
 [#1058]: https://github.com/CLIUtils/CLI11/pull/1058
