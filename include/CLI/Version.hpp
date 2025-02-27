@@ -11,8 +11,8 @@
 // [CLI11:version_hpp:verbatim]
 
 #define CLI11_VERSION_MAJOR 2
-#define CLI11_VERSION_MINOR 4
-#define CLI11_VERSION_PATCH 2
-#define CLI11_VERSION "2.4.2"
+#define CLI11_VERSION_MINOR 5
+#define CLI11_VERSION_PATCH 0
+#define CLI11_VERSION "2.5.0"
 
 // [CLI11:version_hpp:end]

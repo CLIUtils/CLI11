@@ -2,8 +2,75 @@
 
 ## Unreleased
 
-- add mechanism to allow option groups to be hidden and all options be
-  considered part of the parent for help display
+## Version 2.5: Help Formatter
+
+This version add a new formatter with improved control capabilities and output
+aligned with standards for help output. It also add a modifier to enable use of
+non-standard option names. Along with several bug fixes for edge cases in string
+and config file parsing.
+
+- Better help formatter [#866][], this better aligns the help generation with
+  UNIX standard and allows use in help2man. [#1093][]
+- Add mechanism to allow option groups to be hidden and all options be
+  considered part of the parent for help display [#1039][]
+- Add a modifier to allow non-standard single flag option names such as
+  `-option`. [#1078][]
+- Add modifier for subcommands to disable fallthrough which can resolve some
+  issues with positional arguments [#1073][]
+- Add some polish to config file output removing some unnecessary output and add
+  modifier to control output of default values [#1075][]
+- Add the ability to specify pair/tuple defaults and improved parsing [#1081][]
+- Bugfix: Take the configurability of an option name into account when
+  determining naming conflicts [#1049][]
+- Bugfix: Fix an issue where an extra subcommand header was being printed in the
+  output [#1058][]
+- Bugfix: Add additional fuzzing tests and fixes for a bug in escape string
+  processing, and resolve inconsistencies in the handing of `{}` between command
+  line parsing and config file parsing. [#1060][]
+- Bugfix: Improve handling of some ambiguities in vector input processing for
+  config files, specifically in the case of vector of vector inputs. [#1069][]
+- Bugfix: Fix an issue in the handling of uint8_t enums, and some issues related
+  to single element tuples [#1087][]
+- Bugfix: Fix an issue with binary strings containing a `\x` [#1097][]
+- Bugfix: Move the help generation priority so it triggers before config file
+  processing [#1106][]
+- Bugfix: Fixed an issue where max/min on positionals was not being respected
+  and optional positionals were being ignored [#1108][]
+- Bugfix: Fix an issue with strings which started and ended with brackets being
+  misinterpreted as vectors. The parsing now has special handling of strings
+  which start with `[[` [#1110][]
+- Bugfix: Fix some macros for support in C++26 related to wide string parsing
+  [#1113][]
+- Bugfix: Allow trailing spaces on numeric string conversions [#1115][]
+- Docs: Update pymod.find_installation to find python in meson.build [#1076][]
+- Docs: Add example for transform validators [#689][]
+- Docs: Fix several spelling mistakes [#1101][]
+- Backend: Update copyright dates to 2025 [#1112][]
+- Backend: Update CMAKE minimum version to 3.10 [#1084][]
+
+[#1039]: https://github.com/CLIUtils/CLI11/pull/1039
+[#1049]: https://github.com/CLIUtils/CLI11/pull/1049
+[#1058]: https://github.com/CLIUtils/CLI11/pull/1058
+[#1060]: https://github.com/CLIUtils/CLI11/pull/1060
+[#1069]: https://github.com/CLIUtils/CLI11/pull/1069
+[#866]: https://github.com/CLIUtils/CLI11/pull/866
+[#1073]: https://github.com/CLIUtils/CLI11/pull/1073
+[#1075]: https://github.com/CLIUtils/CLI11/pull/1075
+[#689]: https://github.com/CLIUtils/CLI11/pull/689
+[#1076]: https://github.com/CLIUtils/CLI11/pull/1076
+[#1078]: https://github.com/CLIUtils/CLI11/pull/1078
+[#1081]: https://github.com/CLIUtils/CLI11/pull/1081
+[#1084]: https://github.com/CLIUtils/CLI11/pull/1084
+[#1087]: https://github.com/CLIUtils/CLI11/pull/1087
+[#1093]: https://github.com/CLIUtils/CLI11/pull/1093
+[#1097]: https://github.com/CLIUtils/CLI11/pull/1097
+[#1101]: https://github.com/CLIUtils/CLI11/pull/1101
+[#1106]: https://github.com/CLIUtils/CLI11/pull/1106
+[#1108]: https://github.com/CLIUtils/CLI11/pull/1108
+[#1110]: https://github.com/CLIUtils/CLI11/pull/1110
+[#1112]: https://github.com/CLIUtils/CLI11/pull/1112
+[#1113]: https://github.com/CLIUtils/CLI11/pull/1113
+[#1115]: https://github.com/CLIUtils/CLI11/pull/1115
 
 ## Version 2.4: Unicode and TOML support
 
