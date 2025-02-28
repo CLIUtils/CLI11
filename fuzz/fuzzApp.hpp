@@ -61,7 +61,7 @@ class FuzzApp {
     /** generate additional options based on a string config*/
     std::size_t add_custom_options(CLI::App *app, const std::string &description_string);
     /** modify an option based on string*/
-    void modify_option(CLI::Option *opt,const std::string &modifier);
+    void modify_option(CLI::Option *opt, const std::string &modifier);
 
     int32_t val32{0};
     int16_t val16{0};
