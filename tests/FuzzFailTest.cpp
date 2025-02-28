@@ -248,6 +248,7 @@ TEST_CASE("app_roundtrip_single") {
     CHECK(result);
 }
 
+/** test the fuzzer itself to support custom options*/
 TEST_CASE("fuzz_config_test1") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
@@ -259,6 +260,33 @@ TEST_CASE("fuzz_config_test1") {
     CHECK(app->get_option_no_throw("--new_option") != nullptr);
     CHECK(app->get_option_no_throw("--new_flag") != nullptr);
     CHECK(app->get_option_no_throw("--new_vector") != nullptr);
+}
+
+/** test the fuzzer itself to support custom option modifiers*/
+TEST_CASE("fuzz_config_modifier_test1") {
+    CLI::FuzzApp fuzzdata;
+    auto app = fuzzdata.generateApp();
+
+    std::string config_string = "<option  modifiers=R2CG>--new_option</option><flag modifiers=cFg>--new_flag</flag><vector modifiers=35s+>--new_vector</vector>";
+    auto loc = fuzzdata.add_custom_options(app.get(), config_string);
+    config_string = config_string.substr(loc);
+    CHECK(config_string.empty());
+    auto *opt1=app->get_option_no_throw("--new_option");
+    REQUIRE(opt1!= nullptr);
+    CHECK(opt1->get_required());
+    CHECK(opt1->get_expected_min()==2);
+    CHECK(opt1->get_configurable());
+    CHECK(opt1->get_ignore_case());
+    auto *opt2=app->get_option_no_throw("--new_flag");
+    REQUIRE(opt2 != nullptr);
+    CHECK(opt2->get_disable_flag_override());
+    CHECK(!opt2->get_configurable());
+    CHECK(!opt2->get_ignore_case());
+    auto *opt3=app->get_option_no_throw("--new_vector");
+    REQUIRE(opt3 != nullptr);
+    CHECK(opt3->get_expected_min()==0);
+    CHECK(opt3->get_expected_max()==3);
+    CHECK(opt3->get_multi_option_policy()==CLI::MultiOptionPolicy::Sum);
 }
 
 // this test uses the same tests as above just with a full roundtrip test
