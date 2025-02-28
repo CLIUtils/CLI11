@@ -28,15 +28,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     }
 
     try {
-        if (pstring_start > 0) {
+        if(pstring_start > 0) {
             app->parse(parseString.substr(pstring_start));
-        }
-        else {
+        } else {
             app->parse(parseString);
         }
-    }
-    catch (const CLI::HorribleError& he)
-    {
+    } catch(const CLI::HorribleError &he) {
         throw;
     } catch(const CLI::ParseError &e) {
         //(app)->exit(e);
