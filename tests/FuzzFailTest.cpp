@@ -267,11 +267,12 @@ TEST_CASE("fuzz_config_test2") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    std::string config_string = "<option>--new_option</option><flag>--new_flag</flag><vector>--new_vector</vector> --new_flag --new_option 10";
+    std::string config_string =
+        "<option>--new_option</option><flag>--new_flag</flag><vector>--new_vector</vector> --new_flag --new_option 10";
     auto loc = fuzzdata.add_custom_options(app.get(), config_string);
     config_string = config_string.substr(loc);
     CHECK(!config_string.empty());
-    CHECK(config_string==" --new_flag --new_option 10");
+    CHECK(config_string == " --new_flag --new_option 10");
     CHECK(app->get_option_no_throw("--new_option") != nullptr);
     CHECK(app->get_option_no_throw("--new_flag") != nullptr);
     CHECK(app->get_option_no_throw("--new_vector") != nullptr);
