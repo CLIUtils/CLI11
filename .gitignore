@@ -1,12 +1,14 @@
 a.out*
 *.swp
 /*build*
+/*out*
 /test_package/build
 /Makefile
 /CMakeFiles/*
 /cmake_install.cmake
 /*.kdev4
 /.vscode
+/.vs
 /html/*
 !/meson.build
 /CMakeUserPresets.json

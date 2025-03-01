@@ -20,10 +20,10 @@ if(CMAKE_CXX_STANDARD GREATER 16)
     endif()
 
     if(NOT CLI11_FUZZ_TIME_APP)
-      set(CLI11_FUZZ_TIME_APP 600)
+      set(CLI11_FUZZ_TIME_APP 660)
     endif()
     if(NOT CLI11_FUZZ_TIME_FILE)
-      set(CLI11_FUZZ_TIME_FILE 240)
+      set(CLI11_FUZZ_TIME_FILE 200)
     endif()
     add_custom_target(
       QUICK_CLI11_APP_FUZZ

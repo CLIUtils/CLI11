@@ -28,7 +28,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         app->clear();
         std::stringstream out(configOut);
         app->parse_from_stream(out);
-
+    } catch(const CLI::HorribleError &he) {
+        throw;
     } catch(const CLI::ParseError &e) {
         // (app)->exit(e);
         // this just indicates we caught an error known by CLI

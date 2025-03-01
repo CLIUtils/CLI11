@@ -33,7 +33,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         } else {
             app->parse(parseString);
         }
-
+    } catch(const CLI::HorribleError &he) {
+        throw;
     } catch(const CLI::ParseError &e) {
         //(app)->exit(e);
         // this just indicates we caught an error known by CLI
