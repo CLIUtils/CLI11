@@ -86,6 +86,7 @@ class FuzzApp {
     std::vector<std::vector<std::string>> vvs{};
     std::optional<double> od1{};
     std::optional<std::string> ods{};
+    std::optional<std::vector<std::string>> ovs{};
     std::pair<double, std::string> p1{};
     std::pair<std::vector<double>, std::string> p2{};
     std::tuple<int64_t, uint16_t, std::optional<double>> t1{};

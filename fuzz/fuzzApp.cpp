@@ -76,6 +76,7 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
 
     fApp->add_option("--oopt1", od1);
     fApp->add_option("--oopt2", ods);
+    fApp->add_option("--ovopt",ovs);
 
     fApp->add_option("--tup1", p1);
     fApp->add_option("--tup2", t1);
@@ -208,6 +209,9 @@ bool FuzzApp::compare(const FuzzApp &other) const {
         return false;
     }
     if(ods != other.ods) {
+        return false;
+    }
+    if (ovs != other.ovs) {
         return false;
     }
     if(p1 != other.p1) {
