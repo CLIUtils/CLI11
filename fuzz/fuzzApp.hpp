@@ -59,7 +59,10 @@ class FuzzApp {
     /** compare two fuzz apps for equality*/
     CLI11_NODISCARD bool compare(const FuzzApp &other) const;
     /** generate additional options based on a string config*/
-    std::size_t add_custom_options(CLI::App *app, std::string &description_string);
+    std::size_t add_custom_options(CLI::App *app, const std::string &description_string);
+    /** modify an option based on string*/
+    void modify_option(CLI::Option *opt, const std::string &modifier);
+
     int32_t val32{0};
     int16_t val16{0};
     int8_t val8{0};
@@ -83,6 +86,7 @@ class FuzzApp {
     std::vector<std::vector<std::string>> vvs{};
     std::optional<double> od1{};
     std::optional<std::string> ods{};
+    std::optional<std::vector<std::string>> ovs{};
     std::pair<double, std::string> p1{};
     std::pair<std::vector<double>, std::string> p2{};
     std::tuple<int64_t, uint16_t, std::optional<double>> t1{};
