@@ -76,6 +76,7 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
 
     fApp->add_option("--oopt1", od1);
     fApp->add_option("--oopt2", ods);
+    fApp->add_option("--ovopt", ovs);
 
     fApp->add_option("--tup1", p1);
     fApp->add_option("--tup2", t1);
@@ -210,6 +211,9 @@ bool FuzzApp::compare(const FuzzApp &other) const {
     if(ods != other.ods) {
         return false;
     }
+    if(ovs != other.ovs) {
+        return false;
+    }
     if(p1 != other.p1) {
         return false;
     }
@@ -312,11 +316,114 @@ bool FuzzApp::compare(const FuzzApp &other) const {
     return true;
 }
 
+void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string) {
+    auto mod_start = modifier_string.find("modifiers=");
+    if(mod_start == std::string::npos) {
+        return;
+    }
+    auto mod_end = modifier_string.find_first_of(' ', mod_start + 1);
+    std::string modifiers = modifier_string.substr(mod_start + 10, mod_end - mod_start - 10);
+    for(const auto mod : modifiers) {
+        switch(mod) {
+        case 'r':
+        case 'R':
+            opt->required(mod < '`');
+            break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+            opt->expected(mod - '0');
+            break;
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            opt->expected(opt->get_expected_min(), mod - '5');
+            break;
+        case 'c':
+        case 'C':
+            opt->ignore_case(mod < '`');
+            break;
+        case 'u':
+        case 'U':
+            opt->ignore_underscore(mod < '`');
+            break;
+        case 'f':
+        case 'F':
+            opt->disable_flag_override(mod < '`');
+            break;
+        case 'e':
+        case 'E':
+            opt->allow_extra_args(mod < '`');
+            break;
+        case ',':
+        case ';':
+        case '%':
+        case '#':
+        case '|':
+        case '\\':
+        case '~':
+        case ':':
+            opt->delimiter(mod);
+            break;
+        case 'g':
+        case 'G':
+            opt->configurable(mod < '`');
+            break;
+        case 'p':
+        case 'P':
+            opt->trigger_on_parse(mod < '`');
+            break;
+        case 't':
+        case 'T':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::Throw);
+            break;
+        case 'l':
+        case 'L':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::TakeLast);
+            break;
+        case 's':
+        case 'S':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::TakeFirst);
+            break;
+        case 'a':
+        case 'A':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+            break;
+        case 'v':
+        case 'V':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::Reverse);
+            break;
+        case 'j':
+        case 'J':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::Join);
+            break;
+        case '+':
+            opt->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+            break;
+        case 'i':
+            opt->check(CLI::Number);
+            break;
+        case 'I':
+            opt->check(CLI::NonNegativeNumber);
+            break;
+        case 'w':
+            opt->check(!CLI::Number);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 //<option>name_string</option>
 //<vector>name_string</vector>
 //<flag>name_string</flag>
 /** generate additional options based on a string config*/
-std::size_t FuzzApp::add_custom_options(CLI::App *app, std::string &description_string) {
+std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &description_string) {
     std::size_t current_index{0};
     while(description_string.size() - 5 > current_index && description_string[current_index] == '<') {
         if(description_string.compare(current_index, 7, "<option") == 0) {
@@ -330,7 +437,12 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, std::string &description_
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
             custom_string_options.push_back(std::make_shared<std::string>());
-            app->add_option(name, *(custom_string_options.back()));
+            auto *opt = app->add_option(name, *(custom_string_options.back()));
+            if(header_close > current_index + 19) {
+                std::string attributes = description_string.substr(current_index + 8, header_close - 8 - current_index);
+                modify_option(opt, attributes);
+            }
+
             current_index = end_option + 9;
         } else if(description_string.compare(current_index, 5, "<flag") == 0) {
             auto end_option = description_string.find("</flag>", current_index + 6);
@@ -343,7 +455,12 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, std::string &description_
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
             custom_string_options.push_back(std::make_shared<std::string>());
-            app->add_option(name, *(custom_string_options.back()));
+            auto *opt = app->add_option(name, *(custom_string_options.back()));
+
+            if(header_close > current_index + 17) {
+                std::string attributes = description_string.substr(current_index + 6, header_close - 6 - current_index);
+                modify_option(opt, attributes);
+            }
             current_index = end_option + 7;
         } else if(description_string.compare(current_index, 7, "<vector") == 0) {
             auto end_option = description_string.find("</vector>", current_index + 8);
@@ -356,7 +473,11 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, std::string &description_
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
             custom_vector_options.push_back(std::make_shared<std::vector<std::string>>());
-            app->add_option(name, *(custom_string_options.back()));
+            auto *opt = app->add_option(name, *(custom_vector_options.back()));
+            if(header_close > current_index + 19) {
+                std::string attributes = description_string.substr(current_index + 8, header_close - 8 - current_index);
+                modify_option(opt, attributes);
+            }
             current_index = end_option + 9;
         } else {
             if(isspace(description_string[current_index]) != 0) {
