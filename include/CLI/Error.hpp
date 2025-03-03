@@ -275,7 +275,7 @@ class ArgumentMismatch : public ParseError {
                                 std::to_string(received));
     }
     static ArgumentMismatch AtMost(std::string name, int num, std::size_t received) {
-        return ArgumentMismatch(name + ": At Most " + std::to_string(num) + " required but received " +
+        return ArgumentMismatch(name + ": At most " + std::to_string(num) + " required but received " +
                                 std::to_string(received));
     }
     static ArgumentMismatch TypedAtLeast(std::string name, int num, std::string type) {
