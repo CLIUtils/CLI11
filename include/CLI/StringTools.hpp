@@ -33,7 +33,8 @@ namespace enums {
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value>::type>
 std::ostream &operator<<(std::ostream &in, const T &item) {
     // make sure this is out of the detail namespace otherwise it won't be found when needed
-    return in << static_cast<typename std::underlying_type<T>::type>(item);
+    // https://isocpp.org/wiki/faq/input-output#print-char-or-ptr-as-number
+    return in << +static_cast<typename std::underlying_type<T>::type>(item);
 }
 
 }  // namespace enums

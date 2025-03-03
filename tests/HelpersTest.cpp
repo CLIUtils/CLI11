@@ -38,6 +38,9 @@ TEST_CASE("TypeTools: Streaming", "[helpers]") {
 
     CHECK(std::string("string") == CLI::detail::to_string("string"));
     CHECK(std::string("string") == CLI::detail::to_string(std::string("string")));
+
+    enum class t1 : std::uint8_t { enum1, enum2 };
+    CHECK(CLI::detail::to_string(t1::enum1) == "0");
 }
 
 TEST_CASE("TypeTools: tuple", "[helpers]") {
