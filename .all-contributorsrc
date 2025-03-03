@@ -742,7 +742,7 @@
       ]
     },
     {
-       "login": "jmarrec",
+      "login": "jmarrec",
       "name": "Julien Marrec",
       "avatar_url": "https://avatars.githubusercontent.com/u/5479063?v=4",
       "profile": "http://www.effibem.com",
@@ -757,13 +757,22 @@
       "profile": "https://github.com/nshaheed",
       "contributions": [
         "platform"
-        ]
+      ]
     },
     {
       "login": "LostInCompilation",
       "name": "Marc",
       "avatar_url": "https://avatars.githubusercontent.com/u/12819635?v=4",
       "profile": "https://github.com/LostInCompilation",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "gblanco92",
+      "name": "Guillem Blanco",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3957977?v=4",
+      "profile": "https://github.com/gblanco92",
       "contributions": [
         "code"
       ]
