@@ -776,18 +776,6 @@ class Option : public OptionBase<Option> {
                 _validate_results(results_);
                 current_option_state_ = old_option_state;
             }
-        } catch(const ValidationError &err) {
-            // this should be done
-            results_ = std::move(old_results);
-            current_option_state_ = old_option_state;
-            // try an alternate way to convert
-            std::string alternate = detail::value_string(val);
-            if(!alternate.empty() && alternate != val_str) {
-                return default_val(alternate);
-            }
-
-            throw ValidationError(get_name(),
-                                  std::string("given default value does not pass validation :") + err.what());
         } catch(const ConversionError &err) {
             // this should be done
             results_ = std::move(old_results);
