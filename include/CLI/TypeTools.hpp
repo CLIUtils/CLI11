@@ -387,7 +387,7 @@ inline std::string to_string(T &&) {
 /// convert a readable container to a string
 template <typename T,
           enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
-                          !is_ostreamable<T>::value && is_readable_container<T>::value,
+                          !is_ostreamable<T>::value && is_readable_container<T>::value && !is_tuple_like<T>::value,
                       detail::enabler> = detail::dummy>
 inline std::string to_string(T &&variable) {
     auto cval = variable.begin();
