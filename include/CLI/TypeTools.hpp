@@ -1497,7 +1497,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &outp
     using FirstType = typename std::remove_const<typename std::tuple_element<0, ConvertTo>::type>::type;
     using SecondType = typename std::tuple_element<1, ConvertTo>::type;
     FirstType v1;
-    SecondType v2;
+    SecondType v2{};
     bool retval = lexical_assign<FirstType, FirstType>(strings[0], v1);
     retval = retval && lexical_assign<SecondType, SecondType>((strings.size() > 1) ? strings[1] : std::string{}, v2);
     if(retval) {
