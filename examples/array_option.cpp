@@ -6,10 +6,9 @@
 
 // Code modified from @gourin https://github.com/CLIUtils/CLI11/issues/1135
 
-
+#include <CLI/CLI.hpp>
 #include <array>
 #include <iostream>
-#include <CLI/CLI.hpp>
 
 int main(int argc, char **argv) {
     std::array<int, 2> a{0, 1};
