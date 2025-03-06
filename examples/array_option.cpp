@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Code modified from @gourin https://github.com/CLIUtils/CLI11/issues/1135
+// Code modified from Loic Gouarin(https://github.com/gouarin) https://github.com/CLIUtils/CLI11/issues/1135
 
 #include <CLI/CLI.hpp>
 #include <array>
