@@ -1972,7 +1972,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                 }
                 std::string dummy1, dummy2;
                 bool val=false;
-                if(detail::split_long(args.back(), dummy1, dummy2))
+                if (current_type==detail::Classifier::SHORT || detail::split_long(args.back(), dummy1, dummy2))
                 {
                     val = sub->_parse_arg(args, current_type, true);
                 }
