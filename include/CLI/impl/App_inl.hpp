@@ -1949,7 +1949,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
 
         // now check for '.' notation of subcommands
         auto dotloc = arg_name.find_first_of('.', 1);
-        if(dotloc != std::string::npos) {
+        if(dotloc != std::string::npos && dotloc<arg_name.size()-1) {
             // using dot notation is equivalent to single argument subcommand
             auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
             if(sub != nullptr) {

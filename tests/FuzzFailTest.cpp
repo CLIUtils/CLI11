@@ -341,7 +341,7 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
     // like HorribleErrors
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
-    int index = GENERATE(range(1, 2));
+    int index = GENERATE(range(1, 3));
     std::string optionString, flagString;
     auto parseData = loadFailureFile("parse_fail_check", index);
     std::size_t pstring_start{0};
@@ -355,8 +355,22 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
         }
     } catch(const CLI::HorribleError & /*he*/) {
         CHECK(false);
+        return;
     } catch(const CLI::ParseError & /*e*/) {
         CHECK(true);
+        return;
     }
-    CHECK(true);
+    try {
+    // should be able to write the config to a file and read from it again
+    std::string configOut = app->config_to_str();
+    app->clear();
+    std::stringstream out(configOut);
+    app->parse_from_stream(out);
+    } catch(const CLI::HorribleError & /*he*/) {
+        CHECK(false);
+        return;
+    } catch(const CLI::ParseError & /*e*/) {
+        CHECK(false);
+        return;
+    }
 }
