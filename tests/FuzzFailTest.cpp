@@ -306,7 +306,7 @@ TEST_CASE("fuzz_config_modifier_test1") {
     CHECK(opt3->get_multi_option_policy() == CLI::MultiOptionPolicy::Sum);
 }
 
-// this test enbles the custom operation
+// this test enables the custom option creation operation
 TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata;
     CLI::FuzzApp fuzzdata2;
