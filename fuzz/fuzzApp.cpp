@@ -193,17 +193,13 @@ bool FuzzApp::compare(const FuzzApp &other) const {
     }
 
     if(vv1 != other.vv1) {
-        if (vv1.size() != other.vv1.size())
-        {
+        if(vv1.size() != other.vv1.size()) {
             return false;
         }
-        //need to check if they are both nan
-        for (std::size_t index = 0; index < vv1.size(); ++index)
-        {
-            if (vv1[index] != other.vv1[index])
-            {
-                if (std::isnan(vv1[index]) && std::isnan(other.vv1[index]))
-                {
+        // need to check if they are both nan
+        for(std::size_t index = 0; index < vv1.size(); ++index) {
+            if(vv1[index] != other.vv1[index]) {
+                if(std::isnan(vv1[index]) && std::isnan(other.vv1[index])) {
                     continue;
                 }
                 return false;

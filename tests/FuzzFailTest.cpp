@@ -335,11 +335,10 @@ TEST_CASE("app_roundtrip_custom") {
     CHECK(result);
 }
 
-
-// this test 
+// this test
 TEST_CASE("app_roundtrip_parse_normal_fail") {
-    //this is mostly checking that no unexpected errors occur
-    //like HorribleErrors
+    // this is mostly checking that no unexpected errors occur
+    // like HorribleErrors
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
     int index = GENERATE(range(1, 2));
@@ -354,7 +353,7 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
         } else {
             app->parse(parseData);
         }
-    } catch(const CLI::HorribleError &/*he*/) {
+    } catch(const CLI::HorribleError & /*he*/) {
         CHECK(false);
     } catch(const CLI::ParseError & /*e*/) {
         CHECK(true);
