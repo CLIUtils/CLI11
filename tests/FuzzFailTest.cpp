@@ -306,14 +306,13 @@ TEST_CASE("fuzz_config_modifier_test1") {
     CHECK(opt3->get_multi_option_policy() == CLI::MultiOptionPolicy::Sum);
 }
 
-// this test uses the same tests as above just with a full roundtrip test
+// this test enbles the custom operation
 TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata;
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(1, 4));
-    std::string optionString, flagString;
+    int index = GENERATE(range(1, 5));
     auto parseData = loadFailureFile("round_trip_custom", index);
     std::size_t pstring_start{0};
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
@@ -334,4 +333,31 @@ TEST_CASE("app_roundtrip_custom") {
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
     CHECK(result);
+}
+
+
+// this test 
+TEST_CASE("app_roundtrip_parse_normal_fail") {
+    //this is mostly checking that no unexpected errors occur
+    //like HorribleErrors
+    CLI::FuzzApp fuzzdata;
+    auto app = fuzzdata.generateApp();
+    int index = GENERATE(range(1, 2));
+    std::string optionString, flagString;
+    auto parseData = loadFailureFile("parse_fail_check", index);
+    std::size_t pstring_start{0};
+    pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
+
+    try {
+        if(pstring_start > 0) {
+            app->parse(parseData.substr(pstring_start));
+        } else {
+            app->parse(parseData);
+        }
+    } catch(const CLI::HorribleError &/*he*/) {
+        CHECK(false);
+    } catch(const CLI::ParseError & /*e*/) {
+        CHECK(true);
+    }
+    CHECK(true);
 }

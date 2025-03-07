@@ -1970,7 +1970,13 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     args.push_back(nval);
                     current_type = detail::Classifier::SHORT;
                 }
-                auto val = sub->_parse_arg(args, current_type, true);
+                std::string dummy1, dummy2;
+                bool val=false;
+                if(detail::split_long(args.back(), dummy1, dummy2))
+                {
+                    val = sub->_parse_arg(args, current_type, true);
+                }
+                
                 if(val) {
                     if(!sub->silent_) {
                         parsed_subcommands_.push_back(sub);
