@@ -361,11 +361,11 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
         return;
     }
     try {
-    // should be able to write the config to a file and read from it again
-    std::string configOut = app->config_to_str();
-    app->clear();
-    std::stringstream out(configOut);
-    app->parse_from_stream(out);
+        // should be able to write the config to a file and read from it again
+        std::string configOut = app->config_to_str();
+        app->clear();
+        std::stringstream out(configOut);
+        app->parse_from_stream(out);
     } catch(const CLI::HorribleError & /*he*/) {
         CHECK(false);
         return;
