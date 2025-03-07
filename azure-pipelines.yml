@@ -99,7 +99,7 @@ jobs:
     steps:
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: "3.7"
+          versionSpec: "3.11"
       - script: python3 -m pip install meson ninja
         displayName: install meson
       - script: mkdir tests/mesonTest/subprojects
@@ -140,6 +140,7 @@ jobs:
         clang3.4:
           containerImage: silkeh/clang:3.4
           cli11.std: 11
+          cli11.options: -DCLI11_WARNINGS_AS_ERRORS=OFF
         clang8:
           containerImage: silkeh/clang:8
           cli11.std: 14

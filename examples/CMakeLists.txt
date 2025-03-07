@@ -219,6 +219,10 @@ add_cli_exe(modhelp modhelp.cpp)
 add_test(NAME modhelp COMMAND modhelp -a test -h)
 set_property(TEST modhelp PROPERTY PASS_REGULAR_EXPRESSION "Option -a string in help: test")
 
+add_cli_exe(array_option array_option.cpp)
+add_test(NAME array_option COMMAND array_option --a 1 2)
+set_property(TEST array_option PROPERTY PASS_REGULAR_EXPRESSION "pass")
+
 add_subdirectory(subcom_in_files)
 add_test(NAME subcom_in_files COMMAND subcommand_main subcommand_a -f this.txt --with-foo)
 set_property(TEST subcom_in_files PROPERTY PASS_REGULAR_EXPRESSION "Working on file: this\.txt"
