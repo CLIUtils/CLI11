@@ -829,10 +829,9 @@ TEST_CASE_METHOD(TApp, "doubleVector", "[optiontype]") {
 
     std::vector<double> custom_opt;
 
-    auto *opt = app.add_option("--fp", custom_opt);
+    app.add_option("--fp", custom_opt);
 
     args = {"--fp", "12.7", "1.5"};
-
     run();
     CHECK(12.7 == Approx(custom_opt[0]));
     CHECK(1.5 == Approx(custom_opt[1]));
