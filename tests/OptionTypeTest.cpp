@@ -232,6 +232,9 @@ static const std::map<std::string, double> testValuesDouble{
     {"-3.14159  ", -3.14159},
     {"+1.0", 1.0},
     {"-0.01", -0.01},
+    {"-.01", -0.01},
+    {"-.3251", -0.3251},
+    {"+.3251", 0.3251},
     {"5e22", 5e22},
     {" 5e22", 5e22},
     {" 5e22  ", 5e22},
@@ -820,6 +823,28 @@ TEST_CASE_METHOD(TApp, "floatPair", "[optiontype]") {
     run();
     CHECK(3.4f == Approx(custom_opt.first));
     CHECK(2.7f == Approx(custom_opt.second));
+}
+
+// now with tuple support this is possible
+TEST_CASE_METHOD(TApp, "doubleVector", "[optiontype]") {
+
+    std::vector<double> custom_opt;
+
+    app.add_option("--fp", custom_opt);
+
+    args = {"--fp", "12.7", "1.5"};
+    run();
+    CHECK(12.7 == Approx(custom_opt[0]));
+    CHECK(1.5 == Approx(custom_opt[1]));
+    args = {"--fp", "12.7", "-.5"};
+    run();
+    CHECK(12.7 == Approx(custom_opt[0]));
+    CHECK(-0.5 == Approx(custom_opt[1]));
+
+    args = {"--fp", "-.7", "+.5"};
+    run();
+    CHECK(-0.7 == Approx(custom_opt[0]));
+    CHECK(0.5 == Approx(custom_opt[1]));
 }
 
 // now with independent type sizes and expected this is possible
