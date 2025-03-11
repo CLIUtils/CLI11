@@ -9,6 +9,7 @@
 #include "catch.hpp"
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <complex>
@@ -231,6 +232,9 @@ static const std::map<std::string, double> testValuesDouble{
     {"-3.14159  ", -3.14159},
     {"+1.0", 1.0},
     {"-0.01", -0.01},
+    {"-.01", -0.01},
+    {"-.3251", -0.3251},
+    {"+.3251", 0.3251},
     {"5e22", 5e22},
     {" 5e22", 5e22},
     {" 5e22  ", 5e22},
@@ -821,6 +825,28 @@ TEST_CASE_METHOD(TApp, "floatPair", "[optiontype]") {
     CHECK(2.7f == Approx(custom_opt.second));
 }
 
+// now with tuple support this is possible
+TEST_CASE_METHOD(TApp, "doubleVector", "[optiontype]") {
+
+    std::vector<double> custom_opt;
+
+    app.add_option("--fp", custom_opt);
+
+    args = {"--fp", "12.7", "1.5"};
+    run();
+    CHECK(12.7 == Approx(custom_opt[0]));
+    CHECK(1.5 == Approx(custom_opt[1]));
+    args = {"--fp", "12.7", "-.5"};
+    run();
+    CHECK(12.7 == Approx(custom_opt[0]));
+    CHECK(-0.5 == Approx(custom_opt[1]));
+
+    args = {"--fp", "-.7", "+.5"};
+    run();
+    CHECK(-0.7 == Approx(custom_opt[0]));
+    CHECK(0.5 == Approx(custom_opt[1]));
+}
+
 // now with independent type sizes and expected this is possible
 TEST_CASE_METHOD(TApp, "vectorPair", "[optiontype]") {
 
@@ -910,6 +936,50 @@ TEST_CASE_METHOD(TApp, "vectorPairTypeRange", "[optiontype]") {
     CHECK(custom_opt[1].second.empty());
     CHECK(-1 == custom_opt[2].first);
     CHECK("str4" == custom_opt[2].second);
+}
+
+TEST_CASE_METHOD(TApp, "ArrayTriple", "[optiontype]") {
+
+    using TY = std::array<int, 3>;
+    TY custom_opt;
+
+    app.add_option("posit", custom_opt);
+
+    args = {"12", "1", "5"};
+
+    run();
+    CHECK(12 == custom_opt[0]);
+    CHECK(1 == custom_opt[1]);
+    CHECK(5 == custom_opt[2]);
+
+    // enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
+    //    !is_ostreamable<T>::value && is_tuple_like<T>::value && type_count_base<T>::value >= 2,
+    //   detail::enabler>>
+
+    CHECK(!std::is_convertible<TY, std::string>::value);
+    CHECK(!std::is_constructible<std::string, TY>::value);
+    CHECK(!CLI::detail::is_ostreamable<TY>::value);
+    auto ts = std::tuple_size<typename std::decay<TY>::type>::value;
+    CHECK(ts == 3);
+
+    auto vb = CLI::detail::type_count_base<TY>::value;
+    CHECK(vb >= 2);
+    CHECK(!CLI::detail::is_complex<TY>::value);
+    CHECK(CLI::detail::is_tuple_like<TY>::value);
+}
+
+TEST_CASE_METHOD(TApp, "ArrayPair", "[optiontype]") {
+
+    using TY = std::array<int, 2>;
+    TY custom_opt;
+
+    app.add_option("posit", custom_opt);
+
+    args = {"12", "1"};
+
+    run();
+    CHECK(12 == custom_opt[0]);
+    CHECK(1 == custom_opt[1]);
 }
 
 // now with independent type sizes and expected this is possible

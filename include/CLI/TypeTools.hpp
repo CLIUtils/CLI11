@@ -387,7 +387,7 @@ inline std::string to_string(T &&) {
 /// convert a readable container to a string
 template <typename T,
           enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
-                          !is_ostreamable<T>::value && is_readable_container<T>::value,
+                          !is_ostreamable<T>::value && is_readable_container<T>::value && !is_tuple_like<T>::value,
                       detail::enabler> = detail::dummy>
 inline std::string to_string(T &&variable) {
     auto cval = variable.begin();
@@ -1497,7 +1497,7 @@ bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &outp
     using FirstType = typename std::remove_const<typename std::tuple_element<0, ConvertTo>::type>::type;
     using SecondType = typename std::tuple_element<1, ConvertTo>::type;
     FirstType v1;
-    SecondType v2;
+    SecondType v2{};
     bool retval = lexical_assign<FirstType, FirstType>(strings[0], v1);
     retval = retval && lexical_assign<SecondType, SecondType>((strings.size() > 1) ? strings[1] : std::string{}, v2);
     if(retval) {

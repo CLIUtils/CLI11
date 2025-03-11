@@ -1090,7 +1090,9 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_recognize(const std::strin
     if(detail::split_long(current, dummy1, dummy2))
         return detail::Classifier::LONG;
     if(detail::split_short(current, dummy1, dummy2)) {
-        if(dummy1[0] >= '0' && dummy1[0] <= '9') {
+        if((dummy1[0] >= '0' && dummy1[0] <= '9') ||
+           (dummy1[0] == '.' && !dummy2.empty() && (dummy2[0] >= '0' && dummy2[0] <= '9'))) {
+            // it looks like a number but check if it could be an option
             if(get_option_no_throw(std::string{'-', dummy1[0]}) == nullptr) {
                 return detail::Classifier::NONE;
             }
