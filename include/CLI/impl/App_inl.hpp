@@ -1951,7 +1951,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
 
         // now check for '.' notation of subcommands
         auto dotloc = arg_name.find_first_of('.', 1);
-        if(dotloc != std::string::npos) {
+        if(dotloc != std::string::npos && dotloc < arg_name.size() - 1) {
             // using dot notation is equivalent to single argument subcommand
             auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
             if(sub != nullptr) {
@@ -1972,7 +1972,12 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     args.push_back(nval);
                     current_type = detail::Classifier::SHORT;
                 }
-                auto val = sub->_parse_arg(args, current_type, true);
+                std::string dummy1, dummy2;
+                bool val = false;
+                if(current_type == detail::Classifier::SHORT || detail::split_long(args.back(), dummy1, dummy2)) {
+                    val = sub->_parse_arg(args, current_type, true);
+                }
+
                 if(val) {
                     if(!sub->silent_) {
                         parsed_subcommands_.push_back(sub);
