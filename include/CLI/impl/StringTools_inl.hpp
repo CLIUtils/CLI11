@@ -328,7 +328,7 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
     case 1:
     case 2:
 #if defined(_MSC_VER) && _MSC_VER < 1920
-    case (std::size_t)-1:
+    case(std::size_t)-1:
 #else
     case std::string::npos:
 #endif
