@@ -327,7 +327,11 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
         return close_string_quote(str, start, closure_char);
     case 1:
     case 2:
+#if defined(_MSC_VER) && _MSC_VER < 1920
+    case(std::size_t)-1:
+#else
     case std::string::npos:
+#endif
         return close_literal_quote(str, start, closure_char);
     default:
         break;
