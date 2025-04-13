@@ -878,14 +878,13 @@ TEST_CASE_METHOD(TApp, "vectorArray", "[optiontype]") {
 
     auto *opt = app.add_option("--set", custom_opt);
 
-    args = {"--set", "1", "2","3", "--set", "3", "4" , "5"};
+    args = {"--set", "1", "2", "3", "--set", "3", "4", "5"};
 
     run();
     REQUIRE(2u == custom_opt.size());
     CHECK(1 == custom_opt[0][0]);
     CHECK(4 == custom_opt[1][1]);
-    CHECK(opt->get_type_size()==3);
-
+    CHECK(opt->get_type_size() == 3);
 }
 
 TEST_CASE_METHOD(TApp, "vectorPairFail", "[optiontype]") {
