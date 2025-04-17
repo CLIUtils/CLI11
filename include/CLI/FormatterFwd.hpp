@@ -100,9 +100,9 @@ class FormatterBase {
     /// Set the footer paragraph width
     void footer_paragraph_width(std::size_t val) { footer_paragraph_width_ = val; }
     /// enable formatting for description paragraph
-    void enable_description_formatting(bool value=true){enable_description_formatting_=value;}
+    void enable_description_formatting(bool value = true) { enable_description_formatting_ = value; }
     /// disable formatting for footer paragraph
-    void enable_footer_formatting(bool value=true){enable_footer_formatting_=value;}
+    void enable_footer_formatting(bool value = true) { enable_footer_formatting_ = value; }
     ///@}
     /// @name Getters
     ///@{
@@ -125,7 +125,6 @@ class FormatterBase {
 
     /// Get the current footer paragraph width
     CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
-
 
     /// Get the current status of description paragraph formatting
     CLI11_NODISCARD bool is_description_paragraph_formatting_enabled() const { return enable_description_formatting_; }

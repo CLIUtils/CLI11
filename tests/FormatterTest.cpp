@@ -196,15 +196,16 @@ TEST_CASE("Formatter: NamelessSubInGroup", "[formatter]") {
     CHECK(help.find("pos") == std::string::npos);
 }
 
-
 TEST_CASE("Formatter: Footer", "[formatter]") {
     CLI::App app{"My prog"};
-    std::string footer_string{"this is       a test of the footer systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s  e  r  v  e  SPA C ES"};
+    std::string footer_string{"this is       a test of the footer "
+                              "systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s "
+                              " e  r  v  e  SPA C ES"};
     app.footer(footer_string);
     app.add_flag("--option", "MyFlag");
     int val{0};
-   app.get_formatter()->footer_paragraph_width(50);
-   app.get_formatter()->enable_footer_formatting(false);
+    app.get_formatter()->footer_paragraph_width(50);
+    app.get_formatter()->enable_footer_formatting(false);
     std::string help = app.help("", CLI::AppFormatMode::Normal);
     CHECK_THAT(help, Contains("is       a"));
     CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
@@ -218,7 +219,9 @@ TEST_CASE("Formatter: Footer", "[formatter]") {
 
 TEST_CASE("Formatter: Description", "[formatter]") {
     CLI::App app{"My prog"};
-    std::string desc_string{"this is       a test of the footer systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s  e  r  v  e  SPA C ES"};
+    std::string desc_string{"this is       a test of the footer "
+                            "systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s  "
+                            "e  r  v  e  SPA C ES"};
     app.description(desc_string);
     app.add_flag("--option", "MyFlag");
     int val{0};
