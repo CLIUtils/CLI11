@@ -203,7 +203,6 @@ TEST_CASE("Formatter: Footer", "[formatter]") {
                               " e  r  v  e  SPA C ES"};
     app.footer(footer_string);
     app.add_flag("--option", "MyFlag");
-    int val{0};
     app.get_formatter()->footer_paragraph_width(50);
     app.get_formatter()->enable_footer_formatting(false);
     std::string help = app.help("", CLI::AppFormatMode::Normal);
@@ -224,7 +223,6 @@ TEST_CASE("Formatter: Description", "[formatter]") {
                             "e  r  v  e  SPA C ES"};
     app.description(desc_string);
     app.add_flag("--option", "MyFlag");
-    int val{0};
     app.get_formatter()->description_paragraph_width(50);
     app.get_formatter()->enable_description_formatting(false);
     std::string help = app.help("", CLI::AppFormatMode::Normal);
