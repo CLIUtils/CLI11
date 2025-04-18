@@ -356,6 +356,7 @@ template <
     typename T,
     enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
 typename std::remove_reference<T>::type &smart_deref(T &value) {
+    // NOLINTNEXTLINE
     return value;
 }
 /// Generate a string representation of a set
