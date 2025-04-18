@@ -1320,7 +1320,7 @@ TEST_CASE("Types: TypeName", "[helpers]") {
     std::string text2_name = CLI::detail::type_name<char *>();
     CHECK(text2_name == "TEXT");
 
-    enum class test:std::uint8_t { test1, test2, test3 };
+    enum class test : std::uint8_t { test1, test2, test3 };
     std::string enum_name = CLI::detail::type_name<test>();
     CHECK(enum_name == "ENUM");
 
