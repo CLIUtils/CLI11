@@ -178,8 +178,8 @@ jobs:
           containerImage: silkeh/clang:17
           cli11.std: 23
           cli11.options: -DCMAKE_CXX_FLAGS=-std=c++23
-        clang19_26:
-          containerImage: silkeh/clang:19
+        clang20_26:
+          containerImage: silkeh/clang:20
           cli11.std: 26
           cli11.options: -DCMAKE_CXX_FLAGS=-std=c++2c
     container: $[ variables['containerImage'] ]

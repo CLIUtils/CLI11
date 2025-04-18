@@ -22,7 +22,7 @@ jobs:
       - name: Configure
         run: |
           cmake -S . -B build \
-            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_STANDARD=20 \
             -DCLI11_SINGLE_FILE_TESTS=OFF \
             -DCLI11_BUILD_EXAMPLES=OFF \
             -DCLI11_FUZZ_TARGET=ON \
