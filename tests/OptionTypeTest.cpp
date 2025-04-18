@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-using Catch::literals::operator"" _a;
+using Catch::literals::operator""_a;
 
 TEST_CASE_METHOD(TApp, "OneStringAgain", "[optiontype]") {
     std::string str;
