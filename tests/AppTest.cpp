@@ -2615,7 +2615,6 @@ TEST_CASE_METHOD(TApp, "EmptyOptionEach", "[app]") {
 
 // #122
 TEST_CASE_METHOD(TApp, "EmptyOptionFail", "[app]") {
-    std::string q;
     app.add_option("--each");
 
     args = {"--each", "that"};
