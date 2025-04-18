@@ -46,7 +46,15 @@ namespace CLI {
 #endif
 
 namespace detail {
-enum class Classifier:std::uint8_t { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS_STYLE, SUBCOMMAND, SUBCOMMAND_TERMINATOR };
+enum class Classifier : std::uint8_t {
+    NONE,
+    POSITIONAL_MARK,
+    SHORT,
+    LONG,
+    WINDOWS_STYLE,
+    SUBCOMMAND,
+    SUBCOMMAND_TERMINATOR
+};
 struct AppFriend;
 }  // namespace detail
 
