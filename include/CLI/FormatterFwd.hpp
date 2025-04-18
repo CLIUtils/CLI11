@@ -130,7 +130,7 @@ class FormatterBase {
     CLI11_NODISCARD bool is_description_paragraph_formatting_enabled() const { return enable_description_formatting_; }
 
     /// Get the current status of whether footer paragraph formatting is enabled
-    CLI11_NODISCARD std::size_t is_footer_paragraph_formatting_enabled() const { return enable_footer_formatting_; }
+    CLI11_NODISCARD bool is_footer_paragraph_formatting_enabled() const { return enable_footer_formatting_; }
 
     ///@}
 };
