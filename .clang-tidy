@@ -43,6 +43,7 @@ Checks: |
   -modernize-use-constraints,
   -modernize-use-ranges,
   -modernize-use-starts-ends-with,
+  -modernize-use-integer-sign-comparison,
   *performance*,
   -performance-unnecessary-value-param,
   -performance-inefficient-string-concatenation,

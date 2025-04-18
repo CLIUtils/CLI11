@@ -109,7 +109,7 @@ get_names(const std::vector<std::string> &input, bool allow_non_standard) {
     std::vector<std::string> long_names;
     std::string pos_name;
     for(std::string name : input) {
-        if(name.length() == 0) {
+        if(name.empty()) {
             continue;
         }
         if(name.length() > 1 && name[0] == '-' && name[1] != '-') {
