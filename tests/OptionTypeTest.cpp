@@ -56,7 +56,7 @@ TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
-    CHECK_THAT(res,WithinRel(300.356));
+    CHECK_THAT(res, WithinRel(300.356));
     // get the original value as entered as an integer
     CHECK_THAT(app["--val"]->as<float>(), WithinRel(-354.356));
 }
@@ -77,8 +77,8 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunction", "[optiontype]") {
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
     CHECK(3u == res.size());
-    CHECK_THAT(res[0],WithinRel(10.0));
-    CHECK_THAT(res[2],WithinRel(12.0));
+    CHECK_THAT(res[0], WithinRel(10.0));
+    CHECK_THAT(res[2], WithinRel(12.0));
 }
 
 TEST_CASE_METHOD(TApp, "doubleVectorFunctionFail", "[optiontype]") {
