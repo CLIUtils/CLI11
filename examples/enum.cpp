@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+// NOLINTNEXTLINE
 enum class Level : int { High, Medium, Low };
 
 int main(int argc, char **argv) {

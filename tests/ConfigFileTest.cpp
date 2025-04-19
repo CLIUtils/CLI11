@@ -1590,7 +1590,6 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVector", "[config]") {
 
     run();
 
-    auto str = app.config_to_str();
     CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
     CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
     CHECK(four == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8}));
@@ -1621,7 +1620,6 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparated", "[config]") {
 
     run();
 
-    auto str = app.config_to_str();
     CHECK(two == std::vector<std::vector<int>>({{1, 2, 3}, {4, 5, 6}}));
     CHECK(three == std::vector<int>({1, 2, 3, 4, 5, 6}));
 }
@@ -1653,7 +1651,6 @@ TEST_CASE_METHOD(TApp, "TOMLVectorVectorSeparatedSingleElement", "[config]") {
 
     run();
 
-    auto str = app.config_to_str();
     CHECK(two == std::vector<std::vector<int>>({{1}, {2}, {3}}));
     CHECK(three == std::vector<int>({1, 4, 5}));
 }

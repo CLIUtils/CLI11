@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-using Catch::literals::operator"" _a;
+using Catch::Matchers::WithinRel;
 
 TEST_CASE_METHOD(TApp, "OneStringAgain", "[optiontype]") {
     std::string str;
@@ -56,9 +56,9 @@ TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
     args = {"--val", "-354.356"};
     run();
-    CHECK(300.356_a == res);
+    CHECK_THAT(res, WithinRel(300.356));
     // get the original value as entered as an integer
-    CHECK(-354.356_a == app["--val"]->as<float>());
+    CHECK_THAT(app["--val"]->as<float>(), WithinRel(-354.356f));
 }
 
 TEST_CASE_METHOD(TApp, "doubleFunctionFail", "[optiontype]") {
@@ -77,8 +77,8 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunction", "[optiontype]") {
     args = {"--val", "5", "--val", "6", "--val", "7"};
     run();
     CHECK(3u == res.size());
-    CHECK(10.0_a == res[0]);
-    CHECK(12.0_a == res[2]);
+    CHECK_THAT(res[0], WithinRel(10.0));
+    CHECK_THAT(res[2], WithinRel(12.0));
 }
 
 TEST_CASE_METHOD(TApp, "doubleVectorFunctionFail", "[optiontype]") {

@@ -33,7 +33,7 @@ namespace CLI {
 namespace detail {
 // Based generally on https://rmf.io/cxx11/almost-static-if
 /// Simple empty scoped class
-enum class enabler {};
+enum class enabler : std::uint8_t {};
 
 /// An instance to use in EnableIf
 constexpr enabler dummy = {};
@@ -628,7 +628,7 @@ struct expected_count<T, typename std::enable_if<!is_mutable_container<T>::value
 };
 
 // Enumeration of the different supported categorizations of objects
-enum class object_category : int {
+enum class object_category : std::uint8_t {
     char_value = 1,
     integral_value = 2,
     unsigned_integral = 4,

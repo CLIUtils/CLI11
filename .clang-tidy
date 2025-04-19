@@ -14,6 +14,8 @@ Checks: |
   -bugprone-easily-swappable-parameters,
   -bugprone-forwarding-reference-overload,
   -bugprone-exception-escape,
+  -bugprone-crtp-constructor-accessibility,
+  -bugprone-chained-comparison,
   clang-analyzer-optin.cplusplus.VirtualCall,
   clang-analyzer-optin.performance.Padding,
   -clang-diagnostic-float-equal,
@@ -40,9 +42,16 @@ Checks: |
   -modernize-make-unique,
   -modernize-type-traits,
   -modernize-macro-to-enum,
+  -modernize-use-constraints,
+  -modernize-use-ranges,
+  -modernize-use-starts-ends-with,
+  -modernize-use-integer-sign-comparison,
+  -modernize-use-designated-initializers,
+  -modernize-use-std-numbers,
   *performance*,
   -performance-unnecessary-value-param,
   -performance-inefficient-string-concatenation,
+  -performance-enum-size,
   readability-const-return-type,
   readability-container-size-empty,
   readability-delete-null-pointer,
@@ -62,6 +71,7 @@ Checks: |
   readability-string-compare,
   readability-suspicious-call-argument,
   readability-uniqueptr-delete-release,
+  -clang-analyzer-optin.core.EnumCastOutOfRange
 
 CheckOptions:
   - key: google-readability-braces-around-statements.ShortStatementLines

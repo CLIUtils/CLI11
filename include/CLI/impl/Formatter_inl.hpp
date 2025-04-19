@@ -291,11 +291,11 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         int shortNamesOverSize = 0;
 
         // Print short names
-        if(shortNames.length() > 0) {
+        if(!shortNames.empty()) {
             shortNames = "  " + shortNames;  // Indent
-            if(longNames.length() == 0 && opts.length() > 0)
+            if(longNames.empty() && !opts.empty())
                 shortNames += opts;  // Add opts if only short names and no long names
-            if(longNames.length() > 0)
+            if(!longNames.empty())
                 shortNames += ",";
             if(static_cast<int>(shortNames.length()) >= shortNamesColumnWidth) {
                 shortNames += " ";
@@ -312,8 +312,8 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         const auto adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
 
         // Print long names
-        if(longNames.length() > 0) {
-            if(opts.length() > 0)
+        if(!longNames.empty()) {
+            if(!opts.empty())
                 longNames += opts;
             if(static_cast<int>(longNames.length()) >= adjustedLongNamesColumnWidth)
                 longNames += " ";

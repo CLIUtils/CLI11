@@ -185,7 +185,7 @@ class CustomValidator : public Validator {
 namespace detail {
 
 /// CLI enumeration of different file types
-enum class path_type { nonexistent, file, directory };
+enum class path_type : std::uint8_t { nonexistent, file, directory };
 
 /// get the type of the path from a file name
 CLI11_INLINE path_type check_path(const char *file) noexcept;
@@ -356,6 +356,7 @@ template <
     typename T,
     enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
 typename std::remove_reference<T>::type &smart_deref(T &value) {
+    // NOLINTNEXTLINE
     return value;
 }
 /// Generate a string representation of a set
@@ -721,7 +722,7 @@ class AsNumberWithUnit : public Validator {
     /// CASE_SENSITIVE/CASE_INSENSITIVE controls how units are matched.
     /// UNIT_OPTIONAL/UNIT_REQUIRED throws ValidationError
     ///   if UNIT_REQUIRED is set and unit literal is not found.
-    enum Options {
+    enum Options : std::uint8_t {
         CASE_SENSITIVE = 0,
         CASE_INSENSITIVE = 1,
         UNIT_OPTIONAL = 0,

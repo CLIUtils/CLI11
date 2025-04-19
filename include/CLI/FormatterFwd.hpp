@@ -29,7 +29,7 @@ class App;
 /// This is passed in by App; all user classes must accept this as
 /// the second argument.
 
-enum class AppFormatMode {
+enum class AppFormatMode : std::uint8_t {
     Normal,  ///< The normal, detailed help
     All,     ///< A fully expanded help
     Sub,     ///< Used when printed as part of expanded subcommand

@@ -46,7 +46,15 @@ namespace CLI {
 #endif
 
 namespace detail {
-enum class Classifier { NONE, POSITIONAL_MARK, SHORT, LONG, WINDOWS_STYLE, SUBCOMMAND, SUBCOMMAND_TERMINATOR };
+enum class Classifier : std::uint8_t {
+    NONE,
+    POSITIONAL_MARK,
+    SHORT,
+    LONG,
+    WINDOWS_STYLE,
+    SUBCOMMAND,
+    SUBCOMMAND_TERMINATOR
+};
 struct AppFriend;
 }  // namespace detail
 
@@ -60,7 +68,7 @@ CLI11_INLINE std::string help(const App *app, const Error &e);
 
 /// enumeration of modes of how to deal with extras in config files
 
-enum class config_extras_mode : char { error = 0, ignore, ignore_all, capture };
+enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, capture };
 
 class App;
 
@@ -242,7 +250,7 @@ class App {
     /// specify that positional arguments come at the end of the argument sequence not inheritable
     bool positionals_at_end_{false};
 
-    enum class startup_mode : char { stable, enabled, disabled };
+    enum class startup_mode : std::uint8_t { stable, enabled, disabled };
     /// specify the startup mode for the app
     /// stable=no change, enabled= startup enabled, disabled=startup disabled
     startup_mode default_startup{startup_mode::stable};

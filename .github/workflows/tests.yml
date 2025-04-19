@@ -88,13 +88,13 @@ jobs:
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:17
+    container: silkeh/clang:20
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure
         run: >
-          cmake -S . -B build -DCMAKE_CXX_STANDARD=17
+          cmake -S . -B build -DCMAKE_CXX_STANDARD=20
           -DCMAKE_CXX_CLANG_TIDY="$(which
           clang-tidy);--use-color;--warnings-as-errors=*"
 
@@ -133,7 +133,7 @@ jobs:
 
   boost-build:
     name: Boost build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -233,9 +233,9 @@ jobs:
         run: ctest --output-on-failure -L Packaging
         working-directory: build
 
-  cmake-config-ubuntu-2004:
-    name: CMake config check (Ubuntu 20.04)
-    runs-on: ubuntu-20.04
+  cmake-config-ubuntu-2204:
+    name: CMake config check (Ubuntu 22.04)
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -282,9 +282,9 @@ jobs:
           cmake-version: "3.16"
         if: success() || failure()
 
-  cmake-config-ubuntu-2204:
-    name: CMake config check (Ubuntu 22.04)
-    runs-on: ubuntu-22.04
+  cmake-config-ubuntu-2404:
+    name: CMake config check (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
