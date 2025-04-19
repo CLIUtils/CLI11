@@ -58,7 +58,7 @@ TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     run();
     CHECK_THAT(res, WithinRel(300.356));
     // get the original value as entered as an integer
-    CHECK_THAT(app["--val"]->as<float>(), WithinRel(-354.356));
+    CHECK_THAT(app["--val"]->as<float>(), WithinRel(-354.356f));
 }
 
 TEST_CASE_METHOD(TApp, "doubleFunctionFail", "[optiontype]") {
