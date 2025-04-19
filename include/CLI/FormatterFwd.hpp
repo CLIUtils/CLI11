@@ -56,6 +56,10 @@ class FormatterBase {
     /// The width of the footer paragraph
     std::size_t footer_paragraph_width_{80};
 
+    /// options controlling formatting for footer and descriptions
+    bool enable_description_formatting_{true};
+    bool enable_footer_formatting_{true};
+
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
     std::map<std::string, std::string> labels_{};
@@ -81,7 +85,7 @@ class FormatterBase {
     /// @name Setters
     ///@{
 
-    /// Set the "REQUIRED" label
+    /// Set the "REQUIRED" or other labels
     void label(std::string key, std::string val) { labels_[key] = val; }
 
     /// Set the left column width (options/flags/subcommands)
@@ -95,7 +99,10 @@ class FormatterBase {
 
     /// Set the footer paragraph width
     void footer_paragraph_width(std::size_t val) { footer_paragraph_width_ = val; }
-
+    /// enable formatting for description paragraph
+    void enable_description_formatting(bool value = true) { enable_description_formatting_ = value; }
+    /// disable formatting for footer paragraph
+    void enable_footer_formatting(bool value = true) { enable_footer_formatting_ = value; }
     ///@}
     /// @name Getters
     ///@{
@@ -118,6 +125,12 @@ class FormatterBase {
 
     /// Get the current footer paragraph width
     CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
+
+    /// Get the current status of description paragraph formatting
+    CLI11_NODISCARD bool is_description_paragraph_formatting_enabled() const { return enable_description_formatting_; }
+
+    /// Get the current status of whether footer paragraph formatting is enabled
+    CLI11_NODISCARD bool is_footer_paragraph_formatting_enabled() const { return enable_footer_formatting_; }
 
     ///@}
 };
