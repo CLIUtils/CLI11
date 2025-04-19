@@ -210,9 +210,20 @@ TEST_CASE("Formatter: Footer", "[formatter]") {
     CHECK_THAT(help, Contains("is       a"));
     CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, Contains(footer_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(footer_string));
+
     app.get_formatter()->enable_footer_formatting(true);
     CHECK(app.get_formatter()->is_footer_paragraph_formatting_enabled());
     help = app.help("", CLI::AppFormatMode::Normal);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(footer_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
     CHECK_THAT(help, !Contains("is       a"));
     CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, !Contains(footer_string));
@@ -232,10 +243,23 @@ TEST_CASE("Formatter: Description", "[formatter]") {
     CHECK_THAT(help, Contains("is       a"));
     CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, Contains(desc_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(desc_string));
+
     app.get_formatter()->enable_description_formatting(true);
     CHECK(app.get_formatter()->is_description_paragraph_formatting_enabled());
     help = app.help("", CLI::AppFormatMode::Normal);
     CHECK_THAT(help, !Contains("is       a"));
     CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, !Contains(desc_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(desc_string));
 }
+
+
