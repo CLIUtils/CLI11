@@ -261,5 +261,3 @@ TEST_CASE("Formatter: Description", "[formatter]") {
     CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, !Contains(desc_string));
 }
-
-
