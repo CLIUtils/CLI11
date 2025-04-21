@@ -25,11 +25,11 @@ int levenshteinDistance(const std::string &s1, const std::string &s2) {
     for(size_t i = 1; i <= len1; ++i) {
         for(size_t j = 1; j <= len2; ++j) {
             int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
-            dp[i][j] = (std::min)({ 
-                dp[i - 1][j] + 1,     // deletion
-                dp[i][j - 1] + 1,     // insertion
-                dp[i - 1][j - 1] + cost // substitution
-                });
+            dp[i][j] = (std::min)({
+                dp[i - 1][j] + 1,        // deletion
+                dp[i][j - 1] + 1,        // insertion
+                dp[i - 1][j - 1] + cost  // substitution
+            });
         }
     }
 
