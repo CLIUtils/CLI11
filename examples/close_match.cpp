@@ -25,21 +25,21 @@ int levenshteinDistance(const std::string &s1, const std::string &s2) {
     for(size_t i = 1; i <= len1; ++i) {
         for(size_t j = 1; j <= len2; ++j) {
             int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
-            dp[i][j] = std::min({
-                dp[i - 1][j] + 1,        // deletion
-                dp[i][j - 1] + 1,        // insertion
-                dp[i - 1][j - 1] + cost  // substitution
-            });
+            dp[i][j] = (std::min)({ 
+                dp[i - 1][j] + 1,     // deletion
+                dp[i][j - 1] + 1,     // insertion
+                dp[i - 1][j - 1] + cost // substitution
+                });
         }
     }
 
     return dp[len1][len2];
 }
 
-// Finds the closest string from a list
+// Finds the closest string from a list (modified from chat gpt code)
 std::pair<std::string, int> findClosestMatch(const std::string &input, const std::vector<std::string> &candidates) {
     std::string closest;
-    int minDistance = std::numeric_limits<int>::max();
+    int minDistance = (std::numeric_limits<int>::max)();
 
     for(const auto &candidate : candidates) {
         int distance = levenshteinDistance(input, candidate);
