@@ -13,24 +13,17 @@
 #include <utility>
 #include <vector>
 
-std::size_t prefixMatch(const std::string& s1, const std::string& s2)
-{
-    if (s1.size() < s2.size())
-    {
-        if (s2.compare(0, s1.size(), s1.c_str()) == 0)
-        {
-            return s2.size()-s1.size();
-        }
-        else {
+std::size_t prefixMatch(const std::string &s1, const std::string &s2) {
+    if(s1.size() < s2.size()) {
+        if(s2.compare(0, s1.size(), s1.c_str()) == 0) {
+            return s2.size() - s1.size();
+        } else {
             return std::string::npos;
         }
-    }
-    else {
-        if (s1.compare(0, s2.size(), s2.c_str()) == 0)
-        {
-            return s1.size()-s2.size();
-        }
-        else {
+    } else {
+        if(s1.compare(0, s2.size(), s2.c_str()) == 0) {
+            return s1.size() - s2.size();
+        } else {
             return std::string::npos;
         }
     }
@@ -60,20 +53,18 @@ std::size_t levenshteinDistance(const std::string &s1, const std::string &s2) {
     return dp[len1][len2];
 }
 
-enum class MatchType:std::uint8_t {proximity,prefix};
+enum class MatchType : std::uint8_t { proximity, prefix };
 
 // Finds the closest string from a list (modified from chat gpt code)
-std::pair<std::string, std::size_t> findClosestMatch(const std::string &input, const std::vector<std::string> &candidates,MatchType match) {
+std::pair<std::string, std::size_t>
+findClosestMatch(const std::string &input, const std::vector<std::string> &candidates, MatchType match) {
     std::string closest;
     int minDistance = (std::numeric_limits<std::size_t>::max)();
-       std::size_t distance=minDistance;
+    std::size_t distance = minDistance;
     for(const auto &candidate : candidates) {
-        if (match == MatchType::proximity)
-        {
+        if(match == MatchType::proximity) {
             distance = levenshteinDistance(input, candidate);
-        }
-        else
-        {
+        } else {
             distance = prefixMatch(input, candidate);
         }
         if(distance < minDistance) {
@@ -85,11 +76,10 @@ std::pair<std::string, std::size_t> findClosestMatch(const std::string &input, c
     return {closest, minDistance};
 }
 
-void addCloseMatchDetection(CLI::App* app, MatchType match)
-{
+void addCloseMatchDetection(CLI::App *app, MatchType match) {
     app->allow_extras(true);
 
-    app->parse_complete_callback([&app,match]() {
+    app->parse_complete_callback([&app, match]() {
         auto extras = app->remaining();
         if(extras.empty()) {
             return;
@@ -107,17 +97,18 @@ void addCloseMatchDetection(CLI::App* app, MatchType match)
         }
         for(auto &extra : extras) {
             if(extra.front() != '-') {
-                auto closest = findClosestMatch(extra, list,match);
+                auto closest = findClosestMatch(extra, list, match);
                 if(closest.second <= 3) {
                     std::cout << "unmatched commands " << extra << ", closest match is " << closest.first << "\n";
                 }
             }
         }
-        });
+    });
 }
 
-/** This example demonstrates the use of close match detection to detect invalid commands that are close matches to existing ones
-*/
+/** This example demonstrates the use of close match detection to detect invalid commands that are close matches to
+ * existing ones
+ */
 int main(int argc, const char *argv[]) {
 
     int value{0};
@@ -128,7 +119,7 @@ int main(int argc, const char *argv[]) {
     app.add_subcommand("upgrade", "");
     app.add_subcommand("remove", "");
     app.add_subcommand("test", "");
-    addCloseMatchDetection(&app,MatchType::prefix);
+    addCloseMatchDetection(&app, MatchType::prefix);
     CLI11_PARSE(app, argc, argv);
     return 0;
 }
