@@ -13,6 +13,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <array>
 
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
@@ -4113,4 +4114,22 @@ TEST_CASE_METHOD(TApp, "RoundTripEmptyVector", "[config]") {
     std::stringstream out(configOut);
     app.parse_from_stream(out);
     CHECK(cv.empty());
+}
+
+
+TEST_CASE_METHOD(TApp, "RoundTripArrayFloat", "[config]") {
+    std::array<float,2> cv{-1.0F,1.0F};
+    app.add_option("-c", cv)->capture_default_str();
+
+    args = {};
+
+    run();
+    std::string configOut = app.config_to_str(true,true);
+    app.clear();
+    std::stringstream out(configOut);
+    cv[0]=-3.0F;
+    cv[1]=4.0F;
+    app.parse_from_stream(out);
+    CHECK(cv[0]==-1.0F);
+    CHECK(cv[1]==1.0F);
 }
