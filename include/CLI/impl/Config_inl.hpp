@@ -551,10 +551,10 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     if(!opt->get_default_str().empty()) {
                         results_t res;
                         opt->results(res);
-                        value =
-                            detail::ini_join(res, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
-                        if (value.empty()) {
-                            value = detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
+                        value = detail::ini_join(res, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
+                        if(value.empty()) {
+                            value =
+                                detail::convert_arg_for_ini(opt->get_default_str(), stringQuote, literalQuote, false);
                         }
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";
