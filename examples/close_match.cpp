@@ -15,17 +15,15 @@
 
 std::size_t prefixMatch(const std::string &s1, const std::string &s2) {
     if(s1.size() < s2.size()) {
-        if(s2.compare(0, s1.size(), s1.c_str()) == 0) {
+        if (s2.compare(0, s1.size(), s1) == 0) {
             return s2.size() - s1.size();
-        } else {
-            return std::string::npos;
         }
+        return std::string::npos;
     } else {
-        if(s1.compare(0, s2.size(), s2.c_str()) == 0) {
+        if(s1.compare(0, s2.size(), s2) == 0) {
             return s1.size() - s2.size();
-        } else {
-            return std::string::npos;
         }
+        return std::string::npos;
     }
 }
 
@@ -59,14 +57,9 @@ enum class MatchType : std::uint8_t { proximity, prefix };
 std::pair<std::string, std::size_t>
 findClosestMatch(const std::string &input, const std::vector<std::string> &candidates, MatchType match) {
     std::string closest;
-    int minDistance = (std::numeric_limits<std::size_t>::max)();
-    std::size_t distance = minDistance;
+    std::size_t minDistance = (std::numeric_limits<std::size_t>::max)();
     for(const auto &candidate : candidates) {
-        if(match == MatchType::proximity) {
-            distance = levenshteinDistance(input, candidate);
-        } else {
-            distance = prefixMatch(input, candidate);
-        }
+        std::size_t distance=(match == MatchType::proximity)?levenshteinDistance(input, candidate):prefixMatch(input, candidate);
         if(distance < minDistance) {
             minDistance = distance;
             closest = candidate;
