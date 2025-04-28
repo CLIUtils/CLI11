@@ -15,7 +15,7 @@
 
 std::size_t prefixMatch(const std::string &s1, const std::string &s2) {
     if(s1.size() < s2.size()) {
-        if (s2.compare(0, s1.size(), s1) == 0) {
+        if(s2.compare(0, s1.size(), s1) == 0) {
             return s2.size() - s1.size();
         }
         return std::string::npos;
@@ -59,7 +59,8 @@ findClosestMatch(const std::string &input, const std::vector<std::string> &candi
     std::string closest;
     std::size_t minDistance = (std::numeric_limits<std::size_t>::max)();
     for(const auto &candidate : candidates) {
-        std::size_t distance=(match == MatchType::proximity)?levenshteinDistance(input, candidate):prefixMatch(input, candidate);
+        std::size_t distance =
+            (match == MatchType::proximity) ? levenshteinDistance(input, candidate) : prefixMatch(input, candidate);
         if(distance < minDistance) {
             minDistance = distance;
             closest = candidate;
