@@ -6,7 +6,6 @@
 
 #include "app_helper.hpp"
 
-#include <array>
 #include <cstdio>
 #include <memory>
 #include <set>
@@ -14,6 +13,8 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
+#include <array>
 
 TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
 
