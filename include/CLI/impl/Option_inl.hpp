@@ -686,7 +686,8 @@ CLI11_INLINE int Option::_add_result(std::string &&result, std::vector<std::stri
         }
     }
 
-    if((allow_extra_args_ || get_expected_max() > 1) && !result.empty() && result.front() == '[' &&
+    if((allow_extra_args_ || get_expected_max() > 1 || get_type_size() > 1) && !result.empty() &&
+       result.front() == '[' &&
        result.back() == ']') {  // this is now a vector string likely from the default or user entry
 
         result.pop_back();
