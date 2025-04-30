@@ -57,7 +57,7 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
         formatter_ = parent_->formatter_;
         config_formatter_ = parent_->config_formatter_;
         require_subcommand_max_ = parent_->require_subcommand_max_;
-        allow_prefix_matching_=parent_->allow_prefix_matching_;
+        allow_prefix_matching_ = parent_->allow_prefix_matching_;
     }
 }
 
@@ -908,11 +908,9 @@ CLI11_NODISCARD CLI11_INLINE int App::check_name(std::string name_to_check) cons
     if(local_name == name_to_check) {
         return 1;
     }
-    if (allow_prefix_matching_ && name_to_check.size()<local_name.size())
-    {
-        if (local_name.compare(0, name_to_check.size(), name_to_check) == 0)
-        {
-            return static_cast<int>(local_name.size()-name_to_check.size()+1);
+    if(allow_prefix_matching_ && name_to_check.size() < local_name.size()) {
+        if(local_name.compare(0, name_to_check.size(), name_to_check) == 0) {
+            return static_cast<int>(local_name.size() - name_to_check.size() + 1);
         }
     }
     for(std::string les : aliases_) {  // NOLINT(performance-for-range-copy)
@@ -925,11 +923,9 @@ CLI11_NODISCARD CLI11_INLINE int App::check_name(std::string name_to_check) cons
         if(les == name_to_check) {
             return 1;
         }
-        if (allow_prefix_matching_ && name_to_check.size()<les.size())
-        {
-            if (les.compare(0, name_to_check.size(), name_to_check) == 0)
-            {
-                return static_cast<int>(les.size()-name_to_check.size()+1);
+        if(allow_prefix_matching_ && name_to_check.size() < les.size()) {
+            if(les.compare(0, name_to_check.size(), name_to_check) == 0) {
+                return static_cast<int>(les.size() - name_to_check.size() + 1);
             }
         }
     }
@@ -1843,32 +1839,28 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
         if(com->get_name().empty()) {
             auto *subc = com->_find_subcommand(subc_name, ignore_disabled, ignore_used);
             if(subc != nullptr) {
-                if (bcom != nullptr)
-                {
+                if(bcom != nullptr) {
                     return nullptr;
                 }
-                bcom=subc;
-                if (!allow_prefix_matching_) {
+                bcom = subc;
+                if(!allow_prefix_matching_) {
                     return bcom;
                 }
             }
         }
-        auto res=com->check_name(subc_name);
-        if(res!=0) {
-            if ((!*com) || !ignore_used) {
-                if (res == 1)
-                {
+        auto res = com->check_name(subc_name);
+        if(res != 0) {
+            if((!*com) || !ignore_used) {
+                if(res == 1) {
                     return com.get();
                 }
-                if (bcom != nullptr)
-                {
+                if(bcom != nullptr) {
                     return nullptr;
                 }
-                bcom=com.get();
-                if (!allow_prefix_matching_) {
+                bcom = com.get();
+                if(!allow_prefix_matching_) {
                     return bcom;
                 }
-                
             }
         }
     }

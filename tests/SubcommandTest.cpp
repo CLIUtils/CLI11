@@ -206,7 +206,6 @@ TEST_CASE_METHOD(TApp, "subcommandPrefixMultiple", "[subcom]") {
 
     args = {"sub_"};
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
-
 }
 
 TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {

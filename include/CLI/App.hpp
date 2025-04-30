@@ -320,7 +320,7 @@ class App {
 
     /// Special private constructor for subcommand
     App(std::string app_description, std::string app_name, App *parent);
-    
+
   public:
     /// @name Basic
     ///@{
@@ -1236,7 +1236,8 @@ class App {
     CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const;
 
     /// Check the name, case-insensitive and underscore insensitive if set
-    /// @return 0 if no match, 1 or higher if there is a match (2 or more is the character difference with prefix matching enabled)
+    /// @return 0 if no match, 1 or higher if there is a match (2 or more is the character difference with prefix
+    /// matching enabled)
     CLI11_NODISCARD int check_name(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)
