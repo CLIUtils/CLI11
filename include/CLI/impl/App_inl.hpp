@@ -895,8 +895,8 @@ CLI11_NODISCARD CLI11_INLINE std::string App::get_display_name(bool with_aliases
 }
 
 CLI11_NODISCARD CLI11_INLINE bool App::check_name(std::string name_to_check) const {
-    auto result=check_name_detail(std::move(name_to_check));
-    return (result!=NameMatch::none);
+    auto result = check_name_detail(std::move(name_to_check));
+    return (result != NameMatch::none);
 }
 
 CLI11_NODISCARD CLI11_INLINE App::NameMatch App::check_name_detail(std::string name_to_check) const {

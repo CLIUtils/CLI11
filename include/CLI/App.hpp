@@ -1239,9 +1239,10 @@ class App {
     ///@return true if matched
     CLI11_NODISCARD bool check_name(std::string name_to_check) const;
 
-    enum class NameMatch:std::uint8_t{none=0,match=1,prefix=2};
+    enum class NameMatch : std::uint8_t { none = 0, match = 1, prefix = 2 };
     /// Check the name, case-insensitive and underscore insensitive if set
-    /// @return NameMatch::none if no match, NameMatch::match if exact NameMatch::prefix if prefix is enabled and a prefix matches
+    /// @return NameMatch::none if no match, NameMatch::match if exact NameMatch::prefix if prefix is enabled and a
+    /// prefix matches
     CLI11_NODISCARD NameMatch check_name_detail(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)
