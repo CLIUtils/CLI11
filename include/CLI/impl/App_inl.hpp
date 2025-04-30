@@ -894,7 +894,12 @@ CLI11_NODISCARD CLI11_INLINE std::string App::get_display_name(bool with_aliases
     return dispname;
 }
 
-CLI11_NODISCARD CLI11_INLINE int App::check_name(std::string name_to_check) const {
+CLI11_NODISCARD CLI11_INLINE bool App::check_name(std::string name_to_check) const {
+    auto result=check_name_detail(std::move(name_to_check));
+    return (result!=NameMatch::none);
+}
+
+CLI11_NODISCARD CLI11_INLINE App::NameMatch App::check_name_detail(std::string name_to_check) const {
     std::string local_name = name_;
     if(ignore_underscore_) {
         local_name = detail::remove_underscore(name_);
@@ -906,11 +911,11 @@ CLI11_NODISCARD CLI11_INLINE int App::check_name(std::string name_to_check) cons
     }
 
     if(local_name == name_to_check) {
-        return 1;
+        return App::NameMatch::match;
     }
     if(allow_prefix_matching_ && name_to_check.size() < local_name.size()) {
         if(local_name.compare(0, name_to_check.size(), name_to_check) == 0) {
-            return static_cast<int>(local_name.size() - name_to_check.size() + 1);
+            return App::NameMatch::prefix;
         }
     }
     for(std::string les : aliases_) {  // NOLINT(performance-for-range-copy)
@@ -921,15 +926,15 @@ CLI11_NODISCARD CLI11_INLINE int App::check_name(std::string name_to_check) cons
             les = detail::to_lower(les);
         }
         if(les == name_to_check) {
-            return 1;
+            return App::NameMatch::match;
         }
         if(allow_prefix_matching_ && name_to_check.size() < les.size()) {
             if(les.compare(0, name_to_check.size(), name_to_check) == 0) {
-                return static_cast<int>(les.size() - name_to_check.size() + 1);
+                return App::NameMatch::prefix;
             }
         }
     }
-    return 0;
+    return App::NameMatch::none;
 }
 
 CLI11_NODISCARD CLI11_INLINE std::vector<std::string> App::get_groups() const {
@@ -1848,10 +1853,10 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
                 }
             }
         }
-        auto res = com->check_name(subc_name);
-        if(res != 0) {
+        auto res = com->check_name_detail(subc_name);
+        if(res != NameMatch::none) {
             if((!*com) || !ignore_used) {
-                if(res == 1) {
+                if(res == NameMatch::match) {
                     return com.get();
                 }
                 if(bcom != nullptr) {

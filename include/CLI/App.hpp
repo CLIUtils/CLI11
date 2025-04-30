@@ -1235,10 +1235,14 @@ class App {
     /// Get a display name for an app
     CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const;
 
+    /// Check the name, case-insensitive and underscore insensitive, and prefix matching if set
+    ///@return true if matched
+    CLI11_NODISCARD bool check_name(std::string name_to_check) const;
+
+    enum class NameMatch:std::uint8_t{none=0,match=1,prefix=2};
     /// Check the name, case-insensitive and underscore insensitive if set
-    /// @return 0 if no match, 1 or higher if there is a match (2 or more is the character difference with prefix
-    /// matching enabled)
-    CLI11_NODISCARD int check_name(std::string name_to_check) const;
+    /// @return NameMatch::none if no match, NameMatch::match if exact NameMatch::prefix if prefix is enabled and a prefix matches
+    CLI11_NODISCARD NameMatch check_name_detail(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)
     CLI11_NODISCARD std::vector<std::string> get_groups() const;
