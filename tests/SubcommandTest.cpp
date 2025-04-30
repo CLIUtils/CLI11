@@ -110,6 +110,105 @@ TEST_CASE_METHOD(TApp, "CrazyNameSubcommand", "[subcom]") {
     CHECK(1u == sub1->count());
 }
 
+TEST_CASE_METHOD(TApp, "subcommandPrefix", "[subcom]") {
+    app.allow_subcommand_prefix_matching();
+    auto *sub1 = app.add_subcommand("sub1");
+    CHECK(app.get_allow_subcommand_prefix_matching());
+    // name can be set to whatever
+    CHECK_NOTHROW(sub1->name("crazy name with spaces"));
+    args = {"crazy name with spaces"};
+
+    run();
+
+    CHECK(app.got_subcommand("crazy name with spaces"));
+    CHECK(1u == sub1->count());
+
+    args = {"crazy name"};
+    run();
+
+    CHECK(app.got_subcommand("crazy name with spaces"));
+    CHECK(1u == sub1->count());
+
+    args = {"crazy"};
+    run();
+
+    CHECK(app.got_subcommand("crazy name"));
+    CHECK(1u == sub1->count());
+
+    args = {"cr"};
+    run();
+
+    CHECK(app.got_subcommand("crazy"));
+    CHECK(1u == sub1->count());
+
+    args = {"c"};
+    run();
+
+    CHECK(app.got_subcommand("crazy"));
+    CHECK(1u == sub1->count());
+}
+
+TEST_CASE_METHOD(TApp, "subcommandPrefixAlias", "[subcom]") {
+    app.allow_subcommand_prefix_matching();
+    auto *sub1 = app.add_subcommand("sub1");
+    CHECK(app.get_allow_subcommand_prefix_matching());
+    // name can be set to whatever
+    sub1->alias("crazy name with spaces");
+    args = {"crazy name with spaces"};
+
+    run();
+
+    CHECK(app.got_subcommand("crazy name with spaces"));
+    CHECK(1u == sub1->count());
+
+    args = {"crazy name"};
+    run();
+
+    CHECK(app.got_subcommand("crazy name with spaces"));
+    CHECK(1u == sub1->count());
+
+    args = {"crazy"};
+    run();
+
+    CHECK(app.got_subcommand("crazy name"));
+    CHECK(1u == sub1->count());
+
+    args = {"cr"};
+    run();
+
+    CHECK(app.got_subcommand("crazy"));
+    CHECK(1u == sub1->count());
+
+    args = {"c"};
+    run();
+
+    CHECK(app.got_subcommand("crazy"));
+    CHECK(1u == sub1->count());
+}
+
+TEST_CASE_METHOD(TApp, "subcommandPrefixMultiple", "[subcom]") {
+    app.allow_subcommand_prefix_matching();
+    auto *sub1 = app.add_subcommand("sub_long_prefix");
+    auto *sub2 = app.add_subcommand("sub_elong_prefix");
+    // name can be set to whatever
+    args = {"sub_long"};
+
+    run();
+
+    CHECK(app.got_subcommand("sub_long_prefix"));
+    CHECK(1u == sub1->count());
+
+    args = {"sub_e"};
+    run();
+
+    CHECK(app.got_subcommand("sub_elong_prefix"));
+    CHECK(1u == sub2->count());
+
+    args = {"sub_"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+}
+
 TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {
 
     std::string baz;

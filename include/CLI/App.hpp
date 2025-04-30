@@ -271,6 +271,9 @@ class App {
     /// indicator that the subcommand should allow non-standard option arguments, such as -single_dash_flag
     bool allow_non_standard_options_{false};
 
+    /// indicator to allow subcommands to match with prefix matching
+    bool allow_prefix_matching_{false};
+
     /// Counts the number of times this command/subcommand was parsed
     std::uint32_t parsed_{0U};
 
@@ -317,7 +320,7 @@ class App {
 
     /// Special private constructor for subcommand
     App(std::string app_description, std::string app_name, App *parent);
-
+    
   public:
     /// @name Basic
     ///@{
@@ -409,6 +412,11 @@ class App {
         return this;
     }
 
+    /// allow prefix matching for subcommands
+    App *allow_subcommand_prefix_matching(bool allowed = true) {
+        allow_prefix_matching_ = allowed;
+        return this;
+    }
     /// Set the subcommand to be disabled by default, so on clear(), at the start of each parse it is disabled
     App *disabled_by_default(bool disable = true) {
         if(disable) {
@@ -1163,8 +1171,11 @@ class App {
     /// Get the status of silence
     CLI11_NODISCARD bool get_silent() const { return silent_; }
 
-    /// Get the status of silence
+    /// Get the status of allowing non standard option names
     CLI11_NODISCARD bool get_allow_non_standard_option_names() const { return allow_non_standard_options_; }
+
+    /// Get the status of allowing prefix matching for subcommands
+    CLI11_NODISCARD bool get_allow_subcommand_prefix_matching() const { return allow_prefix_matching_; }
 
     /// Get the status of disabled
     CLI11_NODISCARD bool get_immediate_callback() const { return immediate_callback_; }
@@ -1225,7 +1236,8 @@ class App {
     CLI11_NODISCARD std::string get_display_name(bool with_aliases = false) const;
 
     /// Check the name, case-insensitive and underscore insensitive if set
-    CLI11_NODISCARD bool check_name(std::string name_to_check) const;
+    /// @return 0 if no match, 1 or higher if there is a match (2 or more is the character difference with prefix matching enabled)
+    CLI11_NODISCARD int check_name(std::string name_to_check) const;
 
     /// Get the groups available directly from this option (in order)
     CLI11_NODISCARD std::vector<std::string> get_groups() const;
