@@ -911,7 +911,7 @@ CLI11_NODISCARD CLI11_INLINE App::NameMatch App::check_name_detail(std::string n
     }
 
     if(local_name == name_to_check) {
-        return App::NameMatch::match;
+        return App::NameMatch::exact;
     }
     if(allow_prefix_matching_ && name_to_check.size() < local_name.size()) {
         if(local_name.compare(0, name_to_check.size(), name_to_check) == 0) {
@@ -926,7 +926,7 @@ CLI11_NODISCARD CLI11_INLINE App::NameMatch App::check_name_detail(std::string n
             les = detail::to_lower(les);
         }
         if(les == name_to_check) {
-            return App::NameMatch::match;
+            return App::NameMatch::exact;
         }
         if(allow_prefix_matching_ && name_to_check.size() < les.size()) {
             if(les.compare(0, name_to_check.size(), name_to_check) == 0) {
@@ -1856,7 +1856,7 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
         auto res = com->check_name_detail(subc_name);
         if(res != NameMatch::none) {
             if((!*com) || !ignore_used) {
-                if(res == NameMatch::match) {
+                if(res == NameMatch::exact) {
                     return com.get();
                 }
                 if(bcom != nullptr) {

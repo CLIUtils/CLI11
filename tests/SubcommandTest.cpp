@@ -335,6 +335,7 @@ TEST_CASE_METHOD(TApp, "DuplicateSubcommandCallbacksValues", "[subcom]") {
     CHECK(36 == vals[2]);
 }
 
+
 TEST_CASE_METHOD(TApp, "Callbacks", "[subcom]") {
     auto *sub1 = app.add_subcommand("sub1");
     sub1->callback([]() { throw CLI::Success(); });
@@ -1871,6 +1872,25 @@ TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
     sub2->ignore_underscore();
     CHECK_THROWS_AS(sub2->alias("les3"), CLI::OptionAlreadyAdded);
 }
+
+TEST_CASE_METHOD(TApp, "DuplicateErrorsPrefix", "[subcom]") {
+    app.allow_subcommand_prefix_matching(true);
+    auto *sub1 = app.add_subcommand("sub_test");
+    auto *sub2 = app.add_subcommand("sub_deploy");
+
+    
+    CHECK_THROWS_AS(app.add_subcommand("sub"), CLI::OptionAlreadyAdded);
+    // cannot alias to an existing subcommand
+    CHECK_THROWS_AS(sub2->alias("sub"), CLI::OptionAlreadyAdded);
+    app.ignore_case();
+    //this needs to be opposite of the subcommand the alias is being tested on to check for ambiguity
+    sub2->ignore_case();
+    CHECK_THROWS_AS(sub1->alias("SUB_"), CLI::OptionAlreadyAdded);
+    app.ignore_underscore();
+    sub1->ignore_underscore();
+    CHECK_THROWS_AS(sub2->alias("su_bt"), CLI::OptionAlreadyAdded);
+}
+
 // test adding a subcommand via the pointer
 TEST_CASE_METHOD(TApp, "ExistingSubcommandMatch", "[subcom]") {
     auto sshared = std::make_shared<CLI::App>("documenting the subcommand", "sub1");
@@ -1919,6 +1939,8 @@ TEST_CASE_METHOD(TApp, "AliasErrorsInOptionGroup", "[subcom]") {
 
     CHECK_THROWS_AS(sub2->name("sub1"), CLI::OptionAlreadyAdded);
 }
+
+
 
 TEST_CASE("SharedSubTests: SharedSubcommand", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0}, val4{0.0};
