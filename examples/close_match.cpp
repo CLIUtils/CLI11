@@ -78,7 +78,7 @@ void addSubcommandCloseMatchDetection(CLI::App *app, std::size_t minDistance = 3
         }
     }
     // add a callback that runs before a final callback and loops over the remaining arguments for subcommands
-    app->parse_complete_callback([app, minDistance,list=std::move(list)]() {
+    app->parse_complete_callback([app, minDistance, list = std::move(list)]() {
         auto extras = app->remaining();
         if(extras.empty()) {
             return;
