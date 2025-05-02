@@ -159,8 +159,11 @@ calls another command called "`git-thing`" with the remaining options intact.
 
 ### prefix matching
 
-A modifier is available for subcommand matching,  `->allow_subcommand_prefix_matching()`.   if this is enabled unambiguious prefix portions of a subcommand will match.
-For Example `upgrade_package`  would match on `upgrade_`,  `upg`, `u` as long as no other subcommand would also match.   It also disallows subcommand names that are full prefixes of another subcommand. 
+A modifier is available for subcommand matching,
+`->allow_subcommand_prefix_matching()`. if this is enabled unambiguious prefix
+portions of a subcommand will match. For Example `upgrade_package` would match
+on `upgrade_`, `upg`, `u` as long as no other subcommand would also match. It
+also disallows subcommand names that are full prefixes of another subcommand.
 
 ### Silent subcommands
 
