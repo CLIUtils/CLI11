@@ -6,14 +6,15 @@
 
 // Code inspired by discussion from https://github.com/CLIUtils/CLI11/issues/1149
 
-#include <CLI/CLI.hpp>
+
 #include <algorithm>
 #include <iostream>
-#include <limits>
 #include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <CLI/CLI.hpp>
 
 // only works with C++14 or higher
 
@@ -50,7 +51,7 @@ std::size_t levenshteinDistance(const std::string &s1, const std::string &s2) {
 std::pair<std::string, std::size_t> findClosestMatch(const std::string &input,
                                                      const std::vector<std::string> &candidates) {
     std::string closest;
-    std::size_t minDistance = (std::numeric_limits<std::size_t>::max)();
+    std::size_t minDistance{ std::string::npos };
     for(const auto &candidate : candidates) {
         std::size_t distance = levenshteinDistance(input, candidate);
         if(distance < minDistance) {
