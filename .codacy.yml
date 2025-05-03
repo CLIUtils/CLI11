@@ -12,6 +12,9 @@ engines:
     language: c++
 languages:
 
+ignore:
+  - "style"
+
 exclude_paths:
   - "fuzz/**/*"
   - "fuzz/*"
