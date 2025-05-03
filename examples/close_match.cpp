@@ -67,25 +67,20 @@ void addSubcommandCloseMatchDetection(CLI::App *app, std::size_t minDistance = 3
     app->allow_extras(true);
     // generate a list of subcommand names
     auto subs = app->get_subcommands(nullptr);
-    std::vector<std::string> list;
+    CLI::results_t list;
     for(const auto *sub : subs) {
         if(!sub->get_name().empty()) {
-            list.push_back(sub->get_name());
+            list.emplace_back(sub->get_name());
         }
-        auto aliases = sub->get_aliases();
+        const auto &aliases = sub->get_aliases();
         if(!aliases.empty()) {
             list.insert(list.end(), aliases.begin(), aliases.end());
         }
     }
     // add a callback that runs before a final callback and loops over the remaining arguments for subcommands
     app->parse_complete_callback([app, minDistance, list = std::move(list)]() {
-        auto extras = app->remaining();
-        if(extras.empty()) {
-            return;
-        }
-
-        for(auto &extra : extras) {
-            if(extra.front() != '-') {
+        for(auto &extra : app->remaining()) {
+            if(!extra.empty() && extra.front() != '-') {
                 auto closest = findClosestMatch(extra, list);
                 if(closest.second <= minDistance) {
                     std::cout << "unmatched command \"" << extra << "\", closest match is " << closest.first << "\n";
@@ -101,7 +96,7 @@ void addSubcommandCloseMatchDetection(CLI::App *app, std::size_t minDistance = 3
 int main(int argc, const char *argv[]) {
 
     int value{0};
-    CLI::App app{"cose string App"};
+    CLI::App app{"App for testing prefix matching and close string matching"};
     // turn on prefix matching
     app.allow_subcommand_prefix_matching();
     app.add_option("-v", value, "value");
