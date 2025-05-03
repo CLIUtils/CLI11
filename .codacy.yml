@@ -8,6 +8,8 @@ engines:
     enabled: true
   coverage:
     enabled: false
+  cppcheck:
+    language: c++
 languages:
 
 exclude_paths:
