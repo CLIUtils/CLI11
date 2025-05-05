@@ -963,7 +963,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     }
     // remove locale-specific group separators
     char group_separator = std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep();
-    if (input.find_first_of(group_separator) != std::string::npos) {
+    if(input.find_first_of(group_separator) != std::string::npos) {
         std::string nstring = input;
         nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
         return integral_conversion(nstring, output);
@@ -1028,7 +1028,7 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     }
     // remove locale-specific group separators
     char group_separator = std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep();
-    if (input.find_first_of(group_separator) != std::string::npos) {
+    if(input.find_first_of(group_separator) != std::string::npos) {
         std::string nstring = input;
         nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
         return integral_conversion(nstring, output);
@@ -1176,7 +1176,7 @@ bool lexical_cast(const std::string &input, T &output) {
 
     // remove locale-specific group separators
     char group_separator = std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep();
-    if (input.find_first_of(group_separator) != std::string::npos) {
+    if(input.find_first_of(group_separator) != std::string::npos) {
         std::string nstring = input;
         nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
         return lexical_cast(nstring, output);
