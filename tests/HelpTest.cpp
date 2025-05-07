@@ -97,11 +97,11 @@ TEST_CASE("THelp: FooterOptionGroup", "[help]") {
 
     std::string help = app.help();
 
-    auto footer_loc=help.find("bugs@example.com");
-    auto footer_loc2=help.find("bugs@example.com",footer_loc+10);
-    CHECK(footer_loc!=std::string::npos);
-//should only see the footer once
-    CHECK(footer_loc2==std::string::npos);
+    auto footer_loc = help.find("bugs@example.com");
+    auto footer_loc2 = help.find("bugs@example.com", footer_loc + 10);
+    CHECK(footer_loc != std::string::npos);
+    // should only see the footer once
+    CHECK(footer_loc2 == std::string::npos);
 }
 
 TEST_CASE("THelp: OptionalPositional", "[help]") {
