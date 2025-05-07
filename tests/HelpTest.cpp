@@ -91,9 +91,9 @@ TEST_CASE("THelp: FooterOptionGroup", "[help]") {
 
     app.footer("Report bugs to bugs@example.com");
 
-    auto group_a = app.add_option_group("group-a", "");
+    app.add_option_group("group-a", "");
 
-    auto group_b = app.add_option_group("group-b", "");
+    app.add_option_group("group-b", "");
 
     std::string help = app.help();
 
