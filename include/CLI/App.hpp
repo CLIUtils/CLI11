@@ -733,6 +733,9 @@ class App {
         auto *ptr = option_group.get();
         // move to App_p for overload resolution on older gcc versions
         App_p app_ptr = std::dynamic_pointer_cast<App>(option_group);
+        // don't inherit the footer in option groups and clear the help flag by default
+        app_ptr->footer_ = "";
+        app_ptr->set_help_flag();
         add_subcommand(std::move(app_ptr));
         return ptr;
     }
