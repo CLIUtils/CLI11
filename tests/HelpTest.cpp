@@ -85,6 +85,25 @@ TEST_CASE("THelp: FooterCallbackBoth", "[help]") {
     CHECK_THAT(help, Contains("foot!!!!"));
 }
 
+/// @brief from github issue #1156
+TEST_CASE("THelp: FooterOptionGroup", "[help]") {
+    CLI::App app{"My prog"};
+
+    app.footer("Report bugs to bugs@example.com");
+
+    app.add_option_group("group-a", "");
+
+    app.add_option_group("group-b", "");
+
+    std::string help = app.help();
+
+    auto footer_loc = help.find("bugs@example.com");
+    auto footer_loc2 = help.find("bugs@example.com", footer_loc + 10);
+    CHECK(footer_loc != std::string::npos);
+    // should only see the footer once
+    CHECK(footer_loc2 == std::string::npos);
+}
+
 TEST_CASE("THelp: OptionalPositional", "[help]") {
     CLI::App app{"My prog", "program"};
 
