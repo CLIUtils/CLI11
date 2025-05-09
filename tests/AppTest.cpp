@@ -1265,17 +1265,15 @@ TEST_CASE_METHOD(TApp, "ExpectedRangeParam", "[app]") {
     try {
         run();
         CHECK(false);
+    } catch(const CLI::ExtrasError &err) {
+        std::string message = err.what();
+        auto fiveloc = message.find("five");
+        auto sixloc = message.find("six");
+        auto sevenloc = message.find("seven");
+        CHECK(fiveloc < sixloc);
+        CHECK(sixloc < sevenloc);
+        CHECK(sevenloc != std::string::npos);
     }
-    catch (const CLI::ExtrasError& err)
-        {
-            std::string message=err.what();
-            auto fiveloc=message.find("five");
-            auto sixloc=message.find("six");
-            auto sevenloc=message.find("seven");
-            CHECK(fiveloc<sixloc);
-            CHECK(sixloc<sevenloc);
-            CHECK(sevenloc!=std::string::npos);
-        }
 }
 
 TEST_CASE_METHOD(TApp, "ExpectedRangePositional", "[app]") {
@@ -1345,16 +1343,12 @@ TEST_CASE_METHOD(TApp, "PositionalAtEnd", "[app]") {
     try {
         run();
         CHECK(false);
+    } catch(const CLI::ExtrasError &err) {
+        std::string message = err.what();
+        auto oloc = message.find("-O");
+        auto tloc = message.find("Test");
+        CHECK(oloc < tloc);
     }
-    catch (const CLI::ExtrasError& err)
-    {
-        std::string message=err.what();
-        auto oloc=message.find("-O");
-        auto tloc=message.find("Test");
-        CHECK(oloc<tloc);
-    }
-
-
 }
 
 // Tests positionals at end
@@ -2418,8 +2412,6 @@ TEST_CASE_METHOD(TApp, "ExtrasErrorRvalueParse", "[app]") {
     args = {"-x", "45", "-f", "27"};
 
     CHECK_THROWS_AS(app.parse(std::vector<std::string>({"-x", "45", "-f", "27"})), CLI::ExtrasError);
-
-
 }
 
 TEST_CASE_METHOD(TApp, "AllowExtrasCascadeDirect", "[app]") {

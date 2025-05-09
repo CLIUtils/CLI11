@@ -318,7 +318,6 @@ class ExtrasError : public ParseError {
                                        : "The following argument was not expected: ") +
                           detail::join(args, " "),
                       ExitCodes::ExtrasError) {}
-
 };
 
 /// Thrown when extra values are found in an INI file

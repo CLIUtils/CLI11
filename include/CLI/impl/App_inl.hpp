@@ -1802,7 +1802,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
     if(positionals_at_end_) {
         std::vector<std::string> rargs;
         rargs.resize(args.size());
-        std::reverse_copy(args.begin(),args.end(),rargs.begin());
+        std::reverse_copy(args.begin(), args.end(), rargs.begin());
         throw CLI::ExtrasError(name_, rargs);
     }
     /// If this is an option group don't deal with it
