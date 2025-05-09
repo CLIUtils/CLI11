@@ -163,14 +163,21 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
             out << app->get_group() << ':';
         }
     }
-
-    detail::streamOutAsParagraph(
-        out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
+    if(is_description_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(
+            out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
+    } else {
+        out << make_description(app) << '\n';
+    }
     out << make_usage(app, name);
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    detail::streamOutAsParagraph(out, make_footer(app), footer_paragraph_width_);  // Format footer as paragraph
+    if(is_footer_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(out, make_footer(app), footer_paragraph_width_);  // Format footer as paragraph
+    } else {
+        out << make_footer(app) << '\n';
+    }
 
     return out.str();
 }
@@ -232,8 +239,12 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
     std::stringstream out;
     out << sub->get_display_name(true) << '\n';
 
-    detail::streamOutAsParagraph(
-        out, make_description(sub), description_paragraph_width_, "  ");  // Format description as paragraph
+    if(is_description_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(
+            out, make_description(sub), description_paragraph_width_, "  ");  // Format description as paragraph
+    } else {
+        out << make_description(sub) << '\n';
+    }
 
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
         detail::format_aliases(out, sub->get_aliases(), column_width_ + 2);
@@ -242,8 +253,11 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
     out << make_positionals(sub);
     out << make_groups(sub, mode);
     out << make_subcommands(sub, mode);
-    detail::streamOutAsParagraph(out, make_footer(sub), footer_paragraph_width_);  // Format footer as paragraph
-
+    if(is_footer_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(out, make_footer(sub), footer_paragraph_width_);  // Format footer as paragraph
+    } else {
+        out << make_footer(sub) << '\n';
+    }
     out << '\n';
     return out.str();
 }
