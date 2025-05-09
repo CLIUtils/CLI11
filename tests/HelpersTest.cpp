@@ -395,7 +395,7 @@ TEST_CASE("StringTools: escapeConversion", "[helpers]") {
 TEST_CASE("StringTools: quotedString", "[helpers]") {
 
     std::string rstring = "'B\"(\\x35\\xa7)\"'";
-    auto s2 = rstring;
+    std::string s2{rstring};
     CLI::detail::process_quoted_string(s2);
     CHECK(s2[0] == static_cast<char>(0x35));
     CHECK(s2[1] == static_cast<char>(0xa7));
