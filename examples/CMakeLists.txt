@@ -250,6 +250,22 @@ set_property(TEST retired_retired_test3 PROPERTY PASS_REGULAR_EXPRESSION "WARNIN
 
 set_property(TEST retired_deprecated PROPERTY PASS_REGULAR_EXPRESSION "deprecated.*not_deprecated")
 
+if(CMAKE_CXX_STANDARD GREATER 13)
+  add_cli_exe(close_match close_match.cpp)
+
+  add_test(NAME close_match_test COMMAND close_match i)
+  add_test(NAME close_match_test2 COMMAND close_match upg)
+  add_test(NAME close_match_test3 COMMAND close_match rem)
+  add_test(NAME close_match_test4 COMMAND close_match upgrde)
+
+  set_property(TEST close_match_test PROPERTY PASS_REGULAR_EXPRESSION "install")
+
+  set_property(TEST close_match_test2 PROPERTY PASS_REGULAR_EXPRESSION "upgrade")
+
+  set_property(TEST close_match_test3 PROPERTY PASS_REGULAR_EXPRESSION "remove")
+
+  set_property(TEST close_match_test4 PROPERTY PASS_REGULAR_EXPRESSION "closest match is upgrade")
+endif()
 #--------------------------------------------
 add_cli_exe(custom_parse custom_parse.cpp)
 add_test(NAME cp_test COMMAND custom_parse --dv 1.7)
