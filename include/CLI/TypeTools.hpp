@@ -961,6 +961,13 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         output = (output_sll < 0) ? static_cast<T>(0) : static_cast<T>(output_sll);
         return (static_cast<std::int64_t>(output) == output_sll);
     }
+    // remove locale-specific group separators
+    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+    if(input.find_first_of(group_separator) != std::string::npos) {
+        std::string nstring = input;
+        nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
+        return integral_conversion(nstring, output);
+    }
     // remove separators
     if(input.find_first_of("_'") != std::string::npos) {
         std::string nstring = input;
@@ -1018,6 +1025,13 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         // this is to deal with a few oddities with flags and wrapper int types
         output = static_cast<T>(1);
         return true;
+    }
+    // remove locale-specific group separators
+    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+    if(input.find_first_of(group_separator) != std::string::npos) {
+        std::string nstring = input;
+        nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
+        return integral_conversion(nstring, output);
     }
     // remove separators and trailing spaces
     if(input.find_first_of("_'") != std::string::npos) {
@@ -1160,6 +1174,13 @@ bool lexical_cast(const std::string &input, T &output) {
         }
     }
 
+    // remove locale-specific group separators
+    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+    if(input.find_first_of(group_separator) != std::string::npos) {
+        std::string nstring = input;
+        nstring.erase(std::remove(nstring.begin(), nstring.end(), group_separator), nstring.end());
+        return lexical_cast(nstring, output);
+    }
     // remove separators
     if(input.find_first_of("_'") != std::string::npos) {
         std::string nstring = input;

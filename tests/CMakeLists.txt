@@ -49,6 +49,7 @@ set(CLI11_TESTS
     StringParseTest
     ComplexTypeTest
     TrueFalseTest
+    localeTest
     OptionGroupTest
     EncodingTest)
 

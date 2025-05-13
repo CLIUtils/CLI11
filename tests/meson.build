@@ -57,6 +57,7 @@ testnames = [
     ['StringParseTest', {}],
     ['ComplexTypeTest', {}],
     ['TrueFalseTest', {}],
+    ['localeTest', {}],
     ['OptionGroupTest', {}],
     ['EncodingTest', {}],
     # multi-only
