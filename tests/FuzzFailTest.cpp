@@ -332,6 +332,11 @@ TEST_CASE("app_roundtrip_custom") {
     }
     app2->parse_from_stream(out);
     auto result = fuzzdata2.compare(fuzzdata);
+    if (!result)
+    {
+        std::cout<<parseData<<"parsed\n";
+        std::cout<<'\n'<<configOut<<'\n';
+    }
     CHECK(result);
 }
 
