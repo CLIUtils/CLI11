@@ -422,7 +422,7 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
     return offset + 1;
 }
 
-CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape) {
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape,bool force) {
     // s is our escaped output string
     std::string escaped_string{};
     // loop through all characters
@@ -449,7 +449,7 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
             escaped_string.push_back(c);
         }
     }
-    if(escaped_string != string_to_escape) {
+    if(escaped_string != string_to_escape || force) {
         auto sqLoc = escaped_string.find('\'');
         while(sqLoc != std::string::npos) {
             escaped_string[sqLoc] = '\\';

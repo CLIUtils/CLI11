@@ -85,7 +85,7 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
     if(detail::has_escapable_character(arg)) {
         if(arg.size() > 100 && !disable_multi_line) {
             if(arg.find(multiline_literal_quote) != std::string::npos) {
-                return binary_escape_string(arg);
+                return binary_escape_string(arg,true);
             }
             std::string return_string{multiline_literal_quote};
             return_string.reserve(7 + arg.size());
