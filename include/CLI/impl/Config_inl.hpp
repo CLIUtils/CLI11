@@ -398,7 +398,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                         }
                         lineExtension = false;
                         firstLine = false;
-                        if(!l2.empty() && l2.back() == '\\'&& keyChar == '\"') {
+                        if(!l2.empty() && l2.back() == '\\' && keyChar == '\"') {
                             lineExtension = true;
                             l2.pop_back();
                         }
