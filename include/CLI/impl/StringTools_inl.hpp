@@ -422,7 +422,7 @@ CLI11_INLINE std::size_t escape_detect(std::string &str, std::size_t offset) {
     return offset + 1;
 }
 
-CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape,bool force) {
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape, bool force) {
     // s is our escaped output string
     std::string escaped_string{};
     // loop through all characters
