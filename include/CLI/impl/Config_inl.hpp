@@ -84,12 +84,14 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
     }
     if(detail::has_escapable_character(arg)) {
         if(arg.size() > 100 && !disable_multi_line) {
-            if(arg.front() == '\n' || arg.front() == '\r') {
-                // glitch if first character is new line it will be ignored so add extra new line
-                return std::string(multiline_literal_quote) + '\n' + arg + multiline_literal_quote;
-            } else {
-                return std::string(multiline_literal_quote) + arg + multiline_literal_quote;
+            std::string return_string{multiline_literal_quote};
+            return_string.reserve(7+arg.size());
+            if (arg.front() == '\n' || arg.front() == '\r') {
+                return_string.push_back('\n');
             }
+            return_string.append(arg);
+            return_string.append(multiline_literal_quote,3);
+            return return_string;
         }
         return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
     }
