@@ -84,8 +84,8 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
     }
     if(detail::has_escapable_character(arg)) {
         if(arg.size() > 100 && !disable_multi_line) {
-            if(arg.front() == '\n') {
-                // glitch if first character is new line it will be ignored
+            if(arg.front() == '\n'||arg.front()=='\r') {
+                // glitch if first character is new line it will be ignored so add extra new line
                 return std::string(multiline_literal_quote) + '\n' + arg + multiline_literal_quote;
             } else {
                 return std::string(multiline_literal_quote) + arg + multiline_literal_quote;
