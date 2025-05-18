@@ -6,9 +6,9 @@
 
 #include "../fuzz/fuzzApp.hpp"
 #include "app_helper.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 std::string loadFailureFile(const std::string &type, int index) {
     std::string fileName(TEST_FILE_FOLDER "/fuzzFail/");
@@ -335,7 +335,7 @@ TEST_CASE("app_roundtrip_custom") {
     auto result = fuzzdata2.compare(fuzzdata);
     if(!result) {
         result = fuzzdata2.compare(fuzzdata, true);
-        std::cout << "\n:parsed:\n"<< parseData;
+        std::cout << "\n:parsed:\n" << parseData;
         std::cout << "\n:config:\n" << configOut << '\n';
     }
     CHECK(result);
