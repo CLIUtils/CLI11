@@ -338,8 +338,10 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     for(std::size_t ii = 0; ii < custom_string_options.size(); ++ii) {
-        if(*custom_string_options[ii] != *other.custom_string_options[ii]) {
-            return false;
+        if(custom_string_options[ii]->first != other.custom_string_options[ii]->first) {
+            if (custom_string_options[ii]->second) {
+                return false;
+            }
         }
     }
     // now test custom vector_options
@@ -347,8 +349,10 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     for(std::size_t ii = 0; ii < custom_vector_options.size(); ++ii) {
-        if(*custom_vector_options[ii] != *other.custom_vector_options[ii]) {
-            return false;
+        if(custom_vector_options[ii]->first != other.custom_vector_options[ii]->first) {
+            if (custom_vector_options[ii]->second) {
+                return false;
+            }
         }
     }
     return true;
@@ -474,11 +478,15 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 break;
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
-            custom_string_options.push_back(std::make_shared<std::string>());
-            auto *opt = app->add_option(name, *(custom_string_options.back()));
+            custom_string_options.push_back(std::make_shared<std::pair<std::string,bool>>("",true));
+            auto *opt = app->add_option(name, custom_string_options.back()->first);
             if(header_close > current_index + 19) {
                 std::string attributes = description_string.substr(current_index + 8, header_close - 8 - current_index);
                 modify_option(opt, attributes);
+                if (!opt->get_configurable())
+                {
+                    custom_string_options.back()->second=false;
+                }
             }
 
             current_index = end_option + 9;
@@ -492,12 +500,16 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 break;
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
-            custom_string_options.push_back(std::make_shared<std::string>());
-            auto *opt = app->add_option(name, *(custom_string_options.back()));
+            custom_string_options.push_back(std::make_shared<std::pair<std::string,bool>>("",true));
+            auto *opt = app->add_option(name, custom_string_options.back()->first);
 
             if(header_close > current_index + 17) {
                 std::string attributes = description_string.substr(current_index + 6, header_close - 6 - current_index);
                 modify_option(opt, attributes);
+                if (!opt->get_configurable())
+                {
+                    custom_string_options.back()->second=false;
+                }
             }
             current_index = end_option + 7;
         } else if(description_string.compare(current_index, 7, "<vector") == 0) {
@@ -510,11 +522,16 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 break;
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
-            custom_vector_options.push_back(std::make_shared<std::vector<std::string>>());
-            auto *opt = app->add_option(name, *(custom_vector_options.back()));
+            custom_vector_options.push_back(std::make_shared<std::pair<std::vector<std::string>,bool>>());
+            custom_vector_options.back()->second=true;
+            auto *opt = app->add_option(name, custom_vector_options.back()->first);
             if(header_close > current_index + 19) {
                 std::string attributes = description_string.substr(current_index + 8, header_close - 8 - current_index);
                 modify_option(opt, attributes);
+                if (!opt->get_configurable())
+                {
+                    custom_vector_options.back()->second=false;
+                }
             }
             current_index = end_option + 9;
         } else {
