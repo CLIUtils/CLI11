@@ -307,9 +307,12 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
                                           << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
                                           << "]=[empty] \n";
                             } else if(res[ii][jj] != other.vstrD[ii][jj]) {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj
+                                std::cout << "-->string[" << ii << "]:vstrD[" << jj
                                           << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
                                           << "]=" << static_cast<int>(other.vstrD[ii][jj]) << '\n';
+                            } else {
+                                std::cout << "string[" << ii << "]:vstrD[" << jj
+                                    << "]=" << static_cast<int>(res[ii][jj]) << '\n';
                             }
                         }
                     }
