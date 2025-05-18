@@ -57,7 +57,7 @@ class FuzzApp {
     /** generate a fuzzing application with a bunch of different interfaces*/
     std::shared_ptr<CLI::App> generateApp();
     /** compare two fuzz apps for equality*/
-    CLI11_NODISCARD bool compare(const FuzzApp &other,bool print_error=false) const;
+    CLI11_NODISCARD bool compare(const FuzzApp &other, bool print_error = false) const;
     /** generate additional options based on a string config*/
     std::size_t add_custom_options(CLI::App *app, const std::string &description_string);
     /** modify an option based on string*/

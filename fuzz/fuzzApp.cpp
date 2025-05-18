@@ -292,33 +292,28 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         std::vector<std::string> res = vstrD;
         std::reverse(res.begin(), res.end());
         if(res != other.vstrD) {
-            if (print_error)
-            {
-                if (res.size() != other.vstrD.size())
-                {
-                    std::cout<<"size is different vstrD.size()="<<res.size()<<" other.vstrD.size="<<other.vstrD.size()<<'\n';
-                }
-                else {
-                    for (size_t ii = 0; ii < res.size(); ++ii)
-                    {
-                        for (size_t jj = 0; jj < (std::max)(res[ii].size(), other.vstrD[ii].size()); ++jj)
-                        {
-                            if (jj >= res[ii].size())
-                            {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj << "]=[empty], other.vstrD[" << jj <<"]="<<static_cast<int>(other.vstrD[ii][jj])<<'\n';
-                            }
-                            else if (jj >= other.vstrD[ii].size())
-                            {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj << "]="<<static_cast<int>(res[ii][jj])<<", other.vstrD[" << jj << "]=[empty] \n";
-                            }
-                            else
-                            {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj << "]="<<static_cast<int>(res[ii][jj])<<", other.vstrD[" << jj <<"]="<<static_cast<int>(other.vstrD[ii][jj])<<'\n';
+            if(print_error) {
+                if(res.size() != other.vstrD.size()) {
+                    std::cout << "size is different vstrD.size()=" << res.size()
+                              << " other.vstrD.size=" << other.vstrD.size() << '\n';
+                } else {
+                    for(size_t ii = 0; ii < res.size(); ++ii) {
+                        for(size_t jj = 0; jj < (std::max)(res[ii].size(), other.vstrD[ii].size()); ++jj) {
+                            if(jj >= res[ii].size()) {
+                                std::cout << "string[" << ii << "]:vstrD[" << jj << "]=[empty], other.vstrD[" << jj
+                                          << "]=" << static_cast<int>(other.vstrD[ii][jj]) << '\n';
+                            } else if(jj >= other.vstrD[ii].size()) {
+                                std::cout << "string[" << ii << "]:vstrD[" << jj
+                                          << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
+                                          << "]=[empty] \n";
+                            } else {
+                                std::cout << "string[" << ii << "]:vstrD[" << jj
+                                          << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
+                                          << "]=" << static_cast<int>(other.vstrD[ii][jj]) << '\n';
                             }
                         }
                     }
                 }
-                
             }
             return false;
         }
