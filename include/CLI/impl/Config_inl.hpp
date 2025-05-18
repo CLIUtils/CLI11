@@ -28,7 +28,7 @@ namespace detail {
 
 CLI11_INLINE bool is_printable(const std::string &test_string) {
     return std::all_of(test_string.begin(), test_string.end(), [](char x) {
-        return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n' || x == '\r'|| x == '\t');
+        return (isprint(static_cast<unsigned char>(x)) != 0 || x == '\n' || x == '\r' || x == '\t');
     });
 }
 
