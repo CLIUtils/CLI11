@@ -195,3 +195,69 @@ TEST_CASE("Formatter: NamelessSubInGroup", "[formatter]") {
     CHECK_THAT(help, Contains("sub2"));
     CHECK(help.find("pos") == std::string::npos);
 }
+
+TEST_CASE("Formatter: Footer", "[formatter]") {
+    CLI::App app{"My prog"};
+    std::string footer_string{"this is       a test of the footer "
+                              "systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s "
+                              " e  r  v  e  SPA C ES"};
+    app.footer(footer_string);
+    app.add_flag("--option", "MyFlag");
+    app.get_formatter()->footer_paragraph_width(50);
+    app.get_formatter()->enable_footer_formatting(false);
+    CHECK(!app.get_formatter()->is_footer_paragraph_formatting_enabled());
+    std::string help = app.help("", CLI::AppFormatMode::Normal);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(footer_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(footer_string));
+
+    app.get_formatter()->enable_footer_formatting(true);
+    CHECK(app.get_formatter()->is_footer_paragraph_formatting_enabled());
+    help = app.help("", CLI::AppFormatMode::Normal);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(footer_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(footer_string));
+}
+
+TEST_CASE("Formatter: Description", "[formatter]") {
+    CLI::App app{"My prog"};
+    std::string desc_string{"this is       a test of the footer "
+                            "systemsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss to  Pr e  s  "
+                            "e  r  v  e  SPA C ES"};
+    app.description(desc_string);
+    app.add_flag("--option", "MyFlag");
+    app.get_formatter()->description_paragraph_width(50);
+    app.get_formatter()->enable_description_formatting(false);
+    CHECK(!app.get_formatter()->is_description_paragraph_formatting_enabled());
+    std::string help = app.help("", CLI::AppFormatMode::Normal);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(desc_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, Contains("is       a"));
+    CHECK_THAT(help, Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, Contains(desc_string));
+
+    app.get_formatter()->enable_description_formatting(true);
+    CHECK(app.get_formatter()->is_description_paragraph_formatting_enabled());
+    help = app.help("", CLI::AppFormatMode::Normal);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(desc_string));
+
+    help = app.help("", CLI::AppFormatMode::Sub);
+    CHECK_THAT(help, !Contains("is       a"));
+    CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
+    CHECK_THAT(help, !Contains(desc_string));
+}
