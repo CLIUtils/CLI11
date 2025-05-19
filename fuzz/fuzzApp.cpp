@@ -485,9 +485,8 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 modify_option(opt, attributes);
                 if(!opt->get_configurable()) {
                     custom_string_options.back()->second = false;
-                    if(!opt->get_required()) {
-                        // this will always cause a failure so don't allow it
-                        throw(CLI::IncorrectConstruction("required and non configurable not allowed together"));
+                    if(opt->get_required()) {
+                        non_config_required=true;
                     }
                 }
             }
@@ -511,9 +510,8 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 modify_option(opt, attributes);
                 if(!opt->get_configurable()) {
                     custom_string_options.back()->second = false;
-                    if(!opt->get_required()) {
-                        // this will always cause a failure so don't allow it
-                        throw(CLI::IncorrectConstruction("required and non configurable not allowed together"));
+                    if(opt->get_required()) {
+                        non_config_required=true;
                     }
                 }
             }
@@ -536,9 +534,8 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 modify_option(opt, attributes);
                 if(!opt->get_configurable()) {
                     custom_vector_options.back()->second = false;
-                    if(!opt->get_required()) {
-                        // this will always cause a failure so don't allow it
-                        throw(CLI::IncorrectConstruction("required and non configurable not allowed together"));
+                    if(opt->get_required()) {
+                        non_config_required=true;
                     }
                 }
             }

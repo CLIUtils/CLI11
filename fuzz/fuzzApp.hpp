@@ -61,8 +61,9 @@ class FuzzApp {
     /** generate additional options based on a string config*/
     std::size_t add_custom_options(CLI::App *app, const std::string &description_string);
     /** modify an option based on string*/
-    void modify_option(CLI::Option *opt, const std::string &modifier);
+    static void modify_option(CLI::Option *opt, const std::string &modifier);
 
+    bool support_config_file_only() const{return !non_config_required;}
     int32_t val32{0};
     int16_t val16{0};
     int8_t val8{0};
@@ -123,5 +124,7 @@ class FuzzApp {
     std::vector<std::string> validator_strings{};
     std::vector<std::shared_ptr<std::pair<std::string, bool>>> custom_string_options{};
     std::vector<std::shared_ptr<std::pair<std::vector<std::string>, bool>>> custom_vector_options{};
+private:
+    bool non_config_required{false};
 };
 }  // namespace CLI
