@@ -352,9 +352,7 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
     std::size_t pstring_start{0};
     try {
         pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
-    }
-    catch (const CLI::ConstructionError&/*ce*/)
-    {
+    } catch(const CLI::ConstructionError & /*ce*/) {
         CHECK(true);
         return;
     }
