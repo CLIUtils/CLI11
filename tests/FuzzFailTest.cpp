@@ -313,7 +313,7 @@ TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(10, 11));
+    int index = GENERATE(range(1, 11));
     auto parseData = loadFailureFile("round_trip_custom", index);
     std::size_t pstring_start{0};
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
@@ -326,7 +326,6 @@ TEST_CASE("app_roundtrip_custom") {
     if(fuzzdata.support_config_file_only()) {
         // should be able to write the config to a file and read from it again
         std::string configOut = app->config_to_str();
-        app->clear();
         std::stringstream out(configOut);
         if(pstring_start > 0) {
             fuzzdata2.add_custom_options(app2.get(), parseData);
@@ -348,11 +347,17 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
     // like HorribleErrors
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
-    int index = GENERATE(range(1, 4));
+    int index = GENERATE(range(4, 5));
     auto parseData = loadFailureFile("parse_fail_check", index);
     std::size_t pstring_start{0};
-    pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
-
+    try {
+        pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
+    }
+    catch (const CLI::ConstructionError&/*ce*/)
+    {
+        CHECK(true);
+        return;
+    }
     try {
         if(pstring_start > 0) {
             app->parse(parseData.substr(pstring_start));

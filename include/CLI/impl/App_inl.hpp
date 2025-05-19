@@ -178,6 +178,11 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             if(op != nullptr && op->get_configurable()) {
                 throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
             }
+            //need to check if there is another positional with the same name that also doesn't have any long or short names
+            op = get_option_no_throw(myopt.get_single_name());
+            if(op != nullptr && op->lnames_.empty() &&  op->snames_.empty()) {
+                throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
+            }
         } else if(parent_ != nullptr) {
             for(auto &ln : myopt.lnames_) {
                 auto *op = parent_->get_option_no_throw(ln);
