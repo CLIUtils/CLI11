@@ -63,7 +63,7 @@ class FuzzApp {
     /** modify an option based on string*/
     static void modify_option(CLI::Option *opt, const std::string &modifier);
 
-    bool support_config_file_only() const{return !non_config_required;}
+    bool support_config_file_only() const { return !non_config_required; }
     int32_t val32{0};
     int16_t val16{0};
     int8_t val8{0};
@@ -124,7 +124,8 @@ class FuzzApp {
     std::vector<std::string> validator_strings{};
     std::vector<std::shared_ptr<std::pair<std::string, bool>>> custom_string_options{};
     std::vector<std::shared_ptr<std::pair<std::vector<std::string>, bool>>> custom_vector_options{};
-private:
+
+  private:
     bool non_config_required{false};
 };
 }  // namespace CLI

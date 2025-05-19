@@ -486,7 +486,7 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 if(!opt->get_configurable()) {
                     custom_string_options.back()->second = false;
                     if(opt->get_required()) {
-                        non_config_required=true;
+                        non_config_required = true;
                     }
                 }
             }
@@ -511,7 +511,7 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 if(!opt->get_configurable()) {
                     custom_string_options.back()->second = false;
                     if(opt->get_required()) {
-                        non_config_required=true;
+                        non_config_required = true;
                     }
                 }
             }
@@ -535,7 +535,7 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 if(!opt->get_configurable()) {
                     custom_vector_options.back()->second = false;
                     if(opt->get_required()) {
-                        non_config_required=true;
+                        non_config_required = true;
                     }
                 }
             }

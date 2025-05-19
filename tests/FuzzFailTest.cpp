@@ -323,18 +323,17 @@ TEST_CASE("app_roundtrip_custom") {
     } else {
         app->parse(parseData);
     }
-    if (fuzzdata.support_config_file_only())
-    {
+    if(fuzzdata.support_config_file_only()) {
         // should be able to write the config to a file and read from it again
         std::string configOut = app->config_to_str();
         app->clear();
         std::stringstream out(configOut);
-        if (pstring_start > 0) {
+        if(pstring_start > 0) {
             fuzzdata2.add_custom_options(app2.get(), parseData);
         }
         app2->parse_from_stream(out);
         auto result = fuzzdata2.compare(fuzzdata);
-        if (!result) {
+        if(!result) {
             result = fuzzdata.compare(fuzzdata2, true);
             std::cout << "\n:parsed:\n" << parseData;
             std::cout << "\n:config:\n" << configOut << '\n';
