@@ -553,6 +553,10 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 auto results = opt->reduced_results();
+                if (results.size()>1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse)
+                {
+                    std::reverse(results.begin(), results.end());
+                }
                 std::string value =
                     detail::ini_join(results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
 

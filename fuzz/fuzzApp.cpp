@@ -152,6 +152,26 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     return fApp;
 }
 
+static void print_string_comparison(const std::string& s1, const std::string& s2, const std::string &prefix, const std::string &s1name,const std::string &s2name)
+{
+    for(size_t jj = 0; jj < (std::max)(s1.size(), s2.size()); ++jj) {
+        if(jj >= s1.size()) {
+            std::cout << prefix<<":"<<s1name<<"[" << jj << "] = [empty], "<<s2name<<"[" << jj
+                << "]=" << static_cast<int>(s2[jj]) << '\n';
+        } else if(jj >= s2.size()) {
+            std::cout << prefix<<":"<<s1name<<"["<< jj
+                << "]=" << static_cast<int>(s1[jj]) << ", "<<s2name<<"[" << jj
+                << "]=[empty] \n";
+        } else if(s1[jj] != s2[jj]) {
+            std::cout << "-->" << prefix<<":"<<s1name<<"["<< jj
+                << "]=" << static_cast<int>(s1[jj]) << ", "<<s2name<<"[" << jj
+                << "]=" << static_cast<int>(s2[jj]) << '\n';
+        } else {
+            std::cout << prefix<<":"<<s1name<<"["<< jj
+                << "]=" << static_cast<int>(s1[jj]) << '\n';
+        }
+    }
+}
 bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     if(val32 != other.val32) {
         return false;
@@ -298,23 +318,8 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
                               << " other.vstrD.size=" << other.vstrD.size() << '\n';
                 } else {
                     for(size_t ii = 0; ii < res.size(); ++ii) {
-                        for(size_t jj = 0; jj < (std::max)(res[ii].size(), other.vstrD[ii].size()); ++jj) {
-                            if(jj >= res[ii].size()) {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj << "]=[empty], other.vstrD[" << jj
-                                          << "]=" << static_cast<int>(other.vstrD[ii][jj]) << '\n';
-                            } else if(jj >= other.vstrD[ii].size()) {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj
-                                          << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
-                                          << "]=[empty] \n";
-                            } else if(res[ii][jj] != other.vstrD[ii][jj]) {
-                                std::cout << "-->string[" << ii << "]:vstrD[" << jj
-                                          << "]=" << static_cast<int>(res[ii][jj]) << ", other.vstrD[" << jj
-                                          << "]=" << static_cast<int>(other.vstrD[ii][jj]) << '\n';
-                            } else {
-                                std::cout << "string[" << ii << "]:vstrD[" << jj
-                                          << "]=" << static_cast<int>(res[ii][jj]) << '\n';
-                            }
-                        }
+                        print_string_comparison(res[ii],other.vstrD[ii],std::string("string[")+std::to_string(ii)+']',"vstrD","other.vstrD");
+                        
                     }
                 }
             }
@@ -340,6 +345,10 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     for(std::size_t ii = 0; ii < custom_string_options.size(); ++ii) {
         if(custom_string_options[ii]->first != other.custom_string_options[ii]->first) {
             if(custom_string_options[ii]->second) {
+                if (print_error)
+                {
+                    print_string_comparison(custom_string_options[ii]->first, other.custom_string_options[ii]->first,std::string("custom_string[")+std::to_string(ii)+']',"c1","other.c1");
+                }
                 return false;
             }
         }
