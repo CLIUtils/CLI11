@@ -1496,6 +1496,67 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
     }
 }
 
+CLI11_INLINE bool App::_add_flag_like_result(Option* op,  const ConfigItem &item, const std::vector<std::string> &inputs)
+{
+    if(item.inputs.size() <= 1) {
+        // Flag parsing
+        auto res = config_formatter_->to_flag(item);
+        bool converted{false};
+        if(op->get_disable_flag_override()) {
+            auto val = detail::to_flag_value(res);
+            if(val == 1) {
+                res = op->get_flag_value(item.name, "{}");
+                converted = true;
+            }
+        }
+
+        if(!converted) {
+            errno = 0;
+            if(res != "{}" || op->get_expected_max() <= 1) {
+                res = op->get_flag_value(item.name, res);
+            }
+        }
+
+        op->add_result(res);
+        return true;
+    }
+    if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
+        op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
+        if(op->get_items_expected_max() > 1) {
+            throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
+        }
+
+        if(!op->get_disable_flag_override()) {
+            throw ConversionError::TooManyInputsFlag(item.fullname());
+        }
+        // if the disable flag override is set then we must have the flag values match a known flag value
+        // this is true regardless of the output value, so an array input is possible and must be accounted for
+        for(const auto &res : inputs) {
+            bool valid_value{false};
+            if(op->default_flag_values_.empty()) {
+                if(res == "true" || res == "false" || res == "1" || res == "0") {
+                    valid_value = true;
+                }
+            } else {
+                for(const auto &valid_res : op->default_flag_values_) {
+                    if(valid_res.second == res) {
+                        valid_value = true;
+                        break;
+                    }
+                }
+            }
+
+            if(valid_value) {
+                op->add_result(res);
+            } else {
+                throw InvalidError("invalid flag argument given");
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t level) {
 
     if(level < item.parents.size()) {
@@ -1580,60 +1641,8 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         const std::vector<std::string> &inputs = (useBuffer) ? buffer : item.inputs;
         if(op->get_expected_min() == 0) {
-            if(item.inputs.size() <= 1) {
-                // Flag parsing
-                auto res = config_formatter_->to_flag(item);
-                bool converted{false};
-                if(op->get_disable_flag_override()) {
-                    auto val = detail::to_flag_value(res);
-                    if(val == 1) {
-                        res = op->get_flag_value(item.name, "{}");
-                        converted = true;
-                    }
-                }
-
-                if(!converted) {
-                    errno = 0;
-                    if(res != "{}" || op->get_expected_max() <= 1) {
-                        res = op->get_flag_value(item.name, res);
-                    }
-                }
-
-                op->add_result(res);
-                return true;
-            }
-            if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
-               op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
-                if(op->get_items_expected_max() > 1) {
-                    throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
-                }
-
-                if(!op->get_disable_flag_override()) {
-                    throw ConversionError::TooManyInputsFlag(item.fullname());
-                }
-                // if the disable flag override is set then we must have the flag values match a known flag value
-                // this is true regardless of the output value, so an array input is possible and must be accounted for
-                for(const auto &res : inputs) {
-                    bool valid_value{false};
-                    if(op->default_flag_values_.empty()) {
-                        if(res == "true" || res == "false" || res == "1" || res == "0") {
-                            valid_value = true;
-                        }
-                    } else {
-                        for(const auto &valid_res : op->default_flag_values_) {
-                            if(valid_res.second == res) {
-                                valid_value = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(valid_value) {
-                        op->add_result(res);
-                    } else {
-                        throw InvalidError("invalid flag argument given");
-                    }
-                }
+            if (_add_flag_like_result(op, item, inputs))
+            {
                 return true;
             }
         }
@@ -1762,7 +1771,20 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
             posOpt->clear();
         }
-        posOpt->add_result(positional);
+        if(posOpt->get_expected_min() == 0) {
+            ConfigItem item;
+            item.name=posOpt->pname_;
+            item.inputs.push_back(positional);
+            if (!_add_flag_like_result(posOpt, item, item.inputs))
+            {
+                posOpt->add_result(positional);
+            }
+        }
+        else
+        {
+            posOpt->add_result(positional);
+        }
+        
         if(posOpt->get_trigger_on_parse()) {
             posOpt->run_callback();
         }
