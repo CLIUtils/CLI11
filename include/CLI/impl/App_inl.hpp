@@ -1782,8 +1782,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         }
 
         if(posOpt->get_trigger_on_parse()) {
-            if (!posOpt->empty())
-            {
+            if(!posOpt->empty()) {
                 posOpt->run_callback();
             }
         }
