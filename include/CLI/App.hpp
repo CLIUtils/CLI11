@@ -1323,7 +1323,7 @@ class App {
     bool _parse_single_config(const ConfigItem &item, std::size_t level = 0);
 
     /// @brief store the results for a flag like option
-    bool _add_flag_like_result(Option* op, const ConfigItem &item,const std::vector<std::string> &inputs);
+    bool _add_flag_like_result(Option *op, const ConfigItem &item, const std::vector<std::string> &inputs);
 
     /// Parse "one" argument (some may eat more than one), delegate to parent if fails, add to missing if missing
     /// from main return false if the parse has failed and needs to return to parent

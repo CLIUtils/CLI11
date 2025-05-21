@@ -109,7 +109,7 @@ TEST_CASE("app_file_roundtrip") {
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
     int index = GENERATE(range(1, 41));
-    //int index = GENERATE(range(8, 9));
+    // int index = GENERATE(range(8, 9));
     std::string optionString, flagString;
     auto parseData = loadFailureFile("fuzz_app_file_fail", index);
     if(parseData.size() > 25) {
@@ -149,7 +149,7 @@ TEST_CASE("app_file_roundtrip") {
         result = fuzzdata2.compare(fuzzdata);
     }
     */
-    INFO("Failure in test case "<<index)
+    INFO("Failure in test case " << index)
     CHECK(result);
 }
 
@@ -339,7 +339,7 @@ TEST_CASE("app_roundtrip_custom") {
             std::cout << "\n:parsed:\n" << parseData;
             std::cout << "\n:config:\n" << configOut << '\n';
         }
-        INFO("Failure in test case "<<index)
+        INFO("Failure in test case " << index)
         CHECK(result);
     }
 }
@@ -359,7 +359,7 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
         CHECK(true);
         return;
     }
-    INFO("Failure in test case "<<index)
+    INFO("Failure in test case " << index)
     try {
         if(pstring_start > 0) {
             app->parse(parseData.substr(pstring_start));

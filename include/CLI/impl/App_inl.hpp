@@ -1496,8 +1496,8 @@ CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
     }
 }
 
-CLI11_INLINE bool App::_add_flag_like_result(Option* op,  const ConfigItem &item, const std::vector<std::string> &inputs)
-{
+CLI11_INLINE bool
+App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector<std::string> &inputs) {
     if(item.inputs.size() <= 1) {
         // Flag parsing
         auto res = config_formatter_->to_flag(item);
@@ -1521,7 +1521,7 @@ CLI11_INLINE bool App::_add_flag_like_result(Option* op,  const ConfigItem &item
         return true;
     }
     if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
-        op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
+       op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
         if(op->get_items_expected_max() > 1) {
             throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
         }
@@ -1641,8 +1641,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         const std::vector<std::string> &inputs = (useBuffer) ? buffer : item.inputs;
         if(op->get_expected_min() == 0) {
-            if (_add_flag_like_result(op, item, inputs))
-            {
+            if(_add_flag_like_result(op, item, inputs)) {
                 return true;
             }
         }
@@ -1773,18 +1772,15 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         }
         if(posOpt->get_expected_min() == 0) {
             ConfigItem item;
-            item.name=posOpt->pname_;
+            item.name = posOpt->pname_;
             item.inputs.push_back(positional);
-            if (!_add_flag_like_result(posOpt, item, item.inputs))
-            {
+            if(!_add_flag_like_result(posOpt, item, item.inputs)) {
                 posOpt->add_result(positional);
             }
-        }
-        else
-        {
+        } else {
             posOpt->add_result(positional);
         }
-        
+
         if(posOpt->get_trigger_on_parse()) {
             posOpt->run_callback();
         }
