@@ -251,7 +251,7 @@ CLI11_INLINE std::string add_escaped_characters(const std::string &str);
 CLI11_INLINE std::string remove_escaped_characters(const std::string &str);
 
 /// generate a string with all non printable characters escaped to hex codes
-CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape);
+CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape, bool force = false);
 
 CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string);
 

@@ -84,7 +84,17 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
     }
     if(detail::has_escapable_character(arg)) {
         if(arg.size() > 100 && !disable_multi_line) {
-            return std::string(multiline_literal_quote) + arg + multiline_literal_quote;
+            if(arg.find(multiline_literal_quote) != std::string::npos) {
+                return binary_escape_string(arg, true);
+            }
+            std::string return_string{multiline_literal_quote};
+            return_string.reserve(7 + arg.size());
+            if(arg.front() == '\n' || arg.front() == '\r') {
+                return_string.push_back('\n');
+            }
+            return_string.append(arg);
+            return_string.append(multiline_literal_quote, 3);
+            return return_string;
         }
         return std::string(1, stringQuote) + detail::add_escaped_characters(arg) + stringQuote;
     }
@@ -393,7 +403,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                         }
                         lineExtension = false;
                         firstLine = false;
-                        if(!l2.empty() && l2.back() == '\\') {
+                        if(!l2.empty() && l2.back() == '\\' && keyChar == '\"') {
                             lineExtension = true;
                             l2.pop_back();
                         }
@@ -543,6 +553,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 auto results = opt->reduced_results();
+                if(results.size() > 1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse) {
+                    std::reverse(results.begin(), results.end());
+                }
                 std::string value =
                     detail::ini_join(results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
 

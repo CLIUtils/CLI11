@@ -6,6 +6,7 @@
 
 #include "../fuzz/fuzzApp.hpp"
 #include "app_helper.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -108,6 +109,7 @@ TEST_CASE("app_file_roundtrip") {
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
     int index = GENERATE(range(1, 41));
+    // int index = GENERATE(range(8, 9));
     std::string optionString, flagString;
     auto parseData = loadFailureFile("fuzz_app_file_fail", index);
     if(parseData.size() > 25) {
@@ -147,6 +149,7 @@ TEST_CASE("app_file_roundtrip") {
         result = fuzzdata2.compare(fuzzdata);
     }
     */
+    INFO("Failure in test case " << index)
     CHECK(result);
 }
 
@@ -312,7 +315,7 @@ TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(1, 5));
+    int index = GENERATE(range(1, 12));
     auto parseData = loadFailureFile("round_trip_custom", index);
     std::size_t pstring_start{0};
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
@@ -322,17 +325,23 @@ TEST_CASE("app_roundtrip_custom") {
     } else {
         app->parse(parseData);
     }
-
-    // should be able to write the config to a file and read from it again
-    std::string configOut = app->config_to_str();
-    app->clear();
-    std::stringstream out(configOut);
-    if(pstring_start > 0) {
-        fuzzdata2.add_custom_options(app2.get(), parseData);
+    if(fuzzdata.support_config_file_only()) {
+        // should be able to write the config to a file and read from it again
+        std::string configOut = app->config_to_str();
+        std::stringstream out(configOut);
+        if(pstring_start > 0) {
+            fuzzdata2.add_custom_options(app2.get(), parseData);
+        }
+        app2->parse_from_stream(out);
+        auto result = fuzzdata2.compare(fuzzdata);
+        if(!result) {
+            result = fuzzdata.compare(fuzzdata2, true);
+            std::cout << "\n:parsed:\n" << parseData;
+            std::cout << "\n:config:\n" << configOut << '\n';
+        }
+        INFO("Failure in test case " << index)
+        CHECK(result);
     }
-    app2->parse_from_stream(out);
-    auto result = fuzzdata2.compare(fuzzdata);
-    CHECK(result);
 }
 
 // this test
@@ -341,11 +350,16 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
     // like HorribleErrors
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
-    int index = GENERATE(range(1, 4));
+    int index = GENERATE(range(1, 7));
     auto parseData = loadFailureFile("parse_fail_check", index);
     std::size_t pstring_start{0};
-    pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
-
+    try {
+        pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
+    } catch(const CLI::ConstructionError & /*ce*/) {
+        CHECK(true);
+        return;
+    }
+    INFO("Failure in test case " << index)
     try {
         if(pstring_start > 0) {
             app->parse(parseData.substr(pstring_start));

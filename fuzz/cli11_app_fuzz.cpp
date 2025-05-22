@@ -17,9 +17,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     std::string parseString(reinterpret_cast<const char *>(Data), Size);
 
     CLI::FuzzApp fuzzdata;
-    CLI::FuzzApp fuzzdata2;
+
     auto app = fuzzdata.generateApp();
-    auto app2 = fuzzdata2.generateApp();
     std::size_t pstring_start{0};
     try {
         pstring_start = fuzzdata.add_custom_options(app.get(), parseString);
@@ -40,17 +39,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         // this just indicates we caught an error known by CLI
         return 0;  // Non-zero return values are reserved for future use.
     }
-    // should be able to write the config to a file and read from it again
-    std::string configOut = app->config_to_str();
-    app->clear();
-    std::stringstream out(configOut);
-    if(pstring_start > 0) {
-        fuzzdata2.add_custom_options(app2.get(), parseString);
+    if(fuzzdata.support_config_file_only()) {
+        CLI::FuzzApp fuzzdata2;
+        auto app2 = fuzzdata2.generateApp();
+        // should be able to write the config to a file and read from it again
+        std::string configOut = app->config_to_str();
+        std::stringstream out(configOut);
+        if(pstring_start > 0) {
+            fuzzdata2.add_custom_options(app2.get(), parseString);
+        }
+        app2->parse_from_stream(out);
+        auto result = fuzzdata2.compare(fuzzdata);
+        if(!result) {
+            throw CLI::ValidationError("fuzzer", "file input results don't match parse results");
+        }
     }
-    app2->parse_from_stream(out);
-    auto result = fuzzdata2.compare(fuzzdata);
-    if(!result) {
-        throw CLI::ValidationError("fuzzer", "file input results don't match parse results");
-    }
+
     return 0;
 }
