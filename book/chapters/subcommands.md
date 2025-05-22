@@ -105,6 +105,7 @@ at the point the subcommand is created:
 - Fallthrough
 - Group name
 - Max required subcommands
+- prefix_matching
 - validate positional arguments
 - validate optional arguments
 
@@ -155,6 +156,14 @@ completely stops when it gets to an unknown option. Further unknown options are
 ignored, even if they could match. Git is the traditional example for prefix
 commands; if you run git with an unknown subcommand, like "`git thing`", it then
 calls another command called "`git-thing`" with the remaining options intact.
+
+### prefix matching
+
+A modifier is available for subcommand matching,
+`->allow_subcommand_prefix_matching()`. if this is enabled unambiguious prefix
+portions of a subcommand will match. For Example `upgrade_package` would match
+on `upgrade_`, `upg`, `u` as long as no other subcommand would also match. It
+also disallows subcommand names that are full prefixes of another subcommand.
 
 ### Silent subcommands
 

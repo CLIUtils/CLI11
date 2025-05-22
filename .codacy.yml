@@ -8,7 +8,12 @@ engines:
     enabled: true
   coverage:
     enabled: false
+  cppcheck:
+    language: c++
 languages:
+
+ignore:
+  - "style"
 
 exclude_paths:
   - "fuzz/**/*"

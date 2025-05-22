@@ -914,6 +914,11 @@ option_groups. These are:
   is not allowed to have a single character short option starting with the same
   character as a single dash long form name; for example, `-s` and `-single` are
   not allowed in the same application.
+- `.allow_subcommand_prefix_matching()`:🚧 If this modifier is enabled,
+  unambiguious prefix portions of a subcommand will match. For example
+  `upgrade_package` would match on `upgrade_`, `upg`, `u` as long as no other
+  subcommand would also match. It also disallows subcommand names that are full
+  prefixes of another subcommand.
 - `.fallthrough()`: Allow extra unmatched options and positionals to "fall
   through" and be matched on a parent option. Subcommands by default are allowed
   to "fall through" as in they will first attempt to match on the current
