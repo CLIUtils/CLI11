@@ -2706,7 +2706,7 @@ TEST_CASE_METHOD(TApp, "BadUserSepParse", "[app]") {
     std::vector<int> vals;
     app.add_option("--idx", vals);
 
-    args = {"--idx", "1,2,3"};
+    args = {"--idx", "1;2;3"};
 
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
