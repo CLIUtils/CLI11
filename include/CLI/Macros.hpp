@@ -124,11 +124,11 @@
 
 /** rtti enabled */
 #ifndef CLI11_HAS_RTTI
-#if defined(__GXX_RTTI) and __GXX_RTTI == 1
+#if defined(__GXX_RTTI) && __GXX_RTTI == 1
 #define CLI11_HAS_RTTI 1
-#elif defined(_CPPRTTI) and _CPPRTTI == 1
+#elif defined(_CPPRTTI) && _CPPRTTI == 1
 #define CLI11_HAS_RTTI 1
-#elif defined(__NO_RTTI__) and __NO_RTTI__ == 1
+#elif defined(__NO_RTTI__) && __NO_RTTI__ == 1
 #define CLI11_HAS_RTTI 0
 #elif defined(__has_feature)
 #if __has_feature(cxx_rtti)
