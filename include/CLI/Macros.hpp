@@ -125,16 +125,16 @@
 /** rtti enabled */
 #ifndef CLI11_HAS_RTTI
 #if defined(__GXX_RTTI) && __GXX_RTTI == 1
-//gcc
+// gcc
 #define CLI11_HAS_RTTI 1
 #elif defined(_CPPRTTI) && _CPPRTTI == 1
-//msvc
+// msvc
 #define CLI11_HAS_RTTI 1
 #elif defined(__NO_RTTI__) && __NO_RTTI__ == 1
-//intel
+// intel
 #define CLI11_HAS_RTTI 0
 #elif defined(__has_feature)
-//clang and other newer compilers
+// clang and other newer compilers
 #if __has_feature(cxx_rtti)
 #define CLI11_HAS_RTTI 1
 #else
