@@ -419,6 +419,8 @@ CLI11_INLINE bool App::remove_option(Option *opt) {
         help_ptr_ = nullptr;
     if(help_all_ptr_ == opt)
         help_all_ptr_ = nullptr;
+    if(config_ptr_ == opt)
+        config_ptr_ = nullptr;
 
     auto iterator =
         std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });
@@ -1790,9 +1792,8 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
             ConfigItem item;
             item.name = posOpt->pname_;
             item.inputs.push_back(positional);
-            if(!_add_flag_like_result(posOpt, item, item.inputs)) {
-                posOpt->add_result(positional);
-            }
+            // input is singular guaranteed to return true in that case
+            _add_flag_like_result(posOpt, item, item.inputs);
         } else {
             posOpt->add_result(positional);
         }

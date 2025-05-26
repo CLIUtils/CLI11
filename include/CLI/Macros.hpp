@@ -122,6 +122,32 @@
 #endif
 #endif
 
+/** rtti enabled */
+#ifndef CLI11_HAS_RTTI
+#if defined(__GXX_RTTI) && __GXX_RTTI == 1
+// gcc
+#define CLI11_HAS_RTTI 1
+#elif defined(_CPPRTTI) && _CPPRTTI == 1
+// msvc
+#define CLI11_HAS_RTTI 1
+#elif defined(__NO_RTTI__) && __NO_RTTI__ == 1
+// intel
+#define CLI11_HAS_RTTI 0
+#elif defined(__has_feature)
+// clang and other newer compilers
+#if __has_feature(cxx_rtti)
+#define CLI11_HAS_RTTI 1
+#else
+#define CLI11_HAS_RTTI 0
+#endif
+#elif defined(__RTTI) || defined(__INTEL_RTTI__)
+// more intel and some other compilers
+#define CLI11_HAS_RTTI 1
+#else
+#define CLI11_HAS_RTTI 0
+#endif
+#endif
+
 /** disable deprecations */
 #if defined(__GNUC__)  // GCC or clang
 #define CLI11_DIAGNOSTIC_PUSH _Pragma("GCC diagnostic push")

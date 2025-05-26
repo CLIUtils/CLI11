@@ -206,6 +206,13 @@ TEST_CASE_METHOD(TApp, "subcommandPrefixMultiple", "[subcom]") {
 
     args = {"sub_"};
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    args = {"sub_long"};
+    // now turning prefix matching off on main app but left on in subcommands
+    app.allow_subcommand_prefix_matching(false);
+    run();
+    // as the subcommands can specifically match on prefix the first is matched even if there is ambiguity
+    CHECK(app.got_subcommand("sub_long_prefix"));
+    CHECK(1u == sub1->count());
 }
 
 TEST_CASE_METHOD(TApp, "RequiredAndSubcommands", "[subcom]") {
