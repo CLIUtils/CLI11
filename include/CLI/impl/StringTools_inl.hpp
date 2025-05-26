@@ -126,8 +126,15 @@ CLI11_INLINE bool valid_name_string(const std::string &str) {
 CLI11_INLINE std::string get_group_separators() {
     std::string separators{"_'"};
 
+#if defined(__GXX_RTTI) and __GXX_RTTI ==1
     char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
     separators.push_back(group_separator);
+#elif defined( _CPPRTTI) and _CPPRTTI == 1
+    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+    separators.push_back(group_separator);
+#elif defined (__NO_RTTI__) and __NO_RTTI__ ==1
+    //for intel compilers
+#endif
     return separators;
 }
 
