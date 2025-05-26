@@ -23,7 +23,7 @@ class CustomThousandsSeparator : public std::numpunct<char> {
     std::string do_grouping() const override { return "\2"; }  // Group digits in sets of 2
 };
 
-#if CLI11_HAS_RTTI!=0
+#if CLI11_HAS_RTTI != 0
 // derived from https://github.com/CLIUtils/CLI11/pull/1160
 TEST_CASE_METHOD(TApp, "locale", "[separators]") {
     std::locale customLocale(std::locale::classic(), new CustomThousandsSeparator);

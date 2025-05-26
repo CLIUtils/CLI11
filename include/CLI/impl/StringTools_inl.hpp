@@ -125,7 +125,7 @@ CLI11_INLINE bool valid_name_string(const std::string &str) {
 
 CLI11_INLINE std::string get_group_separators() {
     std::string separators{"_'"};
-#if  CLI11_HAS_RTTI !=0
+#if CLI11_HAS_RTTI != 0
     char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
     separators.push_back(group_separator);
 #endif
