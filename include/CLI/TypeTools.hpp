@@ -964,13 +964,13 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     // remove separators if present
     auto group_separators = get_group_separators();
     if(input.find_first_of(group_separators) != std::string::npos) {
+        std::string nstring = input;
         for(auto &separator : group_separators) {
             if(input.find_first_of(separator) != std::string::npos) {
-                std::string nstring = input;
                 nstring.erase(std::remove(nstring.begin(), nstring.end(), separator), nstring.end());
-                return integral_conversion(nstring, output);
             }
         }
+        return integral_conversion(nstring, output);
     }
 
     if(std::isspace(static_cast<unsigned char>(input.back()))) {
