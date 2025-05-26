@@ -1792,7 +1792,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
             ConfigItem item;
             item.name = posOpt->pname_;
             item.inputs.push_back(positional);
-            //input is singular guaranteed to return true in that case
+            // input is singular guaranteed to return true in that case
             _add_flag_like_result(posOpt, item, item.inputs);
         } else {
             posOpt->add_result(positional);
