@@ -144,7 +144,7 @@
 // more intel and some other compilers
 #define CLI11_HAS_RTTI 1
 #else
-#define CLI11_HAAS_RTTI 0
+#define CLI11_HAS_RTTI 0
 #endif
 #endif
 
