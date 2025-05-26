@@ -30,9 +30,9 @@ TEST_CASE_METHOD(TApp, "locale", "[separators]") {
 
     // Ensure standard streams use the custom locale automatically
     std::cout.imbue(std::locale());
-    std::int64_t foo;
-    std::uint64_t bar;
-    float qux;
+    std::int64_t foo{0};
+    std::uint64_t bar{0};
+    float qux{0};
 
     app.add_option("FOO", foo, "Foo option")->default_val(1234567)->force_callback();
     app.add_option("BAR", bar, "Bar option")->default_val(2345678)->force_callback();

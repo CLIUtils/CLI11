@@ -123,6 +123,15 @@ CLI11_INLINE bool valid_name_string(const std::string &str) {
     return true;
 }
 
+CLI11_INLINE std::string get_group_separators()
+{
+    std::string separators{"_'"};
+
+    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+    separators.push_back(group_separator);
+    return separators;
+}
+
 CLI11_INLINE std::string find_and_replace(std::string str, std::string from, std::string to) {
 
     std::size_t start_pos = 0;
