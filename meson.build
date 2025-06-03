@@ -66,12 +66,18 @@ endif
 add_project_arguments(cxx.get_supported_arguments(warnings), language: 'cpp')
 
 if use_precompiled
-  libcli11 = static_library(
+  libcli11 = library(
     'CLI11',
     'src/Precompile.cpp',
     include_directories : CLI11_inc,
     cpp_args            : ['-DCLI11_COMPILE'],
+    install             : true,
   )
+
+  pkg = import('pkgconfig')
+  pkg.generate(libcli11, extra_cflags: ['-DCLI11_COMPILE'])
+
+  install_headers(cli11_headers, subdir: 'CLI')
 else
   libcli11 = []
 endif
