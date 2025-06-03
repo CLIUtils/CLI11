@@ -63,7 +63,7 @@ class FuzzApp {
     /** modify an option based on string*/
     static void modify_option(CLI::Option *opt, const std::string &modifier);
 
-    CLI11_NODISCARD bool support_config_file_only() const { return !non_config_required; }
+    CLI11_NODISCARD bool supports_config_file() const { return !non_config_required; }
     int32_t val32{0};
     int16_t val16{0};
     int8_t val8{0};
