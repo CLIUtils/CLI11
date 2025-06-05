@@ -322,7 +322,7 @@ TEST_CASE("app_roundtrip_custom") {
 
     if(pstring_start > 0) {
         app->parse(parseData.substr(pstring_start));
-        CHECK_NOTHROW(app->help("",CLI::AppFormatMode::All));
+        CHECK_NOTHROW(app->help("", CLI::AppFormatMode::All));
     } else {
         app->parse(parseData);
     }

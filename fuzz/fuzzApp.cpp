@@ -531,40 +531,37 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 }
             }
             current_index = end_option + 7;
-        }
-        else if (description_string.compare(current_index, 7, "<vector") == 0) {
+        } else if(description_string.compare(current_index, 7, "<vector") == 0) {
             auto end_option = description_string.find("</vector>", current_index + 8);
-            if (end_option == std::string::npos) {
+            if(end_option == std::string::npos) {
                 break;
             }
             auto header_close = description_string.find_last_of('>', end_option);
-            if (header_close == std::string::npos || header_close < current_index) {
+            if(header_close == std::string::npos || header_close < current_index) {
                 break;
             }
             std::string name = description_string.substr(header_close + 1, end_option - header_close - 1);
             custom_vector_options.push_back(std::make_shared<std::pair<std::vector<std::string>, bool>>());
             custom_vector_options.back()->second = true;
-            auto* opt = app->add_option(name, custom_vector_options.back()->first);
-            if (header_close > current_index + 19) {
+            auto *opt = app->add_option(name, custom_vector_options.back()->first);
+            if(header_close > current_index + 19) {
                 std::string attributes = description_string.substr(current_index + 8, header_close - 8 - current_index);
                 modify_option(opt, attributes);
-                if (!opt->get_configurable()) {
+                if(!opt->get_configurable()) {
                     custom_vector_options.back()->second = false;
-                    if (opt->get_required()) {
+                    if(opt->get_required()) {
                         non_config_required = true;
                     }
                 }
             }
             current_index = end_option + 9;
-        }else if (description_string.compare(current_index,11,"<subcommand")==0)
-        {
+        } else if(description_string.compare(current_index, 11, "<subcommand") == 0) {
             auto end_sub_label = description_string.find_first_of('>', current_index + 12);
-            if (end_sub_label == std::string::npos)
-            {
+            if(end_sub_label == std::string::npos) {
                 break;
             }
             auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
-            if (end_sub == std::string::npos) {
+            if(end_sub == std::string::npos) {
                 break;
             }
 
