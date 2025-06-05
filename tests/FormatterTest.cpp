@@ -133,7 +133,7 @@ TEST_CASE("Formatter: AppCustomize", "[formatter]") {
 }
 
 TEST_CASE("Formatter: AppCustomizeSimple", "[formatter]") {
-    CLI::App app{"My prog"}; 
+    CLI::App app{"My prog"};
     app.add_subcommand("subcom1", "This");
 
     app.get_formatter()->column_width(20);
