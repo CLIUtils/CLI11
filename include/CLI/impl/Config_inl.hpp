@@ -93,6 +93,9 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
                 return_string.push_back('\n');
             }
             return_string.append(arg);
+            if(arg.back() == '\n' || arg.back() == '\r') {
+                return_string.push_back('\n');
+            }
             return_string.append(multiline_literal_quote, 3);
             return return_string;
         }
