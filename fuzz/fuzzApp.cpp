@@ -555,6 +555,16 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 }
             }
             current_index = end_option + 9;
+        } else if(description_string.compare(current_index, 11, "<subcommand") == 0) {
+            auto end_sub_label = description_string.find_first_of('>', current_index + 12);
+            if(end_sub_label == std::string::npos) {
+                break;
+            }
+            auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+            if(end_sub == std::string::npos) {
+                break;
+            }
+
         } else {
             if(isspace(description_string[current_index]) != 0) {
                 ++current_index;

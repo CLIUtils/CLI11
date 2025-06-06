@@ -322,10 +322,11 @@ TEST_CASE("app_roundtrip_custom") {
 
     if(pstring_start > 0) {
         app->parse(parseData.substr(pstring_start));
+        CHECK_NOTHROW(app->help("", CLI::AppFormatMode::All));
     } else {
         app->parse(parseData);
     }
-    if(fuzzdata.support_config_file_only()) {
+    if(fuzzdata.supports_config_file()) {
         // should be able to write the config to a file and read from it again
         std::string configOut = app->config_to_str();
         std::stringstream out(configOut);

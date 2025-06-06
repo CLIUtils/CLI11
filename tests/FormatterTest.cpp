@@ -126,7 +126,7 @@ TEST_CASE("Formatter: AppCustomize", "[formatter]") {
     app.add_subcommand("subcom2", "That");
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMAND]\n\n"));
+    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMANDS]\n\n"));
     CHECK_THAT(help, Contains("\nSUBCOMMANDS:\n"));
     CHECK_THAT(help, Contains("  subcom1           This \n"));
     CHECK_THAT(help, Contains("  subcom2           That \n"));
@@ -142,7 +142,7 @@ TEST_CASE("Formatter: AppCustomizeSimple", "[formatter]") {
     app.add_subcommand("subcom2", "That");
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMAND]\n\n"));
+    CHECK_THAT(help, Contains("Run: [OPTIONS] [SUBCOMMANDS]\n\n"));
     CHECK_THAT(help, Contains("\nSUBCOMMANDS:\n"));
     CHECK_THAT(help, Contains("  subcom1           This \n"));
     CHECK_THAT(help, Contains("  subcom2           That \n"));

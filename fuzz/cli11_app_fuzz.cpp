@@ -29,6 +29,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     try {
         if(pstring_start > 0) {
             app->parse(parseString.substr(pstring_start));
+            // test to make sure no seg fault or other errors occur
+            std::ignore = app->help("", CLI::AppFormatMode::All);
         } else {
             app->parse(parseString);
         }
@@ -39,7 +41,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         // this just indicates we caught an error known by CLI
         return 0;  // Non-zero return values are reserved for future use.
     }
-    if(fuzzdata.support_config_file_only()) {
+    if(fuzzdata.supports_config_file()) {
         CLI::FuzzApp fuzzdata2;
         auto app2 = fuzzdata2.generateApp();
         // should be able to write the config to a file and read from it again

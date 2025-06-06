@@ -133,8 +133,7 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
                [](const CLI::App *subc) { return ((!subc->get_disabled()) && (!subc->get_name().empty())); })
             .empty()) {
         out << ' ' << (app->get_require_subcommand_min() == 0 ? "[" : "")
-            << get_label(app->get_require_subcommand_max() < 2 || app->get_require_subcommand_min() > 1 ? "SUBCOMMAND"
-                                                                                                        : "SUBCOMMANDS")
+            << get_label(app->get_require_subcommand_max() == 1 ? "SUBCOMMAND" : "SUBCOMMANDS")
             << (app->get_require_subcommand_min() == 0 ? "]" : "");
     }
 

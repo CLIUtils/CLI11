@@ -516,9 +516,13 @@ TEST_CASE("THelp: Subcom", "[help]") {
     app.add_subcommand("sub2");
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMAND]"));
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
 
     app.require_subcommand();
+
+    help = app.help();
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMANDS"));
+    app.require_subcommand(1);
 
     help = app.help();
     CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMAND"));
@@ -546,7 +550,7 @@ TEST_CASE("THelp: Subcom_alias", "[help]") {
     app.add_subcommand("sub2", "Subcommand2 description test");
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMAND]"));
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
     CHECK_THAT(help, Contains("sub_alias1"));
     CHECK_THAT(help, Contains("sub_alias2"));
 }
@@ -561,7 +565,7 @@ TEST_CASE("THelp: Subcom_alias_group", "[help]") {
     app.add_subcommand("sub2", "Subcommand2 description test");
 
     std::string help = app.help();
-    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMAND]"));
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
     CHECK_THAT(help, Contains("sub_alias1"));
     CHECK_THAT(help, Contains("sub_alias2"));
 }
