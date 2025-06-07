@@ -492,6 +492,56 @@ void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string
     }
 }
 
+SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index)
+{
+    SubcommandData sub_data;
+    int depth = 1;
+    // end of prefix section for <subcommand
+    auto first_sub_label = description_string.find_first_of('>', index + 12);
+    auto end_sub_label=first_sub_label;
+    auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+    auto start_sub=description_string.find("<subcommand", end_sub_label + 1);
+    while (depth > 0) {
+        if (end_sub < start_sub)
+        {
+            --depth;
+        }
+        else
+        {
+            ++depth;
+        }
+        if (depth > 0)
+        {
+            end_sub_label=description_string.find_first_of('>',start_sub + 12);
+            end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+            start_sub=description_string.find("<subcommand", end_sub_label + 1);
+        }
+    }
+    sub_data.data=description_string.substr(first_sub_label+1,end_sub-first_sub_label-1);
+    std::string metadata=description_string.substr(index+12,end_sub_label-index-12);
+    auto fields=detail::split_up(metadata);
+    for (auto& field : fields)
+    {
+        if (field.compare(0, 5, "name=") == 0)
+        {
+            sub_data.name=field.substr(5);
+            detail::process_quoted_string(sub_data.name);
+        }
+        else if (field.compare(0, 11, "description=") == 0)
+        {
+            sub_data.description=field.substr(11);
+            detail::process_quoted_string(sub_data.description);
+        }
+        else if (field.compare(0, 10, "modifiers=") == 0)
+        {
+            sub_data.modifiers=field.substr(10);
+            detail::process_quoted_string(sub_data.modifiers);
+        }
+    }
+    sub_data.next=end_sub+13;
+    return sub_data;
+}
+
 //<option>name_string</option>
 //<vector>name_string</vector>
 //<flag>name_string</flag>
@@ -580,7 +630,10 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
             if(end_sub == std::string::npos) {
                 break;
             }
-
+            auto subdata=extract_subcomand_info(description_string,current_index);
+            auto *sub=app->add_subcommand(subdata.name,subdata.description);
+            add_custom_options(sub,subdata.data);
+            current_index = subdata.next;
         } else {
             if(isspace(description_string[current_index]) != 0) {
                 ++current_index;

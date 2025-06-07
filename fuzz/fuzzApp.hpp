@@ -51,6 +51,18 @@ class stringWrapper {
     std::string val{};
 };
 
+/// @brief  class for extracting data for custom subcommand generation.
+class SubcommandData {
+public:
+    std::string name;
+    std::string description;
+    std::string modifiers;
+    std::string data;
+    std::size_t next{std::string::npos};
+};
+
+SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index);
+
 class FuzzApp {
   public:
     FuzzApp() = default;
