@@ -545,9 +545,22 @@ SubcommandData extract_subcomand_info(const std::string &description_string,std:
         }
         if (depth > 0)
         {
-            end_sub_label=description_string.find_first_of('>',start_sub + 12);
-            end_sub = description_string.find("</subcommand>", end_sub_label + 1);
-            start_sub=description_string.find("<subcommand", end_sub_label + 1);
+            if (start_sub != std::string::npos)
+            {
+                end_sub_label=description_string.find_first_of('>',start_sub + 12);
+                end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+                start_sub=description_string.find("<subcommand", end_sub_label + 1);
+            }
+            else
+            {
+                end_sub = description_string.find("</subcommand>", end_sub + 12);
+                if (end_sub == std::string::npos)
+                {
+                    sub_data.next=index;
+                    return sub_data;
+                }
+            }
+           
         }
     }
     sub_data.data=description_string.substr(first_sub_label+1,end_sub-first_sub_label-1);
@@ -664,6 +677,10 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
                 break;
             }
             auto subdata=extract_subcomand_info(description_string,current_index);
+            if (subdata.data.empty())
+            {
+                break;
+            }
             auto *sub=app->add_subcommand(subdata.name,subdata.description);
             if (!subdata.modifiers.empty()) {
                 modify_subcommand(sub, subdata.modifiers);
