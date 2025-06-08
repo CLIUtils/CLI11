@@ -74,7 +74,9 @@ class FuzzApp {
     std::size_t add_custom_options(CLI::App *app, const std::string &description_string);
     /** modify an option based on string*/
     static void modify_option(CLI::Option *opt, const std::string &modifier);
-
+    /** modify a subcommand based on characters in a string*/
+    static void modify_subcommand(CLI::App *app, const std::string &modifiers);
+    /** return true if the app itself support conversiont to config files*/
     CLI11_NODISCARD bool supports_config_file() const { return !non_config_required; }
     int32_t val32{0};
     int16_t val16{0};

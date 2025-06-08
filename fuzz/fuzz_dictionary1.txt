@@ -181,6 +181,13 @@
 "<flag "
 "<flag>"
 "</flag>"
+"<subcommand"
+"<subcommand>"
+"</subcommand>"
 ">-"
 ">--"
 "modifiers="
+"name="
+"description="
+"alias="
+

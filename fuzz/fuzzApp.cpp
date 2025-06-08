@@ -492,6 +492,39 @@ void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string
     }
 }
 
+void FuzzApp::modify_subcommand(CLI::App *app, const std::string &modifiers) {
+    for(const auto mod : modifiers) {
+        switch(mod) {
+        case 'w':
+        case 'W':
+            app->allow_windows_style_options(mod < '`');
+            break;
+        case 'n':
+        case 'N':
+            app->allow_non_standard_option_names(mod < '`');
+            break;
+        case 'p':
+        case 'P':
+            app->allow_subcommand_prefix_matching(mod < '`');
+            break;
+        case 'f':
+        case 'F':
+            app->fallthrough(mod < '`');
+            break;
+        case 'v':
+        case 'V':
+            app->validate_positionals(mod < '`');
+            break;
+        case 'e':
+        case 'E':
+            app->positionals_at_end(mod < '`');
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index)
 {
     SubcommandData sub_data;
@@ -632,6 +665,9 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
             }
             auto subdata=extract_subcomand_info(description_string,current_index);
             auto *sub=app->add_subcommand(subdata.name,subdata.description);
+            if (!subdata.modifiers.empty()) {
+                modify_subcommand(sub, subdata.modifiers);
+            }
             add_custom_options(sub,subdata.data);
             current_index = subdata.next;
         } else {
