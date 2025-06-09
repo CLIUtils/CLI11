@@ -528,37 +528,39 @@ void FuzzApp::modify_subcommand(CLI::App *app, const std::string &modifiers) {
 SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index)
 {
     SubcommandData sub_data;
+    sub_data.next=index;
     int depth = 1;
     // end of prefix section for <subcommand
     auto first_sub_label = description_string.find_first_of('>', index + 12);
+    if (first_sub_label == std::string::npos)
+    {
+        return sub_data;
+    }
     auto end_sub_label=first_sub_label;
     auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
     auto start_sub=description_string.find("<subcommand", end_sub_label + 1);
     while (depth > 0) {
-        if (end_sub < start_sub)
+        if (end_sub == std::string::npos)
         {
-            --depth;
+            return sub_data;
         }
-        else
-        {
-            ++depth;
-        }
+        depth+=(end_sub < start_sub)?-1:1;
+        
         if (depth > 0)
         {
             if (start_sub != std::string::npos)
             {
                 end_sub_label=description_string.find_first_of('>',start_sub + 12);
+                if (end_sub_label == std::string::npos)
+                {
+                    return sub_data;
+                }
                 end_sub = description_string.find("</subcommand>", end_sub_label + 1);
                 start_sub=description_string.find("<subcommand", end_sub_label + 1);
             }
             else
             {
                 end_sub = description_string.find("</subcommand>", end_sub + 12);
-                if (end_sub == std::string::npos)
-                {
-                    sub_data.next=index;
-                    return sub_data;
-                }
             }
            
         }
