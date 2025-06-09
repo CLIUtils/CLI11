@@ -439,7 +439,6 @@ void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string
         case '|':
         case '\\':
         case '~':
-        case ':':
             opt->delimiter(mod);
             break;
         case 'g':

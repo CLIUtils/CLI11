@@ -1785,7 +1785,9 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
                 posOpt->add_result(std::string{});
             }
         }
+        results_t prev;
         if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
+            prev=posOpt->results();
             posOpt->clear();
         }
         if(posOpt->get_expected_min() == 0) {
@@ -1801,6 +1803,13 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         if(posOpt->get_trigger_on_parse()) {
             if(!posOpt->empty()) {
                 posOpt->run_callback();
+            }
+            else
+            {
+                if (!prev.empty())
+                {
+                    posOpt->add_result(prev);
+                }
             }
         }
 
