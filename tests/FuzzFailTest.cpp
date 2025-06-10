@@ -314,12 +314,13 @@ TEST_CASE("fuzz_config_subcommand") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    std::string config_string = "<subcommand name=sub_custom><option  modifiers=R2CG>--new_option</option><flag "
+    std::string config_string =
+        "<subcommand name=sub_custom><option  modifiers=R2CG>--new_option</option><flag "
         "modifiers=cFg>--new_flag</flag><vector modifiers=35s+>--new_vector</vector></subcommand>";
     auto loc = fuzzdata.add_custom_options(app.get(), config_string);
     config_string = config_string.substr(loc);
     CHECK(config_string.empty());
-    auto *sub_c=app->get_subcommand("sub_custom");
+    auto *sub_c = app->get_subcommand("sub_custom");
     auto *opt1 = sub_c->get_option_no_throw("--new_option");
     REQUIRE(opt1 != nullptr);
     CHECK(opt1->get_required());

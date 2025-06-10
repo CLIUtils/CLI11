@@ -302,15 +302,15 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         if(print_error) {
             if(print_error) {
                 if(vstrA.size() != other.vstrA.size()) {
-                    std::cout << "size is different vstrA.size()=" <<vstrA.size()
-                        << " other.vstrA.size=" << other.vstrA.size() << '\n';
+                    std::cout << "size is different vstrA.size()=" << vstrA.size()
+                              << " other.vstrA.size=" << other.vstrA.size() << '\n';
                 } else {
                     for(size_t ii = 0; ii < vstrA.size(); ++ii) {
                         print_string_comparison(vstrA[ii],
-                            other.vstrA[ii],
-                            std::string("string[") + std::to_string(ii) + ']',
-                            "vstrA",
-                            "other.vstrA");
+                                                other.vstrA[ii],
+                                                std::string("string[") + std::to_string(ii) + ']',
+                                                "vstrA",
+                                                "other.vstrA");
                     }
                 }
             }
@@ -524,68 +524,53 @@ void FuzzApp::modify_subcommand(CLI::App *app, const std::string &modifiers) {
     }
 }
 
-SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index)
-{
+SubcommandData extract_subcomand_info(const std::string &description_string, std::size_t index) {
     SubcommandData sub_data;
-    sub_data.next=index;
+    sub_data.next = index;
     int depth = 1;
     // end of prefix section for <subcommand
     auto first_sub_label = description_string.find_first_of('>', index + 12);
-    if (first_sub_label == std::string::npos)
-    {
+    if(first_sub_label == std::string::npos) {
         return sub_data;
     }
-    auto end_sub_label=first_sub_label;
+    auto end_sub_label = first_sub_label;
     auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
-    auto start_sub=description_string.find("<subcommand", end_sub_label + 1);
-    while (depth > 0) {
-        if (end_sub == std::string::npos)
-        {
+    auto start_sub = description_string.find("<subcommand", end_sub_label + 1);
+    while(depth > 0) {
+        if(end_sub == std::string::npos) {
             return sub_data;
         }
-        depth+=(end_sub < start_sub)?-1:1;
-        
-        if (depth > 0)
-        {
-            if (start_sub != std::string::npos)
-            {
-                end_sub_label=description_string.find_first_of('>',start_sub + 12);
-                if (end_sub_label == std::string::npos)
-                {
+        depth += (end_sub < start_sub) ? -1 : 1;
+
+        if(depth > 0) {
+            if(start_sub != std::string::npos) {
+                end_sub_label = description_string.find_first_of('>', start_sub + 12);
+                if(end_sub_label == std::string::npos) {
                     return sub_data;
                 }
                 end_sub = description_string.find("</subcommand>", end_sub_label + 1);
-                start_sub=description_string.find("<subcommand", end_sub_label + 1);
-            }
-            else
-            {
+                start_sub = description_string.find("<subcommand", end_sub_label + 1);
+            } else {
                 end_sub = description_string.find("</subcommand>", end_sub + 12);
             }
-           
         }
     }
-    sub_data.data=description_string.substr(first_sub_label+1,end_sub-first_sub_label-1);
-    std::string metadata=description_string.substr(index+12,end_sub_label-index-12);
-    auto fields=detail::split_up(metadata);
-    for (auto& field : fields)
-    {
-        if (field.compare(0, 5, "name=") == 0)
-        {
-            sub_data.name=field.substr(5);
+    sub_data.data = description_string.substr(first_sub_label + 1, end_sub - first_sub_label - 1);
+    std::string metadata = description_string.substr(index + 12, end_sub_label - index - 12);
+    auto fields = detail::split_up(metadata);
+    for(auto &field : fields) {
+        if(field.compare(0, 5, "name=") == 0) {
+            sub_data.name = field.substr(5);
             detail::process_quoted_string(sub_data.name);
-        }
-        else if (field.compare(0, 11, "description=") == 0)
-        {
-            sub_data.description=field.substr(11);
+        } else if(field.compare(0, 11, "description=") == 0) {
+            sub_data.description = field.substr(11);
             detail::process_quoted_string(sub_data.description);
-        }
-        else if (field.compare(0, 10, "modifiers=") == 0)
-        {
-            sub_data.modifiers=field.substr(10);
+        } else if(field.compare(0, 10, "modifiers=") == 0) {
+            sub_data.modifiers = field.substr(10);
             detail::process_quoted_string(sub_data.modifiers);
         }
     }
-    sub_data.next=end_sub+13;
+    sub_data.next = end_sub + 13;
     return sub_data;
 }
 
@@ -677,16 +662,15 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
             if(end_sub == std::string::npos) {
                 break;
             }
-            auto subdata=extract_subcomand_info(description_string,current_index);
-            if (subdata.data.empty())
-            {
+            auto subdata = extract_subcomand_info(description_string, current_index);
+            if(subdata.data.empty()) {
                 break;
             }
-            auto *sub=app->add_subcommand(subdata.name,subdata.description);
-            if (!subdata.modifiers.empty()) {
+            auto *sub = app->add_subcommand(subdata.name, subdata.description);
+            if(!subdata.modifiers.empty()) {
                 modify_subcommand(sub, subdata.modifiers);
             }
-            add_custom_options(sub,subdata.data);
+            add_custom_options(sub, subdata.data);
             current_index = subdata.next;
         } else {
             if(isspace(description_string[current_index]) != 0) {

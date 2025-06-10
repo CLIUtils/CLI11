@@ -174,44 +174,39 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             if(test_name.size() == 3) {
                 test_name.erase(0, 1);
             }
-            if (name_.empty() && parent_ != nullptr)
-            {
-                auto *test_sub=parent_;
-                while (test_sub->parent_ != nullptr && test_sub->name_.empty())
-                {
-                    test_sub=test_sub->parent_;
+            if(name_.empty() && parent_ != nullptr) {
+                auto *test_sub = parent_;
+                while(test_sub->parent_ != nullptr && test_sub->name_.empty()) {
+                    test_sub = test_sub->parent_;
                 }
-                //if we are in option group
+                // if we are in option group
                 auto *op = test_sub->get_option_no_throw(test_name);
                 if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
                 }
-                // need to check if there is another positional with the same name that also doesn't have any long or short
-                // names
+                // need to check if there is another positional with the same name that also doesn't have any long or
+                // short names
                 op = test_sub->get_option_no_throw(myopt.get_single_name());
                 if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
                     throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
                 }
-            }
-            else
-            {
+            } else {
                 auto *op = get_option_no_throw(test_name);
                 if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
                 }
-                // need to check if there is another positional with the same name that also doesn't have any long or short
-                // names
+                // need to check if there is another positional with the same name that also doesn't have any long or
+                // short names
                 op = get_option_no_throw(myopt.get_single_name());
                 if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
                     throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
                 }
             }
-            
+
         } else if(parent_ != nullptr) {
-            auto *test_sub=parent_;
-            while (test_sub->parent_ != nullptr && test_sub->name_.empty())
-            {
-                test_sub=test_sub->parent_;
+            auto *test_sub = parent_;
+            while(test_sub->parent_ != nullptr && test_sub->name_.empty()) {
+                test_sub = test_sub->parent_;
             }
             for(auto &ln : myopt.lnames_) {
                 auto *op = test_sub->get_option_no_throw(ln);
@@ -1814,7 +1809,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         }
         results_t prev;
         if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
-            prev=posOpt->results();
+            prev = posOpt->results();
             posOpt->clear();
         }
         if(posOpt->get_expected_min() == 0) {
@@ -1830,11 +1825,8 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         if(posOpt->get_trigger_on_parse()) {
             if(!posOpt->empty()) {
                 posOpt->run_callback();
-            }
-            else
-            {
-                if (!prev.empty())
-                {
+            } else {
+                if(!prev.empty()) {
                     posOpt->add_result(prev);
                 }
             }

@@ -53,7 +53,7 @@ class stringWrapper {
 
 /// @brief  class for extracting data for custom subcommand generation.
 class SubcommandData {
-public:
+  public:
     std::string name;
     std::string description;
     std::string modifiers;
@@ -61,7 +61,7 @@ public:
     std::size_t next{std::string::npos};
 };
 
-SubcommandData extract_subcomand_info(const std::string &description_string,std::size_t index);
+SubcommandData extract_subcomand_info(const std::string &description_string, std::size_t index);
 
 class FuzzApp {
   public:
