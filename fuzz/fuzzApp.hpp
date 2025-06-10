@@ -54,10 +54,10 @@ class stringWrapper {
 /// @brief  class for extracting data for custom subcommand generation.
 class SubcommandData {
   public:
-    std::string name;
-    std::string description;
-    std::string modifiers;
-    std::string data;
+    std::string name{""};
+    std::string description{""};
+    std::string modifiers{""};
+    std::string data{""};
     std::size_t next{std::string::npos};
 };
 
