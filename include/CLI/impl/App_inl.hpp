@@ -165,13 +165,14 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                                      std::function<std::string()> func) {
     Option myopt{option_name, option_description, option_callback, this, allow_non_standard_options_};
 
-    const App *top_level_parent=this;
-    while (top_level_parent->name_.empty() && top_level_parent->parent_ != nullptr) {
+    const App *top_level_parent = this;
+    while(top_level_parent->name_.empty() && top_level_parent->parent_ != nullptr) {
         top_level_parent = top_level_parent->parent_;
     }
-    
-    if(std::find_if(std::begin(options_), std::end(options_), [&myopt,top_level_parent](const Option_p &v) { return *v == myopt; }) ==
-       std::end(options_)) {
+
+    if(std::find_if(std::begin(options_), std::end(options_), [&myopt, top_level_parent](const Option_p &v) {
+           return *v == myopt;
+       }) == std::end(options_)) {
         if(myopt.lnames_.empty() && myopt.snames_.empty()) {
             // if the option is positional only there is additional potential for ambiguities in config files and needs
             // to be checked
@@ -186,7 +187,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             }
             // need to check if there is another positional with the same name that also doesn't have any long or
             // short names
-            op =top_level_parent->get_option_no_throw(myopt.get_single_name());
+            op = top_level_parent->get_option_no_throw(myopt.get_single_name());
             if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
                 throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
             }
@@ -205,7 +206,6 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             }
         }
         if(allow_non_standard_options_ && !myopt.snames_.empty()) {
-            
 
             for(auto &sname : myopt.snames_) {
                 if(sname.length() > 1) {
