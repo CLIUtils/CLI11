@@ -170,7 +170,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
         top_level_parent = top_level_parent->parent_;
     }
 
-    if(std::find_if(std::begin(options_), std::end(options_), [&myopt, top_level_parent](const Option_p &v) {
+    if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) {
            return *v == myopt;
        }) == std::end(options_)) {
         if(myopt.lnames_.empty() && myopt.snames_.empty()) {
