@@ -348,10 +348,11 @@ TEST_CASE("app_roundtrip_custom") {
     int index = GENERATE(range(1, 16));
 
     auto parseData = loadFailureFile("round_trip_custom", index);
-    
+
     std::size_t pstring_start{0};
     pstring_start = fuzzdata.add_custom_options(app.get(), parseData);
-    INFO("Failure in test case " << index << " file length=" << parseData.size()<<" pstring start at " << pstring_start)
+    INFO("Failure in test case " << index << " file length=" << parseData.size() << " pstring start at "
+                                 << pstring_start)
     if(pstring_start > 0) {
         app->parse(parseData.substr(pstring_start));
         CHECK_NOTHROW(app->help("", CLI::AppFormatMode::All));
