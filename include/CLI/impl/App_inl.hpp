@@ -165,16 +165,22 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                                      std::function<std::string()> func) {
     Option myopt{option_name, option_description, option_callback, this, allow_non_standard_options_};
 
+    
+    //do a quick search in current subcommand for options
+    auto res=std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; });
+    if (res != options_.end()) {
+        const auto &matchname = (*res)->matching_name(myopt);
+        throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
+    }
+    /** get a top level parent*/
     const App *top_level_parent = this;
     while(top_level_parent->name_.empty() && top_level_parent->parent_ != nullptr) {
         top_level_parent = top_level_parent->parent_;
     }
 
-    if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; }) ==
-       std::end(options_)) {
-        if(myopt.lnames_.empty() && myopt.snames_.empty()) {
-            // if the option is positional only there is additional potential for ambiguities in config files and needs
-            // to be checked
+   if(myopt.lnames_.empty() && myopt.snames_.empty()) {
+        // if the option is positional only there is additional potential for ambiguities in config files and needs
+        // to be checked
             std::string test_name = "--" + myopt.get_single_name();
             if(test_name.size() == 3) {
                 test_name.erase(0, 1);
@@ -196,11 +202,19 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                 if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
                 }
+                op = top_level_parent->get_option_no_throw("--"+ln);
+                if(op != nullptr && op->get_configurable()) {
+                    throw(OptionAlreadyAdded("added option matches existing option: --" + ln));
+                }
             }
             for(auto &sn : myopt.snames_) {
                 auto *op = top_level_parent->get_option_no_throw(sn);
                 if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
+                }
+                op = top_level_parent->get_option_no_throw("-"+sn);
+                if(op != nullptr && op->get_configurable()) {
+                    throw(OptionAlreadyAdded("added option matches existing option: -" + sn));
                 }
             }
         }
@@ -249,16 +263,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             option->capture_default_str();
 
         return option.get();
-    }
-    // we know something matches now find what it is so we can produce more error information
-    for(auto &opt : top_level_parent->get_options()) {
-        const auto &matchname = opt->matching_name(myopt);
-        if(!matchname.empty()) {
-            throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
-        }
-    }
-    // this line should not be reached the above loop should trigger the throw
-    throw(OptionAlreadyAdded("added option matched existing option name"));  // LCOV_EXCL_LINE
+    
 }
 
 CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string &help_description) {

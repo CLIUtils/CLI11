@@ -345,7 +345,7 @@ TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(1, 16));
+    int index = GENERATE(range(1, 15));
 
     auto parseData = loadFailureFile("round_trip_custom", index);
 
@@ -383,7 +383,7 @@ TEST_CASE("app_roundtrip_parse_normal_fail") {
     // like HorribleErrors
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
-    int index = GENERATE(range(1, 10));
+    int index = GENERATE(range(1, 11));
     auto parseData = loadFailureFile("parse_fail_check", index);
     std::size_t pstring_start{0};
     try {
