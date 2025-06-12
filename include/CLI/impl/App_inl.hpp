@@ -186,7 +186,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             test_name.erase(0, 1);
         }
         // if we are in option group
-        auto *op = top_level_parent->get_option_no_throw(test_name);
+        const auto *op = top_level_parent->get_option_no_throw(test_name);
         if(op != nullptr && op->get_configurable()) {
             throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
         }
@@ -198,7 +198,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
         }
     } else if(top_level_parent != this) {
         for(auto &ln : myopt.lnames_) {
-            auto *op = top_level_parent->get_option_no_throw(ln);
+            const auto *op = top_level_parent->get_option_no_throw(ln);
             if(op != nullptr && op->get_configurable()) {
                 throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
             }
@@ -208,7 +208,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             }
         }
         for(auto &sn : myopt.snames_) {
-            auto *op = top_level_parent->get_option_no_throw(sn);
+            const auto *op = top_level_parent->get_option_no_throw(sn);
             if(op != nullptr && op->get_configurable()) {
                 throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
             }
@@ -225,7 +225,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                 std::string test_name;
                 test_name.push_back('-');
                 test_name.push_back(sname.front());
-                auto *op = top_level_parent->get_option_no_throw(test_name);
+                const auto *op = top_level_parent->get_option_no_throw(test_name);
                 if(op != nullptr) {
                     throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
                 }

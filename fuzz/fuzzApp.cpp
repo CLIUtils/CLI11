@@ -299,7 +299,6 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
 
     // for testing restrictions and reduction methods
     if(vstrA != other.vstrA) {
-        if(print_error) {
             if(print_error) {
                 if(vstrA.size() != other.vstrA.size()) {
                     std::cout << "size is different vstrA.size()=" << vstrA.size()
@@ -314,7 +313,6 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
                     }
                 }
             }
-        }
         return false;
     }
     if(vstrB != other.vstrB) {
