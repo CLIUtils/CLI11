@@ -165,10 +165,10 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                                      std::function<std::string()> func) {
     Option myopt{option_name, option_description, option_callback, this, allow_non_standard_options_};
 
-    
-    //do a quick search in current subcommand for options
-    auto res=std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; });
-    if (res != options_.end()) {
+    // do a quick search in current subcommand for options
+    auto res =
+        std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; });
+    if(res != options_.end()) {
         const auto &matchname = (*res)->matching_name(myopt);
         throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
     }
@@ -178,92 +178,90 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
         top_level_parent = top_level_parent->parent_;
     }
 
-   if(myopt.lnames_.empty() && myopt.snames_.empty()) {
+    if(myopt.lnames_.empty() && myopt.snames_.empty()) {
         // if the option is positional only there is additional potential for ambiguities in config files and needs
         // to be checked
-            std::string test_name = "--" + myopt.get_single_name();
-            if(test_name.size() == 3) {
-                test_name.erase(0, 1);
-            }
-            // if we are in option group
-            auto *op = top_level_parent->get_option_no_throw(test_name);
+        std::string test_name = "--" + myopt.get_single_name();
+        if(test_name.size() == 3) {
+            test_name.erase(0, 1);
+        }
+        // if we are in option group
+        auto *op = top_level_parent->get_option_no_throw(test_name);
+        if(op != nullptr && op->get_configurable()) {
+            throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+        }
+        // need to check if there is another positional with the same name that also doesn't have any long or
+        // short names
+        op = top_level_parent->get_option_no_throw(myopt.get_single_name());
+        if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
+            throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
+        }
+    } else if(top_level_parent != this) {
+        for(auto &ln : myopt.lnames_) {
+            auto *op = top_level_parent->get_option_no_throw(ln);
             if(op != nullptr && op->get_configurable()) {
-                throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+                throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
             }
-            // need to check if there is another positional with the same name that also doesn't have any long or
-            // short names
-            op = top_level_parent->get_option_no_throw(myopt.get_single_name());
-            if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
-                throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
+            op = top_level_parent->get_option_no_throw("--" + ln);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing option: --" + ln));
             }
-        } else if(top_level_parent != this) {
-            for(auto &ln : myopt.lnames_) {
-                auto *op = top_level_parent->get_option_no_throw(ln);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
-                }
-                op = top_level_parent->get_option_no_throw("--"+ln);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing option: --" + ln));
-                }
+        }
+        for(auto &sn : myopt.snames_) {
+            auto *op = top_level_parent->get_option_no_throw(sn);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
             }
-            for(auto &sn : myopt.snames_) {
-                auto *op = top_level_parent->get_option_no_throw(sn);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
-                }
-                op = top_level_parent->get_option_no_throw("-"+sn);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing option: -" + sn));
+            op = top_level_parent->get_option_no_throw("-" + sn);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing option: -" + sn));
+            }
+        }
+    }
+    if(allow_non_standard_options_ && !myopt.snames_.empty()) {
+
+        for(auto &sname : myopt.snames_) {
+            if(sname.length() > 1) {
+                std::string test_name;
+                test_name.push_back('-');
+                test_name.push_back(sname.front());
+                auto *op = top_level_parent->get_option_no_throw(test_name);
+                if(op != nullptr) {
+                    throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
                 }
             }
         }
-        if(allow_non_standard_options_ && !myopt.snames_.empty()) {
-
-            for(auto &sname : myopt.snames_) {
-                if(sname.length() > 1) {
+        for(auto &opt : top_level_parent->get_options()) {
+            for(const auto &osn : opt->snames_) {
+                if(osn.size() > 1) {
                     std::string test_name;
-                    test_name.push_back('-');
-                    test_name.push_back(sname.front());
-                    auto *op = top_level_parent->get_option_no_throw(test_name);
-                    if(op != nullptr) {
-                        throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
-                    }
-                }
-            }
-            for(auto &opt : top_level_parent->get_options()) {
-                for(const auto &osn : opt->snames_) {
-                    if(osn.size() > 1) {
-                        std::string test_name;
-                        test_name.push_back(osn.front());
-                        if(myopt.check_sname(test_name)) {
-                            throw(OptionAlreadyAdded("added option interferes with existing non standard option: " +
-                                                     osn));
-                        }
+                    test_name.push_back(osn.front());
+                    if(myopt.check_sname(test_name)) {
+                        throw(OptionAlreadyAdded("added option interferes with existing non standard option: " + osn));
                     }
                 }
             }
         }
-        options_.emplace_back();
-        Option_p &option = options_.back();
-        option.reset(new Option(option_name, option_description, option_callback, this, allow_non_standard_options_));
+    }
+    options_.emplace_back();
+    Option_p &option = options_.back();
+    option.reset(new Option(option_name, option_description, option_callback, this, allow_non_standard_options_));
 
-        // Set the default string capture function
-        option->default_function(func);
+    // Set the default string capture function
+    option->default_function(func);
 
-        // For compatibility with CLI11 1.7 and before, capture the default string here
-        if(defaulted)
-            option->capture_default_str();
+    // For compatibility with CLI11 1.7 and before, capture the default string here
+    if(defaulted)
+        option->capture_default_str();
 
-        // Transfer defaults to the new option
-        option_defaults_.copy_to(option.get());
+    // Transfer defaults to the new option
+    option_defaults_.copy_to(option.get());
 
-        // Don't bother to capture if we already did
-        if(!defaulted && option->get_always_capture_default())
-            option->capture_default_str();
+    // Don't bother to capture if we already did
+    if(!defaulted && option->get_always_capture_default())
+        option->capture_default_str();
 
-        return option.get();
-    
+    return option.get();
 }
 
 CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string &help_description) {
