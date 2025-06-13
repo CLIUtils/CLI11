@@ -559,6 +559,11 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 if(results.size() > 1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse) {
                     std::reverse(results.begin(), results.end());
                 }
+                if (opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && opt->get_delimiter()=='\0' && !results.empty() && results[0].find_first_of('\n')!=std::string::npos)
+                {
+                    //this branch deals with a situation where the output would not be readable by a config file
+                    results = opt->results();
+                }
                 std::string value =
                     detail::ini_join(results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
 
