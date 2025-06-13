@@ -1548,7 +1548,7 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
         return true;
     }
     if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
-       op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
+       op->get_multi_option_policy() != MultiOptionPolicy::TakeAll &&op->get_multi_option_policy() != MultiOptionPolicy::Join) {
         if(op->get_items_expected_max() > 1) {
             throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
         }
