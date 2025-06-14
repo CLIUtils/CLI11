@@ -438,7 +438,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         std::vector<std::string> parents;
         try {
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
-            detail::process_quoted_string(name);
+            detail::process_quoted_string(name,'"','\'',true);
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
                 detail::process_quoted_string(it, stringQuote, literalQuote);
