@@ -332,16 +332,16 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         if(std::get<0>(tcomplex) != std::get<0>(other.tcomplex)) {
             auto testa = std::get<0>(tcomplex);
             auto testb = std::get<0>(other.tcomplex);
-            if(isnan(std::get<double>(testa))) {
+            if(std::isnan(std::get<double>(testa))) {
                 std::get<double>(testa) = keydub;
             }
-            if(isnan(std::get<double>(testb))) {
+            if(std::isnan(std::get<double>(testb))) {
                 std::get<double>(testb) = keydub;
             }
-            if(isnan(std::get<double>(std::get<0>(testa)))) {
+            if(std::isnan(std::get<double>(std::get<0>(testa)))) {
                 std::get<double>(std::get<0>(testa)) = keydub;
             }
-            if(isnan(std::get<double>(std::get<0>(testb)))) {
+            if(std::isnan(std::get<double>(std::get<0>(testb)))) {
                 std::get<double>(std::get<0>(testb)) = keydub;
             }
             if(testa != testb) {
@@ -356,16 +356,16 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         if(std::get<0>(tcomplex2) != std::get<0>(other.tcomplex2)) {
             auto testa = std::get<0>(tcomplex2);
             auto testb = std::get<0>(other.tcomplex2);
-            if(isnan(std::get<double>(testa))) {
+            if(std::isnan(std::get<double>(testa))) {
                 std::get<double>(testa) = keydub;
             }
-            if(isnan(std::get<double>(testb))) {
+            if(std::isnan(std::get<double>(testb))) {
                 std::get<double>(testb) = keydub;
             }
-            if(isnan(std::get<double>(std::get<0>(testa)))) {
+            if(std::isnan(std::get<double>(std::get<0>(testa)))) {
                 std::get<double>(std::get<0>(testa)) = keydub;
             }
-            if(isnan(std::get<double>(std::get<0>(testb)))) {
+            if(std::isnan(std::get<double>(std::get<0>(testb)))) {
                 std::get<double>(std::get<0>(testb)) = keydub;
             }
             if(testa != testb) {
