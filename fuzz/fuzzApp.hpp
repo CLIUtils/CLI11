@@ -125,8 +125,8 @@ class FuzzApp {
     doubleWrapper dwrap{0.0};
     stringWrapper swrap{};
     std::string buffer{};
-    std::complex<double> cv3{ 0.0,0.0 };
-    std::complex<float> cv4{ 0.0,0.0 };
+    std::complex<double> cv3{0.0, 0.0};
+    std::complex<float> cv4{0.0, 0.0};
 
     int intbuffer{0};
     std::atomic<double> doubleAtomic{0.0};
