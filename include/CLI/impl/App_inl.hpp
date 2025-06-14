@@ -851,7 +851,7 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
     }
     for(auto &subc : subcommands_) {
         // also check down into nameless subcommands and specific groups
-        if(subc->get_name().empty() || ( !subc->get_group().empty() && subc->get_group().front() == '+')) {
+        if(subc->get_name().empty() || (!subc->get_group().empty() && subc->get_group().front() == '+')) {
             auto subcopts = subc->get_options(filter);
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
@@ -1627,12 +1627,13 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
             }
         }
     }
-    if (op==nullptr || !op->get_configurable())
-    {
-        auto options=get_options([name=item.name](const CLI::Option *opt){return (opt->get_configurable() && (opt->check_name(name)||opt->check_lname(name)||opt->check_sname(name)));});
-        if (!options.empty())
-        {
-            op=options[0];
+    if(op == nullptr || !op->get_configurable()) {
+        auto options = get_options([name = item.name](const CLI::Option *opt) {
+            return (opt->get_configurable() &&
+                    (opt->check_name(name) || opt->check_lname(name) || opt->check_sname(name)));
+        });
+        if(!options.empty()) {
+            op = options[0];
         }
     }
     if(op == nullptr) {
