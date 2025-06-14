@@ -68,6 +68,9 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     fApp->add_option("--dopt1", v1);
     fApp->add_option("--dopt2", v2);
 
+    fApp->add_option("--cv3", cv3);
+    fApp->add_option("--cv4", cv4);
+
     auto *vgroup = fApp->add_option_group("vectors");
 
     vgroup->add_option("--vopt1", vv1);
@@ -119,7 +122,7 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
 
     sub->add_option("--stup1", p1);
     sub->add_option("--stup2", t1);
-    sub->add_option("--stup4", tcomplex);
+    sub->add_option("--stup4", tcomplex2);
     sub->add_option("--svtup", vectup);
 
     sub->add_option("--sdwrap", dwrap);
@@ -172,6 +175,8 @@ static void print_string_comparison(const std::string &s1,
         }
     }
 }
+
+static constexpr double keydub = 6262542.2622;
 bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     if(val32 != other.val32) {
         return false;
@@ -207,10 +212,14 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     }
 
     if(v1 != other.v1) {
-        return false;
+        if(!(std::isnan(v1) && std::isnan(other.v1))) {
+            return false;
+        }
     }
     if(v2 != other.v2) {
-        return false;
+        if(!(std::isnan(v2) && std::isnan(other.v2))) {
+            return false;
+        }
     }
 
     if(vv1 != other.vv1) {
@@ -232,13 +241,34 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     }
 
     if(vecvecd != other.vecvecd) {
-        return false;
+        if(vecvecd.size() != other.vecvecd.size()) {
+            return false;
+        }
+        // need to check if they are both nan
+        for(std::size_t index = 0; index < vecvecd.size(); ++index) {
+            if(vecvecd[index].size() != other.vecvecd[index].size()) {
+                return false;
+            }
+            if(vecvecd[index] != other.vecvecd[index]) {
+                for(std::size_t jj = 0; jj < vecvecd[index].size(); ++jj) {
+                    if(std::isnan(vecvecd[index][jj]) && std::isnan(other.vecvecd[index][jj])) {
+                        continue;
+                    }
+                    return false;
+                }
+            }
+        }
     }
     if(vvs != other.vvs) {
         return false;
     }
     if(od1 != other.od1) {
-        return false;
+        if(!od1 || !other.od1) {
+            return false;
+        }
+        if(!(std::isnan(*od1) && std::isnan(*other.od1))) {
+            return false;
+        }
     }
     if(ods != other.ods) {
         return false;
@@ -247,22 +277,160 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(p1 != other.p1) {
-        return false;
+        if(p1.second != other.p1.second) {
+            return false;
+        }
+        if(!(std::isnan(p1.first) && std::isnan(other.p1.first))) {
+            return false;
+        }
     }
     if(p2 != other.p2) {
-        return false;
+        if(p2.second != other.p2.second) {
+            return false;
+        }
+        if(p2.first.size() != other.p2.first.size()) {
+            return false;
+        }
+        for(std::size_t index = 0; index < p2.first.size(); ++index) {
+            if(p2.first[index] != other.p2.first[index]) {
+                if(std::isnan(p2.first[index]) && std::isnan(other.p2.first[index])) {
+                    continue;
+                }
+                return false;
+            }
+        }
     }
     if(t1 != other.t1) {
         return false;
     }
+    if(cv3 != other.cv3) {
+        if(cv3.real() != other.cv3.real()) {
+            if(!(std::isnan(cv3.real()) && std::isnan(other.cv3.real()))) {
+                return false;
+            }
+        }
+        if(cv3.imag() != other.cv3.imag()) {
+            if(!(std::isnan(cv3.imag()) && std::isnan(other.cv3.imag()))) {
+                return false;
+            }
+        }
+    }
+    if(cv4 != other.cv4) {
+        if(cv4.real() != other.cv4.real()) {
+            if(!(std::isnan(cv4.real()) && std::isnan(other.cv4.real()))) {
+                return false;
+            }
+        }
+        if(cv4.imag() != other.cv4.imag()) {
+            if(!(std::isnan(cv4.imag()) && std::isnan(other.cv4.imag()))) {
+                return false;
+            }
+        }
+    }
     if(tcomplex != other.tcomplex) {
-        return false;
+
+        if(std::get<0>(tcomplex) != std::get<0>(other.tcomplex)) {
+            auto testa = std::get<0>(tcomplex);
+            auto testb = std::get<0>(other.tcomplex);
+            if(std::isnan(std::get<double>(testa))) {
+                std::get<double>(testa) = keydub;
+            }
+            if(std::isnan(std::get<double>(testb))) {
+                std::get<double>(testb) = keydub;
+            }
+            if(std::isnan(std::get<double>(std::get<0>(testa)))) {
+                std::get<double>(std::get<0>(testa)) = keydub;
+            }
+            if(std::isnan(std::get<double>(std::get<0>(testb)))) {
+                std::get<double>(std::get<0>(testb)) = keydub;
+            }
+            if(testa != testb) {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
     if(tcomplex2 != other.tcomplex2) {
-        return false;
+        if(std::get<0>(tcomplex2) != std::get<0>(other.tcomplex2)) {
+            auto testa = std::get<0>(tcomplex2);
+            auto testb = std::get<0>(other.tcomplex2);
+            if(std::isnan(std::get<double>(testa))) {
+                std::get<double>(testa) = keydub;
+            }
+            if(std::isnan(std::get<double>(testb))) {
+                std::get<double>(testb) = keydub;
+            }
+            if(std::isnan(std::get<double>(std::get<0>(testa)))) {
+                std::get<double>(std::get<0>(testa)) = keydub;
+            }
+            if(std::isnan(std::get<double>(std::get<0>(testb)))) {
+                std::get<double>(std::get<0>(testb)) = keydub;
+            }
+            if(testa != testb) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
     if(vectup != other.vectup) {
-        return false;
+        bool found_diff = false;
+        if(vectup.size() != other.vectup.size()) {
+            if(print_error) {
+                std::cout << "size is different vectup.size()=" << vectup.size()
+                          << " other.vectup.size=" << other.vectup.size() << '\n';
+            }
+            found_diff = true;
+        } else {
+            for(size_t ii = 0; ii < vectup.size(); ++ii) {
+                if(vectup[ii] != other.vectup[ii]) {
+                    int matching = 4;
+                    if(std::get<0>(vectup[ii]) != std::get<0>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][0] != other.vectup[" << ii << "][0]\n";
+                        }
+                    }
+                    if(std::get<1>(vectup[ii]) != std::get<1>(other.vectup[ii])) {
+                        if(!(std::isnan(std::get<1>(vectup[ii])) && std::isnan(std::get<1>(other.vectup[ii])))) {
+                            --matching;
+                            if(print_error) {
+                                std::cout << "vectup[" << ii << "][1] != other.vectup[" << ii << "][1]\n";
+                            }
+                        }
+                    }
+                    if(std::get<2>(vectup[ii]) != std::get<2>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][2] != other.vectup[" << ii << "][2]\n";
+                        }
+                    }
+                    if(std::get<3>(vectup[ii]) != std::get<3>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][3] != other.vectup[" << ii << "][3]\n";
+                        }
+                    }
+                    if(matching != 4) {
+                        found_diff = true;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "] != other.vectup[" << ii << "]\n";
+                        }
+                    }
+                }
+                /*print_string_comparison(vstrA[ii],
+                    other.vectup[ii],
+                    std::string("string[") + std::to_string(ii) + ']',
+                    "vstrA",
+                    "other.vstrA");
+                    */
+            }
+        }
+        if(found_diff) {
+            return false;
+        }
     }
     if(vstrv != other.vstrv) {
         return false;
@@ -282,7 +450,9 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(dwrap.value() != other.dwrap.value()) {
-        return false;
+        if(!(std::isnan(dwrap.value()) && std::isnan(other.dwrap.value()))) {
+            return false;
+        }
     }
     if(swrap.value() != other.swrap.value()) {
         return false;
@@ -294,11 +464,27 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(doubleAtomic != other.doubleAtomic) {
-        return false;
+        if(!(std::isnan(doubleAtomic.load()) && std::isnan(other.doubleAtomic.load()))) {
+            return false;
+        }
     }
 
     // for testing restrictions and reduction methods
     if(vstrA != other.vstrA) {
+        if(print_error) {
+            if(vstrA.size() != other.vstrA.size()) {
+                std::cout << "size is different vstrA.size()=" << vstrA.size()
+                          << " other.vstrA.size=" << other.vstrA.size() << '\n';
+            } else {
+                for(size_t ii = 0; ii < vstrA.size(); ++ii) {
+                    print_string_comparison(vstrA[ii],
+                                            other.vstrA[ii],
+                                            std::string("string[") + std::to_string(ii) + ']',
+                                            "vstrA",
+                                            "other.vstrA");
+                }
+            }
+        }
         return false;
     }
     if(vstrB != other.vstrB) {
@@ -423,7 +609,6 @@ void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string
         case '|':
         case '\\':
         case '~':
-        case ':':
             opt->delimiter(mod);
             break;
         case 'g':
@@ -474,6 +659,89 @@ void FuzzApp::modify_option(CLI::Option *opt, const std::string &modifier_string
             break;
         }
     }
+}
+
+void FuzzApp::modify_subcommand(CLI::App *app, const std::string &modifiers) {
+    for(const auto mod : modifiers) {
+        switch(mod) {
+        case 'w':
+        case 'W':
+            app->allow_windows_style_options(mod < '`');
+            break;
+        case 'n':
+        case 'N':
+            app->allow_non_standard_option_names(mod < '`');
+            break;
+        case 'p':
+        case 'P':
+            app->allow_subcommand_prefix_matching(mod < '`');
+            break;
+        case 'f':
+        case 'F':
+            app->fallthrough(mod < '`');
+            break;
+        case 'v':
+        case 'V':
+            app->validate_positionals(mod < '`');
+            break;
+        case 'e':
+        case 'E':
+            app->positionals_at_end(mod < '`');
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+SubcommandData extract_subcomand_info(const std::string &description_string, std::size_t index) {
+    SubcommandData sub_data;
+    sub_data.next = index;
+    int depth = 1;
+    // end of prefix section for <subcommand
+    auto first_sub_label = description_string.find_first_of('>', index + 12);
+    if(first_sub_label == std::string::npos) {
+        return sub_data;
+    }
+    auto end_sub_label = first_sub_label;
+    auto end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+    auto start_sub = description_string.find("<subcommand", end_sub_label + 1);
+    while(depth > 0) {
+        if(end_sub == std::string::npos) {
+            return sub_data;
+        }
+        depth += (end_sub < start_sub) ? -1 : 1;
+
+        if(depth > 0) {
+            if(start_sub != std::string::npos) {
+                end_sub_label = description_string.find_first_of('>', start_sub + 12);
+                if(end_sub_label == std::string::npos) {
+                    return sub_data;
+                }
+                end_sub = description_string.find("</subcommand>", end_sub_label + 1);
+                start_sub = description_string.find("<subcommand", end_sub_label + 1);
+            } else {
+                end_sub = description_string.find("</subcommand>", end_sub + 12);
+            }
+        }
+    }
+    sub_data.data = description_string.substr(first_sub_label + 1, end_sub - first_sub_label - 1);
+    std::string metadata = description_string.substr(index + 12, end_sub_label - index - 12);
+    auto fields = detail::split_up(metadata);
+    for(auto &field : fields) {
+        if(field.compare(0, 5, "name=") == 0) {
+            sub_data.name = field.substr(5);
+            detail::process_quoted_string(sub_data.name);
+        } else if(field.compare(0, 11, "description=") == 0) {
+            sub_data.description = field.substr(11);
+            detail::process_quoted_string(sub_data.description);
+        } else if(field.compare(0, 10, "modifiers=") == 0) {
+            sub_data.modifiers = field.substr(10);
+            detail::process_quoted_string(sub_data.modifiers);
+        }
+    }
+    sub_data.next = end_sub + 13;
+    return sub_data;
 }
 
 //<option>name_string</option>
@@ -564,7 +832,16 @@ std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &descri
             if(end_sub == std::string::npos) {
                 break;
             }
-
+            auto subdata = extract_subcomand_info(description_string, current_index);
+            if(subdata.data.empty()) {
+                break;
+            }
+            auto *sub = app->add_subcommand(subdata.name, subdata.description);
+            if(!subdata.modifiers.empty()) {
+                modify_subcommand(sub, subdata.modifiers);
+            }
+            add_custom_options(sub, subdata.data);
+            current_index = subdata.next;
         } else {
             if(isspace(description_string[current_index]) != 0) {
                 ++current_index;
