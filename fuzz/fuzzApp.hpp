@@ -12,13 +12,13 @@
 #endif
 
 #include <atomic>
+#include <complex>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <complex>
 
 namespace CLI {
 

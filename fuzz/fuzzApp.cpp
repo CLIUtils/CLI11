@@ -68,8 +68,8 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
     fApp->add_option("--dopt1", v1);
     fApp->add_option("--dopt2", v2);
 
-    fApp->add_option("--cv3",cv3);
-    fApp->add_option("--cv4",cv4);
+    fApp->add_option("--cv3", cv3);
+    fApp->add_option("--cv4", cv4);
 
     auto *vgroup = fApp->add_option_group("vectors");
 
@@ -176,7 +176,7 @@ static void print_string_comparison(const std::string &s1,
     }
 }
 
-static constexpr double keydub=6262542.2622;
+static constexpr double keydub = 6262542.2622;
 bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     if(val32 != other.val32) {
         return false;
@@ -212,12 +212,12 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     }
 
     if(v1 != other.v1) {
-        if (!(std::isnan(v1) && std::isnan(other.v1))) {
+        if(!(std::isnan(v1) && std::isnan(other.v1))) {
             return false;
         }
     }
     if(v2 != other.v2) {
-        if (!(std::isnan(v2) && std::isnan(other.v2))) {
+        if(!(std::isnan(v2) && std::isnan(other.v2))) {
             return false;
         }
     }
@@ -250,25 +250,23 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
                 return false;
             }
             if(vecvecd[index] != other.vecvecd[index]) {
-                for (std::size_t jj = 0; jj < vecvecd[index].size(); ++jj) {
-                    if (std::isnan(vecvecd[index][jj]) && std::isnan(other.vecvecd[index][jj])) {
+                for(std::size_t jj = 0; jj < vecvecd[index].size(); ++jj) {
+                    if(std::isnan(vecvecd[index][jj]) && std::isnan(other.vecvecd[index][jj])) {
                         continue;
                     }
                     return false;
                 }
             }
-                
         }
     }
     if(vvs != other.vvs) {
         return false;
     }
     if(od1 != other.od1) {
-        if (!od1 || !other.od1)
-        {
+        if(!od1 || !other.od1) {
             return false;
         }
-        if (!(std::isnan(*od1) && std::isnan(*other.od1))) {
+        if(!(std::isnan(*od1) && std::isnan(*other.od1))) {
             return false;
         }
     }
@@ -279,21 +277,18 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(p1 != other.p1) {
-        if (p1.second != other.p1.second)
-        {
+        if(p1.second != other.p1.second) {
             return false;
         }
-        if (!(std::isnan(p1.first) && std::isnan(other.p1.first))) {
+        if(!(std::isnan(p1.first) && std::isnan(other.p1.first))) {
             return false;
         }
     }
     if(p2 != other.p2) {
-        if (p2.second != other.p2.second)
-        {
+        if(p2.second != other.p2.second) {
             return false;
         }
-        if (p2.first.size() != other.p2.first.size())
-        {
+        if(p2.first.size() != other.p2.first.size()) {
             return false;
         }
         for(std::size_t index = 0; index < p2.first.size(); ++index) {
@@ -308,167 +303,134 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
     if(t1 != other.t1) {
         return false;
     }
-    if (cv3 != other.cv3)
-    {
-        if (cv3.real() != other.cv3.real())
-        {
-            if (!(std::isnan(cv3.real()) && std::isnan(other.cv3.real()))) {
+    if(cv3 != other.cv3) {
+        if(cv3.real() != other.cv3.real()) {
+            if(!(std::isnan(cv3.real()) && std::isnan(other.cv3.real()))) {
                 return false;
             }
         }
-        if (cv3.imag() != other.cv3.imag())
-        {
-            if (!(std::isnan(cv3.imag()) && std::isnan(other.cv3.imag()))) {
+        if(cv3.imag() != other.cv3.imag()) {
+            if(!(std::isnan(cv3.imag()) && std::isnan(other.cv3.imag()))) {
                 return false;
             }
         }
     }
-    if (cv4 != other.cv4)
-    {
-        if (cv4.real() != other.cv4.real())
-        {
-            if (!(std::isnan(cv4.real()) && std::isnan(other.cv4.real()))) {
+    if(cv4 != other.cv4) {
+        if(cv4.real() != other.cv4.real()) {
+            if(!(std::isnan(cv4.real()) && std::isnan(other.cv4.real()))) {
                 return false;
             }
         }
-        if (cv4.imag() != other.cv4.imag())
-        {
-            if (!(std::isnan(cv4.imag()) && std::isnan(other.cv4.imag()))) {
+        if(cv4.imag() != other.cv4.imag()) {
+            if(!(std::isnan(cv4.imag()) && std::isnan(other.cv4.imag()))) {
                 return false;
             }
         }
     }
     if(tcomplex != other.tcomplex) {
 
-        if (std::get<0>(tcomplex) != std::get<0>(other.tcomplex))
-        {
-            auto testa=std::get<0>(tcomplex);
-            auto testb=std::get<0>(other.tcomplex);
-            if (isnan(std::get<double>(testa)))
-            {
-                std::get<double>(testa)=keydub;
+        if(std::get<0>(tcomplex) != std::get<0>(other.tcomplex)) {
+            auto testa = std::get<0>(tcomplex);
+            auto testb = std::get<0>(other.tcomplex);
+            if(isnan(std::get<double>(testa))) {
+                std::get<double>(testa) = keydub;
             }
-            if (isnan(std::get<double>(testb)))
-            {
-                std::get<double>(testb)=keydub;
+            if(isnan(std::get<double>(testb))) {
+                std::get<double>(testb) = keydub;
             }
-            if (isnan(std::get<double>(std::get<0>(testa))))
-            {
-                std::get<double>(std::get<0>(testa))=keydub;
+            if(isnan(std::get<double>(std::get<0>(testa)))) {
+                std::get<double>(std::get<0>(testa)) = keydub;
             }
-            if (isnan(std::get<double>(std::get<0>(testb))))
-            {
-                std::get<double>(std::get<0>(testb))=keydub;
+            if(isnan(std::get<double>(std::get<0>(testb)))) {
+                std::get<double>(std::get<0>(testb)) = keydub;
             }
-            if (testa != testb)
-            {
+            if(testa != testb) {
                 return false;
             }
 
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
     if(tcomplex2 != other.tcomplex2) {
-        if (std::get<0>(tcomplex2) != std::get<0>(other.tcomplex2))
-        {
+        if(std::get<0>(tcomplex2) != std::get<0>(other.tcomplex2)) {
             auto testa = std::get<0>(tcomplex2);
             auto testb = std::get<0>(other.tcomplex2);
-            if (isnan(std::get<double>(testa)))
-            {
+            if(isnan(std::get<double>(testa))) {
                 std::get<double>(testa) = keydub;
             }
-            if (isnan(std::get<double>(testb)))
-            {
+            if(isnan(std::get<double>(testb))) {
                 std::get<double>(testb) = keydub;
             }
-            if (isnan(std::get<double>(std::get<0>(testa))))
-            {
+            if(isnan(std::get<double>(std::get<0>(testa)))) {
                 std::get<double>(std::get<0>(testa)) = keydub;
             }
-            if (isnan(std::get<double>(std::get<0>(testb))))
-            {
+            if(isnan(std::get<double>(std::get<0>(testb)))) {
                 std::get<double>(std::get<0>(testb)) = keydub;
             }
-            if (testa != testb)
-            {
+            if(testa != testb) {
                 return false;
             }
-        }
-        else
-        {
+        } else {
             return false;
         }
-       
     }
     if(vectup != other.vectup) {
-        bool found_diff=false;
-            if(vectup.size() != other.vectup.size()) {
-                if (print_error) {
-                    std::cout << "size is different vectup.size()=" << vectup.size()
-                        << " other.vectup.size=" << other.vectup.size() << '\n';
-                }
-                found_diff=true;
-            } else {
-                for(size_t ii = 0; ii < vectup.size(); ++ii) {
-                    if (vectup[ii] != other.vectup[ii])
-                    {
-                        int matching=4;
-                        if (std::get<0>(vectup[ii]) != std::get<0>(other.vectup[ii]))
-                        {
+        bool found_diff = false;
+        if(vectup.size() != other.vectup.size()) {
+            if(print_error) {
+                std::cout << "size is different vectup.size()=" << vectup.size()
+                          << " other.vectup.size=" << other.vectup.size() << '\n';
+            }
+            found_diff = true;
+        } else {
+            for(size_t ii = 0; ii < vectup.size(); ++ii) {
+                if(vectup[ii] != other.vectup[ii]) {
+                    int matching = 4;
+                    if(std::get<0>(vectup[ii]) != std::get<0>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][0] != other.vectup[" << ii << "][0]\n";
+                        }
+                    }
+                    if(std::get<1>(vectup[ii]) != std::get<1>(other.vectup[ii])) {
+                        if(!(std::isnan(std::get<1>(vectup[ii])) && std::isnan(std::get<1>(other.vectup[ii])))) {
                             --matching;
-                            if (print_error)
-                            {
-                                std::cout << "vectup[" << ii << "][0] != other.vectup[" << ii << "][0]\n";
-                            }
-                        }
-                        if (std::get<1>(vectup[ii]) != std::get<1>(other.vectup[ii]))
-                        {
-                            if (!(std::isnan(std::get<1>(vectup[ii])) && std::isnan(std::get<1>(other.vectup[ii])))) {
-                                --matching;
-                                if (print_error) {
-                                    std::cout << "vectup[" << ii << "][1] != other.vectup[" << ii << "][1]\n";
-                                }
-                            }
-                        }
-                        if (std::get<2>(vectup[ii]) != std::get<2>(other.vectup[ii]))
-                        {
-                            --matching;
-                            if (print_error) {
-                                std::cout << "vectup[" << ii << "][2] != other.vectup[" << ii << "][2]\n";
-                            }
-                        }
-                        if (std::get<3>(vectup[ii]) != std::get<3>(other.vectup[ii]))
-                        {
-                            --matching;
-                            if (print_error) {
-                                std::cout << "vectup[" << ii << "][3] != other.vectup[" << ii << "][3]\n";
-                            }
-                        }
-                        if (matching != 4)
-                        {
-                            found_diff = true;
-                            if (print_error)
-                            {
-                                std::cout << "vectup[" << ii << "] != other.vectup[" << ii << "]\n";
+                            if(print_error) {
+                                std::cout << "vectup[" << ii << "][1] != other.vectup[" << ii << "][1]\n";
                             }
                         }
                     }
-                    /*print_string_comparison(vstrA[ii],
-                        other.vectup[ii],
-                        std::string("string[") + std::to_string(ii) + ']',
-                        "vstrA",
-                        "other.vstrA");
-                        */
+                    if(std::get<2>(vectup[ii]) != std::get<2>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][2] != other.vectup[" << ii << "][2]\n";
+                        }
+                    }
+                    if(std::get<3>(vectup[ii]) != std::get<3>(other.vectup[ii])) {
+                        --matching;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "][3] != other.vectup[" << ii << "][3]\n";
+                        }
+                    }
+                    if(matching != 4) {
+                        found_diff = true;
+                        if(print_error) {
+                            std::cout << "vectup[" << ii << "] != other.vectup[" << ii << "]\n";
+                        }
+                    }
                 }
+                /*print_string_comparison(vstrA[ii],
+                    other.vectup[ii],
+                    std::string("string[") + std::to_string(ii) + ']',
+                    "vstrA",
+                    "other.vstrA");
+                    */
             }
-            if (found_diff)
-            {
-                return false;
         }
-        
+        if(found_diff) {
+            return false;
+        }
     }
     if(vstrv != other.vstrv) {
         return false;
@@ -488,7 +450,7 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(dwrap.value() != other.dwrap.value()) {
-        if (!(std::isnan(dwrap.value()) && std::isnan(other.dwrap.value()))) {
+        if(!(std::isnan(dwrap.value()) && std::isnan(other.dwrap.value()))) {
             return false;
         }
     }
@@ -502,7 +464,7 @@ bool FuzzApp::compare(const FuzzApp &other, bool print_error) const {
         return false;
     }
     if(doubleAtomic != other.doubleAtomic) {
-        if (!(std::isnan(doubleAtomic.load()) && std::isnan(other.doubleAtomic.load()))) {
+        if(!(std::isnan(doubleAtomic.load()) && std::isnan(other.doubleAtomic.load()))) {
             return false;
         }
     }
