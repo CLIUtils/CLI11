@@ -850,8 +850,8 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             std::end(options));
     }
     for(auto &subc : subcommands_) {
-        // also check down into nameless subcommands
-        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front() == '+') {
+        // also check down into nameless subcommands and specific groups
+        if(subc->get_name().empty() || ( !subc->get_group().empty() && subc->get_group().front() == '+')) {
             auto subcopts = subc->get_options(filter);
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
@@ -1618,11 +1618,6 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         if(op == nullptr) {
             op = get_option_no_throw(item.name);
-        } else if(!op->get_configurable()) {
-            auto *testop = get_option_no_throw(item.name);
-            if(testop != nullptr && testop->get_configurable()) {
-                op = testop;
-            }
         }
     } else if(!op->get_configurable()) {
         if(item.name.size() == 1) {
@@ -1631,14 +1626,15 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op = testop;
             }
         }
-        if(!op->get_configurable()) {
-            auto *testop = get_option_no_throw(item.name);
-            if(testop != nullptr && testop->get_configurable()) {
-                op = testop;
-            }
+    }
+    if (op==nullptr || !op->get_configurable())
+    {
+        auto options=get_options([name=item.name](const CLI::Option *opt){return (opt->get_configurable() && (opt->check_name(name)||opt->check_lname(name)||opt->check_sname(name)));});
+        if (!options.empty())
+        {
+            op=options[0];
         }
     }
-
     if(op == nullptr) {
         // If the option was not present
         if(get_allow_config_extras() == config_extras_mode::capture) {
