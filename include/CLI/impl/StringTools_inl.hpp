@@ -544,13 +544,14 @@ CLI11_INLINE void handle_secondary_array(std::string &str) {
     }
 }
 
-CLI11_INLINE bool process_quoted_string(std::string &str, char string_char, char literal_char,bool disable_secondary_array_processing) {
+CLI11_INLINE bool
+process_quoted_string(std::string &str, char string_char, char literal_char, bool disable_secondary_array_processing) {
     if(str.size() <= 1) {
         return false;
     }
     if(detail::is_binary_escaped_string(str)) {
         str = detail::extract_binary_string(str);
-        if (!disable_secondary_array_processing)
+        if(!disable_secondary_array_processing)
             handle_secondary_array(str);
         return true;
     }
@@ -559,13 +560,13 @@ CLI11_INLINE bool process_quoted_string(std::string &str, char string_char, char
         if(str.find_first_of('\\') != std::string::npos) {
             str = detail::remove_escaped_characters(str);
         }
-        if (!disable_secondary_array_processing)
+        if(!disable_secondary_array_processing)
             handle_secondary_array(str);
         return true;
     }
     if((str.front() == literal_char || str.front() == '`') && str.back() == str.front()) {
         detail::remove_outer(str, str.front());
-        if (!disable_secondary_array_processing)
+        if(!disable_secondary_array_processing)
             handle_secondary_array(str);
         return true;
     }
