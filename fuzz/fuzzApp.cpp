@@ -122,7 +122,7 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
 
     sub->add_option("--stup1", p1);
     sub->add_option("--stup2", t1);
-    sub->add_option("--stup4", tcomplex);
+    sub->add_option("--stup4", tcomplex2);
     sub->add_option("--svtup", vectup);
 
     sub->add_option("--sdwrap", dwrap);
