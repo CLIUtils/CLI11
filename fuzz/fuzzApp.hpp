@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <complex>
 
 namespace CLI {
 
@@ -124,6 +125,9 @@ class FuzzApp {
     doubleWrapper dwrap{0.0};
     stringWrapper swrap{};
     std::string buffer{};
+    std::complex<double> cv3;
+    std::complex<float> cv4;
+
     int intbuffer{0};
     std::atomic<double> doubleAtomic{0.0};
 
