@@ -187,6 +187,10 @@ foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
   add_catch_test(${T})
 endforeach()
 
+if (WIN32)
+    target_compile_options(OptionTypeTest PRIVATE /bigobj)
+endif()
+
 if(CMAKE_CXX_STANDARD GREATER 16)
   set(TEST_FILE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR})
   target_compile_definitions(FuzzFailTest PUBLIC -DTEST_FILE_FOLDER="${TEST_FILE_FOLDER}")
