@@ -3380,7 +3380,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputFlag", "[config]") {
     CHECK_THAT(str, Contains("simple=3"));
     CHECK_THAT(str, !Contains("nothing"));
     CHECK_THAT(str, Contains("onething=true"));
-    CHECK_THAT(str, Contains("something=[true, true]"));
+    CHECK_THAT(str, Contains("something=2"));
 
     str = app.config_to_str(true);
     CHECK_THAT(str, Contains("nothing"));
@@ -3856,7 +3856,7 @@ TEST_CASE_METHOD(TApp, "IniOutputFlag", "[config]") {
     CHECK_THAT(str, Contains("simple=3"));
     CHECK_THAT(str, !Contains("nothing"));
     CHECK_THAT(str, Contains("onething=true"));
-    CHECK_THAT(str, Contains("something=true true"));
+    CHECK_THAT(str, Contains("something=2"));
 
     str = app.config_to_str(true);
     CHECK_THAT(str, Contains("nothing"));

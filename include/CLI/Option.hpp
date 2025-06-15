@@ -34,6 +34,7 @@ using callback_t = std::function<bool(const results_t &)>;
 
 class Option;
 class App;
+class ConfigBase;
 
 using Option_p = std::unique_ptr<Option>;
 /// Enumeration of the multiOption Policy selection
@@ -51,6 +52,7 @@ enum class MultiOptionPolicy : char {
 /// to share parts of the class; an OptionDefaults can copy to an Option.
 template <typename CRTP> class OptionBase {
     friend App;
+    friend ConfigBase;
 
   protected:
     /// The group membership
@@ -230,6 +232,7 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
 
 class Option : public OptionBase<Option> {
     friend App;
+    friend ConfigBase;
 
   protected:
     /// @name Names
