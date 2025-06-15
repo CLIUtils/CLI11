@@ -352,7 +352,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 inMLineValue = true;
                 bool lineExtension{false};
                 bool firstLine = true;
-                if(!item.empty() && item.back() == '\\') {
+                if(!item.empty() && item.back() == '\\' && keyChar == '\"') {
                     item.pop_back();
                     lineExtension = true;
                 } else if(detail::hasMLString(item, keyChar)) {
