@@ -1628,7 +1628,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
     }
     if(op == nullptr || !op->get_configurable()) {
-        std::string name=item.name;
+        std::string name = item.name;
         auto options = get_options([name](const CLI::Option *opt) {
             return (opt->get_configurable() &&
                     (opt->check_name(name) || opt->check_lname(name) || opt->check_sname(name)));

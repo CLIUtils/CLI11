@@ -187,8 +187,8 @@ foreach(T IN LISTS CLI11_MULTIONLY_TESTS)
   add_catch_test(${T})
 endforeach()
 
-if (WIN32)
-    target_compile_options(OptionTypeTest PRIVATE /bigobj)
+if(WIN32)
+  target_compile_options(OptionTypeTest PRIVATE /bigobj)
 endif()
 
 if(CMAKE_CXX_STANDARD GREATER 16)
