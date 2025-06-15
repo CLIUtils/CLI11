@@ -28,7 +28,6 @@
 
 using Catch::Matchers::WithinRel;
 
-
 TEST_CASE_METHOD(TApp, "doubleFunction", "[optiontype]") {
     double res{0.0};
     app.add_option_function<double>("--val", [&res](double val) { res = std::abs(val + 54); });
@@ -397,16 +396,16 @@ TEST_CASE_METHOD(TApp, "doubleVector", "[optiontype]") {
 
     app.add_option("--fp", custom_opt);
 
-    args = { "--fp", "12.7", "1.5" };
+    args = {"--fp", "12.7", "1.5"};
     run();
     CHECK(12.7 == Approx(custom_opt[0]));
     CHECK(1.5 == Approx(custom_opt[1]));
-    args = { "--fp", "12.7", "-.5" };
+    args = {"--fp", "12.7", "-.5"};
     run();
     CHECK(12.7 == Approx(custom_opt[0]));
     CHECK(-0.5 == Approx(custom_opt[1]));
 
-    args = { "--fp", "-.7", "+.5" };
+    args = {"--fp", "-.7", "+.5"};
     run();
     CHECK(-0.7 == Approx(custom_opt[0]));
     CHECK(0.5 == Approx(custom_opt[1]));

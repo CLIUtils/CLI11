@@ -345,7 +345,6 @@ TEST_CASE_METHOD(TApp, "VectorIndexedValidator", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
-
 TEST_CASE_METHOD(TApp, "VectorUnlimString", "[optiontype]") {
     std::vector<std::string> strvec;
     std::vector<std::string> answer{"mystring", "mystring2", "mystring3"};
