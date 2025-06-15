@@ -559,8 +559,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 if(results.size() > 1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse) {
                     std::reverse(results.begin(), results.end());
                 }
-                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Sum &&
-                    opt->count() >= 1) {
+                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Sum && opt->count() >= 1) {
                     // if the multi option policy is sum then there is a possibility of incorrect fields being produced
                     // best to just use the original data for config files
                     results = opt->results();
