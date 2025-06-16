@@ -35,6 +35,7 @@ set(CLI11_TESTS
     HelpersTest
     ConfigFileTest
     OptionTypeTest
+    NumericTypeTest
     SimpleTest
     AppTest
     SetTest

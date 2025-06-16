@@ -165,94 +165,103 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
                                      std::function<std::string()> func) {
     Option myopt{option_name, option_description, option_callback, this, allow_non_standard_options_};
 
-    if(std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; }) ==
-       std::end(options_)) {
-        if(myopt.lnames_.empty() && myopt.snames_.empty()) {
-            // if the option is positional only there is additional potential for ambiguities in config files and needs
-            // to be checked
-            std::string test_name = "--" + myopt.get_single_name();
-            if(test_name.size() == 3) {
-                test_name.erase(0, 1);
-            }
+    // do a quick search in current subcommand for options
+    auto res =
+        std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; });
+    if(res != options_.end()) {
+        const auto &matchname = (*res)->matching_name(myopt);
+        throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
+    }
+    /** get a top level parent*/
+    const App *top_level_parent = this;
+    while(top_level_parent->name_.empty() && top_level_parent->parent_ != nullptr) {
+        top_level_parent = top_level_parent->parent_;
+    }
 
-            auto *op = get_option_no_throw(test_name);
+    if(myopt.lnames_.empty() && myopt.snames_.empty()) {
+        // if the option is positional only there is additional potential for ambiguities in config files and needs
+        // to be checked
+        std::string test_name = "--" + myopt.get_single_name();
+        if(test_name.size() == 3) {
+            test_name.erase(0, 1);
+        }
+        // if we are in option group
+        const auto *op = top_level_parent->get_option_no_throw(test_name);
+        if(op != nullptr && op->get_configurable()) {
+            throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+        }
+        // need to check if there is another positional with the same name that also doesn't have any long or
+        // short names
+        op = top_level_parent->get_option_no_throw(myopt.get_single_name());
+        if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
+            throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
+        }
+    } else if(top_level_parent != this) {
+        for(auto &ln : myopt.lnames_) {
+            const auto *op = top_level_parent->get_option_no_throw(ln);
             if(op != nullptr && op->get_configurable()) {
-                throw(OptionAlreadyAdded("added option positional name matches existing option: " + test_name));
+                throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
             }
-            // need to check if there is another positional with the same name that also doesn't have any long or short
-            // names
-            op = get_option_no_throw(myopt.get_single_name());
-            if(op != nullptr && op->lnames_.empty() && op->snames_.empty()) {
-                throw(OptionAlreadyAdded("unable to disambiguate with existing option: " + test_name));
+            op = top_level_parent->get_option_no_throw("--" + ln);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing option: --" + ln));
             }
-        } else if(parent_ != nullptr) {
-            for(auto &ln : myopt.lnames_) {
-                auto *op = parent_->get_option_no_throw(ln);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing positional option: " + ln));
-                }
+        }
+        for(auto &sn : myopt.snames_) {
+            const auto *op = top_level_parent->get_option_no_throw(sn);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
             }
-            for(auto &sn : myopt.snames_) {
-                auto *op = parent_->get_option_no_throw(sn);
-                if(op != nullptr && op->get_configurable()) {
-                    throw(OptionAlreadyAdded("added option matches existing positional option: " + sn));
+            op = top_level_parent->get_option_no_throw("-" + sn);
+            if(op != nullptr && op->get_configurable()) {
+                throw(OptionAlreadyAdded("added option matches existing option: -" + sn));
+            }
+        }
+    }
+    if(allow_non_standard_options_ && !myopt.snames_.empty()) {
+
+        for(auto &sname : myopt.snames_) {
+            if(sname.length() > 1) {
+                std::string test_name;
+                test_name.push_back('-');
+                test_name.push_back(sname.front());
+                const auto *op = top_level_parent->get_option_no_throw(test_name);
+                if(op != nullptr) {
+                    throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
                 }
             }
         }
-        if(allow_non_standard_options_ && !myopt.snames_.empty()) {
-            for(auto &sname : myopt.snames_) {
-                if(sname.length() > 1) {
+        for(auto &opt : top_level_parent->get_options()) {
+            for(const auto &osn : opt->snames_) {
+                if(osn.size() > 1) {
                     std::string test_name;
-                    test_name.push_back('-');
-                    test_name.push_back(sname.front());
-                    auto *op = get_option_no_throw(test_name);
-                    if(op != nullptr) {
-                        throw(OptionAlreadyAdded("added option interferes with existing short option: " + sname));
-                    }
-                }
-            }
-            for(auto &opt : options_) {
-                for(const auto &osn : opt->snames_) {
-                    if(osn.size() > 1) {
-                        std::string test_name;
-                        test_name.push_back(osn.front());
-                        if(myopt.check_sname(test_name)) {
-                            throw(OptionAlreadyAdded("added option interferes with existing non standard option: " +
-                                                     osn));
-                        }
+                    test_name.push_back(osn.front());
+                    if(myopt.check_sname(test_name)) {
+                        throw(OptionAlreadyAdded("added option interferes with existing non standard option: " + osn));
                     }
                 }
             }
         }
-        options_.emplace_back();
-        Option_p &option = options_.back();
-        option.reset(new Option(option_name, option_description, option_callback, this, allow_non_standard_options_));
-
-        // Set the default string capture function
-        option->default_function(func);
-
-        // For compatibility with CLI11 1.7 and before, capture the default string here
-        if(defaulted)
-            option->capture_default_str();
-
-        // Transfer defaults to the new option
-        option_defaults_.copy_to(option.get());
-
-        // Don't bother to capture if we already did
-        if(!defaulted && option->get_always_capture_default())
-            option->capture_default_str();
-
-        return option.get();
     }
-    // we know something matches now find what it is so we can produce more error information
-    for(auto &opt : options_) {
-        const auto &matchname = opt->matching_name(myopt);
-        if(!matchname.empty()) {
-            throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
-        }
-    }
-    // this line should not be reached the above loop should trigger the throw
-    throw(OptionAlreadyAdded("added option matched existing option name"));  // LCOV_EXCL_LINE
+    options_.emplace_back();
+    Option_p &option = options_.back();
+    option.reset(new Option(option_name, option_description, option_callback, this, allow_non_standard_options_));
+
+    // Set the default string capture function
+    option->default_function(func);
+
+    // For compatibility with CLI11 1.7 and before, capture the default string here
+    if(defaulted)
+        option->capture_default_str();
+
+    // Transfer defaults to the new option
+    option_defaults_.copy_to(option.get());
+
+    // Don't bother to capture if we already did
+    if(!defaulted && option->get_always_capture_default())
+        option->capture_default_str();
+
+    return option.get();
 }
 
 CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string &help_description) {
@@ -841,8 +850,8 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             std::end(options));
     }
     for(auto &subc : subcommands_) {
-        // also check down into nameless subcommands
-        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front() == '+') {
+        // also check down into nameless subcommands and specific groups
+        if(subc->get_name().empty() || (!subc->get_group().empty() && subc->get_group().front() == '+')) {
             auto subcopts = subc->get_options(filter);
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
@@ -1539,7 +1548,8 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
         return true;
     }
     if(static_cast<int>(inputs.size()) > op->get_items_expected_max() &&
-       op->get_multi_option_policy() != MultiOptionPolicy::TakeAll) {
+       op->get_multi_option_policy() != MultiOptionPolicy::TakeAll &&
+       op->get_multi_option_policy() != MultiOptionPolicy::Join) {
         if(op->get_items_expected_max() > 1) {
             throw ArgumentMismatch::AtMost(item.fullname(), op->get_items_expected_max(), inputs.size());
         }
@@ -1608,11 +1618,6 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         if(op == nullptr) {
             op = get_option_no_throw(item.name);
-        } else if(!op->get_configurable()) {
-            auto *testop = get_option_no_throw(item.name);
-            if(testop != nullptr && testop->get_configurable()) {
-                op = testop;
-            }
         }
     } else if(!op->get_configurable()) {
         if(item.name.size() == 1) {
@@ -1621,14 +1626,17 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
                 op = testop;
             }
         }
-        if(!op->get_configurable()) {
-            auto *testop = get_option_no_throw(item.name);
-            if(testop != nullptr && testop->get_configurable()) {
-                op = testop;
-            }
+    }
+    if(op == nullptr || !op->get_configurable()) {
+        std::string iname = item.name;
+        auto options = get_options([iname](const CLI::Option *opt) {
+            return (opt->get_configurable() &&
+                    (opt->check_name(iname) || opt->check_lname(iname) || opt->check_sname(iname)));
+        });
+        if(!options.empty()) {
+            op = options[0];
         }
     }
-
     if(op == nullptr) {
         // If the option was not present
         if(get_allow_config_extras() == config_extras_mode::capture) {
@@ -1785,7 +1793,9 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
                 posOpt->add_result(std::string{});
             }
         }
+        results_t prev;
         if(posOpt->get_trigger_on_parse() && posOpt->current_option_state_ == Option::option_state::callback_run) {
+            prev = posOpt->results();
             posOpt->clear();
         }
         if(posOpt->get_expected_min() == 0) {
@@ -1801,6 +1811,10 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         if(posOpt->get_trigger_on_parse()) {
             if(!posOpt->empty()) {
                 posOpt->run_callback();
+            } else {
+                if(!prev.empty()) {
+                    posOpt->add_result(prev);
+                }
             }
         }
 
