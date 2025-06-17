@@ -568,19 +568,17 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         results = opt->results();
                     }
                 }
-                if (opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && opt->count()>1)
-                {
-                    char delim=opt->get_delimiter();
-                    if ( delim == '\0' ) {
+                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && opt->count() > 1) {
+                    char delim = opt->get_delimiter();
+                    if(delim == '\0') {
                         // this branch deals with a situation where the output would not be readable by a config file
                         results = opt->results();
-                    }
-                    else
-                    {
-                        //this branch deals with the case of the strings containing the delimiter itself or empty strings which would be interpreted incorrectly
-                        std::size_t delim_count=std::count(results[0].begin(), results[0].end(), delim);
-                        if (results[0].back() == delim||opt->count() < delim_count - 1||results[0].find(std::string(2,delim))!=std::string::npos)
-                        {
+                    } else {
+                        // this branch deals with the case of the strings containing the delimiter itself or empty
+                        // strings which would be interpreted incorrectly
+                        std::size_t delim_count = std::count(results[0].begin(), results[0].end(), delim);
+                        if(results[0].back() == delim || opt->count() < delim_count - 1 ||
+                           results[0].find(std::string(2, delim)) != std::string::npos) {
                             results = opt->results();
                         }
                     }
