@@ -577,7 +577,8 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                         // this branch deals with the case of the strings containing the delimiter itself or empty
                         // strings which would be interpreted incorrectly
                         std::size_t delim_count = std::count(results[0].begin(), results[0].end(), delim);
-                        if(results[0].back() == delim || static_cast<decltype(delim_count)>(opt->count()) < delim_count - 1 ||
+                        if(results[0].back() == delim ||
+                           static_cast<decltype(delim_count)>(opt->count()) < delim_count - 1 ||
                            results[0].find(std::string(2, delim)) != std::string::npos) {
                             results = opt->results();
                         }
