@@ -93,6 +93,9 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
                 return_string.push_back('\n');
             }
             return_string.append(arg);
+            if(arg.back() == '\n' || arg.back() == '\r') {
+                return_string.push_back('\n');
+            }
             return_string.append(multiline_literal_quote, 3);
             return return_string;
         }
@@ -349,7 +352,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                 inMLineValue = true;
                 bool lineExtension{false};
                 bool firstLine = true;
-                if(!item.empty() && item.back() == '\\') {
+                if(!item.empty() && item.back() == '\\' && keyChar == '\"') {
                     item.pop_back();
                     lineExtension = true;
                 } else if(detail::hasMLString(item, keyChar)) {
@@ -435,7 +438,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
         std::vector<std::string> parents;
         try {
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
-            detail::process_quoted_string(name);
+            detail::process_quoted_string(name, '"', '\'', true);
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
                 detail::process_quoted_string(it, stringQuote, literalQuote);
@@ -555,6 +558,31 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 auto results = opt->reduced_results();
                 if(results.size() > 1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse) {
                     std::reverse(results.begin(), results.end());
+                }
+                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Sum && opt->count() >= 1 &&
+                   results.size() == 1) {
+                    // if the multi option policy is sum then there is a possibility of incorrect fields being produced
+                    // best to just use the original data for config files
+                    auto pos = opt->_validate(results[0], 0);
+                    if(!pos.empty()) {
+                        results = opt->results();
+                    }
+                }
+                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && opt->count() > 1) {
+                    char delim = opt->get_delimiter();
+                    if(delim == '\0') {
+                        // this branch deals with a situation where the output would not be readable by a config file
+                        results = opt->results();
+                    } else {
+                        // this branch deals with the case of the strings containing the delimiter itself or empty
+                        // strings which would be interpreted incorrectly
+                        auto delim_count = std::count(results[0].begin(), results[0].end(), delim);
+                        if(results[0].back() == delim ||
+                           static_cast<decltype(delim_count)>(opt->count()) < delim_count - 1 ||
+                           results[0].find(std::string(2, delim)) != std::string::npos) {
+                            results = opt->results();
+                        }
+                    }
                 }
                 std::string value =
                     detail::ini_join(results, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
