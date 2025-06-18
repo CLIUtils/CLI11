@@ -1857,7 +1857,6 @@ TEST_CASE_METHOD(TApp, "DuplicateErrors", "[subcom]") {
     app.add_option("m");
     app.add_option("--quit");
     auto *sub1 = app.add_option_group("sub1");
-    
 
     CHECK_THROWS_AS(sub1->add_option("-t"), CLI::OptionAlreadyAdded);
     CHECK_THROWS_AS(sub1->add_option("--t"), CLI::OptionAlreadyAdded);

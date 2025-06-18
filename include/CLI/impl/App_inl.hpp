@@ -206,8 +206,7 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
             if(op != nullptr && op->get_configurable()) {
                 throw(OptionAlreadyAdded("added option matches existing option: --" + ln));
             }
-            if (ln.size() == 1 || top_level_parent->get_allow_non_standard_option_names())
-            {
+            if(ln.size() == 1 || top_level_parent->get_allow_non_standard_option_names()) {
                 op = top_level_parent->get_option_no_throw("-" + ln);
                 if(op != nullptr && op->get_configurable()) {
                     throw(OptionAlreadyAdded("added option matches existing option: -" + ln));
