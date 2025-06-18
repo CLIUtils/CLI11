@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         visual_studio_arm64:
-          vmImage: "windows-2022"
+          vmImage: "windows-2025"
           cli11.std: 17
           cli11.build_type: Debug
           cli11.options: -G "Visual Studio 17 2022" -A ARM64
@@ -66,21 +66,21 @@ jobs:
           cli11.std: 14
           cli11.precompile: ON
         Windows17:
-          vmImage: "windows-2019"
+          vmImage: "windows-2022"
           cli11.std: 17
         Windows17PC:
-          vmImage: "windows-2019"
+          vmImage: "windows-2022"
           cli11.std: 17
           cli11.precompile: ON
         Windows11:
-          vmImage: "windows-2019"
+          vmImage: "windows-2022"
           cli11.std: 11
         Windows20:
-          vmImage: "windows-2022"
+          vmImage: "windows-2025"
           cli11.std: 20
           cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
         WindowsLatest:
-          vmImage: "windows-2022"
+          vmImage: "windows-2025"
           cli11.std: 23
           cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
         Linux17nortti:
