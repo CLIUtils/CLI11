@@ -951,6 +951,12 @@ TEST_CASE_METHOD(TApp, "vectorEmptyArg", "[optiontype]") {
     run();
     CHECK(cv.size() == 2);
     CHECK(cv[1] == "[]");
+
+    args = {"-c", "test1", "[[aa]]"};
+
+    run();
+    CHECK(cv.size() == 2);
+    CHECK(cv[1] == "[a]");
 }
 
 TEST_CASE_METHOD(TApp, "vectorDoubleArg", "[optiontype]") {
