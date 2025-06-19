@@ -1851,6 +1851,25 @@ TEST_CASE_METHOD(TApp, "subcommand_help", "[subcom]") {
     CHECK(called);
 }
 
+TEST_CASE_METHOD(TApp, "DuplicateErrors", "[subcom]") {
+    app.allow_non_standard_option_names();
+    app.add_option("-t");
+    app.add_option("m");
+    app.add_option("--quit");
+    auto *sub1 = app.add_option_group("sub1");
+
+    CHECK_THROWS_AS(sub1->add_option("-t"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("--t"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("t"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("-m"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("--m"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("m"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("quit"), CLI::OptionAlreadyAdded);
+    CHECK_THROWS_AS(sub1->add_option("--quit"), CLI::OptionAlreadyAdded);
+    sub1->allow_non_standard_option_names();
+    CHECK_THROWS_AS(sub1->add_option("-quit"), CLI::OptionAlreadyAdded);
+}
+
 TEST_CASE_METHOD(TApp, "AliasErrors", "[subcom]") {
     auto *sub1 = app.add_subcommand("sub1");
     auto *sub2 = app.add_subcommand("sub2");
