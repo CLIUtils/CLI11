@@ -655,13 +655,15 @@ class App {
     Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, CLI::callback_t(), std::string{}); }
 
     /// Add flag with description but with no variable assignment or callback
-    /// takes a constant string,  if a variable string is passed that variable will be assigned the results from the
-    /// flag
+    /// takes a constant string or a rvalue reference to a string,  if a variable string is passed that variable will be
+    /// assigned the results from the flag
     template <typename T,
-              enable_if_t<std::is_const<T>::value && std::is_constructible<std::string, T>::value, detail::enabler> =
-                  detail::dummy>
-    Option *add_flag(std::string flag_name, T &flag_description) {
-        return _add_flag_internal(flag_name, CLI::callback_t(), flag_description);
+              enable_if_t<(std::is_const<typename std::remove_reference<T>::type>::value ||
+                           std::is_rvalue_reference<T &&>::value) &&
+                              std::is_constructible<std::string, typename std::remove_reference<T>::type>::value,
+                          detail::enabler> = detail::dummy>
+    Option *add_flag(std::string flag_name, T &&flag_description) {
+        return _add_flag_internal(flag_name, CLI::callback_t(), std::forward<T>(flag_description));
     }
 
     /// Other type version accepts all other types that are not vectors such as bool, enum, string or other classes
