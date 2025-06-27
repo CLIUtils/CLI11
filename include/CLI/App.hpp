@@ -654,7 +654,7 @@ class App {
     /// Add a flag with no description or variable assignment
     Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, CLI::callback_t(), std::string{}); }
 
-   /// Add flag with description but with no variable assignment or callback
+    /// Add flag with description but with no variable assignment or callback
     /// takes a constant string or a rvalue reference to a string,  if a variable string is passed that variable will be
     /// assigned the results from the flag
     template <typename T,
