@@ -10,17 +10,14 @@ function(add_cli_exe T)
   endif()
 endfunction()
 
-if(CLI11_BUILD_EXAMPLES_JSON)
+if(CLI11_BUILD_EXAMPLES_JSON AND CMAKE_VERSION VERSION_GREATER "3.14.7")
   message(STATUS "Using nlohmann/json")
   FetchContent_Declare(
     json
     URL https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip
     URL_HASH "SHA256=87b5884741427220d3a33df1363ae0e8b898099fbc59f1c451113f6732891014")
 
-  FetchContent_GetProperties(json)
-  if(NOT json_POPULATED)
-    FetchContent_Populate(json)
-  endif()
+  FetchContent_MakeAvailable(json)
 
   add_cli_exe(json json.cpp)
   target_include_directories(json PUBLIC SYSTEM "${json_SOURCE_DIR}/single_include")
