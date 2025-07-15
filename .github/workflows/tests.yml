@@ -150,6 +150,22 @@ jobs:
         run: ctest --output-on-failure
         working-directory: build
 
+  sanitizer-build:
+    name: sanitizer build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      # this build step will fail
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build -j2
+      - name: Run tests
+        run: ctest --output-on-failure
+        working-directory: build
+
   meson-build:
     name: Meson build
     runs-on: ubuntu-latest
@@ -378,4 +394,5 @@ jobs:
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.31"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
