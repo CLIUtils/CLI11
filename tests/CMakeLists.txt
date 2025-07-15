@@ -132,6 +132,11 @@ set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
   target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  if (WIN32)
+   target_link_libraries(
+  ${APP} PRIVATE Shell32)
+
+endif()
 endforeach()
 
 function(add_dependent_application_definitions TARGET)

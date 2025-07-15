@@ -120,6 +120,9 @@ endif()
 
 include(CLI11Warnings)
 
+set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
+set(CMAKE_CXX_STANDARD_LIBRARIES "")
+
 # Sources
 
 set(CLI11_headerLoc "${PROJECT_SOURCE_DIR}/include/CLI")
