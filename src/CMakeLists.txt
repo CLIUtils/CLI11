@@ -27,12 +27,10 @@ else()
   set(SYSTEM_INCL "SYSTEM")
 endif()
 
-
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(
   CLI11 ${SYSTEM_INCL} ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-
 
 if(CMAKE_CXX_STANDARD LESS 14)
   target_compile_features(CLI11 INTERFACE cxx_std_11)

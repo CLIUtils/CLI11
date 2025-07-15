@@ -140,8 +140,8 @@ function(add_dependent_application_definitions TARGET)
     target_compile_definitions(${TARGET}
                                PRIVATE CLI11_${APP_UPPERCASE}_EXE="$<TARGET_FILE:${APP}>")
 
-    if (WIN32)
-        target_link_libraries(${APP} PRIVATE Shell32)
+    if(WIN32)
+      target_link_libraries(${APP} PRIVATE Shell32)
     endif()
   endforeach()
 endfunction()
