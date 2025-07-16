@@ -22,7 +22,7 @@ jobs:
 
         run: |
           cmake -S . -B build \
-          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_CXX_STANDARD=20
           cmake --build build -j4
           cd build
           ctest --output-on-failure

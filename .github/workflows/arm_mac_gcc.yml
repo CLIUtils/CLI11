@@ -14,7 +14,7 @@ jobs:
     - name: Configure
       run: |
         cmake -S . -B build \
-          -DCMAKE_CXX_STANDARD=20
+          -DCMAKE_CXX_STANDARD=17
 
     - name: Build
       run: cmake --build build -j4
