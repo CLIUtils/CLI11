@@ -1130,7 +1130,14 @@ bool lexical_cast(const std::string &input, T &output) {
         output = static_cast<T>(input[0]);
         return true;
     }
-    return integral_conversion(input, output);
+    std::int8_t res{0};
+    //we do it this way as some systems have char as signed and not,  this ensures consistency in the way things are handled
+    bool result=integral_conversion(input, res);
+    if (result)
+    {
+        output=static_cast<T>(res);
+    }
+    return result;
 }
 
 /// Boolean values

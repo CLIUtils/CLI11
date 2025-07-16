@@ -114,7 +114,7 @@ class FuzzApp {
                std::vector<int>,
                std::optional<std::string>>
         tcomplex2{};
-    std::vector<std::tuple<std::string, double, signed char, std::vector<std::string>>> vectup{};
+    std::vector<std::tuple<std::string, double,char, std::vector<std::string>>> vectup{};
     std::string_view vstrv = "";
 
     bool flag1{false};
