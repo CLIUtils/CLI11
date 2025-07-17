@@ -118,11 +118,10 @@ include(CLI11Warnings)
 # Allow IDE's to group targets into folders
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-  
-    set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
-    set(CMAKE_CXX_STANDARD_LIBRARIES "")
-endif()
 
+  set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "")
+endif()
 
 # Sources
 
