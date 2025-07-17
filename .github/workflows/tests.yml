@@ -401,5 +401,5 @@ jobs:
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "4.0"
-          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+          args: -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()

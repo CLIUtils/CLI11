@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10...4.0)
-# Note: this is a header only library. If you have an older CMake than 3.5,
+# Note: this is a header only library. If you have an older CMake than 3.10,
 # just add the CLI11/include directory and that's all you need to do.
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
