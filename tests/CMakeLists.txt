@@ -115,6 +115,7 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
     VERBATIM)
 endforeach()
 add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
+set_target_properties(cli11_test_data PROPERTIES FOLDER "Tests/Apps")
 
 # Make a shim if we are building single file tests
 if(CLI11_SINGLE_FILE AND CLI11_INSTALL_PACKAGE_TESTS)
@@ -128,6 +129,7 @@ set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
   target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  set_target_properties(${APP} PROPERTIES FOLDER "Tests/Apps")
 endforeach()
 
 function(add_dependent_application_definitions TARGET)
@@ -246,6 +248,7 @@ if(CLI11_FORCE_LIBCXX)
     PROPERTY LINK_FLAGS -stdlib=libc++)
 endif()
 
+set_target_properties(informational PROPERTIES FOLDER "Tests/Apps")
 # Force this to be in a standard location so CTest can find it
 set_target_properties(
   informational

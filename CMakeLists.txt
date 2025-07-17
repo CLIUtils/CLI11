@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.31)
+cmake_minimum_required(VERSION 3.10...4.0)
 # Note: this is a header only library. If you have an older CMake than 3.5,
 # just add the CLI11/include directory and that's all you need to do.
 
@@ -113,15 +113,16 @@ if(NOT DEFINED CMAKE_CXX_STANDARD_REQUIRED)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+include(CLI11Warnings)
+
 # Allow IDE's to group targets into folders
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+  
+    set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "")
 endif()
 
-include(CLI11Warnings)
-
-set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
-set(CMAKE_CXX_STANDARD_LIBRARIES "")
 
 # Sources
 

@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        std: ["11", "14", "17", "20"]
+        std: ["14", "17", "20","23"]
         precompile: ["ON", "OFF"]
     steps:
       - uses: actions/checkout@v4
@@ -394,5 +394,12 @@ jobs:
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.31"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+      
+      - name: Check CMake 4.0
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.0"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
