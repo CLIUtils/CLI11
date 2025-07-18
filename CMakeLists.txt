@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10...4.0)
-# Note: this is a header only library. If you have an older CMake than 3.10,
+cmake_minimum_required(VERSION 3.14...4.0)
+# Note: this is a header only library. If you have an older CMake than 3.14,
 # just add the CLI11/include directory and that's all you need to do.
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -39,16 +39,13 @@ endif()
 include(CMakeDependentOption)
 include(GNUInstallDirs)
 
-if(NOT CMAKE_VERSION VERSION_LESS 3.11)
-  include(FetchContent)
-endif()
+include(FetchContent)
 
 list(APPEND force-libcxx "CMAKE_CXX_COMPILER_ID STREQUAL \"Clang\"")
 list(APPEND force-libcxx "CMAKE_SYSTEM_NAME STREQUAL \"Linux\"")
 list(APPEND force-libcxx "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 
 list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
-list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
 
 # Necessary to support paths with spaces, see #457

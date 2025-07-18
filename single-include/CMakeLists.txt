@@ -1,16 +1,9 @@
 if(CLI11_SINGLE_FILE)
   # Single file test
-  if(CMAKE_VERSION VERSION_LESS 3.12)
-    find_package(PythonInterp REQUIRED)
-    add_executable(Python::Interpreter IMPORTED)
-    set_target_properties(Python::Interpreter PROPERTIES IMPORTED_LOCATION "${PYTHON_EXECUTABLE}"
-                                                         VERSION "${PYTHON_VERSION_STRING}")
-  else()
-    find_package(
-      Python
-      COMPONENTS Interpreter
-      REQUIRED)
-  endif()
+  find_package(
+    Python
+    COMPONENTS Interpreter
+    REQUIRED)
 
   file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/single-include")
   add_custom_command(
