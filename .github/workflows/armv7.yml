@@ -20,13 +20,15 @@ jobs:
       - name: Run script inside Alpine chroot as root
         run: |
           cat /etc/alpine-release
-          apk add build-base cmake
+          apk add clang cmake
         shell: alpine.sh --root {0}
 
       - name: Run script inside Alpine chroot as the default user (unprivileged)
         run: |
+          export CC=/usr/bin/clang
+          export CXX=/usr/bin/clang++
           cmake -S . -B build \
-          -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-Wno-psabi"
+          -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-Wno-psabi -fsanitize=undefined"
           cmake --build build -j2
           cd build
           ctest --output-on-failure
