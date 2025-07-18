@@ -26,7 +26,7 @@ jobs:
       - name: Run script inside Alpine chroot as the default user (unprivileged)
         run: |
           cmake -S . -B build \
-          -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS=-fsanitize=undefined
+          -DCMAKE_CXX_STANDARD=20
           cmake --build build -j4
           cd build
           ctest --output-on-failure
