@@ -9,7 +9,7 @@ on:
 jobs:
   test-armv7:
     runs-on: ubuntu-latest
-    name: run test on FreeBSD
+    name: run test for 32 bit arm
     steps:
       - uses: actions/checkout@v4
 
