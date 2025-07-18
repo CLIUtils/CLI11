@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        std: ["14", "17", "20","23"]
+        std: ["14", "17", "20", "23"]
         precompile: ["ON", "OFF"]
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +61,16 @@ jobs:
           files: build/coverage.info
           functionalities: fixes
 
+  preset:
+    name: Preset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run CMake Workflow
+        run: cmake --workflow default
+
+
   catch2-3:
     name: Catch 2 3.x
     runs-on: macos-latest
@@ -93,13 +103,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Configure
-        run: >
-          cmake -S . -B build -DCMAKE_CXX_STANDARD=20
-          -DCMAKE_CXX_CLANG_TIDY="$(which
-          clang-tidy);--use-color;--warnings-as-errors=*"
+        run: cmake --preset tidy
 
       - name: Build
-        run: cmake --build build -j4 -- --keep-going
+        run: cmake --build --preset tidy
 
   cuda11-build:
     name: CUDA 11 build only
@@ -396,7 +403,7 @@ jobs:
           cmake-version: "3.31"
           args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
-      
+
       - name: Check CMake 4.0
         uses: ./.github/actions/quick_cmake
         with:
