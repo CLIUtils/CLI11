@@ -42,14 +42,14 @@
     }
   ],
   "testPresets": [
-      {
-          "name": "default",
-          "displayName": "Default",
-          "configurePreset": "default",
-          "output": {
-              "outputOnFailure": true
-          }
+    {
+      "name": "default",
+      "displayName": "Default",
+      "configurePreset": "default",
+      "output": {
+        "outputOnFailure": true
       }
+    }
   ],
   "workflowPresets": [
     {
