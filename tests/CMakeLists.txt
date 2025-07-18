@@ -1,4 +1,4 @@
-if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.13.0")
+if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.15.0")
   message(STATUS "Using arsenm/sanitizers-cmake")
   FetchContent_Declare(
     sanitizers
@@ -6,11 +6,7 @@ if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.13.0")
     GIT_SHALLOW 1
     GIT_TAG 0573e2e)
 
-  FetchContent_GetProperties(sanitizers)
-
-  if(NOT sanitizers_POPULATED)
-    FetchContent_Populate(sanitizers)
-  endif()
+  FetchContent_MakeAvailable(sanitizers)
 
   list(APPEND CMAKE_MODULE_PATH "${sanitizers_SOURCE_DIR}/cmake")
 
@@ -119,6 +115,7 @@ foreach(DATA_FILE IN LISTS DATA_FILES)
     VERBATIM)
 endforeach()
 add_custom_target(cli11_test_data DEPENDS ${DATA_FILES})
+set_target_properties(cli11_test_data PROPERTIES FOLDER "Tests/Apps")
 
 # Make a shim if we are building single file tests
 if(CLI11_SINGLE_FILE AND CLI11_INSTALL_PACKAGE_TESTS)
@@ -132,6 +129,7 @@ set(CLI11_DEPENDENT_APPLICATIONS ensure_utf8 ensure_utf8_twice)
 foreach(APP IN LISTS CLI11_DEPENDENT_APPLICATIONS)
   add_executable(${APP} applications/${APP}.cpp)
   target_include_directories(${APP} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  set_target_properties(${APP} PROPERTIES FOLDER "Tests/Apps")
 endforeach()
 
 function(add_dependent_application_definitions TARGET)
@@ -139,6 +137,10 @@ function(add_dependent_application_definitions TARGET)
     string(TOUPPER ${APP} APP_UPPERCASE)
     target_compile_definitions(${TARGET}
                                PRIVATE CLI11_${APP_UPPERCASE}_EXE="$<TARGET_FILE:${APP}>")
+
+    if(WIN32)
+      target_link_libraries(${APP} PRIVATE Shell32)
+    endif()
   endforeach()
 endfunction()
 
@@ -246,6 +248,7 @@ if(CLI11_FORCE_LIBCXX)
     PROPERTY LINK_FLAGS -stdlib=libc++)
 endif()
 
+set_target_properties(informational PROPERTIES FOLDER "Tests/Apps")
 # Force this to be in a standard location so CTest can find it
 set_target_properties(
   informational

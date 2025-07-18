@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        std: ["11", "14", "17", "20"]
+        std: ["14", "17", "20","23"]
         precompile: ["ON", "OFF"]
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +144,22 @@ jobs:
       # this build step will fail
       - name: Configure
         run: cmake -S . -B build -DCLI11_BOOST=ON
+      - name: Build
+        run: cmake --build build -j2
+      - name: Run tests
+        run: ctest --output-on-failure
+        working-directory: build
+
+  sanitizer-build:
+    name: sanitizer build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      # this build step will fail
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_SANITIZERS=ON
       - name: Build
         run: cmake --build build -j2
       - name: Run tests
@@ -378,4 +394,12 @@ jobs:
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.31"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+      
+      - name: Check CMake 4.0
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.0"
+          args: -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()

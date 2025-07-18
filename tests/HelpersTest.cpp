@@ -274,7 +274,7 @@ TEST_CASE("StringTools: binaryEscapeConversion", "[helpers]") {
     testString2.push_back(0);
     testString2.push_back(static_cast<char>(197));
     testString2.push_back(78);
-    testString2.push_back(-34);
+    testString2.push_back(static_cast<char>(-34));
 
     rstring = CLI::detail::extract_binary_string(CLI::detail::binary_escape_string(testString2));
     CHECK(rstring == testString2);
@@ -294,8 +294,8 @@ TEST_CASE("StringTools: binaryEscapeConversion2", "[helpers]") {
     testString.push_back(0);
     testString.push_back(0);
     testString.push_back(56);
-    testString.push_back(-112);
-    testString.push_back(-112);
+    testString.push_back(static_cast<char>(-112));
+    testString.push_back(static_cast<char>(-112));
     testString.push_back(39);
     testString.push_back(97);
     std::string estring = CLI::detail::binary_escape_string(testString);
@@ -310,8 +310,8 @@ TEST_CASE("StringTools: binaryEscapeConversion_withX", "[helpers]") {
     testString.push_back(0);
     testString.push_back(0);
     testString.push_back(56);
-    testString.push_back(-112);
-    testString.push_back(-112);
+    testString.push_back(static_cast<char>(-112));
+    testString.push_back(static_cast<char>(-112));
     testString.push_back(39);
     testString.push_back(97);
     std::string estring = CLI::detail::binary_escape_string(testString);
@@ -324,12 +324,12 @@ TEST_CASE("StringTools: binaryEscapeConversion_withBrackets", "[helpers]") {
 
     std::string vstr = R"raw('B"([\xb0\x0a\xb0/\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0\xb0])"')raw";
     std::string testString("[");
-    testString.push_back(-80);
+    testString.push_back(static_cast<char>(-80));
     testString.push_back('\n');
-    testString.push_back(-80);
+    testString.push_back(static_cast<char>(-80));
     testString.push_back('/');
     for(int ii = 0; ii < 13; ++ii) {
-        testString.push_back(-80);
+        testString.push_back(static_cast<char>(-80));
     }
     testString.push_back(']');
 

@@ -1,0 +1,25 @@
+name: ARM GCC
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  arm64_gcc:
+    name: ARM64 GCC
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_CXX_STANDARD=17
+
+    - name: Build
+      run: cmake --build build -j4
+
+    - name: Test
+      run: |
+        cd build
+        ctest --output-on-failure

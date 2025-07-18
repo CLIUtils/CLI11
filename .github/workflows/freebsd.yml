@@ -1,0 +1,28 @@
+name: freebsd
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: run test on FreeBSD
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkg install -y cmake pkgconf
+
+        run: |
+          cmake -S . -B build \
+          -DCMAKE_CXX_STANDARD=20
+          cmake --build build -j4
+          cd build
+          ctest --output-on-failure

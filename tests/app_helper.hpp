@@ -112,8 +112,8 @@ CLI11_INLINE void check_identical_files(const char *path1, const char *path2) {
     file1.seekg(0);
     file2.seekg(0);
 
-    std::array<uint8_t, 10240> buffer1;
-    std::array<uint8_t, 10240> buffer2;
+    static std::array<uint8_t, 10240> buffer1;
+    static std::array<uint8_t, 10240> buffer2;
 
     for(size_t ibuffer = 0; file1.good(); ++ibuffer) {
         // Flawfinder: ignore
