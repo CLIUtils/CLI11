@@ -1,0 +1,34 @@
+name: armv7
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-armv7:
+    runs-on: ubuntu-latest
+    name: run test on FreeBSD
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup latest Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        with:
+          arch: armv7
+          branch: v3.15
+      - name: Run script inside Alpine chroot as root
+        run: |
+          cat /etc/alpine-release
+          apk add build-base cmake
+        shell: alpine.sh --root {0}
+
+      - name: Run script inside Alpine chroot as the default user (unprivileged)
+        run: |
+          cmake -S . -B build \
+          -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS=-fsanitize=undefined
+          cmake --build build -j4
+          cd build
+          ctest --output-on-failure
+        shell: alpine.sh {0}
