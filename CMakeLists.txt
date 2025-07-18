@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.15...4.0)
-# Note: this is a header only library. If you have an older CMake than 3.15,
+cmake_minimum_required(VERSION 3.14.7...4.0)
+# Note: this is a header only library. If you have an older CMake than 3.14.7,
 # just add the CLI11/include directory and that's all you need to do.
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -65,7 +65,8 @@ endif()
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only" OFF)
-option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF)
+cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
+                       "NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
 
 cmake_dependent_option(CLI11_BUILD_DOCS "Build CLI11 documentation" ON "${build-docs}" OFF)
 
@@ -76,7 +77,7 @@ cmake_dependent_option(CLI11_BUILD_EXAMPLES "Build CLI11 examples" ON
                        "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;${examples_EXIST}" OFF)
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON "Build CLI11 json example" OFF
-                       "CLI11_BUILD_EXAMPLES" OFF)
+                       "CLI11_BUILD_EXAMPLES;NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
 
 cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build"
                        OFF "BUILD_TESTING;CLI11_SINGLE_FILE" OFF)

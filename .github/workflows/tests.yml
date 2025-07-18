@@ -255,11 +255,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check CMake 3.14.7
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.14.7"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
       - name: Check CMake 3.15
         uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "3.15"
-          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
         if: success() || failure()
 
       - name: Check CMake 3.16
