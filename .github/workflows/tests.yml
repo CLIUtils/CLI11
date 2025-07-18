@@ -150,7 +150,7 @@ jobs:
         run: ctest --output-on-failure
         working-directory: build
         
-   linux32-build:
+  linux32-build:
     name: linux32 build
     runs-on: ubuntu-24.04
     steps:
