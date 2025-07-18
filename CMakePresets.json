@@ -1,0 +1,65 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default",
+      "binaryDir": "build",
+      "generator": "Ninja",
+      "errors": {
+        "dev": true,
+        "deprecated": true
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CLI11_WARNINGS_AS_ERRORS": true,
+        "CMAKE_COLOR_DIAGNOSTICS": true
+      }
+    },
+    {
+      "name": "tidy",
+      "displayName": "Clang-tidy",
+      "inherits": "default",
+      "binaryDir": "build-tidy",
+      "cacheVariables": {
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--use-color;--warnings-as-errors=*",
+        "CMAKE_CXX_STANDARD": "17"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "displayName": "Default Build",
+      "configurePreset": "default"
+    },
+    {
+      "name": "tidy",
+      "displayName": "Clang-tidy Build",
+      "configurePreset": "tidy",
+      "nativeToolOptions": ["-k0"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "displayName": "Default",
+      "configurePreset": "default",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default",
+      "displayName": "Default Workflow",
+      "steps": [
+        { "type": "configure", "name": "default" },
+        { "type": "build", "name": "default" },
+        { "type": "test", "name": "default" }
+      ]
+    }
+  ]
+}
