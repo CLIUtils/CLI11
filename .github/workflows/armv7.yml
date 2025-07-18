@@ -17,7 +17,6 @@ jobs:
         uses: jirutka/setup-alpine@v1
         with:
           arch: armv7
-          branch: v3.15
       - name: Run script inside Alpine chroot as root
         run: |
           cat /etc/alpine-release
