@@ -102,6 +102,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install requirements
+        run: apt-get update && apt-get install -y ninja-build
+
       - name: Configure
         run: cmake --preset tidy
 
