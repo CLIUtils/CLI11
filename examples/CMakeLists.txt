@@ -10,7 +10,7 @@ function(add_cli_exe T)
   endif()
 endfunction()
 
-if(CLI11_BUILD_EXAMPLES_JSON AND CMAKE_VERSION VERSION_GREATER "3.14.7")
+if(CLI11_BUILD_EXAMPLES_JSON)
   message(STATUS "Using nlohmann/json")
   FetchContent_Declare(
     json

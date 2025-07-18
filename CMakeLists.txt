@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10...4.0)
-# Note: this is a header only library. If you have an older CMake than 3.10,
+cmake_minimum_required(VERSION 3.15...4.0)
+# Note: this is a header only library. If you have an older CMake than 3.15,
 # just add the CLI11/include directory and that's all you need to do.
 
 set(VERSION_REGEX "#define CLI11_VERSION[ \t]+\"(.+)\"")
@@ -39,16 +39,13 @@ endif()
 include(CMakeDependentOption)
 include(GNUInstallDirs)
 
-if(NOT CMAKE_VERSION VERSION_LESS 3.11)
-  include(FetchContent)
-endif()
+include(FetchContent)
 
 list(APPEND force-libcxx "CMAKE_CXX_COMPILER_ID STREQUAL \"Clang\"")
 list(APPEND force-libcxx "CMAKE_SYSTEM_NAME STREQUAL \"Linux\"")
 list(APPEND force-libcxx "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
 
 list(APPEND build-docs "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME")
-list(APPEND build-docs "NOT CMAKE_VERSION VERSION_LESS 3.11")
 list(APPEND build-docs "Doxygen_FOUND")
 
 # Necessary to support paths with spaces, see #457
@@ -68,8 +65,7 @@ endif()
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only" OFF)
-cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
-                       "NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
+option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF)
 
 cmake_dependent_option(CLI11_BUILD_DOCS "Build CLI11 documentation" ON "${build-docs}" OFF)
 
@@ -80,7 +76,7 @@ cmake_dependent_option(CLI11_BUILD_EXAMPLES "Build CLI11 examples" ON
                        "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;${examples_EXIST}" OFF)
 
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON "Build CLI11 json example" OFF
-                       "CLI11_BUILD_EXAMPLES;NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
+                       "CLI11_BUILD_EXAMPLES" OFF)
 
 cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build"
                        OFF "BUILD_TESTING;CLI11_SINGLE_FILE" OFF)
