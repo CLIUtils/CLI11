@@ -298,9 +298,9 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         std::string longNames = detail::join(vlongNames, ", ");
 
         // Calculate setw sizes
-        const auto shortNamesColumnWidth = static_cast<int>(column_width_ / 3);  // 33% left for short names
-        const auto longNamesColumnWidth = static_cast<int>(std::ceil(
-            static_cast<float>(column_width_) / 3.0f * 2.0f));  // 66% right for long names and options, ceil result
+        // Short names take enough width to align long names at the desired ratio
+        const auto shortNamesColumnWidth = static_cast<int>(static_cast<float>(column_width_) * long_option_alignment_ratio_);
+        const auto longNamesColumnWidth = static_cast<int>(column_width_) - shortNamesColumnWidth;
         int shortNamesOverSize = 0;
 
         // Print short names
