@@ -48,7 +48,7 @@ class FormatterBase {
     std::size_t column_width_{30};
 
     /// The alignment ratio for long options within the left column
-    float long_option_alignment_ratio_{1/3.f};
+    float long_option_alignment_ratio_{1 / 3.f};
 
     /// The width of the right column (description of options/flags/subcommands)
     std::size_t right_column_width_{65};

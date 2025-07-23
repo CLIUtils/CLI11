@@ -265,7 +265,7 @@ TEST_CASE("Formatter: Description", "[formatter]") {
 TEST_CASE("Formatter: LongOptionAlignment", "[formatter]") {
     CLI::App app{"My prog"};
 
-    app.get_formatter()->long_option_alignment_ratio(6/30.f);
+    app.get_formatter()->long_option_alignment_ratio(6 / 30.f);
 
     int v{0};
     app.add_option("--opt", v, "Something");
