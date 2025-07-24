@@ -16,12 +16,12 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <exception>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -1425,7 +1425,7 @@ CLI11_INLINE void App::_process() {
         // process env shouldn't throw but no reason to process it if config generated an error
         _process_env();
     } catch(const CLI::FileError &) {
-        config_exception = std::current_exception();  
+        config_exception = std::current_exception();
     }
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
@@ -1433,7 +1433,7 @@ CLI11_INLINE void App::_process() {
 
     _process_callbacks();
 
-    if (config_exception) {
+    if(config_exception) {
         std::rethrow_exception(config_exception);
     }
 }
