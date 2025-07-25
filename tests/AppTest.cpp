@@ -2057,6 +2057,19 @@ TEST_CASE_METHOD(TApp, "NeedsFlags", "[app]") {
     CHECK_NOTHROW(opt->needs(opt));
 }
 
+TEST_CASE_METHOD(TApp, "needsOptionFunction", "[app]") {
+    std::string s1{"A"};
+    std::string s2{"B"};
+    app.add_flag("-s,--string");
+    app.add_option_function<std::string>("file", [&](std::string const &str) { s1 = str; }, "input file");
+    app.add_option_function<std::string>(
+           "--something", [&](std::string const &str) { s2 = str; }, "something")
+        ->needs("file");
+    args = {"--something", "C"};
+    CHECK_THROWS_AS(run(), CLI::RequiresError);
+    CHECK(s2 == "B");
+}
+
 TEST_CASE_METHOD(TApp, "ExcludesFlags", "[app]") {
     CLI::Option *opt = app.add_flag("-s,--string");
     app.add_flag("--nostr")->excludes(opt);

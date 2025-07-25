@@ -16,6 +16,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -1415,6 +1416,7 @@ CLI11_INLINE void App::_process() {
     // help takes precedence over other potential errors and config and environment shouldn't be processed if help
     // throws
     _process_help_flags();
+    std::exception_ptr config_exception;
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
         // to allow for help, version and other errors to generate first.
@@ -1423,15 +1425,17 @@ CLI11_INLINE void App::_process() {
         // process env shouldn't throw but no reason to process it if config generated an error
         _process_env();
     } catch(const CLI::FileError &) {
-        // callbacks can generate exceptions which should take priority
-        // over the config file error if one exists.
-        _process_callbacks();
-        throw;
+        config_exception = std::current_exception();
     }
+    // callbacks and requirements processing can generate exceptions which should take priority
+    // over the config file error if one exists.
+    _process_requirements();
 
     _process_callbacks();
 
-    _process_requirements();
+    if(config_exception) {
+        std::rethrow_exception(config_exception);
+    }
 }
 
 CLI11_INLINE void App::_process_extras() {
