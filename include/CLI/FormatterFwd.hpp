@@ -47,6 +47,9 @@ class FormatterBase {
     /// The width of the left column (options/flags/subcommands)
     std::size_t column_width_{30};
 
+    /// The alignment ratio for long options within the left column
+    float long_option_alignment_ratio_{1 / 3.f};
+
     /// The width of the right column (description of options/flags/subcommands)
     std::size_t right_column_width_{65};
 
@@ -90,6 +93,10 @@ class FormatterBase {
 
     /// Set the left column width (options/flags/subcommands)
     void column_width(std::size_t val) { column_width_ = val; }
+
+    /// Set the alignment ratio for long options within the left column
+    /// The ratio is in [0;1] range (e.g. 0.2 = 20% of column width, 6.f/column_width = 6th character)
+    void long_option_alignment_ratio(float ratio) { long_option_alignment_ratio_ = ratio; }
 
     /// Set the right column width (description of options/flags/subcommands)
     void right_column_width(std::size_t val) { right_column_width_ = val; }
