@@ -1,4 +1,4 @@
-if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.15.0")
+if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.15")
   message(STATUS "Using arsenm/sanitizers-cmake")
   FetchContent_Declare(
     sanitizers
@@ -320,7 +320,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
 
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/find_package_tests")
 
-  if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER 3.12.9)
+  if(MSVC)
     # Tests for other CMake projects including and using CLI11 using find_package
     add_test(
       NAME find-package-testsA
