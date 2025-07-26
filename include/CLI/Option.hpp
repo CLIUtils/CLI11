@@ -319,7 +319,7 @@ class Option : public OptionBase<Option> {
     /// complete Results of parsing
     results_t results_{};
     /// results after reduction
-    results_t proc_results_{};
+    mutable results_t proc_results_{};
     /// enumeration for the option state machine
     enum class option_state : char {
         parsing = 0,       //!< The option is currently collecting parsed results
@@ -700,7 +700,9 @@ class Option : public OptionBase<Option> {
             } else {
                 res = reduced_results();
             }
-            retval = detail::lexical_conversion<T, T>(res, output);
+            //store the results in a stable location if the output is a view
+            proc_results_=std::move(res);
+            retval = detail::lexical_conversion<T, T>(proc_results_, output);
         }
         if(!retval) {
             throw ConversionError(get_name(), results_);
