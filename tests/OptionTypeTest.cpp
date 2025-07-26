@@ -396,12 +396,12 @@ TEST_CASE_METHOD(TApp, "AsStringView", "[app]") {
     args = {};
     run();
     std::string_view inputStr = app["--input"]->as<std::string_view>();
-    CHECK(inputStr=="optionA");
+    CHECK(inputStr == "optionA");
 
-    args = {"--input","optionC"};
+    args = {"--input", "optionC"};
     run();
     inputStr = app["--input"]->as<std::string_view>();
-    CHECK(inputStr=="optionC");
+    CHECK(inputStr == "optionC");
 }
 
 #endif
@@ -414,12 +414,12 @@ TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
     args = {};
     run();
     const std::string &inputStr = app["--input"]->as<std::string>();
-    CHECK(inputStr=="optionA");
+    CHECK(inputStr == "optionA");
 
-    args = {"--input","optionC"};
+    args = {"--input", "optionC"};
     run();
     const std::string &inputStr2 = app["--input"]->as<std::string>();
-    CHECK(inputStr2=="optionC");
+    CHECK(inputStr2 == "optionC");
 }
 
 TEST_CASE_METHOD(TApp, "VectorExpectedRange", "[optiontype]") {

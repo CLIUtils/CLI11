@@ -710,7 +710,6 @@ TEST_CASE_METHOD(TApp, "StrangeOptionNames", "[app]") {
     CHECK(app["--{}"]->as<int>() == 5);
 }
 
-
 TEST_CASE_METHOD(TApp, "singledash", "[app]") {
     app.add_option("-t");
     try {

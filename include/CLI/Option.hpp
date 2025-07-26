@@ -700,8 +700,8 @@ class Option : public OptionBase<Option> {
             } else {
                 res = reduced_results();
             }
-            //store the results in a stable location if the output is a view
-            proc_results_=std::move(res);
+            // store the results in a stable location if the output is a view
+            proc_results_ = std::move(res);
             retval = detail::lexical_conversion<T, T>(proc_results_, output);
         }
         if(!retval) {
