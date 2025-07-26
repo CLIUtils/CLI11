@@ -390,9 +390,7 @@ TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
 // test code from https://github.com/CLIUtils/CLI11/issues/881
 // https://github.com/Jean1995
 TEST_CASE_METHOD(TApp, "AsStringView", "[app]") {
-    app.add_option("--input", "input option")
-        ->default_val("optA")
-        ->check(CLI::IsMember({"optA", "optB", "optC"}));
+    app.add_option("--input", "input option")->default_val("optA")->check(CLI::IsMember({"optA", "optB", "optC"}));
 
     args = {};
     run();
@@ -408,9 +406,7 @@ TEST_CASE_METHOD(TApp, "AsStringView", "[app]") {
 #endif
 
 TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
-    app.add_option("--input", "input option")
-        ->default_val("optA")
-        ->check(CLI::IsMember({"optA", "optB", "optC"}));
+    app.add_option("--input", "input option")->default_val("optA")->check(CLI::IsMember({"optA", "optB", "optC"}));
 
     args = {};
     run();
