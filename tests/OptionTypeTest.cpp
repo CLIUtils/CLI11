@@ -385,6 +385,40 @@ TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
     CHECK("bca" == m_type.m_value);
 }
 
+#if CLI11_HAS_FILESYSTEM
+#include <string_view>
+// test code from https://github.com/CLIUtils/CLI11/issues/881
+// https://github.com/Jean1995
+TEST_CASE_METHOD(TApp, "AsStringView", "[app]") {
+    app.add_option("--input", "input option")->default_val("optA")->check(CLI::IsMember({"optA", "optB", "optC"}));
+
+    args = {};
+    run();
+    auto inputStr = app["--input"]->as<std::string_view>();
+    CHECK(inputStr == "optA");
+
+    args = {"--input", "optC"};
+    run();
+    inputStr = app["--input"]->as<std::string_view>();
+    CHECK(inputStr == "optC");
+}
+
+#endif
+
+TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
+    app.add_option("--input", "input option")->default_val("optA")->check(CLI::IsMember({"optA", "optB", "optC"}));
+
+    args = {};
+    run();
+    const std::string &inputStr = app["--input"]->as<std::string>();
+    CHECK(inputStr == "optA");
+
+    args = {"--input", "optC"};
+    run();
+    const std::string &inputStr2 = app["--input"]->as<std::string>();
+    CHECK(inputStr2 == "optC");
+}
+
 TEST_CASE_METHOD(TApp, "VectorExpectedRange", "[optiontype]") {
     std::vector<std::string> strvec;
 
