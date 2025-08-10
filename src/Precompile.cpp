@@ -10,11 +10,11 @@
 #include <CLI/impl/Argv_inl.hpp>
 #include <CLI/impl/Config_inl.hpp>
 #include <CLI/impl/Encoding_inl.hpp>
+#include <CLI/impl/ExtraValidators_inl.hpp>
 #include <CLI/impl/Formatter_inl.hpp>
 #include <CLI/impl/Option_inl.hpp>
 #include <CLI/impl/Split_inl.hpp>
 #include <CLI/impl/StringTools_inl.hpp>
 #include <CLI/impl/Validators_inl.hpp>
-#include <CLI/impl/ExtraValidators_inl.hpp>
 
 // IWYU pragma: end_keep
