@@ -6,7 +6,7 @@
 
 #define CLI11_DISABLE_EXTRA_VALIDATORS 1
 #pragma once
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS==1) ||(!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 #include "Error.hpp"
@@ -221,6 +221,10 @@ class AsSizeValue : public AsNumberWithUnit {
     static std::map<std::string, result_t> get_mapping(bool kb_is_1000);
 };
 
+#if defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0
+// new extra validators
+
+#endif
 // [CLI11:extra_validators_hpp:end]
 }  // namespace CLI
 

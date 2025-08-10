@@ -30,6 +30,7 @@ cli11_headers = files(
   'include/CLI/StringTools.hpp',
   'include/CLI/TypeTools.hpp',
   'include/CLI/Validators.hpp',
+  'include/CLI/ExtraValidators.hpp',
   'include/CLI/Version.hpp',
 )
 
@@ -43,6 +44,7 @@ cli11_impl_headers = files(
   'include/CLI/impl/Split_inl.hpp',
   'include/CLI/impl/StringTools_inl.hpp',
   'include/CLI/impl/Validators_inl.hpp',
+  'include/CLI/impl/ExtraValidators_inl.hpp',
 )
 
 subdir('single-include')

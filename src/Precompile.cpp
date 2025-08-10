@@ -15,5 +15,6 @@
 #include <CLI/impl/Split_inl.hpp>
 #include <CLI/impl/StringTools_inl.hpp>
 #include <CLI/impl/Validators_inl.hpp>
+#include <CLI/impl/ExtraValidators_inl.hpp>
 
 // IWYU pragma: end_keep

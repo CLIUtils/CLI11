@@ -15,7 +15,12 @@
 #include <utility>
 #include <vector>
 
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
+TEST_CASE("Validators:basic", "[helpers]")
+{
+    CHECK(true);
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS==1) ||(!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
 TEST_CASE("Validators: IPValidate1", "[helpers]") {
     std::string ip = "1.1.1.1";
