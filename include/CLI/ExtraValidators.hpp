@@ -6,7 +6,7 @@
 
 #define CLI11_DISABLE_EXTRA_VALIDATORS 1
 #pragma once
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS==0
+#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 #include "Error.hpp"
@@ -27,7 +27,6 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
-
 namespace CLI {
 // [CLI11:extra_validators_hpp:verbatim]
 // The implementation of the extra validators is using the Validator class;
@@ -41,12 +40,10 @@ class IPV4Validator : public Validator {
     IPV4Validator();
 };
 
-
 }  // namespace detail
 
 /// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;
-
 
 /// Multiply a number by a factor using given mapping.
 /// Can be used to write transforms for SIZE or DURATION inputs.
@@ -223,7 +220,6 @@ class AsSizeValue : public AsNumberWithUnit {
     /// Cache calculated mapping
     static std::map<std::string, result_t> get_mapping(bool kb_is_1000);
 };
-
 
 // [CLI11:extra_validators_hpp:end]
 }  // namespace CLI

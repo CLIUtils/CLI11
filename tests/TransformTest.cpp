@@ -622,7 +622,3 @@ TEST_CASE_METHOD(TApp, "StringEscapeInvalid", "[transform]") {
 
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
-
-
-
-

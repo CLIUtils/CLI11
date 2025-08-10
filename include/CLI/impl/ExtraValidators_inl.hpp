@@ -6,7 +6,7 @@
 
 #pragma once
 
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS==0
+#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
 
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../ExtraValidators.hpp"
@@ -25,7 +25,7 @@
 namespace CLI {
 // [CLI11:extra_validators_inl_hpp:verbatim]
 
-    namespace detail{
+namespace detail {
 CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
     func_ = [](std::string &ip_addr) {
         auto result = CLI::detail::split(ip_addr, '.');
@@ -48,7 +48,6 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
 }
 
 }  // namespace detail
-
 
 CLI11_INLINE AsSizeValue::AsSizeValue(bool kb_is_1000) : AsNumberWithUnit(get_mapping(kb_is_1000)) {
     if(kb_is_1000) {
@@ -85,11 +84,7 @@ CLI11_INLINE std::map<std::string, AsSizeValue::result_t> AsSizeValue::get_mappi
     return m;
 }
 
-namespace detail {
-
-
-
-}  // namespace detail
+namespace detail {}  // namespace detail
 /// @}
 
 // [CLI11:extra_validators_inl_hpp:end]

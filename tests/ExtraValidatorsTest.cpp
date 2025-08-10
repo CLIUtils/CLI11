@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS==0
+#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
 
 TEST_CASE("Validators: IPValidate1", "[helpers]") {
     std::string ip = "1.1.1.1";
@@ -35,8 +35,6 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     ip = "11.22";
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
 }
-
-
 
 TEST_CASE_METHOD(TApp, "NumberWithUnitCorrectlySplitNumber", "[transform]") {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};

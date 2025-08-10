@@ -630,8 +630,6 @@ TEST_CASE("Validators: PathNotExistsDir", "[helpers]") {
     CHECK(!CLI::ExistingPath(mydir).empty());
 }
 
-
-
 TEST_CASE("Validators: PositiveValidator", "[helpers]") {
     std::string num = "1.1.1.1";
     CHECK_FALSE(CLI::PositiveNumber(num).empty());
