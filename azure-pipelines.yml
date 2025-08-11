@@ -78,7 +78,7 @@ jobs:
         Windows20:
           vmImage: "windows-2025"
           cli11.std: 20
-          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
+          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc" -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         WindowsLatest:
           vmImage: "windows-2025"
           cli11.std: 23
@@ -129,7 +129,7 @@ jobs:
         gcc11:
           containerImage: gcc:11
           cli11.std: 20
-          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion" -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         gcc7:
           containerImage: gcc:7
           cli11.std: 14
