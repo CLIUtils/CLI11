@@ -35,7 +35,6 @@ namespace CLI {
 // Therefore, this is in detail.
 namespace detail {
 
-
 /// Validate the given string is a legal ipv4 address
 class IPV4Validator : public Validator {
   public:
@@ -44,28 +43,27 @@ class IPV4Validator : public Validator {
 
 }  // namespace detail
 
-
-   /// Validate the input as a particular type
+/// Validate the input as a particular type
 template <typename DesiredType> class TypeValidator : public Validator {
-public:
+  public:
     explicit TypeValidator(const std::string &validator_name)
         : Validator(validator_name, [](std::string &input_string) {
-        using CLI::detail::lexical_cast;
-        auto val = DesiredType();
-        if(!lexical_cast(input_string, val)) {
-            return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
-        }
-        return std::string{};
-            }) {}
+              using CLI::detail::lexical_cast;
+              auto val = DesiredType();
+              if(!lexical_cast(input_string, val)) {
+                  return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
+              }
+              return std::string{};
+          }) {}
     TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
 };
 
 /// Check for a number
 const TypeValidator<double> Number("NUMBER");
 
-   /// Produce a bounded range (factory). Min and max are inclusive.
+/// Produce a bounded range (factory). Min and max are inclusive.
 class Bound : public Validator {
-public:
+  public:
     /// This bounds a value with min and max inclusive.
     ///
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
@@ -88,7 +86,7 @@ public:
                 input = detail::to_string(max_val);
 
             return std::string{};
-            };
+        };
     }
 
     /// Range of one value is 0 to value

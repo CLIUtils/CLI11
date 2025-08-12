@@ -194,29 +194,27 @@ CLI11_INLINE path_type check_path(const char *file) noexcept;
 
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
-public:
+  public:
     ExistingFileValidator();
 };
 
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
-public:
+  public:
     ExistingDirectoryValidator();
 };
 
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
-public:
+  public:
     ExistingPathValidator();
 };
 
-
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
-public:
+  public:
     NonexistentPathValidator();
 };
-
 
 class EscapedStringTransformer : public Validator {
   public:
@@ -239,8 +237,6 @@ const detail::NonexistentPathValidator NonexistentPath;
 
 /// convert escaped characters into their associated values
 const detail::EscapedStringTransformer EscapedString;
-
-
 
 /// Modify a path if the file is a particular default location, can be used as Check or transform
 /// with the error return optionally disabled
@@ -289,8 +285,6 @@ const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE
 
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
-
-
 
 namespace detail {
 template <typename T,

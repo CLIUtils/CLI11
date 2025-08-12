@@ -1433,7 +1433,6 @@ TEST_CASE_METHOD(TApp, "RequiredPositionalValidation", "[app]") {
     CHECK("string" == d2);
 }
 
-
 TEST_CASE_METHOD(TApp, "PositionalNoSpaceLong", "[app]") {
     std::vector<std::string> options;
     std::string foo, bar;
@@ -1903,8 +1902,6 @@ TEST_CASE_METHOD(TApp, "RemoveExcludesLinks", "[app]") {
     run();  // Mostly hoping it does not crash
 }
 
-
-
 TEST_CASE_METHOD(TApp, "FileNotExists", "[app]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
     REQUIRE_NOTHROW(CLI::NonexistentPath(myfile));
@@ -1925,8 +1922,6 @@ TEST_CASE_METHOD(TApp, "FileNotExists", "[app]") {
     std::remove(myfile.c_str());
     CHECK(!CLI::ExistingFile(myfile).empty());
 }
-
-
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
 TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
@@ -2310,8 +2305,6 @@ TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
         CHECK(emess.size() < 70U);
     }
 }
-
-
 
 TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {
     std::string str;

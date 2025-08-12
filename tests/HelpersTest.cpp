@@ -668,7 +668,6 @@ TEST_CASE("Validators: NonNegativeValidator", "[helpers]") {
     CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
 }
 
-
 TEST_CASE("Validators: CombinedAndRange", "[helpers]") {
     auto crange = CLI::Range(0, 12) & CLI::Range(4, 16);
     CHECK(crange("4").empty());

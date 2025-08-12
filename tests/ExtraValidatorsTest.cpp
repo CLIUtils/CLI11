@@ -39,7 +39,6 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
 }
 
-
 TEST_CASE("Validators: NumberValidator", "[helpers]") {
     std::string num = "1.1.1.1";
     CHECK_FALSE(CLI::Number(num).empty());

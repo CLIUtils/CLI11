@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <iostream>
 
-
 namespace CLI {
 /*
 int32_t val32{0};

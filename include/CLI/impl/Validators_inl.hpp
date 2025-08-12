@@ -167,7 +167,6 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 }
 #endif
 
-
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
@@ -178,7 +177,7 @@ CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") 
             return "File is actually a directory: " + filename;
         }
         return std::string();
-        };
+    };
 }
 
 CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validator("DIR") {
@@ -191,7 +190,7 @@ CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validato
             return "Directory is actually a file: " + filename;
         }
         return std::string();
-        };
+    };
 }
 
 CLI11_INLINE ExistingPathValidator::ExistingPathValidator() : Validator("PATH(existing)") {
@@ -201,10 +200,8 @@ CLI11_INLINE ExistingPathValidator::ExistingPathValidator() : Validator("PATH(ex
             return "Path does not exist: " + filename;
         }
         return std::string();
-        };
+    };
 }
-
-
 
 CLI11_INLINE NonexistentPathValidator::NonexistentPathValidator() : Validator("PATH(non-existing)") {
     func_ = [](std::string &filename) {
@@ -213,7 +210,7 @@ CLI11_INLINE NonexistentPathValidator::NonexistentPathValidator() : Validator("P
             return "Path already exists: " + filename;
         }
         return std::string();
-        };
+    };
 }
 
 CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer() {

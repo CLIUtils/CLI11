@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-//this definition won't be necessary until 3.0 but is included for now
+// this definition won't be necessary until 3.0 but is included for now
 #define CLI11_ENABLE_EXTRA_VALIDATORS 1
 
 #include <CLI/CLI.hpp>
