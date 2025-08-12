@@ -35,6 +35,7 @@ namespace CLI {
 // Therefore, this is in detail.
 namespace detail {
 
+
 /// Validate the given string is a legal ipv4 address
 class IPV4Validator : public Validator {
   public:
@@ -42,6 +43,59 @@ class IPV4Validator : public Validator {
 };
 
 }  // namespace detail
+
+
+   /// Validate the input as a particular type
+template <typename DesiredType> class TypeValidator : public Validator {
+public:
+    explicit TypeValidator(const std::string &validator_name)
+        : Validator(validator_name, [](std::string &input_string) {
+        using CLI::detail::lexical_cast;
+        auto val = DesiredType();
+        if(!lexical_cast(input_string, val)) {
+            return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
+        }
+        return std::string{};
+            }) {}
+    TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
+};
+
+/// Check for a number
+const TypeValidator<double> Number("NUMBER");
+
+   /// Produce a bounded range (factory). Min and max are inclusive.
+class Bound : public Validator {
+public:
+    /// This bounds a value with min and max inclusive.
+    ///
+    /// Note that the constructor is templated, but the struct is not, so C++17 is not
+    /// needed to provide nice syntax for Range(a,b).
+    template <typename T> Bound(T min_val, T max_val) {
+        std::stringstream out;
+        out << detail::type_name<T>() << " bounded to [" << min_val << " - " << max_val << "]";
+        description(out.str());
+
+        func_ = [min_val, max_val](std::string &input) {
+            using CLI::detail::lexical_cast;
+            T val;
+            bool converted = lexical_cast(input, val);
+            if(!converted) {
+                return std::string("Value ") + input + " could not be converted";
+            }
+            if(val < min_val)
+                input = detail::to_string(min_val);
+            else if(val > max_val)
+                input = detail::to_string(max_val);
+
+            return std::string{};
+            };
+    }
+
+    /// Range of one value is 0 to value
+    template <typename T> explicit Bound(T max_val) : Bound(static_cast<T>(0), max_val) {}
+};
+
+// Static is not needed here, because global const implies static.
 
 /// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;

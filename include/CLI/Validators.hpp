@@ -190,29 +190,33 @@ enum class path_type : std::uint8_t { nonexistent, file, directory };
 /// get the type of the path from a file name
 CLI11_INLINE path_type check_path(const char *file) noexcept;
 
+// Static is not needed here, because global const implies static.
+
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
-  public:
+public:
     ExistingFileValidator();
 };
 
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
-  public:
+public:
     ExistingDirectoryValidator();
 };
 
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
-  public:
+public:
     ExistingPathValidator();
 };
 
+
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
-  public:
+public:
     NonexistentPathValidator();
 };
+
 
 class EscapedStringTransformer : public Validator {
   public:
@@ -220,8 +224,6 @@ class EscapedStringTransformer : public Validator {
 };
 
 }  // namespace detail
-
-// Static is not needed here, because global const implies static.
 
 /// Check for existing file (returns error message if check fails)
 const detail::ExistingFileValidator ExistingFile;
@@ -238,23 +240,7 @@ const detail::NonexistentPathValidator NonexistentPath;
 /// convert escaped characters into their associated values
 const detail::EscapedStringTransformer EscapedString;
 
-/// Validate the input as a particular type
-template <typename DesiredType> class TypeValidator : public Validator {
-  public:
-    explicit TypeValidator(const std::string &validator_name)
-        : Validator(validator_name, [](std::string &input_string) {
-              using CLI::detail::lexical_cast;
-              auto val = DesiredType();
-              if(!lexical_cast(input_string, val)) {
-                  return std::string("Failed parsing ") + input_string + " as a " + detail::type_name<DesiredType>();
-              }
-              return std::string();
-          }) {}
-    TypeValidator() : TypeValidator(detail::type_name<DesiredType>()) {}
-};
 
-/// Check for a number
-const TypeValidator<double> Number("NUMBER");
 
 /// Modify a path if the file is a particular default location, can be used as Check or transform
 /// with the error return optionally disabled
@@ -304,37 +290,7 @@ const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
-/// Produce a bounded range (factory). Min and max are inclusive.
-class Bound : public Validator {
-  public:
-    /// This bounds a value with min and max inclusive.
-    ///
-    /// Note that the constructor is templated, but the struct is not, so C++17 is not
-    /// needed to provide nice syntax for Range(a,b).
-    template <typename T> Bound(T min_val, T max_val) {
-        std::stringstream out;
-        out << detail::type_name<T>() << " bounded to [" << min_val << " - " << max_val << "]";
-        description(out.str());
 
-        func_ = [min_val, max_val](std::string &input) {
-            using CLI::detail::lexical_cast;
-            T val;
-            bool converted = lexical_cast(input, val);
-            if(!converted) {
-                return std::string("Value ") + input + " could not be converted";
-            }
-            if(val < min_val)
-                input = detail::to_string(min_val);
-            else if(val > max_val)
-                input = detail::to_string(max_val);
-
-            return std::string{};
-        };
-    }
-
-    /// Range of one value is 0 to value
-    template <typename T> explicit Bound(T max_val) : Bound(static_cast<T>(0), max_val) {}
-};
 
 namespace detail {
 template <typename T,

@@ -552,30 +552,6 @@ TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomValidator", "[transform]") {
     CHECK(help.find("15->5") == std::string::npos);
 }
 
-TEST_CASE_METHOD(TApp, "BoundTests", "[transform]") {
-    double value = NAN;
-    app.add_option("-s", value)->transform(CLI::Bound(3.4, 5.9));
-    args = {"-s", "15"};
-    run();
-    CHECK(5.9 == value);
-
-    args = {"-s", "3.689"};
-    run();
-    CHECK(std::stod("3.689") == value);
-
-    // value can't be converted to int so it is just ignored
-    args = {"-s", "abcd"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-
-    args = {"-s", "2.5"};
-    run();
-    CHECK(3.4 == value);
-
-    auto help = app.help();
-    CHECK(help.find("bounded to") != std::string::npos);
-    CHECK(help.find("[3.4 - 5.9]") != std::string::npos);
-}
-
 static const std::map<std::string, std::string> validValues = {
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u03C0\u00E9")},
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u73C0\u0057")},

@@ -4,9 +4,12 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#define CLI11_ENABLE_EXTRA_VALIDATORS 1
+
 #include "fuzzApp.hpp"
 #include <algorithm>
 #include <iostream>
+
 
 namespace CLI {
 /*
@@ -150,11 +153,8 @@ std::shared_ptr<CLI::App> FuzzApp::generateApp() {
         ->check(CLI::Range(std::string("aa"), std::string("zz"), "string range"));
     vldtr->add_option("--vdtr6", validator_strings[5])->join()->check(CLI::TypeValidator<double>());
     vldtr->add_option("--vdtr7", validator_strings[6])->join()->check(CLI::TypeValidator<bool>());
-#if !defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0
+
     vldtr->add_option("--vdtr8", validator_strings[7])->join()->check(CLI::ValidIPV4);
-#else
-    vldtr->add_option("--vdtr8", validator_strings[7])->join();
-#endif
     vldtr->add_option("--vdtr9", validator_strings[8])->join()->transform(CLI::Bound(2, 255));
     return fApp;
 }

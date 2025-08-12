@@ -39,6 +39,88 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
 }
 
+
+TEST_CASE("Validators: NumberValidator", "[helpers]") {
+    std::string num = "1.1.1.1";
+    CHECK_FALSE(CLI::Number(num).empty());
+    num = "1.7";
+    CHECK(CLI::Number(num).empty());
+    num = "10000";
+    CHECK(CLI::Number(num).empty());
+    num = "-0.000";
+    CHECK(CLI::Number(num).empty());
+    num = "+1.55";
+    CHECK(CLI::Number(num).empty());
+    num = "a";
+    CHECK_FALSE(CLI::Number(num).empty());
+}
+
+// Tests positionals validation at the end
+TEST_CASE_METHOD(TApp, "PositionalValidation", "[app]") {
+    std::string options;
+    std::string foo;
+
+    app.add_option("bar", options)->check(CLI::Number.name("valbar"));
+    // disable the check on foo
+    app.add_option("foo", foo)->check(CLI::Number.active(false));
+    app.validate_positionals();
+    args = {"1", "param1"};
+    run();
+
+    CHECK("1" == options);
+    CHECK("param1" == foo);
+
+    args = {"param1", "1"};
+    CHECK_NOTHROW(run());
+
+    CHECK("1" == options);
+    CHECK("param1" == foo);
+
+    CHECK(nullptr != app.get_option("bar")->get_validator("valbar"));
+}
+
+TEST_CASE_METHOD(TApp, "BoundTests", "[transform]") {
+    double value = NAN;
+    app.add_option("-s", value)->transform(CLI::Bound(3.4, 5.9));
+    args = {"-s", "15"};
+    run();
+    CHECK(5.9 == value);
+
+    args = {"-s", "3.689"};
+    run();
+    CHECK(std::stod("3.689") == value);
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "abcd"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"-s", "2.5"};
+    run();
+    CHECK(3.4 == value);
+
+    auto help = app.help();
+    CHECK(help.find("bounded to") != std::string::npos);
+    CHECK(help.find("[3.4 - 5.9]") != std::string::npos);
+}
+
+TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
+
+    /// Note that this must be a double in Range, too
+    app.add_option("--one")->check(CLI::TypeValidator<unsigned int>());
+
+    args = {"--one=1"};
+    CHECK_NOTHROW(run());
+
+    args = {"--one=-7"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--one=error"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    args = {"--one=4.568"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "NumberWithUnitCorrectlySplitNumber", "[transform]") {
     std::map<std::string, int> mapping{{"a", 10}, {"b", 100}, {"cc", 1000}};
 
