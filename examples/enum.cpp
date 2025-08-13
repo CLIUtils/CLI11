@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#define CLI11_ENABLE_EXTRA_VALIDATORS 1
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <map>

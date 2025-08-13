@@ -36,6 +36,9 @@ static_assert(CLI::detail::pair_adaptor<std::vector<std::string>>::value == fals
 static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
 static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 TEST_CASE_METHOD(TApp, "SimpleMaps", "[set]") {
     int value{0};
     std::map<std::string, int> map = {{"one", 1}, {"two", 2}};
@@ -731,3 +734,5 @@ TEST_CASE_METHOD(TApp, "AddRemoveSetItemsNoCase", "[set]") {
     args = {"--type2", "TYpE2"};
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
+
+#endif

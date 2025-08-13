@@ -27,6 +27,10 @@
 #endif
 #endif
 
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 TEST_CASE_METHOD(TApp, "SimpleTransform", "[transform]") {
     int value{0};
     auto *opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", std::string("1")}}));
@@ -552,6 +556,7 @@ TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomValidator", "[transform]") {
     CHECK(help.find("15->5") == std::string::npos);
 }
 
+#endif
 static const std::map<std::string, std::string> validValues = {
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u03C0\u00E9")},
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u73C0\u0057")},
@@ -598,3 +603,4 @@ TEST_CASE_METHOD(TApp, "StringEscapeInvalid", "[transform]") {
 
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
+

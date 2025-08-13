@@ -194,27 +194,29 @@ CLI11_INLINE path_type check_path(const char *file) noexcept;
 
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
-  public:
+public:
     ExistingFileValidator();
 };
 
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
-  public:
+public:
     ExistingDirectoryValidator();
 };
 
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
-  public:
+public:
     ExistingPathValidator();
 };
 
+
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
-  public:
+public:
     NonexistentPathValidator();
 };
+
 
 class EscapedStringTransformer : public Validator {
   public:
@@ -237,6 +239,8 @@ const detail::NonexistentPathValidator NonexistentPath;
 
 /// convert escaped characters into their associated values
 const detail::EscapedStringTransformer EscapedString;
+
+
 
 /// Modify a path if the file is a particular default location, can be used as Check or transform
 /// with the error return optionally disabled
@@ -286,367 +290,52 @@ const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
-namespace detail {
-template <typename T,
-          enable_if_t<is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
-auto smart_deref(T value) -> decltype(*value) {
-    return *value;
-}
 
-template <
-    typename T,
-    enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
-typename std::remove_reference<T>::type &smart_deref(T &value) {
-    // NOLINTNEXTLINE
-    return value;
-}
-/// Generate a string representation of a set
-template <typename T> std::string generate_set(const T &set) {
-    using element_t = typename detail::element_type<T>::type;
-    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-    std::string out(1, '{');
-    out.append(detail::join(
-        detail::smart_deref(set),
-        [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
-        ","));
-    out.push_back('}');
-    return out;
-}
+namespace detail
+{
+    // the following suggestion was made by Nikita Ofitserov(@himikof)
+    // done in templates to prevent compiler warnings on negation of unsigned numbers
 
-/// Generate a string representation of a map
-template <typename T> std::string generate_map(const T &map, bool key_only = false) {
-    using element_t = typename detail::element_type<T>::type;
-    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-    std::string out(1, '{');
-    out.append(detail::join(
-        detail::smart_deref(map),
-        [key_only](const iteration_type_t &v) {
-            std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
-
-            if(!key_only) {
-                res.append("->");
-                res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
-            }
-            return res;
-        },
-        ","));
-    out.push_back('}');
-    return out;
-}
-
-template <typename C, typename V> struct has_find {
-    template <typename CC, typename VV>
-    static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
-    template <typename, typename> static auto test(...) -> decltype(std::false_type());
-
-    static const auto value = decltype(test<C, V>(0))::value;
-    using type = std::integral_constant<bool, value>;
-};
-
-/// A search function
-template <typename T, typename V, enable_if_t<!has_find<T, V>::value, detail::enabler> = detail::dummy>
-auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-    using element_t = typename detail::element_type<T>::type;
-    auto &setref = detail::smart_deref(set);
-    auto it = std::find_if(std::begin(setref), std::end(setref), [&val](decltype(*std::begin(setref)) v) {
-        return (detail::pair_adaptor<element_t>::first(v) == val);
-    });
-    return {(it != std::end(setref)), it};
-}
-
-/// A search function that uses the built in find function
-template <typename T, typename V, enable_if_t<has_find<T, V>::value, detail::enabler> = detail::dummy>
-auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-    auto &setref = detail::smart_deref(set);
-    auto it = setref.find(val);
-    return {(it != std::end(setref)), it};
-}
-
-/// A search function with a filter function
-template <typename T, typename V>
-auto search(const T &set, const V &val, const std::function<V(V)> &filter_function)
-    -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-    using element_t = typename detail::element_type<T>::type;
-    // do the potentially faster first search
-    auto res = search(set, val);
-    if((res.first) || (!(filter_function))) {
-        return res;
+    /// Do a check for overflow on signed numbers
+    template <typename T>
+    inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+        if((a > 0) == (b > 0)) {
+            return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
+        }
+        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
     }
-    // if we haven't found it do the longer linear search with all the element translations
-    auto &setref = detail::smart_deref(set);
-    auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
-        V a{detail::pair_adaptor<element_t>::first(v)};
-        a = filter_function(a);
-        return (a == val);
-    });
-    return {(it != std::end(setref)), it};
-}
-
-// the following suggestion was made by Nikita Ofitserov(@himikof)
-// done in templates to prevent compiler warnings on negation of unsigned numbers
-
-/// Do a check for overflow on signed numbers
-template <typename T>
-inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
-    if((a > 0) == (b > 0)) {
-        return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
+    /// Do a check for overflow on unsigned numbers
+    template <typename T>
+    inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+        return ((std::numeric_limits<T>::max)() / a < b);
     }
-    return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
-}
-/// Do a check for overflow on unsigned numbers
-template <typename T>
-inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
-    return ((std::numeric_limits<T>::max)() / a < b);
-}
 
-/// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
-template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
-    if(a == 0 || b == 0 || a == 1 || b == 1) {
+    /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
+    template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
+        if(a == 0 || b == 0 || a == 1 || b == 1) {
+            a *= b;
+            return true;
+        }
+        if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
+            return false;
+        }
+        if(overflowCheck(a, b)) {
+            return false;
+        }
         a *= b;
         return true;
     }
-    if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
-        return false;
+
+    /// Performs a *= b; if it doesn't equal infinity. Returns false otherwise.
+    template <typename T>
+    typename std::enable_if<std::is_floating_point<T>::value, bool>::type checked_multiply(T &a, T b) {
+        T c = a * b;
+        if(std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
+            return false;
+        }
+        a = c;
+        return true;
     }
-    if(overflowCheck(a, b)) {
-        return false;
-    }
-    a *= b;
-    return true;
-}
-
-/// Performs a *= b; if it doesn't equal infinity. Returns false otherwise.
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, bool>::type checked_multiply(T &a, T b) {
-    T c = a * b;
-    if(std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
-        return false;
-    }
-    a = c;
-    return true;
-}
-
-}  // namespace detail
-/// Verify items are in a set
-class IsMember : public Validator {
-  public:
-    using filter_fn_t = std::function<std::string(std::string)>;
-
-    /// This allows in-place construction using an initializer list
-    template <typename T, typename... Args>
-    IsMember(std::initializer_list<T> values, Args &&...args)
-        : IsMember(std::vector<T>(values), std::forward<Args>(args)...) {}
-
-    /// This checks to see if an item is in a set (empty function)
-    template <typename T> explicit IsMember(T &&set) : IsMember(std::forward<T>(set), nullptr) {}
-
-    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
-    /// both sides of the comparison before computing the comparison.
-    template <typename T, typename F> explicit IsMember(T set, F filter_function) {
-
-        // Get the type of the contained item - requires a container have ::value_type
-        // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
-
-        using local_item_t = typename IsMemberType<item_t>::type;  // This will convert bad types to good ones
-                                                                   // (const char * to std::string)
-
-        // Make a local copy of the filter function, using a std::function if not one already
-        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
-
-        // This is the type name for help, it will take the current version of the set contents
-        desc_function_ = [set]() { return detail::generate_set(detail::smart_deref(set)); };
-
-        // This is the function that validates
-        // It stores a copy of the set pointer-like, so shared_ptr will stay alive
-        func_ = [set, filter_fn](std::string &input) {
-            using CLI::detail::lexical_cast;
-            local_item_t b;
-            if(!lexical_cast(input, b)) {
-                throw ValidationError(input);  // name is added later
-            }
-            if(filter_fn) {
-                b = filter_fn(b);
-            }
-            auto res = detail::search(set, b, filter_fn);
-            if(res.first) {
-                // Make sure the version in the input string is identical to the one in the set
-                if(filter_fn) {
-                    input = detail::value_string(detail::pair_adaptor<element_t>::first(*(res.second)));
-                }
-
-                // Return empty error string (success)
-                return std::string{};
-            }
-
-            // If you reach this point, the result was not found
-            return input + " not in " + detail::generate_set(detail::smart_deref(set));
-        };
-    }
-
-    /// You can pass in as many filter functions as you like, they nest (string only currently)
-    template <typename T, typename... Args>
-    IsMember(T &&set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
-        : IsMember(
-              std::forward<T>(set),
-              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-              other...) {}
-};
-
-/// definition of the default transformation object
-template <typename T> using TransformPairs = std::vector<std::pair<std::string, T>>;
-
-/// Translate named items to other or a value set
-class Transformer : public Validator {
-  public:
-    using filter_fn_t = std::function<std::string(std::string)>;
-
-    /// This allows in-place construction
-    template <typename... Args>
-    Transformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&...args)
-        : Transformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
-
-    /// direct map of std::string to std::string
-    template <typename T> explicit Transformer(T &&mapping) : Transformer(std::forward<T>(mapping), nullptr) {}
-
-    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
-    /// both sides of the comparison before computing the comparison.
-    template <typename T, typename F> explicit Transformer(T mapping, F filter_function) {
-
-        static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
-                      "mapping must produce value pairs");
-        // Get the type of the contained item - requires a container have ::value_type
-        // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
-        using local_item_t = typename IsMemberType<item_t>::type;             // Will convert bad types to good ones
-                                                                              // (const char * to std::string)
-
-        // Make a local copy of the filter function, using a std::function if not one already
-        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
-
-        // This is the type name for help, it will take the current version of the set contents
-        desc_function_ = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
-
-        func_ = [mapping, filter_fn](std::string &input) {
-            using CLI::detail::lexical_cast;
-            local_item_t b;
-            if(!lexical_cast(input, b)) {
-                return std::string();
-                // there is no possible way we can match anything in the mapping if we can't convert so just return
-            }
-            if(filter_fn) {
-                b = filter_fn(b);
-            }
-            auto res = detail::search(mapping, b, filter_fn);
-            if(res.first) {
-                input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
-            }
-            return std::string{};
-        };
-    }
-
-    /// You can pass in as many filter functions as you like, they nest
-    template <typename T, typename... Args>
-    Transformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
-        : Transformer(
-              std::forward<T>(mapping),
-              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-              other...) {}
-};
-
-/// translate named items to other or a value set
-class CheckedTransformer : public Validator {
-  public:
-    using filter_fn_t = std::function<std::string(std::string)>;
-
-    /// This allows in-place construction
-    template <typename... Args>
-    CheckedTransformer(std::initializer_list<std::pair<std::string, std::string>> values, Args &&...args)
-        : CheckedTransformer(TransformPairs<std::string>(values), std::forward<Args>(args)...) {}
-
-    /// direct map of std::string to std::string
-    template <typename T> explicit CheckedTransformer(T mapping) : CheckedTransformer(std::move(mapping), nullptr) {}
-
-    /// This checks to see if an item is in a set: pointer or copy version. You can pass in a function that will filter
-    /// both sides of the comparison before computing the comparison.
-    template <typename T, typename F> explicit CheckedTransformer(T mapping, F filter_function) {
-
-        static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
-                      "mapping must produce value pairs");
-        // Get the type of the contained item - requires a container have ::value_type
-        // if the type does not have first_type and second_type, these are both value_type
-        using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
-        using item_t = typename detail::pair_adaptor<element_t>::first_type;  // Is value_type if not a map
-        using local_item_t = typename IsMemberType<item_t>::type;             // Will convert bad types to good ones
-                                                                              // (const char * to std::string)
-        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-
-        // Make a local copy of the filter function, using a std::function if not one already
-        std::function<local_item_t(local_item_t)> filter_fn = filter_function;
-
-        auto tfunc = [mapping]() {
-            std::string out("value in ");
-            out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
-            out += detail::join(
-                detail::smart_deref(mapping),
-                [](const iteration_type_t &v) { return detail::to_string(detail::pair_adaptor<element_t>::second(v)); },
-                ",");
-            out.push_back('}');
-            return out;
-        };
-
-        desc_function_ = tfunc;
-
-        func_ = [mapping, tfunc, filter_fn](std::string &input) {
-            using CLI::detail::lexical_cast;
-            local_item_t b;
-            bool converted = lexical_cast(input, b);
-            if(converted) {
-                if(filter_fn) {
-                    b = filter_fn(b);
-                }
-                auto res = detail::search(mapping, b, filter_fn);
-                if(res.first) {
-                    input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
-                    return std::string{};
-                }
-            }
-            for(const auto &v : detail::smart_deref(mapping)) {
-                auto output_string = detail::value_string(detail::pair_adaptor<element_t>::second(v));
-                if(output_string == input) {
-                    return std::string();
-                }
-            }
-
-            return "Check " + input + " " + tfunc() + " FAILED";
-        };
-    }
-
-    /// You can pass in as many filter functions as you like, they nest
-    template <typename T, typename... Args>
-    CheckedTransformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
-        : CheckedTransformer(
-              std::forward<T>(mapping),
-              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-              other...) {}
-};
-
-/// Helper function to allow ignore_case to be passed to IsMember or Transform
-inline std::string ignore_case(std::string item) { return detail::to_lower(item); }
-
-/// Helper function to allow ignore_underscore to be passed to IsMember or Transform
-inline std::string ignore_underscore(std::string item) { return detail::remove_underscore(item); }
-
-/// Helper function to allow checks to ignore spaces to be passed to IsMember or Transform
-inline std::string ignore_space(std::string item) {
-    item.erase(std::remove(std::begin(item), std::end(item), ' '), std::end(item));
-    item.erase(std::remove(std::begin(item), std::end(item), '\t'), std::end(item));
-    return item;
-}
-
-namespace detail {
 /// Split a string into a program name and command line arguments
 /// the string is assumed to contain a file name followed by other arguments
 /// the return value contains is a pair with the first argument containing the program name and the second

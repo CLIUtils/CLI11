@@ -3386,6 +3386,8 @@ TEST_CASE_METHOD(TApp, "TomlOutputFlag", "[config]") {
     CHECK_THAT(str, Contains("nothing"));
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE_METHOD(TApp, "TomlOutputSet", "[config]") {
 
     int v{0};
@@ -3398,6 +3400,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputSet", "[config]") {
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("simple=2"));
 }
+#endif
 
 TEST_CASE_METHOD(TApp, "TomlOutputDefault", "[config]") {
 
@@ -3862,6 +3865,8 @@ TEST_CASE_METHOD(TApp, "IniOutputFlag", "[config]") {
     CHECK_THAT(str, Contains("nothing"));
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE_METHOD(TApp, "IniOutputSet", "[config]") {
 
     int v{0};
@@ -3874,6 +3879,8 @@ TEST_CASE_METHOD(TApp, "IniOutputSet", "[config]") {
     std::string str = app.config_to_str();
     CHECK_THAT(str, Contains("simple=2"));
 }
+
+#endif
 
 TEST_CASE_METHOD(TApp, "IniOutputDefault", "[config]") {
 
