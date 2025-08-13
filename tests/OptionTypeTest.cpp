@@ -408,7 +408,6 @@ TEST_CASE_METHOD(TApp, "AsStringView", "[app]") {
 
 #endif
 
-
 TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
     app.add_option("--input", "input option")->default_val("optA")->check(CLI::IsMember({"optA", "optB", "optC"}));
 

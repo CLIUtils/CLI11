@@ -98,109 +98,106 @@ class Bound : public Validator {
 /// Check for an IP4 address
 const detail::IPV4Validator ValidIPV4;
 
-
 namespace detail {
-    template <typename T,
-        enable_if_t<is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
-    auto smart_deref(T value) -> decltype(*value) {
-        return *value;
-    }
+template <typename T,
+          enable_if_t<is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
+auto smart_deref(T value) -> decltype(*value) {
+    return *value;
+}
 
-    template <
-        typename T,
-        enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
-    typename std::remove_reference<T>::type &smart_deref(T &value) {
-        // NOLINTNEXTLINE
-        return value;
-    }
-    /// Generate a string representation of a set
-    template <typename T> std::string generate_set(const T &set) {
-        using element_t = typename detail::element_type<T>::type;
-        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-        std::string out(1, '{');
-        out.append(detail::join(
-            detail::smart_deref(set),
-            [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
-            ","));
-        out.push_back('}');
-        return out;
-    }
+template <
+    typename T,
+    enable_if_t<!is_copyable_ptr<typename std::remove_reference<T>::type>::value, detail::enabler> = detail::dummy>
+typename std::remove_reference<T>::type &smart_deref(T &value) {
+    // NOLINTNEXTLINE
+    return value;
+}
+/// Generate a string representation of a set
+template <typename T> std::string generate_set(const T &set) {
+    using element_t = typename detail::element_type<T>::type;
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
+    std::string out(1, '{');
+    out.append(detail::join(
+        detail::smart_deref(set),
+        [](const iteration_type_t &v) { return detail::pair_adaptor<element_t>::first(v); },
+        ","));
+    out.push_back('}');
+    return out;
+}
 
-    /// Generate a string representation of a map
-    template <typename T> std::string generate_map(const T &map, bool key_only = false) {
-        using element_t = typename detail::element_type<T>::type;
-        using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-        std::string out(1, '{');
-        out.append(detail::join(
-            detail::smart_deref(map),
-            [key_only](const iteration_type_t &v) {
-                std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+/// Generate a string representation of a map
+template <typename T> std::string generate_map(const T &map, bool key_only = false) {
+    using element_t = typename detail::element_type<T>::type;
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
+    std::string out(1, '{');
+    out.append(detail::join(
+        detail::smart_deref(map),
+        [key_only](const iteration_type_t &v) {
+            std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
 
-                if(!key_only) {
-                    res.append("->");
-                    res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
-                }
-                return res;
-            },
-            ","));
-        out.push_back('}');
-        return out;
-    }
-
-    template <typename C, typename V> struct has_find {
-        template <typename CC, typename VV>
-        static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
-        template <typename, typename> static auto test(...) -> decltype(std::false_type());
-
-        static const auto value = decltype(test<C, V>(0))::value;
-        using type = std::integral_constant<bool, value>;
-    };
-
-    /// A search function
-    template <typename T, typename V, enable_if_t<!has_find<T, V>::value, detail::enabler> = detail::dummy>
-    auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-        using element_t = typename detail::element_type<T>::type;
-        auto &setref = detail::smart_deref(set);
-        auto it = std::find_if(std::begin(setref), std::end(setref), [&val](decltype(*std::begin(setref)) v) {
-            return (detail::pair_adaptor<element_t>::first(v) == val);
-            });
-        return {(it != std::end(setref)), it};
-    }
-
-    /// A search function that uses the built in find function
-    template <typename T, typename V, enable_if_t<has_find<T, V>::value, detail::enabler> = detail::dummy>
-    auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-        auto &setref = detail::smart_deref(set);
-        auto it = setref.find(val);
-        return {(it != std::end(setref)), it};
-    }
-
-    /// A search function with a filter function
-    template <typename T, typename V>
-    auto search(const T &set, const V &val, const std::function<V(V)> &filter_function)
-        -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
-        using element_t = typename detail::element_type<T>::type;
-        // do the potentially faster first search
-        auto res = search(set, val);
-        if((res.first) || (!(filter_function))) {
+            if(!key_only) {
+                res.append("->");
+                res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
+            }
             return res;
-        }
-        // if we haven't found it do the longer linear search with all the element translations
-        auto &setref = detail::smart_deref(set);
-        auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
-            V a{detail::pair_adaptor<element_t>::first(v)};
-            a = filter_function(a);
-            return (a == val);
-            });
-        return {(it != std::end(setref)), it};
-    }
+        },
+        ","));
+    out.push_back('}');
+    return out;
+}
 
-    
+template <typename C, typename V> struct has_find {
+    template <typename CC, typename VV>
+    static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
+    template <typename, typename> static auto test(...) -> decltype(std::false_type());
+
+    static const auto value = decltype(test<C, V>(0))::value;
+    using type = std::integral_constant<bool, value>;
+};
+
+/// A search function
+template <typename T, typename V, enable_if_t<!has_find<T, V>::value, detail::enabler> = detail::dummy>
+auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
+    using element_t = typename detail::element_type<T>::type;
+    auto &setref = detail::smart_deref(set);
+    auto it = std::find_if(std::begin(setref), std::end(setref), [&val](decltype(*std::begin(setref)) v) {
+        return (detail::pair_adaptor<element_t>::first(v) == val);
+    });
+    return {(it != std::end(setref)), it};
+}
+
+/// A search function that uses the built in find function
+template <typename T, typename V, enable_if_t<has_find<T, V>::value, detail::enabler> = detail::dummy>
+auto search(const T &set, const V &val) -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
+    auto &setref = detail::smart_deref(set);
+    auto it = setref.find(val);
+    return {(it != std::end(setref)), it};
+}
+
+/// A search function with a filter function
+template <typename T, typename V>
+auto search(const T &set, const V &val, const std::function<V(V)> &filter_function)
+    -> std::pair<bool, decltype(std::begin(detail::smart_deref(set)))> {
+    using element_t = typename detail::element_type<T>::type;
+    // do the potentially faster first search
+    auto res = search(set, val);
+    if((res.first) || (!(filter_function))) {
+        return res;
+    }
+    // if we haven't found it do the longer linear search with all the element translations
+    auto &setref = detail::smart_deref(set);
+    auto it = std::find_if(std::begin(setref), std::end(setref), [&](decltype(*std::begin(setref)) v) {
+        V a{detail::pair_adaptor<element_t>::first(v)};
+        a = filter_function(a);
+        return (a == val);
+    });
+    return {(it != std::end(setref)), it};
+}
 
 }  // namespace detail
    /// Verify items are in a set
 class IsMember : public Validator {
-public:
+  public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
     /// This allows in-place construction using an initializer list
@@ -253,16 +250,16 @@ public:
 
             // If you reach this point, the result was not found
             return input + " not in " + detail::generate_set(detail::smart_deref(set));
-            };
+        };
     }
 
     /// You can pass in as many filter functions as you like, they nest (string only currently)
     template <typename T, typename... Args>
     IsMember(T &&set, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
         : IsMember(
-            std::forward<T>(set),
-            [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-            other...) {}
+              std::forward<T>(set),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// definition of the default transformation object
@@ -270,7 +267,7 @@ template <typename T> using TransformPairs = std::vector<std::pair<std::string, 
 
 /// Translate named items to other or a value set
 class Transformer : public Validator {
-public:
+  public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
     /// This allows in-place construction
@@ -286,7 +283,7 @@ public:
     template <typename T, typename F> explicit Transformer(T mapping, F filter_function) {
 
         static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
-            "mapping must produce value pairs");
+                      "mapping must produce value pairs");
         // Get the type of the contained item - requires a container have ::value_type
         // if the type does not have first_type and second_type, these are both value_type
         using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
@@ -315,21 +312,21 @@ public:
                 input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
             }
             return std::string{};
-            };
+        };
     }
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     Transformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
         : Transformer(
-            std::forward<T>(mapping),
-            [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-            other...) {}
+              std::forward<T>(mapping),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// translate named items to other or a value set
 class CheckedTransformer : public Validator {
-public:
+  public:
     using filter_fn_t = std::function<std::string(std::string)>;
 
     /// This allows in-place construction
@@ -345,7 +342,7 @@ public:
     template <typename T, typename F> explicit CheckedTransformer(T mapping, F filter_function) {
 
         static_assert(detail::pair_adaptor<typename detail::element_type<T>::type>::value,
-            "mapping must produce value pairs");
+                      "mapping must produce value pairs");
         // Get the type of the contained item - requires a container have ::value_type
         // if the type does not have first_type and second_type, these are both value_type
         using element_t = typename detail::element_type<T>::type;             // Removes (smart) pointers if needed
@@ -366,7 +363,7 @@ public:
                 ",");
             out.push_back('}');
             return out;
-            };
+        };
 
         desc_function_ = tfunc;
 
@@ -392,16 +389,16 @@ public:
             }
 
             return "Check " + input + " " + tfunc() + " FAILED";
-            };
+        };
     }
 
     /// You can pass in as many filter functions as you like, they nest
     template <typename T, typename... Args>
     CheckedTransformer(T &&mapping, filter_fn_t filter_fn_1, filter_fn_t filter_fn_2, Args &&...other)
         : CheckedTransformer(
-            std::forward<T>(mapping),
-            [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
-            other...) {}
+              std::forward<T>(mapping),
+              [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
+              other...) {}
 };
 
 /// Helper function to allow ignore_case to be passed to IsMember or Transform

@@ -27,7 +27,6 @@
 #endif
 #endif
 
-
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
@@ -603,4 +602,3 @@ TEST_CASE_METHOD(TApp, "StringEscapeInvalid", "[transform]") {
 
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
-

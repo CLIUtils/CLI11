@@ -11,14 +11,13 @@ else()
   if(CMAKE_VERSION VERSION_GREATER 3.19)
     # This is only useful for visual studio and other IDE builds
     target_sources(CLI11 PRIVATE ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers})
-    
-  endif()
 
+  endif()
 
   set(PUBLIC_OR_INTERFACE INTERFACE)
 endif()
 
-if (CLI11_ENABLE_EXTRA_VALIDATORS)
+if(CLI11_ENABLE_EXTRA_VALIDATORS)
   target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=1)
 endif()
 # Allow IDE's to group targets into folders

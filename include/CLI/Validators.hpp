@@ -194,29 +194,27 @@ CLI11_INLINE path_type check_path(const char *file) noexcept;
 
 /// Check for an existing file (returns error message if check fails)
 class ExistingFileValidator : public Validator {
-public:
+  public:
     ExistingFileValidator();
 };
 
 /// Check for an existing directory (returns error message if check fails)
 class ExistingDirectoryValidator : public Validator {
-public:
+  public:
     ExistingDirectoryValidator();
 };
 
 /// Check for an existing path
 class ExistingPathValidator : public Validator {
-public:
+  public:
     ExistingPathValidator();
 };
 
-
 /// Check for an non-existing path
 class NonexistentPathValidator : public Validator {
-public:
+  public:
     NonexistentPathValidator();
 };
-
 
 class EscapedStringTransformer : public Validator {
   public:
@@ -239,8 +237,6 @@ const detail::NonexistentPathValidator NonexistentPath;
 
 /// convert escaped characters into their associated values
 const detail::EscapedStringTransformer EscapedString;
-
-
 
 /// Modify a path if the file is a particular default location, can be used as Check or transform
 /// with the error return optionally disabled
@@ -290,52 +286,50 @@ const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
 const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
+namespace detail {
+// the following suggestion was made by Nikita Ofitserov(@himikof)
+// done in templates to prevent compiler warnings on negation of unsigned numbers
 
-namespace detail
-{
-    // the following suggestion was made by Nikita Ofitserov(@himikof)
-    // done in templates to prevent compiler warnings on negation of unsigned numbers
-
-    /// Do a check for overflow on signed numbers
-    template <typename T>
-    inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
-        if((a > 0) == (b > 0)) {
-            return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
-        }
-        return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
+/// Do a check for overflow on signed numbers
+template <typename T>
+inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    if((a > 0) == (b > 0)) {
+        return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
     }
-    /// Do a check for overflow on unsigned numbers
-    template <typename T>
-    inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
-        return ((std::numeric_limits<T>::max)() / a < b);
-    }
+    return ((std::numeric_limits<T>::min)() / (std::abs)(a) > -(std::abs)(b));
+}
+/// Do a check for overflow on unsigned numbers
+template <typename T>
+inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+    return ((std::numeric_limits<T>::max)() / a < b);
+}
 
-    /// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
-    template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
-        if(a == 0 || b == 0 || a == 1 || b == 1) {
-            a *= b;
-            return true;
-        }
-        if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
-            return false;
-        }
-        if(overflowCheck(a, b)) {
-            return false;
-        }
+/// Performs a *= b; if it doesn't cause integer overflow. Returns false otherwise.
+template <typename T> typename std::enable_if<std::is_integral<T>::value, bool>::type checked_multiply(T &a, T b) {
+    if(a == 0 || b == 0 || a == 1 || b == 1) {
         a *= b;
         return true;
     }
-
-    /// Performs a *= b; if it doesn't equal infinity. Returns false otherwise.
-    template <typename T>
-    typename std::enable_if<std::is_floating_point<T>::value, bool>::type checked_multiply(T &a, T b) {
-        T c = a * b;
-        if(std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
-            return false;
-        }
-        a = c;
-        return true;
+    if(a == (std::numeric_limits<T>::min)() || b == (std::numeric_limits<T>::min)()) {
+        return false;
     }
+    if(overflowCheck(a, b)) {
+        return false;
+    }
+    a *= b;
+    return true;
+}
+
+/// Performs a *= b; if it doesn't equal infinity. Returns false otherwise.
+template <typename T>
+typename std::enable_if<std::is_floating_point<T>::value, bool>::type checked_multiply(T &a, T b) {
+    T c = a * b;
+    if(std::isinf(c) && !std::isinf(a) && !std::isinf(b)) {
+        return false;
+    }
+    a = c;
+    return true;
+}
 /// Split a string into a program name and command line arguments
 /// the string is assumed to contain a file name followed by other arguments
 /// the return value contains is a pair with the first argument containing the program name and the second
