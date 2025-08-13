@@ -41,7 +41,8 @@ jobs:
             -DCLI11_SINGLE_FILE_TESTS=OFF \
             -DCLI11_BUILD_EXAMPLES=OFF \
             -DCLI11_PRECOMPILED=${{matrix.precompile}} \
-            -DCMAKE_BUILD_TYPE=Coverage
+            -DCMAKE_BUILD_TYPE=Coverage \
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=ON
 
       - name: Build
         run: cmake --build build -j4
@@ -274,7 +275,7 @@ jobs:
       - name: Check CMake 3.15
         uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "3.15"
+          cmake-version: "3.15.6"
         if: success() || failure()
 
       - name: Check CMake 3.16
