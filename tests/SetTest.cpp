@@ -36,6 +36,18 @@ static_assert(CLI::detail::pair_adaptor<std::vector<std::string>>::value == fals
 static_assert(CLI::detail::pair_adaptor<std::map<int, int>>::value == true, "Should have pairs");
 static_assert(CLI::detail::pair_adaptor<std::vector<std::pair<int, int>>>::value == true, "Should have pairs");
 
+/** just test a set as an option value type */
+TEST_CASE_METHOD(TApp, "simpleSet", "[set]")
+{
+    std::set<std::string> value;
+    auto *opt = app.add_option("-s,--set", value);
+    args = {"-s", "one","-s", "two","-s", "one"};
+    run();
+    CHECK(app.count("-s") == 3u);
+    CHECK(opt->count() == 3u);
+    CHECK(value.size()==2u);
+}
+
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
