@@ -21,6 +21,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <algorithm>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -30,9 +31,14 @@ namespace detail {
 
 CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
     func_ = [](std::string &ip_addr) {
+        auto cdot=std::count(ip_addr.begin(),ip_addr.end(),'.');
+        if (cdot != 3u)
+        {
+            return std::string("Invalid IPV4 address: must have 3 separators");
+        }
         auto result = CLI::detail::split(ip_addr, '.');
         if(result.size() != 4) {
-            return std::string("Invalid IPV4 address must have four parts (") + ip_addr + ')';
+            return std::string("Invalid IPV4 address: must have four parts (") + ip_addr + ')';
         }
         int num = 0;
         for(const auto &var : result) {

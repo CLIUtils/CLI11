@@ -19,7 +19,6 @@
 #include <functional>
 #include <iostream>
 #include <limits>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -175,10 +174,9 @@ class Validator {
     void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger);
 };
 
-/// Class wrapping some of the accessors of Validator
-class CustomValidator : public Validator {
-  public:
-};
+/// Alias for Validator for custom Validator for clarity
+using CustomValidator=Validator;
+
 // The implementation of the built in validators is using the Validator class;
 // the user is only expected to use the const (static) versions (since there's no setup).
 // Therefore, this is in detail.

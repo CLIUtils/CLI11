@@ -25,6 +25,9 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     CHECK(CLI::ValidIPV4(ip).empty());
     ip = "224.255.0.1";
     CHECK(CLI::ValidIPV4(ip).empty());
+    //check that it doesn't work with a trailing .
+    ip = "224.255.0.1.";
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "-1.255.0.1";
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.256.0.1";
