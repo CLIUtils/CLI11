@@ -175,7 +175,7 @@ class Validator {
 };
 
 /// Alias for Validator for custom Validator for clarity
-using CustomValidator=Validator;
+using CustomValidator = Validator;
 
 // The implementation of the built in validators is using the Validator class;
 // the user is only expected to use the const (static) versions (since there's no setup).
