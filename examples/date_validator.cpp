@@ -6,10 +6,10 @@
 
 #include <CLI/CLI.hpp>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <iomanip>
 
 // Custom validator is an alias of Validator, the constructor takes a function that takes as input and returns a string
 const CLI::CustomValidator ISO8601(
@@ -24,7 +24,6 @@ const CLI::CustomValidator ISO8601(
         return std::string{};
     },
     "datetime[%Y-%m-%dT%H:%M:%S]");
-
 
 int main(int argc, char **argv) {
 

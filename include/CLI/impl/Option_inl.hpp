@@ -73,8 +73,7 @@ CLI11_INLINE Option *Option::expected(int value_min, int value_max) {
     return this;
 }
 
-CLI11_INLINE Option* Option::check(Validator_p validator)
-{
+CLI11_INLINE Option *Option::check(Validator_p validator) {
     validator->non_modifying();
     validators_.push_back(std::move(validator));
 
@@ -83,12 +82,12 @@ CLI11_INLINE Option* Option::check(Validator_p validator)
 
 CLI11_INLINE Option *Option::check(Validator validator, const std::string &validator_name) {
     validator.non_modifying();
-    auto vp=std::make_shared<Validator>(std::move(validator));
-    if (!validator_name.empty()) {
+    auto vp = std::make_shared<Validator>(std::move(validator));
+    if(!validator_name.empty()) {
         vp->name(validator_name);
     }
     validators_.push_back(std::move(vp));
-   
+
     return this;
 }
 
@@ -96,48 +95,51 @@ CLI11_INLINE Option *Option::check(std::function<std::string(const std::string &
                                    std::string validator_description,
                                    std::string validator_name) {
 
-    auto vp=std::make_shared<Validator>(std::move(validator_func),std::move(validator_description), std::move(validator_name));
+    auto vp = std::make_shared<Validator>(
+        std::move(validator_func), std::move(validator_description), std::move(validator_name));
     vp->non_modifying();
     validators_.push_back(std::move(vp));
     return this;
 }
 
-CLI11_INLINE Option* Option::transform(Validator_p validator)
-{
-    validators_.insert(validators_.begin(),std::move(validator));
+CLI11_INLINE Option *Option::transform(Validator_p validator) {
+    validators_.insert(validators_.begin(), std::move(validator));
 
     return this;
 }
 
 CLI11_INLINE Option *Option::transform(Validator validator, const std::string &transform_name) {
-    auto vp=std::make_shared<Validator>(std::move(validator));
-    if (!transform_name.empty()) {
+    auto vp = std::make_shared<Validator>(std::move(validator));
+    if(!transform_name.empty()) {
         vp->name(transform_name);
     }
-    validators_.insert(validators_.begin(),std::move(vp));
+    validators_.insert(validators_.begin(), std::move(vp));
     return this;
 }
 
 CLI11_INLINE Option *Option::transform(const std::function<std::string(std::string)> &transform_func,
                                        std::string transform_description,
                                        std::string transform_name) {
-    auto vp=std::make_shared<Validator>([transform_func](std::string &val) {
-                               val = transform_func(val);
-                               return std::string{};
-                           },std::move(transform_description), std::move(transform_name));
-    validators_.insert(validators_.begin(),
-                       std::move(vp));
+    auto vp = std::make_shared<Validator>(
+        [transform_func](std::string &val) {
+            val = transform_func(val);
+            return std::string{};
+        },
+        std::move(transform_description),
+        std::move(transform_name));
+    validators_.insert(validators_.begin(), std::move(vp));
 
     return this;
 }
 
 CLI11_INLINE Option *Option::each(const std::function<void(std::string)> &func) {
-    auto vp = std::make_shared<Validator>([func](std::string &inout) {
+    auto vp = std::make_shared<Validator>(
+        [func](std::string &inout) {
             func(inout);
             return std::string{};
-        }, std::string{});
-    validators_.push_back(
-        std::move(vp));
+        },
+        std::string{});
+    validators_.push_back(std::move(vp));
     return this;
 }
 
