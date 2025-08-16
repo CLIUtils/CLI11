@@ -4,38 +4,58 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#define CLI11_ENABLE_EXTRA_VALIDATORS 1
-
 #include <CLI/CLI.hpp>
-#include <ctime>
 #include <iostream>
-#include <sstream>
 #include <string>
 
-// Custom validator is an alias of Validator, the constructor takes a function that takes as input and returns a string
-const CLI::CustomValidator ISO8601(
-    [](std::string &input) {
-        std::tm tm = {};
-        std::istringstream ss(input);
 
-        ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
-        if(ss.fail()) {
-            return std::string("Failed to parse time string");
+template<typename T>
+class DeltaRange :public CLI::Validator
+{
+public:
+    T center_point;
+    T delta;
+    DeltaRange(const T& center, const T& range):CLI::Validator([this](const std::string &value)->std::string
+    {
+        T newValue;
+        auto result=CLI::detail::lexical_cast(value,newValue);
+        if (!(result && this->check(newValue)))
+        {
+            return std::string("value not within range");
         }
         return std::string{};
-    },
-    "datetime[%Y-%m-%dT%H:%M:%S]");
+        
+    },"RANGE"), center_point(center), delta(range) { }
+    
+    bool check(const T& test) const {
+            return (test>=(center_point-delta))&&(test<=(center_point+delta));
+    }
+    T center() const {return center_point;}
+    T range() const {return delta;}
+    void center(const T&value){center_point=value;}
+    void range(const T&value){delta=value;}
+
+};
 
 int main(int argc, char **argv) {
-
-    CLI::App app("custom validator testing");
+    /* this application creates custom validator which is a range center+/- range The center and range can be defined by other command line options and are updated dynamically
+    */
+    CLI::App app("custom range validator");
 
     std::string value;
-    app.add_option("--time", value, "enter a date in iso8601 format")->check(ISO8601)->required();
+    auto dr=std::make_shared<DeltaRange<int>>(7,3);
+    auto *opt=app.add_option("--number", value, "enter value in the related range")->check(dr)->required();
+    
+    app.add_option_function<int>("--center",[&dr](int new_center)
+        {
+            dr->center(new_center);
+        })->trigger_on_parse();
+    app.add_option_function<int>("--range",[&dr](int new_range){dr->range(new_range);})->trigger_on_parse();
+   
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "date given = " << value << '\n';
+    std::cout << "number" <<value<<" in range = " << dr->center()<< " +/- "<<dr->range()<<'\n';
 
     return 0;
 }

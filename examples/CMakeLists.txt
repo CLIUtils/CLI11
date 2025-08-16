@@ -123,10 +123,16 @@ add_test(NAME positional_validation4 COMMAND positional_validation 1 one two 2)
 set_property(TEST positional_validation4 PROPERTY PASS_REGULAR_EXPRESSION "File 1 = one"
                                                   "File 2 = two")
 
+add_cli_exe(date_validator date_validator.cpp)
+add_test(NAME date_validator1 COMMAND date_validator --time 2025-08-14T14:30:00)
+set_property(TEST date_validator1 PROPERTY PASS_REGULAR_EXPRESSION "date given")
+add_test(NAME date_validator2 COMMAND date_validator --time 8/17/2025T14:30:00)
+set_property(TEST date_validator2 PROPERTY PASS_REGULAR_EXPRESSION "Failed to parse time string")
+
 add_cli_exe(custom_validator custom_validator.cpp)
-add_test(NAME custom_validator1 COMMAND custom_validator --time 2025-08-14T14:30:00)
-set_property(TEST custom_validator1 PROPERTY PASS_REGULAR_EXPRESSION "date given")
-add_test(NAME custom_validator2 COMMAND custom_validator --time 8/17/2025T14:30:00)
+add_test(NAME custom_validator1 COMMAND custom_validator --value 12)
+set_property(TEST custom_validator1 PROPERTY PASS_REGULAR_EXPRESSION "failed")
+add_test(NAME custom_validator2 COMMAND custom_validator --number 12 --center 10 --range 3)
 set_property(TEST custom_validator2 PROPERTY PASS_REGULAR_EXPRESSION "Failed to parse time string")
 
 add_cli_exe(shapes shapes.cpp)

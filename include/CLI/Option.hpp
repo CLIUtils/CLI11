@@ -37,6 +37,8 @@ class App;
 class ConfigBase;
 
 using Option_p = std::unique_ptr<Option>;
+using Validator_p = std::shared_ptr<Validator>;
+
 /// Enumeration of the multiOption Policy selection
 enum class MultiOptionPolicy : char {
     Throw,      //!< Throw an error if any extra arguments were given
@@ -294,7 +296,7 @@ class Option : public OptionBase<Option> {
     int expected_max_{1};
 
     /// A list of Validators to run on each value parsed
-    std::vector<Validator> validators_{};
+    std::vector<Validator_p> validators_{};
 
     /// A list of options that are required with this option
     std::set<Option *> needs_{};
@@ -418,19 +420,25 @@ class Option : public OptionBase<Option> {
     /// Get the current value of run_callback_for_default
     CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
+    /// Adds a shared validator
+    Option *check(Validator_p validator);
+
     /// Adds a Validator with a built in type name
     Option *check(Validator validator, const std::string &validator_name = "");
 
     /// Adds a Validator. Takes a const string& and returns an error message (empty if conversion/check is okay).
-    Option *check(std::function<std::string(const std::string &)> Validator,
-                  std::string Validator_description = "",
-                  std::string Validator_name = "");
+    Option *check(std::function<std::string(const std::string &)> validator_func,
+                  std::string validator_description = "",
+                  std::string validator_name = "");
+
+    /// Adds a shared Validator
+    Option *transform(Validator_p validator);
 
     /// Adds a transforming Validator with a built in type name
-    Option *transform(Validator Validator, const std::string &Validator_name = "");
+    Option *transform(Validator validator, const std::string &validator_name = "");
 
     /// Adds a Validator-like function that can change result
-    Option *transform(const std::function<std::string(std::string)> &func,
+    Option *transform(const std::function<std::string(std::string)> &transform_func,
                       std::string transform_description = "",
                       std::string transform_name = "");
 
@@ -438,7 +446,7 @@ class Option : public OptionBase<Option> {
     Option *each(const std::function<void(std::string)> &func);
 
     /// Get a named Validator
-    Validator *get_validator(const std::string &Validator_name = "");
+    Validator *get_validator(const std::string &validator_name = "");
 
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index);
