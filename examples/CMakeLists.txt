@@ -130,10 +130,10 @@ add_test(NAME date_validator2 COMMAND date_validator --time 8/17/2025T14:30:00)
 set_property(TEST date_validator2 PROPERTY PASS_REGULAR_EXPRESSION "Failed to parse time string")
 
 add_cli_exe(custom_validator custom_validator.cpp)
-add_test(NAME custom_validator1 COMMAND custom_validator --value 12)
-set_property(TEST custom_validator1 PROPERTY PASS_REGULAR_EXPRESSION "failed")
+add_test(NAME custom_validator1 COMMAND custom_validator --number 12)
+set_property(TEST custom_validator1 PROPERTY PASS_REGULAR_EXPRESSION "value not within range")
 add_test(NAME custom_validator2 COMMAND custom_validator --number 12 --center 10 --range 3)
-set_property(TEST custom_validator2 PROPERTY PASS_REGULAR_EXPRESSION "Failed to parse time string")
+set_property(TEST custom_validator2 PROPERTY PASS_REGULAR_EXPRESSION "number 12 in range")
 
 add_cli_exe(shapes shapes.cpp)
 add_test(NAME shapes_all COMMAND shapes circle 4.4 circle 10.7 rectangle 4 4 circle 2.3 triangle

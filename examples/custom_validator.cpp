@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    std::cout << "number" << value << " in range = " << dr->center() << " +/- " << dr->range() << '\n';
+    std::cout << "number " << value << " in range = " << dr->center() << " +/- " << dr->range() << '\n';
 
     return 0;
 }
