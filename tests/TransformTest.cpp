@@ -555,6 +555,49 @@ TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomValidator", "[transform]") {
     CHECK(help.find("15->5") == std::string::npos);
 }
 
+
+TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomSharedValidator", "[transform]") {
+    std::string value;
+
+    CLI::Validator_p ctrans=std::make_shared<CLI::Validator>(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) |
+        CLI::Validator(
+            [](std::string &element) {
+                if(element == "frog") {
+                    element = "hops";
+                }
+                return std::string{};
+            },
+            std::string{}));
+    ctrans->name("check");
+    auto *opt = app.add_option("-s", value)
+        ->transform(ctrans);
+    args = {"-s", "15"};
+    run();
+    CHECK("5" == value);
+
+    args = {"-s", "18"};
+    run();
+    CHECK("6" == value);
+
+    // value can't be converted to int so it is just ignored
+    args = {"-s", "frog"};
+    run();
+    CHECK("hops" == value);
+
+    args = {"-s", "25"};
+    run();
+    CHECK("25" == value);
+
+    auto help = app.help();
+    CHECK(help.find("15->5") != std::string::npos);
+    CHECK(help.find("OR") == std::string::npos);
+
+    auto *validator = opt->get_validator("check");
+    CHECK("check" == validator->get_name());
+    validator->active(false);
+    help = app.help();
+    CHECK(help.find("15->5") == std::string::npos);
+}
 #endif
 static const std::map<std::string, std::string> validValues = {
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u03C0\u00E9")},

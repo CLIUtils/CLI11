@@ -7,6 +7,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <string>
+#include <memory>
 
 template <typename T> class DeltaRange : public CLI::Validator {
   public:

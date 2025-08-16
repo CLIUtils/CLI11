@@ -435,7 +435,7 @@ class Option : public OptionBase<Option> {
     Option *transform(Validator_p validator);
 
     /// Adds a transforming Validator with a built in type name
-    Option *transform(Validator validator, const std::string &validator_name = "");
+    Option *transform(Validator validator, const std::string &transform_name = "");
 
     /// Adds a Validator-like function that can change result
     Option *transform(const std::function<std::string(std::string)> &transform_func,
