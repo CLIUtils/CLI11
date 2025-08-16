@@ -555,22 +555,20 @@ TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomValidator", "[transform]") {
     CHECK(help.find("15->5") == std::string::npos);
 }
 
-
 TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomSharedValidator", "[transform]") {
     std::string value;
 
-    CLI::Validator_p ctrans=std::make_shared<CLI::Validator>(CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) |
-        CLI::Validator(
-            [](std::string &element) {
-                if(element == "frog") {
-                    element = "hops";
-                }
-                return std::string{};
-            },
-            std::string{}));
+    CLI::Validator_p ctrans = std::make_shared<CLI::Validator>(
+        CLI::Transformer(std::map<int, int>{{15, 5}, {18, 6}, {21, 7}}) | CLI::Validator(
+                                                                              [](std::string &element) {
+                                                                                  if(element == "frog") {
+                                                                                      element = "hops";
+                                                                                  }
+                                                                                  return std::string{};
+                                                                              },
+                                                                              std::string{}));
     ctrans->name("check");
-    auto *opt = app.add_option("-s", value)
-        ->transform(ctrans);
+    auto *opt = app.add_option("-s", value)->transform(ctrans);
     args = {"-s", "15"};
     run();
     CHECK("5" == value);
