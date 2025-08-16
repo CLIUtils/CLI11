@@ -122,12 +122,14 @@ set_property(TEST positional_validation3 PROPERTY PASS_REGULAR_EXPRESSION "File 
 add_test(NAME positional_validation4 COMMAND positional_validation 1 one two 2)
 set_property(TEST positional_validation4 PROPERTY PASS_REGULAR_EXPRESSION "File 1 = one"
                                                   "File 2 = two")
-
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+#this test doesn't work without get_time which isn't available until GCC 5.0
 add_cli_exe(date_validator date_validator.cpp)
 add_test(NAME date_validator1 COMMAND date_validator --time 2025-08-14T14:30:00)
 set_property(TEST date_validator1 PROPERTY PASS_REGULAR_EXPRESSION "date given")
 add_test(NAME date_validator2 COMMAND date_validator --time 8/17/2025T14:30:00)
 set_property(TEST date_validator2 PROPERTY PASS_REGULAR_EXPRESSION "Failed to parse time string")
+endif()
 
 add_cli_exe(custom_validator custom_validator.cpp)
 add_test(NAME custom_validator1 COMMAND custom_validator --number 12)
