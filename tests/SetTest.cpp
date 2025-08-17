@@ -95,9 +95,9 @@ TEST_CASE_METHOD(TApp, "StringStringMapNoModify", "[set]") {
 }
 
 TEST_CASE_METHOD(TApp, "StringStringMapNoModifyMultiple", "[set]") {
-    std::string value1,value2,value3;
+    std::string value1, value2, value3;
     std::map<std::string, std::string> map = {{"a", "b"}, {"b", "c"}};
-    CLI::Validator_p membership=std::make_shared<CLI::Validator>(CLI::IsMember(map));
+    CLI::Validator_p membership = std::make_shared<CLI::Validator>(CLI::IsMember(map));
 
     app.add_option("--set1", value1)->check(membership);
     app.add_option("--set2", value2)->check(membership);
@@ -112,9 +112,8 @@ TEST_CASE_METHOD(TApp, "StringStringMapNoModifyMultiple", "[set]") {
 
     args = {"--set3", "c"};
     CHECK_THROWS_AS(run(), CLI::ValidationError);
-    //check that the validators are actually the same
-    CHECK(app.get_option("--set1")->get_validator(0)==app.get_option("--set3")->get_validator(0));
-
+    // check that the validators are actually the same
+    CHECK(app.get_option("--set1")->get_validator(0) == app.get_option("--set3")->get_validator(0));
 }
 
 enum SimpleEnum { SE_one = 1, SE_two = 2 };
