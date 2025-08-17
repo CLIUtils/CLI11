@@ -32,6 +32,8 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.256.0.1";
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
+    ip = "1.223.0.";
+    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "1.256.0.1";
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
     ip = "aaa";
