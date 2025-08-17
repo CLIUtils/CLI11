@@ -565,12 +565,15 @@ are added through the `check` or `transform` functions. The differences between
 the two function are that checks do not modify the input whereas transforms can
 and are executed before any Validators added through `check`.
 
-CLI11 has several Validators included that perform some common checks.  
-By default the most commonly used ones are available.  🚧 If some are not needed they can be disabled by using 
+CLI11 has several Validators included that perform some common checks. By
+default the most commonly used ones are available. 🚧 If some are not needed
+they can be disabled by using
+
 ```c++
 #define CLI11_DISABLE_EXTRA_VALIDATORS 1
-``` 
-#### Default Validators 
+```
+
+#### Default Validators
 
 These validators are always available regardless of definitions
 
@@ -589,8 +592,9 @@ These validators are always available regardless of definitions
 
 #### Validatrs that may be disabled 🚧
 
-Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1 or enabled by setting
-`CLI11_ENABLE_EXTRA_VALIDATORS` to 1.  By default they are enabled.
+Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
+or enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1. By default they are
+enabled.
 
 - `CLI::IsMember(...)`: Require an option be a member of a given set. See
   [Transforming Validators](#transforming-validators) for more details.
@@ -620,12 +624,13 @@ Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
 
 #### Extra Validators 🚧
 
-New validators will go into code sections that must be explicitly enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
+New validators will go into code sections that must be explicitly enabled by
+setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
 #### Usage
 
-These Validators once enabled can be used by simply passing the name into the `check` or
-`transform` methods on an option
+These Validators once enabled can be used by simply passing the name into the
+`check` or `transform` methods on an option
 
 ```cpp
 ->check(CLI::ExistingFile);
@@ -789,7 +794,15 @@ CLI::Validator(validator_description);
 ```
 
 It is also possible to create a subclass of `CLI::Validator`, in which case it
-can also set a custom description function, and operation function. One example of this is in the [custom validator example](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp). example. The `check` and `transform` operations can also take a shared_ptr 🚧 to a validator if you wish to reuse the validator in multiple locations or it is mutating and the check is dependent on other operations or is variable.  Note that in this case it is not recommended to use the same object for both check and transform operations, the check will modify some internal flags on the object so it will not be usable for transform operations.  
+can also set a custom description function, and operation function. One example
+of this is in the
+[custom validator example](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp).
+example. The `check` and `transform` operations can also take a shared_ptr 🚧 to
+a validator if you wish to reuse the validator in multiple locations or it is
+mutating and the check is dependent on other operations or is variable. Note
+that in this case it is not recommended to use the same object for both check
+and transform operations, the check will modify some internal flags on the
+object so it will not be usable for transform operations.
 
 ##### Querying Validators
 
