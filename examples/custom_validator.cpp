@@ -27,8 +27,8 @@ template <typename T> class DeltaRange : public CLI::Validator {
           center_point(center), delta(range) {}
 
     bool check(const T &test) const { return (test >= (center_point - delta)) && (test <= (center_point + delta)); }
-    T center() const { return center_point; }
-    T range() const { return delta; }
+    CLI11_NODISCARD T center() const { return center_point; }
+    CLI11_NODISCARD T range() const { return delta; }
     void center(const T &value) { center_point = value; }
     void range(const T &value) { delta = value; }
 };
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
     std::string value;
     auto dr = std::make_shared<DeltaRange<int>>(7, 3);
-    auto *opt = app.add_option("--number", value, "enter value in the related range")->check(dr)->required();
+    app.add_option("--number", value, "enter value in the related range")->check(dr)->required();
 
     app.add_option_function<int>("--center", [&dr](int new_center) { dr->center(new_center); })->trigger_on_parse();
     app.add_option_function<int>("--range", [&dr](int new_range) { dr->range(new_range); })->trigger_on_parse();
