@@ -71,6 +71,16 @@ The built-in validators for CLI11 are:
 | `ExistingPath`      | Check for an existing path                                             |
 | `NonexistentPath`   | Check for an non-existing path                                         |
 | `Range(min=0, max)` | Produce a range (factory). Min and max are inclusive.                  |
+| `NonNegativeNumber` | Range(0,max<double>)                                                   |
+| `PositiveNumber`    | Range(epsilon,max<double>)                                             |
+
+A few built-in transformers are also available
+
+| Transformer         | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| `EscapedString`     | modify a string using defined escape characters                        |
+| `FileOnDefaultPath` | Modify a path if the file is a particular default location             |
+
 
 And, the protected members that you can set when you make your own are:
 
@@ -82,3 +92,26 @@ And, the protected members that you can set when you make your own are:
 | `int` (`-1`)                                | `application_index_` | The element this validator applies to (-1 for all)                     |
 | `bool` (`true`)                             | `active_`            | This can be disabled                                                   |
 | `bool` (`false`)                            | `non_modifying_`     | Specify that this is a Validator instead of a Transformer              |
+
+## Extra Validators
+
+Until CLI11 v3.0 these validators will be available by default.  They can be disabled at compilation time by defining CLI11_DISABLE_EXTRA_VALIDATORS to 1.   After version 3.0 they can be enabled by defining CLI11_ENABLE_EXTRA_VALIDATORS to 1.   Some of the Validators are template heavy so if they are not needed and compilation time is a concern they can be disabled.   
+
+| Validator           | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| `ValidIPV4`         | check for valid IPV4 address XX.XX.XX.XX                               |
+| `TypeValidator<T>`  | template for checking that a value can convert to a specific type      |
+| `Number`            | Check that a value can convert to a number                             |
+| `IsMember`          | Check that a value is one of a set of values                           |
+| `CheckedTransformer`| Values must be one of the transformed set or the result                |
+| `AsNumberWithUnit`  | checks for numbers with a unit as part of a specified set of units     |
+| `AsSizeValue`       | As Number with Unit with support for SI prefixes                       |
+
+
+| Transformer            | Description                                                            |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `Bound<T>(min=0, max)` | Force a range (factory). Min and max are inclusive.                    |
+| `Transformer`          | Modify values in a set to the matching pair value                      |
+
+## Custom Validators
+

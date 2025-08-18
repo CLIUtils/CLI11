@@ -40,7 +40,7 @@ set with a simple and intuitive interface.
       - [Default Validators](#default-validators)
       - [Validatrs that may be disabled 🚧](#validatrs-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
-      - [Usage](#usage-1)
+      - [Validator Usage](#validator-usage)
         - [Transforming Validators](#transforming-validators)
         - [Validator operations](#validator-operations)
         - [Custom Validators](#custom-validators)
@@ -627,7 +627,7 @@ enabled.
 New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
-#### Usage
+#### Validator Usage
 
 These Validators once enabled can be used by simply passing the name into the
 `check` or `transform` methods on an option
