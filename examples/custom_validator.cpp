@@ -26,7 +26,9 @@ template <typename T> class DeltaRange : public CLI::Validator {
               "RANGE"),
           center_point(center), delta(range) {}
 
-    CLI11_NODISCARD bool check(const T &test) const { return (test >= (center_point - delta)) && (test <= (center_point + delta)); }
+    CLI11_NODISCARD bool check(const T &test) const {
+        return (test >= (center_point - delta)) && (test <= (center_point + delta));
+    }
     CLI11_NODISCARD T center() const { return center_point; }
     CLI11_NODISCARD T range() const { return delta; }
     void center(const T &value) { center_point = value; }
