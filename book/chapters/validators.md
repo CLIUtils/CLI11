@@ -76,10 +76,10 @@ The built-in validators for CLI11 are:
 
 A few built-in transformers are also available
 
-| Transformer         | Description                                                            |
+| Transformer         | Description                                                |
 | ------------------- | ---------------------------------------------------------- |
-| `EscapedString`     | modify a string using defined escape characters                        |
-| `FileOnDefaultPath` | Modify a path if the file is a particular default location             |
+| `EscapedString`     | modify a string using defined escape characters            |
+| `FileOnDefaultPath` | Modify a path if the file is a particular default location |
 
 And, the protected members that you can set when you make your own are:
 
@@ -100,32 +100,36 @@ After version 3.0 they can be enabled by defining CLI11_ENABLE_EXTRA_VALIDATORS
 to 1. Some of the Validators are template heavy so if they are not needed and
 compilation time is a concern they can be disabled.
 
-| Validator           | Description                                                            |
+| Validator            | Description                                                        |
 | -------------------- | ------------------------------------------------------------------ |
-| `ValidIPV4`         | check for valid IPV4 address XX.XX.XX.XX                               |
-| `TypeValidator<T>`  | template for checking that a value can convert to a specific type      |
-| `Number`            | Check that a value can convert to a number                             |
-| `IsMember`          | Check that a value is one of a set of values                           |
+| `ValidIPV4`          | check for valid IPV4 address XX.XX.XX.XX                           |
+| `TypeValidator<T>`   | template for checking that a value can convert to a specific type  |
+| `Number`             | Check that a value can convert to a number                         |
+| `IsMember`           | Check that a value is one of a set of values                       |
 | `CheckedTransformer` | Values must be one of the transformed set or the result            |
-| `AsNumberWithUnit`  | checks for numbers with a unit as part of a specified set of units     |
-| `AsSizeValue`       | As Number with Unit with support for SI prefixes                       |
+| `AsNumberWithUnit`   | checks for numbers with a unit as part of a specified set of units |
+| `AsSizeValue`        | As Number with Unit with support for SI prefixes                   |
 
-| Transformer            | Description                                                            |
+| Transformer            | Description                                         |
 | ---------------------- | --------------------------------------------------- |
-| `Bound<T>(min=0, max)` | Force a range (factory). Min and max are inclusive.                    |
-| `Transformer`          | Modify values in a set to the matching pair value                      |
+| `Bound<T>(min=0, max)` | Force a range (factory). Min and max are inclusive. |
+| `Transformer`          | Modify values in a set to the matching pair value   |
 
 ## New Extra Validators
 
-Some additional validators can be enabled by using CLI11_ENABLE_EXTRA_VALIDATORS to 1. These validators are disabled by default.  
+Some additional validators can be enabled by using CLI11_ENABLE_EXTRA_VALIDATORS
+to 1. These validators are disabled by default.
 
 ## Custom Validators
 
-CLI11 also supports the use of custom validators, this includes using the Validator class constructor with a custom function calls or subclassing Validator to define a new class.  
+CLI11 also supports the use of custom validators, this includes using the
+Validator class constructor with a custom function calls or subclassing
+Validator to define a new class.
 
 ### Custom Validator operation
 
-The simplest way to make a new Validator is to mimic how many of the existing Validators are created.  Take for example the `IPV4Validator`
+The simplest way to make a new Validator is to mimic how many of the existing
+Validators are created. Take for example the `IPV4Validator`
 
 ```cpp
 class IPV4Validator : public Validator {
@@ -159,10 +163,15 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
 }
 ```
 
-The `IPV4Validator` class inherits from `Validator` and creates a new constructor.   In that constructor it defines the lambda function that does the checking.   Then IPV4 can be used like any other Validator.  One specific item of note is that the class does not define any new member variables, so the class if copyable to a Validator, only the constructor is different.   
+The `IPV4Validator` class inherits from `Validator` and creates a new
+constructor. In that constructor it defines the lambda function that does the
+checking. Then IPV4 can be used like any other Validator. One specific item of
+note is that the class does not define any new member variables, so the class if
+copyable to a Validator, only the constructor is different.
 
-If additional members are needed, then the `check` and `transform` overloads that use shared pointers need to be used.  The other overloads pass by value so polymorphism doesn't work.   
-The custom_validator example shows a case like this.
+If additional members are needed, then the `check` and `transform` overloads
+that use shared pointers need to be used. The other overloads pass by value so
+polymorphism doesn't work. The custom_validator example shows a case like this.
 
 ```cpp
 template <typename T> class DeltaRange : public CLI::Validator {
@@ -210,6 +219,13 @@ int main(int argc, char **argv) {
 }
 ```
 
-The Validator defines some new operations, and in the use case the Validator is constructed using shared_ptrs.   This allows polymorphism to work and the Validator instance to be shared across multiple options, and as in this example adapted during the parsing and checking.   
+The Validator defines some new operations, and in the use case the Validator is
+constructed using shared_ptrs. This allows polymorphism to work and the
+Validator instance to be shared across multiple options, and as in this example
+adapted during the parsing and checking.
 
-There are a few limitation in this, single instances should not be used with both transform and check.  Check modifies some flags in the Validator to prevent value modification, so that would prevent its use as a transform.   Which could be user modified later but that would potentially allow the check to modify the value unintentionally.   
+There are a few limitation in this, single instances should not be used with
+both transform and check. Check modifies some flags in the Validator to prevent
+value modification, so that would prevent its use as a transform. Which could be
+user modified later but that would potentially allow the check to modify the
+value unintentionally.
