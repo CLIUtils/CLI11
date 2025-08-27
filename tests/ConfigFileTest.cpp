@@ -1510,6 +1510,57 @@ TEST_CASE_METHOD(TApp, "TOMLVector", "[config]") {
     CHECK(three == std::vector<int>({1, 2, 3}));
 }
 
+TEST_CASE_METHOD(TApp, "TOMLMultiLineVector", "[config]") {
+
+    TempFile tmptoml{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmptoml);
+
+    {
+        std::ofstream out{tmptoml};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=[\n";
+        out << "  2, 3\n";
+        out << "]\n";
+        out << "three=[\n\t1,\n\t2,\n\t3\n]\n";
+    }
+
+    std::vector<int> two, three;
+    app.add_option("--two", two)->expected(2)->required();
+    app.add_option("--three", three)->required();
+
+    run();
+
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
+}
+
+TEST_CASE_METHOD(TApp, "TOMLMultiLineVector2", "[config]") {
+
+    TempFile tmptoml{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmptoml);
+
+    {
+        std::ofstream out{tmptoml};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=[\n";
+        out << "  2, 3]\n";
+        out << "three=[\n\t1,\n\t2,\n\t3\n]\n";
+    }
+
+    std::vector<int> two, three;
+    app.add_option("--two", two)->expected(2)->required();
+    app.add_option("--three", three)->required();
+
+    run();
+
+    CHECK(two == std::vector<int>({2, 3}));
+    CHECK(three == std::vector<int>({1, 2, 3}));
+}
+
 TEST_CASE_METHOD(TApp, "ColonValueSep", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -1696,6 +1747,30 @@ TEST_CASE_METHOD(TApp, "TOMLStringVector", "[config]") {
     CHECK(zero4 == std::vector<std::string>({"{}"}));
     CHECK(nzero == std::vector<std::string>({"{}"}));
     CHECK(one == std::vector<std::string>({"1"}));
+    CHECK(two == std::vector<std::string>({"2", "3"}));
+    CHECK(three == std::vector<std::string>({"1", "2", "3"}));
+}
+
+TEST_CASE_METHOD(TApp, "TOMLStringVectorMultiline", "[config]") {
+
+    TempFile tmptoml{"TestTomlTmp.toml"};
+
+    app.set_config("--config", tmptoml);
+
+    {
+        std::ofstream out{tmptoml};
+        out << "#this is a comment line\n";
+        out << "[default]\n";
+        out << "two=[\n\t\t\"2\",\"3\"]\n";
+        out << "three=[\n    \"1\",\n    \"2\",\n    \"3\"\n]    \n";
+    }
+
+    std::vector<std::string> two, three;
+
+    app.add_option("--two", two)->required();
+    app.add_option("--three", three)->required();
+
+    run();
     CHECK(two == std::vector<std::string>({"2", "3"}));
     CHECK(three == std::vector<std::string>({"1", "2", "3"}));
 }
