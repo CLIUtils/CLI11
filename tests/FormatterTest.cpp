@@ -261,3 +261,17 @@ TEST_CASE("Formatter: Description", "[formatter]") {
     CHECK_THAT(help, !Contains("to  Pr e  s  e  r  v  e  SPA C ES"));
     CHECK_THAT(help, !Contains(desc_string));
 }
+
+TEST_CASE("Formatter: LongOptionAlignment", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->long_option_alignment_ratio(6 / 30.f);
+
+    int v{0};
+    app.add_option("--opt", v, "Something");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("\n  -h, --help                  Print"));
+    CHECK_THAT(help, Contains("\n      --opt INT               Something"));
+}
