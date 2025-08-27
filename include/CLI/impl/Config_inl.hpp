@@ -414,7 +414,7 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
                     }
                 }
                 items_buffer = {item};
-            } else if(item.size() >= 1 && item.front() == aStart) {
+            } else if(!item.empty() && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
                     detail::trim(multiline);
                     item += multiline;
