@@ -4210,7 +4210,7 @@ TEST_CASE_METHOD(TApp, "RoundTripArrayFloat", "[config]") {
 }
 
 // Code from https://github.com/CLIUtils/CLI11/issues/1197
-TEST_CASE_METHOD(TApp,"CrashTest", "[config]") {
+TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     args = {"spdlog", "--level=off"};
 
     app.configurable()->allow_config_extras(false);
@@ -4223,9 +4223,9 @@ TEST_CASE_METHOD(TApp,"CrashTest", "[config]") {
 
     run();
 
-    auto *ptr= app.get_config_ptr();
+    auto *ptr = app.get_config_ptr();
     std::string conf_filename;
     CHECK_NOTHROW(conf_filename = ptr->as<std::string>());
     CHECK(conf_filename.empty());
-    CHECK(level=="off");
+    CHECK(level == "off");
 }
