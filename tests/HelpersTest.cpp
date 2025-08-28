@@ -1521,7 +1521,7 @@ TEST_CASE("Types: LexicalConversionEmptyVectorDouble", "[helpers]") {
     std::vector<double> x;
     bool res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
     CHECK(res);
-    CHECK(0 == x.size());
+    CHECK(x.empty());
 }
 
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");
