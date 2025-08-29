@@ -257,7 +257,8 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
     std::string footer_string = make_footer(sub);
 
     if(mode == AppFormatMode::Sub && !footer_string.empty()) {
-        std::string parent_footer = make_footer(sub->get_parent());
+        auto *parent=sub->get_parent();
+        std::string parent_footer = (parent != nullptr) ? make_footer(sub->get_parent()) : std::string{};
         if(footer_string == parent_footer) {
             footer_string = "";
         }
