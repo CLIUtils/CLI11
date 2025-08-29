@@ -489,26 +489,6 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
     CHECK_THAT(help, Contains("[18]"));
 }
 
-TEST_CASE("THelp: ManualSetterOverFunction", "[help]") {
-
-    CLI::App app{"My prog"};
-
-    int x{1};
-
-    CLI::Option *op1 = app.add_option("--op1", x)->check(CLI::IsMember({1, 2}));
-    CLI::Option *op2 = app.add_option("--op2", x)->transform(CLI::IsMember({1, 2}));
-    op1->default_str("12");
-    op1->type_name("BIGGLES");
-    op2->type_name("QUIGGLES");
-    CHECK(1 == x);
-
-    std::string help = app.help();
-    CHECK_THAT(help, Contains("[12]"));
-    CHECK_THAT(help, Contains("BIGGLES"));
-    CHECK_THAT(help, Contains("QUIGGLES"));
-    CHECK_THAT(help, Contains("{1,2}"));
-}
-
 TEST_CASE("THelp: Subcom", "[help]") {
     CLI::App app{"My prog"};
 
@@ -581,6 +561,29 @@ TEST_CASE("THelp: MasterName", "[help]") {
     CHECK_THAT(app.help(), Contains("MyRealName"));
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("THelp: ManualSetterOverFunction", "[help]") {
+
+    CLI::App app{"My prog"};
+
+    int x{1};
+
+    CLI::Option *op1 = app.add_option("--op1", x)->check(CLI::IsMember({1, 2}));
+    CLI::Option *op2 = app.add_option("--op2", x)->transform(CLI::IsMember({1, 2}));
+    op1->default_str("12");
+    op1->type_name("BIGGLES");
+    op2->type_name("QUIGGLES");
+    CHECK(1 == x);
+
+    std::string help = app.help();
+    CHECK_THAT(help, Contains("[12]"));
+    CHECK_THAT(help, Contains("BIGGLES"));
+    CHECK_THAT(help, Contains("QUIGGLES"));
+    CHECK_THAT(help, Contains("{1,2}"));
+}
+
 TEST_CASE("THelp: IntDefaults", "[help]") {
     CLI::App app{"My prog"};
 
@@ -612,6 +615,8 @@ TEST_CASE("THelp: SetLower", "[help]") {
     CHECK_THAT(help, Contains("twO"));
     CHECK_THAT(help, Contains("THREE"));
 }
+
+#endif
 
 TEST_CASE("THelp: OnlyOneHelp", "[help]") {
     CLI::App app{"My prog"};
@@ -1327,6 +1332,9 @@ TEST_CASE("THelp: CombinedValidatorsPathyTextAsTransform", "[help]") {
     CHECK_THAT(help, Contains("TEXT:(PATH(existing)) OR (PATH"));
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 // #113 Part 2
 TEST_CASE("THelp: ChangingSet", "[help]") {
     CLI::App app;
@@ -1412,6 +1420,8 @@ TEST_CASE("THelp: ChangingCaselessSetDefaulted", "[help]") {
     CHECK_THAT(help, !Contains("1"));
     CHECK_THAT(help, Contains("4"));
 }
+
+#endif
 
 // New defaults tests (1.8)
 

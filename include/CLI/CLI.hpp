@@ -41,4 +41,6 @@
 
 #include "Formatter.hpp"
 
+#include "ExtraValidators.hpp"
+
 // IWYU pragma: end_exports

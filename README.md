@@ -37,6 +37,10 @@ set with a simple and intuitive interface.
       - [Example](#example)
       - [Option options](#option-options)
       - [Validators](#validators)
+      - [Default Validators](#default-validators)
+      - [Validatrs that may be disabled 🚧](#validatrs-that-may-be-disabled-)
+      - [Extra Validators 🚧](#extra-validators-)
+      - [Validator Usage](#validator-usage)
         - [Transforming Validators](#transforming-validators)
         - [Validator operations](#validator-operations)
         - [Custom Validators](#custom-validators)
@@ -561,7 +565,36 @@ are added through the `check` or `transform` functions. The differences between
 the two function are that checks do not modify the input whereas transforms can
 and are executed before any Validators added through `check`.
 
-CLI11 has several Validators built-in that perform some common checks
+CLI11 has several Validators included that perform some common checks. By
+default the most commonly used ones are available. 🚧 If some are not needed
+they can be disabled by using
+
+```c++
+#define CLI11_DISABLE_EXTRA_VALIDATORS 1
+```
+
+#### Default Validators
+
+These validators are always available regardless of definitions
+
+- `CLI::ExistingFile`: Requires that the file exists if given.
+- `CLI::ExistingDirectory`: Requires that the directory exists.
+- `CLI::ExistingPath`: Requires that the path (file or directory) exists.
+- `CLI::NonexistentPath`: Requires that the path does not exist.
+- `CLI::FileOnDefaultPath`: Best used as a transform, Will check that a file
+  exists either directly or in a default path and update the path appropriately.
+  See [Transforming Validators](#transforming-validators) for more details
+- `CLI::Range(min,max)`: Requires that the option be between min and max (make
+  sure to use floating point if needed). Min defaults to 0.
+- `CLI::PositiveNumber`: Requires the number be greater than 0
+- `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
+- `CLI::Number`: Requires the input be a number.
+
+#### Validatrs that may be disabled 🚧
+
+Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
+or enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1. By default they are
+enabled.
 
 - `CLI::IsMember(...)`: Require an option be a member of a given set. See
   [Transforming Validators](#transforming-validators) for more details.
@@ -577,21 +610,11 @@ CLI11 has several Validators built-in that perform some common checks
 - `CLI::AsSizeValue(...)`: Convert inputs like `100b`, `42 KB`, `101 Mb`,
   `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3
   or 2^10.
-- `CLI::ExistingFile`: Requires that the file exists if given.
-- `CLI::ExistingDirectory`: Requires that the directory exists.
-- `CLI::ExistingPath`: Requires that the path (file or directory) exists.
-- `CLI::NonexistentPath`: Requires that the path does not exist.
-- `CLI::FileOnDefaultPath`: Best used as a transform, Will check that a file
-  exists either directly or in a default path and update the path appropriately.
-  See [Transforming Validators](#transforming-validators) for more details
-- `CLI::Range(min,max)`: Requires that the option be between min and max (make
-  sure to use floating point if needed). Min defaults to 0.
+
 - `CLI::Bounded(min,max)`: Modify the input such that it is always between min
   and max (make sure to use floating point if needed). Min defaults to 0. Will
   produce an error if conversion is not possible.
-- `CLI::PositiveNumber`: Requires the number be greater than 0
-- `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
-- `CLI::Number`: Requires the input be a number.
+
 - `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g.
   `'255.255.255.255'`, `'10.1.1.7'`.
 - `CLI::TypeValidator<TYPE>`:Requires that the option be convertible to the
@@ -599,8 +622,15 @@ CLI11 has several Validators built-in that perform some common checks
   the input be convertible to an `unsigned int` regardless of the end
   conversion.
 
-These Validators can be used by simply passing the name into the `check` or
-`transform` methods on an option
+#### Extra Validators 🚧
+
+New validators will go into code sections that must be explicitly enabled by
+setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
+
+#### Validator Usage
+
+These Validators once enabled can be used by simply passing the name into the
+`check` or `transform` methods on an option
 
 ```cpp
 ->check(CLI::ExistingFile);
@@ -764,14 +794,22 @@ CLI::Validator(validator_description);
 ```
 
 It is also possible to create a subclass of `CLI::Validator`, in which case it
-can also set a custom description function, and operation function.
+can also set a custom description function, and operation function. One example
+of this is in the
+[custom validator example](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp).
+example. The `check` and `transform` operations can also take a shared_ptr 🚧 to
+a validator if you wish to reuse the validator in multiple locations or it is
+mutating and the check is dependent on other operations or is variable. Note
+that in this case it is not recommended to use the same object for both check
+and transform operations, the check will modify some internal flags on the
+object so it will not be usable for transform operations.
 
 ##### Querying Validators
 
 Once loaded into an Option, a pointer to a named Validator can be retrieved via
 
 ```cpp
-opt->get_validator(name);
+auto *validator = opt->get_validator(name);
 ```
 
 This will retrieve a Validator with the given name or throw a
@@ -781,7 +819,7 @@ unnamed Validator will be returned or the first Validator if there is only one.
 or
 
 ```cpp
-opt->get_validator(index);
+auto *validator = opt->get_validator(index);
 ```
 
 Which will return a validator in the index it is applied which isn't necessarily
@@ -1668,6 +1706,10 @@ brief description of each is included here
 - [subcommands](https://github.com/CLIUtils/CLI11/blob/main/examples/subcommands.cpp):
   Short example of subcommands
 - [validators](https://github.com/CLIUtils/CLI11/blob/main/examples/validators.cpp):
+  Example illustrating use of validators
+- [custom validators](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validators.cpp):
+  Example illustrating use of validators
+- [date validators](https://github.com/CLIUtils/CLI11/blob/main/examples/date_validators.cpp):
   Example illustrating use of validators
 
 ## Contribute

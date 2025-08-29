@@ -13,6 +13,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -73,70 +74,92 @@ CLI11_INLINE Option *Option::expected(int value_min, int value_max) {
     return this;
 }
 
+CLI11_INLINE Option *Option::check(Validator_p validator) {
+    validator->non_modifying();
+    validators_.push_back(std::move(validator));
+
+    return this;
+}
+
 CLI11_INLINE Option *Option::check(Validator validator, const std::string &validator_name) {
     validator.non_modifying();
-    validators_.push_back(std::move(validator));
-    if(!validator_name.empty())
-        validators_.back().name(validator_name);
+    auto vp = std::make_shared<Validator>(std::move(validator));
+    if(!validator_name.empty()) {
+        vp->name(validator_name);
+    }
+    validators_.push_back(std::move(vp));
+
     return this;
 }
 
-CLI11_INLINE Option *Option::check(std::function<std::string(const std::string &)> Validator,
-                                   std::string Validator_description,
-                                   std::string Validator_name) {
-    validators_.emplace_back(Validator, std::move(Validator_description), std::move(Validator_name));
-    validators_.back().non_modifying();
+CLI11_INLINE Option *Option::check(std::function<std::string(const std::string &)> validator_func,
+                                   std::string validator_description,
+                                   std::string validator_name) {
+
+    auto vp = std::make_shared<Validator>(
+        std::move(validator_func), std::move(validator_description), std::move(validator_name));
+    vp->non_modifying();
+    validators_.push_back(std::move(vp));
     return this;
 }
 
-CLI11_INLINE Option *Option::transform(Validator Validator, const std::string &Validator_name) {
-    validators_.insert(validators_.begin(), std::move(Validator));
-    if(!Validator_name.empty())
-        validators_.front().name(Validator_name);
+CLI11_INLINE Option *Option::transform(Validator_p validator) {
+    validators_.insert(validators_.begin(), std::move(validator));
+
     return this;
 }
 
-CLI11_INLINE Option *Option::transform(const std::function<std::string(std::string)> &func,
+CLI11_INLINE Option *Option::transform(Validator validator, const std::string &transform_name) {
+    auto vp = std::make_shared<Validator>(std::move(validator));
+    if(!transform_name.empty()) {
+        vp->name(transform_name);
+    }
+    validators_.insert(validators_.begin(), std::move(vp));
+    return this;
+}
+
+CLI11_INLINE Option *Option::transform(const std::function<std::string(std::string)> &transform_func,
                                        std::string transform_description,
                                        std::string transform_name) {
-    validators_.insert(validators_.begin(),
-                       Validator(
-                           [func](std::string &val) {
-                               val = func(val);
-                               return std::string{};
-                           },
-                           std::move(transform_description),
-                           std::move(transform_name)));
+    auto vp = std::make_shared<Validator>(
+        [transform_func](std::string &val) {
+            val = transform_func(val);
+            return std::string{};
+        },
+        std::move(transform_description),
+        std::move(transform_name));
+    validators_.insert(validators_.begin(), std::move(vp));
 
     return this;
 }
 
 CLI11_INLINE Option *Option::each(const std::function<void(std::string)> &func) {
-    validators_.emplace_back(
+    auto vp = std::make_shared<Validator>(
         [func](std::string &inout) {
             func(inout);
             return std::string{};
         },
         std::string{});
+    validators_.push_back(std::move(vp));
     return this;
 }
 
-CLI11_INLINE Validator *Option::get_validator(const std::string &Validator_name) {
-    for(auto &Validator : validators_) {
-        if(Validator_name == Validator.get_name()) {
-            return &Validator;
+CLI11_INLINE Validator *Option::get_validator(const std::string &validator_name) {
+    for(auto &validator : validators_) {
+        if(validator_name == validator->get_name()) {
+            return validator.get();
         }
     }
-    if((Validator_name.empty()) && (!validators_.empty())) {
-        return &(validators_.front());
+    if((validator_name.empty()) && (!validators_.empty())) {
+        return validators_.front().get();
     }
-    throw OptionNotFound(std::string{"Validator "} + Validator_name + " Not Found");
+    throw OptionNotFound(std::string{"Validator "} + validator_name + " Not Found");
 }
 
 CLI11_INLINE Validator *Option::get_validator(int index) {
-    // This is an signed int so that it is not equivalent to a pointer.
+    // This is a signed int so that it is not equivalent to a pointer.
     if(index >= 0 && index < static_cast<int>(validators_.size())) {
-        return &(validators_[static_cast<decltype(validators_)::size_type>(index)]);
+        return validators_[static_cast<decltype(validators_)::size_type>(index)].get();
     }
     throw OptionNotFound("Validator index is not valid");
 }
@@ -510,8 +533,8 @@ CLI11_INLINE Option *Option::type_size(int option_type_size_min, int option_type
 CLI11_NODISCARD CLI11_INLINE std::string Option::get_type_name() const {
     std::string full_type_name = type_name_();
     if(!validators_.empty()) {
-        for(const auto &Validator : validators_) {
-            std::string vtype = Validator.get_description();
+        for(const auto &validator : validators_) {
+            std::string vtype = validator->get_description();
             if(!vtype.empty()) {
                 full_type_name += ":" + vtype;
             }
@@ -645,10 +668,10 @@ CLI11_INLINE std::string Option::_validate(std::string &result, int index) const
         return err_msg;
     }
     for(const auto &vali : validators_) {
-        auto v = vali.get_application_index();
+        auto v = vali->get_application_index();
         if(v == -1 || v == index) {
             try {
-                err_msg = vali(result);
+                err_msg = (*vali)(result);
             } catch(const ValidationError &err) {
                 err_msg = err.what();
             }

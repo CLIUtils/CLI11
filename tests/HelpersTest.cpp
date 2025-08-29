@@ -630,25 +630,6 @@ TEST_CASE("Validators: PathNotExistsDir", "[helpers]") {
     CHECK(!CLI::ExistingPath(mydir).empty());
 }
 
-TEST_CASE("Validators: IPValidate1", "[helpers]") {
-    std::string ip = "1.1.1.1";
-    CHECK(CLI::ValidIPV4(ip).empty());
-    ip = "224.255.0.1";
-    CHECK(CLI::ValidIPV4(ip).empty());
-    ip = "-1.255.0.1";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    ip = "1.256.0.1";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    ip = "1.256.0.1";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    ip = "aaa";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    ip = "1.2.3.abc";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    ip = "11.22";
-    CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-}
-
 TEST_CASE("Validators: PositiveValidator", "[helpers]") {
     std::string num = "1.1.1.1";
     CHECK_FALSE(CLI::PositiveNumber(num).empty());
@@ -685,21 +666,6 @@ TEST_CASE("Validators: NonNegativeValidator", "[helpers]") {
     CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
     num = "a";
     CHECK_FALSE(CLI::NonNegativeNumber(num).empty());
-}
-
-TEST_CASE("Validators: NumberValidator", "[helpers]") {
-    std::string num = "1.1.1.1";
-    CHECK_FALSE(CLI::Number(num).empty());
-    num = "1.7";
-    CHECK(CLI::Number(num).empty());
-    num = "10000";
-    CHECK(CLI::Number(num).empty());
-    num = "-0.000";
-    CHECK(CLI::Number(num).empty());
-    num = "+1.55";
-    CHECK(CLI::Number(num).empty());
-    num = "a";
-    CHECK_FALSE(CLI::Number(num).empty());
 }
 
 TEST_CASE("Validators: CombinedAndRange", "[helpers]") {

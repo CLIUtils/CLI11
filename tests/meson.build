@@ -59,6 +59,7 @@ testnames = [
     ['TrueFalseTest', {}],
     ['localeTest', {}],
     ['OptionGroupTest', {}],
+    ['ExtraValidatorsTest', {}],
     ['EncodingTest', {}],
     # multi-only
     ['TimerTest', {}],
