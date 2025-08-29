@@ -104,6 +104,44 @@ TEST_CASE("THelp: FooterOptionGroup", "[help]") {
     CHECK(footer_loc2 == std::string::npos);
 }
 
+/// @brief from github issue #1183
+TEST_CASE("THelp: FooterSubcommandHelpAll", "[help]") {
+    CLI::App app{"My prog"};
+
+    app.footer("Report bugs to bugs@example.com");
+    app.set_help_all_flag("--help-all", "All options of subcommands");
+    app.add_subcommand("Subcommand1", "Desc1");
+    app.add_subcommand("Subcommand2", "Desc2");
+
+    CHECK_THROWS_AS(app.parse("--help-all"),CLI::CallForAllHelp);
+        
+    std::string help=app.help("", CLI::AppFormatMode::All);
+
+    auto footer_loc = help.find("bugs@example.com");
+    auto footer_loc2 = help.find("bugs@example.com", footer_loc + 10);
+    CHECK(footer_loc != std::string::npos);
+    // should only see the footer once
+    CHECK(footer_loc2 == std::string::npos);
+}
+
+
+TEST_CASE("THelp: FooterSubcommandHelp", "[help]") {
+    CLI::App app{"My prog"};
+
+    app.footer("Report bugs to bugs@example.com");
+    app.add_subcommand("Subcommand1", "Desc1");
+    app.add_subcommand("Subcommand2", "Desc2");
+
+    CHECK_THROWS_AS(app.parse("Subcommand1 Subcommand2 --help"),CLI::CallForHelp);
+
+    std::string help = app.help();
+    auto footer_loc = help.find("bugs@example.com");
+    auto footer_loc2 = help.find("bugs@example.com", footer_loc + 10);
+    CHECK(footer_loc != std::string::npos);
+    // should only see the footer once
+    CHECK(footer_loc2 == std::string::npos);
+}
+
 TEST_CASE("THelp: OptionalPositional", "[help]") {
     CLI::App app{"My prog", "program"};
 
