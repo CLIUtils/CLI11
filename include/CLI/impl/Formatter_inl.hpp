@@ -172,14 +172,13 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     out << make_positionals(app);
     out << make_groups(app, mode);
     out << make_subcommands(app, mode);
-    std::string footer_string=make_footer(app);
+    std::string footer_string = make_footer(app);
 
     if(is_footer_paragraph_formatting_enabled()) {
-          detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
+        detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
     } else {
-       out << footer_string << '\n';
+        out << footer_string << '\n';
     }
-    
 
     return out.str();
 }
@@ -255,14 +254,12 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
     out << make_positionals(sub);
     out << make_groups(sub, mode);
     out << make_subcommands(sub, mode);
-    std::string footer_string=make_footer(sub);
+    std::string footer_string = make_footer(sub);
 
-    if (mode == AppFormatMode::Sub && !footer_string.empty())
-    {
-        std::string parent_footer=make_footer(sub->get_parent());
-        if (footer_string == parent_footer)
-        {
-            footer_string="";
+    if(mode == AppFormatMode::Sub && !footer_string.empty()) {
+        std::string parent_footer = make_footer(sub->get_parent());
+        if(footer_string == parent_footer) {
+            footer_string = "";
         }
     }
     if(is_footer_paragraph_formatting_enabled()) {

@@ -113,9 +113,9 @@ TEST_CASE("THelp: FooterSubcommandHelpAll", "[help]") {
     app.add_subcommand("Subcommand1", "Desc1");
     app.add_subcommand("Subcommand2", "Desc2");
 
-    CHECK_THROWS_AS(app.parse("--help-all"),CLI::CallForAllHelp);
-        
-    std::string help=app.help("", CLI::AppFormatMode::All);
+    CHECK_THROWS_AS(app.parse("--help-all"), CLI::CallForAllHelp);
+
+    std::string help = app.help("", CLI::AppFormatMode::All);
 
     auto footer_loc = help.find("bugs@example.com");
     auto footer_loc2 = help.find("bugs@example.com", footer_loc + 10);
@@ -124,7 +124,6 @@ TEST_CASE("THelp: FooterSubcommandHelpAll", "[help]") {
     CHECK(footer_loc2 == std::string::npos);
 }
 
-
 TEST_CASE("THelp: FooterSubcommandHelp", "[help]") {
     CLI::App app{"My prog"};
 
@@ -132,7 +131,7 @@ TEST_CASE("THelp: FooterSubcommandHelp", "[help]") {
     app.add_subcommand("Subcommand1", "Desc1");
     app.add_subcommand("Subcommand2", "Desc2");
 
-    CHECK_THROWS_AS(app.parse("Subcommand1 Subcommand2 --help"),CLI::CallForHelp);
+    CHECK_THROWS_AS(app.parse("Subcommand1 Subcommand2 --help"), CLI::CallForHelp);
 
     std::string help = app.help();
     auto footer_loc = help.find("bugs@example.com");
