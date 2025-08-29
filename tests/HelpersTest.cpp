@@ -1516,6 +1516,14 @@ TEST_CASE("Types: LexicalConversionVectorDouble", "[helpers]") {
     CHECK(-3.54 == Approx(x[2]));
 }
 
+TEST_CASE("Types: LexicalConversionEmptyVectorDouble", "[helpers]") {
+    CLI::results_t input = {};
+    std::vector<double> x;
+    bool res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
+    CHECK(res);
+    CHECK(x.empty());
+}
+
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::pair<double, double>>::value, "pair of double should be like a tuple");
 static_assert(CLI::detail::is_tuple_like<std::array<double, 4>>::value, "std::array<double,4> should be like a tuple");

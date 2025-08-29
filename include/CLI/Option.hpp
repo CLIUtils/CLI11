@@ -681,7 +681,15 @@ class Option : public OptionBase<Option> {
         bool retval = false;
         if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
             const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
-            retval = detail::lexical_conversion<T, T>(res, output);
+            if(!res.empty()) {
+                retval = detail::lexical_conversion<T, T>(res, output);
+            } else {
+                results_t res2;
+                res2.emplace_back();
+                proc_results_ = std::move(res2);
+                retval = detail::lexical_conversion<T, T>(proc_results_, output);
+            }
+
         } else {
             results_t res;
             if(results_.empty()) {

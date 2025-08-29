@@ -4208,3 +4208,24 @@ TEST_CASE_METHOD(TApp, "RoundTripArrayFloat", "[config]") {
     CHECK(cv[0] == -1.0F);
     CHECK(cv[1] == 1.0F);
 }
+
+// Code from https://github.com/CLIUtils/CLI11/issues/1197
+TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
+    args = {"spdlog", "--level=off"};
+
+    app.configurable()->allow_config_extras(false);
+    app.set_config("--conf")->check(CLI::ExistingFile);
+
+    std::string level;
+
+    auto *command = app.add_subcommand("spdlog");
+    command->add_option("--level", level, "Log level")->default_val("info");
+
+    run();
+
+    auto *ptr = app.get_config_ptr();
+    std::string conf_filename;
+    CHECK_NOTHROW(conf_filename = ptr->as<std::string>());
+    CHECK(conf_filename.empty());
+    CHECK(level == "off");
+}
