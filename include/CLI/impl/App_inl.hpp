@@ -1670,7 +1670,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         throw ConfigError::NotConfigurable(item.fullname());
     }
     if(op->empty()) {
-        std::vector<std::string> buffer;  // a buffer to use for copying an modifying inputs in a few cases
+        std::vector<std::string> buffer;  // a buffer to use for copying and modifying inputs in a few cases
         bool useBuffer{false};
         if(item.multiline) {
             if(!op->get_inject_separator()) {
