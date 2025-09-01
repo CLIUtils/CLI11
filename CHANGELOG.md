@@ -13,8 +13,10 @@
 - Added new tests for array options and fixed ambiguity between tuple and container conversions. [#1136][]
 - Added ability to use rvalue references in `add_flag` descriptions. [#1173][]
 - Added CMake presets for default and tidy builds. [#1181][]
+- Added several validator examples and documentation [#1192][]
 
 ### Changed
+- Moved several of the validators to `ExtraValidators.hpp` and `ExtraValidators_inl.hpp` files, The compilation of these nonessential validators can be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to `OFF`.  Future additional validators will be behind a compile flag `CLI11_ENABLE_EXTRA_VALIDATORS`. All non-essential validators will be under this option with version 3.0. [#1192][]
 - Updated processing order: requirements are now checked before callbacks, avoiding unexpected side effects. [#1186][]
 - Updated minimum required CMake version to 3.14+. [#1182][]
 - Improved Meson build: support for building shared precompiled libraries, pkgconfig, and header installation. [#1167][]
@@ -23,6 +25,7 @@
 - Updated license file to include the correct version number for packagers. [#1180][]
 
 ### Fixed
+- Fixed issue with IPV4 validator where it would allow a trailing `.`. [#1192][]
 - Fixed edge case where a missing config file and no default caused a segfault. [#1199][]
 - Fixed issue with TOML multiline arrays when the first line contained only a single character. [#1196][]
 - Fixed default value conversion errors when locales added thousands separators. [#1160][]
@@ -63,6 +66,7 @@
 [#1185]: https://github.com/CLIUtils/CLI11/pull/1185
 [#1186]: https://github.com/CLIUtils/CLI11/pull/1186
 [#1187]: https://github.com/CLIUtils/CLI11/pull/1187
+[#1192]: https://github.com/CLIUtils/CLI11/pull/1192
 [#1196]: https://github.com/CLIUtils/CLI11/pull/1196
 [#1199]: https://github.com/CLIUtils/CLI11/pull/1199
   
