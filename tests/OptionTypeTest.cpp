@@ -385,6 +385,9 @@ TEST_CASE_METHOD(TApp, "stringLikeTests", "[optiontype]") {
     CHECK("bca" == m_type.m_value);
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 #if CLI11_HAS_FILESYSTEM
 #include <string_view>
 // test code from https://github.com/CLIUtils/CLI11/issues/881
@@ -418,6 +421,8 @@ TEST_CASE_METHOD(TApp, "AsStringRef", "[app]") {
     const std::string &inputStr2 = app["--input"]->as<std::string>();
     CHECK(inputStr2 == "optC");
 }
+
+#endif
 
 TEST_CASE_METHOD(TApp, "VectorExpectedRange", "[optiontype]") {
     std::vector<std::string> strvec;

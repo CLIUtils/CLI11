@@ -48,6 +48,7 @@ set(CLI11_TESTS
     TrueFalseTest
     localeTest
     OptionGroupTest
+    ExtraValidatorsTest
     EncodingTest)
 
 if(WIN32)

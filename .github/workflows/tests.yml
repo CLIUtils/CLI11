@@ -41,7 +41,8 @@ jobs:
             -DCLI11_SINGLE_FILE_TESTS=OFF \
             -DCLI11_BUILD_EXAMPLES=OFF \
             -DCLI11_PRECOMPILED=${{matrix.precompile}} \
-            -DCMAKE_BUILD_TYPE=Coverage
+            -DCMAKE_BUILD_TYPE=Coverage \
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=ON
 
       - name: Build
         run: cmake --build build -j4
@@ -233,7 +234,7 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
       - name: Build
         run: cmake --build build  -j2
       - name: install
@@ -250,7 +251,7 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
       - name: Build
         run: cmake --build build  -j2
       - name: install
@@ -274,7 +275,7 @@ jobs:
       - name: Check CMake 3.15
         uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "3.15"
+          cmake-version: "3.15.6"
         if: success() || failure()
 
       - name: Check CMake 3.16
