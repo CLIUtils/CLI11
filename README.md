@@ -627,6 +627,10 @@ enabled.
 New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
+-   `CLI::ReadPermission`: Requires that the file or folder given exist and have read permission.
+-   `CLI::WritePermission`: Requires that the file or folder given exist and have write permission.
+-   `CLI::ExecPermission`: Requires that the file given exist and have execution permission.
+-   
 #### Validator Usage
 
 These Validators once enabled can be used by simply passing the name into the

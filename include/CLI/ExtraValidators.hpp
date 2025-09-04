@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#define CLI11_ENABLE_EXTRA_VALIDATORS 1
+
 #pragma once
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
@@ -591,6 +593,24 @@ class AsSizeValue : public AsNumberWithUnit {
 
 #if defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0
 // new extra validators
+#if CLI11_HAS_FILESYSTEM
+namespace detail {
+    enum class Permission : std::uint8_t { none = 0, read = 1, write = 2, exec = 4 };
+class PermissionValidator : public Validator {
+  public:
+    explicit PermissionValidator(Permission permission);
+};
+}
+
+/// Check that the file exist and available for read
+const detail::PermissionValidator ReadPermissions(detail::Permission::read);
+
+/// Check that the file exist and available for write
+const detail::PermissionValidator WritePermissions(detail::Permission::write);
+
+/// Check that the file exist and available for write
+const detail::PermissionValidator ExecPermissions(detail::Permission::exec);
+#endif
 
 #endif
 // [CLI11:extra_validators_hpp:end]
