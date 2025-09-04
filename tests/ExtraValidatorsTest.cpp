@@ -625,6 +625,26 @@ TEST_CASE_METHOD(TApp, "FileExistsForExec", "[validate]") {
 
     std::remove(myfile.c_str());
 }
+
+TEST_CASE_METHOD(TApp, "noPermissionCheck", "[validate]") {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    if(std::filesystem::exists(myfile)) {
+        std::filesystem::remove(myfile);
+    }
+    CHECK(!CLI::detail::PermissionValidator(CLI::detail::Permission::none)(myfile).empty());
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
+
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::detail::PermissionValidator(CLI::detail::Permission::none));
+    args = {"--file", myfile};
+
+    run();
+
+    CHECK(myfile == filename);
+    std::remove(myfile.c_str());
+}
 #endif
 #endif
 #endif

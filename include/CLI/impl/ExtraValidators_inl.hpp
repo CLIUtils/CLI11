@@ -119,8 +119,9 @@ CLI11_INLINE PermissionValidator::PermissionValidator(Permission permission) {
                           std::filesystem::perms::others_exec;
         permission_name = "exec";
         break;
-    default:
+    case Permission::none:default: 
         permission_code = std::filesystem::perms::none;
+        break;
     }
     func_ = [permission_code](std::string &path) {
         std::error_code ec;
