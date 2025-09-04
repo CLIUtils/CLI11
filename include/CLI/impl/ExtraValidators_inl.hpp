@@ -119,7 +119,8 @@ CLI11_INLINE PermissionValidator::PermissionValidator(Permission permission) {
                           std::filesystem::perms::others_exec;
         permission_name = "exec";
         break;
-    case Permission::none:default: 
+    case Permission::none:
+    default:
         permission_code = std::filesystem::perms::none;
         break;
     }
