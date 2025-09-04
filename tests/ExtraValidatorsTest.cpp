@@ -546,15 +546,15 @@ TEST_CASE_METHOD(TApp, "AsSizeValue1024", "[transform]") {
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1)
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-TEST_CASE_METHOD(TApp, "FileExistsForRead","[validate]") {
+TEST_CASE_METHOD(TApp, "FileExistsForRead", "[validate]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    if (std::filesystem::exists(myfile)) {
+    if(std::filesystem::exists(myfile)) {
         std::filesystem::remove(myfile);
     }
     CHECK(!CLI::ReadPermissions(myfile).empty());
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
-   CHECK(ok);
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
 
     std::string filename = "Failed";
     app.add_option("--file", filename)->check(CLI::ReadPermissions);
@@ -562,26 +562,26 @@ TEST_CASE_METHOD(TApp, "FileExistsForRead","[validate]") {
 
     run();
 
-    CHECK(myfile==filename);
+    CHECK(myfile == filename);
 
-    std::filesystem::permissions(std::filesystem::path(myfile),std::filesystem::perms::owner_exec);
+    std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_exec);
 
 #if !WIN32
-    //not sure how to make a file unreadable on windows in this context
-   CHECK_THROWS_AS(run(), CLI::ValidationError);
+    // not sure how to make a file unreadable on windows in this context
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 #endif
-    std::filesystem::permissions(std::filesystem::path(myfile),std::filesystem::perms::owner_write);
+    std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_write);
     std::filesystem::remove(myfile);
 }
 
-TEST_CASE_METHOD(TApp, "FileExistsForWrite","[validate]") {
+TEST_CASE_METHOD(TApp, "FileExistsForWrite", "[validate]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    if (std::filesystem::exists(myfile)) {
+    if(std::filesystem::exists(myfile)) {
         std::filesystem::remove(myfile);
     }
     CHECK(!CLI::WritePermissions(myfile).empty());
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     CHECK(ok);
 
     std::string filename = "Failed";
@@ -590,36 +590,37 @@ TEST_CASE_METHOD(TApp, "FileExistsForWrite","[validate]") {
 
     run();
 
-    CHECK(myfile==filename);
+    CHECK(myfile == filename);
 
-    std::filesystem::permissions(std::filesystem::path(myfile),std::filesystem::perms::owner_read);
+    std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_read);
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     std::remove(myfile.c_str());
 }
 
-TEST_CASE_METHOD(TApp, "FileExistsForExec","[validate]") {
+TEST_CASE_METHOD(TApp, "FileExistsForExec", "[validate]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
-    if (std::filesystem::exists(myfile)) {
+    if(std::filesystem::exists(myfile)) {
         std::filesystem::remove(myfile);
     }
     CHECK(!CLI::ExecPermissions(myfile).empty());
 
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a')); // create file
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     CHECK(ok);
 
     std::string filename = "Failed";
     app.add_option("--file", filename)->check(CLI::ExecPermissions);
     args = {"--file", myfile};
 
-    std::filesystem::permissions(std::filesystem::path(myfile),std::filesystem::perms::owner_exec|std::filesystem::perms::owner_read);
+    std::filesystem::permissions(std::filesystem::path(myfile),
+                                 std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read);
     run();
 
-    CHECK(myfile==filename);
+    CHECK(myfile == filename);
 #if !WIN32
-    std::filesystem::permissions(std::filesystem::path(myfile),std::filesystem::perms::owner_read);
+    std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_read);
     CHECK_THROWS_AS(run(), CLI::ValidationError);
-    //exec permission not really a thing on windows
+    // exec permission not really a thing on windows
 #endif
 
     std::remove(myfile.c_str());

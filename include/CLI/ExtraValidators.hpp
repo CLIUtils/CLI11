@@ -595,12 +595,12 @@ class AsSizeValue : public AsNumberWithUnit {
 // new extra validators
 #if CLI11_HAS_FILESYSTEM
 namespace detail {
-    enum class Permission : std::uint8_t { none = 0, read = 1, write = 2, exec = 4 };
+enum class Permission : std::uint8_t { none = 0, read = 1, write = 2, exec = 4 };
 class PermissionValidator : public Validator {
   public:
     explicit PermissionValidator(Permission permission);
 };
-}
+}  // namespace detail
 
 /// Check that the file exist and available for read
 const detail::PermissionValidator ReadPermissions(detail::Permission::read);
