@@ -585,6 +585,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     }
                 }
                 std::string value;
+
                 if(opt->count() == 1 && results.size() == 2 && results.front() == "{}" && results.back() == "%%") {
                     // there is a catch to allow for {} to used as as string in the output
                     //  it will append a sequence terminator to the output so the lexical conversion handles it
