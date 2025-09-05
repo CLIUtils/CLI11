@@ -640,8 +640,8 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
         }
         if(original.size() > num_max) {
             if(original.size() == 2 && num_max == 1 && original[1] == "%%" && original[0] == "{}") {
-                // this condition is a trap for the following empty indicator check on config files
-                out = original;
+                // this condition is a trap for the following empty indicator check on config files, it may not be used anymore
+                out = original;  // LCOV_EXCL_LINE
             } else {
                 throw ArgumentMismatch::AtMost(get_name(), static_cast<int>(num_max), original.size());
             }

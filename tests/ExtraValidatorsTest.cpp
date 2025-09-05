@@ -545,7 +545,10 @@ TEST_CASE_METHOD(TApp, "AsSizeValue1024", "[transform]") {
 
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1)
 
+
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#include <filesystem>
+
 TEST_CASE_METHOD(TApp, "FileExistsForRead", "[validate]") {
     std::string myfile{"TestNonFileNotUsed.txt"};
     if(std::filesystem::exists(myfile)) {
