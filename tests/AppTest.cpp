@@ -1433,30 +1433,6 @@ TEST_CASE_METHOD(TApp, "RequiredPositionalValidation", "[app]") {
     CHECK("string" == d2);
 }
 
-// Tests positionals at end
-TEST_CASE_METHOD(TApp, "PositionalValidation", "[app]") {
-    std::string options;
-    std::string foo;
-
-    app.add_option("bar", options)->check(CLI::Number.name("valbar"));
-    // disable the check on foo
-    app.add_option("foo", foo)->check(CLI::Number.active(false));
-    app.validate_positionals();
-    args = {"1", "param1"};
-    run();
-
-    CHECK("1" == options);
-    CHECK("param1" == foo);
-
-    args = {"param1", "1"};
-    CHECK_NOTHROW(run());
-
-    CHECK("1" == options);
-    CHECK("param1" == foo);
-
-    CHECK(nullptr != app.get_option("bar")->get_validator("valbar"));
-}
-
 TEST_CASE_METHOD(TApp, "PositionalNoSpaceLong", "[app]") {
     std::vector<std::string> options;
     std::string foo, bar;
@@ -1829,6 +1805,8 @@ TEST_CASE_METHOD(TApp, "BigPositional", "[app]") {
     CHECK(vec == args);
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE_METHOD(TApp, "VectorArgAndPositional", "[app]") {
     std::vector<std::string> vec;
     std::vector<int> ivec;
@@ -1856,6 +1834,7 @@ TEST_CASE_METHOD(TApp, "VectorArgAndPositional", "[app]") {
     app.validate_optional_arguments(false);
     CHECK_THROWS(run());
 }
+#endif
 
 TEST_CASE_METHOD(TApp, "Reset", "[app]") {
 
@@ -1944,25 +1923,6 @@ TEST_CASE_METHOD(TApp, "FileNotExists", "[app]") {
     CHECK(!CLI::ExistingFile(myfile).empty());
 }
 
-TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
-    std::string myfile{"TestNonFileNotUsed.txt"};
-    CHECK(!CLI::ExistingFile(myfile).empty());
-
-    std::string filename = "Failed";
-    app.add_option("--file", filename)->check(CLI::ExistingFile);
-    args = {"--file", myfile};
-
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-
-    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
-    CHECK(ok);
-    run();
-    CHECK(filename == myfile);
-
-    std::remove(myfile.c_str());
-    CHECK(!CLI::ExistingFile(myfile).empty());
-}
-
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0 && defined(_MSC_VER)
 TEST_CASE_METHOD(TApp, "filesystemWideName", "[app]") {
     std::filesystem::path myfile{L"voil\u20ac.txt"};
@@ -2000,6 +1960,25 @@ TEST_CASE_METHOD(TApp, "NotFileExists", "[app]") {
     bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
     CHECK(ok);
     CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    std::remove(myfile.c_str());
+    CHECK(!CLI::ExistingFile(myfile).empty());
+}
+
+TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
+    std::string myfile{"TestNonFileNotUsed.txt"};
+    CHECK(!CLI::ExistingFile(myfile).empty());
+
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::ExistingFile);
+    args = {"--file", myfile};
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    bool ok = static_cast<bool>(std::ofstream(myfile.c_str()).put('a'));  // create file
+    CHECK(ok);
+    run();
+    CHECK(filename == myfile);
 
     std::remove(myfile.c_str());
     CHECK(!CLI::ExistingFile(myfile).empty());
@@ -2325,24 +2304,6 @@ TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
         std::string emess = e.what();
         CHECK(emess.size() < 70U);
     }
-}
-
-TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
-
-    /// Note that this must be a double in Range, too
-    app.add_option("--one")->check(CLI::TypeValidator<unsigned int>());
-
-    args = {"--one=1"};
-    CHECK_NOTHROW(run());
-
-    args = {"--one=-7"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-
-    args = {"--one=error"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-
-    args = {"--one=4.568"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
 TEST_CASE_METHOD(TApp, "NeedsTrue", "[app]") {

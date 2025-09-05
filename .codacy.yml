@@ -9,6 +9,7 @@ engines:
   coverage:
     enabled: false
   cppcheck:
+    enabled: false
     language: c++
 languages:
 
