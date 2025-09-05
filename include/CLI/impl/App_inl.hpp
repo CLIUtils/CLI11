@@ -1413,9 +1413,11 @@ CLI11_INLINE void App::_process_requirements() {
 }
 
 CLI11_INLINE void App::_process() {
+    #ifndef CLI11_USE_OLD_HELP_PROCESSING
     // help takes precedence over other potential errors and config and environment shouldn't be processed if help
     // throws
     _process_help_flags();
+    #endif // CLI11_USE_OLD_HELP_PROCESSING
     std::exception_ptr config_exception;
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
@@ -1427,11 +1429,19 @@ CLI11_INLINE void App::_process() {
     } catch(const CLI::FileError &) {
         config_exception = std::current_exception();
     }
+    #ifndef CLI11_USE_OLD_HELP_PROCESSING
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
     _process_requirements();
+    #endif // CLI11_USE_OLD_HELP_PROCESSING
 
     _process_callbacks();
+
+    #ifdef CLI11_USE_OLD_HELP_PROCESSING
+    _process_help_flags();
+
+    _process_requirements();
+    #endif // CLI11_USE_OLD_HELP_PROCESSING
 
     if(config_exception) {
         std::rethrow_exception(config_exception);
