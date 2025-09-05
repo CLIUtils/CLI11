@@ -794,6 +794,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "agalanin-at-nvidia",
+      "name": "Alexander Galanin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91539962?v=4",
+      "profile": "https://nvidia.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
