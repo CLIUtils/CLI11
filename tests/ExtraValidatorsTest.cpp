@@ -568,7 +568,7 @@ TEST_CASE_METHOD(TApp, "FileExistsForRead", "[validate]") {
 
     std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_exec);
 
-#if !WIN32
+#if !defined(WIN32)
     // not sure how to make a file unreadable on windows in this context
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 #endif
@@ -619,7 +619,7 @@ TEST_CASE_METHOD(TApp, "FileExistsForExec", "[validate]") {
     run();
 
     CHECK(myfile == filename);
-#if !WIN32
+#if !defined(WIN32)
     std::filesystem::permissions(std::filesystem::path(myfile), std::filesystem::perms::owner_read);
     CHECK_THROWS_AS(run(), CLI::ValidationError);
     // exec permission not really a thing on windows
