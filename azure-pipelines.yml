@@ -153,11 +153,11 @@ jobs:
         clang3.4:
           containerImage: silkeh/clang:3.4
           cli11.std: 11
-          cli11.options: -DCLI11_WARNINGS_AS_ERRORS=OFF
+          cli11.options: -DCLI11_WARNINGS_AS_ERRORS=OFF  -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8:
           containerImage: silkeh/clang:8
           cli11.std: 14
-          cli11.options: -DCLI11_FORCE_LIBCXX=ON
+          cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8_17:
           containerImage: silkeh/clang:8
           cli11.std: 17
