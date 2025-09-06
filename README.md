@@ -41,12 +41,12 @@ set with a simple and intuitive interface.
       - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
   - [permission. Requires C++17.](#permission-requires-c17)
-      - [Validator Usage](#validator-usage)
-        - [Transforming Validators](#transforming-validators)
-        - [Validator operations](#validator-operations)
-        - [Custom Validators](#custom-validators)
-        - [Querying Validators](#querying-validators)
-      - [Getting results](#getting-results)
+    - [Validator Usage](#validator-usage)
+      - [Transforming Validators](#transforming-validators)
+      - [Validator operations](#validator-operations)
+      - [Custom Validators](#custom-validators)
+      - [Querying Validators](#querying-validators)
+    - [Getting results](#getting-results)
     - [Subcommands](#subcommands)
       - [Subcommand options](#subcommand-options)
       - [Callbacks](#callbacks)
@@ -576,7 +576,9 @@ they can be disabled by using
 
 #### Default Validators
 
-These validators are always available regardless of definitions.  These are used internally or are very commonly used, so will always remain available regardless of flags.  
+These validators are always available regardless of definitions. These are used
+internally or are very commonly used, so will always remain available regardless
+of flags.
 
 - `CLI::ExistingFile`: Requires that the file exists if given.
 - `CLI::ExistingDirectory`: Requires that the directory exists.
@@ -595,7 +597,10 @@ These validators are always available regardless of definitions.  These are used
 
 Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
 or enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1. By default they are
-enabled. In version 3.0 these will likely move to be disabled by default and be controlled solely by the `CLI11_ENABLE_EXTRA_VALIDATORS` option.  These validators are less commonly used or are template heavy and require additional computation time that may not be valuable for some use cases.  
+enabled. In version 3.0 these will likely move to be disabled by default and be
+controlled solely by the `CLI11_ENABLE_EXTRA_VALIDATORS` option. These
+validators are less commonly used or are template heavy and require additional
+computation time that may not be valuable for some use cases.
 
 - `CLI::IsMember(...)`: Require an option be a member of a given set. See
   [Transforming Validators](#transforming-validators) for more details.
@@ -629,7 +634,7 @@ New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
 - `CLI::ReadPermission`: Requires that the file or folder given exist and have
-  read permission.  Requires C++17.
+  read permission. Requires C++17.
 - `CLI::WritePermission`: Requires that the file or folder given exist and have
   write permission. Requires C++17.
 - `CLI::ExecPermission`: Requires that the file given exist and have execution
