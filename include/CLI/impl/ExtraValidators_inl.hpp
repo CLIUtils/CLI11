@@ -19,6 +19,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <fstream>
 #include <map>
 #include <string>
 #include <utility>
@@ -94,7 +95,63 @@ CLI11_INLINE std::map<std::string, AsSizeValue::result_t> AsSizeValue::get_mappi
 namespace detail {}  // namespace detail
 /// @}
 
-// [CLI11:extra_validators_inl_hpp:end]
+#if defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0
+// new extra validators
+namespace detail {
+
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+CLI11_INLINE PermissionValidator::PermissionValidator(Permission permission) {
+    std::filesystem::perms permission_code = std::filesystem::perms::none;
+    std::string permission_name;
+    switch(permission) {
+    case Permission::read:
+        permission_code = std::filesystem::perms::owner_read | std::filesystem::perms::group_read |
+                          std::filesystem::perms::others_read;
+        permission_name = "read";
+        break;
+    case Permission::write:
+        permission_code = std::filesystem::perms::owner_write | std::filesystem::perms::group_write |
+                          std::filesystem::perms::others_write;
+        permission_name = "write";
+        break;
+    case Permission::exec:
+        permission_code = std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec |
+                          std::filesystem::perms::others_exec;
+        permission_name = "exec";
+        break;
+    case Permission::none:
+    default:
+        permission_code = std::filesystem::perms::none;
+        break;
+    }
+    func_ = [permission_code](std::string &path) {
+        std::error_code ec;
+        auto p = std::filesystem::path(path);
+        if(!std::filesystem::exists(p, ec)) {
+            return std::string("Path does not exist: ") + path;
+        }
+        if(ec) {
+            return std::string("Error checking path: ") + ec.message();  // LCOV_EXCL_LINE
+        }
+        if(permission_code == std::filesystem::perms::none) {
+            return std::string{};
+        }
+        auto perms = std::filesystem::status(p, ec).permissions();
+        if(ec) {
+            return std::string("Error checking path status: ") + ec.message();  // LCOV_EXCL_LINE
+        }
+        if((perms & permission_code) == std::filesystem::perms::none) {
+            return std::string("Path does not have required permissions: ") + path;
+        }
+        return std::string{};
+    };
+    description("Path with " + permission_name + " permission");
+}
+#endif
+
+}  // namespace detail
+#endif
+   // [CLI11:extra_validators_inl_hpp:end]
 }  // namespace CLI
 
 #endif

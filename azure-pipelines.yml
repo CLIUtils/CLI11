@@ -34,7 +34,9 @@ jobs:
           vmImage: "windows-2025"
           cli11.std: 17
           cli11.build_type: Debug
-          cli11.options: -G "Visual Studio 17 2022" -A ARM64
+          cli11.options:
+            -G "Visual Studio 17 2022" -A ARM64
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
     pool:
       vmImage: $(vmImage)
 
@@ -52,12 +54,15 @@ jobs:
         macOS-15_23:
           vmImage: "macOS-15"
           cli11.std: 23
+          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-14_20:
           vmImage: "macOS-14"
           cli11.std: 20
+          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-13_17:
           vmImage: "macOS-13"
           cli11.std: 17
+          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-14_11:
           vmImage: "macOS-14"
           cli11.std: 11
@@ -68,10 +73,12 @@ jobs:
         Windows17:
           vmImage: "windows-2022"
           cli11.std: 17
+          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         Windows17PC:
           vmImage: "windows-2022"
           cli11.std: 17
           cli11.precompile: ON
+          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         Windows11:
           vmImage: "windows-2022"
           cli11.std: 11
@@ -87,7 +94,8 @@ jobs:
         Linux17nortti:
           vmImage: "ubuntu-latest"
           cli11.std: 17
-          cli11.options: -DCMAKE_CXX_FLAGS="-fno-rtti"
+          cli11.options:
+            -DCMAKE_CXX_FLAGS="-fno-rtti" -DCLI11_ENABLE_EXTRA_VALIDATORS=1
     pool:
       vmImage: $(vmImage)
     steps:
@@ -126,7 +134,9 @@ jobs:
         gcc9:
           containerImage: gcc:9
           cli11.std: 17
-          cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+          cli11.options:
+            -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         gcc11:
           containerImage: gcc:11
           cli11.std: 20
@@ -143,19 +153,24 @@ jobs:
         clang3.4:
           containerImage: silkeh/clang:3.4
           cli11.std: 11
-          cli11.options: -DCLI11_WARNINGS_AS_ERRORS=OFF
+          cli11.options:
+            -DCLI11_WARNINGS_AS_ERRORS=OFF  -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8:
           containerImage: silkeh/clang:8
           cli11.std: 14
-          cli11.options: -DCLI11_FORCE_LIBCXX=ON
+          cli11.options:
+            -DCLI11_FORCE_LIBCXX=ON -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8_17:
           containerImage: silkeh/clang:8
           cli11.std: 17
-          cli11.options: -DCLI11_FORCE_LIBCXX=ON
+          cli11.options:
+            -DCLI11_FORCE_LIBCXX=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         clang10_20:
           containerImage: silkeh/clang:10
           cli11.std: 20
-          cli11.options: -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
+          cli11.options:
+            -DCLI11_FORCE_LIBCXX=ON -DCMAKE_CXX_FLAGS=-std=c++20
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake.yml
@@ -172,19 +187,25 @@ jobs:
         gcc13_17:
           containerImage: gcc:13
           cli11.std: 17
-          cli11.options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+          cli11.options:
+            -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         gcc12_20:
           containerImage: gcc:12
           cli11.std: 20
-          cli11.options: -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+          cli11.options:
+            -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         clang17_23:
           containerImage: silkeh/clang:17
           cli11.std: 23
-          cli11.options: -DCMAKE_CXX_FLAGS=-std=c++23
+          cli11.options:
+            -DCMAKE_CXX_FLAGS=-std=c++23 -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         clang20_26:
           containerImage: silkeh/clang:20
           cli11.std: 26
-          cli11.options: -DCMAKE_CXX_FLAGS=-std=c++2c
+          cli11.options:
+            -DCMAKE_CXX_FLAGS=-std=c++2c -DCLI11_ENABLE_EXTRA_VALIDATORS=1
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake-new.yml
