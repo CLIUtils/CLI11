@@ -19,6 +19,10 @@ endif()
 
 if(CLI11_ENABLE_EXTRA_VALIDATORS)
   target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=1)
+elseif(CLI11_DISABLE_EXTRA_VALIDATORS)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_DISABLE_EXTRA_VALIDATORS=1)
+elseif(DEFINED CLI11_ENABLE_EXTRA_VALIDATORS)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=0)
 endif()
 # Allow IDE's to group targets into folders
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
