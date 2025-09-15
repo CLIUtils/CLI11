@@ -86,11 +86,11 @@ jobs:
           vmImage: "windows-2025"
           cli11.std: 20
           cli11.options:
-            -DCMAKE_CXX_FLAGS="/EHsc" -DCLI11_DISABLE_EXTRA_VALIDATORS=1
+            -DCMAKE_CXX_FLAGS="/EHsc /GR-" -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         WindowsLatest:
           vmImage: "windows-2025"
           cli11.std: 23
-          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc"
+          cli11.options: -DCMAKE_CXX_FLAGS="/EHsc /GR-"
         Linux17nortti:
           vmImage: "ubuntu-latest"
           cli11.std: 17
