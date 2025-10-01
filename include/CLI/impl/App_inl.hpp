@@ -1414,7 +1414,7 @@ CLI11_INLINE void App::_process_requirements() {
                 }
             }
         }
-        if(sub->count() > 0 || sub->name_.empty() && need_subcommands_.find(sub.get()) == need_subcommands_.end()) {
+        if((sub->count() > 0 || sub->name_.empty()) && need_subcommands_.find(sub.get()) == need_subcommands_.end()) {
             sub->_process_requirements();
         }
 
