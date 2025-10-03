@@ -582,6 +582,7 @@ CLI11_INLINE void App::clear() {
 
     missing_.clear();
     parsed_subcommands_.clear();
+    parse_order_.clear();
     for(const Option_p &opt : options_) {
         opt->clear();
     }

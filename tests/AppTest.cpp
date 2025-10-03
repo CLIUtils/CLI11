@@ -2016,6 +2016,8 @@ TEST_CASE_METHOD(TApp, "OriginalOrder", "[app]") {
     CHECK(std::vector<int>({2}) == st2);
 
     CHECK(std::vector<CLI::Option *>({op1, op2, op1, op1}) == app.parse_order());
+    app.clear();
+    CHECK(app.parse_order().empty());
 }
 
 TEST_CASE_METHOD(TApp, "NeedsFlags", "[app]") {
