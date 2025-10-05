@@ -265,10 +265,10 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
     }
     if(is_footer_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
+        out << '\n';
     } else {
         out << footer_string << '\n';
     }
-    out << '\n';
     return out.str();
 }
 
