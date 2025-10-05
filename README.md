@@ -167,11 +167,14 @@ this library:
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
-  option to disable it). 🆕 The latest version of CLI11 does include partial option matching for option prefixes.  This is enabled by `.allow_subcommand_prefix_matching()`, along with an example that generates suggested close matches.
+  option to disable it). 🆕 The latest version of CLI11 does include partial
+  option matching for option prefixes. This is enabled by
+  `.allow_subcommand_prefix_matching()`, along with an example that generates
+  suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
   is not supported yet.
 - While not recommended, CLI11 does now support non standard option names such
-  as `-option`.  This is enabled through `allow_non_standard_option_names()`
+  as `-option`. This is enabled through `allow_non_standard_option_names()`
   modifier on an app.
 
 ## Install

@@ -2,39 +2,62 @@
 
 ## Unreleased
 
-## Version 2.6.0 
+## Version 2.6.0
 
 ### Added
-- Added option to align long options with a ratio via `long_option_alignment_ratio` in the formatter. This allows more control over help output formatting. [#1185][]
-- Added support for `std::string_view` in the `as<T>` method on options. [#1187][]
-- Added flags on the formatter to disable formatting for the description and footer, allowing custom formatting such as word art. [#1150][]
-- Added subcommand prefix matching as a modifier to `CLI::App`. Also included an example of close matching logic. [#1152][]
-- Added additional fuzzing mechanics, including fuzzing subcommands, and improved handling of edge cases. [#1170][]
-- Added new tests for array options and fixed ambiguity between tuple and container conversions. [#1136][]
+
+- Added option to align long options with a ratio via
+  `long_option_alignment_ratio` in the formatter. This allows more control over
+  help output formatting. [#1185][]
+- Added support for `std::string_view` in the `as<T>` method on options.
+  [#1187][]
+- Added flags on the formatter to disable formatting for the description and
+  footer, allowing custom formatting such as word art. [#1150][]
+- Added subcommand prefix matching as a modifier to `CLI::App`. Also included an
+  example of close matching logic. [#1152][]
+- Added additional fuzzing mechanics, including fuzzing subcommands, and
+  improved handling of edge cases. [#1170][]
+- Added new tests for array options and fixed ambiguity between tuple and
+  container conversions. [#1136][]
 - Added ability to use rvalue references in `add_flag` descriptions. [#1173][]
 - Added CMake presets for default and tidy builds. [#1181][]
 - Added several validator examples and documentation [#1192][]
 - Added permission validators for files and directories [#1203][]
 
 ### Changed
-- Moved several of the validators to `ExtraValidators.hpp` and `ExtraValidators_inl.hpp` files, The compilation of these nonessential validators can be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to `OFF`.  Future additional validators will be behind a compile flag `CLI11_ENABLE_EXTRA_VALIDATORS`. All non-essential validators will be under this option with version 3.0. [#1192][]
-- Updated processing order: requirements are now checked before callbacks, avoiding unexpected side effects. [#1186][]
+
+- Moved several of the validators to `ExtraValidators.hpp` and
+  `ExtraValidators_inl.hpp` files, The compilation of these nonessential
+  validators can be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to
+  `OFF`. Future additional validators will be behind a compile flag
+  `CLI11_ENABLE_EXTRA_VALIDATORS`. All non-essential validators will be under
+  this option with version 3.0. [#1192][]
+- Updated processing order: requirements are now checked before callbacks,
+  avoiding unexpected side effects. [#1186][]
 - Updated minimum required CMake version to 3.14+. [#1182][]
-- Improved Meson build: support for building shared precompiled libraries, pkgconfig, and header installation. [#1167][]
+- Improved Meson build: support for building shared precompiled libraries,
+  pkgconfig, and header installation. [#1167][]
 - Improved fuzzing tests with new failure cases and extended coverage. [#1164][]
-- Updated CI to remove deprecated images and add new ones (Windows-2022/2025, arm64, FreeBSD). [#1172][], [#1178][]
-- Updated license file to include the correct version number for packagers. [#1180][]
+- Updated CI to remove deprecated images and add new ones (Windows-2022/2025,
+  arm64, FreeBSD). [#1172][], [#1178][]
+- Updated license file to include the correct version number for packagers.
+  [#1180][]
 
 ### Fixed
+
 - Fixed issue with IPV4 validator where it would allow a trailing `.`. [#1192][]
-- Fixed edge case where a missing config file and no default caused a segfault. [#1199][]
-- Fixed issue with TOML multiline arrays when the first line contained only a single character. [#1196][]
-- Fixed default value conversion errors when locales added thousands separators. [#1160][]
+- Fixed edge case where a missing config file and no default caused a segfault.
+  [#1199][]
+- Fixed issue with TOML multiline arrays when the first line contained only a
+  single character. [#1196][]
+- Fixed default value conversion errors when locales added thousands separators.
+  [#1160][]
 - Fixed multiple footer printing in help output for option groups. [#1161][]
 - Fixed incorrect argument order in extras error messages. [#1162][]
 - Fixed reversed argument order in unexpected argument error messages. [#1158][]
 - Fixed ambiguity with `vector<array>` options. [#1147][]
-- Fixed bug parsing negative floating point values without a leading zero. [#1140][]
+- Fixed bug parsing negative floating point values without a leading zero.
+  [#1140][]
 - Fixed spelling mistake in `Error.hpp`. [#1129][]
 - Fixed compilation issue with MSVC 2017. [#1143][]
 - Fixed issue with default strings of arrays in config output. [#1155][]
@@ -83,8 +106,8 @@ aligned with standards for help output. It also adds a modifier to enable use of
 non-standard option names, along with several bug fixes for edge cases in string
 and config file parsing.
 
-- Improved help formatter [#866][], better aligns help generation with
-  UNIX standards and allows use in help2man. [#1093][]
+- Improved help formatter [#866][], better aligns help generation with UNIX
+  standards and allows use in help2man. [#1093][]
 - Added mechanism to allow option groups to be hidden and all options to be
   considered part of the parent for help display [#1039][]
 - Added a modifier to allow non-standard single flag option names such as
@@ -96,22 +119,22 @@ and config file parsing.
 - Added ability to specify pair/tuple defaults and improved parsing [#1081][]
 - Bugfix: Take the configurability of an option name into account when
   determining naming conflicts [#1049][]
-- Bugfix: Fixed an issue where an extra subcommand header was being printed in the
-  output [#1058][]
+- Bugfix: Fixed an issue where an extra subcommand header was being printed in
+  the output [#1058][]
 - Bugfix: Added additional fuzzing tests and fixes for a bug in escape string
-  processing, and resolved inconsistencies in the handling of `{}` between command
-  line parsing and config file parsing. [#1060][]
-- Bugfix: Improved handling of ambiguities in vector input processing for
-  config files, specifically in the case of vector of vector inputs. [#1069][]
-- Bugfix: Fixed an issue in the handling of uint8_t enums, and issues related
-  to single element tuples [#1087][]
+  processing, and resolved inconsistencies in the handling of `{}` between
+  command line parsing and config file parsing. [#1060][]
+- Bugfix: Improved handling of ambiguities in vector input processing for config
+  files, specifically in the case of vector of vector inputs. [#1069][]
+- Bugfix: Fixed an issue in the handling of uint8_t enums, and issues related to
+  single element tuples [#1087][]
 - Bugfix: Fixed an issue with binary strings containing a `\x` [#1097][]
 - Bugfix: Moved the help generation priority so it triggers before config file
   processing [#1106][]
 - Bugfix: Fixed an issue where max/min on positionals was not being respected
   and optional positionals were being ignored [#1108][]
-- Bugfix: Fixed an issue with strings which started and ended with brackets being
-  misinterpreted as vectors. Parsing now has special handling of strings
+- Bugfix: Fixed an issue with strings which started and ended with brackets
+  being misinterpreted as vectors. Parsing now has special handling of strings
   which start with `[[` [#1110][]
 - Bugfix: Fixed some macros for support in C++26 related to wide string parsing
   [#1113][]
