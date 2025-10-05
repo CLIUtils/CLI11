@@ -176,7 +176,10 @@ strings, digit separators, string escape sequences,and dot notation. An initial
 round of a fuzzer was added to testing which has caught several bugs related to
 config file processing, and a few other edge cases not previously observed.
 
-NOTE: The fuzzer fixes have had some previously unrecognized changes to allowed positional names.  Positional names with spaces are no longer allowed.  This was not explicitely allowed but not disallowed either, and now it is no longer allowed as these options may be called in config file parsing.  
+NOTE: The fuzzer fixes have had some previously unrecognized changes to allowed
+positional names. Positional names with spaces are no longer allowed. This was
+not explicitely allowed but not disallowed either, and now it is no longer
+allowed as these options may be called in config file parsing.
 
 - Add Unicode support and bug fixes [#804][], [#923][], [#876][], [#848][],
   [#832][], [#987][]
