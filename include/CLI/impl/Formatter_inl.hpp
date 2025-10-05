@@ -147,7 +147,7 @@ CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
     if(footer.empty()) {
         return std::string{};
     }
-    return '\n' + footer + "\n\n";
+    return '\n' + footer + '\n';
 }
 
 CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, AppFormatMode mode) const {
@@ -263,11 +263,14 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
             footer_string = "";
         }
     }
-    if(is_footer_paragraph_formatting_enabled()) {
-        detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
-        out << '\n';
-    } else {
-        out << footer_string << '\n';
+    if (!footer_string.empty())
+    {
+        if (is_footer_paragraph_formatting_enabled()) {
+            detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
+        }
+        else {
+            out << footer_string;
+        }
     }
     return out.str();
 }
