@@ -40,13 +40,12 @@ set with a simple and intuitive interface.
       - [Default Validators](#default-validators)
       - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
-  - [permission. Requires C++17.](#permission-requires-c17)
-    - [Validator Usage](#validator-usage)
-      - [Transforming Validators](#transforming-validators)
-      - [Validator operations](#validator-operations)
-      - [Custom Validators](#custom-validators)
-      - [Querying Validators](#querying-validators)
-    - [Getting results](#getting-results)
+      - [Validator Usage](#validator-usage)
+        - [Transforming Validators](#transforming-validators)
+        - [Validator operations](#validator-operations)
+        - [Custom Validators](#custom-validators)
+        - [Querying Validators](#querying-validators)
+      - [Getting results](#getting-results)
     - [Subcommands](#subcommands)
       - [Subcommand options](#subcommand-options)
       - [Callbacks](#callbacks)
@@ -672,7 +671,6 @@ setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
   write permission. Requires C++17.
 - `CLI::ExecPermission`: Requires that the file given exist and have execution
   permission. Requires C++17.
-  -
 
 #### Validator Usage
 
