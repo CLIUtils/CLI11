@@ -264,11 +264,12 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
         }
     }
     if(!footer_string.empty()) {
-        if(is_footer_paragraph_formatting_enabled()) {
-            detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
-        } else {
+    if(is_footer_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
+        out << '\n';
+    } else {
             out << footer_string;
-        }
+    }
     }
     return out.str();
 }
