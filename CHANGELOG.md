@@ -14,6 +14,7 @@
 - Added ability to use rvalue references in `add_flag` descriptions. [#1173][]
 - Added CMake presets for default and tidy builds. [#1181][]
 - Added several validator examples and documentation [#1192][]
+- Added permission validators for files and directories [#1203][]
 
 ### Changed
 - Moved several of the validators to `ExtraValidators.hpp` and `ExtraValidators_inl.hpp` files, The compilation of these nonessential validators can be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to `OFF`.  Future additional validators will be behind a compile flag `CLI11_ENABLE_EXTRA_VALIDATORS`. All non-essential validators will be under this option with version 3.0. [#1192][]
@@ -39,6 +40,8 @@
 - Fixed issue with default strings of arrays in config output. [#1155][]
 - Fixed fuzzing issues with NaNs and certain error pathways. [#1138][]
 - Fixed fuzzer misinterpreting `--sub1.-` as a short option. [#1148][]
+- Fixed issue where parse_order was not cleared on reset. [#1218][]
+- modify code to make compatible with /GR- option in MSVC [#1206][]
 
 [#1129]: https://github.com/CLIUtils/CLI11/pull/1129
 [#1136]: https://github.com/CLIUtils/CLI11/pull/1136
@@ -69,7 +72,9 @@
 [#1192]: https://github.com/CLIUtils/CLI11/pull/1192
 [#1196]: https://github.com/CLIUtils/CLI11/pull/1196
 [#1199]: https://github.com/CLIUtils/CLI11/pull/1199
-  
+[#1203]: https://github.com/CLIUtils/CLI11/pull/1203
+[#1206]: https://github.com/CLIUtils/CLI11/pull/1206
+[#1218]: https://github.com/CLIUtils/CLI11/pull/1218
 
 ## Version 2.5: Help Formatter
 
