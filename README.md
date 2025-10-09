@@ -211,8 +211,10 @@ int main(int argc, char** argv) {
 }
 ```
 
-When adding options the names should not conflict with eachother,  if an option is added, or a modifier changed that would cause naming conflicts a run time error will be thrown in the add_option method.  This includes default options for help `-h, --help`.  
-For more information about `ensure_utf8` the section on
+When adding options the names should not conflict with eachother, if an option
+is added, or a modifier changed that would cause naming conflicts a run time
+error will be thrown in the add_option method. This includes default options for
+help `-h, --help`. For more information about `ensure_utf8` the section on
 [Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>

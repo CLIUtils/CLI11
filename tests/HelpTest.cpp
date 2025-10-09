@@ -1555,7 +1555,6 @@ TEST_CASE("TVersion: help", "[help]") {
     CHECK_THAT(hvers, Contains("help_for_version2"));
 }
 
-
 TEST_CASE("TVersion: parse_throw", "[help]") {
 
     CLI::App app;
@@ -1594,7 +1593,6 @@ TEST_CASE("TVersion: exit", "[help]") {
         CHECK(0 == ret);
     }
 }
-
 
 TEST_CASE("TVersion: exit_with_required", "[help]") {
     // test that the version flag works even if there are required options

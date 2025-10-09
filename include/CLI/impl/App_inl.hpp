@@ -1246,8 +1246,8 @@ CLI11_INLINE void App::_process_callbacks(callback_priority priority) {
         if(sub->get_name().empty() && sub->parse_complete_callback_) {
             if(sub->count_all() > 0) {
                 sub->_process_callbacks(priority);
-                if (priority == callback_priority::normal) {
-                    //only run the subcommand callback at normal priority
+                if(priority == callback_priority::normal) {
+                    // only run the subcommand callback at normal priority
                     sub->run_callback();
                 }
             }
@@ -1268,19 +1268,19 @@ CLI11_INLINE void App::_process_callbacks(callback_priority priority) {
     }
 }
 
-CLI11_INLINE void App::_process_help_flags(callback_priority priority,bool trigger_help, bool trigger_all_help) const {
+CLI11_INLINE void App::_process_help_flags(callback_priority priority, bool trigger_help, bool trigger_all_help) const {
     const Option *help_ptr = get_help_ptr();
     const Option *help_all_ptr = get_help_all_ptr();
 
-    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority()>=priority)
+    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority() >= priority)
         trigger_help = true;
-    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority()>=priority)
+    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() >= priority)
         trigger_all_help = true;
 
     // If there were parsed subcommands, call those. First subcommand wins if there are multiple ones.
     if(!parsed_subcommands_.empty()) {
         for(const App *sub : parsed_subcommands_)
-            sub->_process_help_flags(priority,trigger_help, trigger_all_help);
+            sub->_process_help_flags(priority, trigger_help, trigger_all_help);
 
         // Only the final subcommand should call for help. All help wins over help.
     } else if(trigger_all_help) {
