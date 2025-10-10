@@ -41,12 +41,12 @@ set with a simple and intuitive interface.
       - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
   - [permission. Requires C++17.](#permission-requires-c17)
-    - [Validator Usage](#validator-usage)
-      - [Transforming Validators](#transforming-validators)
-      - [Validator operations](#validator-operations)
-      - [Custom Validators](#custom-validators)
-      - [Querying Validators](#querying-validators)
-    - [Getting results](#getting-results)
+      - [Validator Usage](#validator-usage)
+        - [Transforming Validators](#transforming-validators)
+        - [Validator operations](#validator-operations)
+        - [Custom Validators](#custom-validators)
+        - [Querying Validators](#querying-validators)
+      - [Getting results](#getting-results)
     - [Subcommands](#subcommands)
       - [Subcommand options](#subcommand-options)
       - [Callbacks](#callbacks)
@@ -515,7 +515,7 @@ Before parsing, you can set the following options:
   and when errors or checks can be triggered from the options. The help pointer
   may also be modified to make it run later by default, it normally runs before
   the requirements checking but can be modified to run later by giving it
-  `Normal` or `Last` priority, as opposed to modifiying individual options. The
+  `Normal` or `Last` priority, as opposed to modifying individual options. The
   version flag has `PreRequirementsCheck` priority by default.
 
 These options return the `Option` pointer, so you can chain them together, and
