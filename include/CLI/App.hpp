@@ -1308,7 +1308,7 @@ class App {
     /// Run help flag processing if any are found.
     ///
     /// The flags allow recursive calls to remember if there was a help flag on a parent.
-    void _process_help_flags(CallbackPriority priority,bool trigger_help = false, bool trigger_all_help = false) const;
+    void _process_help_flags(CallbackPriority priority, bool trigger_help = false, bool trigger_all_help = false) const;
 
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements();

@@ -1027,12 +1027,12 @@ TEST_CASE_METHOD(TApp, "TakeFirstOptMulti", "[app]") {
 
 TEST_CASE_METHOD(TApp, "optionPriority", "[app]") {
     std::vector<int> results;
-    auto* opt1 = app.add_flag_callback("-A", [&]() { results.push_back(1); });
-    auto* opt2 = app.add_flag_callback("-B", [&]() { results.push_back(2); });
-    auto* opt3 = app.add_flag_callback("-C", [&]() { results.push_back(3); });
-    auto* opt4 = app.add_flag_callback("-D", [&]() { results.push_back(4); });
-    auto* opt5 = app.add_flag_callback("-E", [&]() { results.push_back(5); });
-    args={"-A", "-B", "-C", "-D","-E"};
+    auto *opt1 = app.add_flag_callback("-A", [&]() { results.push_back(1); });
+    auto *opt2 = app.add_flag_callback("-B", [&]() { results.push_back(2); });
+    auto *opt3 = app.add_flag_callback("-C", [&]() { results.push_back(3); });
+    auto *opt4 = app.add_flag_callback("-D", [&]() { results.push_back(4); });
+    auto *opt5 = app.add_flag_callback("-E", [&]() { results.push_back(5); });
+    args = {"-A", "-B", "-C", "-D", "-E"};
     run();
     CHECK(std::vector<int>({1, 2, 3, 4, 5}) == results);
     results.clear();
@@ -1046,30 +1046,29 @@ TEST_CASE_METHOD(TApp, "optionPriority", "[app]") {
     results.clear();
     opt5->callback_priority(CLI::CallbackPriority::PreRequirementsCheck);
     run();
-    CHECK(std::vector<int>({2,5, 1, 3, 4}) == results);
+    CHECK(std::vector<int>({2, 5, 1, 3, 4}) == results);
     results.clear();
 
-    args={"-A", "-B", "-C", "-D", "-E","--help"};
+    args = {"-A", "-B", "-C", "-D", "-E", "--help"};
     CHECK_THROWS(run());
     CHECK(std::vector<int>({2}) == results);
     results.clear();
 
     app.get_help_ptr()->callback_priority(CLI::CallbackPriority::Normal);
     CHECK_THROWS(run());
-    CHECK(std::vector<int>({2,5}) == results);
+    CHECK(std::vector<int>({2, 5}) == results);
     results.clear();
 
     app.get_help_ptr()->callback_priority(CLI::CallbackPriority::Last);
     CHECK_THROWS(run());
-    CHECK(std::vector<int>({2,5,1,3}) == results);
+    CHECK(std::vector<int>({2, 5, 1, 3}) == results);
     results.clear();
     opt3->excludes(opt1);
-    args={"-A", "-B", "-C", "-D","-E"};
+    args = {"-A", "-B", "-C", "-D", "-E"};
 
     CHECK_THROWS(run());
-    CHECK(std::vector<int>({2,5}) == results);
+    CHECK(std::vector<int>({2, 5}) == results);
 }
-
 
 TEST_CASE_METHOD(TApp, "ComplexOptMulti", "[app]") {
     std::complex<double> val;

@@ -51,7 +51,7 @@ enum class MultiOptionPolicy : char {
 };
 
 /// @brief  enumeration for the callback priority
-enum class CallbackPriority :std::int8_t { Last = -1, Normal = 0, PreRequirementsCheck = 1, PreHelpCheck=2 };
+enum class CallbackPriority : std::int8_t { Last = -1, Normal = 0, PreRequirementsCheck = 1, PreHelpCheck = 2 };
 
 /// This is the CRTP base class for Option and OptionDefaults. It was designed this way
 /// to share parts of the class; an OptionDefaults can copy to an Option.
@@ -346,7 +346,7 @@ class Option : public OptionBase<Option> {
     bool trigger_on_result_{false};
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
-    
+
     /// callback priority indicator
     CallbackPriority callback_priority_{CallbackPriority::Normal};
     ///@}
@@ -426,8 +426,8 @@ class Option : public OptionBase<Option> {
     /// Get the current value of run_callback_for_default
     CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
-    /// Set the value of callback priority which controls when the callback function should be called relative to other parsing operations
-    /// the default This is controlled automatically but could be manipulated by the user.
+    /// Set the value of callback priority which controls when the callback function should be called relative to other
+    /// parsing operations the default This is controlled automatically but could be manipulated by the user.
     Option *callback_priority(CallbackPriority value = CallbackPriority::Normal) {
         callback_priority_ = value;
         return this;
