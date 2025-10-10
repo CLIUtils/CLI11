@@ -285,7 +285,7 @@ CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string
     // Empty name will simply remove the help flag
     if(!flag_name.empty()) {
         help_ptr_ = add_flag(flag_name, help_description);
-        help_ptr_->configurable(false)->set_callback_priority(callback_priority::pre_requirements_check);
+        help_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
     }
 
     return help_ptr_;
@@ -301,7 +301,7 @@ CLI11_INLINE Option *App::set_help_all_flag(std::string help_name, const std::st
     // Empty name will simply remove the help all flag
     if(!help_name.empty()) {
         help_all_ptr_ = add_flag(help_name, help_description);
-        help_all_ptr_->configurable(false)->set_callback_priority(callback_priority::pre_requirements_check);
+        help_all_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
     }
 
     return help_all_ptr_;
@@ -319,7 +319,7 @@ App::set_version_flag(std::string flag_name, const std::string &versionString, c
     if(!flag_name.empty()) {
         version_ptr_ = add_flag_callback(
             flag_name, [versionString]() { throw(CLI::CallForVersion(versionString, 0)); }, version_help);
-        version_ptr_->configurable(false)->set_callback_priority(callback_priority::pre_requirements_check);
+        version_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
     }
 
     return version_ptr_;
@@ -336,7 +336,7 @@ App::set_version_flag(std::string flag_name, std::function<std::string()> vfunc,
     if(!flag_name.empty()) {
         version_ptr_ =
             add_flag_callback(flag_name, [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); }, version_help);
-        version_ptr_->configurable(false)->set_callback_priority(callback_priority::pre_requirements_check);
+        version_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
     }
 
     return version_ptr_;
@@ -1239,15 +1239,15 @@ CLI11_INLINE void App::_process_env() {
     }
 }
 
-CLI11_INLINE void App::_process_callbacks(callback_priority priority) {
+CLI11_INLINE void App::_process_callbacks(CallbackPriority priority) {
 
     for(App_p &sub : subcommands_) {
         // process the priority option_groups first
         if(sub->get_name().empty() && sub->parse_complete_callback_) {
             if(sub->count_all() > 0) {
                 sub->_process_callbacks(priority);
-                if(priority == callback_priority::normal) {
-                    // only run the subcommand callback at normal priority
+                if (priority == CallbackPriority::Normal) {
+                    //only run the subcommand callback at normal priority
                     sub->run_callback();
                 }
             }
@@ -1268,19 +1268,19 @@ CLI11_INLINE void App::_process_callbacks(callback_priority priority) {
     }
 }
 
-CLI11_INLINE void App::_process_help_flags(callback_priority priority, bool trigger_help, bool trigger_all_help) const {
+CLI11_INLINE void App::_process_help_flags(CallbackPriority priority,bool trigger_help, bool trigger_all_help) const {
     const Option *help_ptr = get_help_ptr();
     const Option *help_all_ptr = get_help_all_ptr();
 
-    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority() >= priority)
+    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority()>=priority)
         trigger_help = true;
-    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() >= priority)
+    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority()>=priority)
         trigger_all_help = true;
 
     // If there were parsed subcommands, call those. First subcommand wins if there are multiple ones.
     if(!parsed_subcommands_.empty()) {
         for(const App *sub : parsed_subcommands_)
-            sub->_process_help_flags(priority, trigger_help, trigger_all_help);
+            sub->_process_help_flags(priority,trigger_help, trigger_all_help);
 
         // Only the final subcommand should call for help. All help wins over help.
     } else if(trigger_all_help) {
@@ -1421,8 +1421,8 @@ CLI11_INLINE void App::_process_requirements() {
 CLI11_INLINE void App::_process() {
     // help takes precedence over other potential errors and config and environment shouldn't be processed if help
     // throws
-    _process_callbacks(callback_priority::pre_help_check);
-    _process_help_flags(callback_priority::pre_requirements_check);
+    _process_callbacks(CallbackPriority::PreHelpCheck);
+    _process_help_flags(CallbackPriority::PreRequirementsCheck);
     std::exception_ptr config_exception;
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
@@ -1436,16 +1436,17 @@ CLI11_INLINE void App::_process() {
     }
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
-    _process_callbacks(callback_priority::pre_requirements_check);
+    _process_callbacks(CallbackPriority::PreRequirementsCheck);
     _process_requirements();
-    _process_help_flags(callback_priority::normal);
-    _process_callbacks(callback_priority::normal);
+    _process_help_flags(CallbackPriority::Normal);
+    _process_callbacks(CallbackPriority::Normal);
 
     if(config_exception) {
         std::rethrow_exception(config_exception);
     }
-    _process_callbacks(callback_priority::last);
-    _process_help_flags(callback_priority::last);
+    _process_help_flags(CallbackPriority::Last);
+    _process_callbacks(CallbackPriority::Last);
+    
 }
 
 CLI11_INLINE void App::_process_extras() {
@@ -1506,14 +1507,14 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
         args = remaining_for_passthrough(false);
     } else if(parse_complete_callback_) {
         _process_env();
-        _process_callbacks(callback_priority::pre_help_check);
-        _process_help_flags(callback_priority::pre_requirements_check);
-        _process_callbacks(callback_priority::pre_requirements_check);
+        _process_callbacks(CallbackPriority::PreHelpCheck);
+        _process_help_flags(CallbackPriority::PreRequirementsCheck);
+        _process_callbacks(CallbackPriority::PreRequirementsCheck);
         _process_requirements();
-        _process_help_flags(callback_priority::normal);
-        _process_callbacks(callback_priority::normal);
-        _process_help_flags(callback_priority::last);
-        _process_callbacks(callback_priority::last);
+        _process_help_flags(CallbackPriority::Normal);
+        _process_callbacks(CallbackPriority::Normal);
+        _process_help_flags(CallbackPriority::Last);
+        _process_callbacks(CallbackPriority::Last);
         run_callback(false, true);
     }
 }
@@ -1634,10 +1635,10 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
     // check for section close
     if(item.name == "--") {
         if(configurable_ && parse_complete_callback_) {
-            _process_callbacks(callback_priority::pre_requirements_check);
+            _process_callbacks(CallbackPriority::PreRequirementsCheck);
             _process_requirements();
-            _process_callbacks(callback_priority::normal);
-            _process_callbacks(callback_priority::last);
+            _process_callbacks(CallbackPriority::Normal);
+            _process_callbacks(CallbackPriority::Last);
             run_callback();
         }
         return true;
@@ -2098,14 +2099,14 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     // run the parse complete callback since the subcommand processing is now complete
                     if(sub->parse_complete_callback_) {
                         sub->_process_env();
-                        sub->_process_callbacks(callback_priority::pre_help_check);
-                        sub->_process_help_flags(callback_priority::pre_requirements_check);
-                        sub->_process_callbacks(callback_priority::pre_requirements_check);
+                        sub->_process_callbacks(CallbackPriority::PreHelpCheck);
+                        sub->_process_help_flags(CallbackPriority::PreRequirementsCheck);
+                        sub->_process_callbacks(CallbackPriority::PreRequirementsCheck);
                         sub->_process_requirements();
-                        sub->_process_help_flags(callback_priority::normal);
-                        sub->_process_callbacks(callback_priority::normal);
-                        sub->_process_help_flags(callback_priority::last);
-                        sub->_process_callbacks(callback_priority::last);
+                        sub->_process_help_flags(CallbackPriority::Normal);
+                        sub->_process_callbacks(CallbackPriority::Normal);
+                        sub->_process_help_flags(CallbackPriority::Last);
+                        sub->_process_callbacks(CallbackPriority::Last);
                         sub->run_callback(false, true);
                     }
                     return true;

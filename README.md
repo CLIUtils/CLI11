@@ -41,12 +41,12 @@ set with a simple and intuitive interface.
       - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
   - [permission. Requires C++17.](#permission-requires-c17)
-    - [Validator Usage](#validator-usage)
-      - [Transforming Validators](#transforming-validators)
-      - [Validator operations](#validator-operations)
-      - [Custom Validators](#custom-validators)
-      - [Querying Validators](#querying-validators)
-    - [Getting results](#getting-results)
+      - [Validator Usage](#validator-usage)
+        - [Transforming Validators](#transforming-validators)
+        - [Validator operations](#validator-operations)
+        - [Custom Validators](#custom-validators)
+        - [Querying Validators](#querying-validators)
+      - [Getting results](#getting-results)
     - [Subcommands](#subcommands)
       - [Subcommand options](#subcommand-options)
       - [Callbacks](#callbacks)
@@ -211,10 +211,8 @@ int main(int argc, char** argv) {
 }
 ```
 
-When adding options the names should not conflict with eachother, if an option
-is added, or a modifier changed that would cause naming conflicts a run time
-error will be thrown in the add_option method. This includes default options for
-help `-h, --help`. For more information about `ensure_utf8` the section on
+When adding options the names should not conflict with each other,  if an option is added, or a modifier changed that would cause naming conflicts a run time error will be thrown in the add_option method.  This includes default options for help `-h, --help`.  
+For more information about `ensure_utf8` the section on
 [Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
@@ -503,6 +501,7 @@ Before parsing, you can set the following options:
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
+- `->callback_priority(CallbackPriority priority)`: 🚧 changes the order in which the option callback is executed.  `CallbackPriority::PreHelpCheck` runs the option callback or value setting prior to help checks and requirements checking.  `CallbackPriority::PreRequirementsCheck` runs the option callback after the help check but prior to checking for other requirements.  `CallbackPriority::Normal` is the default and runs the callbacks after requirements and help have been checked and processed.  `CallbackPriority::Last`  runs after all normal priority callbacks have been executed.  This allows fine grained manipulation of when option values are set and when errors or checks can be triggered from the options.  The help pointer may also be modified to make it run later by default, it normally runs before the requirements checking but can be modified to run later by giving it `Normal` or `Last` priority, as opposed to modifiying individual options.   The version flag has `PreRequirementsCheck` priority by default.
 
 These options return the `Option` pointer, so you can chain them together, and
 even skip storing the pointer entirely. The `each` function takes any function
