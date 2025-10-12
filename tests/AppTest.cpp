@@ -1032,15 +1032,18 @@ TEST_CASE_METHOD(TApp, "optionPriority", "[app]") {
     auto *opt3 = app.add_flag_callback("-C", [&]() { results.push_back(3); });
     auto *opt4 = app.add_flag_callback("-D", [&]() { results.push_back(4); });
     auto *opt5 = app.add_flag_callback("-E", [&]() { results.push_back(5); });
+    CHECK(opt1->get_callback_priority()==CLI::CallbackPriority::Normal);
     args = {"-A", "-B", "-C", "-D", "-E"};
     run();
     CHECK(std::vector<int>({1, 2, 3, 4, 5}) == results);
     results.clear();
     opt2->callback_priority(CLI::CallbackPriority::PreHelpCheck);
+    CHECK(opt2->get_callback_priority()==CLI::CallbackPriority::PreHelpCheck);
     run();
     CHECK(std::vector<int>({2, 1, 3, 4, 5}) == results);
     results.clear();
     opt4->callback_priority(CLI::CallbackPriority::Last);
+    CHECK(opt4->get_callback_priority()==CLI::CallbackPriority::Last);
     run();
     CHECK(std::vector<int>({2, 1, 3, 5, 4}) == results);
     results.clear();
