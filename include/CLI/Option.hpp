@@ -52,8 +52,8 @@ enum class MultiOptionPolicy : char {
 
 /// @brief  enumeration for the callback priority
 enum class CallbackPriority : std::uint8_t {
-    PreReadConfigPreHelp = 0,
-    PreReadConfig = 1,
+    FirstPreHelp = 0,
+    First = 1,
     PreRequirementsCheckPreHelp = 2,
     PreRequirementsCheck = 3,
     NormalPreHelp = 4,

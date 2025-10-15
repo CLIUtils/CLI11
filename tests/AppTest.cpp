@@ -1036,7 +1036,7 @@ TEST_CASE_METHOD(TApp, "optionPriority", "[app]") {
     run();
     CHECK(std::vector<int>({1, 2, 3, 4, 5}) == results);
     results.clear();
-    opt2->callback_priority(CLI::CallbackPriority::PreReadConfigPreHelp);
+    opt2->callback_priority(CLI::CallbackPriority::FirstPreHelp);
     run();
     CHECK(std::vector<int>({2, 1, 3, 4, 5}) == results);
     results.clear();

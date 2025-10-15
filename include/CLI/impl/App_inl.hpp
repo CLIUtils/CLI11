@@ -285,7 +285,7 @@ CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string
     // Empty name will simply remove the help flag
     if(!flag_name.empty()) {
         help_ptr_ = add_flag(flag_name, help_description);
-        help_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
+        help_ptr_->configurable(false)->callback_priority(CallbackPriority::First);
     }
 
     return help_ptr_;
@@ -301,7 +301,7 @@ CLI11_INLINE Option *App::set_help_all_flag(std::string help_name, const std::st
     // Empty name will simply remove the help all flag
     if(!help_name.empty()) {
         help_all_ptr_ = add_flag(help_name, help_description);
-        help_all_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
+        help_all_ptr_->configurable(false)->callback_priority(CallbackPriority::First);
     }
 
     return help_all_ptr_;
@@ -319,7 +319,7 @@ App::set_version_flag(std::string flag_name, const std::string &versionString, c
     if(!flag_name.empty()) {
         version_ptr_ = add_flag_callback(
             flag_name, [versionString]() { throw(CLI::CallForVersion(versionString, 0)); }, version_help);
-        version_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
+        version_ptr_->configurable(false)->callback_priority(CallbackPriority::First);
     }
 
     return version_ptr_;
@@ -336,7 +336,7 @@ App::set_version_flag(std::string flag_name, std::function<std::string()> vfunc,
     if(!flag_name.empty()) {
         version_ptr_ =
             add_flag_callback(flag_name, [vfunc]() { throw(CLI::CallForVersion(vfunc(), 0)); }, version_help);
-        version_ptr_->configurable(false)->callback_priority(CallbackPriority::PreRequirementsCheck);
+        version_ptr_->configurable(false)->callback_priority(CallbackPriority::First);
     }
 
     return version_ptr_;
@@ -1255,7 +1255,7 @@ CLI11_INLINE void App::_process_callbacks(CallbackPriority priority) {
     }
 
     for(const Option_p &opt : options_) {
-        if(opt->get_callback_priority() >= priority) {
+        if(opt->get_callback_priority() == priority) {
             if((*opt) && !opt->get_callback_run()) {
                 opt->run_callback();
             }
@@ -1272,9 +1272,9 @@ CLI11_INLINE void App::_process_help_flags(CallbackPriority priority, bool trigg
     const Option *help_ptr = get_help_ptr();
     const Option *help_all_ptr = get_help_all_ptr();
 
-    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority() >= priority)
+    if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority() == priority)
         trigger_help = true;
-    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() >= priority)
+    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() == priority)
         trigger_all_help = true;
 
     // If there were parsed subcommands, call those. First subcommand wins if there are multiple ones.
@@ -1421,9 +1421,9 @@ CLI11_INLINE void App::_process_requirements() {
 CLI11_INLINE void App::_process() {
     // help takes precedence over other potential errors and config and environment shouldn't be processed if help
     // throws
-    _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
-    _process_help_flags(CallbackPriority::PreReadConfig);
-    _process_callbacks(CallbackPriority::PreReadConfig);
+    _process_callbacks(CallbackPriority::FirstPreHelp);
+    _process_help_flags(CallbackPriority::First);
+    _process_callbacks(CallbackPriority::First);
 
     std::exception_ptr config_exception;
     try {
@@ -1514,9 +1514,9 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
         // Convert missing (pairs) to extras (string only) ready for processing in another app
         args = remaining_for_passthrough(false);
     } else if(parse_complete_callback_) {
-        _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
-        _process_help_flags(CallbackPriority::PreReadConfig);
-        _process_callbacks(CallbackPriority::PreReadConfig);
+        _process_callbacks(CallbackPriority::FirstPreHelp);
+        _process_help_flags(CallbackPriority::First);
+        _process_callbacks(CallbackPriority::First);
         _process_env();
         _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
         _process_help_flags(CallbackPriority::PreRequirementsCheck);
@@ -1648,8 +1648,8 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
     // check for section close
     if(item.name == "--") {
         if(configurable_ && parse_complete_callback_) {
-            _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
-            _process_callbacks(CallbackPriority::PreReadConfig);
+            _process_callbacks(CallbackPriority::FirstPreHelp);
+            _process_callbacks(CallbackPriority::First);
             _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
             _process_callbacks(CallbackPriority::PreRequirementsCheck);
             _process_requirements();
@@ -2116,9 +2116,9 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     _trigger_pre_parse(args.size());
                     // run the parse complete callback since the subcommand processing is now complete
                     if(sub->parse_complete_callback_) {
-                        sub->_process_callbacks(CallbackPriority::PreReadConfigPreHelp);
-                        sub->_process_help_flags(CallbackPriority::PreReadConfig);
-                        sub->_process_callbacks(CallbackPriority::PreReadConfig);
+                        sub->_process_callbacks(CallbackPriority::FirstPreHelp);
+                        sub->_process_help_flags(CallbackPriority::First);
+                        sub->_process_callbacks(CallbackPriority::First);
                         sub->_process_env();
                         sub->_process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
                         sub->_process_help_flags(CallbackPriority::PreRequirementsCheck);
