@@ -368,10 +368,6 @@ class Option : public OptionBase<Option> {
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
 
-    /// callback priority indicator
-    CallbackPriority callback_priority_{CallbackPriority::Normal};
-    ///@}
-
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string option_name,
            std::string option_description,
@@ -453,8 +449,6 @@ class Option : public OptionBase<Option> {
         callback_priority_ = value;
         return this;
     }
-    /// Get the current value of run_callback_for_default
-    CLI11_NODISCARD CallbackPriority get_callback_priority() const { return callback_priority_; }
 
     /// Adds a shared validator
     Option *check(Validator_p validator);
