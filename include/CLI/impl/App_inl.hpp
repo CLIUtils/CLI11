@@ -1421,8 +1421,10 @@ CLI11_INLINE void App::_process_requirements() {
 CLI11_INLINE void App::_process() {
     // help takes precedence over other potential errors and config and environment shouldn't be processed if help
     // throws
-    _process_callbacks(CallbackPriority::PreHelpCheck);
-    _process_help_flags(CallbackPriority::PreRequirementsCheck);
+    _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
+    _process_help_flags(CallbackPriority::PreReadConfig);
+    _process_callbacks(CallbackPriority::PreReadConfig);
+
     std::exception_ptr config_exception;
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
@@ -1436,14 +1438,21 @@ CLI11_INLINE void App::_process() {
     }
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
+    _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
+    _process_help_flags(CallbackPriority::PreRequirementsCheck);
     _process_callbacks(CallbackPriority::PreRequirementsCheck);
+
     _process_requirements();
+
+    _process_callbacks(CallbackPriority::NormalPreHelp);
     _process_help_flags(CallbackPriority::Normal);
     _process_callbacks(CallbackPriority::Normal);
 
     if(config_exception) {
         std::rethrow_exception(config_exception);
     }
+
+    _process_callbacks(CallbackPriority::LastPreHelp);
     _process_help_flags(CallbackPriority::Last);
     _process_callbacks(CallbackPriority::Last);
 }
@@ -1505,13 +1514,18 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
         // Convert missing (pairs) to extras (string only) ready for processing in another app
         args = remaining_for_passthrough(false);
     } else if(parse_complete_callback_) {
+        _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
+        _process_help_flags(CallbackPriority::PreReadConfig);
+        _process_callbacks(CallbackPriority::PreReadConfig);
         _process_env();
-        _process_callbacks(CallbackPriority::PreHelpCheck);
+        _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
         _process_help_flags(CallbackPriority::PreRequirementsCheck);
         _process_callbacks(CallbackPriority::PreRequirementsCheck);
         _process_requirements();
+        _process_callbacks(CallbackPriority::NormalPreHelp);
         _process_help_flags(CallbackPriority::Normal);
         _process_callbacks(CallbackPriority::Normal);
+        _process_callbacks(CallbackPriority::LastPreHelp);
         _process_help_flags(CallbackPriority::Last);
         _process_callbacks(CallbackPriority::Last);
         run_callback(false, true);
@@ -1634,9 +1648,14 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
     // check for section close
     if(item.name == "--") {
         if(configurable_ && parse_complete_callback_) {
+            _process_callbacks(CallbackPriority::PreReadConfigPreHelp);
+            _process_callbacks(CallbackPriority::PreReadConfig);
+            _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
             _process_callbacks(CallbackPriority::PreRequirementsCheck);
             _process_requirements();
+            _process_callbacks(CallbackPriority::NormalPreHelp);
             _process_callbacks(CallbackPriority::Normal);
+            _process_callbacks(CallbackPriority::LastPreHelp);
             _process_callbacks(CallbackPriority::Last);
             run_callback();
         }
@@ -2097,13 +2116,18 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     _trigger_pre_parse(args.size());
                     // run the parse complete callback since the subcommand processing is now complete
                     if(sub->parse_complete_callback_) {
+                        sub->_process_callbacks(CallbackPriority::PreReadConfigPreHelp);
+                        sub->_process_help_flags(CallbackPriority::PreReadConfig);
+                        sub->_process_callbacks(CallbackPriority::PreReadConfig);
                         sub->_process_env();
-                        sub->_process_callbacks(CallbackPriority::PreHelpCheck);
+                        sub->_process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
                         sub->_process_help_flags(CallbackPriority::PreRequirementsCheck);
                         sub->_process_callbacks(CallbackPriority::PreRequirementsCheck);
                         sub->_process_requirements();
+                        sub->_process_callbacks(CallbackPriority::NormalPreHelp);
                         sub->_process_help_flags(CallbackPriority::Normal);
                         sub->_process_callbacks(CallbackPriority::Normal);
+                        sub->_process_callbacks(CallbackPriority::LastPreHelp);
                         sub->_process_help_flags(CallbackPriority::Last);
                         sub->_process_callbacks(CallbackPriority::Last);
                         sub->run_callback(false, true);
