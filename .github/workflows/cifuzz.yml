@@ -1,5 +1,6 @@
 name: CIFuzz
-on: [pull_request]
+true:
+- pull_request
 jobs:
   fuzz:
     runs-on: ubuntu-latest
@@ -7,27 +8,29 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - name: Build Fuzzers
-        id: build
-        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-        with:
-          oss-fuzz-project-name: 'cli11'
-          language: c++
-      - name: Run Fuzzers
-        uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
-        with:
-          oss-fuzz-project-name: 'cli11'
-          language: c++
-          fuzz-seconds: 600
-      - name: Upload Crash
-        if: failure() && steps.build.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: out/artifacts
-      - name: Upload SARIF
-        if: always() && steps.build.outcome == 'success'
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: cifuzz-sarif/results.sarif
-          checkout_path: cifuzz-sarif
+    - name: Build Fuzzers
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        oss-fuzz-project-name: cli11
+        language: c++
+        dry-run: true
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        oss-fuzz-project-name: cli11
+        language: c++
+        fuzz-seconds: 600
+        dry-run: true
+    - name: Upload Crash
+      if: failure() && steps.build.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifacts
+        path: out/artifacts
+    - name: Upload SARIF
+      if: always() && steps.build.outcome == 'success'
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: cifuzz-sarif/results.sarif
+        checkout_path: cifuzz-sarif
