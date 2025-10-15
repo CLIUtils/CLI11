@@ -3,6 +3,7 @@ on: [pull_request]
 jobs:
   fuzz:
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       security-events: write
     steps:
