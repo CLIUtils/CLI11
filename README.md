@@ -504,26 +504,25 @@ Before parsing, you can set the following options:
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
 - `->callback_priority(CallbackPriority priority)`: 🚧 changes the order in
-  which the option callback is executed. Four principal callback call-points
-  are available. `CallbackPriority::First` executes at the very beginning of
+  which the option callback is executed. Four principal callback call-points are
+  available. `CallbackPriority::First` executes at the very beginning of
   processing, before configuration files are read and environment variables are
   interpreted. `CallbackPriority::PreRequirementsCheck` executes after
   configuration and environment processing but before requirements checking.
   `CallbackPriority::Normal` executes after the requirements check but before
   any previously potentially raised exceptions are re-thrown.
-  `CallbackPriority::Last` executes after exception handling is completed.
-  For each position, both ordinary option callbacks and help callbacks are
-  invoked. The relative order between them can be controlled using the
-  corresponding `PreHelp` variants. `CallbackPriority::FirstPreHelp` executes
-  ordinary option callbacks before help callbacks at the very beginning of
-  processing. `CallbackPriority::PreRequirementsCheckPreHelp` executes ordinary
-  option callbacks before help callbacks after configuration and environment
-  processing but before requirements checking. `CallbackPriority::NormalPreHelp`
-  executes ordinary option callbacks before help callbacks after the
-  requirements check but before exception re-throwing.
-  `CallbackPriority::LastPreHelp` executes ordinary option callbacks before help
-  callbacks after exception handling has completed. When using the standard
-  priorities (`CallbackPriority::First`,
+  `CallbackPriority::Last` executes after exception handling is completed. For
+  each position, both ordinary option callbacks and help callbacks are invoked.
+  The relative order between them can be controlled using the corresponding
+  `PreHelp` variants. `CallbackPriority::FirstPreHelp` executes ordinary option
+  callbacks before help callbacks at the very beginning of processing.
+  `CallbackPriority::PreRequirementsCheckPreHelp` executes ordinary option
+  callbacks before help callbacks after configuration and environment processing
+  but before requirements checking. `CallbackPriority::NormalPreHelp` executes
+  ordinary option callbacks before help callbacks after the requirements check
+  but before exception re-throwing. `CallbackPriority::LastPreHelp` executes
+  ordinary option callbacks before help callbacks after exception handling has
+  completed. When using the standard priorities (`CallbackPriority::First`,
   `CallbackPriority::PreRequirementsCheck`, `CallbackPriority::Normal`,
   `CallbackPriority::Last`), help callbacks are executed before ordinary option
   callbacks. By default, help callbacks use `CallbackPriority::First`, and
