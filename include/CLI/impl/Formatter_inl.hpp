@@ -263,12 +263,10 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
             footer_string = "";
         }
     }
-    if (!footer_string.empty())
-    {
-        if (is_footer_paragraph_formatting_enabled()) {
+    if(!footer_string.empty()) {
+        if(is_footer_paragraph_formatting_enabled()) {
             detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
-        }
-        else {
+        } else {
             out << footer_string;
         }
     }
