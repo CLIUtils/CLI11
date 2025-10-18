@@ -1,31 +1,23 @@
 name: CIFuzz
-
 on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   fuzz:
     runs-on: ubuntu-latest
-    # keep CI green while OSS-Fuzz project is not merged yet
-    continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-
       - name: Build Fuzzers (dry run)
         uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
         with:
           oss-fuzz-project-name: cli11
           language: c++
-    dry-run: true
+          dry-run: true
 
       - name: Run Fuzzers (dry run)
         uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
         with:
           oss-fuzz-project-name: cli11
           language: c++
-    dry-run: true
           fuzz-seconds: 600
+          dry-run: true
