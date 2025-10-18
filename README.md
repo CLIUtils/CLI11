@@ -211,7 +211,10 @@ int main(int argc, char** argv) {
 }
 ```
 
-For more information about `ensure_utf8` the section on
+When adding options the names should not conflict with each other, if an option
+is added, or a modifier changed that would cause naming conflicts a run time
+error will be thrown in the add_option method. This includes default options for
+help `-h, --help`. For more information about `ensure_utf8` the section on
 [Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
@@ -500,6 +503,34 @@ Before parsing, you can set the following options:
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
+- `->callback_priority(CallbackPriority priority)`: 🚧 changes the order in
+  which the option callback is executed. Four principal callback call-points
+  are available. `CallbackPriority::First` executes at the very beginning of
+  processing, before configuration files are read and environment variables are
+  interpreted. `CallbackPriority::PreRequirementsCheck` executes after
+  configuration and environment processing but before requirements checking.
+  `CallbackPriority::Normal` executes after the requirements check but before
+  any previously potentially raised exceptions are re-thrown.
+  `CallbackPriority::Last` executes after exception handling is completed.
+  For each position, both ordinary option callbacks and help callbacks are
+  invoked. The relative order between them can be controlled using the
+  corresponding `PreHelp` variants. `CallbackPriority::FirstPreHelp` executes
+  ordinary option callbacks before help callbacks at the very beginning of
+  processing. `CallbackPriority::PreRequirementsCheckPreHelp` executes ordinary
+  option callbacks before help callbacks after configuration and environment
+  processing but before requirements checking. `CallbackPriority::NormalPreHelp`
+  executes ordinary option callbacks before help callbacks after the
+  requirements check but before exception re-throwing.
+  `CallbackPriority::LastPreHelp` executes ordinary option callbacks before help
+  callbacks after exception handling has completed. When using the standard
+  priorities (`CallbackPriority::First`,
+  `CallbackPriority::PreRequirementsCheck`, `CallbackPriority::Normal`,
+  `CallbackPriority::Last`), help callbacks are executed before ordinary option
+  callbacks. By default, help callbacks use `CallbackPriority::First`, and
+  ordinary option callbacks use `CallbackPriority::Normal`. This mechanism
+  provides fine-grained control over when option values are set and when help or
+  requirement checks occur, enabling precise customization of the processing
+  sequence.
 
 These options return the `Option` pointer, so you can chain them together, and
 even skip storing the pointer entirely. The `each` function takes any function
@@ -639,7 +670,7 @@ setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
   write permission. Requires C++17.
 - `CLI::ExecPermission`: Requires that the file given exist and have execution
   permission. Requires C++17.
--
+  -
 
 #### Validator Usage
 

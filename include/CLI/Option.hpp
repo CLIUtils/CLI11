@@ -50,6 +50,18 @@ enum class MultiOptionPolicy : char {
     Reverse,    //!< take only the last Expected number of arguments in reverse order
 };
 
+/// @brief  enumeration for the callback priority
+enum class CallbackPriority : std::uint8_t {
+    FirstPreHelp = 0,
+    First = 1,
+    PreRequirementsCheckPreHelp = 2,
+    PreRequirementsCheck = 3,
+    NormalPreHelp = 4,
+    Normal = 5,
+    LastPreHelp = 6,
+    Last = 7
+};  // namespace CLI
+
 /// This is the CRTP base class for Option and OptionDefaults. It was designed this way
 /// to share parts of the class; an OptionDefaults can copy to an Option.
 template <typename CRTP> class OptionBase {
@@ -83,6 +95,9 @@ template <typename CRTP> class OptionBase {
 
     /// Policy for handling multiple arguments beyond the expected Max
     MultiOptionPolicy multi_option_policy_{MultiOptionPolicy::Throw};
+
+    /// Priority of callback
+    CallbackPriority callback_priority_{CallbackPriority::Normal};
 
     /// Copy the contents to another similar class (one based on OptionBase)
     template <typename T> void copy_to(T *other) const;
@@ -142,6 +157,9 @@ template <typename CRTP> class OptionBase {
     /// The status of the multi option policy
     CLI11_NODISCARD MultiOptionPolicy get_multi_option_policy() const { return multi_option_policy_; }
 
+    /// The priority of callback
+    CLI11_NODISCARD CallbackPriority get_callback_priority() const { return callback_priority_; }
+
     // Shortcuts for multi option policy
 
     /// Set the multi option policy to take last
@@ -200,6 +218,12 @@ class OptionDefaults : public OptionBase<OptionDefaults> {
     OptionDefaults() = default;
 
     // Methods here need a different implementation if they are Option vs. OptionDefault
+
+    /// Set the callback priority
+    OptionDefaults *callback_priority(CallbackPriority value = CallbackPriority::Normal) {
+        callback_priority_ = value;
+        return this;
+    }
 
     /// Take the last argument if given multiple times
     OptionDefaults *multi_option_policy(MultiOptionPolicy value = MultiOptionPolicy::Throw) {
@@ -343,7 +367,6 @@ class Option : public OptionBase<Option> {
     bool trigger_on_result_{false};
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
-    ///@}
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string option_name,
@@ -419,6 +442,13 @@ class Option : public OptionBase<Option> {
     }
     /// Get the current value of run_callback_for_default
     CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
+
+    /// Set the value of callback priority which controls when the callback function should be called relative to other
+    /// parsing operations the default This is controlled automatically but could be manipulated by the user.
+    Option *callback_priority(CallbackPriority value = CallbackPriority::Normal) {
+        callback_priority_ = value;
+        return this;
+    }
 
     /// Adds a shared validator
     Option *check(Validator_p validator);

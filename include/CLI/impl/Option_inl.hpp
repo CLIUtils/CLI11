@@ -32,6 +32,7 @@ template <typename CRTP> template <typename T> void OptionBase<CRTP>::copy_to(T 
     other->delimiter(delimiter_);
     other->always_capture_default(always_capture_default_);
     other->multi_option_policy(multi_option_policy_);
+    other->callback_priority(callback_priority_);
 }
 
 CLI11_INLINE Option *Option::expected(int value) {

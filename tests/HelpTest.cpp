@@ -1593,3 +1593,20 @@ TEST_CASE("TVersion: exit", "[help]") {
         CHECK(0 == ret);
     }
 }
+
+TEST_CASE("TVersion: exit_with_required", "[help]") {
+    // test that the version flag works even if there are required options
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+    app.add_option("--req")->required();
+
+    try {
+        app.parse("--version");
+    } catch(const CLI::CallForVersion &v) {
+        std::ostringstream out;
+        auto ret = app.exit(v, out);
+        CHECK_THAT(out.str(), Contains(CLI11_VERSION));
+        CHECK(0 == ret);
+    }
+}
