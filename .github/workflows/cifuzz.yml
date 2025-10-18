@@ -12,6 +12,7 @@ jobs:
         with:
           oss-fuzz-project-name: cli11
           language: c++
+    dry-run: true
           dry-run: true
 
       - name: Run Fuzzers (dry run)
@@ -19,5 +20,6 @@ jobs:
         with:
           oss-fuzz-project-name: cli11
           language: c++
+    dry-run: true
           fuzz-seconds: 600
           dry-run: true
