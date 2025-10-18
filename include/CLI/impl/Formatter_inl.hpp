@@ -177,7 +177,7 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     if(is_footer_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(out, footer_string, footer_paragraph_width_);  // Format footer as paragraph
     } else {
-        out << footer_string << '\n';
+        out << footer_string;
     }
 
     return out.str();

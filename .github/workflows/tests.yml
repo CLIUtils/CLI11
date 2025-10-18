@@ -127,9 +127,9 @@ jobs:
         run: cmake --build build -j2
 
   cuda12-build:
-    name: CUDA 12 build only
+    name: CUDA 13 build only
     runs-on: ubuntu-latest
-    container: nvidia/cuda:12.3.1-devel-ubuntu22.04
+    container: nvidia/cuda:13.0.0-devel-ubuntu22.04
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
@@ -386,4 +386,10 @@ jobs:
         with:
           cmake-version: "4.0"
           args: -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 4.1
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.1"
         if: success() || failure()
