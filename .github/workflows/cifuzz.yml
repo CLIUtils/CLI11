@@ -20,7 +20,6 @@ jobs:
         with:
           oss-fuzz-project-name: cli11
           language: c++
-          dry-run: true
 
       - name: Run Fuzzers (dry run)
         uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
@@ -28,4 +27,3 @@ jobs:
           oss-fuzz-project-name: cli11
           language: c++
           fuzz-seconds: 600
-          dry-run: true
