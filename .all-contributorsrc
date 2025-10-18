@@ -892,6 +892,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "TheodorNEngoy",
+      "name": "Theodor Nesfeldt Engøy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/140903820?v=4",
+      "profile": "https://github.com/TheodorNEngoy",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
