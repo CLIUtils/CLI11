@@ -505,7 +505,7 @@ Before parsing, you can set the following options:
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
-- `->callback_priority(CallbackPriority priority)`: 🚧 changes the order in
+- `->callback_priority(CallbackPriority priority)`: 🆕 changes the order in
   which the option callback is executed. Four principal callback call-points are
   available. `CallbackPriority::First` executes at the very beginning of
   processing, before configuration files are read and environment variables are
