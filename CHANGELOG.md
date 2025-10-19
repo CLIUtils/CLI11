@@ -4,7 +4,12 @@
 
 ## Version 2.6.0
 
-This version adds finer grained control of when option callbacks are executed, and further refinements in the help formatting.  It also fixes a number of bugs in type support and the ordering of options.  The other major change is moving Extra Validators to a new file which can be disabled for slightly faster compilation if not used, and allowing additional future Validators to be easily added.  
+This version adds finer grained control of when option callbacks are executed,
+and further refinements in the help formatting. It also fixes a number of bugs
+in type support and the ordering of options. The other major change is moving
+Extra Validators to a new file which can be disabled for slightly faster
+compilation if not used, and allowing additional future Validators to be easily
+added.
 
 ### Added
 
@@ -25,7 +30,8 @@ This version adds finer grained control of when option callbacks are executed, a
 - Added CMake presets for default and tidy builds. [#1181][]
 - Added several validator examples and documentation [#1192][]
 - Added permission validators for files and directories [#1203][]
-- Added fine grained control for option callback priority, and in what order options including help execute in the processing sequence. [#1226][]
+- Added fine grained control for option callback priority, and in what order
+  options including help execute in the processing sequence. [#1226][]
 - Added github action to link with future testing is oss-fuzz [#1225][]
 
 ### Changed
@@ -69,7 +75,8 @@ This version adds finer grained control of when option callbacks are executed, a
 - Fixed fuzzer misinterpreting `--sub1.-` as a short option. [#1148][]
 - Fixed issue where parse_order was not cleared on reset. [#1218][]
 - modify code to make compatible with /GR- option in MSVC [#1206][]
-- Fixed issue where the version flag would not take precedence over option requirements [#1226][]
+- Fixed issue where the version flag would not take precedence over option
+  requirements [#1226][]
 - Fixed extra newlines being printed if a footer was in use [#1229][]
 
 [#1129]: https://github.com/CLIUtils/CLI11/pull/1129
