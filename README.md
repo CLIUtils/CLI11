@@ -40,13 +40,12 @@ set with a simple and intuitive interface.
       - [Default Validators](#default-validators)
       - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
       - [Extra Validators 🚧](#extra-validators-)
-  - [permission. Requires C++17.](#permission-requires-c17)
-    - [Validator Usage](#validator-usage)
-      - [Transforming Validators](#transforming-validators)
-      - [Validator operations](#validator-operations)
-      - [Custom Validators](#custom-validators)
-      - [Querying Validators](#querying-validators)
-    - [Getting results](#getting-results)
+      - [Validator Usage](#validator-usage)
+        - [Transforming Validators](#transforming-validators)
+        - [Validator operations](#validator-operations)
+        - [Custom Validators](#custom-validators)
+        - [Querying Validators](#querying-validators)
+      - [Getting results](#getting-results)
     - [Subcommands](#subcommands)
       - [Subcommand options](#subcommand-options)
       - [Callbacks](#callbacks)
@@ -167,11 +166,14 @@ this library:
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
-  option to disable it).
+  option to disable it). 🆕 The latest version of CLI11 does include partial
+  option matching for option prefixes. This is enabled by
+  `.allow_subcommand_prefix_matching()`, along with an example that generates
+  suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
   is not supported yet.
 - While not recommended, CLI11 does now support non standard option names such
-  as `-option`. 🆕. This is enabled through `allow_non_standard_option_names()`
+  as `-option`. This is enabled through `allow_non_standard_option_names()`
   modifier on an app.
 
 ## Install
@@ -503,7 +505,7 @@ Before parsing, you can set the following options:
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
-- `->callback_priority(CallbackPriority priority)`: 🚧 changes the order in
+- `->callback_priority(CallbackPriority priority)`: 🆕 changes the order in
   which the option callback is executed. Four principal callback call-points are
   available. `CallbackPriority::First` executes at the very beginning of
   processing, before configuration files are read and environment variables are
@@ -669,7 +671,6 @@ setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
   write permission. Requires C++17.
 - `CLI::ExecPermission`: Requires that the file given exist and have execution
   permission. Requires C++17.
-  -
 
 #### Validator Usage
 
@@ -988,7 +989,7 @@ option_groups. These are:
   the form of `/s /long /file:file_name.ext` This option does not change how
   options are specified in the `add_option` calls or the ability to process
   options in the form of `-s --long --file=file_name.ext`.
-- `.allow_non_standard_option_names()`:🆕 Allow specification of single `-` long
+- `.allow_non_standard_option_names()`: Allow specification of single `-` long
   form option names. This is not recommended but is available to enable
   reworking of existing interfaces. If this modifier is enabled on an app or
   subcommand, options or flags can be specified like normal but instead of
@@ -996,7 +997,7 @@ option_groups. These are:
   is not allowed to have a single character short option starting with the same
   character as a single dash long form name; for example, `-s` and `-single` are
   not allowed in the same application.
-- `.allow_subcommand_prefix_matching()`:🚧 If this modifier is enabled,
+- `.allow_subcommand_prefix_matching()`:🆕 If this modifier is enabled,
   unambiguious prefix portions of a subcommand will match. For example
   `upgrade_package` would match on `upgrade_`, `upg`, `u` as long as no other
   subcommand would also match. It also disallows subcommand names that are full
@@ -1005,8 +1006,8 @@ option_groups. These are:
   through" and be matched on a parent option. Subcommands by default are allowed
   to "fall through" as in they will first attempt to match on the current
   subcommand and if they fail will progressively check parents for matching
-  subcommands. This can be disabled through `subcommand_fallthrough(false)` 🆕.
-- `.subcommand_fallthrough()`: 🆕 Allow subcommands to "fall through" and be
+  subcommands. This can be disabled through `subcommand_fallthrough(false)`.
+- `.subcommand_fallthrough()`: Allow subcommands to "fall through" and be
   matched on a parent option. Disabling this prevents additional subcommands at
   the same level from being matched. It can be useful in certain circumstances
   where there might be ambiguity between subcommands and positionals. The
