@@ -1723,6 +1723,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
         op->add_result(inputs);
         op->run_callback();
+        
     }
 
     return true;

@@ -55,7 +55,7 @@ TEST_CASE("file_fail") {
     CLI::FuzzApp fuzzdata;
     auto app = fuzzdata.generateApp();
 
-    int index = GENERATE(range(1, 9));
+    int index = GENERATE(range(9, 10));
     auto parseData = loadFailureFile("fuzz_file_fail", index);
     std::stringstream out(parseData);
     try {
@@ -345,7 +345,7 @@ TEST_CASE("app_roundtrip_custom") {
     CLI::FuzzApp fuzzdata2;
     auto app = fuzzdata.generateApp();
     auto app2 = fuzzdata2.generateApp();
-    int index = GENERATE(range(25, 26));
+    int index = GENERATE(range(1, 25));
 
     auto parseData = loadFailureFile("round_trip_custom", index);
 

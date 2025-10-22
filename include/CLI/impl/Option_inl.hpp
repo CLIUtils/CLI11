@@ -325,6 +325,9 @@ CLI11_INLINE void Option::run_callback() {
     current_option_state_ = option_state::callback_run;
     if(callback_) {
         const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
+        if (send_results.empty()){
+            return;
+        }
         bool local_result = callback_(send_results);
         if(used_default_str) {
             // we only clear the results if the callback was actually used
