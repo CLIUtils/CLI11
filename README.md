@@ -1752,9 +1752,9 @@ brief description of each is included here
   Short example of subcommands
 - [validators](https://github.com/CLIUtils/CLI11/blob/main/examples/validators.cpp):
   Example illustrating use of validators
-- [custom validators](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validators.cpp):
+- [custom validators](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp):
   Example illustrating use of validators
-- [date validators](https://github.com/CLIUtils/CLI11/blob/main/examples/date_validators.cpp):
+- [date validators](https://github.com/CLIUtils/CLI11/blob/main/examples/date_validator.cpp):
   Example illustrating use of validators
 
 ## Contribute
