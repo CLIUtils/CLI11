@@ -4,18 +4,19 @@
 
 ## Version 2.6.1
 
-Patch fixing some compile issues in specific situations in the recent release, and a potential segmentation fault from specially crafted config files
+Patch fixing some compile issues in specific situations in the recent release,
+and a potential segmentation fault from specially crafted config files
 
 ### Added
 
 - Added CI tests for install and package management on macos-arm64 [#1238][]
-  
+
 ### Fixed
 
 - Fixed incorrect links to validator examples. [#1239][]
 - Fixed incorrect inclusion of definition for extra validators [#1238][]
-- Fixed fuzz generated failure from crafted files introduced in recent release [#1238][]
-
+- Fixed fuzz generated failure from crafted files introduced in recent release
+  [#1238][]
 
 [#1238]: https://github.com/CLIUtils/CLI11/pull/1238
 [#1239]: https://github.com/CLIUtils/CLI11/pull/1239
