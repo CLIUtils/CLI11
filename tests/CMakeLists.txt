@@ -362,7 +362,6 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
     add_test(
       package-config-tests
       ${CMAKE_CTEST_COMMAND}
-      -C
       --build-and-test
       "${CMAKE_CURRENT_SOURCE_DIR}/package_config_tests"
       "${CMAKE_CURRENT_BINARY_DIR}/package_config_tests"

@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  
 env:
   CTEST_OUTPUT_ON_FAILURE: "1"
 
@@ -126,7 +129,7 @@ jobs:
       - name: Build
         run: cmake --build build -j2
 
-  cuda12-build:
+  cuda13-build:
     name: CUDA 13 build only
     runs-on: ubuntu-latest
     container: nvidia/cuda:13.0.0-devel-ubuntu22.04
@@ -234,6 +237,40 @@ jobs:
           submodules: true
       - name: Configure
         run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+  
+  install-precompiled-macos:
+    name: install tests precompiled macos
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON -DCMAKE_CXX_STANDARD=20
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+   
+  install-precompiled-macos-no-validators:
+    name: install tests precompiled macos no validators
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=OFF -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON
       - name: Build
         run: cmake --build build  -j2
       - name: install
