@@ -1,0 +1,27 @@
+rule "MD001" # header levels increment by 1
+rule "MD003", :style => :atx # header style - atx
+rule "MD004", :style => :dash # unordered list style - dash
+#rule "MD005" # don't allow inconsistent indentation for list items managed by prettier
+#rule "MD007", :indent => 2 # unordered list indentation should be 4 spaces managed by prettier
+rule "MD009" # trailing spaces not allowed
+rule "MD010" # hard tabs not allowed
+rule "MD011" # alert on reversed link syntax
+rule "MD012" # alert on multiple consecutive blank lines
+#rule "MD013" # line length should be no more than 80 characters
+#rule "MD014" # dollars signs not before commands w/o showing output
+rule "MD018" # must have space after header style
+rule "MD019" # no multiple spaces after header style
+rule "MD022" # headers should be surrounded by blank lines
+rule "MD023" # headers must start at the beginning of the line
+rule "MD024", :allow_different_nesting => true # no multiple same level headers with same content
+rule "MD025" # only 1 level 1 header
+rule "MD026", :punctuation => '.,;:' # no trailing punctuation in headers
+rule "MD027" # no multiple spaces after blockquote symbol
+rule "MD028" # no blank lines within blockquote
+#rule "MD029", :style => :ordered # ordered list item prefix, shoulded be ordered
+#rule "MD030", :ul_single => 1, :ol_single => 1, :ul_multi => 1, :ol_multi => 3 # spaces after list markers, controlled by prettier
+rule "MD031" # fenced code blocks need line surrounding
+#rule "MD032" # lists should be surrounded by line # handled by prettier markdown formatting
+rule "MD034" # no raw url
+rule "MD040" # Fenced code blocks should have a language specified
+rule "MD046", :style => :fenced # code block style - fenced
