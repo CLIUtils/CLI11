@@ -12,6 +12,8 @@ jobs:
   single-header:
     name: Single header
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grant write permission for contents to upload artifacts
     steps:
       - uses: actions/checkout@v4
         with:

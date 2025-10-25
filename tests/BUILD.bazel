@@ -58,6 +58,7 @@ cc_test(
         "OptionTypeTest",
         "SimpleTest",
         "SetTest",
+        "NumericTypeTest",
         "TransformTest",
         "CreationTest",
         "SubcommandTest",

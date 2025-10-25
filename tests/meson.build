@@ -43,6 +43,7 @@ testnames = [
     ['HelpersTest', {}],
     ['ConfigFileTest', {}],
     ['OptionTypeTest', {}],
+    ['NumericTypeTest', {}],
     ['SimpleTest', {}],
     ['AppTest', {}],
     ['SetTest', {}],

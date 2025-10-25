@@ -72,12 +72,12 @@ if use_precompiled
     'CLI11',
     'src/Precompile.cpp',
     include_directories : CLI11_inc,
-    cpp_args            : ['-DCLI11_COMPILE'],
+    cpp_args            : ['-DCLI11_COMPILE -DCLI11_ENABLE_EXTRA_VALIDATORS=1'],
     install             : true,
   )
 
   pkg = import('pkgconfig')
-  pkg.generate(libcli11, extra_cflags: ['-DCLI11_COMPILE'])
+  pkg.generate(libcli11, extra_cflags: ['-DCLI11_COMPILE -DCLI11_ENABLE_EXTRA_VALIDATORS=1'])
 
   install_headers(cli11_headers, subdir: 'CLI')
 else
