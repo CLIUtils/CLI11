@@ -59,7 +59,7 @@ cc_test(
         "SimpleTest",
         "SetTest",
         "FuzzFaileTest",
-        "NumericTypeTest"
+        "NumericTypeTest",
         "TransformTest",
         "CreationTest",
         "SubcommandTest",

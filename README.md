@@ -1579,7 +1579,7 @@ int wmain(int argc, wchar_t *argv[]) {
 ```
 
 3\. Retrieve arguments yourself by using Windows APIs like
-[`CommandLineToArgvW`](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
+[CommandLineToArgvW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
 and pass them to CLI. This is what the library is doing under the hood in
 `ensure_utf8`.
 

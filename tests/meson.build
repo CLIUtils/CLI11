@@ -58,7 +58,6 @@ testnames = [
     ['StringParseTest', {}],
     ['ComplexTypeTest', {}],
     ['TrueFalseTest', {}],
-    ['FuzzFailTest', {}],
     ['localeTest', {}],
     ['OptionGroupTest', {}],
     ['ExtraValidatorsTest', {}],
