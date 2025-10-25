@@ -1925,11 +1925,14 @@ CLI11 was developed at the [University of Cincinnati][] to support of the
 try! Feedback is always welcome.
 
 <!-- markdownlint-disable MD034 -->
+<!-- markdownlint-disable -->
 
 [doi-badge]: https://zenodo.org/badge/80064252.svg
 [doi-link]: https://zenodo.org/badge/latestdoi/80064252
+
 [azure-badge]:
   https://dev.azure.com/CLIUtils/CLI11/_apis/build/status/CLIUtils.CLI11?branchName=main
+
 [azure]: https://dev.azure.com/CLIUtils/CLI11
 [actions-link]: https://github.com/CLIUtils/CLI11/actions
 [actions-badge]:
