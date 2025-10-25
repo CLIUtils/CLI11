@@ -58,7 +58,6 @@ cc_test(
         "OptionTypeTest",
         "SimpleTest",
         "SetTest",
-        "FuzzFaileTest",
         "NumericTypeTest",
         "TransformTest",
         "CreationTest",

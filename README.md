@@ -1578,8 +1578,7 @@ int wmain(int argc, wchar_t *argv[]) {
 }
 ```
 
-3\. Retrieve arguments yourself by using Windows APIs like
-[CommandLineToArgvW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
+3\. Retrieve arguments yourself by using Windows APIs like [CommandLineToArgvW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw)
 and pass them to CLI. This is what the library is doing under the hood in
 `ensure_utf8`.
 
@@ -1923,6 +1922,8 @@ CLI11 was developed at the [University of Cincinnati][] to support of the
 [GooFit][] library under [NSF Award 1414736][]. Version 0.9 was featured in a
 [DIANA/HEP][] meeting at CERN ([see the slides][diana slides]). Please give it a
 try! Feedback is always welcome.
+
+<!-- markdownlint-disable MD034 -->
 
 [doi-badge]: https://zenodo.org/badge/80064252.svg
 [doi-link]: https://zenodo.org/badge/latestdoi/80064252
