@@ -2,6 +2,7 @@ rule "MD001" # header levels increment by 1
 rule "MD003", :style => :atx # header style - atx
 rule "MD004", :style => :dash # unordered list style - dash
 #rule "MD005" # don't allow inconsistent indentation for list items managed by prettier
+rule "MD006" # consider starting bulleted lists at the beginning of the line
 #rule "MD007", :indent => 2 # unordered list indentation should be 4 spaces managed by prettier
 rule "MD009" # trailing spaces not allowed
 rule "MD010" # hard tabs not allowed
@@ -11,6 +12,8 @@ rule "MD012" # alert on multiple consecutive blank lines
 #rule "MD014" # dollars signs not before commands w/o showing output
 rule "MD018" # must have space after header style
 rule "MD019" # no multiple spaces after header style
+rule "MD020" # no multiple spaces inside hashes on closed atx style headers
+rule "MD021" # multiple spaces inside hashes on closed atx style headers
 rule "MD022" # headers should be surrounded by blank lines
 rule "MD023" # headers must start at the beginning of the line
 rule "MD024", :allow_different_nesting => true # no multiple same level headers with same content
@@ -22,6 +25,13 @@ rule "MD028" # no blank lines within blockquote
 #rule "MD030", :ul_single => 1, :ol_single => 1, :ul_multi => 1, :ol_multi => 3 # spaces after list markers, controlled by prettier
 rule "MD031" # fenced code blocks need line surrounding
 #rule "MD032" # lists should be surrounded by line # handled by prettier markdown formatting
-rule "MD034" # no raw url
-rule "MD040" # Fenced code blocks should have a language specified
+rule "MD033", :allowed_elements => ['a', 'em', 'strong', 'code', 'del', 'ins', 'sup', 'sub'] # no inline HTML except these elements
+#rule "MD034" # no raw url
+rule "MD035", :style => '---' # horizontal rule style - ---
+#rule "MD036" # emphasis used instead of strong emphasis
+rule "MD037" # no spaces inside emphasis markers
+rule "MD038" # spaces inside code span markers
+rule "MD039" # no spaces inside link text brackets
+rule "MD040" # fenced code blocks should have a language specified
+rule "MD041" # first line should be a top level header
 rule "MD046", :style => :fenced # code block style - fenced

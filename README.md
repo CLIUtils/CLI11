@@ -1924,9 +1924,6 @@ CLI11 was developed at the [University of Cincinnati][] to support of the
 [DIANA/HEP][] meeting at CERN ([see the slides][diana slides]). Please give it a
 try! Feedback is always welcome.
 
-<!-- markdownlint-disable MD034 -->
-<!-- markdownlint-disable -->
-
 [doi-badge]: https://zenodo.org/badge/80064252.svg
 [doi-link]: https://zenodo.org/badge/latestdoi/80064252
 [azure-badge]:
