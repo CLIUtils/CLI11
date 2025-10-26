@@ -165,14 +165,12 @@ CLI11_INLINE bool valid_name_string(const std::string &str);
 
 /// Verify an app name
 inline bool valid_alias_name_string(const std::string &str) {
-    static const std::string badChars{'\n', '\0'};
-    return (str.find_first_of(badChars) == std::string::npos);
+    return ((str.find_first_of('\n') == std::string::npos)&&(str.find_first_of('\0') == std::string::npos));
 }
 
 /// check if a string is a container segment separator (empty or "%%")
 inline bool is_separator(const std::string &str) {
-    static const std::string sep("%%");
-    return (str.empty() || str == sep);
+    return (str.empty() || (str.size()==2 && str[0] == '%' && str[1]=='%'));
 }
 
 /// Verify that str consists of letters only
