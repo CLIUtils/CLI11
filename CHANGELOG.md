@@ -17,7 +17,9 @@ and a potential segmentation fault from specially crafted config files
 - Fixed incorrect inclusion of definition for extra validators [#1238][]
 - Fixed fuzz generated failure from crafted files introduced in recent release
   [#1238][]
-- Removed some usage of static const std::string in inline function that had potential memory issues when CLI11 is used with shared libraries, this likely isn't a bug but the fix did result in smaller code size so was kept.   [#1244][]
+- Removed some usage of static const std::string in inline function that had
+  potential memory issues when CLI11 is used with shared libraries, this likely
+  isn't a bug but the fix did result in smaller code size so was kept. [#1244][]
 
 [#1244]: https://github.com/CLIUtils/CLI11/pull/1244
 [#1238]: https://github.com/CLIUtils/CLI11/pull/1238
