@@ -11,7 +11,7 @@
     "MD010": true, // no hard tabs
     "MD011": true, // reversed link syntax
     "MD012": true, // multiple consecutive blank lines
-    // "MD013": false, // line length ignored
+    "MD013": false, // line length ignored
     // "MD014": false, // command syntax ignored
     "MD018": true, // space after header style
     "MD019": true, // no multiple spaces after header style
@@ -29,6 +29,7 @@
     "MD031": true, // fenced code blocks surrounded by blank lines
     // "MD032": false, // lists surrounded by blank lines, prettier handles
     // "MD033": { "allowed_elements": "a, em, strong, code, del, ins, sup, sub" }, // inline HTML exceptions
+    "MD033": false,
     // "MD034": false, // raw URLs allowed
     "MD035": { "style": "---" }, // horizontal rule style
     // "MD036": false, // strong vs emphasis ignored
