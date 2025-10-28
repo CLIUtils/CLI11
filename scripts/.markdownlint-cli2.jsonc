@@ -40,7 +40,22 @@
     "MD041": true, // first line is top-level header
     // "MD042": false, // empty link disabled
     "MD046": { "style": "fenced" }, // code block style
-    "MD047": true // single newline at end
-    // "MD048": false // code fence style consistency ignored
+    "MD047": true, // single newline at end
+    "MD048": true, // code fence style consistency ignored
+    // Newly enabled rules for testing:
+    "MD044": {
+      // proper names; empty list means default names only
+      "names": []
+    },
+    "MD049": { "style": "consistent" }, // emphasis style
+    "MD050": { "style": "consistent" }, // strong style
+    "MD051": true, // valid link fragments
+    "MD052": true, // reference links/images must use defined labels
+    "MD053": true, // flag unused or undefined link references
+
+    // Table-related rules: enable if you use tables
+    "MD055": true, // consistent pipe style
+    "MD056": true, // consistent column counts
+    "MD058": true  // blank lines around tables
   }
 }
