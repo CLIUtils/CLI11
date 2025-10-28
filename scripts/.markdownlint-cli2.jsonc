@@ -19,7 +19,7 @@
     "MD021": true, // no spaces inside closing hashes
     "MD022": true, // headers surrounded by blank lines
     "MD023": true, // headers start at beginning of line
-    "MD024": { "allow_different_nesting": true }, // duplicate headers allowed in different nests
+    "MD024": { "siblings_only": true,"allow_different_nesting": true }, // duplicate headers allowed in different nests
     "MD025": true, // only one H1
     "MD026": { "punctuation": ".,;:" }, // no trailing punctuation
     "MD027": true, // multiple spaces after blockquote
