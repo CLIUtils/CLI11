@@ -3,6 +3,10 @@ on:
   pull_request_target:
     types: [closed]
 
+permissions:
+  contents: write
+  pull-request: write
+  
 jobs:
   label-merged:
     name: Changelog needed

@@ -43,13 +43,20 @@ repos:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
-
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: script-must-have-extension
   - repo: https://github.com/markdownlint/markdownlint
     rev: v0.13.0
     hooks:
       - id: markdownlint
         args: [-s, ./scripts/.markdownlintrc]
-
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.12.0 # Use the latest stable version
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--fix", "--config", "./scripts/.markdownlint-cli2.jsonc"] # Optional: specify a custom config file
   # - repo: local
   #   hooks:
   #     - id: remarklint
