@@ -18,9 +18,11 @@ repos:
       - id: check-symlinks
       - id: check-yaml
       - id: check-toml
+      - id: check-json
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
+      - id: check-illegal-windows-names
       - id: check-shebang-scripts-are-executable
       - id: check-executables-have-shebangs
       - id: debug-statements
@@ -37,8 +39,8 @@ repos:
       - id: cmake-format
         additional_dependencies: [pyyaml]
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v4.0.0-alpha.8"
+  - repo: https://github.com/JoC0de/pre-commit-prettier
+    rev: v3.6.2
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
@@ -47,11 +49,6 @@ repos:
     rev: 3.0.0
     hooks:
       - id: script-must-have-extension
-  - repo: https://github.com/markdownlint/markdownlint
-    rev: v0.13.0
-    hooks:
-      - id: markdownlint
-        args: [-s, ./scripts/.markdownlintrc]
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.12.0 # Use the latest stable version
     hooks:
