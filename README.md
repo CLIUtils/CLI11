@@ -1992,7 +1992,6 @@ try! Feedback is always welcome.
   https://app.codacy.com/project/badge/Grade/2796b969c1b54321a02ad08affec0800
 [codacy-link]:
   https://www.codacy.com/gh/CLIUtils/CLI11/dashboard?utm_source=github.com&utm_medium=referral&utm_content=CLIUtils/CLI11&utm_campaign=Badge_Grade
-[hunter]: https://docs.hunter.sh/en/latest/packages/pkg/CLI11.html
 [standard readme style]: https://github.com/RichardLitt/standard-readme
 [argparse]: https://github.com/p-ranav/argparse
 [toml]: https://toml.io

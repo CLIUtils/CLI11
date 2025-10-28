@@ -1,0 +1,61 @@
+{
+  "config": {
+    "MD001": true, // header levels increment by 1
+    "MD002": true, // first header should be a top level header
+    "MD003": { "style": "atx" }, // header style
+    "MD004": { "style": "dash" }, // unordered list style - dash
+    // "MD005": false, // inconsistent indentation handled by prettier
+    "MD006": true, // bulleted lists at beginning of line
+    // "MD007": { "indent": 2 }, // handled by prettier
+    "MD009": true, // no trailing spaces
+    "MD010": true, // no hard tabs
+    "MD011": true, // reversed link syntax
+    "MD012": true, // multiple consecutive blank lines
+    "MD013": false, // line length ignored
+    // "MD014": false, // command syntax ignored
+    "MD018": true, // space after header style
+    "MD019": true, // no multiple spaces after header style
+    "MD020": true, // no spaces inside hashes
+    "MD021": true, // no spaces inside closing hashes
+    "MD022": true, // headers surrounded by blank lines
+    "MD023": true, // headers start at beginning of line
+    "MD024": { "siblings_only": true,"allow_different_nesting": true }, // duplicate headers allowed in different nests
+    "MD025": true, // only one H1
+    "MD026": { "punctuation": ".,;:" }, // no trailing punctuation
+    "MD027": true, // multiple spaces after blockquote
+    "MD028": true, // no blank lines inside blockquote
+    // "MD029": { "style": "ordered" }, // prettier handles numbering
+    // "MD030": { "ul_single": 1, "ol_single": 1, "ul_multi": 1, "ol_multi": 3 }, // prettier handles spacing
+    "MD031": true, // fenced code blocks surrounded by blank lines
+    // "MD032": false, // lists surrounded by blank lines, prettier handles
+    // "MD033": { "allowed_elements": "a, em, strong, code, del, ins, sup, sub" }, // inline HTML exceptions
+    "MD033": false,
+    // "MD034": false, // raw URLs allowed
+    "MD035": { "style": "---" }, // horizontal rule style
+    // "MD036": false, // strong vs emphasis ignored
+    "MD037": true, // no spaces inside emphasis
+    "MD038": true, // no spaces inside code spans
+    "MD039": true, // no spaces inside link text
+    "MD040": true, // require fenced language
+    "MD041": true, // first line is top-level header
+    // "MD042": false, // empty link disabled
+    "MD046": { "style": "fenced" }, // code block style
+    "MD047": true, // single newline at end
+    "MD048": true, // code fence style consistency ignored
+    // Newly enabled rules for testing:
+    "MD044": {
+      // proper names; empty list means default names only
+      "names": []
+    },
+    "MD049": { "style": "consistent" }, // emphasis style
+    "MD050": { "style": "consistent" }, // strong style
+    "MD051": true, // valid link fragments
+    "MD052": true, // reference links/images must use defined labels
+    "MD053": true, // flag unused or undefined link references
+
+    // Table-related rules: enable if you use tables
+    "MD055": true, // consistent pipe style
+    "MD056": true, // consistent column counts
+    "MD058": true  // blank lines around tables
+  }
+}

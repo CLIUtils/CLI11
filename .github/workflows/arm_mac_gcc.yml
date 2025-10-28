@@ -4,6 +4,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  
 jobs:
   arm64_gcc:
     name: ARM64 GCC
