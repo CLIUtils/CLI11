@@ -658,8 +658,8 @@ class Option : public OptionBase<Option> {
     /// If all_options is false, pick just the most descriptive name to show.
     /// Use `get_name(true)` to get the positional name (replaces `get_pname`)
     /// if disable_default_flag_values is true, do not include the default values for flags such as `--no-flag{false}`
-    CLI11_NODISCARD std::string get_name(bool positional = false,  ///< Show the positional name
-                                         bool all_options = false,  ///< Show every option
+    CLI11_NODISCARD std::string get_name(bool positional = false,                  ///< Show the positional name
+                                         bool all_options = false,                 ///< Show every option
                                          bool disable_default_flag_values = false  ///< Disable default values in name
     ) const;
 

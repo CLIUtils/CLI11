@@ -108,7 +108,7 @@ TEST_CASE("Formatter: OptDefaults", "[formatter]") {
     CHECK_THAT(help, Contains("[DEFFFF]"));
     app.get_formatter()->enable_option_defaults(false);
 
-    help=app.help();
+    help = app.help();
     CHECK_THAT(help, !Contains("[DEFFFF]"));
     CHECK(!app.get_formatter()->is_option_defaults_enabled());
 }
@@ -126,7 +126,7 @@ TEST_CASE("Formatter: OptTypes", "[formatter]") {
     CHECK_THAT(help, Contains("TEXT"));
     app.get_formatter()->enable_option_type_names(false);
 
-    help=app.help();
+    help = app.help();
     CHECK_THAT(help, !Contains("TEXT"));
     CHECK(!app.get_formatter()->is_option_type_names_enabled());
 }

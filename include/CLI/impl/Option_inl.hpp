@@ -254,7 +254,8 @@ CLI11_INLINE Option *Option::multi_option_policy(MultiOptionPolicy value) {
     return this;
 }
 
-CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool all_options,bool disable_default_flag_values) const {
+CLI11_NODISCARD CLI11_INLINE std::string
+Option::get_name(bool positional, bool all_options, bool disable_default_flag_values) const {
     if(get_group().empty())
         return {};  // Hidden
 
