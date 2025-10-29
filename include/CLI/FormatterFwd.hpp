@@ -63,6 +63,10 @@ class FormatterBase {
     bool enable_description_formatting_{true};
     bool enable_footer_formatting_{true};
 
+    /// options controlling formatting of options
+    bool enable_option_defaults_{true};
+    bool enable_option_type_names_{true};
+    bool enable_default_flag_values_{true};
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
     std::map<std::string, std::string> labels_{};
@@ -110,6 +114,13 @@ class FormatterBase {
     void enable_description_formatting(bool value = true) { enable_description_formatting_ = value; }
     /// disable formatting for footer paragraph
     void enable_footer_formatting(bool value = true) { enable_footer_formatting_ = value; }
+
+    /// enable option defaults to be printed
+    void enable_option_defaults(bool value = true) { enable_option_defaults_ = value; }
+    /// enable option type names to be printed
+    void enable_option_type_names(bool value = true) { enable_option_type_names_ = value; }
+    /// enable default flag values to be printed
+    void enable_default_flag_values(bool value = true) { enable_default_flag_values_ = value; }
     ///@}
     /// @name Getters
     ///@{
@@ -133,11 +144,24 @@ class FormatterBase {
     /// Get the current footer paragraph width
     CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
 
+    /// @brief Get the current alignment ratio for long options within the left column
+    /// @return 
+    CLI11_NODISCARD float get_long_option_alignment_ratio() const { return long_option_alignment_ratio_; }
+
     /// Get the current status of description paragraph formatting
     CLI11_NODISCARD bool is_description_paragraph_formatting_enabled() const { return enable_description_formatting_; }
 
     /// Get the current status of whether footer paragraph formatting is enabled
     CLI11_NODISCARD bool is_footer_paragraph_formatting_enabled() const { return enable_footer_formatting_; }
+
+    /// Get the current status of whether option defaults are printed
+    CLI11_NODISCARD bool is_option_defaults_enabled() const { return enable_option_defaults_; }
+
+    /// Get the current status of whether option type names are printed
+    CLI11_NODISCARD bool is_option_type_names_enabled() const { return enable_option_type_names_; }
+
+    /// Get the current status of whether default flag values are printed
+    CLI11_NODISCARD bool is_default_flag_values_enabled() const { return enable_default_flag_values_; }
 
     ///@}
 };

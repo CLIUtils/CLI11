@@ -254,7 +254,7 @@ CLI11_INLINE Option *Option::multi_option_policy(MultiOptionPolicy value) {
     return this;
 }
 
-CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool all_options) const {
+CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool all_options,bool disable_default_flag_values) const {
     if(get_group().empty())
         return {};  // Hidden
 
@@ -269,14 +269,14 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_name(bool positional, bool 
         if((get_items_expected() == 0) && (!fnames_.empty())) {
             for(const std::string &sname : snames_) {
                 name_list.push_back("-" + sname);
-                if(check_fname(sname)) {
+                if(!disable_default_flag_values && check_fname(sname)) {
                     name_list.back() += "{" + get_flag_value(sname, "") + "}";
                 }
             }
 
             for(const std::string &lname : lnames_) {
                 name_list.push_back("--" + lname);
-                if(check_fname(lname)) {
+                if(!disable_default_flag_values && check_fname(lname)) {
                     name_list.back() += "{" + get_flag_value(lname, "") + "}";
                 }
             }
