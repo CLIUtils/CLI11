@@ -41,7 +41,7 @@ specified words in place of the label.
 
 Some of the control options are visualized in Figure 1.
 
-![example help output][../images/help_output1.png]
+![example help output](../images/help_output1.png)
 
 ### long option alignment ratio
 
