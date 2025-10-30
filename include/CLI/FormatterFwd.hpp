@@ -100,7 +100,10 @@ class FormatterBase {
 
     /// Set the alignment ratio for long options within the left column
     /// The ratio is in [0;1] range (e.g. 0.2 = 20% of column width, 6.f/column_width = 6th character)
-    void long_option_alignment_ratio(float ratio) { long_option_alignment_ratio_ = (ratio>=0.0f)?((ratio<=1.0f)?ratio:1.0f/ratio):((ratio<-1.0f)?1.0f/(-ratio):-ratio); }
+    void long_option_alignment_ratio(float ratio) {
+        long_option_alignment_ratio_ =
+            (ratio >= 0.0f) ? ((ratio <= 1.0f) ? ratio : 1.0f / ratio) : ((ratio < -1.0f) ? 1.0f / (-ratio) : -ratio);
+    }
 
     /// Set the right column width (description of options/flags/subcommands)
     void right_column_width(std::size_t val) { right_column_width_ = val; }

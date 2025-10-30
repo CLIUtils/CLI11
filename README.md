@@ -1076,7 +1076,8 @@ option_groups. These are:
   for processing the app for custom output formats).
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
-- `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for help.
+- `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for
+  help.
 - `.formatter_fn(fmt)`, with signature
   `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more
   details.
@@ -1452,8 +1453,8 @@ The default settings for options are inherited to subcommands, as well.
 
 ### Formatting
 
-The job of formatting help printouts is delegated to a formatter object
-on Apps and Options. You are free to replace either formatter by calling
+The job of formatting help printouts is delegated to a formatter object on Apps
+and Options. You are free to replace either formatter by calling
 `formatter(fmt)` on an `App`, where fmt is any copyable callable with the
 correct signature. CLI11 comes with a default App formatter functional,
 `Formatter`. It is customizable; you can set `label(key, value)` to replace the

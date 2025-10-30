@@ -9,19 +9,19 @@ will be inherited by subcommands that are created after you set the formatter.
 
 There are several configuration options that you can set:
 
-| Set method                                | Description                                                          | Availability |
-| ------------------------------------------| -------------------------------------------------------------------- | ------------ |
-| `column_width(width)`                     | The width of the columns (30)                                        | Both         |
-| `label(key, value)`                       | Set a label to a different value                                     | Both         |
-| `long_option_alignment_ratio(float)`      | Set the alignment ratio for long options within the left column(1/3) | Both         |
-| `right_column_width(std::size_t)`         | Set the right column width(65)                                       | Both         |
-| `description_paragraph_width(std::size_t)`| Set the description paragraph width at the top of help(88)           | Both         |
-| `footer_paragraph_width(std::size_t)`     | Set the footer paragraph width (88)                                  | Both         |
-| `enable_description_formatting(bool)`     | enable/disable description paragraph formatting (true)               | Both         |
-| `enable_footer_formatting(bool)`          | enable/disable footer paragraph formatting (true)                    | Both         |
-| `enable_option_defaults(bool)`            | enable/disable printing of option defaults (true)                    | Both         |
-| `enable_option_type_names(bool)`          | enable/disable printing of option types (true)                       | Both         |
-| `enable_default_flag_values(bool)`        | enable/disable printing of default flag values (true)                | Both         |
+| Set method                                 | Description                                                          | Availability |
+| ------------------------------------------ | -------------------------------------------------------------------- | ------------ |
+| `column_width(width)`                      | The width of the columns (30)                                        | Both         |
+| `label(key, value)`                        | Set a label to a different value                                     | Both         |
+| `long_option_alignment_ratio(float)`       | Set the alignment ratio for long options within the left column(1/3) | Both         |
+| `right_column_width(std::size_t)`          | Set the right column width(65)                                       | Both         |
+| `description_paragraph_width(std::size_t)` | Set the description paragraph width at the top of help(88)           | Both         |
+| `footer_paragraph_width(std::size_t)`      | Set the footer paragraph width (88)                                  | Both         |
+| `enable_description_formatting(bool)`      | enable/disable description paragraph formatting (true)               | Both         |
+| `enable_footer_formatting(bool)`           | enable/disable footer paragraph formatting (true)                    | Both         |
+| `enable_option_defaults(bool)`             | enable/disable printing of option defaults (true)                    | Both         |
+| `enable_option_type_names(bool)`           | enable/disable printing of option types (true)                       | Both         |
+| `enable_default_flag_values(bool)`         | enable/disable printing of default flag values (true)                | Both         |
 
 Labels will map the built in names and type names from key to value if present.
 For example, if you wanted to change the width of the columns to 40 and the
@@ -32,7 +32,10 @@ app.get_formatter()->column_width(40);
 app.get_formatter()->label("REQUIRED", "(MUST HAVE)");
 ```
 
-Used labels are `REQUIRED`,  `POSITIONALS`, `Usage`, `OPTIONS`, `SUBCOMMAND`, `SUBCOMMANDS`, `Env`, `Needs`,`Excludes`, and any type name such as `TEXT`, `INT`,`FLOAT` and others.  Replacing these labels with new ones will use the specified words in place of the label.  
+Used labels are `REQUIRED`, `POSITIONALS`, `Usage`, `OPTIONS`, `SUBCOMMAND`,
+`SUBCOMMANDS`, `Env`, `Needs`,`Excludes`, and any type name such as `TEXT`,
+`INT`,`FLOAT` and others. Replacing these labels with new ones will use the
+specified words in place of the label.
 
 ### Custumization descriptions
 
@@ -42,11 +45,18 @@ Some of the control options are visualized in Figure 1.
 
 ### long option alignment ratio
 
-The long option alignment ratio controls the relative proportion of short to long option names.   It must be a number between 0 and 1. values entered outside this range are converted into the range by absolute value or inversion.  It defines where in the left column long optiosn are aligned.   It is a ratio of the column width property.
+The long option alignment ratio controls the relative proportion of short to
+long option names. It must be a number between 0 and 1. values entered outside
+this range are converted into the range by absolute value or inversion. It
+defines where in the left column long optiosn are aligned. It is a ratio of the
+column width property.
 
 ### formatting options
 
-`enable_description_formatting(false)` and `enable_footer_formatting(false)` turn off any formatting on the description and footer.  This allows things like word art or external management of alignment and width.  With formatting enabled the width is enforced and the paragraphs reflowed.
+`enable_description_formatting(false)` and `enable_footer_formatting(false)`
+turn off any formatting on the description and footer. This allows things like
+word art or external management of alignment and width. With formatting enabled
+the width is enforced and the paragraphs reflowed.
 
 ### Option output control
 
@@ -54,18 +64,20 @@ Additional control options manage printing of specific aspects of an option
 
 ```text
 OPTIONS:
-  -h,   --help           Print this help message and exit 
-        --opt TEXT [DEFFFF]  
-  -o,   --opt2 INT       this is a description for opt2 
-  -f, -n, --opt3, --option-double FLOAT 
-                         this is a description for option3 
-        --flag, --no_flag{false} 
-                         a flag option with a negative flag as well 
+  -h,   --help           Print this help message and exit
+        --opt TEXT [DEFFFF]
+  -o,   --opt2 INT       this is a description for opt2
+  -f, -n, --opt3, --option-double FLOAT
+                         this is a description for option3
+        --flag, --no_flag{false}
+                         a flag option with a negative flag as well
 ```
 
-The `[DEFFFF]` portion, which is the default value for options if specified can be turned off in the help output through `enable_option_defaults(false)`.  The `TEXT`, `INT`, `FLOAT` or other type names can be turned off via `enable_option_type_names(false)`.  and the `{false}` or flag default values can be turned off using `enable_default_flag_values(false)`.
-
-
+The `[DEFFFF]` portion, which is the default value for options if specified can
+be turned off in the help output through `enable_option_defaults(false)`. The
+`TEXT`, `INT`, `FLOAT` or other type names can be turned off via
+`enable_option_type_names(false)`. and the `{false}` or flag default values can
+be turned off using `enable_default_flag_values(false)`.
 
 ## Subclassing
 
@@ -127,7 +139,6 @@ Notes:
   optional.
 - `o` is opt pointer, `p` is true if positional.
 
-
 ## formatting callback
 
 For certain cases it is useful to use a callback for the help formatting
@@ -137,5 +148,7 @@ app.formatter_fn(
     [](const CLI::App *, std::string, CLI::AppFormatMode) { return std::string("This is really simple"); });
 ```
 
-This callback replaces the make_help call in the formatter with the callback.  This is a wrapper around a custom formatter that just needs the main call.  All configuration options are available but are ignored as the output is purely driven by the callback.
-  
+This callback replaces the make_help call in the formatter with the callback.
+This is a wrapper around a custom formatter that just needs the main call. All
+configuration options are available but are ignored as the output is purely
+driven by the callback.

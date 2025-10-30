@@ -103,13 +103,13 @@ TEST_CASE("Formatter: OptBaseExample", "[formatter]") {
     std::string v{};
     app.add_option("--opt", v)->default_str("DEFFFF");
 
-    int v2{ 0 };
-    app.add_option("-o,--opt2", v2,"this is a description for opt2");
+    int v2{0};
+    app.add_option("-o,--opt2", v2, "this is a description for opt2");
 
-    double v3{ 0.0 };
-    app.add_option("-f,-n,--opt3,--option-double", v3,"this is a description for option3");
+    double v3{0.0};
+    app.add_option("-f,-n,--opt3,--option-double", v3, "this is a description for option3");
 
-    app.add_flag("--flag,!--no_flag","a flag option with a negative flag as well");
+    app.add_flag("--flag,!--no_flag", "a flag option with a negative flag as well");
 
     std::string help = app.help();
 
