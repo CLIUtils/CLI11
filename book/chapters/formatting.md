@@ -37,9 +37,9 @@ Used labels are `REQUIRED`, `POSITIONALS`, `Usage`, `OPTIONS`, `SUBCOMMAND`,
 `INT`,`FLOAT` and others. Replacing these labels with new ones will use the
 specified words in place of the label.
 
-### Custumization descriptions
+### Customization Option Descriptions
 
-Some of the control options are visualized in Figure 1.
+Some of the control parameters are visualized in Figure 1. They manage the column widths and ratios of the different sections of the help
 
 ![example help output](../images/help_output1.png)
 
@@ -53,7 +53,7 @@ column width property.
 
 ### formatting options
 
-`enable_description_formatting(false)` and `enable_footer_formatting(false)`
+There are occasions where it is necessary to disable the formatting for headers and footers the two options `enable_description_formatting(false)` and `enable_footer_formatting(false)`
 turn off any formatting on the description and footer. This allows things like
 word art or external management of alignment and width. With formatting enabled
 the width is enforced and the paragraphs reflowed.
@@ -152,3 +152,9 @@ This callback replaces the make_help call in the formatter with the callback.
 This is a wrapper around a custom formatter that just needs the main call. All
 configuration options are available but are ignored as the output is purely
 driven by the callback.
+The first argument is a const pointer to the App in question. The formatter will get a std::string usage name as the second option, and a AppFormatMode mode for the final option. It should return a std::string.
+The `AppFormatMode` can be `Normal`, `All`, or `Sub`, and it indicates the
+situation the help was called in. `Sub` is optional, but the default formatter
+uses it to make sure expanded subcommands are called with their own formatter
+since you can't access anything but the call operator once a formatter has been
+set.
