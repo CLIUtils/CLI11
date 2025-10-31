@@ -166,8 +166,8 @@ this library:
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
-  option to disable it). Recent releases of CLI11 do include partial
-  option matching for option prefixes 🆕. This is enabled by
+  option to disable it). Recent releases of CLI11 do include partial option
+  matching for option prefixes 🆕. This is enabled by
   `.allow_subcommand_prefix_matching()`, along with an example that generates
   suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
@@ -1079,8 +1079,11 @@ option_groups. These are:
 - `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for
   help.
 - `.formatter_fn(fmt)`, with signature
-  `std::string(const App*, std::string, AppFormatMode)`. See [formatting][] for more details.
-- `.config_formatter(std::shared_ptr<Config> fmt)`: set a custom config formatter for generating config files, more details available at [Config files][config]
+  `std::string(const App*, std::string, AppFormatMode)`. See [formatting][] for
+  more details.
+- `.config_formatter(std::shared_ptr<Config> fmt)`: set a custom config
+  formatter for generating config files, more details available at [Config
+  files][config]
 - `.description(str)`: Set/change the description.
 - `.get_description()`: Access the description.
 - `.alias(str)`: set an alias for the subcommand, this allows subcommands to be
@@ -1453,15 +1456,18 @@ The default settings for options are inherited to subcommands, as well.
 
 ### Formatting
 
-The job of formatting help printouts is delegated to a formatter object. You are free to replace the formatter with a custom one by calling `formatter(fmt)` on an `App`. CLI11 comes with a default App formatter,
-`Formatter`. You can retreive the formatter via `.get_formatter()` this will return a pointer to the current `Formatter`.  It is customizable; you can set `label(key, value)` to replace the
-default labels like `REQUIRED`, and `OPTIONS`.  You can also set `column_width(n)` to set the width of the
-columns before you add the functional to the app or option. Several other configuration options are also available in the `Formatter`.  You can also
-override almost any stage of the formatting process in a subclass of either
-formatter. If you want to make a new formatter from scratch, you can do that
-too; you just need to implement the correct signature. 
-see [formatting][] for more details.
-
+The job of formatting help printouts is delegated to a formatter object. You are
+free to replace the formatter with a custom one by calling `formatter(fmt)` on
+an `App`. CLI11 comes with a default App formatter, `Formatter`. You can
+retreive the formatter via `.get_formatter()` this will return a pointer to the
+current `Formatter`. It is customizable; you can set `label(key, value)` to
+replace the default labels like `REQUIRED`, and `OPTIONS`. You can also set
+`column_width(n)` to set the width of the columns before you add the functional
+to the app or option. Several other configuration options are also available in
+the `Formatter`. You can also override almost any stage of the formatting
+process in a subclass of either formatter. If you want to make a new formatter
+from scratch, you can do that too; you just need to implement the correct
+signature. see [formatting][] for more details.
 
 ### Subclassing
 
