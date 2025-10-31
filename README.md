@@ -1459,7 +1459,7 @@ The default settings for options are inherited to subcommands, as well.
 The job of formatting help printouts is delegated to a formatter object. You are
 free to replace the formatter with a custom one by calling `formatter(fmt)` on
 an `App`. CLI11 comes with a default App formatter, `Formatter`. You can
-retreive the formatter via `.get_formatter()` this will return a pointer to the
+retrieve the formatter via `.get_formatter()` this will return a pointer to the
 current `Formatter`. It is customizable; you can set `label(key, value)` to
 replace the default labels like `REQUIRED`, and `OPTIONS`. You can also set
 `column_width(n)` to set the width of the columns before you add the functional
