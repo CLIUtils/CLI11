@@ -38,8 +38,8 @@ set with a simple and intuitive interface.
       - [Option options](#option-options)
       - [Validators](#validators)
       - [Default Validators](#default-validators)
-      - [Validators that may be disabled 🚧](#validators-that-may-be-disabled-)
-      - [Extra Validators 🚧](#extra-validators-)
+      - [Validators that may be disabled 🆕](#validators-that-may-be-disabled-)
+      - [Extra Validators 🆕](#extra-validators-)
       - [Validator Usage](#validator-usage)
         - [Transforming Validators](#transforming-validators)
         - [Validator operations](#validator-operations)
@@ -166,8 +166,8 @@ this library:
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
-  option to disable it). 🆕 The latest version of CLI11 does include partial
-  option matching for option prefixes. This is enabled by
+  option to disable it). Recent releases of CLI11 do include partial option
+  matching for option prefixes 🆕. This is enabled by
   `.allow_subcommand_prefix_matching()`, along with an example that generates
   suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
@@ -599,7 +599,7 @@ the two function are that checks do not modify the input whereas transforms can
 and are executed before any Validators added through `check`.
 
 CLI11 has several Validators included that perform some common checks. By
-default the most commonly used ones are available. 🚧 If some are not needed
+default the most commonly used ones are available. 🆕 If some are not needed
 they can be disabled by using
 
 ```c++
@@ -625,7 +625,7 @@ of flags.
 - `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
 - `CLI::Number`: Requires the input be a number.
 
-#### Validators that may be disabled 🚧
+#### Validators that may be disabled 🆕
 
 Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
 or enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1. By default they are
@@ -660,7 +660,7 @@ computation time that may not be valuable for some use cases.
   the input be convertible to an `unsigned int` regardless of the end
   conversion.
 
-#### Extra Validators 🚧
+#### Extra Validators 🆕
 
 New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
@@ -842,7 +842,7 @@ It is also possible to create a subclass of `CLI::Validator`, in which case it
 can also set a custom description function, and operation function. One example
 of this is in the
 [custom validator example](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp).
-example. The `check` and `transform` operations can also take a shared_ptr 🚧 to
+example. The `check` and `transform` operations can also take a shared_ptr 🆕 to
 a validator if you wish to reuse the validator in multiple locations or it is
 mutating and the check is dependent on other operations or is variable. Note
 that in this case it is not recommended to use the same object for both check
@@ -1076,9 +1076,14 @@ option_groups. These are:
   for processing the app for custom output formats).
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
-- `.formatter(fmt)`: Set a formatter, with signature
-  `std::string(const App*, std::string, AppFormatMode)`. See Formatting for more
-  details.
+- `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for
+  help.
+- `.formatter_fn(fmt)`, with signature
+  `std::string(const App*, std::string, AppFormatMode)`. See [formatting][] for
+  more details.
+- `.config_formatter(std::shared_ptr<Config> fmt)`: set a custom config
+  formatter for generating config files, more details available at [Config
+  files][config]
 - `.description(str)`: Set/change the description.
 - `.get_description()`: Access the description.
 - `.alias(str)`: set an alias for the subcommand, this allows subcommands to be
@@ -1451,25 +1456,18 @@ The default settings for options are inherited to subcommands, as well.
 
 ### Formatting
 
-The job of formatting help printouts is delegated to a formatter callable object
-on Apps and Options. You are free to replace either formatter by calling
-`formatter(fmt)` on an `App`, where fmt is any copyable callable with the
-correct signature. CLI11 comes with a default App formatter functional,
-`Formatter`. It is customizable; you can set `label(key, value)` to replace the
-default labels like `REQUIRED`, and `column_width(n)` to set the width of the
-columns before you add the functional to the app or option. You can also
-override almost any stage of the formatting process in a subclass of either
-formatter. If you want to make a new formatter from scratch, you can do that
-too; you just need to implement the correct signature. The first argument is a
-const pointer to the in question. The formatter will get a `std::string` usage
-name as the second option, and a `AppFormatMode` mode for the final option. It
-should return a `std::string`.
-
-The `AppFormatMode` can be `Normal`, `All`, or `Sub`, and it indicates the
-situation the help was called in. `Sub` is optional, but the default formatter
-uses it to make sure expanded subcommands are called with their own formatter
-since you can't access anything but the call operator once a formatter has been
-set.
+The job of formatting help printouts is delegated to a formatter object. You are
+free to replace the formatter with a custom one by calling `formatter(fmt)` on
+an `App`. CLI11 comes with a default App formatter, `Formatter`. You can
+retrieve the formatter via `.get_formatter()` this will return a pointer to the
+current `Formatter`. It is customizable; you can set `label(key, value)` to
+replace the default labels like `REQUIRED`, and `OPTIONS`. You can also set
+`column_width(n)` to set the width of the columns before you add the functional
+to the app or option. Several other configuration options are also available in
+the `Formatter`. You can also override almost any stage of the formatting
+process in a subclass of either formatter. If you want to make a new formatter
+from scratch, you can do that too; you just need to implement the correct
+signature. see [formatting][] for more details.
 
 ### Subclassing
 
@@ -1997,3 +1995,5 @@ try! Feedback is always welcome.
 [toml]: https://toml.io
 [lyra]: https://github.com/bfgroup/Lyra
 [installation]: https://cliutils.github.io/CLI11/book/chapters/installation.html
+[formatting]: https://cliutils.github.io/CLI11/book/chapters/formatting.html
+[config]: https://cliutils.github.io/CLI11/book/chapters/config.html

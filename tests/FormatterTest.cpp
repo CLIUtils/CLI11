@@ -95,6 +95,63 @@ TEST_CASE("Formatter: OptCustomizeOptionText", "[formatter]") {
     CHECK_THAT(help, Contains("(ARG)"));
 }
 
+TEST_CASE("Formatter: OptBaseExample", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+
+    std::string v{};
+    app.add_option("--opt", v)->default_str("DEFFFF");
+
+    int v2{0};
+    app.add_option("-o,--opt2", v2, "this is a description for opt2");
+
+    double v3{0.0};
+    app.add_option("-f,-n,--opt3,--option-double", v3, "this is a description for option3");
+
+    app.add_flag("--flag,!--no_flag", "a flag option with a negative flag as well");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("DEFFFF"));
+    CHECK_THAT(help, Contains("{false"));
+}
+TEST_CASE("Formatter: OptDefaults", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+
+    std::string v{};
+    app.add_option("--opt", v)->default_str("DEFFFF");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("[DEFFFF]"));
+    app.get_formatter()->enable_option_defaults(false);
+
+    help = app.help();
+    CHECK_THAT(help, !Contains("[DEFFFF]"));
+    CHECK(!app.get_formatter()->is_option_defaults_enabled());
+}
+
+TEST_CASE("Formatter: OptTypes", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+
+    std::string v{};
+    app.add_option("--opt", v);
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("TEXT"));
+    app.get_formatter()->enable_option_type_names(false);
+
+    help = app.help();
+    CHECK_THAT(help, !Contains("TEXT"));
+    CHECK(!app.get_formatter()->is_option_type_names_enabled());
+}
+
 TEST_CASE("Formatter: FalseFlagExample", "[formatter]") {
     CLI::App app{"My prog"};
 
@@ -112,6 +169,30 @@ TEST_CASE("Formatter: FalseFlagExample", "[formatter]") {
     CHECK_THAT(help, Contains("--no_opt{false}"));
     CHECK_THAT(help, Contains("--no_opt2{false}"));
     CHECK_THAT(help, Contains("-O{false}"));
+}
+
+TEST_CASE("Formatter: FalseFlagExampleDisable", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->column_width(25);
+
+    int v{0};
+    app.add_flag("--opt,!--no_opt", v, "Something");
+
+    bool flag{false};
+    app.add_flag("!-O,--opt2,--no_opt2{false}", flag, "Something else");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("--no_opt{false}"));
+    CHECK_THAT(help, Contains("--no_opt2{false}"));
+    CHECK_THAT(help, Contains("-O{false}"));
+
+    app.get_formatter()->enable_default_flag_values(false);
+    CHECK(!app.get_formatter()->is_default_flag_values_enabled());
+
+    help = app.help();
+    CHECK_THAT(help, !Contains("{false}"));
 }
 
 TEST_CASE("Formatter: AppCustomize", "[formatter]") {
