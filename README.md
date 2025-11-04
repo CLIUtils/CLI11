@@ -897,7 +897,7 @@ not used in performance critical code:
   variable.
 - `Value=opt->as<type>()`: Returns the result or default value directly as the
   specified type if possible, can be vector to return all results, and a
-  non-vector to get the result according to the MultiOptionPolicy in place.
+  non-vector to get the result according to the MultiOptionPolicy in place. If it is expected that the results will be needed as a vector, it is suggested that `->expected(CLI::details::expected_max_vector_size)` or `allow_extra_args()` be used on the option to inform CLI11 that vector args are expected and allowed.
 
 ### Subcommands
 

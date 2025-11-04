@@ -37,18 +37,54 @@ The parsing phase is the most interesting:
    didn't fit in the parse.
 
 The `_process` procedure runs the following steps; each step is recursive and
-completes all subcommands before moving to the next step (new in 1.7). This
+completes all subcommands before moving to the next step. This
 ensures that interactions between options and subcommand options is consistent.
 
-1. `_process_ini`: This reads an INI file and fills/changes options as needed.
-2. `_process_env`: Look for environment variables.
-3. `_process_callbacks`: Run the callback functions - this fills out the
-   variables.
-4. `_process_help_flags`: Run help flags if present (and quit).
-5. `_process_requirements`: Make sure needs/excludes, required number of options
-   present.
+```c++
+CLI11_INLINE void App::_process() {
+    // help takes precedence over other potential errors and config and environment shouldn't be processed if help
+    // throws
+    _process_callbacks(CallbackPriority::FirstPreHelp);
+    _process_help_flags(CallbackPriority::First);
+    _process_callbacks(CallbackPriority::First);
+
+    std::exception_ptr config_exception;
+    try {
+        // the config file might generate a FileError but that should not be processed until later in the process
+        // to allow for help, version and other errors to generate first.
+        _process_config_file();
+
+        // process env shouldn't throw but no reason to process it if config generated an error
+        _process_env();
+    } catch(const CLI::FileError &) {
+        config_exception = std::current_exception();
+    }
+    // callbacks and requirements processing can generate exceptions which should take priority
+    // over the config file error if one exists.
+    _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
+    _process_help_flags(CallbackPriority::PreRequirementsCheck);
+    _process_callbacks(CallbackPriority::PreRequirementsCheck);
+
+    _process_requirements();
+
+    _process_callbacks(CallbackPriority::NormalPreHelp);
+    _process_help_flags(CallbackPriority::Normal);
+    _process_callbacks(CallbackPriority::Normal);
+
+    if(config_exception) {
+        std::rethrow_exception(config_exception);
+    }
+
+    _process_callbacks(CallbackPriority::LastPreHelp);
+    _process_help_flags(CallbackPriority::Last);
+    _process_callbacks(CallbackPriority::Last);
+}
+
+```
+
+Option callbacks can be executed at many different stages depending on the priority specified.   The default is `Normal` so they will execute after processing requirements.   The default for help and version flags is to execute `First`.  Both can be changed to execute in different steps of the process.  
 
 ## Exceptions
 
 The library immediately returns a C++ exception when it detects a problem, such
-as an incorrect construction or a malformed command line.
+as an incorrect construction or a malformed command line.  Errors from config processing are delayed until after other processing, to give priority to any help or version flags, or other types of callback errors.  

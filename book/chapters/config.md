@@ -222,10 +222,26 @@ characters. Characters not in this form will be translated as given. If argument
 values with unprintable characters are used to generate a config file this
 binary form will be used in the output string.
 
+### multiline vector
+
+Vector arguments can also be multiline
+
+```toml
+#multiline vector format
+vector = [
+  2,
+  3,
+  4,
+  5,
+  6
+]
+```
+
+
 ### vector of vector inputs
 
 It is possible to specify vector of vector inputs in config file. This can be
-done in a couple different ways
+done in a few different ways
 
 ```toml
 # Examples of vector of vector inputs in config
@@ -239,6 +255,7 @@ vector2 = [1,2,3,"%%",4,5,6]
 # multiline format
 vector3 = [1,2,3]
 vector3 = [4,5,6]
+
 
 ```
 
@@ -348,7 +365,7 @@ bool commentDefaultsBool = false;
 /// specify the config reader should collapse repeated field names to a single vector
 bool allowMultipleDuplicateFields{false};
 /// Specify the configuration index to use for arrayed sections
-uint16_t configIndex{0};
+uint16_t configIndex{-1};
 /// Specify the configuration section that should be used
 std::string configSection;
 ```
