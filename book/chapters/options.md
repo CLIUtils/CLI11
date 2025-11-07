@@ -372,7 +372,8 @@ constructed it sets a type_size min and max of 1. Meaning that the assignment
 uses a single string. The Expected size is also set to 1 by default, and
 `allow_extra_args` is set to false. meaning that each time this option is called
 1 argument is expected. This would also be the case if val were a `double`,
-`int` or any other single argument types. The modifier `allow_extra_args` should be set to true if the option output will ever be needed as a vector.
+`int` or any other single argument types. The modifier `allow_extra_args` should
+be set to true if the option output will ever be needed as a vector.
 
 now for example
 
@@ -463,8 +464,8 @@ specific cases:
   the argument is passed. The value is reset if the option is supplied multiple
   times.
 
-- `->callback_priority(CallbackPriority priority)`: changes the order in
-  which the option callback is executed. Four principal callback call-points are
+- `->callback_priority(CallbackPriority priority)`: changes the order in which
+  the option callback is executed. Four principal callback call-points are
   available. `CallbackPriority::First` executes at the very beginning of
   processing, before configuration files are read and environment variables are
   interpreted. `CallbackPriority::PreRequirementsCheck` executes after
@@ -507,4 +508,3 @@ does not have a streaming operator but one is detected since it is part of a
 template. For these cases a secondary method `app->add_option_no_stream(...)` is
 provided that bypasses this operation completely and should compile in these
 cases.
-
