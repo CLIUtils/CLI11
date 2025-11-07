@@ -372,7 +372,7 @@ constructed it sets a type_size min and max of 1. Meaning that the assignment
 uses a single string. The Expected size is also set to 1 by default, and
 `allow_extra_args` is set to false. meaning that each time this option is called
 1 argument is expected. This would also be the case if val were a `double`,
-`int` or any other single argument types.
+`int` or any other single argument types. The modifier `allow_extra_args` should be set to true if the option output will ever be needed as a vector.
 
 now for example
 
@@ -463,6 +463,34 @@ specific cases:
   the argument is passed. The value is reset if the option is supplied multiple
   times.
 
+- `->callback_priority(CallbackPriority priority)`: changes the order in
+  which the option callback is executed. Four principal callback call-points are
+  available. `CallbackPriority::First` executes at the very beginning of
+  processing, before configuration files are read and environment variables are
+  interpreted. `CallbackPriority::PreRequirementsCheck` executes after
+  configuration and environment processing but before requirements checking.
+  `CallbackPriority::Normal` executes after the requirements check but before
+  any previously potentially raised exceptions are re-thrown.
+  `CallbackPriority::Last` executes after exception handling is completed. For
+  each position, both ordinary option callbacks and help callbacks are invoked.
+  The relative order between them can be controlled using the corresponding
+  `PreHelp` variants. `CallbackPriority::FirstPreHelp` executes ordinary option
+  callbacks before help callbacks at the very beginning of processing.
+  `CallbackPriority::PreRequirementsCheckPreHelp` executes ordinary option
+  callbacks before help callbacks after configuration and environment processing
+  but before requirements checking. `CallbackPriority::NormalPreHelp` executes
+  ordinary option callbacks before help callbacks after the requirements check
+  but before exception re-throwing. `CallbackPriority::LastPreHelp` executes
+  ordinary option callbacks before help callbacks after exception handling has
+  completed. When using the standard priorities (`CallbackPriority::First`,
+  `CallbackPriority::PreRequirementsCheck`, `CallbackPriority::Normal`,
+  `CallbackPriority::Last`), help callbacks are executed before ordinary option
+  callbacks. By default, help callbacks use `CallbackPriority::First`, and
+  ordinary option callbacks use `CallbackPriority::Normal`. This mechanism
+  provides fine-grained control over when option values are set and when help or
+  requirement checks occur, enabling precise customization of the processing
+  sequence.
+
 ## Unusual circumstances
 
 There are a few cases where some things break down in the type system managing
@@ -479,3 +507,4 @@ does not have a streaming operator but one is detected since it is part of a
 template. For these cases a secondary method `app->add_option_no_stream(...)` is
 provided that bypasses this operation completely and should compile in these
 cases.
+
