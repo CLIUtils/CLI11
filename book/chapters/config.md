@@ -237,7 +237,6 @@ vector = [
 ]
 ```
 
-
 ### vector of vector inputs
 
 It is possible to specify vector of vector inputs in config file. This can be

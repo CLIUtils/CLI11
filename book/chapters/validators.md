@@ -120,11 +120,11 @@ compilation time is a concern they can be disabled.
 Some additional validators can be enabled by using CLI11_ENABLE_EXTRA_VALIDATORS
 to 1. These validators are disabled by default.
 
-| Validator           | Description                                                |
-| ------------------- | ---------------------------------------------------------- |
-| `ReadPermissions`   | Ensure a file or directory has permissions to read the file|
-| `WritePermissions`  | Ensure a file or directory has write permissions           |
-| `ExecPermissions`   | Ensure a file has exec permissions                         |
+| Validator          | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `ReadPermissions`  | Ensure a file or directory has permissions to read the file |
+| `WritePermissions` | Ensure a file or directory has write permissions            |
+| `ExecPermissions`  | Ensure a file has exec permissions                          |
 
 ## Custom Validators
 

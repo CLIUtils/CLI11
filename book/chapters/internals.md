@@ -37,8 +37,8 @@ The parsing phase is the most interesting:
    didn't fit in the parse.
 
 The `_process` procedure runs the following steps; each step is recursive and
-completes all subcommands before moving to the next step. This
-ensures that interactions between options and subcommand options is consistent.
+completes all subcommands before moving to the next step. This ensures that
+interactions between options and subcommand options is consistent.
 
 ```c++
 CLI11_INLINE void App::_process() {
@@ -82,9 +82,14 @@ CLI11_INLINE void App::_process() {
 
 ```
 
-Option callbacks can be executed at many different stages depending on the priority specified.   The default is `Normal` so they will execute after processing requirements.   The default for help and version flags is to execute `First`.  Both can be changed to execute in different steps of the process.  
+Option callbacks can be executed at many different stages depending on the
+priority specified. The default is `Normal` so they will execute after
+processing requirements. The default for help and version flags is to execute
+`First`. Both can be changed to execute in different steps of the process.
 
 ## Exceptions
 
 The library immediately returns a C++ exception when it detects a problem, such
-as an incorrect construction or a malformed command line.  Errors from config processing are delayed until after other processing, to give priority to any help or version flags, or other types of callback errors.  
+as an incorrect construction or a malformed command line. Errors from config
+processing are delayed until after other processing, to give priority to any
+help or version flags, or other types of callback errors.
