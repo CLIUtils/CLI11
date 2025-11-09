@@ -185,6 +185,7 @@ default to off if CLI11 is used as a subdirectory in another project.
 | `CLI11_BUILD_EXAMPLES=ON`      | Build the example programs.                                                      |
 | `CLI11_BUILD_EXAMPLES_JSON=ON` | Build some additional example using json libraries                               |
 | `CLI11_INSTALL=ON`             | install CLI11 to the install folder during the install process                   |
+| `CLI11_FULL_INSTALL=ON`        | install all CLI11 headers regardless of other settings                           |
 | `CLI11_FORCE_LIBCXX=OFF`       | use libc++ instead of libstdc++ if building with clang on linux                  |
 | `CLI11_CUDA_TESTS=OFF`         | build the tests with NVCC                                                        |
 | `CLI11_BUILD_TESTS=ON`         | Build the tests.                                                                 |

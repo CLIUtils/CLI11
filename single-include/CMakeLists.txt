@@ -17,7 +17,7 @@ if(CLI11_SINGLE_FILE)
   add_custom_target(CLI11-generate-single-file ALL
                     DEPENDS "${PROJECT_BINARY_DIR}/single-include/CLI11.hpp")
   set_property(TARGET CLI11-generate-single-file PROPERTY FOLDER "Scripts")
-  if(CLI11_INSTALL)
+  if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
     install(FILES "${PROJECT_BINARY_DIR}/single-include/CLI11.hpp"
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   endif()

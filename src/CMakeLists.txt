@@ -44,14 +44,14 @@ if(CMAKE_CXX_STANDARD LESS 14)
   target_compile_features(CLI11 INTERFACE cxx_std_11)
 endif()
 
-if(CLI11_INSTALL)
+if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
 
   # Make an export target
   install(TARGETS CLI11 EXPORT CLI11Targets)
-  if(NOT CLI11_SINGLE_FILE)
+  if((NOT CLI11_SINGLE_FILE) OR CLI11_FULL_INSTALL)
     install(FILES ${CLI11_headers} ${CLI11_library_headers}
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-    if(NOT CLI11_PRECOMPILED)
+    if((NOT CLI11_PRECOMPILED) OR CLI11_FULL_INSTALL)
       install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
     endif()
   endif()
