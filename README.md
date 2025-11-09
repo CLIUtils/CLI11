@@ -482,7 +482,8 @@ Before parsing, you can set the following options:
 - `->configurable(false)`: Disable this option from being in a configuration
   file.
 - `->capture_default_str()`: Store the current value attached and display it in
-  the help string.
+  the help string. This should work with almost any type that `add_option` can
+  accept.
 - `->default_function(std::string())`: Advanced: Change the function that
   `capture_default_str()` uses.
 - `->always_capture_default()`: Always run `capture_default_str()` when creating
@@ -897,7 +898,11 @@ not used in performance critical code:
   variable.
 - `Value=opt->as<type>()`: Returns the result or default value directly as the
   specified type if possible, can be vector to return all results, and a
-  non-vector to get the result according to the MultiOptionPolicy in place.
+  non-vector to get the result according to the MultiOptionPolicy in place. If
+  it is expected that the results will be needed as a vector, it is suggested
+  that `->expected(CLI::details::expected_max_vector_size)` or
+  `allow_extra_args()` be used on the option to inform CLI11 that vector args
+  are expected and allowed.
 
 ### Subcommands
 

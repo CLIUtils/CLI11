@@ -4,7 +4,7 @@ if(CLI11_SANITIZERS AND ${CMAKE_VERSION} VERSION_GREATER "3.15")
     sanitizers
     GIT_REPOSITORY https://github.com/arsenm/sanitizers-cmake.git
     GIT_SHALLOW 1
-    GIT_TAG 0573e2e)
+    GIT_TAG bcb1fc6)
 
   FetchContent_MakeAvailable(sanitizers)
 
