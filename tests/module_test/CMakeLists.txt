@@ -8,6 +8,7 @@ if(CLI11_DIR)
   set(CMAKE_PREFIX_PATH ${CLI11_DIR})
 endif()
 
+set(CMAKE_CXX_STANDARD 23)
 # Test the CLI11 CMake package config
 find_package(CLI11 2.5 REQUIRED)
 

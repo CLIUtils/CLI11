@@ -304,7 +304,7 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_STANDARD=23
       - name: Build
         run: cmake --build build  -j2
       - name: install
