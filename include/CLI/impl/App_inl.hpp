@@ -1275,8 +1275,8 @@ CLI11_INLINE void App::_process_help_flags(CallbackPriority priority, bool trigg
     if(help_ptr != nullptr && help_ptr->count() > 0 && help_ptr->get_callback_priority() == priority)
         trigger_help = true;
     if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() == priority)
-    if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() == priority)
-        trigger_all_help = true;
+        if(help_all_ptr != nullptr && help_all_ptr->count() > 0 && help_all_ptr->get_callback_priority() == priority)
+            trigger_all_help = true;
 
     // If there were parsed subcommands, call those. First subcommand wins if there are multiple ones.
     if(!parsed_subcommands_.empty()) {

@@ -1,12 +1,12 @@
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 
 import math;
 
-int main(){
-    int a=1;
-    int b=2;
+int main() {
+    int a = 1;
+    int b = 2;
 
     int absum = add(a, b);
     int abdif = subtract(a, b);

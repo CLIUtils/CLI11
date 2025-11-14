@@ -35,10 +35,10 @@ else()
   set(SYSTEM_INCL "SYSTEM")
 endif()
 
-if (CLI11_MODULE)
-    target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_MODULE=1)
+if(CLI11_MODULE)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_MODULE=1)
 endif()
-    
+
 # Duplicated because CMake adds the current source dir if you don't.
 target_include_directories(
   CLI11 ${SYSTEM_INCL} ${PUBLIC_OR_INTERFACE} $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

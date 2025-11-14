@@ -357,12 +357,12 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
   set_property(TEST find-package-testsC PROPERTY LABELS Packaging)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
-if (CMAKE_CXX_STANDARD GREATER 19)
+  if(CMAKE_CXX_STANDARD GREATER 19)
     add_test(NAME find-package-module
-           COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/module_tests"
-                   --config ${CLI11_PACKAGE_TEST_BUILD_TYPE})
-endif()
-                
+             COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/module_tests" --config
+                     ${CLI11_PACKAGE_TEST_BUILD_TYPE})
+  endif()
+
   if(NOT MSVC)
     # Tests for other CMake projects using the package_config files
     add_test(
