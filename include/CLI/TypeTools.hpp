@@ -33,10 +33,10 @@ namespace CLI {
 namespace detail {
 // Based generally on https://rmf.io/cxx11/almost-static-if
 /// Simple empty scoped class
-enum class enabler : std::uint8_t {null};
+enum class enabler : std::uint8_t {};
 
 /// An instance to use in EnableIf
-constexpr enabler dummy = {enabler::null};
+CLI11_MODULE_INLINE constexpr enabler dummy = {};
 }  // namespace detail
 
 /// A copy of enable_if_t from C++14, compatible with C++11.

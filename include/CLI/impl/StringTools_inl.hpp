@@ -21,174 +21,185 @@
 namespace CLI {
 // [CLI11:string_tools_inl_hpp:verbatim]
 
-namespace detail {
-CLI11_INLINE std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    // Check to see if empty string, give consistent result
-    if(s.empty()) {
-        elems.emplace_back();
-    } else {
-        std::stringstream ss;
-        ss.str(s);
-        std::string item;
-        while(std::getline(ss, item, delim)) {
-            elems.push_back(item);
-        }
-    }
-    return elems;
-}
-
-CLI11_INLINE std::string &ltrim(std::string &str) {
-    auto it = std::find_if(str.begin(), str.end(), [](char ch) { return !std::isspace<char>(ch, std::locale()); });
-    str.erase(str.begin(), it);
-    return str;
-}
-
-CLI11_INLINE std::string &ltrim(std::string &str, const std::string &filter) {
-    auto it = std::find_if(str.begin(), str.end(), [&filter](char ch) { return filter.find(ch) == std::string::npos; });
-    str.erase(str.begin(), it);
-    return str;
-}
-
-CLI11_INLINE std::string &rtrim(std::string &str) {
-    auto it = std::find_if(str.rbegin(), str.rend(), [](char ch) { return !std::isspace<char>(ch, std::locale()); });
-    str.erase(it.base(), str.end());
-    return str;
-}
-
-CLI11_INLINE std::string &rtrim(std::string &str, const std::string &filter) {
-    auto it =
-        std::find_if(str.rbegin(), str.rend(), [&filter](char ch) { return filter.find(ch) == std::string::npos; });
-    str.erase(it.base(), str.end());
-    return str;
-}
-
-CLI11_INLINE std::string &remove_quotes(std::string &str) {
-    if(str.length() > 1 && (str.front() == '"' || str.front() == '\'' || str.front() == '`')) {
-        if(str.front() == str.back()) {
-            str.pop_back();
-            str.erase(str.begin(), str.begin() + 1);
-        }
-    }
-    return str;
-}
-
-CLI11_INLINE std::string &remove_outer(std::string &str, char key) {
-    if(str.length() > 1 && (str.front() == key)) {
-        if(str.front() == str.back()) {
-            str.pop_back();
-            str.erase(str.begin(), str.begin() + 1);
-        }
-    }
-    return str;
-}
-
-CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string input) {
-    std::string::size_type n = 0;
-    while(n != std::string::npos && n < input.size()) {
-        n = input.find_first_of("\r\n", n);
-        if(n != std::string::npos) {
-            input = input.substr(0, n + 1) + leader + input.substr(n + 1);
-            n += leader.size();
-        }
-    }
-    return input;
-}
-
-CLI11_INLINE std::ostream &format_aliases(std::ostream &out, const std::vector<std::string> &aliases, std::size_t wid) {
-    if(!aliases.empty()) {
-        out << std::setw(static_cast<int>(wid)) << "     aliases: ";
-        bool front = true;
-        for(const auto &alias : aliases) {
-            if(!front) {
-                out << ", ";
-            } else {
-                front = false;
+    namespace detail {
+        CLI11_INLINE std::vector<std::string> split(const std::string& s, char delim) {
+            std::vector<std::string> elems;
+            // Check to see if empty string, give consistent result
+            if (s.empty()) {
+                elems.emplace_back();
             }
-            out << detail::fix_newlines("              ", alias);
+            else {
+                std::stringstream ss;
+                ss.str(s);
+                std::string item;
+                while (std::getline(ss, item, delim)) {
+                    elems.push_back(item);
+                }
+            }
+            return elems;
         }
-        out << "\n";
-    }
-    return out;
-}
 
-CLI11_INLINE bool valid_name_string(const std::string &str) {
-    if(str.empty() || !valid_first_char(str[0])) {
-        return false;
-    }
-    auto e = str.end();
-    for(auto c = str.begin() + 1; c != e; ++c)
-        if(!valid_later_char(*c))
-            return false;
-    return true;
-}
+        CLI11_INLINE std::string& ltrim(std::string& str) {
+            auto it = std::find_if(str.begin(), str.end(), [](char ch) { return !std::isspace<char>(ch, std::locale()); });
+            str.erase(str.begin(), it);
+            return str;
+        }
 
-CLI11_INLINE std::string get_group_separators() {
-    std::string separators{"_'"};
+        CLI11_INLINE std::string& ltrim(std::string& str, const std::string& filter) {
+            auto it = std::find_if(str.begin(), str.end(), [&filter](char ch) { return filter.find(ch) == std::string::npos; });
+            str.erase(str.begin(), it);
+            return str;
+        }
+
+        CLI11_INLINE std::string& rtrim(std::string& str) {
+            auto it = std::find_if(str.rbegin(), str.rend(), [](char ch) { return !std::isspace<char>(ch, std::locale()); });
+            str.erase(it.base(), str.end());
+            return str;
+        }
+
+        CLI11_INLINE std::string& rtrim(std::string& str, const std::string& filter) {
+            auto it =
+                std::find_if(str.rbegin(), str.rend(), [&filter](char ch) { return filter.find(ch) == std::string::npos; });
+            str.erase(it.base(), str.end());
+            return str;
+        }
+
+        CLI11_INLINE std::string& remove_quotes(std::string& str) {
+            if (str.length() > 1 && (str.front() == '"' || str.front() == '\'' || str.front() == '`')) {
+                if (str.front() == str.back()) {
+                    str.pop_back();
+                    str.erase(str.begin(), str.begin() + 1);
+                }
+            }
+            return str;
+        }
+
+        CLI11_INLINE std::string& remove_outer(std::string& str, char key) {
+            if (str.length() > 1 && (str.front() == key)) {
+                if (str.front() == str.back()) {
+                    str.pop_back();
+                    str.erase(str.begin(), str.begin() + 1);
+                }
+            }
+            return str;
+        }
+
+        CLI11_INLINE std::string fix_newlines(const std::string& leader, std::string input) {
+            std::string::size_type n = 0;
+            while (n != std::string::npos && n < input.size()) {
+                n = input.find_first_of("\r\n", n);
+                if (n != std::string::npos) {
+                    input = input.substr(0, n + 1) + leader + input.substr(n + 1);
+                    n += leader.size();
+                }
+            }
+            return input;
+        }
+
+        CLI11_INLINE std::ostream& format_aliases(std::ostream& out, const std::vector<std::string>& aliases, std::size_t wid) {
+            if (!aliases.empty()) {
+                out << std::setw(static_cast<int>(wid)) << "     aliases: ";
+                bool front = true;
+                for (const auto& alias : aliases) {
+                    if (!front) {
+                        out << ", ";
+                    }
+                    else {
+                        front = false;
+                    }
+                    out << detail::fix_newlines("              ", alias);
+                }
+                out << "\n";
+            }
+            return out;
+        }
+
+        CLI11_INLINE bool valid_name_string(const std::string& str) {
+            if (str.empty() || !valid_first_char(str[0])) {
+                return false;
+            }
+            auto e = str.end();
+            for (auto c = str.begin() + 1; c != e; ++c)
+                if (!valid_later_char(*c))
+                    return false;
+            return true;
+        }
+
+        CLI11_INLINE std::string get_group_separators() {
+            std::string separators{ "_'" };
 #if CLI11_HAS_RTTI != 0
-    char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
-    separators.push_back(group_separator);
+            char group_separator = std::use_facet<std::numpunct<char>>(std::locale()).thousands_sep();
+            separators.push_back(group_separator);
 #endif
-    return separators;
-}
+            return separators;
+        }
 
-CLI11_INLINE std::string find_and_replace(std::string str, std::string from, std::string to) {
+        CLI11_INLINE std::string find_and_replace(std::string str, std::string from, std::string to) {
 
-    std::size_t start_pos = 0;
+            std::size_t start_pos = 0;
 
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
+            while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+                str.replace(start_pos, from.length(), to);
+                start_pos += to.length();
+            }
 
-    return str;
-}
+            return str;
+        }
 
-CLI11_INLINE void remove_default_flag_values(std::string &flags) {
-    auto loc = flags.find_first_of('{', 2);
-    while(loc != std::string::npos) {
-        auto finish = flags.find_first_of("},", loc + 1);
-        if((finish != std::string::npos) && (flags[finish] == '}')) {
-            flags.erase(flags.begin() + static_cast<std::ptrdiff_t>(loc),
+        CLI11_INLINE void remove_default_flag_values(std::string& flags) {
+            auto loc = flags.find_first_of('{', 2);
+            while (loc != std::string::npos) {
+                auto finish = flags.find_first_of("},", loc + 1);
+                if ((finish != std::string::npos) && (flags[finish] == '}')) {
+                    flags.erase(flags.begin() + static_cast<std::ptrdiff_t>(loc),
                         flags.begin() + static_cast<std::ptrdiff_t>(finish) + 1);
-        }
-        loc = flags.find_first_of('{', loc + 1);
-    }
-    flags.erase(std::remove(flags.begin(), flags.end(), '!'), flags.end());
-}
-
-CLI11_INLINE std::ptrdiff_t
-find_member(std::string name, const std::vector<std::string> names, bool ignore_case, bool ignore_underscore) {
-    auto it = std::end(names);
-    if(ignore_case) {
-        if(ignore_underscore) {
-            name = detail::to_lower(detail::remove_underscore(name));
-            it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
-                return detail::to_lower(detail::remove_underscore(local_name)) == name;
-            });
-        } else {
-            name = detail::to_lower(name);
-            it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
-                return detail::to_lower(local_name) == name;
-            });
+                }
+                loc = flags.find_first_of('{', loc + 1);
+            }
+            flags.erase(std::remove(flags.begin(), flags.end(), '!'), flags.end());
         }
 
-    } else if(ignore_underscore) {
-        name = detail::remove_underscore(name);
-        it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
-            return detail::remove_underscore(local_name) == name;
-        });
-    } else {
-        it = std::find(std::begin(names), std::end(names), name);
-    }
+        CLI11_INLINE std::ptrdiff_t
+            find_member(std::string name, const std::vector<std::string> names, bool ignore_case, bool ignore_underscore) {
+            auto it = std::end(names);
+            if (ignore_case) {
+                if (ignore_underscore) {
+                    name = detail::to_lower(detail::remove_underscore(name));
+                    it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                        return detail::to_lower(detail::remove_underscore(local_name)) == name;
+                        });
+                }
+                else {
+                    name = detail::to_lower(name);
+                    it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                        return detail::to_lower(local_name) == name;
+                        });
+                }
 
-    return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
-}
+            }
+            else if (ignore_underscore) {
+                name = detail::remove_underscore(name);
+                it = std::find_if(std::begin(names), std::end(names), [&name](std::string local_name) {
+                    return detail::remove_underscore(local_name) == name;
+                    });
+            }
+            else {
+                it = std::find(std::begin(names), std::end(names), name);
+            }
 
-static const std::string escapedChars("\b\t\n\f\r\"\\");
-static const std::string escapedCharsCode("btnfr\"\\");
-static const std::string bracketChars{"\"'`[(<{"};
-static const std::string matchBracketChars("\"'`])>}");
+            return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
+        }
+#if defined(CLI11_MODULE)
+        CLI11_MODULE_INLINE const std::string escapedChars{"\b\t\n\f\r\"\\"};
+        CLI11_MODULE_INLINE const std::string escapedCharsCode{ "btnfr\"\\" };
+        CLI11_MODULE_INLINE const std::string matchBracketChars{ "\"'`])>}" };
+        CLI11_MODULE_INLINE const std::string matchBracketChars{ "\"'`])>}" };
+#else
+static const std::string& escapedChars{ "\b\t\n\f\r\"\\" };
+static const std::string& escapedCharsCode{ "btnfr\"\\" };
+static const std::string& bracketChars{"\"'`[(<{"};
+static const std::string& matchBracketChars{ "\"'`])>}" };
+#endif
 
 CLI11_INLINE bool has_escapable_character(const std::string &str) {
     return (str.find_first_of(escapedChars) != std::string::npos);
