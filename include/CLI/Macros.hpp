@@ -175,4 +175,11 @@
 #else
 #define CLI11_INLINE inline
 #endif
+
+/** Module inline**/
+#ifdef CLI11_MODULE
+#define CLI11_MODULE_INLINE inline
+#else
+#define CLI11_MODULE_INLINE
+#endif
 // [CLI11:macros_hpp:end]

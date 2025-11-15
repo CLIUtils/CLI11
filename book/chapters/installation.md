@@ -180,6 +180,7 @@ default to off if CLI11 is used as a subdirectory in another project.
 | ------------------------------ | -------------------------------------------------------------------------------- |
 | `CLI11_SINGLE_FILE=ON`         | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
 | `CLI11_PRECOMPILED=OFF`        | generate a precompiled static library instead of header-only                     |
+| `CLI11_MODULE=OFF`             | change some code segments for named constants to allow use of CLI11 in a module  |
 | `CLI11_SINGLE_FILE_TESTS=OFF`  | Run the tests on the generated single file version as well                       |
 | `CLI11_BUILD_DOCS=ON`          | build CLI11 documentation and book                                               |
 | `CLI11_BUILD_EXAMPLES=ON`      | Build the example programs.                                                      |
