@@ -358,9 +358,10 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
   if(CMAKE_CXX_STANDARD GREATER 19)
-    add_test(NAME find-package-module
-             COMMAND ${CMAKE_CTEST_COMMAND} --build-and-test "${CMAKE_CURRENT_BINARY_DIR}/module_tests" --config
-                     ${CLI11_PACKAGE_TEST_BUILD_TYPE})
+    add_test(
+      NAME find-package-module
+      COMMAND ${CMAKE_CTEST_COMMAND} --build-and-test "${CMAKE_CURRENT_BINARY_DIR}/module_tests"
+              --config ${CLI11_PACKAGE_TEST_BUILD_TYPE})
     set_property(TEST find-package-module PROPERTY LABELS Packaging)
   endif()
 
