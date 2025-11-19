@@ -365,9 +365,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       "${CMAKE_CURRENT_SOURCE_DIR}/module_test"
       "${CMAKE_CURRENT_BINARY_DIR}/module_test"
       --build-generator
-      "${CMAKE_GENERATOR}"
-      --build-generator-platform
-      "${CMAKE_GENERATOR_PLATFORM}"
+      "Ninja"
       --build-options
       "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
       "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
