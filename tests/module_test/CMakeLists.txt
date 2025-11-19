@@ -15,7 +15,7 @@ find_package(CLI11 2.5 REQUIRED)
 # Test the target
 add_executable(module-test module_test.cpp)
 target_link_libraries(module-test CLI11::CLI11)
-target_compile_definitions(module-test -DCLI11_MODULE=1)
+target_compile_definitions(module-test PUBLIC -DCLI11_MODULE=1)
 
 add_test(NAME module-test1 COMMAND module-test one)
 set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")

@@ -358,7 +358,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
   if(CMAKE_CXX_STANDARD GREATER 19)
-     add_test(
+    add_test(
       find-package-module
       ${CMAKE_CTEST_COMMAND}
       --build-and-test
@@ -373,7 +373,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
       "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
       ${package_test_command})
-   
+
     set_property(TEST find-package-module PROPERTY LABELS Packaging)
   endif()
 
