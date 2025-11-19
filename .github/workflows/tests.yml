@@ -300,6 +300,10 @@ jobs:
     name: install module tests
     runs-on: ubuntu-latest
     steps:
+      - uses: egor-tensin/setup-gcc@v1
+        with:
+          version: 15
+          platform: x64
       - uses: actions/checkout@v4
         with:
           submodules: true
