@@ -299,14 +299,14 @@ jobs:
   install-module:
     name: install module tests
     runs-on: ubuntu-latest
+    container: gcc:15
     steps:
-      - uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 15
-          platform: x64
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.2"
       - name: Configure
         run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_STANDARD=23
       - name: Build
