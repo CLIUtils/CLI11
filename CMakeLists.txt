@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...4.1)
+cmake_minimum_required(VERSION 3.14...4.2)
 # Note: this is a header only library. If you have an older CMake than 3.14,
 # just add the CLI11/include directory and that's all you need to do.
 
