@@ -307,6 +307,7 @@ jobs:
       - uses: ./.github/actions/quick_cmake
         with:
           cmake-version: "4.2"
+      - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_STANDARD=23
       - name: Build
