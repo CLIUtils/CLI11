@@ -244,6 +244,25 @@ jobs:
       - name: Run tests
         run: ctest --output-on-failure -L Packaging
         working-directory: build
+
+  install-precompiled-all:
+    name: install tests precompiled full install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_FULL_INSTALL=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Configure2
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
   
   install-precompiled-macos:
     name: install tests precompiled macos

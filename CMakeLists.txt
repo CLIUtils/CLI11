@@ -79,6 +79,10 @@ cmake_dependent_option(CLI11_BUILD_EXAMPLES "Build CLI11 examples" ON
 cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON "Build CLI11 json example" OFF
                        "CLI11_BUILD_EXAMPLES;NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
 
+cmake_dependent_option(
+  CLI11_FULL_INSTALL "Install all headers regardless of SINGLE_FILE OR PRECOMPILED OPTIONS" OFF
+  "CLI11_SINGLE_FILE OR CLI11_PRECOMPILED" OFF)
+
 cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build"
                        OFF "BUILD_TESTING;CLI11_SINGLE_FILE" OFF)
 
@@ -93,7 +97,9 @@ cmake_dependent_option(
   CLI11_CUDA_TESTS "Build the tests with NVCC to check for warnings there - requires CMake 3.9+"
   OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
 
-if(CLI11_PRECOMPILED AND CLI11_SINGLE_FILE)
+if(NOT CLI11_FULL_INSTALL
+   AND CLI11_PRECOMPILED
+   AND CLI11_SINGLE_FILE)
   # Sanity check
   message(FATAL_ERROR "CLI11_PRECOMPILE and CLI11_SINGLE_FILE are mutually exclusive")
 endif()
@@ -171,7 +177,7 @@ if(CLI11_CUDA_TESTS)
 endif()
 
 # This folder should be installed
-if(CLI11_INSTALL)
+if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
 
   # Use find_package on the installed package
   # Since we have no custom code, we can directly write this
