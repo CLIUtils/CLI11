@@ -184,7 +184,7 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
 
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
-#if defined(CLI11_MODULE)
+#if defined(CLI11_CPP17)
 CLI11_MODULE_INLINE const std::string &escapedChars("\b\t\n\f\r\"\\");
 CLI11_MODULE_INLINE const std::string &escapedCharsCode("btnfr\"\\");
 CLI11_MODULE_INLINE const std::string &bracketChars("\"'`[(<{");

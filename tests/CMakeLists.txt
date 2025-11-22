@@ -357,7 +357,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
   set_property(TEST find-package-testsC PROPERTY LABELS Packaging)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
-  if(CLI11_MODULE OR CLI11_MODULE_TEST)
+  if(CLI11_MODULE_TESTS)
     add_test(
       find-package-module
       ${CMAKE_CTEST_COMMAND}

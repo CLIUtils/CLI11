@@ -177,7 +177,7 @@
 #endif
 
 /** Module inline**/
-#ifdef CLI11_MODULE
+#if defined CLI11_CPP17
 #define CLI11_MODULE_INLINE inline
 #else
 #define CLI11_MODULE_INLINE
