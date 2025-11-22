@@ -176,7 +176,7 @@
 #define CLI11_INLINE inline
 #endif
 
-/** Module inline**/
+/** Module inline to support module operations**/
 #if defined CLI11_CPP17
 #define CLI11_MODULE_INLINE inline
 #else
