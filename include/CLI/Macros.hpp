@@ -180,6 +180,6 @@
 #if defined CLI11_CPP17
 #define CLI11_MODULE_INLINE inline
 #else
-#define CLI11_MODULE_INLINE
+#define CLI11_MODULE_INLINE static
 #endif
 // [CLI11:macros_hpp:end]
