@@ -190,7 +190,6 @@ CLI11_MODULE_INLINE const std::string &escapedCharsCode("btnfr\"\\");
 CLI11_MODULE_INLINE const std::string &bracketChars("\"'`[(<{");
 CLI11_MODULE_INLINE const std::string &matchBracketChars("\"'`])>}");
 
-
 CLI11_INLINE bool has_escapable_character(const std::string &str) {
     return (str.find_first_of(escapedChars) != std::string::npos);
 }
