@@ -18,7 +18,6 @@ add_executable(module-test module_test.cpp)
 target_sources(module-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILES cmodule.ixx)
 
 target_link_libraries(module-test CLI11::CLI11)
-target_compile_definitions(module-test PUBLIC -DCLI11_MODULE=1)
 target_compile_options(module-test PUBLIC -fmodules-ts)
 
 add_test(NAME module-test1 COMMAND module-test one)

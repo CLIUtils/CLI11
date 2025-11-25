@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...4.1)
+cmake_minimum_required(VERSION 3.14...4.2)
 
 project(CLI11-find-package-test)
 

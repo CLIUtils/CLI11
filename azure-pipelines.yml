@@ -189,7 +189,7 @@ jobs:
           cli11.std: 23
           cli11.options:
             -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCLI11_MODULE=ON
+            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
 
         gcc13_17:
           containerImage: gcc:13
