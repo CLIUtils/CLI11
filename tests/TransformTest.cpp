@@ -195,8 +195,8 @@ inline std::ostream &operator<<(std::ostream &os, Color c) { return os << (c == 
 TEST_CASE_METHOD(TApp, "streamTransformCheck", "[transform]") {
 
     std::map<std::string, Color> color_map = {
-        {"red", Color::kRed},    // User types "red"
-        {"blue", Color::kBlue}   // User types "blue"
+        {"red", Color::kRed},   // User types "red"
+        {"blue", Color::kBlue}  // User types "blue"
     };
     Color color = Color::kRed;
 

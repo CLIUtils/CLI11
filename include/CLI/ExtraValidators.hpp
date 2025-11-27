@@ -358,7 +358,9 @@ class CheckedTransformer : public Validator {
             out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
             out += detail::join(
                 detail::smart_deref(mapping),
-                [](const iteration_type_t &v) { return detail::value_string(detail::pair_adaptor<element_t>::second(v)); },
+                [](const iteration_type_t &v) {
+                    return detail::value_string(detail::pair_adaptor<element_t>::second(v));
+                },
                 ",");
             out.push_back('}');
             return out;
