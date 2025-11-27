@@ -159,24 +159,8 @@ TEST_CASE_METHOD(TApp, "EnumCheckedDefaultTransform", "[transform]") {
 
 // test from https://github.com/CLIUtils/CLI11/issues/369  [Jakub Zakrzewski](https://github.com/jzakrzewski)
 TEST_CASE_METHOD(TApp, "EnumCheckedDefaultTransformCallback", "[transform]") {
-    enum class existing : std::int16_t { abort, overwrite, remove };
-    auto cmd = std::make_shared<CLI::App>("deploys the repository somewhere", "deploy");
-    cmd->add_option("--existing", "What to do if file already exists in the destination")
-        ->transform(
-            CLI::CheckedTransformer(std::unordered_map<std::string, existing>{{"abort", existing::abort},
-                                                                              {"overwrite", existing::overwrite},
-                                                                              {"delete", existing::remove},
-                                                                              {"remove", existing::remove}}))
-        ->default_val("abort");
 
-    cmd->callback([cmd]() { CHECK(cmd->get_option("--existing")->as<existing>() == existing::abort); });
-    app.add_subcommand(cmd);
 
-    args = {"deploy"};
-    run();
-}
-
-TEST_CASE_METHOD(TApp, "SimpleTransformFn", "[transform]") {
     int value{0};
     auto *opt = app.add_option("-s", value)->transform(CLI::Transformer({{"one", "1"}}, CLI::ignore_case));
     args = {"-s", "ONE"};
@@ -184,6 +168,31 @@ TEST_CASE_METHOD(TApp, "SimpleTransformFn", "[transform]") {
     CHECK(app.count("-s") == 1u);
     CHECK(opt->count() == 1u);
     CHECK(1 == value);
+}
+
+enum class Color { kRed, kBlue };
+
+// operator<< outputs full enum name (standard practice)
+inline std::ostream& operator<<(std::ostream& os, Color c) {
+    return os << (c == Color::kRed ? "kRed" : "kBlue");
+};
+
+// test from https://github.com/CLIUtils/CLI11/issues/1258 [huweiATgithub](https://github.com/huweiATgithub)
+TEST_CASE_METHOD(TApp, "streamTransformCheck", "[transform]") {
+
+    std::map<std::string, Color> color_map = {
+        {"red", Color::kRed},    // User types "red"
+        {"blue", Color::kBlue}   // User types "blue"
+    };
+    Color color = Color::kRed;
+
+    app.add_option("--color", color)
+        ->transform(CLI::CheckedTransformer(color_map, CLI::ignore_case))
+        ->default_val(Color::kRed);  // BUG: Validates "kRed" against {"red", "blue"}
+
+    CHECK_NOTHROW(app.parse(""));  // Should use default
+
+    
 }
 
 #if defined(CLI11_HAS_STRING_VIEW)

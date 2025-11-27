@@ -815,7 +815,7 @@ class Option : public OptionBase<Option> {
     /// Set the default value and validate the results and run the callback if appropriate to set the value into the
     /// bound value only available for types that can be converted to a string
     template <typename X> Option *default_val(const X &val) {
-        std::string val_str = detail::to_string(val);
+        std::string val_str = detail::value_string(val);
         auto old_option_state = current_option_state_;
         results_t old_results{std::move(results_)};
         results_.clear();
