@@ -357,6 +357,24 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
   set_property(TEST find-package-testsC PROPERTY LABELS Packaging)
   set_property(TEST find-package-testsC PROPERTY DEPENDS find-package-testsB)
 
+  if(CLI11_MODULE_TESTS)
+    add_test(
+      find-package-module
+      ${CMAKE_CTEST_COMMAND}
+      --build-and-test
+      "${CMAKE_CURRENT_SOURCE_DIR}/module_test"
+      "${CMAKE_CURRENT_BINARY_DIR}/module_test"
+      --build-generator
+      "Ninja"
+      --build-options
+      "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
+      "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
+      ${package_test_command})
+
+    set_property(TEST find-package-module PROPERTY LABELS Packaging)
+  endif()
+
   if(NOT MSVC)
     # Tests for other CMake projects using the package_config files
     add_test(

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...4.1)
+cmake_minimum_required(VERSION 3.14...4.2)
 # Note: this is a header only library. If you have an older CMake than 3.14,
 # just add the CLI11/include directory and that's all you need to do.
 
@@ -65,6 +65,7 @@ endif()
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only" OFF)
+
 cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
                        "NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
 

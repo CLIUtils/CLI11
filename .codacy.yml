@@ -9,8 +9,11 @@ engines:
   coverage:
     enabled: false
   cppcheck:
-    enabled: false
-    language: c++
+    enabled: true
+    options:
+      suppress:
+        - missingIncludeSystem
+
 languages:
 
 ignore:
