@@ -40,7 +40,7 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/JoC0de/pre-commit-prettier
-    rev: v3.6.2
+    rev: v3.7.3
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
