@@ -611,8 +611,13 @@ template <class CharT> CLI11_INLINE void App::parse_char_t(int argc, const CharT
 
     std::vector<std::string> args;
     args.reserve(static_cast<std::size_t>(argc) - 1U);
+    /*
     for(auto i = static_cast<std::size_t>(argc) - 1U; i > 0U; --i)
         args.emplace_back(detail::maybe_narrow(argv[i]));
+    */
+
+    for (auto arg : std::ranges::reverse_view(std::span(argv + 1, argc - 1))) {
+        args.emplace_back(detail::maybe_narrow(arg))
 
     parse(std::move(args));
 }
