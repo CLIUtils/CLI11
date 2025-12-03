@@ -16,6 +16,8 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <span>
+#include <ranges>
 #include <exception>
 #include <iostream>
 #include <memory>
