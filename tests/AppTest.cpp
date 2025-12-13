@@ -2436,35 +2436,35 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     app.prefix_command();
     args = {"-x", "45", "-f", "27"};
     run();
-    auto rem=app.remaining();
+    auto rem = app.remaining();
     CHECK(rem.empty());
 
-    args = {"-x", "45", "-f", "27","--test","23"};
+    args = {"-x", "45", "-f", "27", "--test", "23"};
 
     run();
-    rem=app.remaining();
-    CHECK(rem.size()==2U);
+    rem = app.remaining();
+    CHECK(rem.size() == 2U);
 
-    args = {"-x", "45", "-f", "27","--", "--test","23"};
-
-    run();
-    rem=app.remaining();
-    CHECK(rem.size()==3U);
-
-    args = {"-x", "45","--test4", "-f", "27", "--test","23"};
+    args = {"-x", "45", "-f", "27", "--", "--test", "23"};
 
     run();
-    rem=app.remaining();
-    CHECK(rem.size()==5U);
+    rem = app.remaining();
+    CHECK(rem.size() == 3U);
+
+    args = {"-x", "45", "--test4", "-f", "27", "--test", "23"};
+
+    run();
+    rem = app.remaining();
+    CHECK(rem.size() == 5U);
 
     app.prefix_command(CLI::PrefixCommandMode::separator_only);
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
-    args = {"-x", "45", "-f", "27","--", "--test","23"};
+    args = {"-x", "45", "-f", "27", "--", "--test", "23"};
 
     run();
-    rem=app.remaining();
-    CHECK(rem.size()==3U);
+    rem = app.remaining();
+    CHECK(rem.size() == 3U);
 }
 
 // makes sure the error throws on the rValue version of the parse

@@ -1461,17 +1461,16 @@ CLI11_INLINE void App::_process() {
 }
 
 CLI11_INLINE void App::_process_extras() {
-    if(!allow_extras_ && prefix_command_==PrefixCommandMode::off) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             throw ExtrasError(name_, remaining(false));
         }
     }
-    if(!allow_extras_ && prefix_command_==PrefixCommandMode::separator_only) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::separator_only) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
-            if (remaining(false).front() != "--")
-            {
+            if(remaining(false).front() != "--") {
                 throw ExtrasError(name_, remaining(false));
             }
         }
@@ -1483,18 +1482,17 @@ CLI11_INLINE void App::_process_extras() {
 }
 
 CLI11_INLINE void App::_process_extras(std::vector<std::string> &args) {
-    if(!allow_extras_ && prefix_command_==PrefixCommandMode::off) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             args = remaining(false);
             throw ExtrasError(name_, args);
         }
     }
-    if(!allow_extras_ && prefix_command_==PrefixCommandMode::separator_only) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::separator_only) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
-            if (remaining(false).front() != "--")
-            {
+            if(remaining(false).front() != "--") {
                 throw ExtrasError(name_, remaining(false));
             }
         }
@@ -1754,18 +1752,16 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::POSITIONAL_MARK:
         args.pop_back();
         positional_only = true;
-            if(get_prefix_command()) {
-                _move_to_missing(classifier, "--");
-                while(!args.empty()) {
-                    missing_.emplace_back(detail::Classifier::NONE, args.back());
-                    args.pop_back();
-                }
+        if(get_prefix_command()) {
+            _move_to_missing(classifier, "--");
+            while(!args.empty()) {
+                missing_.emplace_back(detail::Classifier::NONE, args.back());
+                args.pop_back();
             }
-        else if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
+        } else if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
             retval = false;
         } else {
             _move_to_missing(classifier, "--");
-
         }
         break;
     case detail::Classifier::SUBCOMMAND_TERMINATOR:
@@ -2175,7 +2171,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         // Otherwise, add to missing
         args.pop_back();
         _move_to_missing(current_type, current);
-        if(get_prefix_command_mode()==PrefixCommandMode::on) {
+        if(get_prefix_command_mode() == PrefixCommandMode::on) {
             while(!args.empty()) {
                 missing_.emplace_back(detail::Classifier::NONE, args.back());
                 args.pop_back();
@@ -2370,7 +2366,7 @@ CLI11_NODISCARD CLI11_INLINE const std::string &App::_compare_subcommand_names(c
 }
 
 CLI11_INLINE void App::_move_to_missing(detail::Classifier val_type, const std::string &val) {
-    if(allow_extras_ || subcommands_.empty()||get_prefix_command()) {
+    if(allow_extras_ || subcommands_.empty() || get_prefix_command()) {
         missing_.emplace_back(val_type, val);
         return;
     }
