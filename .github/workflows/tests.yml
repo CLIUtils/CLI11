@@ -359,7 +359,7 @@ jobs:
       - name: Check CMake 3.16
         uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "3.16"
+          cmake-version: "3.16.2"
         if: success() || failure()
 
   cmake-config-ubuntu-2404:
