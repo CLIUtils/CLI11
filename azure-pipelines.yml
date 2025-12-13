@@ -55,12 +55,8 @@ jobs:
           vmImage: "macOS-15"
           cli11.std: 20
           cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        macOS-15_17:
-          vmImage: "macOS-15"
-          cli11.std: 17
-          cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        macOS-26_23:
-          vmImage: "macos-26"
+        macOS-latest_23:
+          vmImage: "macos-latest"
           cli11.std: 23
           cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-14_11:
@@ -208,8 +204,8 @@ jobs:
           cli11.std: 23
           cli11.options:
             -DCMAKE_CXX_FLAGS=-std=c++23 -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        clang21_26:
-          containerImage: silkeh/clang:21
+        clang20_26:
+          containerImage: silkeh/clang:20
           cli11.std: 26
           cli11.options:
             -DCMAKE_CXX_FLAGS=-std=c++2c -DCLI11_ENABLE_EXTRA_VALIDATORS=1
