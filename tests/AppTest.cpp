@@ -2465,6 +2465,14 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     run();
     rem = app.remaining();
     CHECK(rem.size() == 3U);
+
+    args = {"-x", "45", "--test4","-f", "27", "--", "--test", "23"};
+
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    app.allow_extras(true);
+    run();
+    rem = app.remaining();
+    CHECK(rem.size() == 4U);
 }
 
 // makes sure the error throws on the rValue version of the parse
