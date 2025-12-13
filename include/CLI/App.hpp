@@ -1333,10 +1333,6 @@ class App {
     /// Throw an error if anything is left over and should not be.
     void _process_extras();
 
-    /// Throw an error if anything is left over and should not be.
-    /// Modifies the args to fill in the missing items before throwing.
-    void _process_extras(std::vector<std::string> &args);
-
     /// Internal function to recursively increment the parsed counter on the current app as well unnamed subcommands
     void increment_parsed();
 

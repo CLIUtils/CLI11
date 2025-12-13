@@ -1481,28 +1481,6 @@ CLI11_INLINE void App::_process_extras() {
     }
 }
 
-CLI11_INLINE void App::_process_extras(std::vector<std::string> &args) {
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::off) {
-        std::size_t num_left_over = remaining_size();
-        if(num_left_over > 0) {
-            args = remaining(false);
-            throw ExtrasError(name_, args);
-        }
-    }
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::separator_only) {
-        std::size_t num_left_over = remaining_size();
-        if(num_left_over > 0) {
-            if(remaining(false).front() != "--") {
-                throw ExtrasError(name_, remaining(false));
-            }
-        }
-    }
-    for(App_p &sub : subcommands_) {
-        if(sub->count() > 0)
-            sub->_process_extras(args);
-    }
-}
-
 CLI11_INLINE void App::increment_parsed() {
     ++parsed_;
     for(App_p &sub : subcommands_) {
@@ -1526,8 +1504,7 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
         _process();
 
         // Throw error if any items are left over (depending on settings)
-        _process_extras(args);
-
+        _process_extras();
         // Convert missing (pairs) to extras (string only) ready for processing in another app
         args = remaining_for_passthrough(false);
     } else if(parse_complete_callback_) {
