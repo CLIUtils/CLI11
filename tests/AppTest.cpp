@@ -2460,6 +2460,9 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     app.prefix_command(CLI::PrefixCommandMode::separator_only);
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
+    args = {"-x", "45", "positional", "-f", "27", "--test", "23"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
     args = {"-x", "45", "-f", "27", "--", "--test", "23"};
 
     run();
