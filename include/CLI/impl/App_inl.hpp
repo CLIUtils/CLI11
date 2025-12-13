@@ -1072,7 +1072,7 @@ CLI11_INLINE void App::_configure() {
         }
         if(app->name_.empty()) {
             app->fallthrough_ = false;  // make sure fallthrough_ is false to prevent infinite loop
-            app->prefix_command_ = false;
+            app->prefix_command_ = PrefixCommandMode::off;
         }
         // make sure the parent is set to be this object in preparation for parse
         app->parent_ = this;
@@ -1461,13 +1461,21 @@ CLI11_INLINE void App::_process() {
 }
 
 CLI11_INLINE void App::_process_extras() {
-    if(!(allow_extras_ || prefix_command_)) {
+    if(!allow_extras_ && prefix_command_==PrefixCommandMode::off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             throw ExtrasError(name_, remaining(false));
         }
     }
-
+    if(!allow_extras_ && prefix_command_==PrefixCommandMode::separator_only) {
+        std::size_t num_left_over = remaining_size();
+        if(num_left_over > 0) {
+            if (remaining(false).front() != "--")
+            {
+                throw ExtrasError(name_, remaining(false));
+            }
+        }
+    }
     for(App_p &sub : subcommands_) {
         if(sub->count() > 0)
             sub->_process_extras();
@@ -1475,14 +1483,22 @@ CLI11_INLINE void App::_process_extras() {
 }
 
 CLI11_INLINE void App::_process_extras(std::vector<std::string> &args) {
-    if(!(allow_extras_ || prefix_command_)) {
+    if(!allow_extras_ && prefix_command_==PrefixCommandMode::off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             args = remaining(false);
             throw ExtrasError(name_, args);
         }
     }
-
+    if(!allow_extras_ && prefix_command_==PrefixCommandMode::separator_only) {
+        std::size_t num_left_over = remaining_size();
+        if(num_left_over > 0) {
+            if (remaining(false).front() != "--")
+            {
+                throw ExtrasError(name_, remaining(false));
+            }
+        }
+    }
     for(App_p &sub : subcommands_) {
         if(sub->count() > 0)
             sub->_process_extras(args);
@@ -1738,10 +1754,18 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
     case detail::Classifier::POSITIONAL_MARK:
         args.pop_back();
         positional_only = true;
-        if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
+            if(get_prefix_command()) {
+                _move_to_missing(classifier, "--");
+                while(!args.empty()) {
+                    missing_.emplace_back(detail::Classifier::NONE, args.back());
+                    args.pop_back();
+                }
+            }
+        else if((!_has_remaining_positionals()) && (parent_ != nullptr)) {
             retval = false;
         } else {
             _move_to_missing(classifier, "--");
+
         }
         break;
     case detail::Classifier::SUBCOMMAND_TERMINATOR:
@@ -1922,9 +1946,9 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
     /// We are out of other options this goes to missing
     _move_to_missing(detail::Classifier::NONE, positional);
     args.pop_back();
-    if(prefix_command_) {
+    if(get_prefix_command()) {
         while(!args.empty()) {
-            _move_to_missing(detail::Classifier::NONE, args.back());
+            missing_.emplace_back(detail::Classifier::NONE, args.back());
             args.pop_back();
         }
     }
@@ -2151,6 +2175,12 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         // Otherwise, add to missing
         args.pop_back();
         _move_to_missing(current_type, current);
+        if(get_prefix_command_mode()==PrefixCommandMode::on) {
+            while(!args.empty()) {
+                missing_.emplace_back(detail::Classifier::NONE, args.back());
+                args.pop_back();
+            }
+        }
         return true;
     }
 
@@ -2340,11 +2370,11 @@ CLI11_NODISCARD CLI11_INLINE const std::string &App::_compare_subcommand_names(c
 }
 
 CLI11_INLINE void App::_move_to_missing(detail::Classifier val_type, const std::string &val) {
-    if(allow_extras_ || subcommands_.empty()) {
+    if(allow_extras_ || subcommands_.empty()||get_prefix_command()) {
         missing_.emplace_back(val_type, val);
         return;
     }
-    // allow extra arguments to be places in an option group if it is allowed there
+    // allow extra arguments to be placed in an option group if it is allowed there
     for(auto &subc : subcommands_) {
         if(subc->name_.empty() && subc->allow_extras_) {
             subc->missing_.emplace_back(val_type, val);

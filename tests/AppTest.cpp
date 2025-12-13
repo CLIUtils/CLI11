@@ -2427,6 +2427,46 @@ TEST_CASE_METHOD(TApp, "AllowExtrasCascade", "[app]") {
     CHECK(45 == v1);
     CHECK(27 == v2);
 }
+
+TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
+    int v1{0};
+    int v2{0};
+    app.add_option("-f", v1);
+    app.add_option("-x", v2);
+    app.prefix_command();
+    args = {"-x", "45", "-f", "27"};
+    run();
+    auto rem=app.remaining();
+    CHECK(rem.empty());
+
+    args = {"-x", "45", "-f", "27","--test","23"};
+
+    run();
+    rem=app.remaining();
+    CHECK(rem.size()==2U);
+
+    args = {"-x", "45", "-f", "27","--", "--test","23"};
+
+    run();
+    rem=app.remaining();
+    CHECK(rem.size()==3U);
+
+    args = {"-x", "45","--test4", "-f", "27", "--test","23"};
+
+    run();
+    rem=app.remaining();
+    CHECK(rem.size()==5U);
+
+    app.prefix_command(CLI::PrefixCommandMode::separator_only);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+
+    args = {"-x", "45", "-f", "27","--", "--test","23"};
+
+    run();
+    rem=app.remaining();
+    CHECK(rem.size()==3U);
+}
+
 // makes sure the error throws on the rValue version of the parse
 TEST_CASE_METHOD(TApp, "ExtrasErrorRvalueParse", "[app]") {
 

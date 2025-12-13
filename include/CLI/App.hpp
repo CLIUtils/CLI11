@@ -67,8 +67,11 @@ CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
 
 /// enumeration of modes of how to deal with extras in config files
-
 enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, capture };
+
+/// @brief  enumeration of prefix command modes, separator requires that the first extra argument be a "--", other unrecognized arguments will cause an error.
+/// on allows the first extra to trigger prefix mode regardless of other recognized options
+enum class PrefixCommandMode: std::uint8_t{off=0,separator_only=1,on=2};
 
 class App;
 
@@ -119,7 +122,7 @@ class App {
     config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
     ///  If true, cease processing on an unrecognized option (implies allow_extras) INHERITABLE
-    bool prefix_command_{false};
+    PrefixCommandMode prefix_command_{PrefixCommandMode::off};
 
     /// If set to true the name was automatically generated from the command line vs a user set name
     bool has_automatic_name_{false};
@@ -474,7 +477,14 @@ class App {
     /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
     /// remaining args
     App *prefix_command(bool is_prefix = true) {
-        prefix_command_ = is_prefix;
+        prefix_command_ = is_prefix?PrefixCommandMode::on:PrefixCommandMode::off;
+        return this;
+    }
+
+    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
+    /// remaining args
+    App *prefix_command(PrefixCommandMode mode) {
+        prefix_command_ = mode;
         return this;
     }
 
@@ -1162,7 +1172,10 @@ class App {
     CLI11_NODISCARD std::size_t get_require_option_max() const { return require_option_max_; }
 
     /// Get the prefix command status
-    CLI11_NODISCARD bool get_prefix_command() const { return prefix_command_; }
+    CLI11_NODISCARD bool get_prefix_command() const { return static_cast<bool>(prefix_command_); }
+
+    /// Get the prefix command status
+    CLI11_NODISCARD PrefixCommandMode get_prefix_command_mode() const { return prefix_command_; }
 
     /// Get the status of allow extras
     CLI11_NODISCARD bool get_allow_extras() const { return allow_extras_; }
