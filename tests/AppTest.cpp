@@ -2466,7 +2466,7 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     rem = app.remaining();
     CHECK(rem.size() == 3U);
 
-    args = {"-x", "45", "--test4","-f", "27", "--", "--test", "23"};
+    args = {"-x", "45", "--test4", "-f", "27", "--", "--test", "23"};
 
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
     app.allow_extras(true);
