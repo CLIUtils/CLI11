@@ -72,7 +72,7 @@ enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, ca
 /// @brief  enumeration of prefix command modes, separator requires that the first extra argument be a "--", other
 /// unrecognized arguments will cause an error. on allows the first extra to trigger prefix mode regardless of other
 /// recognized options
-enum class PrefixCommandMode : std::uint8_t { off = 0, separator_only = 1, on = 2 };
+enum class PrefixCommandMode : std::uint8_t { Off = 0, SeparatorOnly = 1, On = 2 };
 
 class App;
 
@@ -123,7 +123,7 @@ class App {
     config_extras_mode allow_config_extras_{config_extras_mode::ignore};
 
     ///  If true, cease processing on an unrecognized option (implies allow_extras) INHERITABLE
-    PrefixCommandMode prefix_command_{PrefixCommandMode::off};
+    PrefixCommandMode prefix_command_{PrefixCommandMode::Off};
 
     /// If set to true the name was automatically generated from the command line vs a user set name
     bool has_automatic_name_{false};
@@ -478,7 +478,7 @@ class App {
     /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
     /// remaining args
     App *prefix_command(bool is_prefix = true) {
-        prefix_command_ = is_prefix ? PrefixCommandMode::on : PrefixCommandMode::off;
+        prefix_command_ = is_prefix ? PrefixCommandMode::On : PrefixCommandMode::Off;
         return this;
     }
 

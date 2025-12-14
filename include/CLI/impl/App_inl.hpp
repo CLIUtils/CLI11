@@ -1072,7 +1072,7 @@ CLI11_INLINE void App::_configure() {
         }
         if(app->name_.empty()) {
             app->fallthrough_ = false;  // make sure fallthrough_ is false to prevent infinite loop
-            app->prefix_command_ = PrefixCommandMode::off;
+            app->prefix_command_ = PrefixCommandMode::Off;
         }
         // make sure the parent is set to be this object in preparation for parse
         app->parent_ = this;
@@ -1461,13 +1461,13 @@ CLI11_INLINE void App::_process() {
 }
 
 CLI11_INLINE void App::_process_extras() {
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::off) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::Off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             throw ExtrasError(name_, remaining(false));
         }
     }
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::separator_only) {
+    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::SeparatorOnly) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             if(remaining(false).front() != "--") {
@@ -2148,7 +2148,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         // Otherwise, add to missing
         args.pop_back();
         _move_to_missing(current_type, current);
-        if(get_prefix_command_mode() == PrefixCommandMode::on) {
+        if(get_prefix_command_mode() == PrefixCommandMode::On) {
             while(!args.empty()) {
                 missing_.emplace_back(detail::Classifier::NONE, args.back());
                 args.pop_back();

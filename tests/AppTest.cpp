@@ -2457,7 +2457,7 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     rem = app.remaining();
     CHECK(rem.size() == 5U);
 
-    app.prefix_command(CLI::PrefixCommandMode::separator_only);
+    app.prefix_command(CLI::PrefixCommandMode::SeparatorOnly);
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
 
     args = {"-x", "45", "positional", "-f", "27", "--test", "23"};
