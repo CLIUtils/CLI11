@@ -65,10 +65,13 @@ CLI11_INLINE std::string simple(const App *app, const Error &e);
 /// Printout the full help string on error (if this fn is set, the old default for CLI11)
 CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
+/// enumeration of modes of how to deal with command line extras
 
+enum class ExtrasMode:std::uint8_t{error=0, ignore,assume_arguments,capture};
 /// enumeration of modes of how to deal with extras in config files
 enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, capture };
 
+enum class ConfigExtrasMode : std::uint8_t { Error = 0, Ignore, IgnoreAll, Capture };
 /// @brief  enumeration of prefix command modes, separator requires that the first extra argument be a "--", other
 /// unrecognized arguments will cause an error. on allows the first extra to trigger prefix mode regardless of other
 /// recognized options
@@ -116,7 +119,7 @@ class App {
     std::string description_{};
 
     /// If true, allow extra arguments (ie, don't throw an error). INHERITABLE
-    bool allow_extras_{false};
+    bool allow_extras_{ExtrasMode::error};
 
     /// If ignore, allow extra arguments in the ini file (ie, don't throw an error). INHERITABLE
     /// if error, error on an extra argument, and if capture feed it to the app
