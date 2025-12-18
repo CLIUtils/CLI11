@@ -986,7 +986,7 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> App::remaining(bool recurs
     }
     // Get from a subcommand that may allow extras
     if(recurse) {
-        if(!allow_extras_) {
+        if(allow_extras_!=ExtrasMode::Error) {
             for(const auto &sub : subcommands_) {
                 if(sub->name_.empty() && !sub->missing_.empty()) {
                     for(const std::pair<detail::Classifier, std::string> &miss : sub->missing_) {
@@ -1461,13 +1461,13 @@ CLI11_INLINE void App::_process() {
 }
 
 CLI11_INLINE void App::_process_extras() {
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::Off) {
+    if(allow_extras_==ExtrasMode::Error && prefix_command_ == PrefixCommandMode::Off) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             throw ExtrasError(name_, remaining(false));
         }
     }
-    if(!allow_extras_ && prefix_command_ == PrefixCommandMode::SeparatorOnly) {
+    if(allow_extras_==ExtrasMode::Error && prefix_command_ == PrefixCommandMode::SeparatorOnly) {
         std::size_t num_left_over = remaining_size();
         if(num_left_over > 0) {
             if(remaining(false).front() != "--") {
@@ -1555,7 +1555,7 @@ CLI11_INLINE void App::_parse_stream(std::istream &input) {
 
 CLI11_INLINE void App::_parse_config(const std::vector<ConfigItem> &args) {
     for(const ConfigItem &item : args) {
-        if(!_parse_single_config(item) && allow_config_extras_ == config_extras_mode::error)
+        if(!_parse_single_config(item) && allow_config_extras_ == ConfigExtrasMode::Error)
             throw ConfigError::Extras(item.fullname());
     }
 }
@@ -2343,13 +2343,13 @@ CLI11_NODISCARD CLI11_INLINE const std::string &App::_compare_subcommand_names(c
 }
 
 CLI11_INLINE void App::_move_to_missing(detail::Classifier val_type, const std::string &val) {
-    if(allow_extras_ || subcommands_.empty() || get_prefix_command()) {
+    if(allow_extras_==ExtrasMode::Capture||allow_extras_==ExtrasMode::AssumeArguments || subcommands_.empty() || get_prefix_command()) {
         missing_.emplace_back(val_type, val);
         return;
     }
     // allow extra arguments to be placed in an option group if it is allowed there
     for(auto &subc : subcommands_) {
-        if(subc->name_.empty() && subc->allow_extras_) {
+        if(subc->name_.empty() && (subc->allow_extras_==ExtrasMode::AssumeArguments||subc->allow_extras_==ExtrasMode::Capture)) {
             subc->missing_.emplace_back(val_type, val);
             return;
         }
