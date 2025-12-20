@@ -65,9 +65,9 @@ CLI11_INLINE std::string simple(const App *app, const Error &e);
 /// Printout the full help string on error (if this fn is set, the old default for CLI11)
 CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
-/// enumeration of modes of how to deal with command line extras
 
-enum class ExtrasMode:std::uint8_t{Error=0, Ignore,AssumeArguments,Capture};
+/// enumeration of modes of how to deal with command line extras
+enum class ExtrasMode:std::uint8_t{Error=0, Ignore,AssumeSingleArgument,AssumeMultipleArguments,Capture};
 
 /// enumeration of modes of how to deal with extras in config files
 enum class ConfigExtrasMode : std::uint8_t { Error = 0, Ignore, IgnoreAll, Capture};
@@ -1201,7 +1201,7 @@ class App {
     CLI11_NODISCARD bool get_allow_extras() const { return allow_extras_>ExtrasMode::Ignore; }
 
     /// Get the mode of allow_extras
-    CLI11_NODISCARD ExtrasMode get_allow_extra_mode() const { return allow_extras_; }
+    CLI11_NODISCARD ExtrasMode get_allow_extras_mode() const { return allow_extras_; }
 
     /// Get the status of required
     CLI11_NODISCARD bool get_required() const { return required_; }

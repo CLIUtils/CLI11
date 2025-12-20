@@ -986,7 +986,7 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> App::remaining(bool recurs
     }
     // Get from a subcommand that may allow extras
     if(recurse) {
-        if(allow_extras_!=ExtrasMode::Error) {
+        if(allow_extras_==ExtrasMode::Error||allow_extras_==ExtrasMode::Ignore) {
             for(const auto &sub : subcommands_) {
                 if(sub->name_.empty() && !sub->missing_.empty()) {
                     for(const std::pair<detail::Classifier, std::string> &miss : sub->missing_) {
@@ -1730,7 +1730,8 @@ CLI11_INLINE bool App::_parse_single(std::vector<std::string> &args, bool &posit
         args.pop_back();
         positional_only = true;
         if(get_prefix_command()) {
-            _move_to_missing(classifier, "--");
+            //don't care about extras mode here
+            missing_.emplace_back(classifier, "--");
             while(!args.empty()) {
                 missing_.emplace_back(detail::Classifier::NONE, args.back());
                 args.pop_back();
@@ -2154,6 +2155,22 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                 args.pop_back();
             }
         }
+        else if (allow_extras_ == ExtrasMode::AssumeSingleArgument)
+        {
+            if (!args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE)
+            {
+                _move_to_missing(detail::Classifier::NONE,args.back());
+                args.pop_back();
+            }
+        }
+        else if (allow_extras_ == ExtrasMode::AssumeMultipleArguments)
+        {
+            while (!args.empty() && _recognize(args.back(), false) == detail::Classifier::NONE)
+            {
+                _move_to_missing(detail::Classifier::NONE,args.back());
+                args.pop_back();
+            }
+        }
         return true;
     }
 
@@ -2342,20 +2359,28 @@ CLI11_NODISCARD CLI11_INLINE const std::string &App::_compare_subcommand_names(c
     return estring;
 }
 
+inline bool capture_extras(ExtrasMode mode) {
+    return mode == ExtrasMode::Capture || mode == ExtrasMode::AssumeSingleArgument||mode==ExtrasMode::AssumeMultipleArguments;
+}
 CLI11_INLINE void App::_move_to_missing(detail::Classifier val_type, const std::string &val) {
-    if(allow_extras_==ExtrasMode::Capture||allow_extras_==ExtrasMode::AssumeArguments || subcommands_.empty() || get_prefix_command()) {
-        missing_.emplace_back(val_type, val);
+    if (capture_extras(allow_extras_) || subcommands_.empty() || get_prefix_command()) {
+        if (allow_extras_ != ExtrasMode::Ignore) {
+            missing_.emplace_back(val_type, val);
+        }
         return;
     }
     // allow extra arguments to be placed in an option group if it is allowed there
     for(auto &subc : subcommands_) {
-        if(subc->name_.empty() && (subc->allow_extras_==ExtrasMode::AssumeArguments||subc->allow_extras_==ExtrasMode::Capture)) {
+        if(subc->name_.empty() && capture_extras(subc->allow_extras_)) {
             subc->missing_.emplace_back(val_type, val);
             return;
         }
     }
-    // if we haven't found any place to put them yet put them in missing
-    missing_.emplace_back(val_type, val);
+    if (allow_extras_ != ExtrasMode::Ignore) {
+        // if we haven't found any place to put them yet put them in missing
+        missing_.emplace_back(val_type, val);
+    }
+    
 }
 
 CLI11_INLINE void App::_move_option(Option *opt, App *app) {

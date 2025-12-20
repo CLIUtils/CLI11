@@ -2391,6 +2391,12 @@ TEST_CASE_METHOD(TApp, "AllowExtras", "[app]") {
     REQUIRE_NOTHROW(run());
     CHECK(val);
     CHECK(std::vector<std::string>({"-x"}) == app.remaining());
+
+    app.allow_extras(CLI::ExtrasMode::Ignore);
+    val = false;
+    REQUIRE_NOTHROW(run());
+    CHECK(val);
+    CHECK(app.remaining().empty());
 }
 
 TEST_CASE_METHOD(TApp, "AllowExtrasOrder", "[app]") {
@@ -2410,7 +2416,6 @@ TEST_CASE_METHOD(TApp, "AllowExtrasOrder", "[app]") {
 TEST_CASE_METHOD(TApp, "AllowExtrasCascade", "[app]") {
 
     app.allow_extras();
-
     args = {"-x", "45", "-f", "27"};
     REQUIRE_NOTHROW(run());
     CHECK(std::vector<std::string>({"-x", "45", "-f", "27"}) == app.remaining());
@@ -2426,6 +2431,51 @@ TEST_CASE_METHOD(TApp, "AllowExtrasCascade", "[app]") {
     capp.parse(left_over);
     CHECK(45 == v1);
     CHECK(27 == v2);
+}
+
+TEST_CASE_METHOD(TApp, "AllowExtrasAssumptions", "[app]") {
+
+    app.allow_extras(CLI::ExtrasMode::AssumeSingleArgument);
+
+    std::string one;
+    std::string two;
+    app.add_option("--one", one);
+    app.add_option("two", two);
+    args = {"--one", "45", "--three", "27", "this"};
+
+    REQUIRE_NOTHROW(run());
+    CHECK(one=="45");
+    CHECK(two == "this");
+    CHECK(app.remaining().size()==2U);
+
+
+   
+
+    two.clear();
+    app.allow_extras(CLI::ExtrasMode::AssumeMultipleArguments);
+
+    run();
+    CHECK(one=="45");
+    CHECK(two.empty());
+    CHECK(app.remaining().size()==3U);
+    app.allow_extras(CLI::ExtrasMode::AssumeSingleArgument);
+    CHECK(app.get_allow_extras_mode() == CLI::ExtrasMode::AssumeSingleArgument);
+    args = {"--three", "27","--one", "45",  "this"};
+    run();
+    CHECK(one=="45");
+    CHECK(two == "this");
+    CHECK(app.remaining().size()==2U);
+
+    app.allow_extras(CLI::ExtrasMode::AssumeMultipleArguments);
+    CHECK(app.get_allow_extras_mode() == CLI::ExtrasMode::AssumeMultipleArguments);
+    args = {"--three", "27","extra","--one", "45",  "this"};
+    one.clear();
+    two.clear();
+    run();
+    CHECK(one=="45");
+    CHECK(two == "this");
+    CHECK(app.remaining().size()==3U);
+
 }
 
 TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
