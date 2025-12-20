@@ -67,14 +67,13 @@ CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
 
 /// enumeration of modes of how to deal with command line extras
-enum class ExtrasMode:std::uint8_t{Error=0, Ignore,AssumeSingleArgument,AssumeMultipleArguments,Capture};
+enum class ExtrasMode : std::uint8_t { Error = 0, Ignore, AssumeSingleArgument, AssumeMultipleArguments, Capture };
 
 /// enumeration of modes of how to deal with extras in config files
-enum class ConfigExtrasMode : std::uint8_t { Error = 0, Ignore, IgnoreAll, Capture};
+enum class ConfigExtrasMode : std::uint8_t { Error = 0, Ignore, IgnoreAll, Capture };
 
 /// @brief  enumeration of modes of how to deal with extras in config files
 enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, capture };
-
 
 /// @brief  enumeration of prefix command modes, separator requires that the first extra argument be a "--", other
 /// unrecognized arguments will cause an error. on allows the first extra to trigger prefix mode regardless of other
@@ -395,7 +394,7 @@ class App {
 
     /// Remove the error when extras are left over on the command line.
     App *allow_extras(bool allow = true) {
-        allow_extras_ = allow?ExtrasMode::Capture:ExtrasMode::Error;
+        allow_extras_ = allow ? ExtrasMode::Capture : ExtrasMode::Error;
         return this;
     }
 
@@ -1198,7 +1197,7 @@ class App {
     CLI11_NODISCARD PrefixCommandMode get_prefix_command_mode() const { return prefix_command_; }
 
     /// Get the status of allow extras
-    CLI11_NODISCARD bool get_allow_extras() const { return allow_extras_>ExtrasMode::Ignore; }
+    CLI11_NODISCARD bool get_allow_extras() const { return allow_extras_ > ExtrasMode::Ignore; }
 
     /// Get the mode of allow_extras
     CLI11_NODISCARD ExtrasMode get_allow_extras_mode() const { return allow_extras_; }
@@ -1232,7 +1231,9 @@ class App {
     CLI11_NODISCARD bool get_validate_optional_arguments() const { return validate_optional_arguments_; }
 
     /// Get the status of allow extras
-    CLI11_NODISCARD config_extras_mode get_allow_config_extras() const { return static_cast<config_extras_mode>(allow_config_extras_); }
+    CLI11_NODISCARD config_extras_mode get_allow_config_extras() const {
+        return static_cast<config_extras_mode>(allow_config_extras_);
+    }
 
     /// Get a pointer to the help flag.
     Option *get_help_ptr() { return help_ptr_; }

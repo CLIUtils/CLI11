@@ -2444,38 +2444,34 @@ TEST_CASE_METHOD(TApp, "AllowExtrasAssumptions", "[app]") {
     args = {"--one", "45", "--three", "27", "this"};
 
     REQUIRE_NOTHROW(run());
-    CHECK(one=="45");
+    CHECK(one == "45");
     CHECK(two == "this");
-    CHECK(app.remaining().size()==2U);
-
-
-   
+    CHECK(app.remaining().size() == 2U);
 
     two.clear();
     app.allow_extras(CLI::ExtrasMode::AssumeMultipleArguments);
 
     run();
-    CHECK(one=="45");
+    CHECK(one == "45");
     CHECK(two.empty());
-    CHECK(app.remaining().size()==3U);
+    CHECK(app.remaining().size() == 3U);
     app.allow_extras(CLI::ExtrasMode::AssumeSingleArgument);
     CHECK(app.get_allow_extras_mode() == CLI::ExtrasMode::AssumeSingleArgument);
-    args = {"--three", "27","--one", "45",  "this"};
+    args = {"--three", "27", "--one", "45", "this"};
     run();
-    CHECK(one=="45");
+    CHECK(one == "45");
     CHECK(two == "this");
-    CHECK(app.remaining().size()==2U);
+    CHECK(app.remaining().size() == 2U);
 
     app.allow_extras(CLI::ExtrasMode::AssumeMultipleArguments);
     CHECK(app.get_allow_extras_mode() == CLI::ExtrasMode::AssumeMultipleArguments);
-    args = {"--three", "27","extra","--one", "45",  "this"};
+    args = {"--three", "27", "extra", "--one", "45", "this"};
     one.clear();
     two.clear();
     run();
-    CHECK(one=="45");
+    CHECK(one == "45");
     CHECK(two == "this");
-    CHECK(app.remaining().size()==3U);
-
+    CHECK(app.remaining().size() == 3U);
 }
 
 TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
