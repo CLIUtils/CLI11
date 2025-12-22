@@ -2487,14 +2487,14 @@ TEST_CASE_METHOD(TApp, "AllowExtrasImmediateError", "[app]") {
     args = {"-x", "21", "-f", "23", "-g", "25"};
     app.allow_extras(CLI::ExtrasMode::ErrorImmediately);
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
-    CHECK(v1 == 23);  //-f still triggers
+    CHECK(v1 == 23);  // -f still triggers
     CHECK(v2 == 15);
-    CHECK(app.remaining().size() == 0U);
+    CHECK(app.remaining().empty());
     args = {"-x", "27", "-g", "29", "-f", "31"};
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
     CHECK(v1 == 23);  // -f did not trigger
     CHECK(v2 == 15);
-    CHECK(app.remaining().size() == 0U);
+    CHECK(app.remaining().empty());
 }
 
 TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {

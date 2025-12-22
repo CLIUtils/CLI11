@@ -1132,11 +1132,11 @@ option_groups. These are:
   - `CLI::ExtrasMode::Ignore`: ignore any unrecognized argument, do not generate
     an error.
   - `CLI::ExtrasMode::AssumeSingleArgument`: After an unrecognized flag or
-    option argument, if the following arugment is not a flag or option argument
+    option argument, if the following argument is not a flag or option argument
     assume it an argument and treat it as also unrecognized even if it would
     otherwise go to a positional argument
   - `CLI::ExtrasMode::AssumeMultipleArguments`:After an unrecognized flag or
-    option argument, if the following arugments are not a flag or option
+    option argument, if the following arguments are not a flag or option
     argument assume they are arguments and treat them as also unrecognized even
     if it would otherwise go to a positional argument
   - `CLI::ExtrasMode::Capture`: capture all unrecognized arguments, same as
