@@ -2474,6 +2474,30 @@ TEST_CASE_METHOD(TApp, "AllowExtrasAssumptions", "[app]") {
     CHECK(app.remaining().size() == 3U);
 }
 
+
+TEST_CASE_METHOD(TApp, "AllowExtrasImmediateError", "[app]") {
+
+    int v1{ 0 };
+    int v2{ 0 };
+    app.add_option("-f", v1)->trigger_on_parse();
+    app.add_option("-x", v2);
+    args = { "-x", "15", "-f", "17", "-g", "19" };
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    CHECK(v1==17);
+    CHECK(app.remaining().size()==2U);
+    args = { "-x", "21", "-f", "23", "-g", "25" };
+    app.allow_extras(CLI::ExtrasMode::ErrorImmediately);
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    CHECK(v1==23); //-f still triggers
+    CHECK(v2==15);
+    CHECK(app.remaining().size()==0U);
+    args = { "-x", "27","-g", "29", "-f", "31"  };
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+    CHECK(v1==23); // -f did not trigger
+    CHECK(v2==15);
+    CHECK(app.remaining().size()==0U);
+}
+
 TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     int v1{0};
     int v2{0};
@@ -2526,8 +2550,6 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
 
 // makes sure the error throws on the rValue version of the parse
 TEST_CASE_METHOD(TApp, "ExtrasErrorRvalueParse", "[app]") {
-
-    args = {"-x", "45", "-f", "27"};
 
     CHECK_THROWS_AS(app.parse(std::vector<std::string>({"-x", "45", "-f", "27"})), CLI::ExtrasError);
 }

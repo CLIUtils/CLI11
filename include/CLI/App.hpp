@@ -67,7 +67,7 @@ CLI11_INLINE std::string help(const App *app, const Error &e);
 }  // namespace FailureMessage
 
 /// enumeration of modes of how to deal with command line extras
-enum class ExtrasMode : std::uint8_t { Error = 0, Ignore, AssumeSingleArgument, AssumeMultipleArguments, Capture };
+enum class ExtrasMode:std::uint8_t{Error=0,ErrorImmediately, Ignore,AssumeSingleArgument,AssumeMultipleArguments,Capture};
 
 /// enumeration of modes of how to deal with extras in config files
 enum class ConfigExtrasMode : std::uint8_t { Error = 0, Ignore, IgnoreAll, Capture };
