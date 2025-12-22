@@ -2358,12 +2358,11 @@ inline bool capture_extras(ExtrasMode mode) {
            mode == ExtrasMode::AssumeMultipleArguments;
 }
 CLI11_INLINE void App::_move_to_missing(detail::Classifier val_type, const std::string &val) {
-    if (allow_extras_ == ExtrasMode::ErrorImmediately)
-    {
+    if(allow_extras_ == ExtrasMode::ErrorImmediately) {
         throw ExtrasError(name_, std::vector<std::string>{val});
     }
-    if (capture_extras(allow_extras_) || subcommands_.empty() || get_prefix_command()) {
-        if (allow_extras_ != ExtrasMode::Ignore) {
+    if(capture_extras(allow_extras_) || subcommands_.empty() || get_prefix_command()) {
+        if(allow_extras_ != ExtrasMode::Ignore) {
             missing_.emplace_back(val_type, val);
         }
         return;
