@@ -58,7 +58,7 @@ if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
   if((NOT CLI11_SINGLE_FILE) OR CLI11_FULL_INSTALL)
     install(FILES ${CLI11_headers} ${CLI11_library_headers}
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-    
+
     # --- FIX START: Always install impl headers (Removed IF condition) ---
     install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
     # --- FIX END ---
