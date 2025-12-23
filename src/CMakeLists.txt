@@ -5,6 +5,12 @@ if(CLI11_PRECOMPILED)
                            ${CLI11_precompile_sources})
   target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
 
+  # --- FIX START: Link Shell32 for Windows (Required for Precompiled mode) ---
+  if(WIN32)
+    target_link_libraries(CLI11 PUBLIC Shell32)
+  endif()
+  # --- FIX END ---
+
   set(PUBLIC_OR_INTERFACE PUBLIC)
 else()
   add_library(CLI11 INTERFACE)
@@ -24,6 +30,7 @@ elseif(CLI11_DISABLE_EXTRA_VALIDATORS)
 elseif(DEFINED CLI11_ENABLE_EXTRA_VALIDATORS)
   target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=0)
 endif()
+
 # Allow IDE's to group targets into folders
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls
 
@@ -51,8 +58,9 @@ if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
   if((NOT CLI11_SINGLE_FILE) OR CLI11_FULL_INSTALL)
     install(FILES ${CLI11_headers} ${CLI11_library_headers}
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI")
-    if((NOT CLI11_PRECOMPILED) OR CLI11_FULL_INSTALL)
-      install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
-    endif()
+    
+    # --- FIX START: Always install impl headers (Removed IF condition) ---
+    install(FILES ${CLI11_impl_headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CLI/impl")
+    # --- FIX END ---
   endif()
 endif()
