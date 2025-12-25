@@ -70,7 +70,12 @@ class Config {
 
     /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
     CLI11_NODISCARD std::vector<ConfigItem> from_file(const std::string &name) const {
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
         std::ifstream input{to_path(name)};
+#else
+        std::ifstream input{name};
+#endif
+
         if(!input.good())
             throw FileError::Missing(name);
 
