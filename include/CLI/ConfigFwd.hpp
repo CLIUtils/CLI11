@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 // [CLI11:public_includes:end]
-
+#include "Encoding.hpp"
 #include "Error.hpp"
 #include "StringTools.hpp"
 
@@ -70,7 +70,7 @@ class Config {
 
     /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
     CLI11_NODISCARD std::vector<ConfigItem> from_file(const std::string &name) const {
-        std::ifstream input{name};
+        std::ifstream input{to_path(name)};
         if(!input.good())
             throw FileError::Missing(name);
 
