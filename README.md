@@ -321,7 +321,7 @@ assigning it. Or using some variant type
 ```cpp
 using vtype=std::variant<int, double, std::string>;
  vtype v1;
-app.add_option<vtype,std:string>("--vs",v1);
+app.add_option<vtype,std::string>("--vs",v1);
 app.add_option<vtype,int>("--vi",v1);
 app.add_option<vtype,double>("--vf",v1);
 ```
