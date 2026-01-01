@@ -544,7 +544,8 @@ template <typename T, std::size_t I>
 }
 
 /// Get the type size of the sum of type sizes for all the individual tuple types
-template <typename T> struct type_count<T, typename std::enable_if<is_tuple_like<T>::value && !is_complex<T>::value>::type> {
+template <typename T>
+struct type_count<T, typename std::enable_if<is_tuple_like<T>::value && !is_complex<T>::value>::type> {
     static constexpr int value{tuple_type_size<T, 0>()};
 };
 
@@ -593,7 +594,8 @@ template <typename T, std::size_t I>
 }
 
 /// Get the type size of the sum of type sizes for all the individual tuple types
-template <typename T> struct type_count_min<T, typename std::enable_if<is_tuple_like<T>::value && !is_complex<T>::value>::type> {
+template <typename T>
+struct type_count_min<T, typename std::enable_if<is_tuple_like<T>::value && !is_complex<T>::value>::type> {
     static constexpr int value{tuple_type_size_min<T, 0>()};
 };
 
