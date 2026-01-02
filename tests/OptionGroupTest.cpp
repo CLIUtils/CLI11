@@ -706,6 +706,14 @@ TEST_CASE_METHOD(ManyGroups, "ExtrasFallDown", "[optiongroup]") {
     std::vector<std::string> extras{"--test1", "--flag", "extra"};
     CHECK(extras == app.remaining(true));
     CHECK(extras == main->remaining());
+    app.allow_extras(CLI::ExtrasMode::Ignore);
+
+    CHECK_NOTHROW(run());
+
+    CHECK(0u == app.remaining_size(false));
+
+    CHECK(extras == app.remaining(true));
+    CHECK(extras == main->remaining());
 }
 
 // Test the option Inheritance
