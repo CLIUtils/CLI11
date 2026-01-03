@@ -65,6 +65,7 @@ endif()
 option(CLI11_WARNINGS_AS_ERRORS "Turn all warnings into errors (for CI)")
 option(CLI11_SINGLE_FILE "Generate a single header file")
 option(CLI11_PRECOMPILED "Generate a precompiled static library instead of a header-only" OFF)
+option(CLI11_MODULES "Build CLI11 as a C++ module (requires C++20)" OFF)
 
 cmake_dependent_option(CLI11_SANITIZERS "Download the sanitizers CMake config" OFF
                        "NOT CMAKE_VERSION VERSION_LESS 3.15" OFF)
