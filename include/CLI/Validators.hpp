@@ -222,19 +222,19 @@ class EscapedStringTransformer : public Validator {
 }  // namespace detail
 
 /// Check for existing file (returns error message if check fails)
-const detail::ExistingFileValidator ExistingFile;
+CLI11_MODULE_INLINE const detail::ExistingFileValidator ExistingFile;
 
 /// Check for an existing directory (returns error message if check fails)
-const detail::ExistingDirectoryValidator ExistingDirectory;
+CLI11_MODULE_INLINE const detail::ExistingDirectoryValidator ExistingDirectory;
 
 /// Check for an existing path
-const detail::ExistingPathValidator ExistingPath;
+CLI11_MODULE_INLINE const detail::ExistingPathValidator ExistingPath;
 
 /// Check for an non-existing path
-const detail::NonexistentPathValidator NonexistentPath;
+CLI11_MODULE_INLINE const detail::NonexistentPathValidator NonexistentPath;
 
 /// convert escaped characters into their associated values
-const detail::EscapedStringTransformer EscapedString;
+CLI11_MODULE_INLINE const detail::EscapedStringTransformer EscapedString;
 
 /// Modify a path if the file is a particular default location, can be used as Check or transform
 /// with the error return optionally disabled
@@ -279,10 +279,10 @@ class Range : public Validator {
 };
 
 /// Check for a non negative number
-const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
+CLI11_MODULE_INLINE const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
-const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
+CLI11_MODULE_INLINE const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 namespace detail {
 // the following suggestion was made by Nikita Ofitserov(@himikof)

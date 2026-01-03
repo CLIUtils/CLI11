@@ -95,7 +95,7 @@ class Bound : public Validator {
 // Static is not needed here, because global const implies static.
 
 /// Check for an IP4 address
-const detail::IPV4Validator ValidIPV4;
+CLI11_MODULE_INLINE const detail::IPV4Validator ValidIPV4;
 
 namespace detail {
 template <typename T,
