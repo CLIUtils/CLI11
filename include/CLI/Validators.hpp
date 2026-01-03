@@ -282,7 +282,8 @@ class Range : public Validator {
 CLI11_MODULE_INLINE const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
 /// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
-CLI11_MODULE_INLINE const Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
+CLI11_MODULE_INLINE const
+    Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 namespace detail {
 // the following suggestion was made by Nikita Ofitserov(@himikof)
