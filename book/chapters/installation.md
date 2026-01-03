@@ -75,7 +75,7 @@ linker errors):
 
 #### Global Headers with Target
 
-configuring and installing the project is required for linking CLI11 to your
+Configuring and installing the project is required for linking CLI11 to your
 project in the same way as you would do with any other external library. With
 CMake, this step allows using `find_package(CLI11 CONFIG REQUIRED)` and then
 using the `CLI11::CLI11` target when linking. If `CMAKE_INSTALL_PREFIX` was
@@ -86,6 +86,23 @@ use [Conan.io](https://conan.io/center/cli11) or
 just conveniences to allow you to use your favorite method of managing packages;
 it's just header only so including the correct path and using C++11 is all you
 really need.)
+
+#### Modules
+
+When using modules, you must be using C++20 or later. CMake currently supports only
+Ninja as the build system for modules (for example, Makefiles won't work). When enabling
+`CLI11_MODULES`, you will have a target `CLI11::Modules` for linking.
+
+```cpp
+import cli11;
+
+using CLI::App;
+
+int main(int argc, char* argv[]) {
+    App app{"MyApp"};
+    // ...
+}
+```
 
 #### Using Fetchcontent
 
@@ -180,6 +197,7 @@ default to off if CLI11 is used as a subdirectory in another project.
 | --------------------------------- | -------------------------------------------------------------------------------- |
 | `CLI11_SINGLE_FILE=ON`            | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
 | `CLI11_PRECOMPILED=OFF`           | Generate a precompiled static library instead of header-only                     |
+| `CLI11_MODULES=OFF`               | Build CLI11 as a module (requires C++20 or later)                                |
 | `CLI11_INSTALL_PACKAGE_TESTS=OFF` | Run tests checking the installation                                              |
 | `CLI11_MODULE_TEST=OFF`           | Run a test checking that CLI11 works with modules                                |
 | `CLI11_SINGLE_FILE_TESTS=OFF`     | Run the tests on the generated single file version as well                       |
@@ -302,7 +320,7 @@ and in your C++ file:
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
 
-int main(int argc, char** argv)) {
+int main(int argc, char** argv) {
     CLI::App app{"MyApp"};
     // Here your flags / options
     CLI11_PARSE(app, argc, argv);

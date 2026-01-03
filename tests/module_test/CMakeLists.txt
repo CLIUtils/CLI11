@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...4.2)
+cmake_minimum_required(VERSION 3.28...4.2)
 
 project(CLI11-module-test)
 
@@ -9,15 +9,14 @@ if(CLI11_DIR)
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
+
 # Test the CLI11 CMake package config
 find_package(CLI11 2.5 REQUIRED)
 
 # Test the target
 add_executable(module-test module_test.cpp)
 
-target_sources(module-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILES cmodule.ixx)
-
-target_link_libraries(module-test CLI11::CLI11)
+target_link_libraries(module-test CLI11::Module)
 target_compile_options(module-test PUBLIC -fmodules-ts)
 
 add_test(NAME module-test1 COMMAND module-test one)
