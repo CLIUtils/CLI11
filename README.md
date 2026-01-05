@@ -1123,6 +1123,24 @@ option_groups. These are:
   executes after the first argument of an application is processed. See
   [Subcommand callbacks](#callbacks) for some additional details.
 - `.allow_extras()`: Do not throw an error if extra arguments are left over.
+- `.allow_extras(CLI::ExtrasMode)`: Specify the method of handling unrecognized
+  arguments.
+  - `CLI::ExtrasMode::Error`: generate an error on unrecognized argument. Same
+    as `.allow_extras(false)`.
+  - `CLI::ExtrasMode::ErrorImmediately`: generate an error immediately on
+    parsing an unrecognized option`.
+  - `CLI::ExtrasMode::Ignore`: ignore any unrecognized argument, do not generate
+    an error.
+  - `CLI::ExtrasMode::AssumeSingleArgument`: After an unrecognized flag or
+    option argument, if the following argument is not a flag or option argument
+    assume it an argument and treat it as also unrecognized even if it would
+    otherwise go to a positional argument
+  - `CLI::ExtrasMode::AssumeMultipleArguments`:After an unrecognized flag or
+    option argument, if the following arguments are not a flag or option
+    argument assume they are arguments and treat them as also unrecognized even
+    if it would otherwise go to a positional argument
+  - `CLI::ExtrasMode::Capture`: capture all unrecognized arguments, same as
+    `true` for `.allow_extras`:
 - `.positionals_at_end()`: Specify that positional arguments occur as the last
   arguments and throw an error if an unexpected positional is encountered.
 - `.prefix_command()`: Like `allow_extras`, but stop processing immediately on
