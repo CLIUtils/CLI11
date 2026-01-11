@@ -4,12 +4,12 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+import cli11;
+
 #include <cassert>
 #include <cstdlib>
 #include <print>
 #include <string>
-
-import cli11;
 
 using std::string;
 
