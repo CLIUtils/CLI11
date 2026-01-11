@@ -16,7 +16,7 @@ find_package(CLI11 2.5 REQUIRED)
 # Test the target
 add_executable(module-test module_test.cpp)
 
-target_link_libraries(module-test CLI11::Module)
+target_link_libraries(module-test CLI11::CLI11_Module)
 target_compile_options(module-test PUBLIC -fmodules-ts)
 
 add_test(NAME module-test1 COMMAND module-test one)
