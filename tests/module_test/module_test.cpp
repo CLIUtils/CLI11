@@ -4,19 +4,19 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include <cassert>
-#include <cstdlib>
-#include <print>
-#include <string>
-
 import cli11;
+
+#include <cassert>
+#include <cstdio>
+// #include <print>
+#include <string>
 
 using std::string;
 
 using CLI::App;
 using CLI::ParseError;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     App app{"Module test"};
 
     string value;
@@ -30,7 +30,8 @@ int main(int argc, char *argv[]) {
 
     assert(!value.empty());
 
-    std::println("OK: export module");
+    std::printf("OK: export module\n");
+    // std::println("OK: export module");
 
-    return EXIT_SUCCESS;
+    return 0;
 }
