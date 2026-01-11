@@ -89,9 +89,10 @@ really need.)
 
 #### Modules
 
-When using modules, you must be using C++20 or later. CMake currently supports only
-Ninja as the build system for modules (for example, Makefiles won't work). When enabling
-`CLI11_MODULES`, you will have a target `CLI11::Modules` for linking.
+When using modules, you must be using C++20 or later. CMake currently supports
+only Ninja as the build system for modules (for example, Makefiles won't work).
+When enabling `CLI11_MODULES`, you will have a target `CLI11::Modules` for
+linking.
 
 ```cpp
 import cli11;

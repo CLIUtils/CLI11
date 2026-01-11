@@ -16,7 +16,7 @@ using std::string;
 using CLI::App;
 using CLI::ParseError;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     App app{"Module test"};
 
     string value;
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     try {
         app.parse(argc, argv);
-    } catch (const ParseError& e) {
+    } catch(const ParseError &e) {
         return app.exit(e);
     }
 
