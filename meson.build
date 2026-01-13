@@ -1,18 +1,13 @@
 project('CLI11', ['cpp'],
   version         : run_command(find_program('scripts/ExtractVersion.py'), check: true).stdout().strip(),
   license         : 'BSD-3-clause',
-  meson_version   : '>= 0.60',
-  default_options : ['cpp_std=c++11', 'warning_level=3']
+  meson_version   : '>= 1.3',
+  default_options : ['cpp_std=c++17,c++14,c++11', 'warning_level=3']
 )
 
 cxx = meson.get_compiler('cpp')
 
-use_single_header = get_option('single-file-header')
-use_precompiled =   get_option('precompiled')
-
-if use_precompiled and use_single_header
-  error('Options "single-file"header" and "precompiled" are mutually exclusive')
-endif
+buildmode = get_option('mode')
 
 cli11_headers = files(
   'include/CLI/App.hpp',
@@ -47,52 +42,69 @@ cli11_impl_headers = files(
   'include/CLI/impl/ExtraValidators_inl.hpp',
 )
 
-subdir('single-include')
+cli11_inc = include_directories('include')
 
-CLI11_inc = include_directories(['include'])
-
-warnings = ['-Wshadow', '-Wsign-conversion', '-Wswitch-enum']
-if cxx.get_id() == 'gcc' and cxx.version().version_compare('>=4.9')
-  warnings += '-Weffc++'
+if cxx.get_argument_syntax() == 'gcc'
+  warnings = ['-Wshadow', '-Wsign-conversion', '-Wswitch-enum']
+  if cxx.get_id() == 'gcc' and cxx.version().version_compare('>=4.9')
+    warnings += '-Weffc++'
+  endif
+  if cxx.get_id() == 'clang'
+    warnings += [
+      '-Wcast-align',
+      '-Wimplicit-atomic-properties',
+      '-Wmissing-declarations',
+      '-Woverlength-strings',
+      '-Wstrict-selector-match',
+      '-Wundeclared-selector',
+    ]
+  endif
+  add_project_arguments(cxx.get_supported_arguments(warnings), language: 'cpp')
 endif
-if cxx.get_id() == 'clang'
-  warnings += [
-    '-Wcast-align',
-    '-Wimplicit-atomic-properties',
-    '-Wmissing-declarations',
-    '-Woverlength-strings',
-    '-Wstrict-selector-match',
-    '-Wundeclared-selector',
-  ]
-endif
-add_project_arguments(cxx.get_supported_arguments(warnings), language: 'cpp')
 
-if use_precompiled
+if buildmode == 'amalgamated'
+  subdir('single-include')
+
+  cli11_dep = declare_dependency(
+    sources: single_header,
+    include_directories : include_directories(meson.current_build_dir() / 'single-include'),
+  )
+elif buildmode == 'headeronly'
+  install_headers(cli11_headers, subdir: 'CLI')
+
+  cli11_dep = declare_dependency(include_directories : cli11_inc)
+elif buildmode == 'precompiled'
+  cli11_cflags = ['-DCLI11_COMPILE', '-DCLI11_ENABLE_EXTRA_VALIDATORS=1']
+
   libcli11 = library(
     'CLI11',
     'src/Precompile.cpp',
-    include_directories : CLI11_inc,
-    cpp_args            : ['-DCLI11_COMPILE -DCLI11_ENABLE_EXTRA_VALIDATORS=1'],
+    include_directories : cli11_inc,
+    cpp_args            : cli11_cflags,
     install             : true,
   )
 
-  pkg = import('pkgconfig')
-  pkg.generate(libcli11, extra_cflags: ['-DCLI11_COMPILE -DCLI11_ENABLE_EXTRA_VALIDATORS=1'])
+  pkg = import('pkgconfig', required: false)
+  if pkg.found()
+    pkg.generate(
+      libcli11,
+      description  : 'CLI11 is a command line parser for C++11 and beyond that provides a rich feature set with a simple and intuitive interface.',
+      extra_cflags : cli11_cflags,
+      url          : 'https://github.com/CLIUtils/CLI11',
+    )
+  endif
 
   install_headers(cli11_headers, subdir: 'CLI')
-else
-  libcli11 = []
+
+  cli11_dep = declare_dependency(
+    link_with           : libcli11,
+    include_directories : cli11_inc,
+  )
 endif
 
-CLI11_dep = declare_dependency(
-  sources             : single_header,
-  link_with           : libcli11,
-  include_directories : CLI11_inc,
-  version             : meson.project_version(),
-)
+meson.override_dependency('CLI11', cli11_dep)
 
-meson.override_dependency('CLI11', CLI11_dep)
-
-if get_option('tests')
-  subdir('tests')
-endif
+tests = get_option('tests')
+tests = tests.disable_auto_if(meson.is_subproject())
+catch2_dep = dependency('catch2', required: tests)
+subdir('tests', if_found: catch2_dep)

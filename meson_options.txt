@@ -1,3 +1,2 @@
-option('tests', type: 'boolean', value: false, description: 'Build CLI11 tests')
-option('single-file-header', type: 'boolean', value: false, description : 'Generate a single header file.')
-option('precompiled', type: 'boolean', value: false, description : 'Generate a precompiled static library instead of a header-only')
+option('tests', type: 'feature', value: 'auto', description: 'Build CLI11 tests')
+option('mode', type: 'combo', choices: ['amalgamated', 'headeronly', 'precompiled'], value: 'headeronly')
