@@ -37,6 +37,11 @@ cc_test(
         "//:cli11",
         "@catch2",
     ],
+    linkopts = select({
+        "@rules_cc//cc/compiler:msvc-cl": [],
+        "@rules_cc//cc/compiler:clang-cl": [],
+        "//conditions:default": ["-pthread"],
+    }),
 )
 
 [
