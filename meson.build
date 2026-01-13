@@ -72,6 +72,16 @@ if buildmode == 'amalgamated'
 elif buildmode == 'headeronly'
   install_headers(cli11_headers, subdir: 'CLI')
 
+  pkg = import('pkgconfig', required: false)
+  if pkg.found()
+    pkg.generate(
+      name         : 'CLI11',
+      description  : 'CLI11 is a command line parser for C++11 and beyond that provides a rich feature set with a simple and intuitive interface.',
+      url          : 'https://github.com/CLIUtils/CLI11',
+      install_dir  : get_option('datadir') / 'pkgconfig',
+    )
+  endif
+
   cli11_dep = declare_dependency(include_directories : cli11_inc)
 elif buildmode == 'precompiled'
   cli11_cflags = ['-DCLI11_COMPILE', '-DCLI11_ENABLE_EXTRA_VALIDATORS=1']

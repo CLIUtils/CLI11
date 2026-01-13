@@ -27,8 +27,8 @@ using tchar = char;
 #include <csignal>
 #include <cstring>
 #include <spawn.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #endif
 
 TEST_CASE_METHOD(TApp, "OneFlagShort", "[app]") {
