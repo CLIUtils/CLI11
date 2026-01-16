@@ -932,6 +932,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "mochaaP",
+      "name": "Zephyr Lykos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/21154023?v=4",
+      "profile": "https://mochaa.ws/?utm_source=github_user",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
