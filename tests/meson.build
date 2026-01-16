@@ -40,7 +40,7 @@ else
 endif
 
 testnames = {
-    'HelpersTest': {},
+    'HelpersTest': {'workdir': meson.project_build_root()},
     'ConfigFileTest': {},
     'OptionTypeTest': {},
     'NumericTypeTest': {},
@@ -91,5 +91,5 @@ foreach name, kwargs: testnames
         build_by_default: false,
         dependencies: [testdep] + kwargs.get('dependencies', []),
         link_with: kwargs.get('link_with', [])
-    ), depends: app_tgts, workdir: meson.current_build_dir())
+    ), depends: app_tgts, workdir: kwargs.get('workdir', meson.current_build_dir()))
 endforeach
