@@ -5,18 +5,31 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
-#include <cmath>
 
 #include <array>
+#include <cmath>
 #include <complex>
 #include <cstdint>
-#include <cstdlib>
 #include <limits>
-#include <map>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#ifdef _WIN32
+#define PLATFORM_TEXT(x) _PLATFORM_TEXT(x)
+#define _PLATFORM_TEXT(x) L##x
+using tchar = wchar_t;
+#include <process.h>
+#else
+#define PLATFORM_TEXT(x) x
+using tchar = char;
+#include <csignal>
+#include <cstring>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 
 TEST_CASE_METHOD(TApp, "OneFlagShort", "[app]") {
     app.add_flag("-c,--count");
@@ -2979,38 +2992,107 @@ TEST_CASE("C20_compile", "simple") {
     CHECK_FALSE(flag->empty());
 }
 
+#ifdef _WIN32
+static int spawn_subprocess_win32(const wchar_t *path, wchar_t *commandline) {
+    STARTUPINFOW si{};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi{};
+    REQUIRE(CreateProcessW(path, commandline, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi));
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    DWORD exitcode;  // NOLINT(cppcoreguidelines-init-variables)
+    REQUIRE(GetExitCodeProcess(pi.hProcess, &exitcode));
+
+    return static_cast<int>(exitcode);
+}
+#else
+static int spawn_subprocess_posix(const char *path, char *const *argv) {
+    // NOLINTBEGIN(cppcoreguidelines-init-variables)
+    pid_t pid;
+    sigset_t old, reset;
+    struct sigaction sa, oldint, oldquit;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SIG_IGN;
+    int status = -1, ret;
+    posix_spawnattr_t attr;
+    // NOLINTEND(cppcoreguidelines-init-variables)
+
+    pthread_testcancel();
+
+    sigaction(SIGINT, &sa, &oldint);
+    sigaction(SIGQUIT, &sa, &oldquit);
+    sigaddset(&sa.sa_mask, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &sa.sa_mask, &old);
+
+    sigemptyset(&reset);
+    if(oldint.sa_handler != SIG_IGN)
+        sigaddset(&reset, SIGINT);
+    if(oldquit.sa_handler != SIG_IGN)
+        sigaddset(&reset, SIGQUIT);
+    posix_spawnattr_init(&attr);
+    posix_spawnattr_setsigmask(&attr, &old);
+    posix_spawnattr_setsigdefault(&attr, &reset);
+    posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK);
+    CHECK((ret = posix_spawn(&pid, path, nullptr, &attr, argv, nullptr)) == 0);
+
+    if(ret == 0)
+        while(waitpid(pid, &status, 0) < 0 && errno != EINTR) {
+        }
+
+    sigaction(SIGINT, &oldint, nullptr);
+    sigaction(SIGQUIT, &oldquit, nullptr);
+    sigprocmask(SIG_SETMASK, &old, nullptr);
+
+    return status;
+}
+#endif
+
+static int spawn_app_exe(const tchar *path) {
+#ifdef _WIN32
+    std::wstring args{L"app_exe 1234 false \"hello world\""};
+    return spawn_subprocess_win32(path, &args[0]);
+#else
+    std::string arg0{"app_exe"};
+    std::string arg1{"1234"};
+    std::string arg2{"false"};
+    std::string arg3{"hello world"};
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    char *const args[] = {&arg0[0], &arg1[0], &arg2[0], &arg3[0], nullptr};
+    return spawn_subprocess_posix(path, args);
+#endif
+}
+
 // #845
 TEST_CASE("Ensure UTF-8", "[app]") {
-    const char *commandline = CLI11_ENSURE_UTF8_EXE " 1234 false \"hello world\"";
-    int retval = std::system(commandline);
+    auto retval = spawn_app_exe(PLATFORM_TEXT(CLI11_ENSURE_UTF8_EXE));
 
     if(retval == -1) {
-        FAIL("Executable '" << commandline << "' reported that argv pointer changed where it should not have been");
+        FAIL("Executable " CLI11_ENSURE_UTF8_EXE " reported that argv pointer changed where it should not have been");
     }
 
     if(retval > 0) {
-        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+        FAIL("Executable " CLI11_ENSURE_UTF8_EXE " reported different argv at index " << (retval - 1));
     }
 
     if(retval != 0) {
-        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+        FAIL("Executable " CLI11_ENSURE_UTF8_EXE " failed with an unknown return code");
     }
 }
 
 // #845
 TEST_CASE("Ensure UTF-8 called twice", "[app]") {
-    const char *commandline = CLI11_ENSURE_UTF8_TWICE_EXE " 1234 false \"hello world\"";
-    int retval = std::system(commandline);
+    auto retval = spawn_app_exe(PLATFORM_TEXT(CLI11_ENSURE_UTF8_TWICE_EXE));
 
     if(retval == -1) {
-        FAIL("Executable '" << commandline << "' reported that argv pointer changed where it should not have been");
+        FAIL("Executable " CLI11_ENSURE_UTF8_TWICE_EXE
+             " reported that argv pointer changed where it should not have been");
     }
 
     if(retval > 0) {
-        FAIL("Executable '" << commandline << "' reported different argv at index " << (retval - 1));
+        FAIL("Executable " CLI11_ENSURE_UTF8_TWICE_EXE " reported different argv at index " << (retval - 1));
     }
 
     if(retval != 0) {
-        FAIL("Executable '" << commandline << "' failed with an unknown return code");
+        FAIL("Executable " CLI11_ENSURE_UTF8_TWICE_EXE " failed with an unknown return code");
     }
 }

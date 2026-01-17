@@ -213,6 +213,10 @@ if(CMAKE_CXX_STANDARD GREATER 16)
   file(REMOVE ${CMAKE_BINARY_DIR}/test_atomic.cpp)
 endif()
 
+find_package(Threads)
+
+target_link_libraries(AppTest PRIVATE Threads::Threads)
+
 # Add -Wno-deprecated-declarations to DeprecatedTest
 set(no-deprecated-declarations $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
                                $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-deprecated-declarations>)
