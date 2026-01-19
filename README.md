@@ -350,10 +350,9 @@ app.add_option<std::vector<double>,int>("--vs",v1);
 would load a vector of doubles but ensure all values can be represented as
 integers.
 
-Automatic direct capture of the default string is disabled when using the two
-parameter template. Use `set_default_str(...)` or
-`->default_function(std::string())` to set the default string or capture
-function directly for these cases.
+Use `default_str(...)` or `default_val(...)` to set the default string or value for the option or flag.
+Use `->default_function(std::string())` to customize the default capture
+function directly.  The default value is then captured by calling `->capture_default_str()`.
 
 Flag options specified through the `add_flag*` functions allow a syntax for the
 option names to default particular options to a false value or any other value
