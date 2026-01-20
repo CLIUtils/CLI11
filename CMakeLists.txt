@@ -1,3 +1,9 @@
+# Copyright (c) 2017-2026, University of Cincinnati, developed by Henry Schreiner
+# under NSF AWARD 1414736 and by the respective contributors.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 cmake_minimum_required(VERSION 3.14...4.2)
 # Note: this is a header only library. If you have an older CMake than 3.14,
 # just add the CLI11/include directory and that's all you need to do.

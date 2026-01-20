@@ -5,7 +5,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.12.0
+    rev: 26.1.0
     hooks:
       - id: black
 
@@ -40,7 +40,7 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/JoC0de/pre-commit-prettier
-    rev: v3.7.4
+    rev: v3.8.0
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
