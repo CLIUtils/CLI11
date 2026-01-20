@@ -1,7 +1,8 @@
-# C/C++ with GCC
-# Build your C/C++ project with GCC using make.
-# Add steps that publish test results, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+# Copyright (c) 2017-2026, University of Cincinnati, developed by Henry Schreiner
+# under NSF AWARD 1414736 and by the respective contributors.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
 
 trigger:
   - main

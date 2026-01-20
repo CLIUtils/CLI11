@@ -1,3 +1,9 @@
+# Copyright (c) 2017-2026, University of Cincinnati, developed by Henry Schreiner
+# under NSF AWARD 1414736 and by the respective contributors.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 if(CLI11_PRECOMPILED)
   # Create static lib
   file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
