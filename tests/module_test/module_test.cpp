@@ -4,11 +4,10 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+
 import cli11;
 
-#include <cassert>
-#include <cstdlib>
-#include <print>
+#include <iostream>
 #include <string>
 
 using std::string;
@@ -28,9 +27,8 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-    assert(!value.empty());
 
-    std::println("OK: export module");
+    std::cout<<"OK: export module\n"<< "value = " << value << "\n";
 
-    return EXIT_SUCCESS;
+    return 0;
 }
