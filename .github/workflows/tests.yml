@@ -344,7 +344,7 @@ jobs:
       - name: Set up Clang
         uses: egor-tensin/setup-clang@v2
         with:
-          version: latest
+          version: 20
           platform: x64
       - uses: actions/checkout@v4
         with:
