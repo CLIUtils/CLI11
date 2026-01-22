@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-
 import cli11;
 
 #include <iostream>
@@ -27,8 +26,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-
-    std::cout<<"OK: export module\n"<< "value = " << value << "\n";
+    std::cout << "OK: export module\n" << "value = " << value << "\n";
 
     return 0;
 }
