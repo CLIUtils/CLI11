@@ -338,7 +338,7 @@ jobs:
         working-directory: build
 
   install-module-clang:
-    name: install module include tests
+    name: install cli11 module tests
     runs-on: ubuntu-latest
     container: silkeh/clang:20
     steps:
@@ -350,7 +350,7 @@ jobs:
           cmake-version: "4.2"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCLI11_MODULES=ON-DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
       - name: Build
         run: cmake --build build  -j2
       - name: install
