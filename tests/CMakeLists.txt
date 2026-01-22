@@ -380,6 +380,7 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
       "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
       "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
+      "-DCLI11_MODULES=${CLI11_MODULES}"
       ${package_test_command})
 
     set_property(TEST find-package-module PROPERTY LABELS Packaging)
