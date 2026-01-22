@@ -340,8 +340,12 @@ jobs:
   install-module-clang:
     name: install cli11 module tests
     runs-on: ubuntu-latest
-    container: silkeh/clang:20
     steps:
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v2
+        with:
+          version: latest
+          platform: x64
       - uses: actions/checkout@v4
         with:
           submodules: true
