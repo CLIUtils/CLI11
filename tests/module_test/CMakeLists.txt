@@ -38,5 +38,5 @@ target_sources(module-include-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILE
 target_link_libraries(module-include-test CLI11::CLI11)
 target_compile_options(module-include-test PUBLIC -fmodules-ts)
 
-add_test(NAME module-include-test1 COMMAND module-test one)
+add_test(NAME module-include-test1 COMMAND module-include-test one)
 set_property(TEST module-include-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
