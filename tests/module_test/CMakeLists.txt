@@ -25,11 +25,10 @@ if(CLI11_MODULES)
 
   target_link_libraries(module-test CLI11::CLI11_Module)
   target_compile_options(module-test PUBLIC -fmodules-ts)
-  
+
   add_test(NAME module-test1 COMMAND module-test one)
   set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
 endif()
-
 
 # Test inclusion of CLI11 in modules
 add_executable(module-include-test module_include_test.cpp)
