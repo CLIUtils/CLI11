@@ -346,10 +346,10 @@ jobs:
         with:
           version: 20
           platform: x64
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "20.0"
+      - name: Install specific libc++ version
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-20-dev libc++abi-20-dev
       - uses: actions/checkout@v4
         with:
           submodules: true
