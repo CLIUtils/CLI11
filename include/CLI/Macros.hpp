@@ -105,7 +105,7 @@
 #endif
 
 /** <codecvt> availability */
-#if !defined(CLI11_CPP26) && !defined(CLI11_HAS_CODECVT)
+#if !defined(CLI11_CPP23) && !defined(CLI11_HAS_CODECVT)
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 5
 #define CLI11_HAS_CODECVT 0
 #else
