@@ -27,6 +27,8 @@ target_sources(module-include-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILE
 target_link_libraries(module-include-test CLI11::CLI11)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(module-include-test PUBLIC -fmodules-ts)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  target_compile_options(module-include-test PUBLIC -stdlib=libc++)
 endif()
 
 add_test(NAME module-include-test1 COMMAND module-include-test one)
@@ -39,8 +41,10 @@ if(CLI11_MODULES)
 
   target_link_libraries(module-test CLI11::CLI11_Module)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(module-test PUBLIC -fmodules-ts)
-  endif()
+  target_compile_options(module-test PUBLIC -fmodules-ts)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  target_compile_options(module-test PUBLIC -stdlib=libc++)
+endif()
 
   add_test(NAME module-test1 COMMAND module-test one)
   set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
