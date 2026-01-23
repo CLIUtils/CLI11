@@ -3006,6 +3006,7 @@ static int spawn_subprocess_win32(const wchar_t *path, wchar_t *commandline) {
     return static_cast<int>(exitcode);
 }
 #else
+#include <pthread.h>
 static int spawn_subprocess_posix(const char *path, char *const *argv) {
     // NOLINTBEGIN(cppcoreguidelines-init-variables)
     pid_t pid;
