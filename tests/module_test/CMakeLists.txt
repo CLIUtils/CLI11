@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.28...4.2)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(CLI11-module-test)
 
@@ -28,7 +29,14 @@ target_link_libraries(module-include-test CLI11::CLI11)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(module-include-test PUBLIC -fmodules-ts)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  target_compile_options(module-include-test PUBLIC -stdlib=libc++)
+  if(CLI11_FORCE_LIBCXX)
+    set_property(
+      TARGET module-include-test
+      APPEND_STRING
+      PROPERTY LINK_FLAGS -stdlib=libc++)
+    target_link_libraries(module-include-test c++abi)
+    #target_link_libraries(module-include-test c++)
+  endif()
 endif()
 
 add_test(NAME module-include-test1 COMMAND module-include-test one)
@@ -43,9 +51,17 @@ if(CLI11_MODULES)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(module-test PUBLIC -fmodules-ts)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(module-test PUBLIC -stdlib=libc++)
+    if(CLI11_FORCE_LIBCXX)
+      set_property(
+        TARGET module-test
+        APPEND_STRING
+        PROPERTY LINK_FLAGS -stdlib=libc++)
+      target_link_libraries(module-test c++abi)
+      # target_link_libraries(module-test c++)
+    endif()
   endif()
 
   add_test(NAME module-test1 COMMAND module-test one)
-  set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
+  set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION
+                                          "OK: import cli11 module\nvalue = one")
 endif()

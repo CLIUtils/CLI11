@@ -6,7 +6,7 @@
 
 import cli11;
 
-#include <iostream>
+#include <print>
 #include <string>
 
 using std::string;
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-    std::cout << "OK: export module\n" << "value = " << value << "\n";
+    std::println("OK: import cli11 module\nvalue = {}", value);
 
     return 0;
 }
