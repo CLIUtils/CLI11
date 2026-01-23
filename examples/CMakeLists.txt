@@ -6,7 +6,7 @@ function(add_cli_exe T)
     set_property(
       TARGET ${T}
       APPEND_STRING
-      PROPERTY LINK_FLAGS -stdlib=libc++)
+      PROPERTY LINK_FLAGS -stdlib=libc++ -lc++abi)
   endif()
 endfunction()
 
