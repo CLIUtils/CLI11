@@ -7,6 +7,7 @@ function(add_cli_exe T)
       TARGET ${T}
       APPEND_STRING
       PROPERTY LINK_FLAGS -stdlib=libc++)
+    target_link_libraries(${T} PUBLIC c++abi)
   endif()
 endfunction()
 

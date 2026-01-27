@@ -62,3 +62,7 @@ if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
     endif()
   endif()
 endif()
+
+if(CLI11_MODULES)
+  add_subdirectory(modules)
+endif()

@@ -316,7 +316,7 @@ jobs:
         working-directory: build
 
   install-module:
-    name: install module tests
+    name: install module include tests
     runs-on: ubuntu-latest
     container: gcc:15
     steps:
@@ -328,7 +328,7 @@ jobs:
           cmake-version: "4.2"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_STANDARD=23
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install 
       - name: Build
         run: cmake --build build  -j2
       - name: install
@@ -337,6 +337,35 @@ jobs:
         run: ctest --output-on-failure -L Packaging
         working-directory: build
 
+  install-module-clang:
+    name: install cli11 module tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v2
+        with:
+          version: 20
+          platform: x64
+      - name: Install specific libc++ version
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-20-dev libc++abi-20-dev lld-20
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.2"
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
 
   cmake-config-ubuntu-2204:
     name: CMake config check (Ubuntu 22.04)

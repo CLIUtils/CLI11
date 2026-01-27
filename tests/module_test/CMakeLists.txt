@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.14...4.2)
+cmake_minimum_required(VERSION 3.28...4.2)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(CLI11-module-test)
 
@@ -15,16 +16,52 @@ if(CLI11_DIR)
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
+
 # Test the CLI11 CMake package config
 find_package(CLI11 2.5 REQUIRED)
 
-# Test the target
-add_executable(module-test module_test.cpp)
+# Test inclusion of CLI11 in modules
+add_executable(module-include-test module_include_test.cpp)
 
-target_sources(module-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILES cmodule.ixx)
+target_sources(module-include-test PUBLIC FILE_SET cmodule TYPE CXX_MODULES FILES cmodule.ixx)
 
-target_link_libraries(module-test CLI11::CLI11)
-target_compile_options(module-test PUBLIC -fmodules-ts)
+target_link_libraries(module-include-test CLI11::CLI11)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(module-include-test PUBLIC -fmodules-ts)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if(CLI11_FORCE_LIBCXX)
+    set_property(
+      TARGET module-include-test
+      APPEND_STRING
+      PROPERTY LINK_FLAGS -stdlib=libc++)
+    target_link_libraries(module-include-test c++abi)
+    #target_link_libraries(module-include-test c++)
+  endif()
+endif()
 
-add_test(NAME module-test1 COMMAND module-test one)
-set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
+add_test(NAME module-include-test1 COMMAND module-include-test one)
+set_property(TEST module-include-test1 PROPERTY PASS_REGULAR_EXPRESSION "OK: export module")
+
+# Test the CLI11 Module target if available
+if(CLI11_MODULES)
+  # Test the target
+  add_executable(module-test module_test.cpp)
+
+  target_link_libraries(module-test CLI11::CLI11_Module)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(module-test PUBLIC -fmodules-ts)
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CLI11_FORCE_LIBCXX)
+      set_property(
+        TARGET module-test
+        APPEND_STRING
+        PROPERTY LINK_FLAGS -stdlib=libc++)
+      target_link_libraries(module-test c++abi)
+      # target_link_libraries(module-test c++)
+    endif()
+  endif()
+
+  add_test(NAME module-test1 COMMAND module-test one)
+  set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION
+                                          "OK: import cli11 module\nvalue = one")
+endif()

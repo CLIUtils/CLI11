@@ -160,9 +160,10 @@ macro(add_catch_test TESTNAME)
   set_target_properties(${TESTNAME} PROPERTIES FOLDER "Tests")
   if(CLI11_FORCE_LIBCXX)
     set_property(
-      TARGET ${T}
+      TARGET ${TESTNAME}
       APPEND_STRING
       PROPERTY LINK_FLAGS -stdlib=libc++)
+    target_link_libraries(${TESTNAME} PUBLIC c++abi)
   endif()
 endmacro()
 
@@ -243,10 +244,7 @@ if(CLI11_FORCE_LIBCXX)
     TARGET link_test_1
     APPEND_STRING
     PROPERTY LINK_FLAGS -stdlib=libc++)
-  set_property(
-    TARGET link_test_2
-    APPEND_STRING
-    PROPERTY LINK_FLAGS -stdlib=libc++)
+  target_link_libraries(link_test_1 PUBLIC c++abi)
 endif()
 
 # Add informational printout
@@ -256,7 +254,8 @@ if(CLI11_FORCE_LIBCXX)
   set_property(
     TARGET informational
     APPEND_STRING
-    PROPERTY LINK_FLAGS -stdlib=libc++)
+    PROPERTY LINK_FLAGS "-stdlib=libc++")
+  target_link_libraries(informational PUBLIC c++abi)
 endif()
 
 set_target_properties(informational PROPERTIES FOLDER "Tests/Apps")
@@ -380,6 +379,11 @@ if(CLI11_INSTALL_PACKAGE_TESTS)
       "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
       "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
       "-DCLI11_DIR=${CMAKE_INSTALL_PREFIX}"
+      "-DCLI11_MODULES=${CLI11_MODULES}"
+      "-DCLI11_FORCE_LIBCXX=${CLI11_FORCE_LIBCXX}"
+      "-DCMAKE_LINKER_TYPE=${CMAKE_LINKER_TYPE}"
+      "-DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}"
+      "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}"
       ${package_test_command})
 
     set_property(TEST find-package-module PROPERTY LABELS Packaging)
