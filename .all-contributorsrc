@@ -951,6 +951,15 @@
         "platform",
         "infra"
       ]
+    },
+    {
+      "login": "mikomikotaishi",
+      "name": "Miko",
+      "avatar_url": "https://avatars.githubusercontent.com/u/110693261?v=4",
+      "profile": "https://github.com/mikomikotaishi",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
