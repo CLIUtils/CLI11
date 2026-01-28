@@ -194,22 +194,23 @@ Total Test time (real) =   0.34 sec
 For the curious, the CMake options and defaults are listed below. Most options
 default to off if CLI11 is used as a subdirectory in another project.
 
-| Option                            | Description                                                                      |
-| --------------------------------- | -------------------------------------------------------------------------------- |
-| `CLI11_SINGLE_FILE=ON`            | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
-| `CLI11_PRECOMPILED=OFF`           | Generate a precompiled static library instead of header-only                     |
-| `CLI11_MODULES=OFF`               | Build CLI11 as a module (requires C++20 or later)                                |
-| `CLI11_INSTALL_PACKAGE_TESTS=OFF` | Run tests checking the installation                                              |
-| `CLI11_MODULE_TEST=OFF`           | Run a test checking that CLI11 works with modules                                |
-| `CLI11_SINGLE_FILE_TESTS=OFF`     | Run the tests on the generated single file version as well                       |
-| `CLI11_BUILD_DOCS=ON`             | Build CLI11 documentation and book                                               |
-| `CLI11_BUILD_EXAMPLES=ON`         | Build the example programs.                                                      |
-| `CLI11_BUILD_EXAMPLES_JSON=ON`    | Build some additional example using json libraries                               |
-| `CLI11_INSTALL=ON`                | Install CLI11 to the install folder during the install process                   |
-| `CLI11_FULL_INSTALL=ON`           | Install all CLI11 headers/libraries regardless of other settings                 |
-| `CLI11_FORCE_LIBCXX=OFF`          | Use libc++ instead of libstdc++ if building with clang on linux                  |
-| `CLI11_CUDA_TESTS=OFF`            | Build the tests with NVCC                                                        |
-| `CLI11_BUILD_TESTS=ON`            | Build the tests.                                                                 |
+| Option                               | Description                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------- |
+| `CLI11_SINGLE_FILE=ON`               | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
+| `CLI11_PRECOMPILED=OFF`              | Generate a precompiled static library instead of header-only                     |
+| `CLI11_MODULES=OFF`                  | Build CLI11 as a module (requires C++20 or later)                                |
+| `CLI11_INSTALL_PACKAGE_TESTS=OFF`    | Run tests checking the installation                                              |
+| `CLI11_MODULE_TEST=OFF`              | Run a test checking that CLI11 works with modules                                |
+| `CLI11_SINGLE_FILE_TESTS=OFF`        | Run the tests on the generated single file version as well                       |
+| `CLI11_BUILD_DOCS=ON`                | Build CLI11 documentation and book                                               |
+| `CLI11_BUILD_EXAMPLES=ON`            | Build the example programs.                                                      |
+| `CLI11_BUILD_EXAMPLES_JSON=ON`       | Build some additional example using json libraries                               |
+| `CLI11_INSTALL=ON`                   | Install CLI11 to the install folder during the install process                   |
+| `CLI11_FULL_INSTALL=ON`              | Install all CLI11 headers/libraries regardless of other settings                 |
+| `CLI11_FORCE_LIBCXX=OFF`             | Use libc++ instead of libstdc++ if building with clang on linux                  |
+| `CLI11_DISABLE_IMPL_HEADERS_INSTALL` | Don't install the impl headers if the CLI11_PRECOMPILED is ON                    |
+| `CLI11_CUDA_TESTS=OFF`               | Build the tests with NVCC                                                        |
+| `CLI11_BUILD_TESTS=ON`               | Build the tests.                                                                 |
 
 [^1]:
     Docker is being used to create a pristine disposable environment; there is

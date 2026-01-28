@@ -89,7 +89,7 @@ cmake_dependent_option(CLI11_BUILD_EXAMPLES_JSON "Build CLI11 json example" OFF
 
 cmake_dependent_option(
   CLI11_FULL_INSTALL "Install all headers regardless of SINGLE_FILE OR PRECOMPILED OPTIONS" OFF
-  "CLI11_SINGLE_FILE OR CLI11_PRECOMPILED" OFF)
+  "CLI11_SINGLE_FILE " OFF)
 
 cmake_dependent_option(CLI11_SINGLE_FILE_TESTS "Duplicate all the tests for a single file build"
                        OFF "BUILD_TESTING;CLI11_SINGLE_FILE" OFF)
