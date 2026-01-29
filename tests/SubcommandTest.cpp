@@ -1676,6 +1676,27 @@ TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
     CHECK_THROWS_AS(appC.get_option("--vvvv"), CLI::OptionNotFound);
 }
 
+TEST_CASE_METHOD(TApp, "FallthroughFind", "[subcom]") {
+    double val{0.0};
+    double val2{0.0};
+    auto *gbl=app.add_option("--global", val);
+    auto *sub = app.add_subcommand("sub1", "empty name");
+    sub->fallthrough();
+    sub->add_option("-v,--value", val2);
+
+    auto *opt_fnd = sub->get_option("--global");
+    CHECK(opt_fnd==gbl);
+
+    auto opts = sub->get_options();
+    CHECK(opts.size() == 3);
+
+    sub->fallthrough(false);
+    opts = sub->get_options();
+    CHECK(opts.size() == 2);
+
+    CHECK_THROWS_AS(sub->get_option("--global"), CLI::OptionNotFound);
+}
+
 TEST_CASE_METHOD(TApp, "UnnamedSubMix", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0};
     app.add_option("-t", val2);

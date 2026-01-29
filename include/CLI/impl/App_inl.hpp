@@ -854,7 +854,13 @@ CLI11_INLINE std::vector<const Option *> App::get_options(const std::function<bo
             fallthrough_parent = fallthrough_parent->parent_;
         }
         std::vector<const Option *> subcopts = fallthrough_parent->get_options(filter);
-        options.insert(options.end(), subcopts.begin(), subcopts.end());
+        for (const auto* opt : subcopts)
+        {
+            if (std::find_if(options.begin(), options.end(), [opt](const Option * opt2) {return opt->check_name(opt2->get_name()); }) == options.end())
+            {
+                options.push_back(opt);
+            }
+        }
     }
     return options;
 }
@@ -882,7 +888,13 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             fallthrough_parent = fallthrough_parent->parent_;
         }
         std::vector<Option *> subcopts = fallthrough_parent->get_options(filter);
-        options.insert(options.end(), subcopts.begin(), subcopts.end());
+        for (auto* opt : subcopts)
+        {
+            if (std::find_if(options.begin(), options.end(), [opt](Option * opt2) {return opt->check_name(opt2->get_name()); }) == options.end())
+            {
+                options.push_back(opt);
+            }
+        }
     }
     return options;
 }
