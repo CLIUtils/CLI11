@@ -1679,13 +1679,13 @@ TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
 TEST_CASE_METHOD(TApp, "FallthroughFind", "[subcom]") {
     double val{0.0};
     double val2{0.0};
-    auto *gbl=app.add_option("--global", val);
+    auto *gbl = app.add_option("--global", val);
     auto *sub = app.add_subcommand("sub1", "empty name");
     sub->fallthrough();
     sub->add_option("-v,--value", val2);
 
     auto *opt_fnd = sub->get_option("--global");
-    CHECK(opt_fnd==gbl);
+    CHECK(opt_fnd == gbl);
 
     auto opts = sub->get_options();
     CHECK(opts.size() == 3);
