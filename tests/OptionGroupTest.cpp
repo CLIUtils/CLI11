@@ -843,8 +843,7 @@ TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
     g1->fallthrough();
     auto *opt_name = g1->get_option("--base");
     CHECK(opt_name == opt_main);
-    auto const *g1_const=g1;
+    auto const *g1_const = g1;
     auto *opt_name_const = g1_const->get_option("--base");
     CHECK(opt_name_const == opt_main);
-
 }

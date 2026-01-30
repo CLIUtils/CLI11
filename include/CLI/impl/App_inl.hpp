@@ -2330,7 +2330,7 @@ CLI11_INLINE App *App::_get_fallthrough_parent() noexcept {
     return fallthrough_parent;
 }
 
-CLI11_INLINE const App *App::_get_fallthrough_parent() const noexcept{
+CLI11_INLINE const App *App::_get_fallthrough_parent() const noexcept {
     if(parent_ == nullptr) {
         return nullptr;
     }

@@ -2643,7 +2643,6 @@ TEST_CASE_METHOD(TApp, "CheckSubcomFail", "[app]") {
     CHECK_THROWS_AS(CLI::detail::AppFriend::parse_subcommand(&app, args), CLI::HorribleError);
 }
 
-
 TEST_CASE_METHOD(TApp, "FallthroughParents", "[app]") {
     auto *sub = app.add_subcommand("test");
     CHECK(&app == CLI::detail::AppFriend::get_fallthrough_parent(sub));
@@ -2664,7 +2663,7 @@ TEST_CASE_METHOD(TApp, "FallthroughParents", "[app]") {
     ogb2->name("groupb");
     CHECK(ogb2 == CLI::detail::AppFriend::get_fallthrough_parent(ogb3));
 
-    CHECK(CLI::detail::AppFriend::get_fallthrough_parent(&app)==nullptr);
+    CHECK(CLI::detail::AppFriend::get_fallthrough_parent(&app) == nullptr);
 }
 
 TEST_CASE_METHOD(TApp, "OptionWithDefaults", "[app]") {

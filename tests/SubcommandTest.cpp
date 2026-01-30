@@ -1709,18 +1709,18 @@ TEST_CASE_METHOD(TApp, "FallthroughFind2level", "[subcom]") {
     sub->add_option("--other", val4);
     auto *subsub = sub->add_subcommand("subcc", "sub of sub");
     subsub->add_option("-v,--value", val3, "subsub value");
-    //this also tests that the value is only listed once
+    // this also tests that the value is only listed once
     subsub->fallthrough();
     auto *opt_fnd = subsub->get_option("--global");
     CHECK(opt_fnd == gbl);
 
     auto opts = subsub->get_options();
     CHECK(opts.size() == 4);
-    //now check the const version
+    // now check the const version
     const auto *subsub_const = subsub;
     auto opts_const = subsub_const->get_options();
     CHECK(opts_const.size() == 4);
-    //change parent fallthrough and make sure that works
+    // change parent fallthrough and make sure that works
     sub->fallthrough(false);
     opts = subsub->get_options();
     CHECK(opts.size() == 3);
