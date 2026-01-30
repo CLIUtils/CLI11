@@ -838,11 +838,10 @@ TEST_CASE_METHOD(ManyGroupsPreTrigger, "PreTriggerTestsSubcommand", "[optiongrou
     // go until the sub1 command is given
 }
 
-
 TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
-    auto * opt_main=app.add_option("--base");
+    auto *opt_main = app.add_option("--base");
     g1->fallthrough();
-    auto *opt_name=g1->get_option("--base");
-    
+    auto *opt_name = g1->get_option("--base");
+
     CHECK(opt_name == opt_main);
 }
