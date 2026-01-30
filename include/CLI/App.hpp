@@ -1424,6 +1424,9 @@ class App {
     /// Get the appropriate parent to fallthrough to which is the first one that has a name or the main app
     App *_get_fallthrough_parent();
 
+    /// Get the appropriate parent to fallthrough to which is the first one that has a name or the main app
+    const App *_get_fallthrough_parent() const;
+
     /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
     CLI11_NODISCARD const std::string &_compare_subcommand_names(const App &subcom, const App &base) const;
 

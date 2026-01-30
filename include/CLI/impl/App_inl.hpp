@@ -849,10 +849,7 @@ CLI11_INLINE std::vector<const Option *> App::get_options(const std::function<bo
         }
     }
     if(fallthrough_ && parent_ != nullptr) {
-        const auto *fallthrough_parent = parent_;
-        while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
-            fallthrough_parent = fallthrough_parent->parent_;
-        }
+        const auto *fallthrough_parent = _get_fallthrough_parent();
         std::vector<const Option *> subcopts = fallthrough_parent->get_options(filter);
         for(const auto *opt : subcopts) {
             if(std::find_if(options.begin(), options.end(), [opt](const Option *opt2) {
@@ -883,10 +880,7 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
         }
     }
     if(fallthrough_ && parent_ != nullptr) {
-        auto *fallthrough_parent = parent_;
-        while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
-            fallthrough_parent = fallthrough_parent->parent_;
-        }
+        auto *fallthrough_parent = _get_fallthrough_parent();
         std::vector<Option *> subcopts = fallthrough_parent->get_options(filter);
         for(auto *opt : subcopts) {
             if(std::find_if(options.begin(), options.end(), [opt](Option *opt2) {
@@ -915,11 +909,7 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
         }
     }
     if(fallthrough_ && parent_ != nullptr) {
-        auto *fallthrough_parent = parent_;
-        while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
-            fallthrough_parent = fallthrough_parent->parent_;
-        }
-        return fallthrough_parent->get_option_no_throw(option_name);
+        return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
 }
@@ -2338,6 +2328,17 @@ CLI11_INLINE App *App::_get_fallthrough_parent() {
         throw(HorribleError("No Valid parent"));
     }
     auto *fallthrough_parent = parent_;
+    while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
+        fallthrough_parent = fallthrough_parent->parent_;
+    }
+    return fallthrough_parent;
+}
+
+CLI11_INLINE const App *App::_get_fallthrough_parent() const {
+    if(parent_ == nullptr) {
+        throw(HorribleError("No Valid parent"));
+    }
+    const auto *fallthrough_parent = parent_;
     while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
         fallthrough_parent = fallthrough_parent->parent_;
     }
