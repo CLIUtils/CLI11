@@ -909,11 +909,7 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
         }
     }
     if(fallthrough_ && parent_ != nullptr) {
-        try {
-            return _get_fallthrough_parent()->get_option_no_throw(option_name);
-        } catch(const HorribleError &) {
-            return nullptr;  // LCOV_EXCL_LINE
-        }
+        return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
 }
@@ -934,11 +930,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option_no_throw(std::string 
         }
     }
     if(fallthrough_ && parent_ != nullptr) {
-        try {
-            return _get_fallthrough_parent()->get_option_no_throw(option_name);
-        } catch(const HorribleError &) {
-            return nullptr;  // LCOV_EXCL_LINE
-        }
+        return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
 }
@@ -2327,9 +2319,9 @@ CLI11_INLINE void App::_trigger_pre_parse(std::size_t remaining_args) {
     }
 }
 
-CLI11_INLINE App *App::_get_fallthrough_parent() {
+CLI11_INLINE App *App::_get_fallthrough_parent() noexcept {
     if(parent_ == nullptr) {
-        throw(HorribleError("No Valid parent"));
+        return nullptr;
     }
     auto *fallthrough_parent = parent_;
     while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
@@ -2338,9 +2330,9 @@ CLI11_INLINE App *App::_get_fallthrough_parent() {
     return fallthrough_parent;
 }
 
-CLI11_INLINE const App *App::_get_fallthrough_parent() const {
+CLI11_INLINE const App *App::_get_fallthrough_parent() const noexcept{
     if(parent_ == nullptr) {
-        throw(HorribleError("No Valid parent"));
+        return nullptr;
     }
     const auto *fallthrough_parent = parent_;
     while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
