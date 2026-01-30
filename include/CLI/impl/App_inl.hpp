@@ -911,8 +911,7 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
     if(fallthrough_ && parent_ != nullptr) {
         try {
             return _get_fallthrough_parent()->get_option_no_throw(option_name);
-        }
-        catch (const HorribleError&) {
+        } catch(const HorribleError &) {
             return nullptr;  // LCOV_EXCL_LINE
         }
     }
@@ -937,8 +936,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option_no_throw(std::string 
     if(fallthrough_ && parent_ != nullptr) {
         try {
             return _get_fallthrough_parent()->get_option_no_throw(option_name);
-        }
-        catch (const HorribleError&) {
+        } catch(const HorribleError &) {
             return nullptr;  // LCOV_EXCL_LINE
         }
     }
