@@ -1547,6 +1547,9 @@ struct AppFriend {
 #endif
     /// Wrap the fallthrough parent function to make sure that is working correctly
     static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
+
+    /// Wrap the const fallthrough parent function to make sure that is working correctly
+    static const App *get_fallthrough_parent(const App *app) { return app->_get_fallthrough_parent(); }
 };
 }  // namespace detail
 

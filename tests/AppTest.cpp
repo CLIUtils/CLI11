@@ -2666,6 +2666,29 @@ TEST_CASE_METHOD(TApp, "FallthroughParents", "[app]") {
     CHECK(CLI::detail::AppFriend::get_fallthrough_parent(&app) == nullptr);
 }
 
+TEST_CASE_METHOD(TApp, "ConstFallthroughParents", "[app]") {
+    auto *sub = app.add_subcommand("test");
+    CHECK(&app == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::App *>(sub)));
+
+    auto *ssub = sub->add_subcommand("sub2");
+    CHECK(sub == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::App *>(ssub)));
+
+    auto *og1 = app.add_option_group("g1");
+    auto *og2 = og1->add_option_group("g2");
+    auto *og3 = og2->add_option_group("g3");
+    CHECK(&app == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::Option_group *>(og3)));
+
+    auto *ogb1 = sub->add_option_group("g1");
+    auto *ogb2 = ogb1->add_option_group("g2");
+    auto *ogb3 = ogb2->add_option_group("g3");
+    CHECK(sub == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::Option_group *>(ogb3)));
+
+    ogb2->name("groupb");
+    CHECK(ogb2 == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::Option_group *>(ogb3)));
+
+    CHECK(CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::App *>(&app))==nullptr);
+}
+
 TEST_CASE_METHOD(TApp, "OptionWithDefaults", "[app]") {
     int someint{2};
     app.add_option("-a", someint)->capture_default_str();
