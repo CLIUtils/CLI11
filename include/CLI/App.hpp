@@ -1137,7 +1137,7 @@ class App {
     }
 
     /// Get an option by name (non-const version)
-    Option *get_option(std::string option_name) {
+    CLI11_NODISCARD Option *get_option(std::string option_name) {
         auto *opt = get_option_no_throw(option_name);
         if(opt == nullptr) {
             throw OptionNotFound(option_name);
@@ -1422,7 +1422,10 @@ class App {
     void _trigger_pre_parse(std::size_t remaining_args);
 
     /// Get the appropriate parent to fallthrough to which is the first one that has a name or the main app
-    App *_get_fallthrough_parent();
+    CLI11_NODISCARD App *_get_fallthrough_parent() noexcept;
+
+    /// Get the appropriate parent to fallthrough to which is the first one that has a name or the main app
+    CLI11_NODISCARD const App *_get_fallthrough_parent() const noexcept;
 
     /// Helper function to run through all possible comparisons of subcommand names to check there is no overlap
     CLI11_NODISCARD const std::string &_compare_subcommand_names(const App &subcom, const App &base) const;
@@ -1544,6 +1547,9 @@ struct AppFriend {
 #endif
     /// Wrap the fallthrough parent function to make sure that is working correctly
     static App *get_fallthrough_parent(App *app) { return app->_get_fallthrough_parent(); }
+
+    /// Wrap the const fallthrough parent function to make sure that is working correctly
+    static const App *get_fallthrough_parent(const App *app) { return app->_get_fallthrough_parent(); }
 };
 }  // namespace detail
 

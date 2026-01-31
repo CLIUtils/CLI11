@@ -587,6 +587,33 @@ TEST_CASE("THelp: Subcom_alias_group", "[help]") {
     CHECK_THAT(help, Contains("sub_alias2"));
 }
 
+// from https://github.com/CLIUtils/CLI11/issues/1269
+TEST_CASE("THelp: nested_subcommand", "[help]") {
+    CLI::App app{"My prog"};
+
+    auto *sub1 = app.add_subcommand("sub1", "Subcommand1 description test");
+    int opt1 = 0;
+    sub1->add_option("--opt1", opt1, "Option belonging to subc1");
+
+    // Level 2 subcommand under subc1 with fallthrough enabled
+    auto *subc2 = sub1->add_subcommand("subc2", "Second level command");
+    subc2->fallthrough();  // allow unknown options to fall through to parent
+    int opt2 = 0;
+    subc2->add_option("--opt2", opt2, "Option belonging to subc2");
+
+    try {
+        app.parse("sub1 subc2 --help");
+        CHECK(false);
+    } catch(const CLI::ParseError &e) {
+        std::ostringstream eout;
+        auto res = app.exit(e, eout);
+        std::string help = eout.str();
+        CHECK(res == 0);
+        CHECK_THAT(help, Contains("--opt2"));
+        CHECK_THAT(help, Contains("--opt1"));
+    }
+}
+
 TEST_CASE("THelp: MasterName", "[help]") {
     CLI::App app{"My prog", "MyRealName"};
 

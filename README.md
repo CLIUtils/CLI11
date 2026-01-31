@@ -1074,11 +1074,14 @@ option_groups. These are:
 - `.get_parent()`: Get the parent App or `nullptr` if called on main App.
 - `.get_option(name)`: Get an option pointer by option name will throw if the
   specified option is not available, nameless subcommands are also searched
+  along with the parent for subcommands with fallthrough.
 - `.get_option_no_throw(name)`: Get an option pointer by option name. This
   function will return a `nullptr` instead of throwing if the option is not
   available.
 - `.get_options(filter)`: Get the list of all defined option pointers (useful
-  for processing the app for custom output formats).
+  for processing the app for custom output formats). If used on a subcommand
+  will also get options that are in the parent app if the subcommand has
+  fallthrough.
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
 - `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for

@@ -1676,6 +1676,56 @@ TEST_CASE_METHOD(TApp, "UnnamedSub", "[subcom]") {
     CHECK_THROWS_AS(appC.get_option("--vvvv"), CLI::OptionNotFound);
 }
 
+TEST_CASE_METHOD(TApp, "FallthroughFind", "[subcom]") {
+    double val{0.0};
+    double val2{0.0};
+    auto *gbl = app.add_option("--global", val);
+    auto *sub = app.add_subcommand("sub1", "empty name");
+    sub->fallthrough();
+    sub->add_option("-v,--value", val2);
+
+    auto *opt_fnd = sub->get_option("--global");
+    CHECK(opt_fnd == gbl);
+
+    auto opts = sub->get_options();
+    CHECK(opts.size() == 3);
+
+    sub->fallthrough(false);
+    opts = sub->get_options();
+    CHECK(opts.size() == 2);
+
+    CHECK_THROWS_AS(sub->get_option("--global"), CLI::OptionNotFound);
+}
+
+TEST_CASE_METHOD(TApp, "FallthroughFind2level", "[subcom]") {
+    double val{0.0};
+    double val2{0.0};
+    double val3{0.0};
+    double val4{0.0};
+    auto *gbl = app.add_option("--global", val);
+    auto *sub = app.add_subcommand("sub1", "empty name");
+    sub->fallthrough();
+    sub->add_option("-v,--value", val2);
+    sub->add_option("--other", val4);
+    auto *subsub = sub->add_subcommand("subcc", "sub of sub");
+    subsub->add_option("-v,--value", val3, "subsub value");
+    // this also tests that the value is only listed once
+    subsub->fallthrough();
+    auto *opt_fnd = subsub->get_option("--global");
+    CHECK(opt_fnd == gbl);
+
+    auto opts = subsub->get_options();
+    CHECK(opts.size() == 4);
+    // now check the const version
+    const auto *subsub_const = subsub;
+    auto opts_const = subsub_const->get_options();
+    CHECK(opts_const.size() == 4);
+    // change parent fallthrough and make sure that works
+    sub->fallthrough(false);
+    opts = subsub->get_options();
+    CHECK(opts.size() == 3);
+}
+
 TEST_CASE_METHOD(TApp, "UnnamedSubMix", "[subcom]") {
     double val{0.0}, val2{0.0}, val3{0.0};
     app.add_option("-t", val2);
