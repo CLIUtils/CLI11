@@ -2686,7 +2686,7 @@ TEST_CASE_METHOD(TApp, "ConstFallthroughParents", "[app]") {
     ogb2->name("groupb");
     CHECK(ogb2 == CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::Option_group *>(ogb3)));
 
-    CHECK(CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::App *>(&app))==nullptr);
+    CHECK(CLI::detail::AppFriend::get_fallthrough_parent(const_cast<const CLI::App *>(&app)) == nullptr);
 }
 
 TEST_CASE_METHOD(TApp, "OptionWithDefaults", "[app]") {
