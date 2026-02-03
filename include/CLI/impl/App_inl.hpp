@@ -848,6 +848,17 @@ CLI11_INLINE std::vector<const Option *> App::get_options(const std::function<bo
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
     }
+    if(fallthrough_ && parent_ != nullptr) {
+        const auto *fallthrough_parent = _get_fallthrough_parent();
+        std::vector<const Option *> subcopts = fallthrough_parent->get_options(filter);
+        for(const auto *opt : subcopts) {
+            if(std::find_if(options.begin(), options.end(), [opt](const Option *opt2) {
+                   return opt->check_name(opt2->get_name());
+               }) == options.end()) {
+                options.push_back(opt);
+            }
+        }
+    }
     return options;
 }
 
@@ -868,6 +879,17 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
     }
+    if(fallthrough_ && parent_ != nullptr) {
+        auto *fallthrough_parent = _get_fallthrough_parent();
+        std::vector<Option *> subcopts = fallthrough_parent->get_options(filter);
+        for(auto *opt : subcopts) {
+            if(std::find_if(options.begin(), options.end(), [opt](Option *opt2) {
+                   return opt->check_name(opt2->get_name());
+               }) == options.end()) {
+                options.push_back(opt);
+            }
+        }
+    }
     return options;
 }
 
@@ -886,6 +908,9 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
             }
         }
     }
+    if(fallthrough_ && parent_ != nullptr) {
+        return _get_fallthrough_parent()->get_option_no_throw(option_name);
+    }
     return nullptr;
 }
 
@@ -903,6 +928,9 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option_no_throw(std::string 
                 return opt;
             }
         }
+    }
+    if(fallthrough_ && parent_ != nullptr) {
+        return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
 }
@@ -2291,11 +2319,22 @@ CLI11_INLINE void App::_trigger_pre_parse(std::size_t remaining_args) {
     }
 }
 
-CLI11_INLINE App *App::_get_fallthrough_parent() {
+CLI11_INLINE App *App::_get_fallthrough_parent() noexcept {
     if(parent_ == nullptr) {
-        throw(HorribleError("No Valid parent"));
+        return nullptr;
     }
     auto *fallthrough_parent = parent_;
+    while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
+        fallthrough_parent = fallthrough_parent->parent_;
+    }
+    return fallthrough_parent;
+}
+
+CLI11_INLINE const App *App::_get_fallthrough_parent() const noexcept {
+    if(parent_ == nullptr) {
+        return nullptr;
+    }
+    const auto *fallthrough_parent = parent_;
     while((fallthrough_parent->parent_ != nullptr) && (fallthrough_parent->get_name().empty())) {
         fallthrough_parent = fallthrough_parent->parent_;
     }

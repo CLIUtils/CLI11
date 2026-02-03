@@ -136,6 +136,9 @@ Here, `--shared_flag` was set on the main app, and on the command line it "falls
 through" `my_model_1` to match on the main app. This is set through
 `->fallthrough()` on a subcommand.
 
+calling help on subcommands with fallthrough will result in the parent options
+showing as if they were part of the subcommand.
+
 #### Subcommand fallthrough
 
 Subcommand fallthrough allows additional subcommands to be triggered after the
