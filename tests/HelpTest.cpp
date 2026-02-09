@@ -144,9 +144,8 @@ TEST_CASE("THelp: FooterSubcommandHelp", "[help]") {
 TEST_CASE("THelp: Description", "[help]") {
     CLI::App app{"My prog"};
     std::string x;
-    app.add_option("--option",x,"option description BD");
+    app.add_option("--option", x, "option description BD");
 
-   
     std::string help = app.help();
     CHECK_THAT(help, Contains("option description BD"));
     // there was an issue where an extra space was being generated in the description, so make sure that is not there
