@@ -610,13 +610,22 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
         std::size_t charsWritten = 0;
 
         while(iss >> word) {
-            if(word.length() + charsWritten > paragraphWidth) {
+            if(charsWritten>0 && (word.length() +1+ charsWritten > paragraphWidth)) {
                 out << '\n' << linePrefix;
                 charsWritten = 0;
             }
+            if (charsWritten == 0)
+            {
+                out << word;
+                charsWritten += word.length();
+            }
+            else {
+                out << ' ' << word;
+                charsWritten += word.length() + 1;
 
-            out << word << " ";
-            charsWritten += word.length() + 1;
+            }
+            
+            
         }
 
         if(!lss.eof())
