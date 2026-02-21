@@ -72,9 +72,9 @@ Features that were added in the last released minor version are marked with
 ### Introduction
 
 CLI11 provides all the features you expect in a powerful command line parser,
-with a beautiful, minimal syntax and no dependencies beyond C++11. It is header-only,
-and comes in a single file form for easy inclusion in projects. It is easy
-to use for small projects, but powerful enough for complex command line
+with a beautiful, minimal syntax and no dependencies beyond C++11. It is
+header-only, and comes in a single file form for easy inclusion in projects. It
+is easy to use for small projects, but powerful enough for complex command line
 projects, and can be customized for frameworks. It is tested on [Azure][] and
 [GitHub Actions][actions-link], and was originally used by the [GooFit GPU
 fitting framework][goofit]. It was inspired by [`plumbum.cli`][plumbum] for
@@ -1126,8 +1126,8 @@ option_groups. These are:
   executes after the first argument of an application is processed. See
   [Subcommand callbacks](#callbacks) for some additional details.
 - `.allow_extras()`: Do not throw an error if extra arguments are left over.
-- `.allow_extras(CLI::ExtrasMode)`: 🆕 Specify the method of handling unrecognized
-  arguments.
+- `.allow_extras(CLI::ExtrasMode)`: 🆕 Specify the method of handling
+  unrecognized arguments.
   - `CLI::ExtrasMode::Error`: generate an error on unrecognized argument. Same
     as `.allow_extras(false)`.
   - `CLI::ExtrasMode::ErrorImmediately`: generate an error immediately on
@@ -1151,8 +1151,8 @@ option_groups. These are:
   remaining_arg list. It is ideal for allowing your app or subcommand to be a
   "prefix" to calling another app. Can be called with a `bool` value to turn on
   or off
-- `.prefix_command(CLI::PrefixCommandMode)`: 🆕 specify the prefix_command mode to
-  use. `PrefixCommandMode::on` and `PrefixCommandMode::off` are the same as
+- `.prefix_command(CLI::PrefixCommandMode)`: 🆕 specify the prefix_command mode
+  to use. `PrefixCommandMode::on` and `PrefixCommandMode::off` are the same as
   `prefix_command(true)` or `prefix_command(false)`. Calling with
   `PrefixCommandMode::separator_only` will only trigger prefix command mode by
   the use of the subcommand separator `--` other unrecognized arguments would be

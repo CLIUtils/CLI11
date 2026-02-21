@@ -4,24 +4,34 @@
 
 ## Version 2.6.2
 
-This version adds C++20 modules support, additional controls for help output and finer grained control for extras handling and prefix command operation.  Fixes compatibility issues with C++26 and Windows and a number of small issue with help output and specific conditions.
+This version adds C++20 modules support, additional controls for help output and
+finer grained control for extras handling and prefix command operation. Fixes
+compatibility issues with C++26 and Windows and a number of small issue with
+help output and specific conditions.
 
 ### Added
 
 - Added C++20 modules support with new module files and tests. [#1286][]
-- Added configuration modes for extras handling: `AssumeMultipleArguments` and `AssumeSingleArgument`. [#1270][]
-- Added option for full install including impl headers with precompiled option. [#1252][]
-- Added improvements to prefix commands including `PrefixCommandMode` and separator specification. [#1266][]
-- Added controls for option name formatting in help output, allowing disabling of default values, flags, and type names. [#1247][]
-- Added refactor of Meson build system with updated version and new options. [#1280][]
+- Added configuration modes for extras handling: `AssumeMultipleArguments` and
+  `AssumeSingleArgument`. [#1270][]
+- Added option for full install including impl headers with precompiled option.
+  [#1252][]
+- Added improvements to prefix commands including `PrefixCommandMode` and
+  separator specification. [#1266][]
+- Added controls for option name formatting in help output, allowing disabling
+  of default values, flags, and type names. [#1247][]
+- Added refactor of Meson build system with updated version and new options.
+  [#1280][]
 - Added support for Bazel 9. [#1287][]
 - Added module testing infrastructure. [#1255][]
 
 ### Changed
 
-- Changed default to install impl headers even when precompiled option is selected. [#1291][]
+- Changed default to install impl headers even when precompiled option is
+  selected. [#1291][]
 - Updated copyright dates to 2026. [#1283][]
-- Updated CI pipelines including Azure Pipelines and GitHub workflows. [#1267][], [#1283][]
+- Updated CI pipelines including Azure Pipelines and GitHub workflows.
+  [#1267][], [#1283][]
 - Updated documentation and book chapters. [#1250][]
 
 ### Fixed
@@ -30,8 +40,11 @@ This version adds C++20 modules support, additional controls for help output and
 - Fixed option searching to use fallthrough in parent apps. [#1292][]
 - Fixed C++26 template ambiguity for `std::complex`. [#1278][]
 - Fixed UTF-8 config filenames not supported on Windows. [#1273][]
-- Fixed enumeration stream output generating unconvertible strings if certain a user supplied stream conversion method was supplied [#1261][]
-- Fixed code simplification issues by removing use of static std::string which was causing some heap allocation issues when using CLI11 as part of DLL on certain operating systems [#1244][]
+- Fixed enumeration stream output generating unconvertible strings if certain a
+  user supplied stream conversion method was supplied [#1261][]
+- Fixed code simplification issues by removing use of static std::string which
+  was causing some heap allocation issues when using CLI11 as part of DLL on
+  certain operating systems [#1244][]
 
 [#1286]: https://github.com/CLIUtils/CLI11/pull/1286
 [#1270]: https://github.com/CLIUtils/CLI11/pull/1270
@@ -71,7 +84,6 @@ and a potential segmentation fault from specially crafted config files
   potential memory issues when CLI11 is used with shared libraries, this likely
   isn't a bug but the fix did result in smaller code size so was kept. [#1244][]
 
-[#1244]: https://github.com/CLIUtils/CLI11/pull/1244
 [#1238]: https://github.com/CLIUtils/CLI11/pull/1238
 [#1239]: https://github.com/CLIUtils/CLI11/pull/1239
 
