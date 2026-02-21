@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+## Version 2.6.2
+
+This version adds C++20 modules support, additional controls for help output and finer grained control for extras handling and prefix command operation.  Fixes compatibility issues with C++26 and Windows and a number of small issue with help output and specific conditions.
+
+### Added
+
+- Added C++20 modules support with new module files and tests. [#1286][]
+- Added configuration modes for extras handling: `AssumeMultipleArguments` and `AssumeSingleArgument`. [#1270][]
+- Added option for full install including impl headers with precompiled option. [#1252][]
+- Added improvements to prefix commands including `PrefixCommandMode` and separator specification. [#1266][]
+- Added controls for option name formatting in help output, allowing disabling of default values, flags, and type names. [#1247][]
+- Added refactor of Meson build system with updated version and new options. [#1280][]
+- Added support for Bazel 9. [#1287][]
+- Added module testing infrastructure. [#1255][]
+
+### Changed
+
+- Changed default to install impl headers even when precompiled option is selected. [#1291][]
+- Updated copyright dates to 2026. [#1283][]
+- Updated CI pipelines including Azure Pipelines and GitHub workflows. [#1267][], [#1283][]
+- Updated documentation and book chapters. [#1250][]
+
+### Fixed
+
+- Fixed extra spaces in option and app descriptions. [#1295][]
+- Fixed option searching to use fallthrough in parent apps. [#1292][]
+- Fixed C++26 template ambiguity for `std::complex`. [#1278][]
+- Fixed UTF-8 config filenames not supported on Windows. [#1273][]
+- Fixed enumeration stream output generating unconvertible strings if certain a user supplied stream conversion method was supplied [#1261][]
+- Fixed code simplification issues by removing use of static std::string which was causing some heap allocation issues when using CLI11 as part of DLL on certain operating systems [#1244][]
+
+[#1286]: https://github.com/CLIUtils/CLI11/pull/1286
+[#1270]: https://github.com/CLIUtils/CLI11/pull/1270
+[#1252]: https://github.com/CLIUtils/CLI11/pull/1252
+[#1266]: https://github.com/CLIUtils/CLI11/pull/1266
+[#1247]: https://github.com/CLIUtils/CLI11/pull/1247
+[#1280]: https://github.com/CLIUtils/CLI11/pull/1280
+[#1287]: https://github.com/CLIUtils/CLI11/pull/1287
+[#1255]: https://github.com/CLIUtils/CLI11/pull/1255
+[#1291]: https://github.com/CLIUtils/CLI11/pull/1291
+[#1283]: https://github.com/CLIUtils/CLI11/pull/1283
+[#1267]: https://github.com/CLIUtils/CLI11/pull/1267
+[#1250]: https://github.com/CLIUtils/CLI11/pull/1250
+[#1295]: https://github.com/CLIUtils/CLI11/pull/1295
+[#1292]: https://github.com/CLIUtils/CLI11/pull/1292
+[#1278]: https://github.com/CLIUtils/CLI11/pull/1278
+[#1273]: https://github.com/CLIUtils/CLI11/pull/1273
+[#1261]: https://github.com/CLIUtils/CLI11/pull/1261
+[#1244]: https://github.com/CLIUtils/CLI11/pull/1244
+
 ## Version 2.6.1
 
 Patch fixing some compile issues in specific situations in the recent release,
