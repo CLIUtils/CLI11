@@ -1354,10 +1354,22 @@ CLI11_INLINE void App::_process_requirements() {
             missing_need = opt->get_name();
         }
     }
+    for(const auto &subc : need_subcommands_) { // Process subcommands given on the commandline first
+        if (subc->count() > 0) {
+            subc->_process_requirements();
+        }
+    }
     for(const auto &subc : need_subcommands_) {
-        if(subc->count_all() == 0) {
-            missing_needed = true;
-            missing_need = subc->get_display_name();
+        if (subc->count() == 0) {
+            try {
+                subc->_process_requirements();
+            } catch (const CLI::RequiresError&) {
+                throw RequiresError(get_display_name(), subc->name_);
+            }
+            if(subc->count_all() == 0) {
+                missing_needed = true;
+                missing_need = subc->get_display_name();
+            }
         }
     }
     if(missing_needed) {
@@ -1439,7 +1451,7 @@ CLI11_INLINE void App::_process_requirements() {
                 }
             }
         }
-        if(sub->count() > 0 || sub->name_.empty()) {
+        if((sub->count() > 0 || sub->name_.empty()) && need_subcommands_.find(sub.get()) == need_subcommands_.end()) {
             sub->_process_requirements();
         }
 
