@@ -7,7 +7,7 @@
 This version adds C++20 modules support, additional controls for help output and
 finer grained control for extras handling and prefix command operation. Fixes
 compatibility issues with C++26 and Windows and a number of small issue with
-help output and specific conditions.
+help output and specific combinations of options and conditions.
 
 ### Added
 
@@ -45,7 +45,9 @@ help output and specific conditions.
 - Fixed code simplification issues by removing use of static std::string which
   was causing some heap allocation issues when using CLI11 as part of DLL on
   certain operating systems [#1244][]
+- Fixed MISRACPP2023-25_5_2-a-1 rule violation [#1299][]
 
+[#1299]: https://github.com/CLIUtils/CLI11/pull/1299
 [#1286]: https://github.com/CLIUtils/CLI11/pull/1286
 [#1270]: https://github.com/CLIUtils/CLI11/pull/1270
 [#1252]: https://github.com/CLIUtils/CLI11/pull/1252
