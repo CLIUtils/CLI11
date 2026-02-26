@@ -42,7 +42,7 @@ help output and specific combinations of options and conditions.
 - Fixed UTF-8 config filenames not supported on Windows. [#1273][]
 - Fixed enumeration stream output generating unconvertible strings if certain a
   user supplied stream conversion method was supplied [#1261][]
-- Fixed code simplification issues by removing use of static std::string which
+- Fixed code simplification issues by removing use of `static std::string` which
   was causing some heap allocation issues when using CLI11 as part of DLL on
   certain operating systems [#1244][]
 - Fixed MISRACPP2023-25_5_2-a-1 rule violation [#1299][]
