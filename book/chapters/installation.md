@@ -119,7 +119,7 @@ FetchContent_Declare(
     cli11_proj
     QUIET
     GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
-    GIT_TAG v2.3.2
+    GIT_TAG v2.6.2
 )
 
 FetchContent_MakeAvailable(cli11_proj)
@@ -196,11 +196,11 @@ default to off if CLI11 is used as a subdirectory in another project.
 
 | Option                               | Description                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------- |
-| `CLI11_SINGLE_FILE=ON`               | Build the `CLI11.hpp` file from the sources. Requires Python (version 3 or 2.7). |
-| `CLI11_PRECOMPILED=OFF`              | Generate a precompiled static library instead of header-only                     |
+| `CLI11_SINGLE_FILE=ON`               | Build the `CLI11.hpp` file from the sources. Requires Python.                    |
+| `CLI11_PRECOMPILED=OFF`              | Generate a precompiled library instead of header-only                            |
 | `CLI11_MODULES=OFF`                  | Build CLI11 as a module (requires C++20 or later)                                |
 | `CLI11_INSTALL_PACKAGE_TESTS=OFF`    | Run tests checking the installation                                              |
-| `CLI11_MODULE_TEST=OFF`              | Run a test checking that CLI11 works with modules                                |
+| `CLI11_MODULE_TESTS=OFF`             | Run a test checking that CLI11 works with modules                                |
 | `CLI11_SINGLE_FILE_TESTS=OFF`        | Run the tests on the generated single file version as well                       |
 | `CLI11_BUILD_DOCS=ON`                | Build CLI11 documentation and book                                               |
 | `CLI11_BUILD_EXAMPLES=ON`            | Build the example programs.                                                      |

@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(CLI11_PRECOMPILED)
-  # Create static lib
+  # Create library default is static
   file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
-  add_library(CLI11 STATIC ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
+  add_library(CLI11 ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
                            ${CLI11_precompile_sources})
   target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
 
