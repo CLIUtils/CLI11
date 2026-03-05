@@ -52,6 +52,10 @@ jobs:
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
+        Linux14PC-Shared:
+          vmImage: "ubuntu-latest"
+          cli11.precompile: ON
+          cli11.options: -DBUILD_SHARED_LIBS=ON
         macOS-15_20:
           vmImage: "macOS-15"
           cli11.std: 20
@@ -162,6 +166,7 @@ jobs:
           cli11.std: 17
           cli11.options:
             -DCLI11_FORCE_LIBCXX=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=1
+            -
         clang10_20:
           containerImage: silkeh/clang:10
           cli11.std: 20
