@@ -165,8 +165,7 @@ jobs:
           containerImage: silkeh/clang:8
           cli11.std: 17
           cli11.options:
-            -DCLI11_FORCE_LIBCXX=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-            -
+            -DCLI11_FORCE_LIBCXX=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -
         clang10_20:
           containerImage: silkeh/clang:10
           cli11.std: 20
