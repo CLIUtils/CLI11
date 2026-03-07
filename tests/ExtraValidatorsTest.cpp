@@ -647,6 +647,164 @@ TEST_CASE_METHOD(TApp, "noPermissionCheck", "[validate]") {
     CHECK(myfile == filename);
     std::remove(myfile.c_str());
 }
+
+TEST_CASE_METHOD(TApp, "FileSizeValidatorMinOnly", "[validate]") {
+    std::string smallfile{"TestSmallFile.txt"};
+    std::string largefile{"TestLargeFile.txt"};
+    if(std::filesystem::exists(smallfile)) {
+        std::filesystem::remove(smallfile);
+    }
+    if(std::filesystem::exists(largefile)) {
+        std::filesystem::remove(largefile);
+    }
+
+    // Create a small file (1 byte)
+    {
+        std::ofstream ofs(smallfile);
+        ofs << "a";
+    }
+    CHECK(std::filesystem::file_size(smallfile) == 1);
+
+    // Create a large file (100 bytes)
+    {
+        std::ofstream ofs(largefile);
+        for(int i = 0; i < 100; ++i) {
+            ofs << "a";
+        }
+    }
+    CHECK(std::filesystem::file_size(largefile) == 100);
+
+    // Test min only (at least 50 bytes)
+    CLI::detail::FileSizeValidator minValidator(50);
+    CHECK(!minValidator(smallfile).empty());  // smallfile is too small
+    CHECK(minValidator(largefile).empty());   // largefile is ok
+
+    // Test with app
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(minValidator);
+    args = {"--file", largefile};
+    run();
+    CHECK(largefile == filename);
+
+    std::filesystem::remove(smallfile);
+    std::filesystem::remove(largefile);
+}
+
+TEST_CASE_METHOD(TApp, "FileSizeValidatorRange", "[validate]") {
+    std::string smallfile{"TestSmallFile.txt"};
+    std::string largefile{"TestLargeFile.txt"};
+    std::string hugefile{"TestHugeFile.txt"};
+    if(std::filesystem::exists(smallfile)) {
+        std::filesystem::remove(smallfile);
+    }
+    if(std::filesystem::exists(largefile)) {
+        std::filesystem::remove(largefile);
+    }
+    if(std::filesystem::exists(hugefile)) {
+        std::filesystem::remove(hugefile);
+    }
+
+    // Create a small file (1 byte)
+    {
+        std::ofstream ofs(smallfile);
+        ofs << "a";
+    }
+    CHECK(std::filesystem::file_size(smallfile) == 1);
+
+    // Create a large file (100 bytes)
+    {
+        std::ofstream ofs(largefile);
+        for(int i = 0; i < 100; ++i) {
+            ofs << "a";
+        }
+    }
+    CHECK(std::filesystem::file_size(largefile) == 100);
+
+    // Create a huge file (1000 bytes)
+    {
+        std::ofstream ofs(hugefile);
+        for(int i = 0; i < 1000; ++i) {
+            ofs << "a";
+        }
+    }
+    CHECK(std::filesystem::file_size(hugefile) == 1000);
+
+    // Test min and max (between 10 and 200 bytes)
+    CLI::detail::FileSizeValidator rangeValidator(10, 200);
+    CHECK(!rangeValidator(smallfile).empty());  // smallfile is too small
+    CHECK(rangeValidator(largefile).empty());  // largefile is ok
+    CHECK(!rangeValidator(hugefile).empty());  // too big
+
+    // Test with app
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(rangeValidator);
+    args = {"--file", largefile};
+    run();
+    CHECK(largefile == filename);
+
+    std::filesystem::remove(smallfile);
+    std::filesystem::remove(largefile);
+    std::filesystem::remove(hugefile);
+}
+
+TEST_CASE_METHOD(TApp, "NonEmptyFile", "[validate]") {
+    std::string emptyfile{"TestEmptyFile.txt"};
+    std::string nonemptyfile{"TestNonEmptyFile.txt"};
+    if(std::filesystem::exists(emptyfile)) {
+        std::filesystem::remove(emptyfile);
+    }
+    if(std::filesystem::exists(nonemptyfile)) {
+        std::filesystem::remove(nonemptyfile);
+    }
+
+    // Create an empty file
+    {
+        std::ofstream ofs(emptyfile);
+    }
+    CHECK(std::filesystem::file_size(emptyfile) == 0);
+
+    // Create a non-empty file
+    {
+        std::ofstream ofs(nonemptyfile);
+        ofs << "content";
+    }
+    CHECK(std::filesystem::file_size(nonemptyfile) > 0);
+
+    // Test NonEmptyFile
+    CHECK(!CLI::NonEmptyFile(emptyfile).empty());    // empty file fails
+    CHECK(CLI::NonEmptyFile(nonemptyfile).empty());  // non-empty file passes
+
+    // Test with app
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::NonEmptyFile);
+    args = {"--file", nonemptyfile};
+    run();
+    CHECK(nonemptyfile == filename);
+
+    std::filesystem::remove(emptyfile);
+    std::filesystem::remove(nonemptyfile);
+}
+
+TEST_CASE_METHOD(TApp, "NonEmptyFileFail", "[validate]") {
+    std::string emptyfile{"TestEmptyFile.txt"};
+    if(std::filesystem::exists(emptyfile)) {
+        std::filesystem::remove(emptyfile);
+    }
+
+    // Create an empty file
+    {
+        std::ofstream ofs(emptyfile);
+    }
+    CHECK(std::filesystem::file_size(emptyfile) == 0);
+
+    // Test with app - should fail
+    std::string filename = "Failed";
+    app.add_option("--file", filename)->check(CLI::NonEmptyFile);
+    args = {"--file", emptyfile};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
+    std::filesystem::remove(emptyfile);
+}
 #endif
 #endif
 #endif
