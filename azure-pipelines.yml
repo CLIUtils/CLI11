@@ -52,6 +52,10 @@ jobs:
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
+        Linux14PC-Shared:
+          vmImage: "ubuntu-latest"
+          cli11.precompile: ON
+          cli11.options: -DBUILD_SHARED_LIBS=ON
         macOS-15_20:
           vmImage: "macOS-15"
           cli11.std: 20
