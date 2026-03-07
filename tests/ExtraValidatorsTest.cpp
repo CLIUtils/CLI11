@@ -675,7 +675,7 @@ TEST_CASE_METHOD(TApp, "FileSizeValidatorMinOnly", "[validate]") {
     CHECK(std::filesystem::file_size(largefile) == 100);
 
     // Test min only (at least 50 bytes)
-    CLI::detail::FileSizeValidator minValidator(50);
+    CLI::FileSizeValidator minValidator(50);
     CHECK(!minValidator(smallfile).empty());  // smallfile is too small
     CHECK(minValidator(largefile).empty());   // largefile is ok
 
@@ -694,6 +694,7 @@ TEST_CASE_METHOD(TApp, "FileSizeValidatorRange", "[validate]") {
     std::string smallfile{"TestSmallFile.txt"};
     std::string largefile{"TestLargeFile.txt"};
     std::string hugefile{"TestHugeFile.txt"};
+    std::string nonExistingFile{"FileDoesnotExist.txt"};
     if(std::filesystem::exists(smallfile)) {
         std::filesystem::remove(smallfile);
     }
@@ -730,11 +731,11 @@ TEST_CASE_METHOD(TApp, "FileSizeValidatorRange", "[validate]") {
     CHECK(std::filesystem::file_size(hugefile) == 1000);
 
     // Test min and max (between 10 and 200 bytes)
-    CLI::detail::FileSizeValidator rangeValidator(10, 200);
+    CLI::FileSizeValidator rangeValidator(10, 200);
     CHECK(!rangeValidator(smallfile).empty());  // smallfile is too small
-    CHECK(rangeValidator(largefile).empty());   // largefile is ok
-    CHECK(!rangeValidator(hugefile).empty());   // too big
-
+    CHECK(rangeValidator(largefile).empty());  // largefile is ok
+    CHECK(!rangeValidator(hugefile).empty());  // too big
+    CHECK(!rangeValidator(nonExistingFile).empty());  // doesn't exist
     // Test with app
     std::string filename = "Failed";
     app.add_option("--file", filename)->check(rangeValidator);
@@ -750,6 +751,7 @@ TEST_CASE_METHOD(TApp, "FileSizeValidatorRange", "[validate]") {
 TEST_CASE_METHOD(TApp, "NonEmptyFile", "[validate]") {
     std::string emptyfile{"TestEmptyFile.txt"};
     std::string nonemptyfile{"TestNonEmptyFile.txt"};
+    std::string nonExistingFile{"FileDoesnotExist.txt"};
     if(std::filesystem::exists(emptyfile)) {
         std::filesystem::remove(emptyfile);
     }
@@ -783,6 +785,8 @@ TEST_CASE_METHOD(TApp, "NonEmptyFile", "[validate]") {
 
     std::filesystem::remove(emptyfile);
     std::filesystem::remove(nonemptyfile);
+    //test with a file that doesn't exist
+    CHECK(!CLI::NonEmptyFile(nonExistingFile).empty());
 }
 
 TEST_CASE_METHOD(TApp, "NonEmptyFileFail", "[validate]") {

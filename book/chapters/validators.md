@@ -125,6 +125,8 @@ to 1. These validators are disabled by default.
 | `ReadPermissions`  | Ensure a file or directory has permissions to read the file |
 | `WritePermissions` | Ensure a file or directory has write permissions            |
 | `ExecPermissions`  | Ensure a file has exec permissions                          |
+| `NonEmptyFile`     | Ensure that a file exists and is not empty                  |
+| `FileSizeValidator`| specify that the size must be between min and max sizes     |
 
 ## Custom Validators
 
