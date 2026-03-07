@@ -732,8 +732,8 @@ TEST_CASE_METHOD(TApp, "FileSizeValidatorRange", "[validate]") {
     // Test min and max (between 10 and 200 bytes)
     CLI::detail::FileSizeValidator rangeValidator(10, 200);
     CHECK(!rangeValidator(smallfile).empty());  // smallfile is too small
-    CHECK(rangeValidator(largefile).empty());  // largefile is ok
-    CHECK(!rangeValidator(hugefile).empty());  // too big
+    CHECK(rangeValidator(largefile).empty());   // largefile is ok
+    CHECK(!rangeValidator(hugefile).empty());   // too big
 
     // Test with app
     std::string filename = "Failed";

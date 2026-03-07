@@ -169,10 +169,12 @@ CLI11_INLINE FileSizeValidator::FileSizeValidator(std::uint64_t min_size, std::u
             return std::string("Error getting file size: ") + ec.message();
         }
         if(size < min_size) {
-            return std::string("File size ") + std::to_string(size) + " bytes is less than minimum " + std::to_string(min_size) + " bytes";
+            return std::string("File size ") + std::to_string(size) + " bytes is less than minimum " +
+                   std::to_string(min_size) + " bytes";
         }
         if(max_size > 0 && size > max_size) {
-            return std::string("File size ") + std::to_string(size) + " bytes exceeds maximum " + std::to_string(max_size) + " bytes";
+            return std::string("File size ") + std::to_string(size) + " bytes exceeds maximum " +
+                   std::to_string(max_size) + " bytes";
         }
         return std::string{};
     };
