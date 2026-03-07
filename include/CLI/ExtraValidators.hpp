@@ -602,9 +602,8 @@ class PermissionValidator : public Validator {
 };
 }  // namespace detail
 
-
 class FileSizeValidator : public Validator {
-public:
+  public:
     explicit FileSizeValidator(std::uint64_t min_size, std::uint64_t max_size = 0);
 };
 
