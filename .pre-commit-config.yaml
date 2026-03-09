@@ -5,7 +5,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.1.0
+    rev: 26.3.0
     hooks:
       - id: black
 
@@ -89,7 +89,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         args: ["-L", "atleast,ans,doub,inout,AtMost,hep"]
