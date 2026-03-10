@@ -92,14 +92,11 @@ CLI11_INLINE std::map<std::string, AsSizeValue::result_t> AsSizeValue::get_mappi
     return m;
 }
 
-namespace detail {}  // namespace detail
-/// @}
-
 #if defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0
 // new extra validators
-namespace detail {
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+namespace detail {
 CLI11_INLINE PermissionValidator::PermissionValidator(Permission permission) {
     std::filesystem::perms permission_code = std::filesystem::perms::none;
     std::string permission_name;
@@ -147,11 +144,44 @@ CLI11_INLINE PermissionValidator::PermissionValidator(Permission permission) {
     };
     description("Path with " + permission_name + " permission");
 }
+}  // namespace detail
+
+CLI11_INLINE FileSizeValidator::FileSizeValidator(std::uint64_t min_size, std::uint64_t max_size) {
+    std::string desc;
+    if(max_size == 0) {
+        desc = "File size at least " + std::to_string(min_size) + " bytes";
+    } else {
+        desc = "File size between " + std::to_string(min_size) + " and " + std::to_string(max_size) + " bytes";
+    }
+    description(desc);
+    func_ = [min_size, max_size](std::string &path) {
+        std::error_code ec;
+        auto p = std::filesystem::path(path);
+        if(!std::filesystem::exists(p, ec)) {
+            return std::string("File does not exist: ") + path;
+        }
+        if(ec) {
+            return std::string("Error checking file: ") + ec.message();  // LCOV_EXCL_LINE
+        }
+        auto size = std::filesystem::file_size(p, ec);
+        if(ec) {
+            return std::string("Error getting file size: ") + ec.message();  // LCOV_EXCL_LINE
+        }
+        if(size < min_size) {
+            return std::string("File size ") + std::to_string(size) + " bytes is less than minimum " +
+                   std::to_string(min_size) + " bytes";
+        }
+        if(max_size > 0 && size > max_size) {
+            return std::string("File size ") + std::to_string(size) + " bytes exceeds maximum " +
+                   std::to_string(max_size) + " bytes";
+        }
+        return std::string{};
+    };
+}
 #endif
 
-}  // namespace detail
 #endif
-   // [CLI11:extra_validators_inl_hpp:end]
+// [CLI11:extra_validators_inl_hpp:end]
 }  // namespace CLI
 
 #endif
