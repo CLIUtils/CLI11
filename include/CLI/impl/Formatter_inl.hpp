@@ -373,6 +373,17 @@ CLI11_INLINE std::string Formatter::make_option_name(const Option *opt, bool is_
 
 CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
     std::stringstream out;
+    // Help output should be stable across runs, so sort pointer-based sets by option name before printing.
+    const auto print_option_set = [&out](const std::set<Option *> &options) {
+        std::vector<const Option *> sorted(options.begin(), options.end());
+        std::sort(sorted.begin(), sorted.end(), [](const Option *lhs, const Option *rhs) {
+            const auto &left_name = lhs->get_name();
+            const auto &right_name = rhs->get_name();
+            return (left_name == right_name) ? (lhs < rhs) : (left_name < right_name);
+        });
+        for(const Option *op : sorted)
+            out << " " << op->get_name();
+    };
 
     if(!opt->get_option_text().empty()) {
         out << " " << opt->get_option_text();
@@ -398,13 +409,11 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
             out << " (" << get_label("Env") << ":" << opt->get_envname() << ")";
         if(!opt->get_needs().empty()) {
             out << " " << get_label("Needs") << ":";
-            for(const Option *op : opt->get_needs())
-                out << " " << op->get_name();
+            print_option_set(opt->get_needs());
         }
         if(!opt->get_excludes().empty()) {
             out << " " << get_label("Excludes") << ":";
-            for(const Option *op : opt->get_excludes())
-                out << " " << op->get_name();
+            print_option_set(opt->get_excludes());
         }
     }
     return out.str();
