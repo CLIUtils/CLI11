@@ -378,9 +378,7 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
     const auto print_option_set = [&out](const std::set<Option *> &options) {
         std::vector<const Option *> sorted(options.begin(), options.end());
         std::sort(sorted.begin(), sorted.end(), [](const Option *lhs, const Option *rhs) {
-            const auto &left_name = lhs->get_name();
-            const auto &right_name = rhs->get_name();
-            return (left_name == right_name) ? (lhs < rhs) : (left_name < right_name);
+            return lhs->get_name() < rhs->get_name();
         });
         for(const Option *op : sorted)
             out << " " << op->get_name();
