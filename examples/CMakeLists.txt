@@ -289,6 +289,13 @@ add_cli_exe(help_usage help_usage.cpp)
 add_test(NAME help_use COMMAND help_usage --help)
 set_property(TEST help_use PROPERTY PASS_REGULAR_EXPRESSION "[1..9]")
 
+add_cli_exe(envname_help envname_help.cpp)
+add_test(NAME envname_help_test COMMAND envname_help --help)
+set_property(TEST envname_help_test
+             PROPERTY PASS_REGULAR_EXPRESSION "\\[env: APP_HOST\\]"
+                      "\\[env: APP_PORT\\]"
+                      "\\[env: APP_CONFIG\\]")
+
 #------------------------------------------------
 # This executable is for manual testing and is expected to change regularly
 

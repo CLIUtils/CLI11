@@ -395,7 +395,7 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
                 out << " " << get_label("REQUIRED");
         }
         if(!opt->get_envname().empty())
-            out << " (" << get_label("Env") << ":" << opt->get_envname() << ")";
+            out << " [env: " << opt->get_envname() << "]";
         if(!opt->get_needs().empty()) {
             out << " " << get_label("Needs") << ":";
             for(const Option *op : opt->get_needs())

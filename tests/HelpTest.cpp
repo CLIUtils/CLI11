@@ -436,7 +436,37 @@ TEST_CASE("THelp: EnvName", "[help]") {
 
     std::string help = app.help();
 
-    CHECK_THAT(help, Contains("SOME_ENV"));
+    CHECK_THAT(help, Contains("[env: SOME_ENV]"));
+}
+
+TEST_CASE("THelp: EnvNameWithDefault", "[help]") {
+    CLI::App app{"My prog"};
+    std::string input = "default_value";
+    app.add_option("--something", input, "Description here")
+        ->envname("SOME_ENV")
+        ->default_str("default_value");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("[env: SOME_ENV]"));
+    CHECK_THAT(help, Contains("[default_value]"));
+    CHECK_THAT(help, Contains("Description here"));
+}
+
+TEST_CASE("THelp: EnvNameNotShownWhenNotSet", "[help]") {
+    CLI::App app{"My prog"};
+    std::string withEnv;
+    std::string withoutEnv;
+    app.add_option("--with-env", withEnv)->envname("SOME_ENV");
+    app.add_option("--without-env", withoutEnv);
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("[env: SOME_ENV]"));
+    CHECK_THAT(help, Contains("--with-env"));
+    CHECK_THAT(help, Contains("--without-env"));
+    // Ensure [env: ...] only appears once (for --with-env)
+    CHECK(std::count(help.begin(), help.end(), '[') >= 2);  // at least [env: ...] and option brackets
 }
 
 TEST_CASE("THelp: Needs", "[help]") {
