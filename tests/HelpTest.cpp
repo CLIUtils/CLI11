@@ -500,6 +500,30 @@ TEST_CASE("THelp: ExcludesSymmetric", "[help]") {
     CHECK_THAT(help, Contains("Excludes: --op2"));
 }
 
+TEST_CASE("THelp: NeedsSortedByName", "[help]") {
+    CLI::App app{"My prog"};
+
+    CLI::Option *option_b = app.add_flag("--optionB");
+    CLI::Option *option_a = app.add_flag("--optionA");
+    app.add_flag("--target")->needs(option_b)->needs(option_a);
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Needs: --optionA --optionB"));
+}
+
+TEST_CASE("THelp: ExcludesSortedByName", "[help]") {
+    CLI::App app{"My prog"};
+
+    CLI::Option *option_b = app.add_flag("--optionB");
+    CLI::Option *option_a = app.add_flag("--optionA");
+    app.add_flag("--target")->excludes(option_b)->excludes(option_a);
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Excludes: --optionA --optionB"));
+}
+
 TEST_CASE("THelp: ManualSetters", "[help]") {
 
     CLI::App app{"My prog"};
