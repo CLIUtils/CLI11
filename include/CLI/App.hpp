@@ -500,15 +500,15 @@ class App {
         return this;
     }
 
-    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
-    /// remaining args
+    /// Enable or disable prefix command mode. If enabled, parsing stops at the
+    /// first unrecognized option and all remaining arguments are stored in
+    /// remaining args.
     App *prefix_command(bool is_prefix = true) {
         prefix_command_ = is_prefix ? PrefixCommandMode::On : PrefixCommandMode::Off;
         return this;
     }
 
-    /// Do not parse anything after the first unrecognized option (if true) all remaining arguments are stored in
-    /// remaining args
+    /// Set the prefix command mode directly.
     App *prefix_command(PrefixCommandMode mode) {
         prefix_command_ = mode;
         return this;
