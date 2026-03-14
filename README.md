@@ -1149,14 +1149,17 @@ option_groups. These are:
 - `.prefix_command()`: Like `allow_extras`, but stop processing immediately on
   the first unrecognized item. All subsequent arguments are placed in the
   remaining_arg list. It is ideal for allowing your app or subcommand to be a
-  "prefix" to calling another app. Can be called with a `bool` value to turn on
-  or off
-- `.prefix_command(CLI::PrefixCommandMode)`: 🆕 specify the prefix_command mode
-  to use. `PrefixCommandMode::on` and `PrefixCommandMode::off` are the same as
-  `prefix_command(true)` or `prefix_command(false)`. Calling with
-  `PrefixCommandMode::separator_only` will only trigger prefix command mode by
-  the use of the subcommand separator `--` other unrecognized arguments would be
-  considered an error depending on whether `allow_extras` was set or not.
+  "prefix" to calling another app.
+- `.prefix_command(bool)`: Enable or disable prefix command mode.
+  `prefix_command(true)` is equivalent to
+  `prefix_command(CLI::PrefixCommandMode::On)`, and `prefix_command(false)` is
+  equivalent to `prefix_command(CLI::PrefixCommandMode::Off)`.
+- `.prefix_command(CLI::PrefixCommandMode)`: Specify the prefix command mode
+  directly. `PrefixCommandMode::On` and `PrefixCommandMode::Off` are the same as
+  `prefix_command(true)` and `prefix_command(false)`. Calling with
+  `PrefixCommandMode::SeparatorOnly` will only trigger prefix command mode with
+  the subcommand separator `--`; other unrecognized arguments are considered an
+  error unless `allow_extras` is enabled.
 - `.usage(message)`: Replace text to appear at the start of the help string
   after description.
 - `.usage(std::string())`: Set a callback to generate a string that will appear
