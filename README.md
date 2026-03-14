@@ -1152,9 +1152,8 @@ option_groups. These are:
   "prefix" to calling another app.
 - `.prefix_command(bool)`: Enable or disable prefix command mode.
   `prefix_command(true)` is equivalent to
-  `prefix_command(CLI::PrefixCommandMode::On)`, and
-  `prefix_command(false)` is equivalent to
-  `prefix_command(CLI::PrefixCommandMode::Off)`.
+  `prefix_command(CLI::PrefixCommandMode::On)`, and `prefix_command(false)` is
+  equivalent to `prefix_command(CLI::PrefixCommandMode::Off)`.
 - `.prefix_command(CLI::PrefixCommandMode)`: Specify the prefix command mode
   directly. `PrefixCommandMode::On` and `PrefixCommandMode::Off` are the same as
   `prefix_command(true)` and `prefix_command(false)`. Calling with
