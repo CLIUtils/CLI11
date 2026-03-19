@@ -840,10 +840,14 @@ TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
     }
 
     app.set_config("--config", tmpini)->required();
-    app.config_formatter(std::make_shared<EvilConfig>());
+    auto evil=std::make_shared<EvilConfig>();
+    std::shared_ptr<CLI::Config> evilptr = evil;
+    app.config_formatter(evil);
     int two{0};
     app.add_option("--two", two);
     REQUIRE_THROWS_AS(run(), CLI::FileError);
+
+    REQUIRE_THROWS_AS(evilptr->to_config(&app,CLI::ConfigOutputMode::Active,true,""), CLI::FileError);
 }
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
@@ -3744,7 +3748,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteAllDefaults", "[config]") {
         ->check(CLI::NonexistentPath);
 
     auto *load = app.add_subcommand("load");
-    std::string load_path{tmpexist};
+    std::string load_path(tmpexist);
     load->add_option("--load-path", load_path, "A file which must exist")
         ->capture_default_str()
         ->check(CLI::ExistingFile);
