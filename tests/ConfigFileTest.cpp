@@ -3700,6 +3700,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
     CHECK(config2 == config1);
 }
 
+
 TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -3721,6 +3722,81 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
     run();
 
     CHECK_FALSE(flag);
+}
+
+// code example based on https://github.com/CLIUtils/CLI11/issues/541
+TEST_CASE_METHOD(TApp, "ConfigWriteAllDefaults", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+
+    TempFile tmpexist{"existing-file.txt"};
+
+    {
+        std::ofstream out{tmpexist};
+        out << "file-test";
+    }
+
+    auto *create = app.add_subcommand("create");
+    std::string create_path{"create-path"};
+    create->add_option("--create-path", create_path, "A file which must not exist")
+        ->capture_default_str()
+        ->check(CLI::NonexistentPath);
+
+    auto *load = app.add_subcommand("load");
+    std::string load_path{tmpexist};
+    load->add_option("--load-path", load_path, "A file which must exist")
+        ->capture_default_str()
+        ->check(CLI::ExistingFile);
+    //validators run during the config to string
+    std::string configOut = app.config_to_str(true, false);
+    CHECK_THAT(configOut, Contains("create.create-path"));
+    CHECK_THAT(configOut, Contains("load.load-path"));
+
+    {
+        std::ofstream out{tmpini};
+        out << configOut;
+    }
+
+    args = {"--config", tmpini};
+    CHECK_NOTHROW(run());
+}
+
+// code example based on https://github.com/CLIUtils/CLI11/issues/541
+TEST_CASE_METHOD(TApp, "ConfigWriteDefaultActiveSubcommands", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    auto *create = app.add_subcommand("create");
+    std::string create_path{"create-path"};
+    create->add_option("--create-path", create_path)->capture_default_str()->check(CLI::NonexistentPath);
+
+    auto *load = app.add_subcommand("load");
+    std::string load_path{"load-path"};
+    load->add_option("--load-path", load_path)->capture_default_str()->check(CLI::ExistingPath);
+
+    args = {"create"};
+    run();
+
+    std::string activeConfig = app.config_to_str(CLI::ConfigOutputMode::ActiveSubcommandDefaults, false);
+    CHECK_THAT(activeConfig, Contains("create.create-path"));
+    CHECK_THAT(activeConfig, !Contains("load.load-path"));
+
+    {
+        std::ofstream out{tmpini};
+        out << activeConfig;
+    }
+
+    create_path = "not-right-path";
+    args = {"--config", tmpini};
+    CHECK_NOTHROW(run());
+
+    CHECK(create_path == "create-path");
+    
 }
 
 /////// INI output tests

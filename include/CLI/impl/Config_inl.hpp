@@ -511,7 +511,16 @@ CLI11_INLINE std::string &clean_name_string(std::string &name, const std::string
 
 CLI11_INLINE std::string
 ConfigBase::to_config(const App *app, bool default_also, bool write_description, std::string prefix) const {
+    return to_config(app,
+                     default_also ? ConfigOutputMode::AllDefaults : ConfigOutputMode::Active,
+                     write_description,
+                     std::move(prefix));
+}
+
+CLI11_INLINE std::string
+ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_description, std::string prefix) const {
     std::stringstream out;
+    const bool include_default_values = (mode != ConfigOutputMode::Active);
     std::string commentLead;
     commentLead.push_back(commentChar);
     commentLead.push_back(' ');
@@ -597,7 +606,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 }
 
                 bool isDefault = false;
-                if(value.empty() && default_also) {
+                if(value.empty() && include_default_values) {
                     if(!opt->get_default_str().empty()) {
                         results_t res;
                         opt->results(res);
@@ -654,7 +663,7 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
-            if(!default_also && (subcom->count_all() == 0)) {
+            if(!include_default_values && (subcom->count_all() == 0)) {
                 continue;
             }
             if(write_description && !subcom->get_group().empty()) {
@@ -672,19 +681,21 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                 out << '[' << subname << "]\n";
             }
             */
-            out << to_config(subcom, default_also, write_description, prefix);
+            out << to_config(subcom, mode, write_description, prefix);
         }
     }
 
     for(const App *subcom : subcommands) {
         if(!subcom->get_name().empty()) {
-            if(!default_also && (subcom->count_all() == 0)) {
+            if((!include_default_values && (subcom->count_all() == 0)) ||
+               (mode == ConfigOutputMode::ActiveSubcommandDefaults && !app->got_subcommand(subcom))) {
                 continue;
             }
             std::string subname = subcom->get_name();
             clean_name_string(subname, keyChars);
 
-            if(subcom->get_configurable() && (default_also || app->got_subcommand(subcom))) {
+            if(subcom->get_configurable() &&
+               (app->got_subcommand(subcom) || (mode == ConfigOutputMode::AllDefaults))) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
 
                     out << '[' << prefix << subname << "]\n";
@@ -701,9 +712,9 @@ ConfigBase::to_config(const App *app, bool default_also, bool write_description,
                     }
                     out << '[' << subname << "]\n";
                 }
-                out << to_config(subcom, default_also, write_description, "");
+                out << to_config(subcom, mode, write_description, "");
             } else {
-                out << to_config(subcom, default_also, write_description, prefix + subname + parentSeparatorChar);
+                out << to_config(subcom, mode, write_description, prefix + subname + parentSeparatorChar);
             }
         }
     }

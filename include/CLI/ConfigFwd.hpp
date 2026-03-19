@@ -10,6 +10,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -24,6 +25,13 @@ namespace CLI {
 // [CLI11:config_fwd_hpp:verbatim]
 
 class App;
+
+/// enumeration of output modes for writing config files
+enum class ConfigOutputMode : std::uint8_t {
+    Active = 0,
+    AllDefaults,
+    ActiveSubcommandDefaults
+};
 
 /// Holds values to load into Options
 struct ConfigItem {
@@ -53,6 +61,11 @@ class Config {
   public:
     /// Convert an app into a configuration
     virtual std::string to_config(const App *, bool, bool, std::string) const = 0;
+
+    /// Convert an app into a configuration
+    virtual std::string to_config(const App *app, ConfigOutputMode mode, bool write_description, std::string prefix) const {
+        return to_config(app, mode != ConfigOutputMode::Active, write_description, std::move(prefix));
+    }
 
     /// Convert a configuration into an app
     virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
@@ -117,6 +130,9 @@ class ConfigBase : public Config {
     std::string configSection{};
 
   public:
+    std::string
+    to_config(const App * /*app*/, ConfigOutputMode mode, bool write_description, std::string prefix) const override;
+
     std::string
     to_config(const App * /*app*/, bool default_also, bool write_description, std::string prefix) const override;
 
