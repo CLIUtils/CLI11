@@ -15,8 +15,8 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 // [CLI11:public_includes:end]
 #include "Encoding.hpp"
 #include "Error.hpp"

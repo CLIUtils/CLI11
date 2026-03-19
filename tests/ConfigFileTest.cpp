@@ -840,14 +840,14 @@ TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
     }
 
     app.set_config("--config", tmpini)->required();
-    auto evil=std::make_shared<EvilConfig>();
+    auto evil = std::make_shared<EvilConfig>();
     std::shared_ptr<CLI::Config> evilptr = evil;
     app.config_formatter(evil);
     int two{0};
     app.add_option("--two", two);
     REQUIRE_THROWS_AS(run(), CLI::FileError);
 
-    REQUIRE_THROWS_AS(evilptr->to_config(&app,CLI::ConfigOutputMode::Active,true,""), CLI::FileError);
+    REQUIRE_THROWS_AS(evilptr->to_config(&app, CLI::ConfigOutputMode::Active, true, ""), CLI::FileError);
 }
 
 TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
