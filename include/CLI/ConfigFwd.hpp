@@ -27,11 +27,7 @@ namespace CLI {
 class App;
 
 /// enumeration of output modes for writing config files
-enum class ConfigOutputMode : std::uint8_t {
-    Active = 0,
-    AllDefaults,
-    ActiveSubcommandDefaults
-};
+enum class ConfigOutputMode : std::uint8_t { Active = 0, AllDefaults, ActiveSubcommandDefaults };
 
 /// Holds values to load into Options
 struct ConfigItem {
@@ -63,7 +59,8 @@ class Config {
     virtual std::string to_config(const App *, bool, bool, std::string) const = 0;
 
     /// Convert an app into a configuration
-    virtual std::string to_config(const App *app, ConfigOutputMode mode, bool write_description, std::string prefix) const {
+    virtual std::string
+    to_config(const App *app, ConfigOutputMode mode, bool write_description, std::string prefix) const {
         return to_config(app, mode != ConfigOutputMode::Active, write_description, std::move(prefix));
     }
 

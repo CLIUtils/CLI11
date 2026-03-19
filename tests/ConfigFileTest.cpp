@@ -3700,7 +3700,6 @@ TEST_CASE_METHOD(TApp, "ConfigWriteReadWrite", "[config]") {
     CHECK(config2 == config1);
 }
 
-
 TEST_CASE_METHOD(TApp, "ConfigWriteReadNegated", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -3731,7 +3730,6 @@ TEST_CASE_METHOD(TApp, "ConfigWriteAllDefaults", "[config]") {
 
     app.set_config("--config", tmpini);
 
-
     TempFile tmpexist{"existing-file.txt"};
 
     {
@@ -3750,7 +3748,7 @@ TEST_CASE_METHOD(TApp, "ConfigWriteAllDefaults", "[config]") {
     load->add_option("--load-path", load_path, "A file which must exist")
         ->capture_default_str()
         ->check(CLI::ExistingFile);
-    //validators run during the config to string
+    // validators run during the config to string
     std::string configOut = app.config_to_str(true, false);
     CHECK_THAT(configOut, Contains("create.create-path"));
     CHECK_THAT(configOut, Contains("load.load-path"));
@@ -3796,7 +3794,6 @@ TEST_CASE_METHOD(TApp, "ConfigWriteDefaultActiveSubcommands", "[config]") {
     CHECK_NOTHROW(run());
 
     CHECK(create_path == "create-path");
-    
 }
 
 /////// INI output tests

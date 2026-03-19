@@ -694,8 +694,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
             std::string subname = subcom->get_name();
             clean_name_string(subname, keyChars);
 
-            if(subcom->get_configurable() &&
-               (app->got_subcommand(subcom) || (mode == ConfigOutputMode::AllDefaults))) {
+            if(subcom->get_configurable() && (app->got_subcommand(subcom) || (mode == ConfigOutputMode::AllDefaults))) {
                 if(!prefix.empty() || app->get_parent() == nullptr) {
 
                     out << '[' << prefix << subname << "]\n";

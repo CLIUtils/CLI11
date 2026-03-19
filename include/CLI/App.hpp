@@ -1076,9 +1076,7 @@ class App {
     }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
     /// include default arguments. write_descriptions will print a description for the App and for each option.
-    CLI11_NODISCARD std::string config_to_str() const {
-        return config_to_str(ConfigOutputMode::Active, false);
-    }
+    CLI11_NODISCARD std::string config_to_str() const { return config_to_str(ConfigOutputMode::Active, false); }
 
     /// Produce a string that could be read in as a config of the current values of the App.
     CLI11_NODISCARD std::string config_to_str(ConfigOutputMode mode, bool write_description = false) const {
