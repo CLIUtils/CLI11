@@ -14,13 +14,12 @@
 // [CLI11:public_includes:end]
 
 // [CLI11:encoding_includes:verbatim]
-#if defined(CLI11_CPP17) ||(defined(CLI11_HAS_FILESYSTEM) && CLI11_HAS_FILESYSTEM > 0)
+#if defined(CLI11_CPP17) || (defined(CLI11_HAS_FILESYSTEM) && CLI11_HAS_FILESYSTEM > 0)
 #include <string_view>
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>
 #endif
 #endif
-
 
 // [CLI11:encoding_includes:end]
 
