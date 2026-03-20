@@ -3441,11 +3441,11 @@ TEST_CASE_METHOD(TApp, "ConfigOutputVectorCustom", "[config]") {
 
     std::string str = app.config_to_str();
     CHECK(str == "vector:{1; 2; 3}\n");
-    //some extra calls to test the call chain
-    str = V->to_config(&app,false,false,"");
+    // some extra calls to test the call chain
+    str = V->to_config(&app, false, false, "");
     CHECK(str == "vector:{1; 2; 3}\n");
 
-    str = V->to_config(&app,CLI::ConfigOutputMode::AllDefaults,false,"");
+    str = V->to_config(&app, CLI::ConfigOutputMode::AllDefaults, false, "");
     CHECK(str == "vector:{1; 2; 3}\n");
 }
 
