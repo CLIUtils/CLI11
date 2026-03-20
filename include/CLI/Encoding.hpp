@@ -23,7 +23,7 @@
 #ifndef CLI11_CPP17
 #include <string_view>
 #endif
-#endif                  // CLI11_HAS_FILESYSTEM
+#endif  // CLI11_HAS_FILESYSTEM
 // [CLI11:encoding_includes:end]
 
 namespace CLI {
