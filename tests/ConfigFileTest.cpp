@@ -850,7 +850,7 @@ TEST_CASE_METHOD(TApp, "IniRequiredbadConfigurator", "[config]") {
     REQUIRE_THROWS_AS(evilptr->to_config(&app, CLI::ConfigOutputMode::Active, true, ""), CLI::FileError);
 }
 
-TEST_CASE_METHOD(TApp, "IniNotRequiredbadConfigurator", "[config]") {
+TEST_CASE_METHOD(TApp, "IniNotRequiredBadConfigurator", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
 
@@ -3440,6 +3440,12 @@ TEST_CASE_METHOD(TApp, "ConfigOutputVectorCustom", "[config]") {
     run();
 
     std::string str = app.config_to_str();
+    CHECK(str == "vector:{1; 2; 3}\n");
+    //some extra calls to test the call chain
+    str = V->to_config(&app,false,false,"");
+    CHECK(str == "vector:{1; 2; 3}\n");
+
+    str = V->to_config(&app,CLI::ConfigOutputMode::AllDefaults,false,"");
     CHECK(str == "vector:{1; 2; 3}\n");
 }
 

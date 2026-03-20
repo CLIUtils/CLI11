@@ -1429,12 +1429,27 @@ configuration files if the `configurable` flag was set on the subcommand. Then
 the use of `[subcommand]` notation will trigger a subcommand and cause it to act
 as if it were on the command line.
 
-To print a configuration file from the passed arguments, use
-`.config_to_str(default_also=false, write_description=false)`, where
-`default_also` will also show any defaulted arguments, and `write_description`
-will include the app and option descriptions. See
-[Config files](https://cliutils.github.io/CLI11/book/chapters/config.html) for
-some additional details and customization points.
+To print a configuration file from the passed arguments, use one of the
+following overloads:
+
+- `.config_to_str()`: Print active values only.
+- `.config_to_str(bool default_also, bool write_description = false)`: Print
+  active values, or include defaulted arguments if `default_also` is `true`.
+  This overload will likely be deprecated in a future release in favor of the
+  `CLI::ConfigOutputMode` overload.
+- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🆕
+  Specify how configuration output should be generated.
+  - `CLI::ConfigOutputMode::Active`: print active values only. Same as
+    `.config_to_str()`.
+  - `CLI::ConfigOutputMode::AllDefaults`: include defaulted arguments for the
+    app and all subcommands. Same as `.config_to_str(true, ...)`.
+  - `CLI::ConfigOutputMode::ActiveSubcommandDefaults`: include defaulted
+    arguments for the app and active subcommands, while omitting defaults from
+    inactive subcommands.
+
+The `write_description` argument will include the app and option descriptions.
+See [Config files](https://cliutils.github.io/CLI11/book/chapters/config.html)
+for some additional details and customization points.
 
 If it is desired that multiple configuration be allowed. Use
 
