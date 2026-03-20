@@ -14,7 +14,7 @@
 #endif  // CLI11_HAS_FILESYSTEM
 
 // "abcd"
-static const std::string abcd_str = "abcd";     
+static const std::string abcd_str = "abcd";
 static const std::wstring abcd_wstr = L"abcd";
 
 // "𓂀𓂀𓂀" - 4-byte utf8 characters

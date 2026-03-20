@@ -28,7 +28,7 @@
 // [CLI11:validators_hpp_filesystem:verbatim]
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-#include <filesystem> 
+#include <filesystem>
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
