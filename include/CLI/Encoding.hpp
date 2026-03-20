@@ -16,14 +16,14 @@
 // [CLI11:encoding_includes:verbatim]
 #ifdef CLI11_CPP17
 #include <string_view>
-#endif  // CLI11_CPP17
-
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>
-#ifndef CLI11_CPP17
+#endif
+#elif defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+#include <filesystem>
 #include <string_view>
 #endif
-#endif  // CLI11_HAS_FILESYSTEM
+
 // [CLI11:encoding_includes:end]
 
 namespace CLI {
