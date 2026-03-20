@@ -20,7 +20,7 @@
 
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
 #include <filesystem>
-#include <string_view>  // NOLINT(build/include)
+#include <string_view> 
 #endif                  // CLI11_HAS_FILESYSTEM
 // [CLI11:encoding_includes:end]
 
