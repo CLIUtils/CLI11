@@ -862,7 +862,7 @@ TEST_CASE_METHOD(TApp, "SubcommandOptionGroupWithFallthrough", "[optiongroup]") 
 
     auto *sub = app.add_subcommand("sub", "Execute a subcommand");
 
-    auto group = sub->add_option_group("GROUP");
+    auto *group = sub->add_option_group("GROUP");
 
     // Fails:
     group->add_option("-p,--path", str, "An option");
