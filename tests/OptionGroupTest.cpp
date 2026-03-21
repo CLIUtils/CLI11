@@ -848,9 +848,9 @@ TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
     CHECK(opt_name_const == opt_main);
 }
 
-//from https://github.com/CLIUtils/CLI11/issues/1315 
+// from https://github.com/CLIUtils/CLI11/issues/1315
 TEST_CASE_METHOD(TApp, "SubcommandOptionGroupWithFallthrough", "[optiongroup]") {
-    //code from https://github.com/The0Dev
+    // code from https://github.com/The0Dev
     bool flag{false};
     std::string str;
     app.add_flag("--flag,!--no-flag", flag, "Enable a flag");
