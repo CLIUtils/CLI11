@@ -843,9 +843,11 @@ TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
     g1->fallthrough();
     auto *opt_name = g1->get_option("--base");
     CHECK(opt_name == opt_main);
+    CHECK_THROWS_AS(g1->get_option("--notfound"), CLI::OptionNotFound);
     auto const *g1_const = g1;
     const auto *opt_name_const = g1_const->get_option("--base");
     CHECK(opt_name_const == opt_main);
+    CHECK_THROWS_AS(g1_const->get_option("--notfound"), CLI::OptionNotFound);
 }
 
 // from https://github.com/CLIUtils/CLI11/issues/1315

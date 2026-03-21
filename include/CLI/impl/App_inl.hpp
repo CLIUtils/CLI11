@@ -893,6 +893,31 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
     return options;
 }
 
+
+/// Get an option by name
+CLI11_NODISCARD CLI11_INLINE const Option *App::get_option(std::string option_name) const {
+    const auto *opt = get_option_no_throw(option_name);
+    if(opt == nullptr) {
+        if(fallthrough_ && parent_ != nullptr  && name_.empty()) {
+            return _get_fallthrough_parent()->get_option(option_name);
+        }
+        throw OptionNotFound(option_name);
+    }
+    return opt;
+}
+
+/// Get an option by name (non-const version)
+CLI11_NODISCARD CLI11_INLINE Option *App::get_option(std::string option_name) {
+    auto *opt = get_option_no_throw(option_name);
+    if(opt == nullptr) {
+        if(fallthrough_ && parent_ != nullptr  && name_.empty()) {
+            return _get_fallthrough_parent()->get_option(option_name);
+        }
+        throw OptionNotFound(option_name);
+    }
+    return opt;
+}
+
 CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option_name) noexcept {
     for(Option_p &opt : options_) {
         if(opt->check_name(option_name)) {
@@ -909,6 +934,8 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
         }
     }
     if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
+        // if there is fallthrough and a parent and this is not an option_group then also check the parent for the
+        // option
         return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;

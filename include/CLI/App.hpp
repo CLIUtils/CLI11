@@ -1140,22 +1140,10 @@ class App {
     CLI11_NODISCARD const Option *get_option_no_throw(std::string option_name) const noexcept;
 
     /// Get an option by name
-    CLI11_NODISCARD const Option *get_option(std::string option_name) const {
-        const auto *opt = get_option_no_throw(option_name);
-        if(opt == nullptr) {
-            throw OptionNotFound(option_name);
-        }
-        return opt;
-    }
+    CLI11_NODISCARD const Option *get_option(std::string option_name) const;
 
     /// Get an option by name (non-const version)
-    CLI11_NODISCARD Option *get_option(std::string option_name) {
-        auto *opt = get_option_no_throw(option_name);
-        if(opt == nullptr) {
-            throw OptionNotFound(option_name);
-        }
-        return opt;
-    }
+    CLI11_NODISCARD Option *get_option(std::string option_name);
 
     /// Shortcut bracket operator for getting a pointer to an option
     const Option *operator[](const std::string &option_name) const { return get_option(option_name); }
