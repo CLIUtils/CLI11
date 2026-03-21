@@ -1077,11 +1077,11 @@ option_groups. These are:
   along with the parent for subcommands with fallthrough.
 - `.get_option_no_throw(name)`: Get an option pointer by option name. This
   function will return a `nullptr` instead of throwing if the option is not
-  available.
+  available. This method will not search parents of option_options or nameless subcommands regardless of fallthrough status 🚧, this behavior is slightly different from `get_option`. 
 - `.get_options(filter)`: Get the list of all defined option pointers (useful
-  for processing the app for custom output formats). If used on a subcommand
+  for processing the app for custom output formats). If used on a subcommand 
   will also get options that are in the parent app if the subcommand has
-  fallthrough.
+  fallthrough (and is not nameless 🚧).
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
 - `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for

@@ -898,6 +898,9 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option(std::string option_na
     const auto *opt = get_option_no_throw(option_name);
     if(opt == nullptr) {
         if(fallthrough_ && parent_ != nullptr && name_.empty()) {
+            // as a special case option groups with fallthrough enabled can also check the parent for options if the
+            // option is not found in the group this will not recurse as the internal call is to the no_throw version
+            // which will not check the parent again for option groups even with fallthrough enabled
             return _get_fallthrough_parent()->get_option(option_name);
         }
         throw OptionNotFound(option_name);
@@ -910,6 +913,9 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option(std::string option_name) {
     auto *opt = get_option_no_throw(option_name);
     if(opt == nullptr) {
         if(fallthrough_ && parent_ != nullptr && name_.empty()) {
+            // as a special case option groups with fallthrough enabled can also check the parent for options if the
+            // option is not found in the group this will not recurse as the internal call is to the no_throw version
+            // which will not check the parent again for option groups even with fallthrough enabled
             return _get_fallthrough_parent()->get_option(option_name);
         }
         throw OptionNotFound(option_name);
