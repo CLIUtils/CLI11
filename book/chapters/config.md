@@ -308,10 +308,26 @@ be specified by separate `--config` arguments.
 
 ## Writing out a configure file
 
-To print a configuration file from the passed arguments, use
-`.config_to_str(default_also=false, write_description=false)`, where
-`default_also` will also show any defaulted arguments, and `write_description`
-will include option descriptions and the App description
+To print a configuration file from the passed arguments, use one of the
+following overloads:
+
+- `.config_to_str()`: Print active values only.
+- `.config_to_str(bool default_also, bool write_description = false)`: Print
+  active values, or include defaulted arguments if `default_also` is `true`.
+  This overload will likely be deprecated in a future release in favor of the
+  `CLI::ConfigOutputMode` overload.
+- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🆕
+  Specify how configuration output should be generated.
+  - `CLI::ConfigOutputMode::Active`: print active values only. Same as
+    `.config_to_str()`.
+  - `CLI::ConfigOutputMode::AllDefaults`: include defaulted arguments for the
+    app and all subcommands. Same as `.config_to_str(true, ...)`.
+  - `CLI::ConfigOutputMode::ActiveSubcommandDefaults`: include defaulted
+    arguments for the app and active subcommands, while omitting defaults from
+    inactive subcommands.
+
+The `write_description` argument will include option descriptions and the App
+description.
 
 ```cpp
  CLI::App app;
@@ -330,6 +346,14 @@ for just a subcommand, the config formatter can be obtained directly.
   //std::string to_config(const App *app, bool default_also, bool write_description, std::string prefix)
   fmtr->to_config(&app,true,true,"sub.");
   //prefix can be used to set a prefix before each argument,  like "sub."
+```
+
+The formatter also has an overload taking `CLI::ConfigOutputMode`:
+
+```cpp
+  auto fmtr=app.get_config_formatter();
+  //std::string to_config(const App *app, CLI::ConfigOutputMode mode, bool write_description, std::string prefix)
+  fmtr->to_config(&app,CLI::ConfigOutputMode::ActiveSubcommandDefaults,true,"sub.");
 ```
 
 ### Customization of configure file output

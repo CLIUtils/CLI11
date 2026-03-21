@@ -14,8 +14,8 @@
 #endif  // CLI11_HAS_FILESYSTEM
 
 // "abcd"
-static const std::string abcd_str = "abcd";     // NOLINT(runtime/string)
-static const std::wstring abcd_wstr = L"abcd";  // NOLINT(runtime/string)
+static const std::string abcd_str = "abcd";
+static const std::wstring abcd_wstr = L"abcd";
 
 // "𓂀𓂀𓂀" - 4-byte utf8 characters
 static const std::array<uint8_t, 12 + 1> egypt_utf8_codeunits{
