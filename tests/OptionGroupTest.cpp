@@ -847,3 +847,21 @@ TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
     const auto *opt_name_const = g1_const->get_option("--base");
     CHECK(opt_name_const == opt_main);
 }
+
+//from https://github.com/CLIUtils/CLI11/issues/1315 
+TEST_CASE_METHOD(TApp, "SubcommandOptionGroupWithFallthrough", "[optiongroup]") {
+    //code from https://github.com/The0Dev
+    bool flag{false};
+    std::string str;
+    app.add_flag("--flag,!--no-flag", flag, "Enable a flag");
+
+    // Disabling this prevents the issue:
+    app.fallthrough(true);
+
+    auto *sub = app.add_subcommand("sub", "Execute a subcommand");
+
+    auto group = sub->add_option_group("GROUP");
+
+    // Fails:
+    group->add_option("-p,--path", str, "An option");
+}

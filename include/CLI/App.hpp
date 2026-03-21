@@ -776,6 +776,7 @@ class App {
             throw IncorrectConstruction("option group names may not contain newlines or null characters");
         }
         auto option_group = std::make_shared<T>(std::move(group_description), group_name, this);
+        option_group->fallthrough(false);
         auto *ptr = option_group.get();
         // move to App_p for overload resolution on older gcc versions
         App_p app_ptr = std::static_pointer_cast<App>(option_group);

@@ -848,7 +848,7 @@ CLI11_INLINE std::vector<const Option *> App::get_options(const std::function<bo
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
     }
-    if(fallthrough_ && parent_ != nullptr) {
+    if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
         const auto *fallthrough_parent = _get_fallthrough_parent();
         std::vector<const Option *> subcopts = fallthrough_parent->get_options(filter);
         for(const auto *opt : subcopts) {
@@ -879,7 +879,7 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
     }
-    if(fallthrough_ && parent_ != nullptr) {
+    if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
         auto *fallthrough_parent = _get_fallthrough_parent();
         std::vector<Option *> subcopts = fallthrough_parent->get_options(filter);
         for(auto *opt : subcopts) {
@@ -908,7 +908,7 @@ CLI11_NODISCARD CLI11_INLINE Option *App::get_option_no_throw(std::string option
             }
         }
     }
-    if(fallthrough_ && parent_ != nullptr) {
+    if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
         return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
@@ -929,7 +929,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option_no_throw(std::string 
             }
         }
     }
-    if(fallthrough_ && parent_ != nullptr) {
+    if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
         return _get_fallthrough_parent()->get_option_no_throw(option_name);
     }
     return nullptr;
