@@ -893,12 +893,11 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
     return options;
 }
 
-
 /// Get an option by name
 CLI11_NODISCARD CLI11_INLINE const Option *App::get_option(std::string option_name) const {
     const auto *opt = get_option_no_throw(option_name);
     if(opt == nullptr) {
-        if(fallthrough_ && parent_ != nullptr  && name_.empty()) {
+        if(fallthrough_ && parent_ != nullptr && name_.empty()) {
             return _get_fallthrough_parent()->get_option(option_name);
         }
         throw OptionNotFound(option_name);
@@ -910,7 +909,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::get_option(std::string option_na
 CLI11_NODISCARD CLI11_INLINE Option *App::get_option(std::string option_name) {
     auto *opt = get_option_no_throw(option_name);
     if(opt == nullptr) {
-        if(fallthrough_ && parent_ != nullptr  && name_.empty()) {
+        if(fallthrough_ && parent_ != nullptr && name_.empty()) {
             return _get_fallthrough_parent()->get_option(option_name);
         }
         throw OptionNotFound(option_name);
