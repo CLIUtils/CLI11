@@ -864,6 +864,6 @@ TEST_CASE_METHOD(TApp, "SubcommandOptionGroupWithFallthrough", "[optiongroup]") 
 
     auto *group = sub->add_option_group("GROUP");
 
-    // Fails:
-    group->add_option("-p,--path", str, "An option");
+    // possible failure
+    CHECK_NOTHROW(group->add_option("-p,--path", str, "An option"));
 }
