@@ -71,6 +71,11 @@ class FormatterBase {
     /// Values are Needs, Excludes, etc.
     std::map<std::string, std::string> labels_{};
 
+    /// Default user-facing help labels used when no override is set
+    static std::string default_label(const std::string &key) {
+        return key;
+    }
+
     ///@}
     /// @name Basic
     ///@{
@@ -129,11 +134,7 @@ class FormatterBase {
     ///@{
 
     /// Get the current value of a name (REQUIRED, etc.)
-    CLI11_NODISCARD std::string get_label(std::string key) const {
-        if(labels_.find(key) == labels_.end())
-            return key;
-        return labels_.at(key);
-    }
+    CLI11_NODISCARD std::string get_label(std::string key) const { auto it = labels_.find(key); return it != labels_.end() ? it->second : default_label(key); }
 
     /// Get the current left column width (options/flags/subcommands)
     CLI11_NODISCARD std::size_t get_column_width() const { return column_width_; }
