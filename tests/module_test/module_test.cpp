@@ -15,17 +15,17 @@ using CLI::App;
 using CLI::ParseError;
 
 int main(int argc, char *argv[]) {
-    std::string script_path {};
-    std::string toolchain_path {};
-    std::string build_dir {};
-    std::string install_dir {};
+    std::string script_path{};
+    std::string toolchain_path{};
+    std::string build_dir{};
+    std::string install_dir{};
     std::string output{};
     App app{"Module test"};
 
     string value;
     app.add_option("value", value, "A test value")->required();
-    //test with long and short options and subcommands
-     auto config = app.add_subcommand("configure", "Configure the project");
+    // test with long and short options and subcommands
+    auto config = app.add_subcommand("configure", "Configure the project");
     config->add_option("-S,--script-path", script_path, "Path to build script");
     config->add_option("-T,--toolchain-path", toolchain_path, "Compiler toolchain to use");
     config->add_option("-B,--build-dir", build_dir, "Build directory");
