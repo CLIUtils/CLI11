@@ -38,8 +38,10 @@ add_test(NAME simple_basic COMMAND simple)
 add_test(NAME simple_all COMMAND simple -f filename.txt -c 12 --flag --flag -d 1.2)
 set_property(
   TEST simple_all
-  PROPERTY PASS_REGULAR_EXPRESSION
-           [=[Working on file: filename.txt, direct count: 1, opt count: 1.*Working on count: 12, direct count: 1, opt count: 1.*Received flag: 2 \(2\) times.*Some value: 1\.2]=])
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[Working on file: filename.txt, direct count: 1, opt count: 1.*Working on count: 12, direct count: 1, opt count: 1.*Received flag: 2 \(2\) times.*Some value: 1\.2]=]
+)
 
 add_test(NAME simple_version COMMAND simple --version)
 set_property(TEST simple_version PROPERTY PASS_REGULAR_EXPRESSION "${CLI11_VERSION}")
@@ -53,8 +55,10 @@ add_test(
   name stop --count)
 set_property(
   TEST subcommands_all
-  PROPERTY PASS_REGULAR_EXPRESSION
-           [=[Working on --file from start: name.*Working on --count from stop: 1, direct count: 1.*Count of --random flag: 1.*Subcommand: start.*Subcommand: stop]=])
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[Working on --file from start: name.*Working on --count from stop: 1, direct count: 1.*Count of --random flag: 1.*Subcommand: start.*Subcommand: stop]=]
+)
 
 add_cli_exe(subcom_partitioned subcom_partitioned.cpp)
 add_test(NAME subcom_partitioned_none COMMAND subcom_partitioned)
@@ -66,13 +70,16 @@ set_property(
 add_test(NAME subcom_partitioned_all COMMAND subcom_partitioned --file this --count --count -d 1.2)
 set_property(
   TEST subcom_partitioned_all
-  PROPERTY PASS_REGULAR_EXPRESSION
-           [=[Working on file: this, direct count: 1, opt count: 1.*Working on count: 2, direct count: 2, opt count: 2.*Some value: 1\.2.*This is a timer:]=])
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[Working on file: this, direct count: 1, opt count: 1.*Working on count: 2, direct count: 2, opt count: 2.*Some value: 1\.2.*This is a timer:]=]
+)
 # test shows that the help prints out for unnamed subcommands
 add_test(NAME subcom_partitioned_help COMMAND subcom_partitioned --help)
-set_property(TEST subcom_partitioned_help
-             PROPERTY PASS_REGULAR_EXPRESSION
-                      [=[-f,[ \t]*--file TEXT REQUIRED(.|[\r\n])*-d,[ \t]*--double FLOAT]=])
+set_property(
+  TEST subcom_partitioned_help
+  PROPERTY PASS_REGULAR_EXPRESSION
+           [=[-f,[ \t]*--file TEXT REQUIRED(.|[\r\n])*-d,[ \t]*--double FLOAT]=])
 
 ####################################################
 add_cli_exe(config_app config_app.cpp)
@@ -105,7 +112,7 @@ add_test(NAME positional_arity1 COMMAND positional_arity one)
 set_property(TEST positional_arity1 PROPERTY PASS_REGULAR_EXPRESSION "File 1 = one")
 add_test(NAME positional_arity2 COMMAND positional_arity one two)
 set_property(TEST positional_arity2 PROPERTY PASS_REGULAR_EXPRESSION
-                                              [=[File 1 = one.*File 2 = two]=])
+                                             [=[File 1 = one.*File 2 = two]=])
 add_test(NAME positional_arity3 COMMAND positional_arity 1 2 one)
 set_property(TEST positional_arity3 PROPERTY PASS_REGULAR_EXPRESSION "File 1 = one")
 add_test(NAME positional_arity_fail COMMAND positional_arity 1 one two)
@@ -142,8 +149,11 @@ add_cli_exe(shapes shapes.cpp)
 add_test(NAME shapes_all COMMAND shapes circle 4.4 circle 10.7 rectangle 4 4 circle 2.3 triangle
                                  4.5 ++ rectangle 2.1 ++ circle 234.675)
 set_property(
-  TEST shapes_all PROPERTY PASS_REGULAR_EXPRESSION
-                           [=[circle2 with radius 10\.7(.|[\r\n])*triangle1 with sides \[4\.5\](.|[\r\n])*rectangle2 with edges \[2\.1,2\.1\](.|[\r\n])*circle4 with radius 234\.675]=])
+  TEST shapes_all
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[circle2 with radius 10\.7(.|[\r\n])*triangle1 with sides \[4\.5\](.|[\r\n])*rectangle2 with edges \[2\.1,2\.1\](.|[\r\n])*circle4 with radius 234\.675]=]
+)
 
 add_cli_exe(ranges ranges.cpp)
 add_test(NAME ranges_range COMMAND ranges --range 1 2 3)
@@ -157,27 +167,34 @@ add_cli_exe(validators validators.cpp)
 add_test(NAME validators_help COMMAND validators --help)
 set_property(
   TEST validators_help
-  PROPERTY PASS_REGULAR_EXPRESSION
-           [=[  -f,[ \t]*--file TEXT:FILE.*File name.*  -v,[ \t]*--value INT:INT in \[3 - 6\].*Value in range]=])
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[  -f,[ \t]*--file TEXT:FILE.*File name.*  -v,[ \t]*--value INT:INT in \[3 - 6\].*Value in range]=]
+)
 add_test(NAME validators_file COMMAND validators --file nonex.xxx)
 set_property(
-  TEST validators_file PROPERTY PASS_REGULAR_EXPRESSION
-                                [=[--file: File does not exist: nonex\.xxx.*Run with --help for more information\.]=])
+  TEST validators_file
+  PROPERTY PASS_REGULAR_EXPRESSION
+           [=[--file: File does not exist: nonex\.xxx.*Run with --help for more information\.]=])
 add_test(NAME validators_plain COMMAND validators --value 9)
 set_property(
-  TEST validators_plain PROPERTY PASS_REGULAR_EXPRESSION
-                                 [=[--value: Value 9 not in range \[3 - 6\].*Run with --help for more information\.]=])
+  TEST validators_plain
+  PROPERTY PASS_REGULAR_EXPRESSION
+           [=[--value: Value 9 not in range \[3 - 6\].*Run with --help for more information\.]=])
 
 add_cli_exe(groups groups.cpp)
 add_test(NAME groups_none COMMAND groups)
 set_property(
-  TEST groups_none PROPERTY PASS_REGULAR_EXPRESSION
-                            [=[--file is required.*Run with --help for more information\..*This is a timer:]=])
+  TEST groups_none
+  PROPERTY PASS_REGULAR_EXPRESSION
+           [=[--file is required.*Run with --help for more information\..*This is a timer:]=])
 add_test(NAME groups_all COMMAND groups --file this --count --count -d 1.2)
 set_property(
   TEST groups_all
-  PROPERTY PASS_REGULAR_EXPRESSION
-           [=[Working on file: this, direct count: 1, opt count: 1.*Working on count: 2, direct count: 2, opt count: 2.*Some value: 1\.2.*This is a timer:]=])
+  PROPERTY
+    PASS_REGULAR_EXPRESSION
+    [=[Working on file: this, direct count: 1, opt count: 1.*Working on count: 2, direct count: 2, opt count: 2.*Some value: 1\.2.*This is a timer:]=]
+)
 
 add_cli_exe(inter_argument_order inter_argument_order.cpp)
 add_test(NAME inter_argument_order COMMAND inter_argument_order --foo 1 2 3 --x --bar 4 5 6 --z
@@ -197,8 +214,9 @@ foo : 8]=])
 
 add_cli_exe(prefix_command prefix_command.cpp)
 add_test(NAME prefix_command COMMAND prefix_command -v 3 2 1 -- other one two 3)
-set_property(TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION
-                                          [=[Prefix: 3 : 2 : 1.*Remaining commands: other one two 3]=])
+set_property(
+  TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION
+                               [=[Prefix: 3 : 2 : 1.*Remaining commands: other one two 3]=])
 
 add_cli_exe(arg_capture arg_capture.cpp)
 add_test(NAME arg_capture COMMAND arg_capture -v 27 --sub -v 13 --val prefix)
@@ -215,8 +233,10 @@ set_property(TEST callback_passthrough2 PROPERTY PASS_REGULAR_EXPRESSION "the va
 add_cli_exe(enum enum.cpp)
 add_test(NAME enum_pass COMMAND enum -l 1)
 add_test(NAME enum_fail COMMAND enum -l 4)
-set_property(TEST enum_fail PROPERTY PASS_REGULAR_EXPRESSION
-                                     [=[--level: Check 4 value in \{.*FAILED.*Run with --help for more information\.]=])
+set_property(
+  TEST enum_fail
+  PROPERTY PASS_REGULAR_EXPRESSION
+           [=[--level: Check 4 value in \{.*FAILED.*Run with --help for more information\.]=])
 
 add_cli_exe(enum_ostream enum_ostream.cpp)
 add_test(NAME enum_ostream_pass COMMAND enum_ostream --level medium)
