@@ -1,0 +1,115 @@
+name: Build Tests
+on:
+  push:
+    branches:
+      - main
+      - v*
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: "1"
+
+jobs:
+  cuda11-build:
+    name: CUDA 11 build only
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:11.8.0-devel-ubuntu22.04
+    steps:
+      - name: Add build tools
+        run: apt-get update && apt-get install -y wget git cmake
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+      - name: Build
+        run: cmake --build build -j2
+
+  cuda13-build:
+    name: CUDA 13 build only
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:13.0.0-devel-ubuntu22.04
+    steps:
+      - name: Add build tools
+        run: apt-get update && apt-get install -y wget git cmake
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
+      - name: Build
+        run: cmake --build build -j2
+
+  boost-build:
+    name: Boost build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Add boost
+        run: sudo apt-get update && sudo apt-get install -y libboost-dev
+      # NOTE: If a boost version matching all requirements cannot be found,
+      # this build step will fail
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_BOOST=ON
+      - name: Build
+        run: cmake --build build -j2
+      - name: Run tests
+        run: ctest --output-on-failure
+        working-directory: build
+
+  sanitizer-build:
+    name: sanitizer build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      # this build step will fail
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build -j2
+      - name: Run tests
+        run: ctest --output-on-failure
+        working-directory: build
+
+  meson-build:
+    name: Meson build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare commands
+        run: |
+          pipx install meson
+          pipx install ninja
+
+      - name: Configure
+        run: meson setup build-meson . -Dtests=enabled
+
+      - name: Build
+        run: meson compile -C build-meson
+
+      - name: Test
+        run: meson test -C build-meson
+
+  bazel-build:
+    name: Bazel build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: bazel build //...
+
+      - name: Test
+        run: bazel test --test_output=errors //...

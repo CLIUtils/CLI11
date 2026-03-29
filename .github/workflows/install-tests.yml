@@ -1,0 +1,191 @@
+name: Install Tests
+on:
+  push:
+    branches:
+      - main
+      - v*
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: "1"
+
+jobs:
+  install:
+    name: install tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-precompiled:
+    name: install tests precompiled
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-precompiled-shared:
+    name: install tests precompiled shared
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-precompiled-all:
+    name: install tests precompiled full install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Configure2
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-precompiled-macos:
+    name: install tests precompiled macos
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON -DCMAKE_CXX_STANDARD=20
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-precompiled-macos-no-validators:
+    name: install tests precompiled macos no validators
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=OFF -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-single_file:
+    name: install tests single file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-module:
+    name: install module include tests
+    runs-on: ubuntu-latest
+    container: gcc:15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.2"
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install 
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
+
+  install-module-clang:
+    name: install cli11 module tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v2
+        with:
+          version: 20
+          platform: x64
+      - name: Install specific libc++ version
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-20-dev libc++abi-20-dev lld-20
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.2"
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
+      - name: Build
+        run: cmake --build build  -j2
+      - name: install
+        run: cmake --install build
+      - name: Run tests
+        run: ctest --output-on-failure -L Packaging
+        working-directory: build
