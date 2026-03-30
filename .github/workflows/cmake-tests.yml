@@ -1,0 +1,159 @@
+name: CMake Tests
+on:
+  push:
+    branches:
+      - main
+      - v*
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: "1"
+
+jobs:
+  cmake-config-ubuntu-2204:
+    name: CMake config check (Ubuntu 22.04)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check CMake 3.14
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.14"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+
+      - name: Check CMake 3.15
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.15.6"
+        if: success() || failure()
+
+      - name: Check CMake 3.16
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.16.2"
+        if: success() || failure()
+
+  cmake-config-ubuntu-2404:
+    name: CMake config check (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check CMake 3.17
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.17"
+
+      - name: Check CMake 3.18
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.18"
+        if: success() || failure()
+
+      - name: Check CMake 3.19
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.19"
+        if: success() || failure()
+
+      - name: Check CMake 3.20
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.20"
+        if: success() || failure()
+
+      - name: Check CMake 3.21
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.21"
+        if: success() || failure()
+
+      - name: Check CMake 3.22
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.22"
+        if: success() || failure()
+
+      - name: Check CMake 3.23
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.23"
+        if: success() || failure()
+
+      - name: Check CMake 3.24
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.24"
+        if: success() || failure()
+
+      - name: Check CMake 3.25
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.25"
+        if: success() || failure()
+
+      - name: Check CMake 3.26 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.26"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 3.27
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.27"
+        if: success() || failure()
+
+      - name: Check CMake 3.28 (full)
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.28.X"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 3.29
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.29"
+        if: success() || failure()
+
+      - name: Check CMake 3.30
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.30"
+        if: success() || failure()
+
+      - name: Check CMake 3.31
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "3.31"
+          args: -DCLI11_SANITIZERS=ON -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 4.0
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.0"
+          args: -DCLI11_BUILD_EXAMPLES_JSON=ON
+        if: success() || failure()
+
+      - name: Check CMake 4.1
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.1"
+        if: success() || failure()
+
+      - name: Check CMake 4.2
+        uses: ./.github/actions/quick_cmake
+        with:
+          cmake-version: "4.2"
+        if: success() || failure()

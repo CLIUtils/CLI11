@@ -1,0 +1,50 @@
+name: Platform Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  arm64-gcc:
+    name: ARM64 GCC
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=17
+
+      - name: Build
+        run: cmake --build build -j4
+
+      - name: Test
+        run: |
+          cd build
+          ctest --output-on-failure
+
+  freebsd:
+    name: FreeBSD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test in FreeBSD
+        id: test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y cmake pkgconf
+
+          run: |
+            cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=20
+            cmake --build build -j4
+            cd build
+            ctest --output-on-failure
