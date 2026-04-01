@@ -50,6 +50,10 @@ if(CMAKE_CXX_STANDARD LESS 14)
   target_compile_features(CLI11 INTERFACE cxx_std_11)
 endif()
 
+if(WIN32)
+  target_link_libraries(CLI11 ${PUBLIC_OR_INTERFACE} Shell32)
+endif()
+
 if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
 
   # Make an export target

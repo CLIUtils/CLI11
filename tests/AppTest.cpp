@@ -647,6 +647,7 @@ TEST_CASE_METHOD(TApp, "doubleDashH", "[app]") {
     CHECK_NOTHROW(app.add_flag("--t"));
 }
 
+
 TEST_CASE_METHOD(TApp, "DisableFlagOverrideTest", "[app]") {
 
     int val{0};
