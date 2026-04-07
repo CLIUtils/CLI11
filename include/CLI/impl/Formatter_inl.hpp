@@ -121,10 +121,11 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     // Print out positionals if any are left
     if(!positionals.empty()) {
         // Convert to help names
-        std::vector<std::string> positional_names(positionals.size());
-        std::transform(positionals.begin(), positionals.end(), positional_names.begin(), [this](const Option *opt) {
-            return make_option_usage(opt);
-        });
+        std::vector<std::string> positional_names;
+        positional_names.reserve(positionals.size());
+        for(const auto *opt : positionals) {
+            positional_names.push_back(make_option_usage(opt));
+        }
 
         out << " " << detail::join(positional_names, " ");
     }
