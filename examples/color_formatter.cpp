@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "CLI/CLI.hpp"
-#include <CLI/CLI.hpp>
 #include <iostream>
 
 int main(int argc, char **argv) {
