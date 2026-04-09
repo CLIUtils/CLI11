@@ -96,8 +96,6 @@ class FormatterBase {
     virtual std::string make_help(const App *, std::string, AppFormatMode) const = 0;
 
     /// Detect whether the current terminal supports color output.
-    /// Respects NO_COLOR, FORCE_COLOR, and CLI11_COLOR environment variables,
-    /// then falls back to isatty() check.
     static bool terminal_supports_color();
 
     ///@}

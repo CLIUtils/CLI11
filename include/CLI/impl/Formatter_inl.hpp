@@ -35,18 +35,6 @@ namespace CLI {
 // [CLI11:formatter_inl_hpp:verbatim]
 
 CLI11_INLINE bool FormatterBase::terminal_supports_color() {
-    // NO_COLOR convention (https://no-color.org)
-    if(std::getenv("NO_COLOR") != nullptr)
-        return false;
-
-    // Force color
-    if(std::getenv("FORCE_COLOR") != nullptr)
-        return true;
-
-    const char *cli11_color = std::getenv("CLI11_COLOR");
-    if(cli11_color != nullptr)
-        return std::string(cli11_color) != "0";
-
 #ifdef _WIN32
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if(hOut == INVALID_HANDLE_VALUE)
