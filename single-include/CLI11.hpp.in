@@ -46,6 +46,8 @@
 
 {argv_inl_includes}
 
+{formatter_inl_includes}
+
 namespace {namespace} {{
 
 {encoding_hpp}
