@@ -260,6 +260,7 @@ set_property(TEST subcom_in_files PROPERTY PASS_REGULAR_EXPRESSION
                                            [=[Working on file: this\.txt.*Using foo!]=])
 
 add_cli_exe(formatter formatter.cpp)
+add_cli_exe(color_formatter color_formatter.cpp)
 
 add_cli_exe(nested nested.cpp)
 
