@@ -215,14 +215,4 @@
 #define CLI11_HELP_COLOR_RESET "\033[0m"
 #endif
 
-/** Windows-specific includes */
-#ifdef _WIN32
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <io.h>
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 // [CLI11:macros_hpp:end]

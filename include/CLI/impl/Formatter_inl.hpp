@@ -19,6 +19,16 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <io.h>
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 namespace CLI {
 // [CLI11:formatter_inl_hpp:verbatim]
 
