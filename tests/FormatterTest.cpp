@@ -356,3 +356,17 @@ TEST_CASE("Formatter: LongOptionAlignment", "[formatter]") {
     CHECK_THAT(help, Contains("\n  -h, --help                  Print"));
     CHECK_THAT(help, Contains("\n      --opt INT               Something"));
 }
+
+TEST_CASE("Formatter: Colored Help", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    app.get_formatter()->enable_color();
+
+    int v{0};
+    app.add_option("--opt", v, "Something");
+
+    std::string help = app.help();
+
+    std::string expected = CLI11_HELP_COLOR_LONG_OPT + std::string("--opt") + CLI11_HELP_COLOR_RESET;
+    CHECK_THAT(help, Contains(expected));
+}
