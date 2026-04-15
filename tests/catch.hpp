@@ -26,8 +26,8 @@ using Catch::Matchers::WithinRel;     // NOLINT(google-global-names-in-headers)
 inline auto Contains(const std::string &x) { return Catch::Matchers::ContainsSubstring(x); }
 
 #else
-
 #include <catch2/catch.hpp>
+#include <new>
 
 using Catch::Equals;              // NOLINT(google-global-names-in-headers)
 using Catch::WithinRel;           // NOLINT(google-global-names-in-headers)
