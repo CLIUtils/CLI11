@@ -647,6 +647,9 @@ TEST_CASE_METHOD(TApp, "vectorComplex", "[newparse]") {
     CHECK(-4.0 == vcomplex[1].imag());
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 // enumeration with stream operator
 #define COLOR_LIST \
     X(Red) \
@@ -704,3 +707,5 @@ TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
     CHECK(color==Color::Blue);
     CHECK(other_color==Color::Green);
 }
+
+#endif
