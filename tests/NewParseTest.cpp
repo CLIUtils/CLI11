@@ -682,9 +682,10 @@ std::ostream& operator<<(std::ostream& os, Color c) {
 
 TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
     Color color;
+    Color other_color;
     app.add_option("--color", color)
         ->default_val(Color::Red)
-        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP));
+        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))->force_callback();
 
     args = {};
     run();
@@ -693,4 +694,13 @@ TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
     args={"--color","Green"};
     run();
     CHECK(color==Color::Green);
+
+    app.add_option("--color2", other_color)
+        ->default_str("Green")
+        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))->force_callback();
+
+    args={"--color","Blue"};
+    run();
+    CHECK(color==Color::Blue);
+    CHECK(other_color==Color::Green);
 }
