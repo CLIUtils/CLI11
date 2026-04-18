@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 using cx = std::complex<double>;
 
@@ -644,4 +645,52 @@ TEST_CASE_METHOD(TApp, "vectorComplex", "[newparse]") {
     CHECK(2.0 == vcomplex[0].imag());
     CHECK(1.4 == vcomplex[1].real());
     CHECK(-4.0 == vcomplex[1].imag());
+}
+
+// enumeration with stream operator
+#define COLOR_LIST \
+    X(Red) \
+    X(Blue) \
+    X(Green)  \
+
+enum class Color {
+#define X(name) name,
+    COLOR_LIST
+#undef X
+};
+
+const std::unordered_map<std::string, Color> STR_TO_COLOR_MAP {
+#define X(name) {#name, Color::name},
+    COLOR_LIST
+#undef X
+};
+
+const std::unordered_map<Color, std::string> COLOR_TO_STR_MAP {
+#define X(name) {Color::name, #name},
+    COLOR_LIST
+#undef X
+};
+
+// Comment this to stop CLI::ConversionError from being thrown
+std::ostream& operator<<(std::ostream& os, Color c) {
+    auto it = COLOR_TO_STR_MAP.find(c);
+    if (it != COLOR_TO_STR_MAP.end())
+        return os << it->second;
+
+    return os << std::string("Unknown");
+}
+
+TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
+    Color color;
+    app.add_option("--color", color)
+        ->default_val(Color::Red)
+        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP));
+
+    args = {};
+    run();
+    CHECK(color==Color::Red);
+
+    args={"--color","Green"};
+    run();
+    CHECK(color==Color::Green);
 }
