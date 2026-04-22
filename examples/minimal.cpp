@@ -11,9 +11,8 @@
 /** This example is a minimal example of using CLI11. It does not do anything, but it compiles and runs, and can be used
  * as a starting point for new projects.
  */
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
-   
     CLI::App app{"App description"};
     CLI11_PARSE(app, argc, argv);
     return 0;
