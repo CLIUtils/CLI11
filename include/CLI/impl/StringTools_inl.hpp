@@ -185,23 +185,43 @@ find_member(std::string name, const std::vector<std::string> names, bool ignore_
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
-CLI11_MODULE_INLINE const std::string &escapedChars("\b\t\n\f\r\"\\");
-CLI11_MODULE_INLINE const std::string &escapedCharsCode("btnfr\"\\");
+CLI11_MODULE_INLINE const std::string &escapedChars() {
+    static const std::string s{"\b\t\n\f\r\"\\"};
+    return s;
+}
+CLI11_MODULE_INLINE const std::string &escapedCharsCode() {
+    static const std::string s{"btnfr\"\\"};
+    return s;
+}
+CLI11_MODULE_INLINE const std::string &bracketChars() {
+    static const std::string s{"\"'`[(<{"};
+    return s;
+}
+CLI11_MODULE_INLINE const std::string &matchBracketChars() {
+    static const std::string s{"\"'`])>}"}; 
+    return s;
+}
+
+//CLI11_MODULE_INLINE constexpr char escapedChars[]="\b\t\n\f\r\"\\";
+//CLI11_MODULE_INLINE constexpr char escapedCharsCode[]="btnfr\"\\";
+/*
+const std::string &escapedChars("\b\t\n\f\r\"\\");
+
 CLI11_MODULE_INLINE const std::string &bracketChars("\"'`[(<{");
 CLI11_MODULE_INLINE const std::string &matchBracketChars("\"'`])>}");
-
+*/
 CLI11_INLINE bool has_escapable_character(const std::string &str) {
-    return (str.find_first_of(escapedChars) != std::string::npos);
+    return (str.find_first_of(escapedChars()) != std::string::npos);
 }
 
 CLI11_INLINE std::string add_escaped_characters(const std::string &str) {
     std::string out;
     out.reserve(str.size() + 4);
     for(char s : str) {
-        auto sloc = escapedChars.find_first_of(s);
+        auto sloc = escapedChars().find_first_of(s);
         if(sloc != std::string::npos) {
             out.push_back('\\');
-            out.push_back(escapedCharsCode[sloc]);
+            out.push_back(escapedCharsCode()[sloc]);
         } else {
             out.push_back(s);
         }
@@ -258,9 +278,9 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
             if(str.end() - loc < 2) {
                 throw std::invalid_argument("invalid escape sequence " + str);
             }
-            auto ecloc = escapedCharsCode.find_first_of(*(loc + 1));
+            auto ecloc = escapedCharsCode().find_first_of(*(loc + 1));
             if(ecloc != std::string::npos) {
-                out.push_back(escapedChars[ecloc]);
+                out.push_back(escapedChars()[ecloc]);
                 ++loc;
             } else if(*(loc + 1) == 'u') {
                 // must have 4 hex characters
@@ -330,7 +350,7 @@ CLI11_INLINE std::size_t close_literal_quote(const std::string &str, std::size_t
 
 CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char) {
 
-    auto bracket_loc = matchBracketChars.find(closure_char);
+    auto bracket_loc = matchBracketChars().find(closure_char);
     switch(bracket_loc) {
     case 0:
         return close_string_quote(str, start, closure_char);
@@ -356,7 +376,7 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
                 return loc;
             }
         }
-        bracket_loc = bracketChars.find(str[loc]);
+        bracket_loc = bracketChars().find(str[loc]);
         if(bracket_loc != std::string::npos) {
             switch(bracket_loc) {
             case 0:
@@ -367,7 +387,7 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
                 loc = close_literal_quote(str, loc, str[loc]);
                 break;
             default:
-                closures.push_back(matchBracketChars[bracket_loc]);
+                closures.push_back(matchBracketChars()[bracket_loc]);
                 break;
             }
         }
@@ -388,9 +408,9 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
 
     std::vector<std::string> output;
     while(!str.empty()) {
-        if(bracketChars.find_first_of(str[0]) != std::string::npos) {
-            auto bracketLoc = bracketChars.find_first_of(str[0]);
-            auto end = close_sequence(str, 0, matchBracketChars[bracketLoc]);
+        if(bracketChars().find_first_of(str[0]) != std::string::npos) {
+            auto bracketLoc = bracketChars().find_first_of(str[0]);
+            auto end = close_sequence(str, 0, matchBracketChars()[bracketLoc]);
             if(end >= str.size()) {
                 output.push_back(std::move(str));
                 str.clear();
