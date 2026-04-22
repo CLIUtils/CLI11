@@ -198,12 +198,12 @@ CLI11_MODULE_INLINE const std::string &bracketChars() {
     return s;
 }
 CLI11_MODULE_INLINE const std::string &matchBracketChars() {
-    static const std::string s{"\"'`])>}"}; 
+    static const std::string s{"\"'`])>}"};
     return s;
 }
 
-//CLI11_MODULE_INLINE constexpr char escapedChars[]="\b\t\n\f\r\"\\";
-//CLI11_MODULE_INLINE constexpr char escapedCharsCode[]="btnfr\"\\";
+// CLI11_MODULE_INLINE constexpr char escapedChars[]="\b\t\n\f\r\"\\";
+// CLI11_MODULE_INLINE constexpr char escapedCharsCode[]="btnfr\"\\";
 /*
 const std::string &escapedChars("\b\t\n\f\r\"\\");
 
