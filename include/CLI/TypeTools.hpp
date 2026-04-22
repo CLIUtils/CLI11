@@ -1457,10 +1457,16 @@ bool lexical_assign(const std::string &input, AssignTo &output) {
 /* on some older clang compilers */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__) && (__GNUC__ == 8)
+/* gcc 8 warns on intentional assignments such as std::atomic<unsigned long> = int */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
         output = val;
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#elif defined(__GNUC__) && (__GNUC__ == 8)
+#pragma GCC diagnostic pop
 #endif
         return true;
     }
