@@ -2,6 +2,7 @@ exclude: ^(.github/workflows/|docs/img/|tests/fuzzFail)
 ci:
   autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"
   autofix_commit_msg: "style: pre-commit.ci fixes"
+  autoupdate_schedule: "monthly"
 
 repos:
   - repo: https://github.com/psf/black-pre-commit-mirror
@@ -39,7 +40,7 @@ repos:
       - id: cmake-format
         additional_dependencies: [pyyaml]
 
-  - repo: https://github.com/JoC0de/pre-commit-prettier
+  - repo: https://github.com/rbubley/mirrors-prettier
     rev: v3.8.3
     hooks:
       - id: prettier
