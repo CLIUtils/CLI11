@@ -218,6 +218,10 @@ set_property(
   TEST prefix_command PROPERTY PASS_REGULAR_EXPRESSION
                                [=[Prefix: 3 : 2 : 1.*Remaining commands: other one two 3]=])
 
+#just test a minimal build
+add_cli_exe(minimal minimal.cpp)
+add_test(NAME minimal COMMAND minimal)
+
 add_cli_exe(arg_capture arg_capture.cpp)
 add_test(NAME arg_capture COMMAND arg_capture -v 27 --sub -v 13 --val prefix)
 set_property(TEST arg_capture PROPERTY PASS_REGULAR_EXPRESSION "value=27")
