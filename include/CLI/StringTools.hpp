@@ -274,6 +274,10 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 const std::string &linePrefix = "",
                                                 bool skipPrefixOnFirstLine = false);
 
+/// Compute the visual (display) width of a string, ignoring ANSI escape sequences.
+/// This is needed for correct column alignment when strings contain color codes.
+CLI11_INLINE std::size_t visual_length(const std::string &str);
+
 }  // namespace detail
 
 // [CLI11:string_tools_hpp:end]

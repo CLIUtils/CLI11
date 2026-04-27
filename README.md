@@ -1514,13 +1514,14 @@ free to replace the formatter with a custom one by calling `formatter(fmt)` on
 an `App`. CLI11 comes with a default App formatter, `Formatter`. You can
 retrieve the formatter via `.get_formatter()` this will return a pointer to the
 current `Formatter`. It is customizable; you can set `label(key, value)` to
-replace the default labels like `REQUIRED`, and `OPTIONS`. You can also set
-`column_width(n)` to set the width of the columns before you add the functional
-to the app or option. Several other configuration options are also available in
-the `Formatter`. You can also override almost any stage of the formatting
-process in a subclass of either formatter. If you want to make a new formatter
-from scratch, you can do that too; you just need to implement the correct
-signature. see [formatting][] for more details.
+replace the default labels like `REQUIRED`, and `OPTIONS`. You can call
+`enable_color()` to enable colorful help. You can also set `column_width(n)` to
+set the width of the columns before you add the functional to the app or option.
+Several other configuration options are also available in the `Formatter`. You
+can also override almost any stage of the formatting process in a subclass of
+either formatter. If you want to make a new formatter from scratch, you can do
+that too; you just need to implement the correct signature. see [formatting][]
+for more details.
 
 ### Subclassing
 
