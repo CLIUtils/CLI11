@@ -1395,13 +1395,31 @@ bool lexical_cast(const std::string & /*input*/, T & /*output*/) {
 /// Strings can be empty so we need to do a little different
 template <typename AssignTo,
           typename ConvertTo,
-          enable_if_t<std::is_same<AssignTo, ConvertTo>::value &&
+          enable_if_t<std::is_same<AssignTo, ConvertTo>::value && !is_wrapper<AssignTo>::value &&
                           (classify_object<AssignTo>::value == object_category::string_assignable ||
                            classify_object<AssignTo>::value == object_category::string_constructible ||
                            classify_object<AssignTo>::value == object_category::wstring_assignable ||
                            classify_object<AssignTo>::value == object_category::wstring_constructible),
                       detail::enabler> = detail::dummy>
 bool lexical_assign(const std::string &input, AssignTo &output) {
+    return lexical_cast(input, output);
+}
+
+/// Assign a value through lexical cast operations
+/// Strings can be empty so we need to do a little different but also need to support wrappers
+template <typename AssignTo,
+          typename ConvertTo,
+          enable_if_t<std::is_same<AssignTo, ConvertTo>::value && is_wrapper<AssignTo>::value &&
+                          (classify_object<AssignTo>::value == object_category::string_assignable ||
+                           classify_object<AssignTo>::value == object_category::string_constructible ||
+                           classify_object<AssignTo>::value == object_category::wstring_assignable ||
+                           classify_object<AssignTo>::value == object_category::wstring_constructible),
+                      detail::enabler> = detail::dummy>
+bool lexical_assign(const std::string &input, AssignTo &output) {
+    if(input.empty()) {
+        output = AssignTo{};
+        return true;
+    }
     return lexical_cast(input, output);
 }
 

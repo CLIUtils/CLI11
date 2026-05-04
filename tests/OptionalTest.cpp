@@ -81,6 +81,42 @@ TEST_CASE_METHOD(TApp, "StdOptionalTest", "[optional]") {
     CHECK((opt && (3 == *opt)));
 }
 
+TEST_CASE_METHOD(TApp, "StdOptionalNulloptDefaultValConsistency", "[optional]") {
+    std::optional<int> opt_int;
+    app.add_option("-a", opt_int)->default_val(std::nullopt);
+
+    std::optional<std::string> opt_string;
+
+    CHECK_FALSE(opt_int.has_value());
+    CHECK_FALSE(opt_string.has_value());
+
+    auto *optargs = app.add_option("-b", opt_string);
+    optargs->default_val(std::nullopt);
+
+    run();
+
+    CHECK_FALSE(opt_int.has_value());
+    CHECK_FALSE(opt_string.has_value());
+}
+
+TEST_CASE_METHOD(TApp, "StdOptionalEmptyOptConsistency", "[optional]") {
+    std::optional<int> opt_int;
+    app.add_option("-a", opt_int)->default_val(opt_int);
+
+    std::optional<std::string> opt_string;
+
+    CHECK_FALSE(opt_int.has_value());
+    CHECK_FALSE(opt_string.has_value());
+
+    auto *optargs = app.add_option("-b", opt_string);
+    optargs->default_val(opt_string);
+
+    run();
+
+    CHECK_FALSE(opt_int.has_value());
+    CHECK_FALSE(opt_string.has_value());
+}
+
 TEST_CASE_METHOD(TApp, "StdOptionalVectorEmptyDirect", "[optional]") {
     std::optional<std::vector<int>> opt;
     app.add_option("-v,--vec", opt)->expected(0, 3)->allow_extra_args();
