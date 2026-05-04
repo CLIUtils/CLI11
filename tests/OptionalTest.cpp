@@ -90,7 +90,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalNulloptDefaultValConsistency", "[optional]") 
     CHECK_FALSE(opt_int.has_value());
     CHECK_FALSE(opt_string.has_value());
 
-    auto *optargs=app.add_option("-b", opt_string);
+    auto *optargs = app.add_option("-b", opt_string);
     optargs->default_val(std::nullopt);
 
     run();
@@ -108,7 +108,7 @@ TEST_CASE_METHOD(TApp, "StdOptionalEmptyOptConsistency", "[optional]") {
     CHECK_FALSE(opt_int.has_value());
     CHECK_FALSE(opt_string.has_value());
 
-    auto *optargs=app.add_option("-b", opt_string);
+    auto *optargs = app.add_option("-b", opt_string);
     optargs->default_val(opt_string);
 
     run();
