@@ -747,9 +747,6 @@ SubcommandData extract_subcomand_info(const std::string &description_string, std
     return sub_data;
 }
 
-//<option>name_string</option>
-//<vector>name_string</vector>
-//<flag>name_string</flag>
 /** generate additional options based on a string config*/
 std::size_t FuzzApp::add_custom_options(CLI::App *app, const std::string &description_string) {
     std::size_t current_index{0};
