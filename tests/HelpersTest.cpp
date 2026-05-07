@@ -764,8 +764,8 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     CHECK(res.second.empty());
 
     // Quoted program name only, no trailing args (regression: npos+1 wrap-around)
-    res = CLI::detail::split_program_name("\"C:\\example.exe\"");
-    CHECK("C:\\example.exe" == res.first);
+    res = CLI::detail::split_program_name(R"("C:\example.exe")");
+    CHECK(R"(C:\example.exe)" == res.first);
     CHECK(res.second.empty());
 }
 
