@@ -219,7 +219,7 @@ jobs:
           containerImage: silkeh/clang:20
           cli11.std: 26
           cli11.options:
-            -DCMAKE_CXX_FLAGS="-std=c++2c -stdlib=libc++"
+            -DCMAKE_CXX_FLAGS="-std=c++2c -stdlib=libc++ -Wdocumentation"
             -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCMAKE_CXX_COMPILER=clang++
             -DCLI11_FORCE_LIBCXX=ON -DCMAKE_LINKER_TYPE=LLD
     container: $[ variables['containerImage'] ]

@@ -266,7 +266,6 @@ CLI11_INLINE std::pair<std::string, std::string> split_program_name(std::string 
     trim(commandline);
     auto esp = commandline.find_first_of(' ', 1);
     while(detail::check_path(commandline.substr(0, esp).c_str()) != path_type::file) {
-        esp = commandline.find_first_of(' ', esp + 1);
         if(esp == std::string::npos) {
             // if we have reached the end and haven't found a valid file just assume the first argument is the
             // program name
@@ -293,6 +292,7 @@ CLI11_INLINE std::pair<std::string, std::string> split_program_name(std::string 
 
             break;
         }
+        esp = commandline.find_first_of(' ', esp + 1);
     }
     if(vals.first.empty()) {
         vals.first = commandline.substr(0, esp);

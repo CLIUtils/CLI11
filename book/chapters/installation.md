@@ -146,6 +146,12 @@ CLI11 has examples and tests that can be accessed using a CMake build on any
 platform. Simply build and run ctest to run the 200+ tests to ensure CLI11 works
 on your system.
 
+The test build uses Catch2. If Catch2 is not available as a CMake package, CLI11
+will download the required Catch2 header during configuration. On systems
+without internet access, or where TLS connections to GitHub releases are
+blocked, install Catch2 separately or configure with `CLI11_BUILD_TESTS=OFF`
+until the dependency is available.
+
 As an example of the build system, the following code will download and test
 CLI11 in a simple Alpine Linux docker container [^1]:
 
