@@ -490,7 +490,7 @@ TEST_CASE_METHOD(TApp, "TransformEmptyDescription", "[transform]") {
     int result_number = 0;
 
     auto *opt = app.add_option("-n,--number", result_number, "My number")
-        ->transform(CLI::Transformer(numbers_type_map), "", "my number transform");
+                    ->transform(CLI::Transformer(numbers_type_map), "", "my number transform");
 
     args = {"--number", "two"};
     REQUIRE_NOTHROW(run());
