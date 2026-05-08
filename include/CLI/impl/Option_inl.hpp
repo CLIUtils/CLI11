@@ -119,12 +119,13 @@ CLI11_INLINE Option *Option::transform(Validator validator, const std::string &t
     return this;
 }
 
-CLI11_INLINE Option *Option::transform(Validator validator, const std::string &transform_description, const std::string &transform_name) {
+CLI11_INLINE Option *
+Option::transform(Validator validator, const std::string &transform_description, const std::string &transform_name) {
     auto vp = std::make_shared<Validator>(std::move(validator));
     if(!transform_name.empty()) {
         vp->name(transform_name);
     }
-    vp->description( transform_description);
+    vp->description(transform_description);
     validators_.insert(validators_.begin(), std::move(vp));
     return this;
 }
