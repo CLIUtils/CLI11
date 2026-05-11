@@ -9,9 +9,9 @@
 #include <complex>
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <unordered_map>
 
 using cx = std::complex<double>;
 
@@ -651,10 +651,10 @@ TEST_CASE_METHOD(TApp, "vectorComplex", "[newparse]") {
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
 // enumeration with stream operator
-#define COLOR_LIST \
-    X(Red) \
-    X(Blue) \
-    X(Green)  \
+#define COLOR_LIST                                                                                                     \
+    X(Red)                                                                                                             \
+    X(Blue)                                                                                                            \
+    X(Green)
 
 enum class Color {
 #define X(name) name,
@@ -662,22 +662,22 @@ enum class Color {
 #undef X
 };
 
-const std::unordered_map<std::string, Color> STR_TO_COLOR_MAP {
+const std::unordered_map<std::string, Color> STR_TO_COLOR_MAP{
 #define X(name) {#name, Color::name},
     COLOR_LIST
 #undef X
 };
 
-const std::unordered_map<Color, std::string> COLOR_TO_STR_MAP {
+const std::unordered_map<Color, std::string> COLOR_TO_STR_MAP{
 #define X(name) {Color::name, #name},
     COLOR_LIST
 #undef X
 };
 
 // Comment this to stop CLI::ConversionError from being thrown
-std::ostream& operator<<(std::ostream& os, Color c) {
+std::ostream &operator<<(std::ostream &os, Color c) {
     auto it = COLOR_TO_STR_MAP.find(c);
-    if (it != COLOR_TO_STR_MAP.end())
+    if(it != COLOR_TO_STR_MAP.end())
         return os << it->second;
 
     return os << std::string("Unknown");
@@ -688,24 +688,26 @@ TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
     Color other_color;
     app.add_option("--color", color)
         ->default_val(Color::Red)
-        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))->force_callback();
+        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))
+        ->force_callback();
 
     args = {};
     run();
-    CHECK(color==Color::Red);
+    CHECK(color == Color::Red);
 
-    args={"--color","Green"};
+    args = {"--color", "Green"};
     run();
-    CHECK(color==Color::Green);
+    CHECK(color == Color::Green);
 
     app.add_option("--color2", other_color)
         ->default_str("Green")
-        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))->force_callback();
+        ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))
+        ->force_callback();
 
-    args={"--color","Blue"};
+    args = {"--color", "Blue"};
     run();
-    CHECK(color==Color::Blue);
-    CHECK(other_color==Color::Green);
+    CHECK(color == Color::Blue);
+    CHECK(other_color == Color::Green);
 }
 
 #endif
