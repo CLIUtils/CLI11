@@ -458,6 +458,52 @@ TEST_CASE_METHOD(TApp, "TransformCascadeDeactivate", "[transform]") {
     CHECK_THROWS_AS(opt->get_validator("sdfsdf"), CLI::OptionNotFound);
 }
 
+// from GitHub issue: https://github.com/CLIUtils/CLI11/issues/1338
+// transform(Transformer(...), "", "") should hide transform help text
+// without disabling the transform behavior.
+TEST_CASE_METHOD(TApp, "TransformEmptyNameAndDescription", "[transform]") {
+    std::map<std::string, int> numbers_type_map{{"one", 1}, {"two", 2}, {"three", 3}};
+
+    int result_number = 0;
+
+    auto *opt = app.add_option("-n,--number", result_number, "My number")
+                    ->transform(CLI::Transformer(numbers_type_map), "", "");
+
+    args = {"--number", "two"};
+    REQUIRE_NOTHROW(run());
+    CHECK(app.count("--number") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(result_number == 2);
+
+    auto help = app.help();
+    CHECK(help.find("one->1") == std::string::npos);
+    CHECK(help.find("two->2") == std::string::npos);
+    CHECK(help.find("three->3") == std::string::npos);
+}
+
+// from GitHub issue: https://github.com/CLIUtils/CLI11/issues/1338
+// transform(Transformer(...), "", "") should hide transform help text
+// without disabling the transform behavior.
+TEST_CASE_METHOD(TApp, "TransformEmptyDescription", "[transform]") {
+    std::map<std::string, int> numbers_type_map{{"one", 1}, {"two", 2}, {"three", 3}};
+
+    int result_number = 0;
+
+    auto *opt = app.add_option("-n,--number", result_number, "My number")
+                    ->transform(CLI::Transformer(numbers_type_map), "", "my number transform");
+
+    args = {"--number", "two"};
+    REQUIRE_NOTHROW(run());
+    CHECK(app.count("--number") == 1u);
+    CHECK(opt->count() == 1u);
+    CHECK(result_number == 2);
+
+    auto help = app.help();
+    CHECK(help.find("one->1") == std::string::npos);
+    CHECK(help.find("two->2") == std::string::npos);
+    CHECK(help.find("three->3") == std::string::npos);
+}
+
 TEST_CASE_METHOD(TApp, "IntTransformFn", "[transform]") {
     std::string value;
     app.add_option("-s", value)

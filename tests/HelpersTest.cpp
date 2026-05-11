@@ -757,6 +757,16 @@ TEST_CASE("Validators: ProgramNameSplit", "[helpers]") {
     res = CLI::detail::split_program_name("'odd_program_name.exe --arg --arg2=5");
     CHECK("'odd_program_name.exe" == res.first);
     CHECK_FALSE(res.second.empty());
+
+    // No space in commandline: esp starts as npos, should not increment npos
+    res = CLI::detail::split_program_name("not_a_real_program");
+    CHECK("not_a_real_program" == res.first);
+    CHECK(res.second.empty());
+
+    // Quoted program name only, no trailing args (regression: npos+1 wrap-around)
+    res = CLI::detail::split_program_name(R"("C:\example.exe")");
+    CHECK(R"(C:\example.exe)" == res.first);
+    CHECK(res.second.empty());
 }
 
 TEST_CASE("CheckedMultiply: Int", "[helpers]") {

@@ -23,9 +23,9 @@ complexity of CLI11 needlessly.
 - Once you make the PR, tests will run to make sure your code works on all
   supported platforms
 - The test coverage is also measured, and that should remain 100%
-- Formatting should be done with pre-commit, otherwise the format check will not
-  pass. However, it is trivial to apply this to your PR, so don't worry about
-  this check. If you do want to run it, see below.
+- Formatting should be done with prek or pre-commit, otherwise the format check
+  will not pass. However, it is trivial to apply this to your PR, so don't worry
+  about this check. If you do want to run it, see below.
 - Everything must pass clang-tidy as well, run with
   `-DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy)"` (if you set
   `"$(which clang-tidy) -fix"`, make sure you use a single threaded build
@@ -37,27 +37,27 @@ complexity of CLI11 needlessly.
 
 ## Pre-commit
 
-Format is handled by pre-commit. You should install it (or use
-[pipx](https://pypa.github.io/pipx/)):
+Format is handled by pre-commit / prek. You should install it (or use
+[pipx](https://pypa.github.io/pipx/) or [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-python3 -m pip install pre-commit
+python3 -m pip install prek
 ```
 
 Then, you can run it on the items you've added to your staging area, or all
 files:
 
 ```bash
-pre-commit run
+prek
 # OR
-pre-commit run --all-files
+prek -a
 ```
 
 And, if you want to always use it, you can install it as a git hook (hence the
 name, pre-commit):
 
 ```bash
-pre-commit install
+prek install
 ```
 
 ## For maintainers: remember to add contributions

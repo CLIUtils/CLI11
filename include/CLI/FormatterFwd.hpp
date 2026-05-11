@@ -150,7 +150,7 @@ class FormatterBase {
     CLI11_NODISCARD std::size_t get_footer_paragraph_width() const { return footer_paragraph_width_; }
 
     /// @brief Get the current alignment ratio for long options within the left column
-    /// @return
+    /// @return The alignment ratio used for long options within the left column
     CLI11_NODISCARD float get_long_option_alignment_ratio() const { return long_option_alignment_ratio_; }
 
     /// Get the current status of description paragraph formatting
