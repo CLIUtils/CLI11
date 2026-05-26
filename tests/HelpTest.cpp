@@ -599,8 +599,9 @@ TEST_CASE("THelp: Subcommand unlimited max uses plural label", "[help]") {
     app.require_subcommand(1, 0);
 
     const std::string help = app.help();
-    CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMANDS"));
-    CHECK_THAT(help, !Contains("Usage: [OPTIONS] SUBCOMMAND"));
+    // Match through the newline: SUBCOMMAND is a prefix of SUBCOMMANDS in plain Contains()
+    CHECK_THAT(help, Contains("[OPTIONS] SUBCOMMANDS\n"));
+    CHECK_THAT(help, !Contains("[OPTIONS] SUBCOMMAND\n"));
 }
 
 TEST_CASE("THelp: Exactly one required subcommand uses singular label", "[help]") {
@@ -609,8 +610,8 @@ TEST_CASE("THelp: Exactly one required subcommand uses singular label", "[help]"
     app.require_subcommand(1, 1);
 
     const std::string help = app.help();
-    CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMAND"));
-    CHECK_THAT(help, !Contains("Usage: [OPTIONS] SUBCOMMANDS"));
+    CHECK_THAT(help, Contains("[OPTIONS] SUBCOMMAND\n"));
+    CHECK_THAT(help, !Contains("[OPTIONS] SUBCOMMANDS\n"));
 }
 
 TEST_CASE("THelp: Subcom_alias", "[help]") {
