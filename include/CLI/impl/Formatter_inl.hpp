@@ -138,8 +138,7 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
         const auto sub_max = app->get_require_subcommand_max();
         // max == 0 means unlimited subcommands; use plural unless exactly one is required
         const bool exactly_one_required = (sub_max == 1 && sub_min >= 1);
-        out << ' ' << (sub_min == 0 ? "[" : "")
-            << get_label(exactly_one_required ? "SUBCOMMAND" : "SUBCOMMANDS")
+        out << ' ' << (sub_min == 0 ? "[" : "") << get_label(exactly_one_required ? "SUBCOMMAND" : "SUBCOMMANDS")
             << (sub_min == 0 ? "]" : "");
     }
 
