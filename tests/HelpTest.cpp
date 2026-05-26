@@ -603,6 +603,16 @@ TEST_CASE("THelp: Subcommand unlimited max uses plural label", "[help]") {
     CHECK_THAT(help, !Contains("Usage: [OPTIONS] SUBCOMMAND"));
 }
 
+TEST_CASE("THelp: Exactly one required subcommand uses singular label", "[help]") {
+    CLI::App app{"My prog"};
+    app.add_subcommand("sub1");
+    app.require_subcommand(1, 1);
+
+    const std::string help = app.help();
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMAND"));
+    CHECK_THAT(help, !Contains("Usage: [OPTIONS] SUBCOMMANDS"));
+}
+
 TEST_CASE("THelp: Subcom_alias", "[help]") {
     CLI::App app{"My prog"};
 
