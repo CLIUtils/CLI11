@@ -115,6 +115,5 @@ endif
 meson.override_dependency('CLI11', cli11_dep)
 
 tests = get_option('tests')
-tests = tests.disable_auto_if(meson.is_subproject())
 catch2_dep = dependency('catch2', required: tests)
 subdir('tests', if_found: catch2_dep)
