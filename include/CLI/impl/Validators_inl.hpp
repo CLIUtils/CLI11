@@ -169,7 +169,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
     func_ = [](std::string &filename) -> std::string {
-        if (filename.empty())
+        if(filename.empty())
             return std::string("File name is missing.");
 
         auto path_result = check_path(filename.c_str());
