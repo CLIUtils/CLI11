@@ -2064,6 +2064,27 @@ TEST_CASE_METHOD(TApp, "ExistingFileEmptyStringIsRejected", "[app]") {
     CHECK(filename == "initial_value");  // ensure no overwrite
 }
 
+// Test for empty file name using std::filesystem::path
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+TEST_CASE_METHOD(TApp, "ExistingFileEmptyFilesystemPathIsRejected", "[app]") {
+    std::filesystem::path filename{""};
+
+    app.add_option("--file", filename)
+        ->check(CLI::ExistingFile);
+
+    args = {"--file", ""};
+
+    try {
+        run();
+        FAIL("Expected ValidationError");
+    } catch(const CLI::ValidationError &err) {
+        CHECK(std::string(err.what()).find("File name is missing.") != std::string::npos);
+    }
+
+    CHECK(filename == std::filesystem::path{"initial_value"});
+}
+#endif
+
 TEST_CASE_METHOD(TApp, "DefaultedResult", "[app]") {
     std::string sval = "NA";
     int ival{0};
