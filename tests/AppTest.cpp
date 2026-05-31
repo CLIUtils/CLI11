@@ -2069,8 +2069,7 @@ TEST_CASE_METHOD(TApp, "ExistingFileEmptyStringIsRejected", "[app]") {
 TEST_CASE_METHOD(TApp, "ExistingFileEmptyFilesystemPathIsRejected", "[app]") {
     std::filesystem::path filename{""};
 
-    app.add_option("--file", filename)
-        ->check(CLI::ExistingFile);
+    app.add_option("--file", filename)->check(CLI::ExistingFile);
 
     args = {"--file", ""};
 
