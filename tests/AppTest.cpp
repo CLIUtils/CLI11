@@ -2042,6 +2042,30 @@ TEST_CASE_METHOD(TApp, "FileExists", "[app]") {
     CHECK(!CLI::ExistingFile(myfile).empty());
 }
 
+TEST_CASE_METHOD(TApp, "ExistingFileEmptyDefaultValue", "[app]") {
+    std::string filename = "";
+
+    app.add_option("--file", filename)
+        ->check(CLI::ExistingFile);
+
+    args = {};  // <-- key case: option not provided
+
+    CHECK_NOTHROW(run());
+    CHECK(filename.empty());
+}
+
+TEST_CASE_METHOD(TApp, "ExistingFileEmptyStringIsRejected", "[app]") {
+    std::string filename = "initial_value";
+
+    app.add_option("--file", filename)
+        ->check(CLI::ExistingFile);
+
+    args = {"--file", ""};  // explicit empty string input
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK(filename == "initial_value"); // ensure no overwrite
+}
+
 TEST_CASE_METHOD(TApp, "DefaultedResult", "[app]") {
     std::string sval = "NA";
     int ival{0};
