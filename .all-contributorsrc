@@ -997,6 +997,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "oscarpeer-design",
+      "name": "Oscar Peer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/194883569?v=4",
+      "profile": "https://github.com/oscarpeer-design",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
