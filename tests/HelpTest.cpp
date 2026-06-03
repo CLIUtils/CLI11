@@ -579,6 +579,10 @@ TEST_CASE("THelp: Subcom", "[help]") {
     help = app.help();
     CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMAND"));
 
+    app.require_subcommand(1, 0);
+    help = app.help();
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] SUBCOMMANDS"));
+
     help = sub1->help();
     CHECK_THAT(help, Contains("sub1 [OPTIONS]"));
 
@@ -605,6 +609,10 @@ TEST_CASE("THelp: Subcom_alias", "[help]") {
     CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
     CHECK_THAT(help, Contains("sub_alias1"));
     CHECK_THAT(help, Contains("sub_alias2"));
+
+    app.require_subcommand(0, 0);
+    help = app.help();
+    CHECK_THAT(help, Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
 }
 
 TEST_CASE("THelp: Subcom_alias_group", "[help]") {
