@@ -120,6 +120,46 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransform", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+TEST_CASE_METHOD(TApp, "EnumCheckedTransformHelpFormatting", "[transform]") {
+    enum class FirmwareUpdateFlags : std::int16_t {
+        normal = 0,
+        allow_downgrade = 1,
+        force_update = 2,
+        no_check = 3,
+        normal_check_only = 4,
+        allow_downgrade_check_only = 5,
+        force_update_check_only = 6
+    };
+
+    FirmwareUpdateFlags flags{FirmwareUpdateFlags::normal};
+
+    const std::map<std::string, FirmwareUpdateFlags> flags_map{
+        {"normal", FirmwareUpdateFlags::normal},
+        {"allow_downgrade", FirmwareUpdateFlags::allow_downgrade},
+        {"force_update", FirmwareUpdateFlags::force_update},
+        {"no_check", FirmwareUpdateFlags::no_check},
+        {"normal_check_only", FirmwareUpdateFlags::normal_check_only},
+        {"allow_downgrade_check_only", FirmwareUpdateFlags::allow_downgrade_check_only},
+        {"force_update_check_only", FirmwareUpdateFlags::force_update_check_only}};
+
+    app.add_option("--flags", flags, "FW Update Flags")->transform(CLI::CheckedTransformer(flags_map));
+
+    const auto help = app.help();
+
+    CHECK(help.find("--flags") != std::string::npos);
+    CHECK(help.find("FW Update Flags") != std::string::npos);
+
+    const auto first_mapping = help.find("allow_downgrade->1");
+    const auto second_mapping = help.find("allow_downgrade_check_only->5");
+
+    REQUIRE(first_mapping != std::string::npos);
+    REQUIRE(second_mapping != std::string::npos);
+
+    const auto newline_after_first = help.find('\n', first_mapping);
+
+    CHECK(newline_after_first < second_mapping);
+}
+
 // from to-mas-kral Issue #1086
 TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
     enum class FooType : std::uint8_t { A, B };

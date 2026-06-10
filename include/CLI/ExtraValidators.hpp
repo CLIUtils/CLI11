@@ -145,6 +145,27 @@ template <typename T> std::string generate_map(const T &map, bool key_only = fal
     return out;
 }
 
+/// Generate a multiline string representation of a map
+template <typename T> std::string generate_multiline_map(const T &map, bool key_only = false) {
+    using element_t = typename detail::element_type<T>::type;
+    using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
+    std::string out("{\n");
+    out.append(detail::join(
+        detail::smart_deref(map),
+        [key_only](const iteration_type_t &v) {
+            std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+
+            if(!key_only) {
+                res.append("->");
+                res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
+            }
+            return res;
+        },
+        ",\n"));
+    out.append("\n}");
+    return out;
+}
+
 template <typename C, typename V> struct has_find {
     template <typename CC, typename VV>
     static auto test(int) -> decltype(std::declval<CC>().find(std::declval<VV>()), std::true_type());
@@ -354,8 +375,12 @@ class CheckedTransformer : public Validator {
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
         auto tfunc = [mapping]() {
+            auto map_description = detail::generate_map(detail::smart_deref(mapping));
+            if(map_description.size() > 60) {
+                map_description = detail::generate_multiline_map(detail::smart_deref(mapping));
+            }
             std::string out("value in ");
-            out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
+            out += map_description + " OR {";
             out += detail::join(
                 detail::smart_deref(mapping),
                 [](const iteration_type_t &v) {
