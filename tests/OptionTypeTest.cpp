@@ -1123,3 +1123,34 @@ TEST_CASE_METHOD(TApp, "force_callback3", "[optiontype]") {
     run();
     CHECK(0 == cnt);
 }
+
+TEST_CASE_METHOD(TApp, "JoinDefaultStrResults", "[optiontype]") {
+    // _reduce_results must apply the Join policy to the default-derived results (not the empty results_)
+    std::vector<std::string> strs;
+    auto *opt = app.add_option("--str", strs)
+                    ->multi_option_policy(CLI::MultiOptionPolicy::Join)
+                    ->expected(2)
+                    ->default_str("[a,b]");
+
+    args = {};
+    run();
+
+    std::string out;
+    opt->results(out);
+    CHECK("a\nb" == out);
+}
+
+TEST_CASE_METHOD(TApp, "SumLargeInteger", "[optiontype]") {
+    // a Sum-policy int64 option must accumulate large integral values exactly without scientific notation
+    std::int64_t val{0};
+    app.add_option("--s", val)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--s", "5000000000000000", "--s", "5000000000000000"};
+    run();
+    CHECK(val == static_cast<std::int64_t>(10000000000000000LL));
+
+    // values above 2^53 must not lose precision through a double accumulation
+    args = {"--s", "9007199254740993", "--s", "0"};
+    run();
+    CHECK(val == static_cast<std::int64_t>(9007199254740993LL));
+}
