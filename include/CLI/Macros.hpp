@@ -11,7 +11,7 @@
 // [CLI11:macros_hpp:verbatim]
 
 // The following version macro is very similar to the one in pybind11
-#if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
+#if !(defined(_MSC_VER) && __cplusplus == 199711L)
 #if __cplusplus >= 201402L
 #define CLI11_CPP14
 #if __cplusplus >= 201703L
@@ -53,8 +53,7 @@
 #endif
 
 // GCC < 10 doesn't ignore this in unevaluated contexts
-#if !defined(CLI11_CPP17) ||                                                                                           \
-    (defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 10 && __GNUC__ > 4)
+#if !defined(CLI11_CPP17) || (defined(__GNUC__) && !defined(__llvm__) && __GNUC__ < 10 && __GNUC__ > 4)
 #define CLI11_NODISCARD
 #else
 #define CLI11_NODISCARD [[nodiscard]]

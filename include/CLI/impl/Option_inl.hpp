@@ -13,6 +13,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cerrno>
 #include <memory>
 #include <string>
 #include <utility>

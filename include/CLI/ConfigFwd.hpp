@@ -115,7 +115,7 @@ class ConfigBase : public Config {
     /// the character to use around single characters and literal strings
     char literalQuote = '\'';
     /// the maximum number of layers to allow
-    uint8_t maximumLayers{255};
+    std::uint8_t maximumLayers{255};
     /// the separator used to separator parent layers
     char parentSeparatorChar{'.'};
     /// comment default values
