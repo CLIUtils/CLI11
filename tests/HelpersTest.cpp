@@ -216,6 +216,25 @@ TEST_CASE("StringTools: Modify3", "[helpers]") {
     CHECK("aba" == newString);
 }
 
+TEST_CASE("StringTools: escape_detect", "[helpers]") {
+    // a trigger char preceded by a '-' (for '=') is reinterpreted as a space so split_up works
+    std::string opt{"--opt=\"value\""};
+    CLI::detail::escape_detect(opt, 5);
+    CHECK(opt == "--opt \"value\"");
+
+    // a leading trigger character has nothing preceding it; it must not be rewritten
+    // (and must not read out of bounds at offset 0)
+    std::string leading{"=\"value\""};
+    auto ret = CLI::detail::escape_detect(leading, 0);
+    CHECK(ret == 1U);
+    CHECK(leading == "=\"value\"");
+
+    // make sure a later '-' does not get wrongly matched for a leading trigger
+    std::string leading2{"=\"-value\""};
+    CLI::detail::escape_detect(leading2, 0);
+    CHECK(leading2 == "=\"-value\"");
+}
+
 TEST_CASE("StringTools: flagValues", "[helpers]") {
     errno = 0;
     CHECK(-1 == CLI::detail::to_flag_value("0"));
@@ -477,6 +496,11 @@ TEST_CASE("StringTools: unicode_literals", "[helpers]") {
 
     CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8"), std::invalid_argument);
     CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E60"), std::invalid_argument);
+    // code points above U+10FFFF are not valid and must throw rather than silently vanish
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U00110000"), std::invalid_argument);
+    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\UFFFFFFFF"), std::invalid_argument);
+    // the largest valid code point still works
+    CHECK(CLI::detail::remove_escaped_characters("test\\U0010FFFF") == from_u8string(u8"test\U0010FFFF"));
 }
 
 TEST_CASE("StringTools: close_sequence", "[helpers]") {
@@ -1212,6 +1236,30 @@ TEST_CASE("SplitUp: BadStrings", "[helpers]") {
     oput = {"one", "'  two three"};
     orig = R"(  one  '  two three )";
     result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: TrailingAfterQuote", "[helpers]") {
+    // a non-delimiter character following a closing quote must not be dropped
+    std::vector<std::string> oput = {"\"abc\"", "def"};
+    std::string orig{"\"abc\"def"};
+    std::vector<std::string> result = CLI::detail::split_up(orig);
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: TrailingAfterBracket", "[helpers]") {
+    // a non-delimiter character following a closing bracket must not be dropped
+    std::vector<std::string> oput = {"[a, b]", "c"};
+    std::string orig{"[a, b]c"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
+    CHECK(result == oput);
+}
+
+TEST_CASE("SplitUp: DelimiterAfterQuote", "[helpers]") {
+    // an actual delimiter following a closing quote is still consumed
+    std::vector<std::string> oput = {"\"abc\"", "def"};
+    std::string orig{"\"abc\",def"};
+    std::vector<std::string> result = CLI::detail::split_up(orig, ',');
     CHECK(result == oput);
 }
 
