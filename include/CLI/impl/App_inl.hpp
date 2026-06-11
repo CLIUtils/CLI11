@@ -1732,8 +1732,8 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
         }
     }
     if(op == nullptr || !op->get_configurable()) {
-        std::string iname = item.name;
-        auto options = get_options([iname](const CLI::Option *opt) {
+        const std::string &iname = item.name;
+        auto options = get_options([&iname](const CLI::Option *opt) {
             return (opt->get_configurable() &&
                     (opt->check_name(iname) || opt->check_lname(iname) || opt->check_sname(iname)));
         });
@@ -2096,14 +2096,15 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         throw HorribleError("parsing got called with invalid option! You should not see this");
     }
 
-    auto op_ptr = std::find_if(std::begin(options_), std::end(options_), [arg_name, current_type](const Option_p &opt) {
-        if(current_type == detail::Classifier::LONG)
-            return opt->check_lname(arg_name);
-        if(current_type == detail::Classifier::SHORT)
-            return opt->check_sname(arg_name);
-        // this will only get called for detail::Classifier::WINDOWS_STYLE
-        return opt->check_lname(arg_name) || opt->check_sname(arg_name);
-    });
+    auto op_ptr =
+        std::find_if(std::begin(options_), std::end(options_), [&arg_name, current_type](const Option_p &opt) {
+            if(current_type == detail::Classifier::LONG)
+                return opt->check_lname(arg_name);
+            if(current_type == detail::Classifier::SHORT)
+                return opt->check_sname(arg_name);
+            // this will only get called for detail::Classifier::WINDOWS_STYLE
+            return opt->check_lname(arg_name) || opt->check_sname(arg_name);
+        });
 
     // Option not found
     while(op_ptr == std::end(options_)) {

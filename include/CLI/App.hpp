@@ -541,7 +541,7 @@ class App {
 
     /// Set the help formatter
     App *formatter(std::shared_ptr<FormatterBase> fmt) {
-        formatter_ = fmt;
+        formatter_ = std::move(fmt);
         return this;
     }
 
@@ -553,7 +553,7 @@ class App {
 
     /// Set the config formatter
     App *config_formatter(std::shared_ptr<Config> fmt) {
-        config_formatter_ = fmt;
+        config_formatter_ = std::move(fmt);
         return this;
     }
 
@@ -837,7 +837,7 @@ class App {
 
     /// Changes the group membership
     App *group(std::string group_name) {
-        group_ = group_name;
+        group_ = std::move(group_name);
         return this;
     }
 
@@ -959,7 +959,7 @@ class App {
 
     /// Provide a function to print a help message. The function gets access to the App pointer and error.
     void failure_message(std::function<std::string(const App *, const Error &e)> function) {
-        failure_message_ = function;
+        failure_message_ = std::move(function);
     }
 
     /// Print a nice error message and return the exit code

@@ -83,7 +83,7 @@ CLI11_INLINE std::map<std::string, AsSizeValue::result_t> AsSizeValue::init_mapp
     return m;
 }
 
-CLI11_INLINE std::map<std::string, AsSizeValue::result_t> AsSizeValue::get_mapping(bool kb_is_1000) {
+CLI11_INLINE const std::map<std::string, AsSizeValue::result_t> &AsSizeValue::get_mapping(bool kb_is_1000) {
     if(kb_is_1000) {
         static auto m = init_mapping(true);
         return m;

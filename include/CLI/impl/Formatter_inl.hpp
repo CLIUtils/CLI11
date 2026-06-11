@@ -200,9 +200,10 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
             continue;
         }
         std::string group_key = com->get_group();
+        std::string group_key_lower = detail::to_lower(group_key);
         if(!group_key.empty() &&
-           std::find_if(subcmd_groups_seen.begin(), subcmd_groups_seen.end(), [&group_key](std::string a) {
-               return detail::to_lower(a) == detail::to_lower(group_key);
+           std::find_if(subcmd_groups_seen.begin(), subcmd_groups_seen.end(), [&group_key_lower](const std::string &a) {
+               return detail::to_lower(a) == group_key_lower;
            }) == subcmd_groups_seen.end())
             subcmd_groups_seen.push_back(group_key);
     }

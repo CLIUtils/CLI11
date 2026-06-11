@@ -1077,7 +1077,7 @@ inline std::int64_t to_flag_value(std::string val) noexcept {
     if(val == falseString) {
         return -1;
     }
-    val = detail::to_lower(val);
+    val = detail::to_lower(std::move(val));
     std::int64_t ret = 0;
     if(val.size() == 1) {
         if(val[0] >= '1' && val[0] <= '9') {
