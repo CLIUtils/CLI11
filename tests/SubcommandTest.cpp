@@ -1840,6 +1840,40 @@ TEST_CASE_METHOD(TApp, "SubcommandAliasIgnoreCaseUnderscore", "[subcom]") {
     CHECK_THROWS_AS(run(), CLI::ExtrasError);
 }
 
+// Regression test: ignore_case() + ignore_underscore() together on a subcommand
+// whose name contains an underscore — all spellings should match (GH #1357)
+TEST_CASE_METHOD(TApp, "SubcommandIgnoreCaseAndUnderscoreCombined", "[subcom]") {
+    double val{0.0};
+    auto *sub = app.add_subcommand("my_sub");
+    sub->ignore_case();
+    sub->ignore_underscore();
+    sub->add_option("-v,--value", val);
+
+    // exact name
+    args = {"my_sub", "-v", "1"};
+    run();
+    CHECK(val == 1.0);
+
+    // underscore removed
+    args = {"mysub", "-v", "2"};
+    run();
+    CHECK(val == 2.0);
+
+    // uppercase with underscore
+    args = {"MY_SUB", "-v", "3"};
+    run();
+    CHECK(val == 3.0);
+
+    // mixed case without underscore
+    args = {"MySub", "-v", "4"};
+    run();
+    CHECK(val == 4.0);
+
+    // unrelated name must still fail
+    args = {"other", "-v", "5"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
 TEST_CASE_METHOD(TApp, "OptionGroupAlias", "[subcom]") {
     double val{0.0};
     auto *sub = app.add_option_group("sub1");
