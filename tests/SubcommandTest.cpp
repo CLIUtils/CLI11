@@ -1575,6 +1575,21 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {
     CHECK(!sub1->remove_needs(sub1));
 }
 
+TEST_CASE_METHOD(ManySubcommands, "SubcommandExcludesFail", "[subcom]") {
+
+    CHECK_THROWS_AS(sub1->excludes((CLI::App *)nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(sub1->excludes(sub1), CLI::OptionNotFound);
+    // the self-reference error should mention excludes, not needs
+    try {
+        sub1->excludes(sub1);
+        FAIL("expected OptionNotFound");
+    } catch(const CLI::OptionNotFound &e) {
+        std::string msg = e.what();
+        CHECK(msg.find("excludes") != std::string::npos);
+        CHECK(msg.find("needs") == std::string::npos);
+    }
+}
+
 TEST_CASE_METHOD(ManySubcommands, "SubcommandRequired", "[subcom]") {
 
     sub1->required();
@@ -2378,6 +2393,85 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandRecursive2", "[subcom]") {
     auto extras = app.remaining();
     CHECK(extras.size() == 1);
     CHECK(extras.front() == "sub1.sub2.sub3.bob");
+}
+
+// require_subcommand_max_ must be honored even when subcommand fallthrough is disabled
+TEST_CASE_METHOD(TApp, "RequireSubcommandMaxNoFallthrough", "[subcom]") {
+    app.require_subcommand(0, 1);
+    app.subcommand_fallthrough(false);
+    app.allow_extras();
+    auto *sub1 = app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
+
+    args = {"sub1", "sub2"};
+    run();
+    // only the first subcommand should be parsed, the second is left over as an extra
+    CHECK(app.get_subcommands().size() == 1u);
+    CHECK(1u == sub1->count());
+    CHECK(vs_t({"sub2"}) == app.remaining(true));
+
+    // without allow_extras the extra subcommand is an error
+    CLI::App app2;
+    app2.require_subcommand(0, 1);
+    app2.subcommand_fallthrough(false);
+    app2.add_subcommand("sub1");
+    app2.add_subcommand("sub2");
+    CHECK_THROWS_AS(app2.parse(std::vector<std::string>{"sub2", "sub1"}), CLI::ExtrasError);
+}
+
+// dot notation must work for windows-style options, not just '--' prefixed long options
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyle", "[subcom]") {
+    std::string v1, v2, vbase;
+
+    app.allow_windows_style_options();
+    auto *sub1 = app.add_subcommand("sub1");
+    auto *sub2 = app.add_subcommand("sub2");
+    sub1->add_option("--value", v1);
+    sub2->add_option("--value", v2);
+    app.add_option("--value", vbase);
+
+    // long form still works
+    args = {"--sub1.value=val1"};
+    run();
+    CHECK(v1 == "val1");
+
+    // windows style with attached value
+    args = {"/sub2.value:val2", "/value:base"};
+    run();
+    CHECK(v2 == "val2");
+    CHECK(vbase == "base");
+}
+
+// windows-style single-char (short) option through dot notation
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyleSingleChar", "[subcom]") {
+    std::string v1, vbase;
+
+    app.allow_windows_style_options();
+    auto *sub1 = app.add_subcommand("sub1");
+    sub1->add_option("-v", v1);
+    app.add_option("-b", vbase);
+
+    args = {"/sub1.v:val1", "/b:base"};
+    run();
+    CHECK(v1 == "val1");
+    CHECK(vbase == "base");
+}
+
+// a windows-style dot-notation argument that does not match the subcommand should fall through
+// to the parent (and not throw a HorribleError from a mismatched re-split)
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyleFallthrough", "[subcom]") {
+    std::string vbase;
+
+    app.allow_windows_style_options();
+    app.allow_extras();
+    app.add_subcommand("sub1");
+
+    // sub1 has no such option; the argument should be reported as an extra, not crash
+    args = {"/sub1.nope:7"};
+    CHECK_NOTHROW(run());
+    auto extras = app.remaining();
+    REQUIRE(extras.size() == 1);
+    CHECK(extras.front() == "/sub1.nope:7");
 }
 
 // Reported bug #903 on github

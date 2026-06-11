@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -593,6 +594,46 @@ TEST_CASE_METHOD(TApp, "GetOptionList", "[creation]") {
     for(std::size_t i = 0; i < opt_list.size(); ++i) {
         CHECK(opt_list.at(i) == nonconst_opt_list.at(i));
     }
+}
+
+// the const and non-const get_options overloads must return the same set of options
+TEST_CASE_METHOD(TApp, "GetOptionListConstConsistency", "[creation]") {
+    int val{0};
+    auto *base = app.add_option("--base", val);
+
+    // a regular (non '+') nameless option group: its options are shown separately and are NOT
+    // merged into the parent option list
+    auto *grp = app.add_option_group("plain");
+    auto *gopt = grp->add_option("--grpopt", val);
+
+    // a nameless option group whose name starts with '+' is merged into the parent
+    auto *mgrp = app.add_option_group("+merged");
+    auto *mopt = mgrp->add_option("--mergedopt", val);
+
+    // a named subcommand whose group starts with '+' is still a real subcommand and must NOT be merged
+    auto *namedsub = app.add_subcommand("named");
+    namedsub->group("+special");
+    namedsub->add_option("--subopt", val);
+
+    const CLI::App &const_app = app;
+    auto const_opts = const_app.get_options();
+    auto nonconst_opts = app.get_options();
+
+    REQUIRE(const_opts.size() == nonconst_opts.size());
+    for(std::size_t i = 0; i < const_opts.size(); ++i) {
+        CHECK(const_opts.at(i) == nonconst_opts.at(i));
+    }
+
+    auto in_list = [](const std::vector<const CLI::Option *> &lst, const CLI::Option *o) {
+        return std::find(lst.begin(), lst.end(), o) != lst.end();
+    };
+    CHECK(in_list(const_opts, base));
+    CHECK(in_list(const_opts, mopt));   // merged '+' group is included
+    CHECK(!in_list(const_opts, gopt));  // plain option group is not merged
+    // named subcommand options are never merged
+    std::vector<const CLI::Option *> nc(nonconst_opts.begin(), nonconst_opts.end());
+    CHECK(!in_list(nc, namedsub->get_options().at(0)));
+    (void)mopt;
 }
 
 TEST_CASE_METHOD(TApp, "GetOptionListFilter", "[creation]") {
