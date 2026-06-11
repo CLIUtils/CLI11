@@ -1011,7 +1011,7 @@ class App {
             throw OptionNotFound("nullptr passed");
         }
         if(app == this) {
-            throw OptionNotFound("cannot self reference in needs");
+            throw OptionNotFound("cannot self reference in excludes");
         }
         auto res = exclude_subcommands_.insert(app);
         // subcommand exclusion should be symmetric
