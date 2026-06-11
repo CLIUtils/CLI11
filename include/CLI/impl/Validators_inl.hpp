@@ -243,7 +243,7 @@ CLI11_INLINE FileOnDefaultPath::FileOnDefaultPath(std::string default_path, bool
         auto path_result = detail::check_path(filename.c_str());
         if(path_result == detail::path_type::nonexistent) {
             std::string test_file_path = default_path;
-            if(default_path.back() != '/' && default_path.back() != '\\') {
+            if(!default_path.empty() && default_path.back() != '/' && default_path.back() != '\\') {
                 // Add folder separator
                 test_file_path += '/';
             }

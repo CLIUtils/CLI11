@@ -281,9 +281,9 @@ class Range : public Validator {
 /// Check for a non negative number
 CLI11_MODULE_INLINE const Range NonNegativeNumber((std::numeric_limits<double>::max)(), "NONNEGATIVE");
 
-/// Check for a positive valued number (val>0.0), <double>::min  here is the smallest positive number
+/// Check for a positive valued number (val>0.0), <double>::denorm_min is the smallest positive number
 CLI11_MODULE_INLINE const
-    Range PositiveNumber((std::numeric_limits<double>::min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
+    Range PositiveNumber((std::numeric_limits<double>::denorm_min)(), (std::numeric_limits<double>::max)(), "POSITIVE");
 
 namespace detail {
 // the following suggestion was made by Nikita Ofitserov(@himikof)
@@ -291,7 +291,7 @@ namespace detail {
 
 /// Do a check for overflow on signed numbers
 template <typename T>
-inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+inline typename std::enable_if<std::is_signed<T>::value, bool>::type overflowCheck(const T &a, const T &b) {
     if((a > 0) == (b > 0)) {
         return ((std::numeric_limits<T>::max)() / (std::abs)(a) < (std::abs)(b));
     }
@@ -299,7 +299,7 @@ inline typename std::enable_if<std::is_signed<T>::value, T>::type overflowCheck(
 }
 /// Do a check for overflow on unsigned numbers
 template <typename T>
-inline typename std::enable_if<!std::is_signed<T>::value, T>::type overflowCheck(const T &a, const T &b) {
+inline typename std::enable_if<!std::is_signed<T>::value, bool>::type overflowCheck(const T &a, const T &b) {
     return ((std::numeric_limits<T>::max)() / a < b);
 }
 
