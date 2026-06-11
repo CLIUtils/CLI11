@@ -356,3 +356,39 @@ TEST_CASE("Formatter: LongOptionAlignment", "[formatter]") {
     CHECK_THAT(help, Contains("\n  -h, --help                  Print"));
     CHECK_THAT(help, Contains("\n      --opt INT               Something"));
 }
+
+TEST_CASE("Formatter: HiddenPositionalUsage", "[formatter]") {
+    // a positional in an empty (hidden) group must not render as an empty "[]" in the usage line
+    CLI::App app{"My prog"};
+    int v{0};
+    app.add_option("pos", v, "a hidden positional")->group("");
+
+    std::string help = app.help();
+    CHECK_THAT(help, Contains("Usage:"));
+    CHECK_THAT(help, !Contains("[]"));
+    // the hidden positional should not appear in the usage line at all
+    CHECK_THAT(help, !Contains("pos"));
+}
+
+TEST_CASE("Formatter: LongSubcommandName", "[formatter]") {
+    // a subcommand name that fills the name column must wrap so its description does not glue onto it
+    CLI::App app{"My prog"};
+    app.add_subcommand("a-really-really-long-subcommand-name", "subcommand description text");
+
+    std::string help = app.help();
+    // name and description must be separated, not concatenated
+    CHECK_THAT(help, !Contains("a-really-really-long-subcommand-namesubcommand"));
+    CHECK_THAT(help, Contains("a-really-really-long-subcommand-name\n"));
+    CHECK_THAT(help, Contains("subcommand description text"));
+}
+
+TEST_CASE("Formatter: DescriptionNoFormattingSpacing", "[formatter]") {
+    // toggling description formatting off must not introduce an extra blank line before the usage
+    CLI::App app{"My prog"};
+    app.description("Short desc");
+
+    app.get_formatter()->enable_description_formatting(false);
+    std::string help = app.help();
+    CHECK_THAT(help, Contains("Short desc\n\n\nUsage"));
+    CHECK_THAT(help, !Contains("Short desc\n\n\n\nUsage"));
+}

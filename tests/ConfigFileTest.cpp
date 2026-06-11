@@ -1424,6 +1424,78 @@ TEST_CASE_METHOD(TApp, "TomlDocStringComment3", "[config]") {
     CHECK(3 == three);
 }
 
+TEST_CASE_METHOD(TApp, "TomlSectionTrailingComment", "[config]") {
+    // a trailing comment on a section header should be stripped and the section recognized
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "val=1" << '\n';
+        out << "[subcom] # a comment about the subcommand" << '\n';
+        out << "val=2" << '\n';
+    }
+
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+}
+
+TEST_CASE_METHOD(TApp, "TomlDocStringCommentOneLine", "[config]") {
+    // a multiline comment that opens and closes on the same line must not swallow the rest of the file
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini, "", true);
+
+    {
+        std::ofstream out{tmpini};
+        out << "'''comment on one line'''" << '\n';
+        out << "[default]" << '\n';
+        out << "one=35" << '\n';
+        out << R"("""another one line comment""")" << '\n';
+        out << "two=42" << '\n';
+    }
+
+    int one{0}, two{0};
+    app.add_option("--one", one);
+    app.add_option("--two", two);
+
+    CHECK_NOTHROW(run());
+    CHECK(35 == one);
+    CHECK(42 == two);
+}
+
+TEST_CASE_METHOD(TApp, "IniJoinEmbeddedDelimiterRoundTrip", "[config]") {
+    // a Join-policy option whose stored elements contain the join delimiter must fall back to the
+    // array form when written so that the value round-trips with the correct element count.  The
+    // detection compares opt->count() against the embedded-delimiter count (off-by-two fix).
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    std::vector<std::string> vals;
+    auto *opt = app.add_option("--vals", vals)->delimiter(',')->multi_option_policy(CLI::MultiOptionPolicy::Join);
+
+    app.set_config("--config", tmpini);
+
+    // two separate elements, the second containing the delimiter through the [[ ]] vector escape
+    opt->add_result("c");
+    opt->add_result("[[aa,,bb]]");  // -> a single element literally equal to "[a,b]"
+    REQUIRE(opt->count() == 2u);
+
+    std::string str = app.config_to_str();
+    // because an element embeds the delimiter the writer must emit the array form (vals=[...]) rather
+    // than a bare quoted join (the buggy off-by-two produced vals="c,[a,b]")
+    CHECK_THAT(str, Contains("vals=["));
+    CHECK_THAT(str, !Contains("vals=\"c,[a,b]\""));
+}
+
 TEST_CASE_METHOD(TApp, "ConfigModifiers", "[config]") {
 
     app.set_config("--config", "test.ini", "", true);
