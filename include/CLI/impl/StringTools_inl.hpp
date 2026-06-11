@@ -64,11 +64,8 @@ CLI11_INLINE std::string &rtrim(std::string &str, const std::string &filter) {
 }
 
 CLI11_INLINE std::string &remove_quotes(std::string &str) {
-    if(str.length() > 1 && (str.front() == '"' || str.front() == '\'' || str.front() == '`')) {
-        if(str.front() == str.back()) {
-            str.pop_back();
-            str.erase(str.begin(), str.begin() + 1);
-        }
+    if(!str.empty() && (str.front() == '"' || str.front() == '\'' || str.front() == '`')) {
+        remove_outer(str, str.front());
     }
     return str;
 }
@@ -202,14 +199,6 @@ CLI11_MODULE_INLINE const std::string &matchBracketChars() {
     return s;
 }
 
-// CLI11_MODULE_INLINE constexpr char escapedChars[]="\b\t\n\f\r\"\\";
-// CLI11_MODULE_INLINE constexpr char escapedCharsCode[]="btnfr\"\\";
-/*
-const std::string &escapedChars("\b\t\n\f\r\"\\");
-
-CLI11_MODULE_INLINE const std::string &bracketChars("\"'`[(<{");
-CLI11_MODULE_INLINE const std::string &matchBracketChars("\"'`])>}");
-*/
 CLI11_INLINE bool has_escapable_character(const std::string &str) {
     return (str.find_first_of(escapedChars()) != std::string::npos);
 }

@@ -1354,6 +1354,12 @@ class App {
     /// The flags allow recursive calls to remember if there was a help flag on a parent.
     void _process_help_flags(CallbackPriority priority, bool trigger_help = false, bool trigger_all_help = false) const;
 
+    /// Run the full priority-ordered callback/help-flag pipeline used when a parse-complete callback fires.
+    ///
+    /// When @p with_help_flags is true the help-flag passes and environment processing are included
+    /// (the option/dot-notation paths); when false they are omitted (the config-section-close path).
+    void _process_completion_callbacks(bool with_help_flags);
+
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements();
 
@@ -1365,6 +1371,10 @@ class App {
 
     /// Internal function to recursively increment the parsed counter on the current app as well unnamed subcommands
     void increment_parsed();
+
+    /// Shared prologue for the public parse() overloads: clears prior state, validates and configures,
+    /// and marks this app as the top-level app.
+    void _parse_setup();
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args);
