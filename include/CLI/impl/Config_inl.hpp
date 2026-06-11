@@ -346,7 +346,8 @@ inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) cons
             if(mlquote) {
                 // multiline string
                 auto keyChar = item.front();
-                item = buffer.substr(delimiter_pos + 1, std::string::npos);
+                auto offset = buffer.find_first_not_of(" \t");
+                item = buffer.substr((offset == std::string::npos ? 0 : offset) + delimiter_pos + 1, std::string::npos);
                 detail::ltrim(item);
                 item.erase(0, 3);
                 inMLineValue = true;
