@@ -397,6 +397,7 @@ class Option : public OptionBase<Option> {
     /// Clear the parsed results (mostly for testing)
     void clear() {
         results_.clear();
+        proc_results_.clear();
         current_option_state_ = option_state::parsing;
     }
 
