@@ -418,9 +418,15 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
                 str.clear();
             } else {
                 output.push_back(str.substr(0, end + 1));
-                // only skip the character following the closing quote/bracket when it is an
-                // actual delimiter; otherwise resume from it so no characters are lost
-                auto next = (find_ws(str[end + 1])) ? end + 2 : end + 1;
+                // The character following a closing quote/bracket is normally a delimiter and is
+                // consumed.  If it is an ordinary character it must be retained (resume from it) so
+                // no characters are silently lost (e.g. `"abc"def` -> {"abc", "def"}).  However if it
+                // is itself a quote/bracket opening character, resuming from it would start a fresh
+                // (potentially unterminated) quoted sequence that could swallow later delimiters, so
+                // it is skipped like the original delimiter case to keep splitting well behaved.
+                char follow = str[end + 1];
+                bool skip_follow = find_ws(follow) || (bracketChars().find_first_of(follow) != std::string::npos);
+                auto next = skip_follow ? end + 2 : end + 1;
                 if(next < str.size()) {
                     str = str.substr(next);
                 } else {
