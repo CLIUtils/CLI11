@@ -995,7 +995,7 @@ CLI11_NODISCARD CLI11_INLINE App::NameMatch App::check_name_detail(std::string n
         name_to_check = detail::remove_underscore(name_to_check);
     }
     if(ignore_case_) {
-        local_name = detail::to_lower(name_);
+        local_name = detail::to_lower(local_name);
         name_to_check = detail::to_lower(name_to_check);
     }
 
