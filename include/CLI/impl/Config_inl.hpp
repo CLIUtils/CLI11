@@ -614,7 +614,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                         // strings which would be interpreted incorrectly
                         auto delim_count = std::count(results[0].begin(), results[0].end(), delim);
                         if(results[0].back() == delim ||
-                           static_cast<decltype(delim_count)>(opt->count()) < delim_count + 1 ||
+                           static_cast<decltype(delim_count)>(opt->count()) <= delim_count ||
                            results[0].find(std::string(2, delim)) != std::string::npos) {
                             results = opt->results();
                         }
