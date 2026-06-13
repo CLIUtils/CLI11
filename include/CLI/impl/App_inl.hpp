@@ -879,9 +879,12 @@ CLI11_INLINE std::vector<Option *> App::get_options(const std::function<bool(Opt
             std::end(options));
     }
     for(auto &subc : subcommands_) {
-        // also check down into nameless subcommands that are merged into the parent (group starting with '+')
-        // this must match the const overload above so both return the same set of options
-        if(subc->get_name().empty() && !subc->get_group().empty() && subc->get_group().front() == '+') {
+        // also check down into nameless subcommands and specific groups
+        // note: this purposely differs from the const overload above. The const overload is used for help
+        // formatting and only merges explicitly merged groups ('+'), while this overload is used for config
+        // generation and subcommand comparison which must mirror the parser and descend into every nameless
+        // subcommand (e.g. option groups)
+        if(subc->get_name().empty() || (!subc->get_group().empty() && subc->get_group().front() == '+')) {
             auto subcopts = subc->get_options(filter);
             options.insert(options.end(), subcopts.begin(), subcopts.end());
         }
