@@ -969,7 +969,7 @@ TEST_CASE_METHOD(TApp, "SumOptClearResetsProc", "[app]") {
 
     opt->clear();
     opt->add_result("7");
-    opt->as<int>();  // triggers reduction into proc_results_
+    (void)opt->as<int>();  // triggers reduction into proc_results_
     CHECK(7 == opt->as<int>());
 }
 
