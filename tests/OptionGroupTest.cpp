@@ -850,6 +850,39 @@ TEST_CASE_METHOD(ManyGroups, "OptionFind", "[optiongroup]") {
     CHECK_THROWS_AS(g1_const->get_option("--notfound"), CLI::OptionNotFound);
 }
 
+// from https://github.com/CLIUtils/CLI11/issues/1355
+TEST_CASE_METHOD(TApp, "SubgroupHelpIndentation", "[optiongroup]") {
+    auto *group = app.add_option_group("group", "common group");
+
+    group->add_option_group("subgroup 1", "subgroup 1 description");
+    group->add_option_group("subgroup 2", "subgroup 2 description");
+    group->add_option_group("subgroup 3", "subgroup 3 description");
+
+    const std::string help = app.help();
+
+    CHECK_THAT(help, Contains("[Option Group: group]\n  common group"));
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 1]\n    subgroup 1 description"));
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 2]\n    subgroup 2 description"));
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 3]\n    subgroup 3 description"));
+}
+
+// from https://github.com/CLIUtils/CLI11/issues/1355
+TEST_CASE_METHOD(TApp, "SubgroupHelpIndentationWithOption", "[optiongroup]") {
+    auto *group = app.add_option_group("group", "common group");
+
+    auto *subgroup1 = group->add_option_group("subgroup 1", "subgroup 1 description");
+    subgroup1->add_option("-a", "option a");
+    group->add_option_group("subgroup 2", "subgroup 2 description");
+    group->add_option_group("subgroup 3", "subgroup 3 description");
+
+    const std::string help = app.help();
+
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 1]\n    subgroup 1 description"));
+    CHECK_THAT(help, Contains("    OPTIONS:\n      -a"));
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 2]\n    subgroup 2 description"));
+    CHECK_THAT(help, Contains("  [Option Group: subgroup 3]\n    subgroup 3 description"));
+}
+
 // from https://github.com/CLIUtils/CLI11/issues/1315
 TEST_CASE_METHOD(TApp, "SubcommandOptionGroupWithFallthrough", "[optiongroup]") {
     // code from https://github.com/The0Dev
