@@ -35,7 +35,7 @@ CLI11_INLINE std::string indent_block(const std::string &input, const std::strin
     }
 
     return out.str();
-    }
+}
 }  // namespace detail
 
 CLI11_INLINE std::string
