@@ -2460,8 +2460,6 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyleSingleChar", "[subcom]"
 // a windows-style dot-notation argument that does not match the subcommand should fall through
 // to the parent (and not throw a HorribleError from a mismatched re-split)
 TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyleFallthrough", "[subcom]") {
-    std::string vbase;
-
     app.allow_windows_style_options();
     app.allow_extras();
     app.add_subcommand("sub1");
