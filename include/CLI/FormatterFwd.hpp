@@ -67,6 +67,10 @@ class FormatterBase {
     bool enable_option_defaults_{true};
     bool enable_option_type_names_{true};
     bool enable_default_flag_values_{true};
+
+    /// whether color output is enabled
+    bool color_enabled_{false};
+
     /// @brief The required help printout labels (user changeable)
     /// Values are Needs, Excludes, etc.
     std::map<std::string, std::string> labels_{};
@@ -90,6 +94,9 @@ class FormatterBase {
 
     /// This is the key method that puts together help
     virtual std::string make_help(const App *, std::string, AppFormatMode) const = 0;
+
+    /// Detect whether the current terminal supports color output.
+    static bool terminal_supports_color();
 
     ///@}
     /// @name Setters
@@ -127,6 +134,10 @@ class FormatterBase {
     void enable_option_type_names(bool value = true) { enable_option_type_names_ = value; }
     /// enable default flag values to be printed
     void enable_default_flag_values(bool value = true) { enable_default_flag_values_ = value; }
+
+    /// enable colorized help output
+    void enable_color(bool value = true) { color_enabled_ = value; }
+
     ///@}
     /// @name Getters
     ///@{
@@ -167,6 +178,14 @@ class FormatterBase {
 
     /// Get the current status of whether default flag values are printed
     CLI11_NODISCARD bool is_default_flag_values_enabled() const { return enable_default_flag_values_; }
+
+    /// Get the current status of whether color output is enabled
+    CLI11_NODISCARD bool is_color_enabled() const { return color_enabled_; }
+
+    /// Wrap text with an ANSI color code and reset suffix
+    CLI11_NODISCARD static std::string colorize(const std::string &text, const std::string &color) {
+        return color + text + CLI11_HELP_COLOR_RESET;
+    }
 
     ///@}
 };

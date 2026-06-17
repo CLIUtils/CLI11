@@ -182,4 +182,37 @@
 #else
 #define CLI11_MODULE_INLINE static
 #endif
+
+/** ANSI color codes for help output — override before including CLI11 to customize */
+#ifndef CLI11_HELP_COLOR_USAGE
+#define CLI11_HELP_COLOR_USAGE "\033[1;34m"
+#endif
+#ifndef CLI11_HELP_COLOR_PROGRAM
+#define CLI11_HELP_COLOR_PROGRAM "\033[1;32m"
+#endif
+#ifndef CLI11_HELP_COLOR_HEADER
+#define CLI11_HELP_COLOR_HEADER "\033[1;33m"
+#endif
+#ifndef CLI11_HELP_COLOR_SHORT_OPT
+#define CLI11_HELP_COLOR_SHORT_OPT "\033[1;32m"
+#endif
+#ifndef CLI11_HELP_COLOR_LONG_OPT
+#define CLI11_HELP_COLOR_LONG_OPT "\033[1;36m"
+#endif
+#ifndef CLI11_HELP_COLOR_POSITIONAL
+#define CLI11_HELP_COLOR_POSITIONAL "\033[1;36m"
+#endif
+#ifndef CLI11_HELP_COLOR_SUBCOMMAND
+#define CLI11_HELP_COLOR_SUBCOMMAND "\033[1;36m"
+#endif
+#ifndef CLI11_HELP_COLOR_REQUIRED
+#define CLI11_HELP_COLOR_REQUIRED "\033[1;31m"
+#endif
+#ifndef CLI11_HELP_COLOR_DEFAULT
+#define CLI11_HELP_COLOR_DEFAULT "\033[2m"
+#endif
+#ifndef CLI11_HELP_COLOR_RESET
+#define CLI11_HELP_COLOR_RESET "\033[0m"
+#endif
+
 // [CLI11:macros_hpp:end]

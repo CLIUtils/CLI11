@@ -19,13 +19,50 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+// [CLI11:formatter_inl_includes:verbatim]
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <io.h>
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+// [CLI11:formatter_inl_includes:end]
+
 namespace CLI {
 // [CLI11:formatter_inl_hpp:verbatim]
+
+CLI11_INLINE bool FormatterBase::terminal_supports_color() {
+#ifdef _WIN32
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if(hOut == INVALID_HANDLE_VALUE)
+        return false;
+    DWORD dwMode = 0;
+    if(!GetConsoleMode(hOut, &dwMode))
+        return false;
+    // Try to enable VT processing; if already enabled or successfully set, color is supported
+    if((dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0)
+        return true;
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    if(SetConsoleMode(hOut, dwMode))
+        return true;
+    return false;
+#else
+    return isatty(fileno(stdout)) != 0;
+#endif
+}
+
 CLI11_INLINE std::string
 Formatter::make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const {
     std::stringstream out;
 
-    out << "\n" << group << ":\n";
+    if(color_enabled_) {
+        out << "\n" << colorize(group, CLI11_HELP_COLOR_HEADER) << ":\n";
+    } else {
+        out << "\n" << group << ":\n";
+    }
     for(const Option *opt : opts) {
         out << make_option(opt, is_positional);
     }
@@ -102,10 +139,18 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     std::stringstream out;
     out << '\n';
 
-    if(name.empty())
-        out << get_label("Usage") << ':';
-    else
-        out << name;
+    if(name.empty()) {
+        std::string label = get_label("Usage");
+        if(color_enabled_)
+            out << colorize(label, CLI11_HELP_COLOR_HEADER) << ':';
+        else
+            out << label << ':';
+    } else {
+        if(color_enabled_)
+            out << colorize(name, CLI11_HELP_COLOR_HEADER);
+        else
+            out << name;
+    }
 
     std::vector<std::string> groups = app->get_groups();
 
@@ -209,7 +254,11 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
     // For each group, filter out and print subcommands
     for(const std::string &group : subcmd_groups_seen) {
-        out << '\n' << group << ":\n";
+        if(color_enabled_) {
+            out << '\n' << colorize(group, CLI11_HELP_COLOR_HEADER) << ":\n";
+        } else {
+            out << '\n' << group << ":\n";
+        }
         std::vector<const App *> subcommands_group = app->get_subcommands(
             [&group](const App *sub_app) { return detail::to_lower(sub_app->get_group()) == detail::to_lower(group); });
         for(const App *new_com : subcommands_group) {
@@ -229,9 +278,21 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
 
 CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
     std::stringstream out;
-    std::string name = "  " + sub->get_display_name(true) + (sub->get_required() ? " " + get_label("REQUIRED") : "");
+    std::string display_name = sub->get_display_name(true);
+    std::string required_label = sub->get_required() ? " " + get_label("REQUIRED") : "";
 
-    out << std::setw(static_cast<int>(column_width_)) << std::left << name;
+    if(color_enabled_) {
+        std::string name =
+            "  " + colorize(display_name, CLI11_HELP_COLOR_SUBCOMMAND) +
+            (sub->get_required() ? " " + colorize(get_label("REQUIRED"), CLI11_HELP_COLOR_REQUIRED) : "");
+        std::size_t visual_len = 2 + display_name.length() + required_label.length();
+        out << name;
+        if(visual_len < column_width_)
+            out << std::string(column_width_ - visual_len, ' ');
+    } else {
+        std::string name = "  " + display_name + required_label;
+        out << std::setw(static_cast<int>(column_width_)) << std::left << name;
+    }
     detail::streamOutAsParagraph(
         out, sub->get_description(), right_column_width_, std::string(column_width_, ' '), true);
     out << '\n';
@@ -240,7 +301,11 @@ CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
 
 CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode mode) const {
     std::stringstream out;
-    out << sub->get_display_name(true) << '\n';
+    std::string display_name = sub->get_display_name(true);
+    if(color_enabled_)
+        out << colorize(display_name, CLI11_HELP_COLOR_SUBCOMMAND) << '\n';
+    else
+        out << display_name << '\n';
 
     if(is_description_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(
@@ -278,13 +343,19 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
 CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_positional) const {
     std::stringstream out;
     if(is_positional) {
-        const std::string left = "  " + make_option_name(opt, true) + make_option_opts(opt);
+        const std::string name = make_option_name(opt, true);
+        const std::string left =
+            "  " + (color_enabled_ ? colorize(name, CLI11_HELP_COLOR_POSITIONAL) : name) + make_option_opts(opt);
         const std::string desc = make_option_desc(opt);
-        out << std::setw(static_cast<int>(column_width_)) << std::left << left;
+        const std::size_t visual_len = color_enabled_ ? detail::visual_length(left) : left.length();
+
+        out << left;
+        if(visual_len < column_width_)
+            out << std::string(column_width_ - visual_len, ' ');
 
         if(!desc.empty()) {
             bool skipFirstLinePrefix = true;
-            if(left.length() >= column_width_) {
+            if(visual_len >= column_width_) {
                 out << '\n';
                 skipFirstLinePrefix = false;
             }
@@ -318,47 +389,136 @@ CLI11_INLINE std::string Formatter::make_option(const Option *opt, bool is_posit
         const auto longNamesColumnWidth = static_cast<int>(column_width_) - shortNamesColumnWidth;
         int shortNamesOverSize = 0;
 
-        // Print short names
-        if(!shortNames.empty()) {
-            shortNames = "  " + shortNames;  // Indent
-            if(longNames.empty() && !opts.empty())
-                shortNames += opts;  // Add opts if only short names and no long names
-            if(!longNames.empty())
-                shortNames += ",";
-            if(static_cast<int>(shortNames.length()) >= shortNamesColumnWidth) {
-                shortNames += " ";
-                shortNamesOverSize = static_cast<int>(shortNames.length()) - shortNamesColumnWidth;
+        if(color_enabled_) {
+            // When colored, consider visual length (length without color codes)
+            std::string left_str;
+            std::size_t visual_left_len = 0;
+
+            // Print short names (colored)
+            if(!shortNames.empty()) {
+                std::string short_part = "  " + colorize(shortNames, CLI11_HELP_COLOR_SHORT_OPT);
+                std::size_t short_visual =
+                    2 + shortNames.length();  // Pre-colored length equals post-colored visual length
+
+                // Add opts if only short names and no long names
+                if(longNames.empty() && !opts.empty()) {
+                    short_part += opts;
+                    short_visual += opts.length();
+                }
+                if(!longNames.empty()) {
+                    short_part += ",";
+                    short_visual += 1;
+                }
+
+                if(static_cast<int>(short_visual) < shortNamesColumnWidth) {
+                    // Not full : Padding
+                    short_part += std::string(static_cast<std::size_t>(shortNamesColumnWidth) - short_visual, ' ');
+                    visual_left_len = static_cast<std::size_t>(shortNamesColumnWidth);
+                } else {
+                    // Full : Add a space
+                    short_part += " ";
+                    visual_left_len = short_visual + 1;
+                }
+
+                left_str += short_part;
+
+            } else {
+                // Padding
+                left_str += std::string(static_cast<std::size_t>(shortNamesColumnWidth), ' ');
+                visual_left_len = static_cast<std::size_t>(shortNamesColumnWidth);
             }
-            out << std::setw(shortNamesColumnWidth) << std::left << shortNames;
-        } else {
-            out << std::setw(shortNamesColumnWidth) << std::left << "";
-        }
 
-        // Adjust long name column width in case of short names column reaching into long names column
-        shortNamesOverSize =
-            (std::min)(shortNamesOverSize, longNamesColumnWidth);  // Prevent negative result with unsigned integers
-        const auto adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
+            // Adjust long name column width in case of short names column reaching into long names column
+            shortNamesOverSize = static_cast<int>(visual_left_len) - shortNamesColumnWidth;
+            shortNamesOverSize = (std::min)(0, shortNamesOverSize);
+            shortNamesOverSize = (std::min)(shortNamesOverSize, longNamesColumnWidth);
+            const int adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
 
-        // Print long names
-        if(!longNames.empty()) {
-            if(!opts.empty())
-                longNames += opts;
-            if(static_cast<int>(longNames.length()) >= adjustedLongNamesColumnWidth)
-                longNames += " ";
+            // Print long names (colored)
+            if(!longNames.empty()) {
+                std::string long_part = colorize(longNames, CLI11_HELP_COLOR_LONG_OPT);
+                std::size_t long_visual = longNames.length();  // Pre-colored length equals post-colored visual length
 
-            out << std::setw(adjustedLongNamesColumnWidth) << std::left << longNames;
-        } else {
-            out << std::setw(adjustedLongNamesColumnWidth) << std::left << "";
-        }
+                if(!opts.empty()) {
+                    long_part += opts;
+                    long_visual += opts.length();
+                }
 
-        if(!desc.empty()) {
-            bool skipFirstLinePrefix = true;
-            if(out.str().length() > column_width_) {
-                out << '\n';
-                skipFirstLinePrefix = false;
+                if(static_cast<int>(long_visual) < adjustedLongNamesColumnWidth) {
+                    // Not full : Padding
+                    long_part += std::string(static_cast<std::size_t>(adjustedLongNamesColumnWidth) - long_visual, ' ');
+                    visual_left_len += static_cast<std::size_t>(adjustedLongNamesColumnWidth);
+                } else {
+                    // Full : Add a space
+                    long_part += " ";
+                    visual_left_len += long_visual + 1;
+                }
+
+                left_str += long_part;
+
+            } else {
+                // Padding
+                left_str += std::string(static_cast<std::size_t>(adjustedLongNamesColumnWidth), ' ');
+                visual_left_len += static_cast<std::size_t>(adjustedLongNamesColumnWidth);
             }
-            detail::streamOutAsParagraph(
-                out, desc, right_column_width_, std::string(column_width_, ' '), skipFirstLinePrefix);
+
+            out << left_str;
+
+            if(!desc.empty()) {
+                bool skipFirstLinePrefix = true;
+
+                // Use the visual length instead of total string length
+                if(visual_left_len > column_width_) {
+                    out << '\n';
+                    skipFirstLinePrefix = false;
+                }
+                detail::streamOutAsParagraph(
+                    out, desc, right_column_width_, std::string(column_width_, ' '), skipFirstLinePrefix);
+            }
+        } else {
+            // When not colored, use setw approach with actual string lengths
+            // Print short names
+            if(!shortNames.empty()) {
+                shortNames = "  " + shortNames;  // Indent
+                if(longNames.empty() && !opts.empty())
+                    shortNames += opts;  // Add opts if only short names and no long names
+                if(!longNames.empty())
+                    shortNames += ",";
+                if(static_cast<int>(shortNames.length()) >= shortNamesColumnWidth) {
+                    shortNames += " ";
+                    shortNamesOverSize = static_cast<int>(shortNames.length()) - shortNamesColumnWidth;
+                }
+                out << std::setw(shortNamesColumnWidth) << std::left << shortNames;
+            } else {
+                out << std::setw(shortNamesColumnWidth) << std::left << "";
+            }
+
+            // Adjust long name column width in case of short names column reaching into long names column
+            shortNamesOverSize =
+                (std::min)(shortNamesOverSize, longNamesColumnWidth);  // Prevent negative result with unsigned integers
+            const auto adjustedLongNamesColumnWidth = longNamesColumnWidth - shortNamesOverSize;
+
+            // Print long names
+            if(!longNames.empty()) {
+                if(!opts.empty())
+                    longNames += opts;
+                if(static_cast<int>(longNames.length()) >= adjustedLongNamesColumnWidth)
+                    longNames += " ";
+
+                out << std::setw(adjustedLongNamesColumnWidth) << std::left << longNames;
+            } else {
+                out << std::setw(adjustedLongNamesColumnWidth) << std::left << "";
+            }
+
+            if(!desc.empty()) {
+                bool skipFirstLinePrefix = true;
+                if(out.str().length() > column_width_) {
+                    out << '\n';
+                    skipFirstLinePrefix = false;
+                }
+                detail::streamOutAsParagraph(
+                    out, desc, right_column_width_, std::string(column_width_, ' '), skipFirstLinePrefix);
+            }
         }
     }
 
@@ -394,16 +554,27 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
                     out << " " << get_label(opt->get_type_name());
             }
             if(enable_option_defaults_) {
-                if(!opt->get_default_str().empty())
-                    out << " [" << opt->get_default_str() << "] ";
+                if(!opt->get_default_str().empty()) {
+                    std::string default_str = opt->get_default_str();
+                    default_str = " [" + default_str + "] ";
+                    if(color_enabled_)
+                        out << colorize(default_str, CLI11_HELP_COLOR_DEFAULT);
+                    else
+                        out << default_str;
+                }
             }
             if(opt->get_expected_max() == detail::expected_max_vector_size)
                 out << " ...";
             else if(opt->get_expected_min() > 1)
                 out << " x " << opt->get_expected();
 
-            if(opt->get_required())
-                out << " " << get_label("REQUIRED");
+            if(opt->get_required()) {
+                std::string req = get_label("REQUIRED");
+                if(color_enabled_)
+                    out << " " << colorize(req, CLI11_HELP_COLOR_REQUIRED);
+                else
+                    out << " " << req;
+            }
         }
         if(!opt->get_envname().empty())
             out << " (" << get_label("Env") << ":" << opt->get_envname() << ")";

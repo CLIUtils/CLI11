@@ -652,6 +652,23 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
     return out;
 }
 
+CLI11_INLINE std::size_t visual_length(const std::string &str) {
+    std::size_t len = 0;
+    bool in_escape = false;
+    for(char c : str) {
+        if(in_escape) {
+            if((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                in_escape = false;  // End of CSI sequence
+            }
+        } else if(c == '\033') {
+            in_escape = true;
+        } else {
+            ++len;
+        }
+    }
+    return len;
+}
+
 }  // namespace detail
 // [CLI11:string_tools_inl_hpp:end]
 }  // namespace CLI
