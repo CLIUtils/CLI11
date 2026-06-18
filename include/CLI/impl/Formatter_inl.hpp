@@ -21,6 +21,23 @@
 
 namespace CLI {
 // [CLI11:formatter_inl_hpp:verbatim]
+namespace detail {
+CLI11_INLINE std::string indent_block(const std::string &input, const std::string &indent) {
+    std::stringstream out;
+    bool line_start = true;
+
+    for(char ch : input) {
+        if(line_start && ch != '\n') {
+            out << indent;
+        }
+        out << ch;
+        line_start = (ch == '\n');
+    }
+
+    return out.str();
+}
+}  // namespace detail
+
 CLI11_INLINE std::string
 Formatter::make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const {
     std::stringstream out;
@@ -195,7 +212,9 @@ CLI11_INLINE std::string Formatter::make_subcommands(const App *app, AppFormatMo
     for(const App *com : subcommands) {
         if(com->get_name().empty()) {
             if(!com->get_group().empty() && com->get_group().front() != '+') {
-                out << make_expanded(com, mode);
+                auto expanded = make_expanded(com, mode);
+                // add expansion in one place so each group has subgroups beneath it
+                out << expanded;
             }
             continue;
         }
@@ -240,22 +259,25 @@ CLI11_INLINE std::string Formatter::make_subcommand(const App *sub) const {
 
 CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode mode) const {
     std::stringstream out;
+    const bool is_option_group = sub->get_name().empty();
+    const std::string body_indent = is_option_group ? "  " : "";
+
     out << sub->get_display_name(true) << '\n';
 
     if(is_description_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(
-            out, make_description(sub), description_paragraph_width_, "  ");  // Format description as paragraph
+            out, make_description(sub), description_paragraph_width_, body_indent);  // Format description as paragraph
     } else {
-        out << make_description(sub) << '\n';
+        out << detail::indent_block(make_description(sub), body_indent) << '\n';
     }
 
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
         detail::format_aliases(out, sub->get_aliases(), column_width_ + 2);
     }
 
-    out << make_positionals(sub);
-    out << make_groups(sub, mode);
-    out << make_subcommands(sub, mode);
+    out << detail::indent_block(make_positionals(sub), body_indent);
+    out << detail::indent_block(make_groups(sub, mode), body_indent);
+    out << detail::indent_block(make_subcommands(sub, mode), body_indent);
     std::string footer_string = make_footer(sub);
 
     if(mode == AppFormatMode::Sub && !footer_string.empty()) {
