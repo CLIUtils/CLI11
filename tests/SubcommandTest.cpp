@@ -1577,7 +1577,7 @@ TEST_CASE_METHOD(ManySubcommands, "SubcommandNeedsFail", "[subcom]") {
 
 TEST_CASE_METHOD(ManySubcommands, "SubcommandExcludesFail", "[subcom]") {
 
-    CHECK_THROWS_AS(sub1->excludes((CLI::App *)nullptr), CLI::OptionNotFound);
+    CHECK_THROWS_AS(sub1->excludes(static_cast<CLI::App *>(nullptr)), CLI::OptionNotFound);
     CHECK_THROWS_AS(sub1->excludes(sub1), CLI::OptionNotFound);
     // the self-reference error should mention excludes, not needs
     try {
