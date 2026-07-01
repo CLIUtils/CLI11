@@ -93,6 +93,31 @@ TEST_CASE("StringBased: First", "[config]") {
     CHECK(output.at(1).inputs.at(0) == "four");
 }
 
+TEST_CASE("StringBased: EmptySectionSegment", "[config]") {
+    // a section with consecutive separators (e.g. [a..b]) yields empty parent segments;
+    // this must not crash when removing quotes from the parents
+    std::stringstream ofile;
+
+    ofile << "[a..b]\n";
+    ofile << "val=3\n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<CLI::ConfigItem> output;
+    CHECK_NOTHROW(output = CLI::ConfigINI().from_config(ofile));
+    REQUIRE_FALSE(output.empty());
+    // the value should still be present under the (cleaned-up) parent chain
+    bool found = false;
+    for(const auto &item : output) {
+        if(item.name == "val") {
+            found = true;
+            REQUIRE(item.inputs.size() == 1u);
+            CHECK(item.inputs.at(0) == "3");
+        }
+    }
+    CHECK(found);
+}
+
 TEST_CASE("StringBased: FirstWithComments", "[config]") {
     std::stringstream ofile;
 
