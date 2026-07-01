@@ -71,6 +71,26 @@ TEST_CASE("Encoding: Widen", "[unicode]") {
 #endif  // CLI11_CPP17
 }
 
+// str_size must bound the conversion; converting a prefix of a longer buffer must not read past str_size
+// (relevant for the non-codecvt path, which is the default under C++26).
+TEST_CASE("Encoding: WidenSize", "[unicode]") {
+    using CLI::widen;
+
+    // "Hello " is 6 leading ASCII bytes, mapping 1:1 to 6 wide characters.
+    const std::string longer = "Hello world";
+    const std::wstring expected = L"Hello ";
+
+    CHECK(expected == widen(longer.c_str(), 6));
+
+    // A buffer that is not NUL-terminated at str_size must only read the first str_size bytes.
+    const std::array<char, 5> not_terminated{{'a', 'b', 'c', 'd', 'e'}};
+    CHECK(std::wstring(L"abc") == widen(not_terminated.data(), 3));
+
+#ifdef CLI11_CPP17
+    CHECK(expected == widen(std::string_view{longer}.substr(0, 6)));
+#endif  // CLI11_CPP17
+}
+
 // #14
 TEST_CASE("Encoding: Narrow", "[unicode]") {
     using CLI::narrow;
@@ -84,6 +104,26 @@ TEST_CASE("Encoding: Narrow", "[unicode]") {
 
 #ifdef CLI11_CPP17
     CHECK(hello_str == narrow(std::wstring_view{hello_wstr}));
+#endif  // CLI11_CPP17
+}
+
+// str_size must bound the conversion; converting a prefix of a longer buffer must not read past str_size
+// (relevant for the non-codecvt path, which is the default under C++26).
+TEST_CASE("Encoding: NarrowSize", "[unicode]") {
+    using CLI::narrow;
+
+    // "Hello " is 6 leading ASCII wide characters, mapping 1:1 to 6 bytes.
+    const std::wstring longer = L"Hello world";
+    const std::string expected = "Hello ";
+
+    CHECK(expected == narrow(longer.c_str(), 6));
+
+    // A buffer that is not NUL-terminated at str_size must only read the first str_size characters.
+    const std::array<wchar_t, 5> not_terminated{{L'a', L'b', L'c', L'd', L'e'}};
+    CHECK(std::string("abc") == narrow(not_terminated.data(), 3));
+
+#ifdef CLI11_CPP17
+    CHECK(expected == narrow(std::wstring_view{longer}.substr(0, 6)));
 #endif  // CLI11_CPP17
 }
 
