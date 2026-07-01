@@ -368,6 +368,33 @@ TEST_CASE("StringBased: TomlMultiLineStringError", "[config]") {
     CHECK_THROWS(CLI::ConfigINI().from_config(ofile));
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringIndented", "[config]") {
+    // Regression: indented key with multiline value must not corrupt the value
+    // by applying the trimmed delimiter_pos to the untrimmed buffer.
+    std::stringstream ofile;
+
+    ofile << "one = [three]\n";
+    ofile << "  two = '''\n";
+    ofile << "multiline content\n";
+    ofile << "'''\n";
+    ofile << "three=7    \n";
+
+    ofile.seekg(0, std::ios::beg);
+
+    std::vector<CLI::ConfigItem> output = CLI::ConfigINI().from_config(ofile);
+
+    CHECK(output.size() == 3u);
+    CHECK(output.at(0).name == "one");
+    CHECK(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).inputs.at(0) == "three");
+    CHECK(output.at(1).name == "two");
+    CHECK(output.at(1).inputs.size() == 1u);
+    CHECK(output.at(1).inputs.at(0) == "multiline content");
+    CHECK(output.at(2).name == "three");
+    CHECK(output.at(2).inputs.size() == 1u);
+    CHECK(output.at(2).inputs.at(0) == "7");
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
