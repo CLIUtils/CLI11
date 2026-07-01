@@ -2619,6 +2619,23 @@ TEST_CASE_METHOD(TApp, "ExtrasErrorRvalueParse", "[app]") {
     CHECK_THROWS_AS(app.parse(std::vector<std::string>({"-x", "45", "-f", "27"})), CLI::ExtrasError);
 }
 
+// the two-argument ExtrasError(name, args) must still report its class name through get_name(),
+// like every other error class, while preserving the message content
+TEST_CASE_METHOD(TApp, "ExtrasErrorName", "[app]") {
+    app.name("myprog");
+    args = {"extra1", "extra2"};
+    try {
+        run();
+        CHECK(false);
+    } catch(const CLI::ExtrasError &err) {
+        CHECK(err.get_name() == "ExtrasError");
+        std::string message = err.what();
+        CHECK_THAT(message, Contains("extra1"));
+        CHECK_THAT(message, Contains("extra2"));
+        CHECK_THAT(message, Contains("myprog"));
+    }
+}
+
 TEST_CASE_METHOD(TApp, "AllowExtrasCascadeDirect", "[app]") {
 
     app.allow_extras();

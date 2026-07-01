@@ -314,9 +314,9 @@ class ExtrasError : public ParseError {
                           detail::join(args, " "),
                       ExitCodes::ExtrasError) {}
     ExtrasError(const std::string &name, std::vector<std::string> args)
-        : ExtrasError(name,
-                      (args.size() > 1 ? "The following arguments were not expected: "
-                                       : "The following argument was not expected: ") +
+        : ExtrasError((name.empty() ? std::string{} : name + ": ") +
+                          (args.size() > 1 ? "The following arguments were not expected: "
+                                           : "The following argument was not expected: ") +
                           detail::join(args, " "),
                       ExitCodes::ExtrasError) {}
 };
