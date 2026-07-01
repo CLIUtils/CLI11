@@ -22,3 +22,7 @@ a.out*
 
 /subprojects/Catch2-*
 /subprojects/packagecache
+
+# Symlink to AGENTS.md
+CLAUDE.md
+/claude
