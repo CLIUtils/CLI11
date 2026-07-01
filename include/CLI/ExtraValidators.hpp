@@ -562,7 +562,7 @@ inline AsNumberWithUnit::Options operator|(const AsNumberWithUnit::Options &a, c
 /// Converts a human-readable size string (with unit literal) to uin64_t size.
 /// Example:
 ///   "100" => 100
-///   "1 b" => 100
+///   "1 b" => 1
 ///   "10Kb" => 10240 // you can configure this to be interpreted as kilobyte (*1000) or kibibyte (*1024)
 ///   "10 KB" => 10240
 ///   "10 kb" => 10240
@@ -613,7 +613,7 @@ const detail::PermissionValidator ReadPermissions(detail::Permission::read);
 /// Check that the file exist and available for write
 const detail::PermissionValidator WritePermissions(detail::Permission::write);
 
-/// Check that the file exist and available for write
+/// Check that the file exist and available for execute
 const detail::PermissionValidator ExecPermissions(detail::Permission::exec);
 
 /// Check that the file exists and is not empty

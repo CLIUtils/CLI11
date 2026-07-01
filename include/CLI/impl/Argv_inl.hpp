@@ -14,7 +14,6 @@
 #include "../Encoding.hpp"
 
 // [CLI11:public_includes:set]
-#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <string>

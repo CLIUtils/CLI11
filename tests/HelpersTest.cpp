@@ -605,6 +605,12 @@ TEST_CASE("Validators: FilePathModifier", "[helpers]") {
     CLI::FileOnDefaultPath defPathNoFail("../", false);
     CHECK(defPathNoFail(filename2).empty());
     CHECK(filename2 == "nonexistingfile.csv");
+    // empty default path must not invoke UB via back() on an empty string
+    CLI::FileOnDefaultPath defPathEmpty("", false);
+    std::string filename3 = "nonexistingfile.csv";
+    CHECK(defPathEmpty(filename3).empty());
+    CLI::FileOnDefaultPath defPathEmptyErr("", true);
+    CHECK_FALSE(defPathEmptyErr(filename3).empty());
 }
 
 TEST_CASE("Validators: FileIsDir", "[helpers]") {
@@ -671,6 +677,9 @@ TEST_CASE("Validators: PositiveValidator", "[helpers]") {
     CHECK_FALSE(CLI::PositiveNumber(num).empty());
     num = "a";
     CHECK_FALSE(CLI::PositiveNumber(num).empty());
+    // subnormal positive doubles are strictly positive and must be accepted
+    num = "5e-324";  // std::numeric_limits<double>::denorm_min
+    CHECK(CLI::PositiveNumber(num).empty());
 }
 
 TEST_CASE("Validators: NonNegativeValidator", "[helpers]") {

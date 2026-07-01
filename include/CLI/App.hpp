@@ -109,9 +109,8 @@ Option *default_flag_modifiers(Option *opt) {
 
 class Option_group;
 /// Creates a command line program, with very few defaults.
-/** To use, create a new `Program()` instance with `argc`, `argv`, and a help description. The templated
- *  add_option methods make it easy to prepare options. Remember to call `.start` before starting your
- * program, so that the options can be evaluated and the help option doesn't accidentally run your program. */
+/** To use, create a new `App` instance with a description, then call `parse(argc, argv)`. The templated
+ *  add_option methods make it easy to prepare options. After parsing, bound variables hold the parsed values. */
 class App {
     friend Option;
     friend detail::AppFriend;
@@ -411,7 +410,7 @@ class App {
         return this;
     }
 
-    /// Remove the error when extras are left over on the command line.
+    /// Set whether this subcommand/option-group is required to be present on the command line.
     App *required(bool require = true) {
         required_ = require;
         return this;
