@@ -634,7 +634,7 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
         }
     } break;
     case MultiOptionPolicy::Join:
-        if(results_.size() > 1) {
+        if(original.size() > 1) {
             out.push_back(detail::join(original, std::string(1, (delimiter_ == '\0') ? '\n' : delimiter_)));
         }
         break;

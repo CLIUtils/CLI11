@@ -1376,6 +1376,18 @@ TEST_CASE("Types: LexicalCastInt", "[helpers]") {
     CHECK_FALSE(CLI::detail::lexical_cast(empty_input, y_signed));
 }
 
+TEST_CASE("Types: LexicalCastUnsignedLeadingWhitespaceNegative", "[helpers]") {
+    // strtoull skips leading whitespace and silently wraps a negative value; " -1" must not become UINT64_MAX
+    std::uint64_t x_unsigned = 0;
+    CHECK_FALSE(CLI::detail::lexical_cast(" -1", x_unsigned));
+    CHECK_FALSE(CLI::detail::lexical_cast("\t-5", x_unsigned));
+    CHECK_FALSE(CLI::detail::lexical_cast("-1", x_unsigned));
+
+    // a leading-whitespace positive value should still convert correctly
+    CHECK(CLI::detail::lexical_cast(" 7", x_unsigned));
+    CHECK(x_unsigned == static_cast<std::uint64_t>(7));
+}
+
 TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
     std::string input = "9.12";
     long double x = NAN;
@@ -1394,6 +1406,12 @@ TEST_CASE("Types: LexicalCastDouble", "[helpers]") {
 
     std::string empty_input{};
     CHECK_FALSE(CLI::detail::lexical_cast(empty_input, x));
+
+    // whitespace-only strings perform no conversion in strtold and must fail rather than report 0.0
+    double d = 7.5;
+    CHECK_FALSE(CLI::detail::lexical_cast(" ", d));
+    CHECK_FALSE(CLI::detail::lexical_cast("   ", d));
+    CHECK_FALSE(CLI::detail::lexical_cast("\t\n", d));
 }
 
 TEST_CASE("Types: LexicalCastBool", "[helpers]") {
@@ -1498,6 +1516,47 @@ TEST_CASE("Types: LexicalConversionEmptyVectorDouble", "[helpers]") {
     bool res = CLI::detail::lexical_conversion<std::vector<double>, std::vector<double>>(input, x);
     CHECK(res);
     CHECK(x.empty());
+}
+
+TEST_CASE("Types: LexicalConversionPairContainerOddCount", "[helpers]") {
+    // an odd element count must fail rather than insert a pair with an uninitialized/defaulted second value
+    using map_t = std::vector<std::pair<std::string, int>>;
+    CLI::results_t input = {"onlykey"};
+    map_t x;
+    bool res = CLI::detail::lexical_conversion<map_t, map_t>(input, x);
+    CHECK_FALSE(res);
+
+    // a complete set of pairs should still convert successfully
+    input = {"a", "1", "b", "2"};
+    res = CLI::detail::lexical_conversion<map_t, map_t>(input, x);
+    CHECK(res);
+    REQUIRE(x.size() == static_cast<std::size_t>(2));
+    CHECK(x[0].first == "a");
+    CHECK(x[0].second == 1);
+    CHECK(x[1].first == "b");
+    CHECK(x[1].second == 2);
+}
+
+TEST_CASE("Types: SumStringVector", "[helpers]") {
+    // large integer sums must stay exact and render as plain integers, not scientific notation
+    std::vector<std::string> big = {"5000000000000000", "5000000000000000"};
+    CHECK(CLI::detail::sum_string_vector(big) == "10000000000000000");
+
+    // values above 2^53 must not lose precision through a double accumulation
+    std::vector<std::string> precise = {"9007199254740993", "0"};
+    CHECK(CLI::detail::sum_string_vector(precise) == "9007199254740993");
+
+    // simple integer sums
+    std::vector<std::string> small = {"3", "4", "5"};
+    CHECK(CLI::detail::sum_string_vector(small) == "12");
+
+    // floating point sums fall back to the double path
+    std::vector<std::string> floats = {"1.5", "2.5"};
+    CHECK(CLI::detail::sum_string_vector(floats) == "4");
+
+    // non-numeric values fall back to string concatenation
+    std::vector<std::string> strings = {"a", "b"};
+    CHECK(CLI::detail::sum_string_vector(strings) == "ab");
 }
 
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");

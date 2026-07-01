@@ -944,7 +944,13 @@ inline std::string type_name() {
 /// Convert to an unsigned integral
 template <typename T, enable_if_t<std::is_unsigned<T>::value, detail::enabler> = detail::dummy>
 bool integral_conversion(const std::string &input, T &output) noexcept {
-    if(input.empty() || input.front() == '-') {
+    if(input.empty()) {
+        return false;
+    }
+    // strtoull skips leading whitespace and silently wraps a negative value, so reject any input whose
+    // first non-whitespace character is a minus sign before it reaches strtoull
+    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r");
+    if(first_non_ws != std::string::npos && input[first_non_ws] == '-') {
         return false;
     }
     char *val{nullptr};
@@ -1167,6 +1173,11 @@ bool lexical_cast(const std::string &input, T &output) {
     }
     char *val = nullptr;
     auto output_ld = std::strtold(input.c_str(), &val);
+    // strtold performs no conversion (and leaves val == start) for inputs like whitespace-only strings;
+    // treat that as a failure rather than reporting a successful conversion to 0
+    if(val == input.c_str()) {
+        return false;
+    }
     output = static_cast<T>(output_ld);
     if(val == (input.c_str() + input.size())) {
         return true;
@@ -1750,11 +1761,14 @@ bool lexical_conversion(std::vector<std::string> strings, AssignTo &output) {
     output.clear();
     while(!strings.empty()) {
 
-        typename std::remove_const<typename std::tuple_element<0, typename ConvertTo::value_type>::type>::type v1;
-        typename std::tuple_element<1, typename ConvertTo::value_type>::type v2;
+        typename std::remove_const<typename std::tuple_element<0, typename ConvertTo::value_type>::type>::type v1{};
+        typename std::tuple_element<1, typename ConvertTo::value_type>::type v2{};
         bool retval = tuple_type_conversion<decltype(v1), decltype(v1)>(strings, v1);
         if(!strings.empty()) {
             retval = retval && tuple_type_conversion<decltype(v2), decltype(v2)>(strings, v2);
+        } else {
+            // an odd number of elements means the second value is missing; never insert a default-constructed v2
+            retval = false;
         }
         if(retval) {
             output.insert(output.end(), typename AssignTo::value_type{v1, v2});
@@ -1858,6 +1872,28 @@ bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &outpu
 
 /// Sum a vector of strings
 inline std::string sum_string_vector(const std::vector<std::string> &values) {
+    // First try a pure integer sum so that large integral totals (>= 1e16, or beyond the 2^53 mantissa of
+    // double) are preserved exactly and rendered as a plain integer rather than scientific notation
+    std::int64_t ival{0};
+    bool int_sum{true};
+    for(const auto &arg : values) {
+        std::int64_t tv{0};
+        if(!integral_conversion(arg, tv)) {
+            int_sum = false;
+            break;
+        }
+        // detect signed overflow before performing the addition since signed overflow is undefined behavior
+        if((tv > 0 && ival > (std::numeric_limits<std::int64_t>::max)() - tv) ||
+           (tv < 0 && ival < (std::numeric_limits<std::int64_t>::min)() - tv)) {
+            int_sum = false;
+            break;
+        }
+        ival += tv;
+    }
+    if(int_sum) {
+        return std::to_string(ival);
+    }
+
     double val{0.0};
     bool fail{false};
     std::string output;
