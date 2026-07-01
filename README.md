@@ -491,11 +491,13 @@ Before parsing, you can set the following options:
 - `->default_str(string)`: Set the default string directly (NO VALIDATION OR
   CALLBACKS). This string will also be used as a default value if no arguments
   are passed and the value is requested.
-- `->default_val(value)`: Generate the default string from a value and validate
-  that the value is also valid. For options that assign directly to a value type
-  the value in that type is also updated. Value must be convertible to a
-  string(one of known types or have a stream operator). The callback may be
-  triggered if the `run_callback_for_default` is set.
+- `->default_val(value)`: Generate the default string from a value. The value is
+  converted (and any transforms are applied), but `check`s are not run against a
+  default, so a default that fails a check does not throw at configuration time;
+  checks apply to values parsed from the command line. For options that assign
+  directly to a value type the value in that type is also updated. Value must be
+  convertible to a string(one of known types or have a stream operator). The
+  callback may be triggered if the `run_callback_for_default` is set.
 - `->run_callback_for_default()`: This will force the option callback to be
   executed or the variable set when the `default_val` is set.
 - `->option_text(string)`: Sets the text between the option name and

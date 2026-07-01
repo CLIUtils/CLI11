@@ -319,14 +319,14 @@ Option::get_name(bool positional, bool all_options, bool disable_default_flag_va
     return pname_;
 }
 
-CLI11_INLINE void Option::run_callback() {
+CLI11_INLINE void Option::run_callback(bool transform_only) {
     bool used_default_str = false;
     if(force_callback_ && results_.empty()) {
         used_default_str = true;
         add_result(default_str_);
     }
     if(current_option_state_ == option_state::parsing) {
-        _validate_results(results_);
+        _validate_results(results_, transform_only);
         current_option_state_ = option_state::validated;
     }
 
@@ -559,7 +559,7 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_type_name() const {
     return full_type_name;
 }
 
-CLI11_INLINE void Option::_validate_results(results_t &res) const {
+CLI11_INLINE void Option::_validate_results(results_t &res, bool transform_only) const {
     // Run the Validators (can change the string)
     if(!validators_.empty()) {
         if(type_size_max_ > 1) {  // in this context index refers to the index in the type
@@ -576,7 +576,7 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
                     index = 0;  // reset index for variable size chunks
                     continue;
                 }
-                auto err_msg = _validate(result, (index >= 0) ? (index % type_size_max_) : index);
+                auto err_msg = _validate(result, (index >= 0) ? (index % type_size_max_) : index, transform_only);
                 if(!err_msg.empty())
                     throw ValidationError(get_name(), err_msg);
                 ++index;
@@ -590,7 +590,7 @@ CLI11_INLINE void Option::_validate_results(results_t &res) const {
                 index = expected_max_ - static_cast<int>(res.size());
             }
             for(std::string &result : res) {
-                auto err_msg = _validate(result, index);
+                auto err_msg = _validate(result, index, transform_only);
                 ++index;
                 if(!err_msg.empty())
                     throw ValidationError(get_name(), err_msg);
@@ -678,13 +678,18 @@ CLI11_INLINE void Option::_reduce_results(results_t &out, const results_t &origi
     }
 }
 
-CLI11_INLINE std::string Option::_validate(std::string &result, int index) const {
+CLI11_INLINE std::string Option::_validate(std::string &result, int index, bool transform_only) const {
     std::string err_msg;
     if(result.empty() && expected_min_ == 0) {
         // an empty with nothing expected is allowed
         return err_msg;
     }
     for(const auto &vali : validators_) {
+        // when validating a default value only transforms (modifying validators) are applied; a
+        // default that fails a check should not throw at configuration time (see default_val)
+        if(transform_only && !vali->get_modifying()) {
+            continue;
+        }
         auto v = vali->get_application_index();
         if(v == -1 || v == index) {
             try {

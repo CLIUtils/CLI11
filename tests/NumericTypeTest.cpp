@@ -100,7 +100,12 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunctionRunCallbackOnDefault", "[optiontype]
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
     opt->check(CLI::Number);
     opt->run_callback_for_default(false);
-    CHECK_THROWS_AS(opt->default_val("this is a string"), CLI::ValidationError);
+    // Issue #1375: checks are not applied to default values, so a default that fails a check no
+    // longer throws at configuration time (this previously threw CLI::ValidationError).
+    CHECK_NOTHROW(opt->default_val("this is a string"));
+    // the check still applies to values parsed from the command line
+    args = {"--val", "this is a string"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 #endif
 }
 

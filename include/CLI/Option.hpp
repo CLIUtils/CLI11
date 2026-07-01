@@ -671,8 +671,9 @@ class Option : public OptionBase<Option> {
     /// @name Parser tools
     ///@{
 
-    /// Process the callback
-    void run_callback();
+    /// Process the callback. When @p transform_only is set (running the callback to store a default
+    /// value) checks are skipped so a default that fails a check does not throw; see default_val.
+    void run_callback(bool transform_only = false);
 
     /// If options share any of the same names, find it
     CLI11_NODISCARD const std::string &matching_name(const Option &other) const;
@@ -827,10 +828,10 @@ class Option : public OptionBase<Option> {
             add_result(val_str);
             // if trigger_on_result_ is set the callback already ran
             if(run_callback_for_default_ && !trigger_on_result_) {
-                run_callback();  // run callback sets the state, we need to reset it again
+                run_callback(true);  // run callback sets the state, we need to reset it again
                 current_option_state_ = option_state::parsing;
             } else {
-                _validate_results(results_);
+                _validate_results(results_, true);
                 current_option_state_ = old_option_state;
             }
         } catch(const ConversionError &err) {
@@ -854,16 +855,18 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
-    /// Run the results through the Validators
-    void _validate_results(results_t &res) const;
+    /// Run the results through the Validators. When @p transform_only is set (validating a default
+    /// value) only modifying validators (transforms) are applied; checks are skipped so a default
+    /// that fails a check does not throw at configuration time.
+    void _validate_results(results_t &res, bool transform_only = false) const;
 
     /** reduce the results in accordance with the MultiOptionPolicy
     @param[out] out results are assigned to res if there if they are different
     */
     void _reduce_results(results_t &out, const results_t &original) const;
 
-    // Run a result through the Validators
-    std::string _validate(std::string &result, int index) const;
+    // Run a result through the Validators; see _validate_results for the meaning of transform_only
+    std::string _validate(std::string &result, int index, bool transform_only = false) const;
 
     /// Add a single result to the result set, taking into account delimiters
     int _add_result(std::string &&result, std::vector<std::string> &res) const;

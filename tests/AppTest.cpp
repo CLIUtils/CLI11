@@ -554,6 +554,25 @@ TEST_CASE_METHOD(TApp, "invalidDefault", "[app]") {
     CHECK_THROWS(opt->default_val("4,6,2,8"));
 }
 
+// from https://github.com/CLIUtils/CLI11/issues/1375
+// A default value that fails a check() registered before default_val() should not throw at
+// configuration time; checks apply to parsed input, which is caught by CLI11_PARSE.
+TEST_CASE_METHOD(TApp, "defaultValFailingCheck", "[app]") {
+    int someNumber{0};
+    CLI::Option *opt{nullptr};
+    CHECK_NOTHROW(opt = app.add_option("-n,--someNumber", someNumber)->check(CLI::PositiveNumber)->default_val(0));
+
+    // default is applied even though it does not satisfy the check
+    args = {};
+    run();
+    CHECK(someNumber == 0);
+    CHECK(opt->get_default_str() == "0");
+
+    // actual input is still validated at parse time
+    args = {"-n", "-5"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "TogetherInt", "[app]") {
     int i{0};
     app.add_option("-i,--int", i);
