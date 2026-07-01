@@ -652,7 +652,7 @@ CLI11_INLINE void App::parse(std::wstring commandline, bool program_name_include
     parse(narrow(commandline), program_name_included);
 }
 
-CLI11_INLINE void App::parse(std::vector<std::string> &args) {
+CLI11_INLINE void App::_parse_setup() {
     // Clear if parsed
     if(parsed_ > 0)
         clear();
@@ -666,26 +666,16 @@ CLI11_INLINE void App::parse(std::vector<std::string> &args) {
     // set the parent as nullptr as this object should be the top now
     parent_ = nullptr;
     parsed_ = 0;
+}
 
+CLI11_INLINE void App::parse(std::vector<std::string> &args) {
+    _parse_setup();
     _parse(args);
     run_callback();
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &&args) {
-    // Clear if parsed
-    if(parsed_ > 0)
-        clear();
-
-    // parsed_ is incremented in commands/subcommands,
-    // but placed here to make sure this is cleared when
-    // running parse after an error is thrown, even by _validate or _configure.
-    parsed_ = 1;
-    _validate();
-    _configure();
-    // set the parent as nullptr as this object should be the top now
-    parent_ = nullptr;
-    parsed_ = 0;
-
+    _parse_setup();
     _parse(std::move(args));
     run_callback();
 }
@@ -1522,16 +1512,15 @@ CLI11_INLINE void App::_process() {
 
 CLI11_INLINE void App::_process_extras() {
     if(allow_extras_ == ExtrasMode::Error && prefix_command_ == PrefixCommandMode::Off) {
-        std::size_t num_left_over = remaining_size();
-        if(num_left_over > 0) {
+        if(remaining_size() > 0) {
             throw ExtrasError(name_, remaining(false));
         }
     }
     if(allow_extras_ == ExtrasMode::Error && prefix_command_ == PrefixCommandMode::SeparatorOnly) {
-        std::size_t num_left_over = remaining_size();
-        if(num_left_over > 0) {
-            if(remaining(false).front() != "--") {
-                throw ExtrasError(name_, remaining(false));
+        if(remaining_size() > 0) {
+            auto rem = remaining(false);
+            if(rem.front() != "--") {
+                throw ExtrasError(name_, std::move(rem));
             }
         }
     }
@@ -1547,6 +1536,34 @@ CLI11_INLINE void App::increment_parsed() {
         if(sub->get_name().empty())
             sub->increment_parsed();
     }
+}
+
+CLI11_INLINE void App::_process_completion_callbacks(bool with_help_flags) {
+    _process_callbacks(CallbackPriority::FirstPreHelp);
+    if(with_help_flags) {
+        _process_help_flags(CallbackPriority::First);
+    }
+    _process_callbacks(CallbackPriority::First);
+    if(with_help_flags) {
+        _process_env();
+    }
+    _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
+    if(with_help_flags) {
+        _process_help_flags(CallbackPriority::PreRequirementsCheck);
+    }
+    _process_callbacks(CallbackPriority::PreRequirementsCheck);
+    _process_requirements();
+    _process_callbacks(CallbackPriority::NormalPreHelp);
+    if(with_help_flags) {
+        _process_help_flags(CallbackPriority::Normal);
+    }
+    _process_callbacks(CallbackPriority::Normal);
+    _process_callbacks(CallbackPriority::LastPreHelp);
+    if(with_help_flags) {
+        _process_help_flags(CallbackPriority::Last);
+    }
+    _process_callbacks(CallbackPriority::Last);
+    run_callback(false, with_help_flags);
 }
 
 CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
@@ -1568,21 +1585,7 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &args) {
         // Convert missing (pairs) to extras (string only) ready for processing in another app
         args = remaining_for_passthrough(false);
     } else if(parse_complete_callback_) {
-        _process_callbacks(CallbackPriority::FirstPreHelp);
-        _process_help_flags(CallbackPriority::First);
-        _process_callbacks(CallbackPriority::First);
-        _process_env();
-        _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
-        _process_help_flags(CallbackPriority::PreRequirementsCheck);
-        _process_callbacks(CallbackPriority::PreRequirementsCheck);
-        _process_requirements();
-        _process_callbacks(CallbackPriority::NormalPreHelp);
-        _process_help_flags(CallbackPriority::Normal);
-        _process_callbacks(CallbackPriority::Normal);
-        _process_callbacks(CallbackPriority::LastPreHelp);
-        _process_help_flags(CallbackPriority::Last);
-        _process_callbacks(CallbackPriority::Last);
-        run_callback(false, true);
+        _process_completion_callbacks(true);
     }
 }
 
@@ -1594,7 +1597,9 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &&args) {
     bool positional_only = false;
 
     while(!args.empty()) {
-        _parse_single(args, positional_only);
+        if(!_parse_single(args, positional_only)) {
+            break;
+        }
     }
     _process();
 
@@ -1702,16 +1707,7 @@ CLI11_INLINE bool App::_parse_single_config(const ConfigItem &item, std::size_t 
     // check for section close
     if(item.name == "--") {
         if(configurable_ && parse_complete_callback_) {
-            _process_callbacks(CallbackPriority::FirstPreHelp);
-            _process_callbacks(CallbackPriority::First);
-            _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
-            _process_callbacks(CallbackPriority::PreRequirementsCheck);
-            _process_requirements();
-            _process_callbacks(CallbackPriority::NormalPreHelp);
-            _process_callbacks(CallbackPriority::Normal);
-            _process_callbacks(CallbackPriority::LastPreHelp);
-            _process_callbacks(CallbackPriority::Last);
-            run_callback();
+            _process_completion_callbacks(false);
         }
         return true;
     }
@@ -1968,9 +1964,7 @@ CLI11_INLINE bool App::_parse_positional(std::vector<std::string> &args, bool ha
         }
     }
     if(positionals_at_end_) {
-        std::vector<std::string> rargs;
-        rargs.resize(args.size());
-        std::reverse_copy(args.begin(), args.end(), rargs.begin());
+        std::vector<std::string> rargs(args.rbegin(), args.rend());
         throw CLI::ExtrasError(name_, rargs);
     }
     /// If this is an option group don't deal with it
@@ -2177,21 +2171,7 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
                     _trigger_pre_parse(args.size());
                     // run the parse complete callback since the subcommand processing is now complete
                     if(sub->parse_complete_callback_) {
-                        sub->_process_callbacks(CallbackPriority::FirstPreHelp);
-                        sub->_process_help_flags(CallbackPriority::First);
-                        sub->_process_callbacks(CallbackPriority::First);
-                        sub->_process_env();
-                        sub->_process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
-                        sub->_process_help_flags(CallbackPriority::PreRequirementsCheck);
-                        sub->_process_callbacks(CallbackPriority::PreRequirementsCheck);
-                        sub->_process_requirements();
-                        sub->_process_callbacks(CallbackPriority::NormalPreHelp);
-                        sub->_process_help_flags(CallbackPriority::Normal);
-                        sub->_process_callbacks(CallbackPriority::Normal);
-                        sub->_process_callbacks(CallbackPriority::LastPreHelp);
-                        sub->_process_help_flags(CallbackPriority::Last);
-                        sub->_process_callbacks(CallbackPriority::Last);
-                        sub->run_callback(false, true);
+                        sub->_process_completion_callbacks(true);
                     }
                     return true;
                 }

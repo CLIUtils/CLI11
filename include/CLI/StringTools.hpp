@@ -125,6 +125,9 @@ inline std::string trim_copy(const std::string &str) {
     return trim(s);
 }
 
+/// remove a matching pair of outer characters (front and back) from a string if both equal `key`
+CLI11_INLINE std::string &remove_outer(std::string &str, char key);
+
 /// remove quotes at the front and back of a string either '"' or '\''
 CLI11_INLINE std::string &remove_quotes(std::string &str);
 
