@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "app_helper.hpp"
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -593,6 +594,53 @@ TEST_CASE_METHOD(TApp, "GetOptionList", "[creation]") {
     for(std::size_t i = 0; i < opt_list.size(); ++i) {
         CHECK(opt_list.at(i) == nonconst_opt_list.at(i));
     }
+}
+
+// the const and non-const get_options overloads serve different purposes and therefore do not return the
+// same set of options. The const overload is used for help formatting and only merges explicitly merged
+// groups ('+'); the non-const overload is used for config generation/subcommand comparison and must mirror
+// the parser, which descends into every nameless subcommand (e.g. plain option groups).
+TEST_CASE_METHOD(TApp, "GetOptionListOverloadBehavior", "[creation]") {
+    int val{0};
+    auto *base = app.add_option("--base", val);
+
+    // a regular (non '+') nameless option group: its options are shown separately in help (not merged into
+    // the parent) but are still parsed as part of the parent, so they must appear in the non-const list
+    auto *grp = app.add_option_group("plain");
+    auto *gopt = grp->add_option("--grpopt", val);
+
+    // a nameless option group whose name starts with '+' is merged into the parent for both overloads
+    auto *mgrp = app.add_option_group("+merged");
+    auto *mopt = mgrp->add_option("--mergedopt", val);
+
+    // a plain named subcommand is never merged into the parent option list by either overload
+    auto *namedsub = app.add_subcommand("named");
+    auto *subopt = namedsub->add_option("--subopt", val);
+
+    const CLI::App &const_app = app;
+    auto const_opts = const_app.get_options();
+    auto nonconst_opts = app.get_options();
+
+    auto in_const = [&](const CLI::Option *o) {
+        return std::find(const_opts.begin(), const_opts.end(), o) != const_opts.end();
+    };
+    auto in_nonconst = [&](const CLI::Option *o) {
+        return std::find(nonconst_opts.begin(), nonconst_opts.end(), o) != nonconst_opts.end();
+    };
+
+    // both overloads include the parent option and the explicitly merged '+' group
+    CHECK(in_const(base));
+    CHECK(in_nonconst(base));
+    CHECK(in_const(mopt));
+    CHECK(in_nonconst(mopt));
+
+    // a plain option group is merged for the non-const overload (config) but not the const overload (help)
+    CHECK(!in_const(gopt));
+    CHECK(in_nonconst(gopt));
+
+    // plain named subcommand options are never merged by either overload
+    CHECK(!in_const(subopt));
+    CHECK(!in_nonconst(subopt));
 }
 
 TEST_CASE_METHOD(TApp, "GetOptionListFilter", "[creation]") {
