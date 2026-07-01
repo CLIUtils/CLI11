@@ -108,6 +108,7 @@ using CLI::IsMemberType;
 using CLI::make_void;
 using CLI::NonexistentPath;
 using CLI::NonNegativeNumber;
+using CLI::Number;
 using CLI::PositiveNumber;
 using CLI::Range;
 using CLI::Timer;

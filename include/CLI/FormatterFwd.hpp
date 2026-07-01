@@ -9,6 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <string>

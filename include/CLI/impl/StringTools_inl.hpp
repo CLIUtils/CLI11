@@ -600,7 +600,7 @@ process_quoted_string(std::string &str, char string_char, char literal_char, boo
     return false;
 }
 
-std::string get_environment_value(const std::string &env_name) {
+CLI11_INLINE std::string get_environment_value(const std::string &env_name) {
     std::string ename_string;
 
 #ifdef _MSC_VER

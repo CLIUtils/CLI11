@@ -10,8 +10,11 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cctype>
+#include <cerrno>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <exception>
 #include <limits>
 #include <memory>
