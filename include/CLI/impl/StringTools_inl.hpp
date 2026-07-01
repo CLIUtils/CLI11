@@ -85,8 +85,8 @@ CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string inp
     while(n != std::string::npos && n < input.size()) {
         n = input.find_first_of("\r\n", n);
         if(n != std::string::npos) {
-            input = input.substr(0, n + 1) + leader + input.substr(n + 1);
-            n += leader.size();
+            input.insert(n + 1, leader);
+            n += leader.size() + 1;
         }
     }
     return input;
@@ -155,7 +155,7 @@ CLI11_INLINE void remove_default_flag_values(std::string &flags) {
 }
 
 CLI11_INLINE std::ptrdiff_t
-find_member(std::string name, const std::vector<std::string> names, bool ignore_case, bool ignore_underscore) {
+find_member(std::string name, const std::vector<std::string> &names, bool ignore_case, bool ignore_underscore) {
     auto it = std::end(names);
     if(ignore_case) {
         if(ignore_underscore) {
@@ -487,7 +487,7 @@ CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escap
         while(sqLoc != std::string::npos) {
             escaped_string[sqLoc] = '\\';
             escaped_string.insert(sqLoc + 1, "x27");
-            sqLoc = escaped_string.find('\'');
+            sqLoc = escaped_string.find('\'', sqLoc + 4);
         }
         escaped_string.insert(0, "'B\"(");
         escaped_string.push_back(')');

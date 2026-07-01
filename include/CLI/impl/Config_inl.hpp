@@ -116,11 +116,12 @@ CLI11_INLINE std::string ini_join(const std::vector<std::string> &args,
         joined.push_back(arrayStart);
         disable_multi_line = true;
     }
+    const bool sep_is_space = std::isspace<char>(sepChar, std::locale());
     std::size_t start = 0;
     for(const auto &arg : args) {
         if(start++ > 0) {
             joined.push_back(sepChar);
-            if(!std::isspace<char>(sepChar, std::locale())) {
+            if(!sep_is_space) {
                 joined.push_back(' ');
             }
         }
@@ -542,6 +543,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("OPTIONS"));
 
+    const std::vector<const Option *> options = app->get_options({});
     for(auto &group : groups) {
         if(group == "OPTIONS" || group.empty()) {
             if(defaultUsed) {

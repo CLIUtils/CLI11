@@ -222,12 +222,15 @@ class IsMember : public Validator {
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
+        // Store a single copy of the set in a shared_ptr so the lambdas below can share it
+        auto shared_set = std::make_shared<T>(std::move(set));
+
         // This is the type name for help, it will take the current version of the set contents
-        desc_function_ = [set]() { return detail::generate_set(detail::smart_deref(set)); };
+        desc_function_ = [shared_set]() { return detail::generate_set(detail::smart_deref(*shared_set)); };
 
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
-        func_ = [set, filter_fn](std::string &input) {
+        func_ = [shared_set, filter_fn](std::string &input) {
             using CLI::detail::lexical_cast;
             local_item_t b;
             if(!lexical_cast(input, b)) {
@@ -236,7 +239,7 @@ class IsMember : public Validator {
             if(filter_fn) {
                 b = filter_fn(b);
             }
-            auto res = detail::search(set, b, filter_fn);
+            auto res = detail::search(*shared_set, b, filter_fn);
             if(res.first) {
                 // Make sure the version in the input string is identical to the one in the set
                 if(filter_fn) {
@@ -248,7 +251,7 @@ class IsMember : public Validator {
             }
 
             // If you reach this point, the result was not found
-            return input + " not in " + detail::generate_set(detail::smart_deref(set));
+            return input + " not in " + detail::generate_set(detail::smart_deref(*shared_set));
         };
     }
 
@@ -293,10 +296,13 @@ class Transformer : public Validator {
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
-        // This is the type name for help, it will take the current version of the set contents
-        desc_function_ = [mapping]() { return detail::generate_map(detail::smart_deref(mapping)); };
+        // Store a single copy of the mapping in a shared_ptr so the lambdas below can share it
+        auto shared_mapping = std::make_shared<T>(std::move(mapping));
 
-        func_ = [mapping, filter_fn](std::string &input) {
+        // This is the type name for help, it will take the current version of the set contents
+        desc_function_ = [shared_mapping]() { return detail::generate_map(detail::smart_deref(*shared_mapping)); };
+
+        func_ = [shared_mapping, filter_fn](std::string &input) {
             using CLI::detail::lexical_cast;
             local_item_t b;
             if(!lexical_cast(input, b)) {
@@ -306,7 +312,7 @@ class Transformer : public Validator {
             if(filter_fn) {
                 b = filter_fn(b);
             }
-            auto res = detail::search(mapping, b, filter_fn);
+            auto res = detail::search(*shared_mapping, b, filter_fn);
             if(res.first) {
                 input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
             }
@@ -353,11 +359,14 @@ class CheckedTransformer : public Validator {
         // Make a local copy of the filter function, using a std::function if not one already
         std::function<local_item_t(local_item_t)> filter_fn = filter_function;
 
-        auto tfunc = [mapping]() {
+        // Store a single copy of the mapping in a shared_ptr so the lambdas below can share it
+        auto shared_mapping = std::make_shared<T>(std::move(mapping));
+
+        auto tfunc = [shared_mapping]() {
             std::string out("value in ");
-            out += detail::generate_map(detail::smart_deref(mapping)) + " OR {";
+            out += detail::generate_map(detail::smart_deref(*shared_mapping)) + " OR {";
             out += detail::join(
-                detail::smart_deref(mapping),
+                detail::smart_deref(*shared_mapping),
                 [](const iteration_type_t &v) {
                     return detail::value_string(detail::pair_adaptor<element_t>::second(v));
                 },
@@ -368,7 +377,7 @@ class CheckedTransformer : public Validator {
 
         desc_function_ = tfunc;
 
-        func_ = [mapping, tfunc, filter_fn](std::string &input) {
+        func_ = [shared_mapping, tfunc, filter_fn](std::string &input) {
             using CLI::detail::lexical_cast;
             local_item_t b;
             bool converted = lexical_cast(input, b);
@@ -376,13 +385,13 @@ class CheckedTransformer : public Validator {
                 if(filter_fn) {
                     b = filter_fn(b);
                 }
-                auto res = detail::search(mapping, b, filter_fn);
+                auto res = detail::search(*shared_mapping, b, filter_fn);
                 if(res.first) {
                     input = detail::value_string(detail::pair_adaptor<element_t>::second(*res.second));
                     return std::string{};
                 }
             }
-            for(const auto &v : detail::smart_deref(mapping)) {
+            for(const auto &v : detail::smart_deref(*shared_mapping)) {
                 auto output_string = detail::value_string(detail::pair_adaptor<element_t>::second(v));
                 if(output_string == input) {
                     return std::string();
@@ -458,7 +467,8 @@ class AsNumberWithUnit : public Validator {
 
             // Find split position between number and prefix
             auto unit_begin = input.end();
-            while(unit_begin > input.begin() && std::isalpha(*(unit_begin - 1), std::locale())) {
+            const std::locale loc{};
+            while(unit_begin > input.begin() && std::isalpha(*(unit_begin - 1), loc)) {
                 --unit_begin;
             }
 
@@ -536,7 +546,7 @@ class AsNumberWithUnit : public Validator {
                     throw ValidationError(std::string("Several matching lowercase unit representations are found: ") +
                                           s);
                 }
-                lower_mapping[detail::to_lower(kv.first)] = kv.second;
+                lower_mapping[std::move(s)] = kv.second;
             }
             mapping = std::move(lower_mapping);
         }
@@ -588,7 +598,7 @@ class AsSizeValue : public AsNumberWithUnit {
     static std::map<std::string, result_t> init_mapping(bool kb_is_1000);
 
     /// Cache calculated mapping
-    static std::map<std::string, result_t> get_mapping(bool kb_is_1000);
+    static const std::map<std::string, result_t> &get_mapping(bool kb_is_1000);
 };
 
 #if defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0

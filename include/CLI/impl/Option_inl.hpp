@@ -486,10 +486,10 @@ CLI11_INLINE Option *Option::add_result(std::vector<std::string> s) {
 }
 
 CLI11_NODISCARD CLI11_INLINE results_t Option::reduced_results() const {
-    results_t res = proc_results_.empty() ? results_ : proc_results_;
+    const bool parsing = current_option_state_ == option_state::parsing;
+    results_t res = (parsing || proc_results_.empty()) ? results_ : proc_results_;
     if(current_option_state_ < option_state::reduced) {
-        if(current_option_state_ == option_state::parsing) {
-            res = results_;
+        if(parsing) {
             _validate_results(res);
         }
         if(!res.empty()) {
