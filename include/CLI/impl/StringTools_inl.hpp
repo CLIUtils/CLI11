@@ -629,15 +629,20 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 std::size_t paragraphWidth,
                                                 const std::string &linePrefix,
                                                 bool skipPrefixOnFirstLine) {
-    if(!skipPrefixOnFirstLine)
-        out << linePrefix;  // First line prefix
-
     std::istringstream lss(text);
     std::string line = "";
+    bool first_iter = true;
     while(std::getline(lss, line)) {
         std::istringstream iss(line);
         std::string word = "";
         std::size_t charsWritten = 0;
+
+        if(!first_iter || !skipPrefixOnFirstLine) {
+            out << linePrefix;
+        }
+
+        if(first_iter)
+            first_iter = false;
 
         while(iss >> word) {
             if(charsWritten > 0 && (word.length() + 1 + charsWritten > paragraphWidth)) {
@@ -654,7 +659,7 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
         }
 
         if(!lss.eof())
-            out << '\n' << linePrefix;
+            out << '\n';
     }
     return out;
 }
