@@ -32,6 +32,48 @@ jobs:
       - name: Build
         run: cmake --build build -j2
 
+  cuda12-single-header-repro:
+    name: CUDA 12.6 single-header repro
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:12.6.1-devel-ubuntu24.04
+    steps:
+      - name: Add build tools
+        run: apt-get update && apt-get install -y git cmake python3
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Configure single-header build
+        run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON -DCLI11_BUILD_TESTS=OFF -DCLI11_BUILD_EXAMPLES=OFF
+      - name: Generate single header
+        run: cmake --build build --target CLI11-generate-single-file
+      - name: Create reproduction source
+        run: |
+          cat <<'EOF' > test.cu
+          #include "CLI11.hpp"
+          int main() { return 0; }
+          EOF
+      - name: Try reproducing nvcc single-header compile issue
+        id: repro
+        run: |
+          set +e
+          timeout --signal=KILL 10m nvcc test.cu -I "${GITHUB_WORKSPACE}/build/single-include" -o test_cu -std=c++20
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            echo "result=compiled" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=failed" >> "$GITHUB_OUTPUT"
+            echo "status=$status" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+      - name: Summarize reproduction attempt
+        if: always()
+        run: |
+          if [ "${{ steps.repro.outputs.result }}" = "compiled" ]; then
+            echo "CUDA 12.6 single-header repro did not trigger; nvcc compiled the test translation unit." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "CUDA 12.6 single-header repro triggered; nvcc failed with exit code ${{ steps.repro.outputs.status }}." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   cuda13-build:
     name: CUDA 13 build only
     runs-on: ubuntu-latest
