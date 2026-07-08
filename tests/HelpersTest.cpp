@@ -16,6 +16,7 @@
 #include <fstream>
 #include <limits>
 #include <map>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -214,6 +215,24 @@ TEST_CASE("StringTools: Modify3", "[helpers]") {
         return 0u;
     });
     CHECK("aba" == newString);
+}
+
+TEST_CASE("StringTools: streamOutAsParagraph", "[helpers]") {
+    auto paragraph = [](const std::string &text, const std::string &prefix, bool skipFirst = false) {
+        std::ostringstream out;
+        CLI::detail::streamOutAsParagraph(out, text, 80, prefix, skipFirst);
+        return out.str();
+    };
+
+    CHECK(paragraph("hello world", ">>") == ">>hello world");
+    CHECK(paragraph("hello world", ">>", true) == "hello world");
+    CHECK(paragraph("", ">>").empty());
+
+    // A trailing newline must not leave a dangling prefix on a phantom last line (regression: #1379).
+    CHECK(paragraph("hello", ">>") == ">>hello");
+    CHECK(paragraph("hello\n", ">>") == ">>hello\n");
+    CHECK(paragraph("line1\nline2", ">>") == ">>line1\n>>line2");
+    CHECK(paragraph("line1\nline2\n", ">>") == ">>line1\n>>line2\n");
 }
 
 TEST_CASE("StringTools: escape_detect", "[helpers]") {

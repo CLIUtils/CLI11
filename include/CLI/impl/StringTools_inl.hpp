@@ -631,18 +631,14 @@ CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 bool skipPrefixOnFirstLine) {
     std::istringstream lss(text);
     std::string line = "";
-    bool first_iter = true;
     while(std::getline(lss, line)) {
         std::istringstream iss(line);
         std::string word = "";
         std::size_t charsWritten = 0;
 
-        if(!first_iter || !skipPrefixOnFirstLine) {
+        if(!skipPrefixOnFirstLine)
             out << linePrefix;
-        }
-
-        if(first_iter)
-            first_iter = false;
+        skipPrefixOnFirstLine = false;  // subsequent lines always get the prefix
 
         while(iss >> word) {
             if(charsWritten > 0 && (word.length() + 1 + charsWritten > paragraphWidth)) {
