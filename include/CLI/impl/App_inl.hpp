@@ -2187,7 +2187,8 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         if(parent_ != nullptr && fallthrough_)
             return _get_fallthrough_parent()->_parse_arg(args, current_type, false);
 
-        // Otherwise, add to missing
+        // Otherwise, add to missing. In PositionalOnly mode an unrecognized option is left as an
+        // extra and parsing continues so later registered options are still matched (#1374).
         args.pop_back();
         _move_to_missing(current_type, current);
         if(get_prefix_command_mode() == PrefixCommandMode::On) {

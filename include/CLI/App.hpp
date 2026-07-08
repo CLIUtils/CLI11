@@ -84,8 +84,9 @@ enum class config_extras_mode : std::uint8_t { error = 0, ignore, ignore_all, ca
 
 /// @brief  enumeration of prefix command modes, separator requires that the first extra argument be a "--", other
 /// unrecognized arguments will cause an error. on allows the first extra to trigger prefix mode regardless of other
-/// recognized options
-enum class PrefixCommandMode : std::uint8_t { Off = 0, SeparatorOnly = 1, On = 2 };
+/// recognized options. positional_only triggers prefix mode only at the first positional argument (or "--");
+/// unrecognized options do not stop parsing and are collected as extras
+enum class PrefixCommandMode : std::uint8_t { Off = 0, SeparatorOnly = 1, On = 2, PositionalOnly = 3 };
 
 class App;
 
@@ -501,7 +502,8 @@ class App {
 
     /// Enable or disable prefix command mode. If enabled, parsing stops at the
     /// first unrecognized option and all remaining arguments are stored in
-    /// remaining args.
+    /// remaining args. Use PrefixCommandMode::PositionalOnly to only stop at
+    /// positional arguments (or the `--` separator).
     App *prefix_command(bool is_prefix = true) {
         prefix_command_ = is_prefix ? PrefixCommandMode::On : PrefixCommandMode::Off;
         return this;
