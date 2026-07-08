@@ -52,9 +52,8 @@ jobs:
         run: cat test.cu
       - name: Try reproducing nvcc single-header compile issue
         id: repro
-        continue-on-error: true
         run: |
-          /usr/bin/time -v timeout --signal=KILL 10m nvcc test.cu -o test_cu -std=c++20
+          /usr/bin/time -v timeout --signal=KILL 3m nvcc test.cu -o test_cu -std=c++20
       - name: Summarize reproduction attempt
         if: always()
         run: |
