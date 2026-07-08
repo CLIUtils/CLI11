@@ -38,10 +38,12 @@ jobs:
     container: nvidia/cuda:12.6.1-devel-ubuntu24.04
     steps:
       - name: Add build tools
-        run: apt-get update && apt-get install -y git time wget
+        run: apt-get update && apt-get install -y cmake git python3 time
       - uses: actions/checkout@v4
-      - name: Download released single header
-        run: wget https://github.com/CLIUtils/CLI11/releases/download/v2.6.2/CLI11.hpp
+      - name: Configure single-header build
+        run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON -DCLI11_BUILD_TESTS=OFF -DCLI11_BUILD_EXAMPLES=OFF
+      - name: Generate single header
+        run: cmake --build build --target CLI11-generate-single-file
       - name: Create reproduction source
         run: |
           cat <<'EOF' > test.cu
@@ -53,16 +55,16 @@ jobs:
       - name: Try reproducing nvcc single-header compile issue
         id: repro
         run: |
-          /usr/bin/time -v timeout --signal=KILL 3m nvcc test.cu -o test_cu -std=c++20
+          /usr/bin/time -v timeout --signal=KILL 3m nvcc test.cu -I "${GITHUB_WORKSPACE}/build/single-include" -o test_cu -std=c++20
       - name: Summarize reproduction attempt
         if: always()
         run: |
           if [ "${{ steps.repro.outcome }}" = "success" ]; then
-            echo "CUDA 12.6 single-header repro did not trigger; nvcc compiled the released v2.6.2 single header." >> "$GITHUB_STEP_SUMMARY"
+            echo "CUDA 12.6 single-header repro did not trigger; nvcc compiled the single header generated from this branch." >> "$GITHUB_STEP_SUMMARY"
           elif [ "${{ steps.repro.outcome }}" = "skipped" ]; then
             echo "CUDA 12.6 single-header repro did not run because an earlier setup step failed." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "CUDA 12.6 single-header repro triggered or timed out while compiling the released v2.6.2 single header." >> "$GITHUB_STEP_SUMMARY"
+            echo "CUDA 12.6 single-header repro triggered or timed out while compiling the single header generated from this branch." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   cuda13-build:
