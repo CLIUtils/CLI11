@@ -2472,6 +2472,20 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommandWindowsStyleFallthrough", "[subcom]
     CHECK(extras.front() == "/sub1.nope:7");
 }
 
+// a failed single-char dot-notation attempt pushes two arguments (value and short option) and must pop
+// both on failure; popping only one left a phantom copy of the value in the argument list
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandShortFallthroughRestore", "[subcom]") {
+    app.allow_extras();
+    app.add_subcommand("sub1");
+
+    // sub1 has no '-v'; the argument must be reported as a single extra, without a phantom "7"
+    args = {"--sub1.v=7"};
+    CHECK_NOTHROW(run());
+    auto extras = app.remaining(true);
+    REQUIRE(extras.size() == 1);
+    CHECK(extras.front() == "--sub1.v=7");
+}
+
 // Reported bug #903 on github
 TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
     auto *sub1 = app.add_subcommand("sub1");
