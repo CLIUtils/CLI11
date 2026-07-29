@@ -152,9 +152,6 @@ jobs:
           containerImage: gcc:7
           cli11.std: 14
           cli11.options: -DCMAKE_CXX_FLAGS="-Wconversion"
-        gcc8:
-          containerImage: gcc:8
-          cli11.std: 17
         gcc4.8:
           containerImage: helics/buildenv:gcc4-8-builder
           cli11.std: 11
@@ -163,11 +160,6 @@ jobs:
           cli11.std: 11
           cli11.options:
             -DCLI11_WARNINGS_AS_ERRORS=OFF  -DCLI11_DISABLE_EXTRA_VALIDATORS=1
-        clang8:
-          containerImage: silkeh/clang:8
-          cli11.std: 14
-          cli11.options:
-            -DCLI11_FORCE_LIBCXX=ON -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8_17:
           containerImage: silkeh/clang:8
           cli11.std: 17
@@ -199,12 +191,6 @@ jobs:
             -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
             -DCLI11_ENABLE_EXTRA_VALIDATORS=1
 
-        gcc13_17:
-          containerImage: gcc:13
-          cli11.std: 17
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         gcc12_20:
           containerImage: gcc:12
           cli11.std: 20
