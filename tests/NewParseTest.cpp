@@ -8,6 +8,7 @@
 
 #include <complex>
 #include <cstdint>
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -668,13 +669,14 @@ const std::unordered_map<std::string, Color> STR_TO_COLOR_MAP{
 #undef X
 };
 
-const std::unordered_map<Color, std::string> COLOR_TO_STR_MAP{
+// std::map: GCC < 6.1 has no std::hash for enums
+const std::map<Color, std::string> COLOR_TO_STR_MAP{
 #define X(name) {Color::name, #name},
     COLOR_LIST
 #undef X
 };
 
-// Comment this to stop CLI::ConversionError from being thrown
+// this stream operator triggered the ConversionError in issue #1330
 std::ostream &operator<<(std::ostream &os, Color c) {
     auto it = COLOR_TO_STR_MAP.find(c);
     if(it != COLOR_TO_STR_MAP.end())
@@ -684,8 +686,8 @@ std::ostream &operator<<(std::ostream &os, Color c) {
 }
 
 TEST_CASE_METHOD(TApp, "enumDefaultParse", "[newparse]") {
-    Color color;
-    Color other_color;
+    Color color{Color::Blue};
+    Color other_color{Color::Red};
     app.add_option("--color", color)
         ->default_val(Color::Red)
         ->transform(CLI::CheckedTransformer(STR_TO_COLOR_MAP))
