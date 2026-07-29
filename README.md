@@ -1161,7 +1161,10 @@ option_groups. These are:
   `prefix_command(true)` and `prefix_command(false)`. Calling with
   `PrefixCommandMode::SeparatorOnly` will only trigger prefix command mode with
   the subcommand separator `--`; other unrecognized arguments are considered an
-  error unless `allow_extras` is enabled.
+  error unless `allow_extras` is enabled. Calling with
+  `PrefixCommandMode::PositionalOnly` will only trigger prefix command mode at
+  the first positional argument or the separator `--`; unrecognized options do
+  not stop processing and are collected in the remaining_arg list.
 - `.usage(message)`: Replace text to appear at the start of the help string
   after description.
 - `.usage(std::string())`: Set a callback to generate a string that will appear

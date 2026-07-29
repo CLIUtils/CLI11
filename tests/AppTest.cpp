@@ -2624,6 +2624,39 @@ TEST_CASE_METHOD(TApp, "PrefixCommand", "[app]") {
     CHECK(rem.size() == 4U);
 }
 
+// PrefixCommandMode::PositionalOnly must not stop parsing at an unrecognized *option*; a
+// registered option after one still gets recognized regardless of order (#1374)
+TEST_CASE_METHOD(TApp, "PrefixCommandPositionalOnly", "[app]") {
+    bool known{false};
+    app.add_flag("--known", known);
+    app.prefix_command(CLI::PrefixCommandMode::PositionalOnly);
+
+    args = {"--known", "--unknown"};
+    run();
+    CHECK(known);
+    CHECK(app.remaining().size() == 1U);
+
+    known = false;
+    args = {"--unknown", "--known"};
+    run();
+    CHECK(known);
+    CHECK(app.remaining().size() == 1U);  // only "--unknown" left over
+
+    // a positional still stops parsing and dumps everything after it
+    known = false;
+    args = {"positional", "--known"};
+    run();
+    CHECK_FALSE(known);
+    CHECK(app.remaining() == std::vector<std::string>{"positional", "--known"});
+
+    // the "--" separator also stops parsing
+    known = false;
+    args = {"--", "--known"};
+    run();
+    CHECK_FALSE(known);
+    CHECK(app.remaining() == std::vector<std::string>{"--", "--known"});
+}
+
 // makes sure the error throws on the rValue version of the parse
 TEST_CASE_METHOD(TApp, "ExtrasErrorRvalueParse", "[app]") {
 
