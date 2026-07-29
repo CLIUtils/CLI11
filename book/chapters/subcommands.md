@@ -128,8 +128,8 @@ Fallthrough allows an option that does not match in a subcommand to "fall
 through" to the parent command; if that parent allows that option, it matches
 there instead. This was added to allow CLI11 to represent models:
 
-```term
-gitbook:code $ ./my_program my_model_1 --model_flag --shared_flag
+```console
+./my_program my_model_1 --model_flag --shared_flag
 ```
 
 Here, `--shared_flag` was set on the main app, and on the command line it "falls

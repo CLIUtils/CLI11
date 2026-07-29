@@ -155,8 +155,8 @@ until the dependency is available.
 As an example of the build system, the following code will download and test
 CLI11 in a simple Alpine Linux docker container [^1]:
 
-```term
-gitbook:~ $ docker run -it alpine
+```console
+$ docker run -it alpine
 root:/ # apk add --no-cache g++ cmake make git
 fetch ...
 root:/ # git clone https://github.com/CLIUtils/CLI11.git

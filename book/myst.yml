@@ -1,0 +1,27 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  title: CLI11 Tutorial
+  description: A set of examples and detailed information about CLI11
+  authors:
+    - name: Henry Schreiner
+  github: https://github.com/CLIUtils/CLI11
+  license: BSD-3-Clause
+  toc:
+    - file: README.md
+    - file: chapters/installation.md
+    - file: chapters/basics.md
+    - file: chapters/flags.md
+    - file: chapters/options.md
+    - file: chapters/validators.md
+    - file: chapters/subcommands.md
+    - file: chapters/an-advanced-example.md
+    - file: chapters/config.md
+    - file: chapters/formatting.md
+    - file: chapters/toolkits.md
+    - file: chapters/advanced-topics.md
+    - file: chapters/internals.md
+site:
+  template: book-theme
+  options:
+    folders: true

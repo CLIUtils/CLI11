@@ -2,10 +2,12 @@
 
 The simplest CLI11 program looks like this:
 
-[include](../code/simplest.cpp)
+```{literalinclude} ../code/simplest.cpp
+:language: cpp
+```
 
 The first line includes the library; this explicitly uses the single file
-edition (see [Selecting an edition](/chapters/installation)).
+edition (see [Selecting an edition](./installation.md)).
 
 After entering the main function, you'll see that a `CLI::App` object is
 created. This is the basis for all interactions with the library. You could
@@ -29,9 +31,9 @@ For this (and most of the examples in this book) we will assume that we have the
 executable `a.out` on a macOS or Linux system. The commands to compile and test
 this example would be:
 
-```term
-gitbook:examples $ g++ -std=c++11 simplest.cpp
-gitbook:examples $ ./a.out -h
+```console
+$ g++ -std=c++11 simplest.cpp
+$ ./a.out -h
 Usage: ./a.out [OPTIONS]
 
 Options:

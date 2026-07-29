@@ -56,8 +56,8 @@ When you give an option on the command line without a name, that is a positional
 option. Positional options are accepted in the same order they are defined. So,
 for example:
 
-```term
-gitbook:examples $ ./a.out one --two three four
+```console
+./a.out one --two three four
 ```
 
 The string `one` would have to be the first positional option. If `--two` is a

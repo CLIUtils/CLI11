@@ -23,8 +23,8 @@ code runs, and then return:
 
 If you compile and run:
 
-```term
-gitbook:examples $ c++ -std=c++11 geet.cpp -o geet
+```console
+c++ -std=c++11 geet.cpp -o geet
 ```
 
 You'll see it behaves pretty much like `git`.

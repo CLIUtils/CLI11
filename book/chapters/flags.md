@@ -126,8 +126,8 @@ app.add_flag("--flag", flag)
 
 would allow the following to count as passing the flag:
 
-```term
-gitbook $ ./my_app --fLaG
+```console
+./my_app --fLaG
 ```
 
 ## Example
@@ -144,9 +144,9 @@ The values would be used like this:
 
 If you compile and run:
 
-```term
-gitbook:examples $ g++ -std=c++11 flags.cpp
-gitbook:examples $ ./a.out -h
+```console
+$ g++ -std=c++11 flags.cpp
+$ ./a.out -h
 Flag example program
 Usage: ./a.out [OPTIONS]
 
@@ -156,7 +156,7 @@ Options:
   -i,--int                    This is an int flag
   -p,--plain                  This is a plain flag
 
-gitbook:examples $ ./a.out -bii --plain -i
+$ ./a.out -bii --plain -i
 The flags program
 Bool flag passed
 Flag int: 3

@@ -1,7 +1,7 @@
 # CLI11: An introduction
 
-This gitbook is designed to provide an introduction to using the CLI11 library
-to write your own command line programs. The library is designed to be clean,
+This book is designed to provide an introduction to using the CLI11 library to
+write your own command line programs. The library is designed to be clean,
 intuitive, but powerful. There are no requirements beyond C++11 support (and
 even `<regex>` support not required). It works on Mac, Linux, and Windows, and
 has 100% test coverage on all three systems. You can simply drop in a single
@@ -21,14 +21,14 @@ The syntax is simple and scales from a basic application to a massive physics
 analysis with multiple models and many parameters and switches. For example,
 this is a simple program that has an optional parameter that defaults to 0:
 
-```term
-gitbook $ ./a.out
+```console
+$ ./a.out
 Parameter value: 0
 
-gitbook $ ./a.out -p 4
+$ ./a.out -p 4
 Parameter value: 4
 
-gitbook $ ./a.out --help
+$ ./a.out --help
 App description
 Usage: ./a.out [OPTIONS]
 
@@ -40,7 +40,9 @@ Options:
 Like any good command line application, help is provided. This program can be
 implemented in 10 lines:
 
-[include](code/intro.cpp)
+```{literalinclude} code/intro.cpp
+:language: cpp
+```
 
 [Source code](https://github.com/CLIUtils/CLI11/blob/main/book/code/intro.cpp)
 
@@ -48,8 +50,8 @@ Unlike some other libraries, this is enough to exit correctly and cleanly if
 help is requested or if incorrect arguments are passed. You can try this example
 out for yourself. To compile with GCC:
 
-```term
-gitbook:examples $ c++ -std=c++11 intro.cpp
+```console
+c++ -std=c++11 intro.cpp
 ```
 
 Much more complicated options are handled elegantly:
