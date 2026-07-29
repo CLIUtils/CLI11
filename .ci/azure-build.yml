@@ -9,6 +9,7 @@ steps:
         .. -DCLI11_WARNINGS_AS_ERRORS=ON -DCLI11_SINGLE_FILE=$(cli11.single)
         -DCMAKE_CXX_STANDARD=$(cli11.std)
         -DCLI11_SINGLE_FILE_TESTS=$(cli11.single)
+        -DCLI11_PRECOMPILED=$(cli11.precompile)
         -DCMAKE_BUILD_TYPE=$(cli11.build_type) $(cli11.options)
     displayName: "Configure"
 

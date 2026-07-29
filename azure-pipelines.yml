@@ -12,7 +12,8 @@ pr:
   - main
 
 variables:
-  cli11.single: ON
+  # Single-file tests double the test build; only a few jobs turn them on
+  cli11.single: OFF
   cli11.std: 14
   cli11.build_type: Debug
   cli11.options: -DCLI11_EXAMPLES_JSON=ON
@@ -49,6 +50,7 @@ jobs:
       matrix:
         Linux14:
           vmImage: "ubuntu-latest"
+          cli11.single: ON
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
@@ -63,6 +65,7 @@ jobs:
         macOS-latest_23:
           vmImage: "macos-latest"
           cli11.std: 23
+          cli11.single: ON
           cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-14_11:
           vmImage: "macOS-14"
@@ -83,6 +86,7 @@ jobs:
         Windows11:
           vmImage: "windows-2022"
           cli11.std: 11
+          cli11.single: ON
         Windows20:
           vmImage: "windows-2025"
           cli11.std: 20
