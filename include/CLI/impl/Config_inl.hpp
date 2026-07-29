@@ -217,10 +217,10 @@ CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
 }
 
 /// @brief  find a matching configItem in a list
-inline auto find_matching_config(std::vector<ConfigItem> &items,
-                                 const std::vector<std::string> &parents,
-                                 const std::string &name,
-                                 bool fullSearch) -> decltype(items.begin()) {
+CLI11_INLINE auto find_matching_config(std::vector<ConfigItem> &items,
+                                       const std::vector<std::string> &parents,
+                                       const std::string &name,
+                                       bool fullSearch) -> decltype(items.begin()) {
     if(items.empty()) {
         return items.end();
     }
@@ -254,7 +254,7 @@ CLI11_INLINE void clean_name_string(std::string &name, const std::string &keyCha
 }
 }  // namespace detail
 
-inline std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
+CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input) const {
     std::string line;
     std::string buffer;
     std::string currentSection = "default";
