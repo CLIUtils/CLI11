@@ -1,3 +1,8 @@
+# Wait for all coverage jobs before computing status
+codecov:
+  notify:
+    after_n_builds: 8
+
 ignore:
   - "tests"
   - "examples"
