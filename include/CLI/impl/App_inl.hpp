@@ -2144,6 +2144,12 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
         if(dotloc != std::string::npos && dotloc < arg_name.size() - 1) {
             // using dot notation is equivalent to single argument subcommand
             auto *sub = _find_subcommand(arg_name.substr(0, dotloc), true, false);
+            if(sub != nullptr && require_subcommand_max_ != 0 &&
+               parsed_subcommands_.size() >= require_subcommand_max_ &&
+               std::find(parsed_subcommands_.begin(), parsed_subcommands_.end(), sub) == parsed_subcommands_.end()) {
+                // the maximum number of subcommands is reached, so a new one cannot be started
+                sub = nullptr;
+            }
             if(sub != nullptr) {
                 std::string v = args.back();
                 auto saved_type = current_type;

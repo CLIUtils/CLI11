@@ -2302,6 +2302,25 @@ TEST_CASE_METHOD(TApp, "DotNotationSubcommand", "[subcom]") {
     CHECK(subs.front()->get_name() == "sub2");
 }
 
+TEST_CASE_METHOD(TApp, "DotNotationSubcommandMax", "[subcom]") {
+    std::string v1, v2, other;
+
+    app.require_subcommand(0, 1);
+    auto *sub1 = app.add_subcommand("sub1");
+    sub1->add_option("--value", v1);
+    sub1->add_option("--other", other);
+    app.add_subcommand("sub2")->add_option("--value", v2);
+
+    // more than one option on the same subcommand is still a single subcommand
+    args = {"--sub1.value=a", "--sub1.other=b"};
+    run();
+    CHECK(v1 == "a");
+    CHECK(other == "b");
+
+    args = {"--sub1.value=a", "--sub2.value=b"};
+    CHECK_THROWS_AS(run(), CLI::ExtrasError);
+}
+
 TEST_CASE_METHOD(TApp, "DotNotationSubcommandSingleChar", "[subcom]") {
     std::string v1, v2, vbase;
 
