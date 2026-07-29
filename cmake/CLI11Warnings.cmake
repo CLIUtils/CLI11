@@ -6,16 +6,7 @@ set(unix-warnings -Wall -Wextra -pedantic -Wshadow -Wsign-conversion -Wswitch-en
 # Clang warnings
 # -Wfloat-equal could be added with Catch::literals and _a usage
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  list(
-    APPEND
-    unix-warnings
-    -Wcast-align
-    -Wimplicit-atomic-properties
-    -Wmissing-declarations
-    -Woverlength-strings
-    -Wshadow
-    -Wstrict-selector-match
-    -Wundeclared-selector)
+  list(APPEND unix-warnings -Wcast-align -Wmissing-declarations -Woverlength-strings)
   # -Wunreachable-code Doesn't work on Clang 3.4
 endif()
 

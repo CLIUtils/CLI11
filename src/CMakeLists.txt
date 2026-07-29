@@ -9,12 +9,12 @@ if(CLI11_PRECOMPILED)
   file(GLOB CLI11_precompile_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
   add_library(CLI11 ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers}
                     ${CLI11_precompile_sources})
-  target_compile_definitions(CLI11 PUBLIC -DCLI11_COMPILE)
+  target_compile_definitions(CLI11 PUBLIC CLI11_COMPILE)
 
   set(PUBLIC_OR_INTERFACE PUBLIC)
 else()
   add_library(CLI11 INTERFACE)
-  if(CMAKE_VERSION VERSION_GREATER 3.19)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
     # This is only useful for visual studio and other IDE builds
     target_sources(CLI11 PRIVATE ${CLI11_headers} ${CLI11_library_headers} ${CLI11_impl_headers})
 
@@ -24,11 +24,11 @@ else()
 endif()
 
 if(CLI11_ENABLE_EXTRA_VALIDATORS)
-  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=1)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} CLI11_ENABLE_EXTRA_VALIDATORS=1)
 elseif(CLI11_DISABLE_EXTRA_VALIDATORS)
-  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_DISABLE_EXTRA_VALIDATORS=1)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} CLI11_DISABLE_EXTRA_VALIDATORS=1)
 elseif(DEFINED CLI11_ENABLE_EXTRA_VALIDATORS)
-  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} -DCLI11_ENABLE_EXTRA_VALIDATORS=0)
+  target_compile_definitions(CLI11 ${PUBLIC_OR_INTERFACE} CLI11_ENABLE_EXTRA_VALIDATORS=0)
 endif()
 # Allow IDE's to group targets into folders
 add_library(CLI11::CLI11 ALIAS CLI11) # for add_subdirectory calls

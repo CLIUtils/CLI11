@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #pragma once
-#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
@@ -58,7 +58,7 @@ template <typename DesiredType> class TypeValidator : public Validator {
 };
 
 /// Check for a number
-const TypeValidator<double> Number("NUMBER");
+CLI11_MODULE_INLINE const TypeValidator<double> Number("NUMBER");
 
 /// Produce a bounded range (factory). Min and max are inclusive.
 class Bound : public Validator {
