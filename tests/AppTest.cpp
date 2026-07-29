@@ -3084,6 +3084,12 @@ TEST_CASE("C20_compile", "simple") {
 }
 
 #ifdef _WIN32
+// The precompiled mode does not include any Windows headers through CLI11
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+
 static int spawn_subprocess_win32(const wchar_t *path, wchar_t *commandline) {
     STARTUPINFOW si{};
     si.cb = sizeof(si);

@@ -25,9 +25,9 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -42,9 +42,9 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -59,9 +59,9 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON -DBUILD_SHARED_LIBS=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON -DCLI11_DISABLE_IMPL_HEADERS_INSTALL=ON -DBUILD_SHARED_LIBS=ON
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -76,28 +76,29 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_PRECOMPILED=ON
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Configure2
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/home/runner/work/install
       - name: Run tests
         run: ctest --output-on-failure -L Packaging
         working-directory: build
 
   install-precompiled-macos:
-    name: install tests precompiled macos
+    # Shared covers dylib symbol export of the precompiled library
+    name: install tests precompiled shared macos
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON -DCMAKE_CXX_STANDARD=20
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=20
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -112,9 +113,9 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=OFF -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=OFF -DCMAKE_INSTALL_PREFIX=/Users/runner/work/install -DCLI11_PRECOMPILED=ON
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -129,9 +130,9 @@ jobs:
         with:
           submodules: true
       - name: Configure
-        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
+        run: cmake -S . -B build -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_ENABLE_EXTRA_VALIDATORS=ON -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCLI11_SINGLE_FILE=ON
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -151,9 +152,9 @@ jobs:
           cmake-version: "4.2"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install 
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_MODULE_TESTS=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install 
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests
@@ -181,9 +182,9 @@ jobs:
           cmake-version: "4.2"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=23 -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
       - name: Build
-        run: cmake --build build  -j2
+        run: cmake --build build -j4
       - name: install
         run: cmake --install build
       - name: Run tests

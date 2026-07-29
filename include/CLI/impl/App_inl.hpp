@@ -2405,7 +2405,7 @@ CLI11_NODISCARD CLI11_INLINE const std::string &App::_compare_subcommand_names(c
     return estring;
 }
 
-inline bool capture_extras(ExtrasMode mode) {
+CLI11_INLINE bool capture_extras(ExtrasMode mode) {
     return mode == ExtrasMode::Capture || mode == ExtrasMode::AssumeSingleArgument ||
            mode == ExtrasMode::AssumeMultipleArguments;
 }

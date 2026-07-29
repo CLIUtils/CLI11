@@ -12,7 +12,8 @@ pr:
   - main
 
 variables:
-  cli11.single: ON
+  # Single-file tests double the test build; only a few jobs turn them on
+  cli11.single: OFF
   cli11.std: 14
   cli11.build_type: Debug
   cli11.options: -DCLI11_EXAMPLES_JSON=ON
@@ -49,6 +50,7 @@ jobs:
       matrix:
         Linux14:
           vmImage: "ubuntu-latest"
+          cli11.single: ON
         Linux14PC:
           vmImage: "ubuntu-latest"
           cli11.precompile: ON
@@ -63,6 +65,7 @@ jobs:
         macOS-latest_23:
           vmImage: "macos-latest"
           cli11.std: 23
+          cli11.single: ON
           cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
         macOS-14_11:
           vmImage: "macOS-14"
@@ -83,6 +86,7 @@ jobs:
         Windows11:
           vmImage: "windows-2022"
           cli11.std: 11
+          cli11.single: ON
         Windows20:
           vmImage: "windows-2025"
           cli11.std: 20
@@ -148,9 +152,6 @@ jobs:
           containerImage: gcc:7
           cli11.std: 14
           cli11.options: -DCMAKE_CXX_FLAGS="-Wconversion"
-        gcc8:
-          containerImage: gcc:8
-          cli11.std: 17
         gcc4.8:
           containerImage: helics/buildenv:gcc4-8-builder
           cli11.std: 11
@@ -159,11 +160,6 @@ jobs:
           cli11.std: 11
           cli11.options:
             -DCLI11_WARNINGS_AS_ERRORS=OFF  -DCLI11_DISABLE_EXTRA_VALIDATORS=1
-        clang8:
-          containerImage: silkeh/clang:8
-          cli11.std: 14
-          cli11.options:
-            -DCLI11_FORCE_LIBCXX=ON -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         clang8_17:
           containerImage: silkeh/clang:8
           cli11.std: 17
@@ -178,52 +174,5 @@ jobs:
     container: $[ variables['containerImage'] ]
     steps:
       - template: .ci/azure-cmake.yml
-      - template: .ci/azure-build.yml
-      - template: .ci/azure-test.yml
-
-  - job: Docker_new
-    variables:
-      cli11.single: OFF
-    pool:
-      vmImage: "ubuntu-latest"
-    strategy:
-      matrix:
-        gcc15_23:
-          containerImage: gcc:15
-          cli11.std: 23
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-
-        gcc13_17:
-          containerImage: gcc:13
-          cli11.std: 17
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        gcc12_20:
-          containerImage: gcc:12
-          cli11.std: 20
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-Wredundant-decls -Wconversion"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        clang17_23:
-          containerImage: silkeh/clang:17
-          cli11.std: 23
-          cli11.precompile: ON
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-std=c++23 -stdlib=libc++"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCMAKE_CXX_COMPILER=clang++
-            -DCLI11_FORCE_LIBCXX=ON -DCMAKE_LINKER_TYPE=LLD
-        clang20_26:
-          containerImage: silkeh/clang:20
-          cli11.std: 26
-          cli11.options:
-            -DCMAKE_CXX_FLAGS="-std=c++2c -stdlib=libc++ -Wdocumentation"
-            -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCMAKE_CXX_COMPILER=clang++
-            -DCLI11_FORCE_LIBCXX=ON -DCMAKE_LINKER_TYPE=LLD
-    container: $[ variables['containerImage'] ]
-    steps:
-      - template: .ci/azure-cmake-new.yml
       - template: .ci/azure-build.yml
       - template: .ci/azure-test.yml

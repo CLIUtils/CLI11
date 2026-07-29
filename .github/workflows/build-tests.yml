@@ -30,7 +30,7 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
       - name: Build
-        run: cmake --build build -j2
+        run: cmake --build build -j4
 
   cuda12-single-header-repro:
     name: CUDA 12.6 single-header repro
@@ -80,7 +80,7 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCLI11_CUDA_TESTS=ON
       - name: Build
-        run: cmake --build build -j2
+        run: cmake --build build -j4
 
   boost-build:
     name: Boost build
@@ -96,7 +96,7 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCLI11_BOOST=ON
       - name: Build
-        run: cmake --build build -j2
+        run: cmake --build build -j4
       - name: Run tests
         run: ctest --output-on-failure
         working-directory: build
@@ -112,7 +112,7 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -DCLI11_SANITIZERS=ON
       - name: Build
-        run: cmake --build build -j2
+        run: cmake --build build -j4
       - name: Run tests
         run: ctest --output-on-failure
         working-directory: build

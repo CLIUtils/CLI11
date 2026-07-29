@@ -9,10 +9,11 @@ steps:
         .. -DCLI11_WARNINGS_AS_ERRORS=ON -DCLI11_SINGLE_FILE=$(cli11.single)
         -DCMAKE_CXX_STANDARD=$(cli11.std)
         -DCLI11_SINGLE_FILE_TESTS=$(cli11.single)
+        -DCLI11_PRECOMPILED=$(cli11.precompile)
         -DCMAKE_BUILD_TYPE=$(cli11.build_type) $(cli11.options)
     displayName: "Configure"
 
-  - script: cmake --build . -- -j2 --keep-going
+  - script: cmake --build . -- -j4 --keep-going
     displayName: "Build Unix"
     workingDirectory: build
     condition: ne( variables['Agent.OS'], 'Windows_NT' )
