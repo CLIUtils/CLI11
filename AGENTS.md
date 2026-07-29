@@ -60,7 +60,9 @@ ctest --preset dev -R AppTest
 - `dev` — Inherits `default`, adds `CLI11_PRECOMPILED=ON`,
   `CLI11_BUILD_EXAMPLES=OFF`, and `ccache`. An edit to `impl/*_inl.hpp` only
   rebuilds the static library, not every test.
-- `tidy` — Inherits `default`, adds `clang-tidy` with warnings-as-errors.
+- `tidy` — Inherits `default`, adds `clang-tidy` with warnings-as-errors. Uses
+  precompiled mode, so each `impl/*_inl.hpp` header is analyzed once (in
+  `src/Precompile.cpp`) instead of in every test and example.
 
 ```bash
 cmake --preset tidy

@@ -1,0 +1,5 @@
+InheritParentConfig: true
+
+# CLI11_INLINE expands to nothing in this TU; the _inl.hpp definitions are
+# compiled exactly once here, so the header-definition check does not apply.
+Checks: "-misc-definitions-in-headers"

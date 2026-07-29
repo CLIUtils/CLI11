@@ -35,7 +35,9 @@
       "binaryDir": "build-tidy",
       "cacheVariables": {
         "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--use-color;--warnings-as-errors=*",
-        "CMAKE_CXX_STANDARD": "17"
+        "CMAKE_CXX_STANDARD": "17",
+        "CLI11_PRECOMPILED": true,
+        "CLI11_ENABLE_EXTRA_VALIDATORS": true
       }
     }
   ],
