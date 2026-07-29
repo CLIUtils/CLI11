@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     scan->add_option("-B,--build-dir", build_dir, "Build directory");
     // test with option group
     auto group = app.add_option_group("output group", "type of output");
-    group->add_option("-o,--output", value, "output type");
+    group->add_option("-o,--output", output, "output type");
 
     try {
         app.parse(argc, argv);
@@ -50,6 +50,24 @@ int main(int argc, char *argv[]) {
     }
 
     std::println("OK: import cli11 module\nvalue = {}", value);
+    for(const auto *sub : app.get_subcommands()) {
+        std::println("subcommand = {}", sub->get_name());
+    }
+    if(!script_path.empty()) {
+        std::println("script_path = {}", script_path);
+    }
+    if(!toolchain_path.empty()) {
+        std::println("toolchain_path = {}", toolchain_path);
+    }
+    if(!build_dir.empty()) {
+        std::println("build_dir = {}", build_dir);
+    }
+    if(!install_dir.empty()) {
+        std::println("install_dir = {}", install_dir);
+    }
+    if(!output.empty()) {
+        std::println("output = {}", output);
+    }
 
     return 0;
 }

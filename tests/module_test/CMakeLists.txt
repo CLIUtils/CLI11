@@ -67,4 +67,21 @@ if(CLI11_MODULES)
   add_test(NAME module-test1 COMMAND module-test one)
   set_property(TEST module-test1 PROPERTY PASS_REGULAR_EXPRESSION
                                           "OK: import cli11 module\nvalue = one")
+
+  # Long options through a subcommand (see #1318)
+  add_test(NAME module-test-long-opts COMMAND module-test one configure --script-path foo
+                                              --build-dir bar)
+  set_property(
+    TEST module-test-long-opts
+    PROPERTY PASS_REGULAR_EXPRESSION "subcommand = configure\nscript_path = foo\nbuild_dir = bar")
+
+  # Short options through a subcommand
+  add_test(NAME module-test-short-opts COMMAND module-test one install -B bld -I prefix)
+  set_property(
+    TEST module-test-short-opts
+    PROPERTY PASS_REGULAR_EXPRESSION "subcommand = install\nbuild_dir = bld\ninstall_dir = prefix")
+
+  # Long option in an option group
+  add_test(NAME module-test-option-group COMMAND module-test one --output json)
+  set_property(TEST module-test-option-group PROPERTY PASS_REGULAR_EXPRESSION "output = json")
 endif()
