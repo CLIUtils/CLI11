@@ -263,6 +263,9 @@ CLI11_INLINE bool is_binary_escaped_string(const std::string &escaped_string);
 /// extract an escaped binary_string
 CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string);
 
+/// escape an array-like string so it cannot be interpreted as a secondary array
+CLI11_INLINE void handle_secondary_array(std::string &str);
+
 /// process a quoted string, remove the quotes and if appropriate handle escaped characters
 CLI11_INLINE bool process_quoted_string(std::string &str,
                                         char string_char = '\"',
