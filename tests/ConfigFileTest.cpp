@@ -1501,6 +1501,32 @@ TEST_CASE_METHOD(TApp, "TomlSectionTrailingComment", "[config]") {
     CHECK(two == 2);
 }
 
+TEST_CASE_METHOD(TApp, "TomlQuotedSectionTrailingComment", "[config]") {
+    // stripping a trailing comment from a section header must skip comment characters inside quotes,
+    // and a header that is too short after the strip is ignored
+    TempFile tmpini{"TestIniTmp.ini"};
+
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "val=1" << '\n';
+        out << "[ # not a section" << '\n';
+        out << "[\"subcom\"] # a 'quoted' comment" << '\n';
+        out << "val=2" << '\n';
+    }
+
+    int one{0}, two{0};
+    app.add_option("--val", one);
+    auto *subcom = app.add_subcommand("subcom");
+    subcom->add_option("--val", two);
+
+    run();
+
+    CHECK(one == 1);
+    CHECK(two == 2);
+}
+
 TEST_CASE_METHOD(TApp, "TomlDocStringCommentOneLine", "[config]") {
     // a multiline comment that opens and closes on the same line must not swallow the rest of the file
     TempFile tmpini{"TestIniTmp.ini"};

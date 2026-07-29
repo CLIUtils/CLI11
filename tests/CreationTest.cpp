@@ -478,6 +478,11 @@ TEST_CASE_METHOD(TApp, "GetNameCheck", "[creation]") {
     CHECK("-o,--other" == d->get_name(false, true));
     CHECK("one,-o,--other" == d->get_name(true, true));
     CHECK("one" == d->get_name(true, false));
+
+    // an option with an empty group is hidden and has no name
+    auto *e = app.add_flag("--hidden")->group("");
+    CHECK(e->get_name().empty());
+    CHECK(e->get_name(true, true).empty());
 }
 
 TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {

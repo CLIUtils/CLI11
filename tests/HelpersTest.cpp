@@ -503,6 +503,24 @@ TEST_CASE("StringTools: unicode_literals", "[helpers]") {
     CHECK(CLI::detail::remove_escaped_characters("test\\U0010FFFF") == from_u8string(u8"test\U0010FFFF"));
 }
 
+TEST_CASE("StringTools: handleSecondaryArray", "[helpers]") {
+    // a quoted string that decodes to an array-like value gets its characters doubled so it
+    // cannot be misinterpreted as a secondary array by later processing
+    std::string s1 = "[1,2]";
+    CLI::detail::handle_secondary_array(s1);
+    CHECK(s1 == "[[11,,22]]");
+
+    // non array-like strings pass through untouched
+    std::string s2 = "[1,2";
+    CLI::detail::handle_secondary_array(s2);
+    CHECK(s2 == "[1,2");
+
+    // the escaping also triggers through quote processing
+    std::string q1 = "\"[1,2]\"";
+    CHECK(CLI::detail::process_quoted_string(q1));
+    CHECK(q1 == "[[11,,22]]");
+}
+
 TEST_CASE("StringTools: close_sequence", "[helpers]") {
     CHECK(CLI::detail::close_sequence("[test]", 0, ']') == 5U);
     CHECK(CLI::detail::close_sequence("[\"test]\"]", 0, ']') == 8U);
@@ -1614,6 +1632,13 @@ TEST_CASE("Types: SumStringVector", "[helpers]") {
     // non-numeric values fall back to string concatenation
     std::vector<std::string> strings = {"a", "b"};
     CHECK(CLI::detail::sum_string_vector(strings) == "ab");
+
+    // sums that would overflow int64 fall back to the double path
+    std::vector<std::string> overflow = {"9223372036854775807", "1"};
+    CHECK(CLI::detail::sum_string_vector(overflow) == "9.223372036854776e+18");
+
+    std::vector<std::string> underflow = {"-9223372036854775807", "-2"};
+    CHECK(CLI::detail::sum_string_vector(underflow) == "-9.223372036854776e+18");
 }
 
 static_assert(!CLI::detail::is_tuple_like<std::vector<double>>::value, "vector should not be like a tuple");

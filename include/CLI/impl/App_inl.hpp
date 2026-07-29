@@ -1598,7 +1598,7 @@ CLI11_INLINE void App::_parse(std::vector<std::string> &&args) {
 
     while(!args.empty()) {
         if(!_parse_single(args, positional_only)) {
-            break;
+            break;  // LCOV_EXCL_LINE  _parse_single cannot return false at the top level
         }
     }
     _process();
