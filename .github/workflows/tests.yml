@@ -64,6 +64,11 @@ jobs:
             std: 23
             precompile: OFF
             options: -DCMAKE_CXX_FLAGS="-Wstrict-overflow=5" -DCLI11_ENABLE_EXTRA_VALIDATORS=1
+          - name: gcc15 std26
+            container: gcc:15
+            std: 26
+            precompile: OFF
+            options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
           - name: gcc12 std20
             container: gcc:12
             std: 20

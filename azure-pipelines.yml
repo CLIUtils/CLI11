@@ -93,6 +93,7 @@ jobs:
           cli11.options:
             -DCMAKE_CXX_FLAGS="/EHsc /GR-" -DCLI11_DISABLE_EXTRA_VALIDATORS=1
         WindowsLatest:
+          # CMake compiles MSVC std 23 with /std:c++latest; 26 is not supported yet
           vmImage: "windows-2025"
           cli11.std: 23
           cli11.options: -DCMAKE_CXX_FLAGS="/EHsc /GR-"

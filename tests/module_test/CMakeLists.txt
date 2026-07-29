@@ -15,7 +15,10 @@ if(CLI11_DIR)
   set(CMAKE_PREFIX_PATH ${CLI11_DIR})
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
+# Default only; the outer build passes its own standard so the module BMI matches
+set(CMAKE_CXX_STANDARD
+    23
+    CACHE STRING "The C++ standard to use")
 
 # Test the CLI11 CMake package config
 find_package(CLI11 2.5 REQUIRED)
