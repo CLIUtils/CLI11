@@ -183,7 +183,8 @@ jobs:
           submodules: true
       - uses: ./.github/actions/quick_cmake
         with:
-          cmake-version: "4.2"
+          # 4.4+ compiles the imported-module BMI with the consumer's standard
+          cmake-version: "4.4"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=${{ matrix.std }} -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
