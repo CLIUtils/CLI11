@@ -9,3 +9,14 @@
 #titlearea td {
   display: block;
 }
+
+/* Place the dark-mode toggle in the top-right corner of the sidebar header. */
+#titlearea {
+  position: relative;
+}
+
+doxygen-awesome-dark-mode-toggle {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
