@@ -18,6 +18,17 @@
       }
     },
     {
+      "name": "dev",
+      "displayName": "Development (fast rebuilds)",
+      "inherits": "default",
+      "binaryDir": "build-dev",
+      "cacheVariables": {
+        "CLI11_PRECOMPILED": true,
+        "CLI11_BUILD_EXAMPLES": false,
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
       "name": "tidy",
       "displayName": "Clang-tidy",
       "inherits": "default",
@@ -35,6 +46,11 @@
       "configurePreset": "default"
     },
     {
+      "name": "dev",
+      "displayName": "Development Build",
+      "configurePreset": "dev"
+    },
+    {
       "name": "tidy",
       "displayName": "Clang-tidy Build",
       "configurePreset": "tidy",
@@ -49,6 +65,14 @@
       "output": {
         "outputOnFailure": true
       }
+    },
+    {
+      "name": "dev",
+      "displayName": "Development",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ],
   "workflowPresets": [
@@ -59,6 +83,15 @@
         { "type": "configure", "name": "default" },
         { "type": "build", "name": "default" },
         { "type": "test", "name": "default" }
+      ]
+    },
+    {
+      "name": "dev",
+      "displayName": "Development Workflow",
+      "steps": [
+        { "type": "configure", "name": "dev" },
+        { "type": "build", "name": "dev" },
+        { "type": "test", "name": "dev" }
       ]
     }
   ]

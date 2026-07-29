@@ -5,26 +5,36 @@ system; Meson and Bazel are also supported.
 
 ## Quick Build & Test
 
+Use presets. The `dev` workflow is the fastest for iteration; use `default`
+before a push to verify the primary header-only mode.
+
 ```bash
-# Default workflow (configure + build + test)
+# Fast iteration (precompiled lib, no examples, ccache; configure + build + test)
+cmake --workflow dev
+
+# Full header-only build, matches CI (configure + build + test)
 cmake --workflow default
 
-# Or manually
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build -j4
-cmake --build build --target test   # or: cd build && ctest --output-on-failure
+# Or step by step
+cmake --preset dev
+cmake --build --preset dev
+ctest --preset dev
 ```
+
+The `dev` preset uses `ccache`; install it (`brew install ccache`) or override
+with `cmake --preset dev -DCMAKE_CXX_COMPILER_LAUNCHER=`.
 
 ## Running a Single Test
 
-Tests are individual Catch2 executables in `build/tests/`.
+Tests are individual Catch2 executables in `build-dev/tests/` (`dev` preset) or
+`build/tests/` (`default` preset).
 
 ```bash
 # Run one test executable directly
-./build/tests/AppTest
+./build-dev/tests/AppTest
 
 # Or via CTest with a regex
-ctest -R AppTest --output-on-failure
+ctest --preset dev -R AppTest
 ```
 
 ## Key CMake Options
@@ -47,6 +57,9 @@ ctest -R AppTest --output-on-failure
 
 - `default` — Debug, Ninja, `CLI11_WARNINGS_AS_ERRORS=ON`, export compile
   commands.
+- `dev` — Inherits `default`, adds `CLI11_PRECOMPILED=ON`,
+  `CLI11_BUILD_EXAMPLES=OFF`, and `ccache`. An edit to `impl/*_inl.hpp` only
+  rebuilds the static library, not every test.
 - `tidy` — Inherits `default`, adds `clang-tidy` with warnings-as-errors.
 
 ```bash
