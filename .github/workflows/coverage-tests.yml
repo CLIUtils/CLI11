@@ -63,3 +63,5 @@ jobs:
       - uses: codecov/codecov-action@v5
         with:
           files: build/coverage.info
+          # Protected branches reject tokenless uploads; fork PRs still work without it.
+          token: ${{ secrets.CODECOV_TOKEN }}
