@@ -1,0 +1,11 @@
+/* CLI11 tweaks on top of doxygen-awesome (sidebar-only layout). */
+
+/* Doxygen >= 1.13 places the search box in the title table row, where it
+   overlaps the project brief inside the narrow sidebar. Stack the header
+   elements (name, brief, search) vertically instead. */
+#titlearea table,
+#titlearea tbody,
+#titlearea tr,
+#titlearea td {
+  display: block;
+}
