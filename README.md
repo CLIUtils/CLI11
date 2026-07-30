@@ -13,7 +13,7 @@
 [![Latest release][repology-badge]][repology]
 [![Conan.io][conan-badge]][conan-link]
 [![Conda Version][conda-badge]][conda-link]
-[![Try CLI11 2.4 online][wandbox-badge]][wandbox-link]
+[![Try CLI11 online][wandbox-badge]][wandbox-link]
 
 [What's new](./CHANGELOG.md) • [Documentation][gitbook] • [API
 Reference][api-docs]
@@ -166,8 +166,8 @@ this library:
   incomplete arguments. It's better not to guess. Most third party command line
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
-  option to disable it). Recent releases of CLI11 do include partial option
-  matching for option prefixes 🆕. This is enabled by
+  option to disable it). Recent releases of CLI11 include optional unambiguous
+  prefix matching for subcommand names 🆕, enabled by
   `.allow_subcommand_prefix_matching()`, along with an example that generates
   suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
 When adding options the names should not conflict with each other, if an option
 is added, or a modifier changed that would cause naming conflicts a run time
 error will be thrown in the add_option method. This includes default options for
-help `-h, --help`. For more information about `ensure_utf8` the section on
+help `-h, --help`. For more information about `ensure_utf8` see the section on
 [Unicode support](#unicode-support) below.
 
 <details><summary>Note: If you don't like macros, this is what that macro expands to: (click to expand)</summary><p>
@@ -311,7 +311,7 @@ The two parameter template overload can be used in cases where you want to
 restrict the input such as
 
 ```cpp
-double val
+double val;
 app.add_option<double,unsigned int>("-v",val);
 ```
 
@@ -336,9 +336,9 @@ template to directly specify the conversion type.
 
 Types such as (std or boost) `optional<int>`, `optional<double>`, and
 `optional<string>` and any other wrapper types are supported directly. For
-purposes of CLI11 wrapper types are those which `value_type` definition. See
-[CLI11 Advanced Topics/Custom Converters][] for information on how you can add
-your own converters for additional types.
+purposes of CLI11 wrapper types are those which have a `value_type` definition.
+See [CLI11 Advanced Topics/Custom Converters][] for information on how you can
+add your own converters for additional types.
 
 Vector types can also be used in the two parameter template overload
 
@@ -460,17 +460,17 @@ Before parsing, you can set the following options:
   flags (which do not inherit their default but always start with a specific
   policy). `->join(delim)` can also be used to join with a specific delimiter.
   This equivalent to calling `->delimiter(delim)` and `->join()`. Valid values
-  are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::Throw`,
-  `CLI::MultiOptionPolicy::TakeLast`, `CLI::MultiOptionPolicy::TakeFirst`,
-  `CLI::MultiOptionPolicy::Join`, `CLI::MultiOptionPolicy::TakeAll`,
-  `CLI::MultiOptionPolicy::Sum`, and `CLI::MultiOptionPolicy::Reverse`.
+  are `CLI::MultiOptionPolicy::Throw`, `CLI::MultiOptionPolicy::TakeLast`,
+  `CLI::MultiOptionPolicy::TakeFirst`, `CLI::MultiOptionPolicy::Join`,
+  `CLI::MultiOptionPolicy::TakeAll`, `CLI::MultiOptionPolicy::Sum`, and
+  `CLI::MultiOptionPolicy::Reverse`.
 - `->check(std::string(const std::string &), validator_name="",validator_description="")`:
   Define a check function. The function should return a non empty string with
   the error message if the check fails
 - `->check(Validator)`: Use a Validator object to do the check see
   [Validators](#validators) for a description of available Validators and how to
   create new ones.
-- `->transform(std::string(std::string &), validator_name="",validator_description=")`:
+- `->transform(std::string(std::string &), validator_name="",validator_description="")`:
   Converts the input string into the output string, in-place in the parsed
   options.
 - `->transform(Validator)`: Uses a Validator object to do the transformation see
@@ -624,7 +624,6 @@ of flags.
   sure to use floating point if needed). Min defaults to 0.
 - `CLI::PositiveNumber`: Requires the number be greater than 0
 - `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
-- `CLI::Number`: Requires the input be a number.
 
 #### Validators that may be disabled 🆕
 
@@ -650,10 +649,11 @@ computation time that may not be valuable for some use cases.
   `11 Mib` to absolute values. `KB` can be configured to be interpreted as 10^3
   or 2^10.
 
-- `CLI::Bounded(min,max)`: Modify the input such that it is always between min
-  and max (make sure to use floating point if needed). Min defaults to 0. Will
+- `CLI::Bound(min,max)`: Modify the input such that it is always between min and
+  max (make sure to use floating point if needed). Min defaults to 0. Will
   produce an error if conversion is not possible.
 
+- `CLI::Number`: Requires the input be a number.
 - `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g.
   `'255.255.255.255'`, `'10.1.1.7'`.
 - `CLI::TypeValidator<TYPE>`:Requires that the option be convertible to the
@@ -703,9 +703,9 @@ There are a few built in Validators that let you transform values if used with
 the `transform` function. If they also do some checks then they can be used
 `check` but some may do nothing in that case.
 
-- `CLI::Bounded(min,max)` will bound values between min and max and values
-  outside of that range are limited to min or max, it will fail if the value
-  cannot be converted and produce a `ValidationError`
+- `CLI::Bound(min,max)` will bound values between min and max and values outside
+  of that range are limited to min or max, it will fail if the value cannot be
+  converted and produce a `ValidationError`
 - The `IsMember` Validator lets you specify a set of predefined options. You can
   pass any container or copyable pointer (including `std::shared_ptr`) to a
   container to this Validator; the container just needs to be iterable and have
@@ -731,7 +731,7 @@ functions that work on other types. Here are some examples of `IsMember`:
   can use maps; in `->transform()` these replace the matched value with the
   matched key. The value member of the map is not used in `IsMember`, so it can
   be any type.
-- `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>("one", "two")); CLI::IsMember(p)`:
+- `auto p = std::make_shared<std::vector<std::string>>(std::initializer_list<std::string>{"one", "two"}); CLI::IsMember(p)`:
   You can modify `p` later.
 - The `Transformer` and `CheckedTransformer` Validators transform one value into
   another. Any container or copyable pointer (including `std::shared_ptr`) to a
@@ -753,16 +753,16 @@ are interchangeable in the examples) of `Transformer`:
 
 - `CLI::Transformer({{"key1", "map1"},{"key2","map2"}})`: Select from key values
   and produce map values.
-- `CLI::Transformer(std::map<std::string,int>({"two",2},{"three",3},{"four",4}}))`:
+- `CLI::Transformer(std::map<std::string,int>({{"two",2},{"three",3},{"four",4}}))`:
   most maplike containers work, the `::value_type` needs to produce a pair of
   some kind.
 - `CLI::CheckedTransformer(std::map<std::string, int>({{"one", 1}, {"two", 2}}))`:
   You can use maps; in `->transform()` these replace the matched key with the
   value. `CheckedTransformer` also requires that the value either match one of
   the keys or match one of known outputs.
-- `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>({"key1", "map1"},{"key2","map2"})); CLI::Transformer(p)`:
+- `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>{{"key1", "map1"},{"key2","map2"}}); CLI::Transformer(p)`:
   You can modify `p` later. `TransformPairs<T>` is an alias for
-  `std::vector<std::pair<<std::string,T>>`
+  `std::vector<std::pair<std::string,T>>`
 
 NOTES: If the container used in `IsMember`, `Transformer`, or
 `CheckedTransformer` has a `find` function like `std::unordered_map` or
@@ -900,7 +900,7 @@ not used in performance critical code:
   specified type if possible, can be vector to return all results, and a
   non-vector to get the result according to the MultiOptionPolicy in place. If
   it is expected that the results will be needed as a vector, it is suggested
-  that `->expected(CLI::details::expected_max_vector_size)` or
+  that `->expected(CLI::detail::expected_max_vector_size)` or
   `allow_extra_args()` be used on the option to inform CLI11 that vector args
   are expected and allowed.
 
@@ -1003,7 +1003,7 @@ option_groups. These are:
   character as a single dash long form name; for example, `-s` and `-single` are
   not allowed in the same application.
 - `.allow_subcommand_prefix_matching()`:🆕 If this modifier is enabled,
-  unambiguious prefix portions of a subcommand will match. For example
+  unambiguous prefix portions of a subcommand will match. For example
   `upgrade_package` would match on `upgrade_`, `upg`, `u` as long as no other
   subcommand would also match. It also disallows subcommand names that are full
   prefixes of another subcommand.
@@ -1086,7 +1086,7 @@ option_groups. These are:
   fallthrough (and is not nameless 🚧).
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
-- `.formatter(std::shared_ptr<formatterBase> fmt)`: Set a custom formatter for
+- `.formatter(std::shared_ptr<FormatterBase> fmt)`: Set a custom formatter for
   help.
 - `.formatter_fn(fmt)`, with signature
   `std::string(const App*, std::string, AppFormatMode)`. See [formatting][] for
@@ -1162,9 +1162,9 @@ option_groups. These are:
   `PrefixCommandMode::SeparatorOnly` will only trigger prefix command mode with
   the subcommand separator `--`; other unrecognized arguments are considered an
   error unless `allow_extras` is enabled. Calling with
-  `PrefixCommandMode::PositionalOnly` will only trigger prefix command mode at
-  the first positional argument or the separator `--`; unrecognized options do
-  not stop processing and are collected in the remaining_arg list.
+  `PrefixCommandMode::PositionalOnly` 🚧 will only trigger prefix command mode
+  at the first positional argument or the separator `--`; unrecognized options
+  do not stop processing and are collected in the remaining_arg list.
 - `.usage(message)`: Replace text to appear at the start of the help string
   after description.
 - `.usage(std::string())`: Set a callback to generate a string that will appear
@@ -1445,7 +1445,7 @@ following overloads:
   active values, or include defaulted arguments if `default_also` is `true`.
   This overload will likely be deprecated in a future release in favor of the
   `CLI::ConfigOutputMode` overload.
-- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🆕
+- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🚧
   Specify how configuration output should be generated.
   - `CLI::ConfigOutputMode::Active`: print active values only. Same as
     `.config_to_str()`.
@@ -1530,7 +1530,7 @@ signature. see [formatting][] for more details.
 The App class was designed allow toolkits to subclass it, to provide preset
 default options (see above) and setup/teardown code. Subcommands remain an
 unsubclassed `App`, since those are not expected to need setup and teardown. The
-default `App` only adds a help flag, `-h,--help`, than can removed/replaced
+default `App` only adds a help flag, `-h,--help`, that can be removed/replaced
 using `.set_help_flag(name, help_string)`. You can also set a help-all flag with
 `.set_help_all_flag(name, help_string)`; this will expand the subcommands (one
 level only). You can remove options if you have pointers to them using
@@ -2017,7 +2017,7 @@ try! Feedback is always welcome.
 [github pull requests]: https://github.com/CLIUtils/CLI11/pulls
 [goofit]: https://GooFit.github.io
 [plumbum]: https://plumbum.readthedocs.io/en/latest/
-[click]: http://click.pocoo.org
+[click]: https://click.palletsprojects.com
 [api-docs]: https://CLIUtils.github.io/CLI11/index.html
 [rang]: https://github.com/agauniyal/rang
 [boost program options]:
@@ -2033,7 +2033,7 @@ try! Feedback is always welcome.
 [university of cincinnati]: http://www.uc.edu
 [gitbook]: https://cliutils.github.io/CLI11/book.html
 [cli11 advanced topics/custom converters]:
-  https://cliutils.gitlab.io/CLI11Tutorial/chapters/advanced-topics.html#custom-converters
+  https://cliutils.github.io/CLI11/book-advanced-topics.html
 [programoptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx
 [argument aggregator]: https://github.com/vietjtnguyen/argagg
 [args]: https://github.com/Taywee/args
@@ -2045,7 +2045,7 @@ try! Feedback is always welcome.
 [version 1.3 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-13/
 [version 1.6 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-16/
 [version 2.0 post]: https://iscinumpy.gitlab.io/post/announcing-cli11-20/
-[wandbox-badge]: https://img.shields.io/badge/try_2.1-online-blue.svg
+[wandbox-badge]: https://img.shields.io/badge/try-online-blue.svg
 [wandbox-link]: https://wandbox.org/permlink/9eQyaD1DchlzukRv
 [releases-badge]: https://img.shields.io/github/release/CLIUtils/CLI11.svg
 [cli11-po-compare]:

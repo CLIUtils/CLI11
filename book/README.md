@@ -9,7 +9,7 @@ header file (`CLI11.hpp` available in [releases][]) to use CLI11 in your own
 application. Other ways to integrate it into a build system are listed in the
 [README][].
 
-The library was inspired the Python libraries [Plumbum][] and [Click][], and
+The library was inspired by the Python libraries [Plumbum][] and [Click][], and
 incorporates many of their user friendly features. The library is extensively
 documented, with a [friendly introduction][readme], this tutorial book, and more
 technical [API docs][].
@@ -22,13 +22,13 @@ analysis with multiple models and many parameters and switches. For example,
 this is a simple program that has an optional parameter that defaults to 0:
 
 ```text
-gitbook $ ./a.out
+$ ./a.out
 Parameter value: 0
 
-gitbook $ ./a.out -p 4
+$ ./a.out -p 4
 Parameter value: 4
 
-gitbook $ ./a.out --help
+$ ./a.out --help
 App description
 Usage: ./a.out [OPTIONS]
 
@@ -38,7 +38,7 @@ Options:
 ```
 
 Like any good command line application, help is provided. This program can be
-implemented in 10 lines:
+implemented in only a few lines:
 
 \include intro.cpp
 
@@ -49,7 +49,7 @@ help is requested or if incorrect arguments are passed. You can try this example
 out for yourself. To compile with GCC:
 
 ```text
-gitbook:examples $ c++ -std=c++11 intro.cpp
+c++ -std=c++11 intro.cpp
 ```
 
 Much more complicated options are handled elegantly:

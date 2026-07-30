@@ -15,8 +15,8 @@ There are several configuration options that you can set:
 | `label(key, value)`                        | Set a label to a different value                                     | Both         |
 | `long_option_alignment_ratio(float)`       | Set the alignment ratio for long options within the left column(1/3) | Both         |
 | `right_column_width(std::size_t)`          | Set the right column width(65)                                       | Both         |
-| `description_paragraph_width(std::size_t)` | Set the description paragraph width at the top of help(88)           | Both         |
-| `footer_paragraph_width(std::size_t)`      | Set the footer paragraph width (88)                                  | Both         |
+| `description_paragraph_width(std::size_t)` | Set the description paragraph width at the top of help(80)           | Both         |
+| `footer_paragraph_width(std::size_t)`      | Set the footer paragraph width (80)                                  | Both         |
 | `enable_description_formatting(bool)`      | enable/disable description paragraph formatting (true)               | Both         |
 | `enable_footer_formatting(bool)`           | enable/disable footer paragraph formatting (true)                    | Both         |
 | `enable_option_defaults(bool)`             | enable/disable printing of option defaults (true)                    | Both         |
@@ -49,7 +49,7 @@ column widths and ratios of the different sections of the help
 The long option alignment ratio controls the relative proportion of short to
 long option names. It must be a number between 0 and 1. values entered outside
 this range are converted into the range by absolute value or inversion. It
-defines where in the left column long optiosn are aligned. It is a ratio of the
+defines where in the left column long options are aligned. It is a ratio of the
 column width property.
 
 ### formatting options
@@ -99,8 +99,8 @@ app.formatter(std::make_shared<MyFormatter>());
 ```
 
 Look at the class definitions in `FormatterFwd.hpp` or the method definitions in
-`Formatter.hpp` to see what methods you have access to and how they are put
-together.
+`impl/Formatter_inl.hpp` to see what methods you have access to and how they are
+put together.
 
 ## Anatomy of a help message
 
@@ -109,16 +109,16 @@ line.
 
 ```text
 <make_description(app)>
-<make_usage(app)>
+<make_usage(app, name)>
 <make_positionals(app)>
-  <make_group(app, "Positionals", true, filter>
+  <make_group("POSITIONALS", true, opts)>
 <make_groups(app, mode)>
-  <make_group(app, "Option Group 1"), false, filter>
-  <make_group(app, "Option Group 2"), false, filter>
+  <make_group("Option Group 1", false, opts)>
+  <make_group("Option Group 2", false, opts)>
   ...
-<make_subcommands(app)>
-  <make_subcommand(sub1, Mode::Normal)>
-  <make_subcommand(sub2, Mode::Normal)>
+<make_subcommands(app, mode)>
+  <make_subcommand(sub1)>
+  <make_subcommand(sub2)>
 <make_footer(app)>
 ```
 
@@ -138,8 +138,6 @@ make_option_name(o,p)        make_option_desc(o)
 
 Notes:
 
-- `*1`: This signature depends on whether the call is from a positional or
-  optional.
 - `o` is opt pointer, `p` is true if positional.
 
 ## formatting callback

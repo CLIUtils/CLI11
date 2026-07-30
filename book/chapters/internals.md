@@ -15,9 +15,11 @@ Option* add_option(string name, T &item) {
 }
 ```
 
-Obviously, you can't access `T` after the `add_` method is over, so it stores
-the string representation of the default value if it receives the special `true`
-value as the final argument (not shown above).
+Obviously, you can't access `T` after the `add_` method is over. To store the
+string representation of the default value, call `capture_default_str()` on the
+option (or use `always_capture_default()` to do this for every option). Only the
+low-level `add_option` overload taking a raw `callback_t` still accepts a
+`defaulted` bool argument.
 
 ## Parsing
 
@@ -33,7 +35,7 @@ The parsing phase is the most interesting:
 1. `_parse_single`: Run on each entry on the command line and fill the
    options/subcommands.
 2. `_process`: Run the procedure listed below.
-3. `_process_extra`: This throws an error if needed on extra arguments that
+3. `_process_extras`: This throws an error if needed on extra arguments that
    didn't fit in the parse.
 
 The `_process` procedure runs the following steps; each step is recursive and

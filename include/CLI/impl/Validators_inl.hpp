@@ -309,7 +309,6 @@ CLI11_INLINE std::pair<std::string, std::string> split_program_name(std::string 
 }
 
 }  // namespace detail
-/// @}
 
 // [CLI11:validators_inl_hpp:end]
 }  // namespace CLI

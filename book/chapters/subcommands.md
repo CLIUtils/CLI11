@@ -17,7 +17,7 @@ can do with an `App`, however.
 You are given a lot of control the help output. You can set a footer with
 `app.footer("My Footer")`. You can replace the default help print when a
 `ParseError` is thrown with `app.failure_message(CLI::FailureMessage::help)`.
-The default is `CLI:::FailureMessage::simple`, and you can easily define a new
+The default is `CLI::FailureMessage::simple`, and you can easily define a new
 one. Just make a (lambda) function that takes an App pointer and a reference to
 an error code (even if you don't use them), and returns a string.
 
@@ -95,10 +95,15 @@ at the point the subcommand is created:
 
 - The name and description for the help flag
 - The footer
+- The usage
 - The failure message printer function
+- The formatter
+- The config formatter
 - Option defaults
 - Allow extras
+- Allow config extras
 - Prefix command
+- Immediate callback
 - Ignore case
 - Ignore underscore
 - Allow Windows style options
@@ -106,6 +111,7 @@ at the point the subcommand is created:
 - Group name
 - Max required subcommands
 - prefix_matching
+- Configurable
 - validate positional arguments
 - validate optional arguments
 
@@ -129,7 +135,7 @@ through" to the parent command; if that parent allows that option, it matches
 there instead. This was added to allow CLI11 to represent models:
 
 ```text
-gitbook:code $ ./my_program my_model_1 --model_flag --shared_flag
+./my_program my_model_1 --model_flag --shared_flag
 ```
 
 Here, `--shared_flag` was set on the main app, and on the command line it "falls
@@ -163,7 +169,7 @@ calls another command called "`git-thing`" with the remaining options intact.
 ### prefix matching
 
 A modifier is available for subcommand matching,
-`->allow_subcommand_prefix_matching()`. if this is enabled unambiguious prefix
+`->allow_subcommand_prefix_matching()`. if this is enabled unambiguous prefix
 portions of a subcommand will match. For Example `upgrade_package` would match
 on `upgrade_`, `upg`, `u` as long as no other subcommand would also match. It
 also disallows subcommand names that are full prefixes of another subcommand.
@@ -189,12 +195,12 @@ This would allow calling help such as:
 ### Positional Validation
 
 Some arguments supplied on the command line may be legitimately applied to more
-than 1 positional argument. In this context enabling `positional_validation` on
+than 1 positional argument. In this context calling `validate_positionals()` on
 the application or subcommand will check any validators before applying the
 command line argument to the positional option. It is not an error to fail
 validation in this context, positional arguments not matching any validators
-will go into the `extra_args` field which may generate an error depending on
-settings.
+will be treated as extra arguments (retrievable via `app.remaining()`) which may
+generate an error depending on settings.
 
 ### Optional Argument Validation
 
