@@ -47,10 +47,17 @@ jobs:
           name: CLI11-Source
           path: CLI11-Source
 
+      - name: Make release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          python3 scripts/ExtractReleaseNotes.py "${GITHUB_REF_NAME}" > release-notes.md
+          cat release-notes.md
+
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          body_path: release-notes.md
           files: |
             build/single-include/CLI11.hpp
             CLI11-Source/CLI11-*-Source.tar.gz
