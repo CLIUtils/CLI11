@@ -73,8 +73,11 @@ for use in a toolkit (like [GooFit][]). All the standard shell idioms, like
 `--`, work as well.
 
 The guide chapters in the sidebar walk through the library step by step,
-starting with [installation](@ref book-installation) and a first program. Feel
-free to contribute to [the guide here][cli11guide] if something can be improved!
+starting with [installation](@ref book-installation) and a first program. The
+examples section shows complete programs: the @ref book-an-advanced-example
+walkthrough, and @ref example-programs, an index of the programs that ship with
+CLI11. Feel free to contribute to [the guide here][cli11guide] if something can
+be improved!
 
 ## API reference
 

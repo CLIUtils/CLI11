@@ -10,12 +10,19 @@ order, or jump to the chapter you need:
 - [Options](chapters/options.md)
 - [Validators](chapters/validators.md)
 - [Subcommands and the App](chapters/subcommands.md)
-- [Making a git clone](chapters/an-advanced-example.md)
+- [Option groups](chapters/option-groups.md)
 - [Accepting configure files](chapters/config.md)
 - [Formatting help output](chapters/formatting.md)
+- [Unicode support](chapters/unicode.md)
 - [Using CLI11 in a Toolkit](chapters/toolkits.md)
 - [Advanced topics](chapters/advanced-topics.md)
 - [CLI11 Internals](chapters/internals.md)
+
+## Examples
+
+- [Making a git clone](chapters/an-advanced-example.md) — a walkthrough of a
+  larger program
+- [Example programs](../examples) — small, complete programs you can copy
 
 A rendered version is part of the
 [CLI11 documentation](https://cliutils.github.io/CLI11/).

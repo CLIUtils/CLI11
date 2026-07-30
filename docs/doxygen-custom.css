@@ -1,7 +1,7 @@
 /* CLI11 tweaks on top of doxygen-awesome (sidebar-only layout). */
 
 /* doxygen-awesome hides the sidebar expander arrows until hover, which makes
-   collapsed sections (Guide, API Reference) easy to miss. Keep them
+   collapsed sections (Guide, Examples, API Reference) easy to miss. Keep them
    visible. */
 html {
   --side-nav-arrow-opacity: 0.4;
