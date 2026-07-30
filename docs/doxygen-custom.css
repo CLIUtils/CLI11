@@ -1,13 +1,16 @@
 /* CLI11 tweaks on top of doxygen-awesome (sidebar-only layout). */
 
-/* Doxygen >= 1.13 places the search box in the title table row, where it
-   overlaps the project brief inside the narrow sidebar. Stack the header
-   elements (name, brief, search) vertically instead. */
-#titlearea table,
-#titlearea tbody,
-#titlearea tr,
-#titlearea td {
-  display: block;
+/* doxygen-awesome hides the sidebar expander arrows until hover, which makes
+   collapsed sections (Tutorial, API Reference) easy to miss. Keep them
+   visible. */
+html {
+  --side-nav-arrow-opacity: 0.4;
+  --side-nav-arrow-hover-opacity: 0.9;
+
+  /* The theme reserves --top-height for the sidebar header (title + search).
+     Its 120px default is a few pixels too short for our logo + two-line brief,
+     which clips the bottom of the search bar. */
+  --top-height: 140px;
 }
 
 /* Place the dark-mode toggle in the top-right corner of the sidebar header. */
