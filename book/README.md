@@ -1,8 +1,8 @@
 # Guide
 
-This guide walks through CLI11 chapter by chapter, from a first simple
-program to subcommands, configuration files, and the library internals. Read it
-in order, or jump to the chapter you need:
+This guide walks through CLI11 chapter by chapter, from a first simple program
+to subcommands, configuration files, and the library internals. Read it in
+order, or jump to the chapter you need:
 
 - [Installation](chapters/installation.md)
 - [The Basics](chapters/basics.md)
@@ -20,7 +20,7 @@ in order, or jump to the chapter you need:
 A rendered version is part of the
 [CLI11 documentation](https://cliutils.github.io/CLI11/).
 
-> Feel free to contribute to [this documentation here][cli11guide] if
-> something can be improved!
+> Feel free to contribute to [this documentation here][cli11guide] if something
+> can be improved!
 
 [cli11guide]: https://github.com/CLIUtils/CLI11/tree/main/book
