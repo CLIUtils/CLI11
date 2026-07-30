@@ -33,7 +33,6 @@ jobs:
         run: |
           mkdir -p CLI11-Source
           cp build/CLI11-*-Source.* CLI11-Source
-          cp build/CLI11-*-Source.* .
 
       - name: Make header
         run: cmake --build build --target CLI11-generate-single-file
@@ -54,3 +53,5 @@ jobs:
         with:
           files: |
             build/single-include/CLI11.hpp
+            CLI11-Source/CLI11-*-Source.tar.gz
+            CLI11-Source/CLI11-*-Source.zip
