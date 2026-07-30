@@ -666,12 +666,17 @@ computation time that may not be valuable for some use cases.
 New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
-- `CLI::ReadPermission`: Requires that the file or folder given exist and have
+- `CLI::ReadPermissions`: Requires that the file or folder given exist and have
   read permission. Requires C++17.
-- `CLI::WritePermission`: Requires that the file or folder given exist and have
+- `CLI::WritePermissions`: Requires that the file or folder given exist and have
   write permission. Requires C++17.
-- `CLI::ExecPermission`: Requires that the file given exist and have execution
+- `CLI::ExecPermissions`: Requires that the file given exist and have execution
   permission. Requires C++17.
+- `CLI::FileSizeValidator(min_size, max_size = 0)`: 🆕 Requires that the file
+  exist and that its size in bytes be at least `min_size`. If `max_size` is
+  greater than 0, the size must also not exceed it. Requires C++17.
+- `CLI::NonEmptyFile`: 🆕 Requires that the file exist and not be empty. Same as
+  `CLI::FileSizeValidator(1)`. Requires C++17.
 
 #### Validator Usage
 
