@@ -57,7 +57,7 @@ option. Positional options are accepted in the same order they are defined. So,
 for example:
 
 ```text
-gitbook:examples $ ./a.out one --two three four
+./a.out one --two three four
 ```
 
 The string `one` would have to be the first positional option. If `--two` is a
@@ -106,7 +106,7 @@ command line.
 
 A definition of a container for purposes of CLI11 is a type with a `end()`,
 `insert(...)`, `clear()` and `value_type` definitions. This includes `vector`,
-`set`, `deque`, `list`, `forward_iist`, `map`, `unordered_map` and a few others
+`set`, `deque`, `list`, `forward_list`, `map`, `unordered_map` and a few others
 from the standard library, and many other containers from the boost library.
 
 ### Empty containers
@@ -162,7 +162,7 @@ the defaults. To insert of a separator from the command line add a `%%` where
 the separation should occur.
 
 ```bash
-cmd --vec_of_vec 1 2 3 4 %% 1 2
+cmd --vec 1 2 3 4 %% 1 2
 ```
 
 would then result in a container of size 2 with the first element containing 4
@@ -228,8 +228,8 @@ that to add option modifiers. A full listing of the option modifiers:
 | `->take_all()`                                          | sets `->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)`                                                                                                                                                                                                                                                                                                                                                                                             |
 | `->join()`                                              | sets `->multi_option_policy(CLI::MultiOptionPolicy::Join)`, which uses newlines or the specified delimiter to join all arguments into a single string output.                                                                                                                                                                                                                                                                                             |
 | `->join(delim)`                                         | sets `->multi_option_policy(CLI::MultiOptionPolicy::Join)`, which uses `delim` to join all arguments into a single string output. this also sets the delimiter                                                                                                                                                                                                                                                                                            |
-| `->check(Validator)`                                    | perform a check on the returned results to verify they meet some criteria. See [Validators](./validators.md) for more info                                                                                                                                                                                                                                                                                                                                |
-| `->transform(Validator)`                                | Run a transforming validator on each value passed. See [Validators](./validators.md) for more info                                                                                                                                                                                                                                                                                                                                                        |
+| `->check(Validator)`                                    | perform a check on the returned results to verify they meet some criteria. See [Validators](@ref book-validators) for more info                                                                                                                                                                                                                                                                                                                           |
+| `->transform(Validator)`                                | Run a transforming validator on each value passed. See [Validators](@ref book-validators) for more info                                                                                                                                                                                                                                                                                                                                                   |
 | `->each(void(std::string))`                             | Run a function on each parsed value, _in order_.                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `->default_str(string)`                                 | set a default string for use in the help and as a default value if no arguments are passed and a value is requested                                                                                                                                                                                                                                                                                                                                       |
 | `->default_function(std::string())`                     | Advanced: Change the function that `capture_default_str()` uses.                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -242,9 +242,10 @@ that to add option modifiers. A full listing of the option modifiers:
 | `->option_text(string)`                                 | Sets the text between the option name and description.                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 The `->check(...)` and `->transform(...)` modifiers can also take a callback
-function of the form `bool function(std::string)` that runs on every value that
-the option receives, and returns a value that tells CLI11 whether the check
-passed or failed.
+function that runs on every value that the option receives and returns an error
+message as a `std::string`; an empty string means the value passed. A `check`
+function receives the value by `const` reference, while a `transform` function
+may modify it.
 
 ### Multi Option policy
 
@@ -280,7 +281,7 @@ them.
 ```cpp
 CLI::Option* opt = app.add_flag("--opt");
 
-CLI11_PARSE(app, argv, argc);
+CLI11_PARSE(app, argc, argv);
 
 if(* opt)
     std::cout << "Flag received " << opt->count() << " times." << '\n';
@@ -321,8 +322,8 @@ An example of usage:
 ```cpp
 app.option_defaults()->ignore_case()->group("Required");
 
-app.add_flag("--CaSeLeSs");
-app.get_group() // is "Required"
+CLI::Option* opt = app.add_flag("--CaSeLeSs");
+opt->get_group() // is "Required"
 ```
 
 Groups are mostly for visual organization, but an empty string for a group name

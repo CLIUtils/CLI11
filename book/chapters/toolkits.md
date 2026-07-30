@@ -15,9 +15,9 @@ You may also want to make your own copy of the `CLI11_PARSE` macro. Something
 like:
 
 ```cpp
- #define MYPACKAGE_PARSE(app, argv, argc)    \
+ #define MYPACKAGE_PARSE(app, argc, argv)    \
      try {                                   \
-         app.parse(argv, argc);              \
+         app.parse(argc, argv);              \
      } catch(const CLI::ParseError &e) {     \
          return app.exit(e);                 \
      }
@@ -27,7 +27,7 @@ like:
 
 If you subclass `App`, you'll just need to do a few things. You'll need a
 constructor; calling the base `App` constructor is a good idea, but not
-necessary (it just sets a description and adds a help flag.
+necessary (it just sets a description and adds a help flag).
 
 You can call anything you would like to configure in the constructor, like
 `option_defaults()->take_last()` or `fallthrough()`, and it will be set on all
