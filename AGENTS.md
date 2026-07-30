@@ -124,3 +124,15 @@ prek -a
 
 The version string is read from `include/CLI/Version.hpp` at configure time. Do
 not edit project version in `CMakeLists.txt`.
+
+## Release Checklist
+
+When preparing a release (`chore: prepare X.Y.Z release`):
+
+- Add the changelog entry and bump `include/CLI/Version.hpp`.
+- Update the feature markers in `README.md`: remove the old 🆕 markers (the
+  previous release's features) and change 🚧 markers (main-only features) to 🆕.
+  Removing an emoji from a heading also changes its TOC anchor — drop the
+  trailing `-` from the matching TOC links.
+- Check the copyright year in `LICENSE` and the version in
+  `book/chapters/installation.md`.
