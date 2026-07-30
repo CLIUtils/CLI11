@@ -3,9 +3,9 @@
 ## Reading a configure file
 
 You can tell your app to allow configure files with `set_config("--config")`.
-There are arguments: the first is the option name. If empty, it will clear the
-config flag. The second item is the default file name. If that is specified, the
-config will try to read that file. The third item is the help string, with a
+There are four arguments: the first is the option name. If empty, it will clear
+the config flag. The second item is the default file name. If that is specified,
+the config will try to read that file. The third item is the help string, with a
 reasonable default, and the final argument is a boolean (default: false) that
 indicates that the configuration file is required and an error will be thrown if
 the file is not found and this is set to true. The option pointer returned by
@@ -132,7 +132,7 @@ vector = [1,2,3]
 
 # Section map to subcommands
 [subcommand]
-in_subcommand = Wow
+in_subcommand = "Wow"
 [subcommand.sub]
 subcommand = true # could also be give as sub.subcommand=true
 ```
@@ -388,7 +388,7 @@ bool commentDefaultsBool = false;
 /// specify the config reader should collapse repeated field names to a single vector
 bool allowMultipleDuplicateFields{false};
 /// Specify the configuration index to use for arrayed sections
-uint16_t configIndex{-1};
+int16_t configIndex{-1};
 /// Specify the configuration section that should be used
 std::string configSection;
 ```
@@ -415,7 +415,7 @@ These can be modified via setter functions
   parent layers from options
 - `ConfigBase *section(const std::string &sectionName)` : specify the section
   name to use to get the option values, only this section will be processed
-- `ConfigBase *index(uint16_t sectionIndex)` : specify an index section to use
+- `ConfigBase *index(int16_t sectionIndex)` : specify an index section to use
   for processing if multiple TOML sections of the same name are present
   `[[section]]`
 

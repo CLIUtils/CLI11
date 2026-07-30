@@ -24,7 +24,7 @@ code runs, and then return:
 If you compile and run:
 
 ```text
-gitbook:examples $ c++ -std=c++11 geet.cpp -o geet
+c++ -std=c++11 geet.cpp -o geet
 ```
 
 You'll see it behaves pretty much like `git`.

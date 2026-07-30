@@ -49,7 +49,8 @@ add_option(CLI::App &app, std::string name, cx &variable, std::string descriptio
     };
 
     CLI::Option *opt = app.add_option(name, fun, description, defaulted);
-    opt->set_custom_option("COMPLEX", 2);
+    opt->type_name("COMPLEX");
+    opt->type_size(2);
     if(defaulted) {
         std::stringstream out;
         out << variable;
@@ -71,38 +72,11 @@ add_option(app, "-c,--complex", comp);
 You can add your own converters to allow CLI11 to accept more option types in
 the standard calls. These can only be used for "single" size options (so
 complex, vector, etc. are a separate topic). If you set up a custom
-`istringstream& operator <<` overload before include CLI11, you can support
+`istringstream& operator>>` overload before include CLI11, you can support
 different conversions. If you place this in the CLI namespace, you can even keep
-this from affecting the rest of your code. Here's how you could add
-`boost::optional` for a compiler that does not have `__has_include`:
-
-```cpp
-// CLI11 already does this if __has_include is defined
-#ifndef __has_include
-
-#include <boost/optional.hpp>
-
-// Use CLI namespace to avoid the conversion leaking into your other code
-namespace CLI {
-
-template <typename T> std::istringstream &operator>>(std::istringstream &in, boost::optional<T> &val) {
-    T v;
-    in >> v;
-    val = v;
-    return in;
-}
-
-}
-
-#endif
-
-#include <CLI11.hpp>
-```
-
-This is an example of how to use the system only; if you are just looking for a
-way to activate `boost::optional` support on older compilers, you should define
-`CLI11_BOOST_OPTIONAL` before including a CLI11 file, you'll get the
-`boost::optional` support.
+this from affecting the rest of your code. Note that `std::optional` is
+supported natively and does not need a custom converter. The next section shows
+a complete example.
 
 ## Custom converters and type names: std::chrono example
 

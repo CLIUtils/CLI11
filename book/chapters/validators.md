@@ -8,9 +8,10 @@ There are two forms of validators:
 
 A transform validator comes in one form, a function with the signature
 `std::string(std::string&)`. The function will take a string and return an error
-message, or an empty string if input is valid. If there is an error, the
-function should throw a `CLI::ValidationError` with the appropriate reason as a
-message.
+message, or an empty string if input is valid. Alternatively, the function may
+throw a `CLI::ValidationError` with the appropriate reason as a message; either
+returning a non-empty string or throwing signals a failure, so throwing is not
+required.
 
 An example of a mutating validator:
 
@@ -45,7 +46,7 @@ constructor also.
 An example of a custom validator:
 
 ```cpp
-struct LowerCaseValidator : public Validator {
+struct LowerCaseValidator : public CLI::Validator {
     LowerCaseValidator() {
         name_ = "LOWER";
         func_ = [](const std::string &str) {
@@ -72,7 +73,7 @@ The built-in validators for CLI11 are:
 | `NonexistentPath`   | Check for an non-existing path                                         |
 | `Range(min=0, max)` | Produce a range (factory). Min and max are inclusive.                  |
 | `NonNegativeNumber` | Range(0,max<double>)                                                   |
-| `PositiveNumber`    | Range(epsilon,max<double>)                                             |
+| `PositiveNumber`    | Range(denorm_min<double>,max<double>), i.e. any positive number        |
 
 A few built-in transformers are also available
 
@@ -86,7 +87,7 @@ And, the protected members that you can set when you make your own are:
 | Type                                        | Member               | Description                                                            |
 | ------------------------------------------- | -------------------- | ---------------------------------------------------------------------- |
 | `std::function<std::string(std::string &)>` | `func_`              | Core validation function - modifies input and returns "" if successful |
-| `std::function<std::string()>`              | `desc_function`      | Optional description function (uses `description_` instead if not set) |
+| `std::function<std::string()>`              | `desc_function_`     | Optional description function (returns an empty string if not set)     |
 | `std::string`                               | `name_`              | The name for search purposes                                           |
 | `int` (`-1`)                                | `application_index_` | The element this validator applies to (-1 for all)                     |
 | `bool` (`true`)                             | `active_`            | This can be disabled                                                   |
@@ -110,15 +111,16 @@ compilation time is a concern they can be disabled.
 | `AsNumberWithUnit`   | checks for numbers with a unit as part of a specified set of units |
 | `AsSizeValue`        | As Number with Unit with support for SI prefixes                   |
 
-| Transformer            | Description                                         |
-| ---------------------- | --------------------------------------------------- |
-| `Bound<T>(min=0, max)` | Force a range (factory). Min and max are inclusive. |
-| `Transformer`          | Modify values in a set to the matching pair value   |
+| Transformer                       | Description                                                            |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| `Bound(min, max)` or `Bound(max)` | Force a range (factory). Min and max are inclusive; min defaults to 0. |
+| `Transformer`                     | Modify values in a set to the matching pair value                      |
 
 ## New Extra Validators
 
 Some additional validators can be enabled by using CLI11_ENABLE_EXTRA_VALIDATORS
-to 1. These validators are disabled by default.
+to 1. These validators are disabled by default. They also require `<filesystem>`
+support (C++17, `CLI11_HAS_FILESYSTEM`).
 
 | Validator           | Description                                                 |
 | ------------------- | ----------------------------------------------------------- |

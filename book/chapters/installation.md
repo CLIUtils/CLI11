@@ -25,9 +25,9 @@ include shown above.
 
 ### CMake support for the full edition
 
-If you use CMake 3.5+ for your project (highly recommended), CLI11 comes with a
+If you use CMake 3.14+ for your project (highly recommended), CLI11 comes with a
 powerful CMakeLists.txt file that was designed to also be used with
-`add_subproject`. You can add the repository to your code (preferably as a git
+`add_subdirectory`. You can add the repository to your code (preferably as a git
 submodule), then add the following line to your project (assuming your folder is
 called CLI11):
 
@@ -89,10 +89,10 @@ really need.)
 
 #### Modules
 
-When using modules, you must be using C++20 or later. CMake currently supports
-only Ninja as the build system for modules (for example, Makefiles won't work).
-When enabling `CLI11_MODULES`, you will have a target `CLI11::Modules` for
-linking.
+When using modules, you must be using C++20 or later. CMake supports modules
+with the Ninja generator, and with the Visual Studio generator in CMake 3.28+
+(Makefiles won't work). When enabling `CLI11_MODULES`, you will have a target
+`CLI11::Modules` for linking.
 
 ```cpp
 import cli11;
@@ -152,49 +152,22 @@ without internet access, or where TLS connections to GitHub releases are
 blocked, install Catch2 separately or configure with `CLI11_BUILD_TESTS=OFF`
 until the dependency is available.
 
-As an example of the build system, the following code will download and test
-CLI11 in a simple Alpine Linux docker container [^1]:
+As an example of the build system, the following commands will download and test
+CLI11 in a simple Alpine Linux docker container. (Docker is being used to create
+a pristine disposable environment; there is nothing special about this
+container. Alpine is being used because it is small, modern, and fast. Commands
+are similar on any other platform.)
 
-```text
-gitbook:~ $ docker run -it alpine
-root:/ # apk add --no-cache g++ cmake make git
-fetch ...
-root:/ # git clone https://github.com/CLIUtils/CLI11.git
-Cloning into 'CLI11' ...
-root:/ # cd CLI11
-root:CLI11 # mkdir build
-root:CLI11 # cd build
-root:build # cmake ..
--- The CXX compiler identification is GNU 6.3.0 ...
-root:build # make
-Scanning dependencies ...
-root:build # make test
-[warning]Running tests...
-Test project /CLI11/build
-      Start  1: HelpersTest
- 1/10 Test  #1: HelpersTest ......................   Passed    0.01 sec
-      Start  2: IniTest
- 2/10 Test  #2: IniTest ..........................   Passed    0.01 sec
-      Start  3: SimpleTest
- 3/10 Test  #3: SimpleTest .......................   Passed    0.01 sec
-      Start  4: AppTest
- 4/10 Test  #4: AppTest ..........................   Passed    0.02 sec
-      Start  5: CreationTest
- 5/10 Test  #5: CreationTest .....................   Passed    0.01 sec
-      Start  6: SubcommandTest
- 6/10 Test  #6: SubcommandTest ...................   Passed    0.01 sec
-      Start  7: HelpTest
- 7/10 Test  #7: HelpTest .........................   Passed    0.01 sec
-      Start  8: NewParseTest
- 8/10 Test  #8: NewParseTest .....................   Passed    0.01 sec
-      Start  9: TimerTest
- 9/10 Test  #9: TimerTest ........................   Passed    0.24 sec
-      Start 10: link_test_2
-10/10 Test #10: link_test_2 ......................   Passed    0.00 sec
-
-100% tests passed, 0 tests failed out of 10
-
-Total Test time (real) =   0.34 sec
+```bash
+docker run -it alpine
+apk add --no-cache g++ cmake make git
+git clone https://github.com/CLIUtils/CLI11.git
+cd CLI11
+mkdir build
+cd build
+cmake ..
+make
+make test
 ```
 
 For the curious, the CMake options and defaults are listed below. Most options
@@ -202,7 +175,7 @@ default to off if CLI11 is used as a subdirectory in another project.
 
 | Option                               | Description                                                      |
 | ------------------------------------ | ---------------------------------------------------------------- |
-| `CLI11_SINGLE_FILE=ON`               | Build the `CLI11.hpp` file from the sources. Requires Python.    |
+| `CLI11_SINGLE_FILE=OFF`              | Build the `CLI11.hpp` file from the sources. Requires Python.    |
 | `CLI11_PRECOMPILED=OFF`              | Generate a precompiled library instead of header-only            |
 | `CLI11_MODULES=OFF`                  | Build CLI11 as a module (requires C++20 or later)                |
 | `CLI11_INSTALL_PACKAGE_TESTS=OFF`    | Run tests checking the installation                              |
@@ -212,16 +185,11 @@ default to off if CLI11 is used as a subdirectory in another project.
 | `CLI11_BUILD_EXAMPLES=ON`            | Build the example programs.                                      |
 | `CLI11_BUILD_EXAMPLES_JSON=ON`       | Build some additional example using json libraries               |
 | `CLI11_INSTALL=ON`                   | Install CLI11 to the install folder during the install process   |
-| `CLI11_FULL_INSTALL=ON`              | Install all CLI11 headers/libraries regardless of other settings |
+| `CLI11_FULL_INSTALL=OFF`             | Install all CLI11 headers/libraries regardless of other settings |
 | `CLI11_FORCE_LIBCXX=OFF`             | Use libc++ instead of libstdc++ if building with clang on linux  |
 | `CLI11_DISABLE_IMPL_HEADERS_INSTALL` | Don't install the impl headers if the CLI11_PRECOMPILED is ON    |
 | `CLI11_CUDA_TESTS=OFF`               | Build the tests with NVCC                                        |
 | `CLI11_BUILD_TESTS=ON`               | Build the tests.                                                 |
-
-[^1]:
-    Docker is being used to create a pristine disposable environment; there is
-    nothing special about this container. Alpine is being used because it is
-    small, modern, and fast. Commands are similar on any other platform.
 
 ## Meson support
 
