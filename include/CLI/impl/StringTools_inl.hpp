@@ -28,7 +28,7 @@ CLI11_INLINE std::vector<std::string> split(const std::string &s, char delim) {
         elems.emplace_back();
         return elems;
     }
-    
+
     std::size_t start = 0;
     std::size_t end = 0;
 
