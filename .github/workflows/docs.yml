@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
@@ -26,6 +24,11 @@ jobs:
         run: |
           curl -fsSL https://github.com/doxygen/doxygen/releases/download/Release_1_17_0/doxygen-1.17.0.linux.bin.tar.gz | tar -xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/doxygen-1.17.0/bin" >> "$GITHUB_PATH"
+
+      - name: Get version from Version.hpp
+        run: |
+          version=$(sed -n 's/#define CLI11_VERSION[ \t]*"\(.*\)"/\1/p' include/CLI/Version.hpp)
+          echo "CLI11_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Build API docs
         run: doxygen docs/Doxyfile
@@ -50,6 +53,9 @@ jobs:
   pages:
     runs-on: ubuntu-latest
     needs: [apidocs]
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
