@@ -37,9 +37,6 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
             return std::string("Invalid IPV4 address: must have 3 separators");
         }
         auto result = CLI::detail::split(ip_addr, '.');
-        if(result.size() != 4) {
-            return std::string("Invalid IPV4 address: must have four parts (") + ip_addr + ')';
-        }
         int num = 0;
         for(const auto &var : result) {
             using CLI::detail::lexical_cast;

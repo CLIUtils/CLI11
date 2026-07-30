@@ -168,6 +168,13 @@ TEST_CASE("Split: Empty", "[helpers]") {
     REQUIRE(out.size() == 1u);
     CHECK(out.at(0).empty());
 }
+TEST_CASE("Split: TrailingDelimiter", "[helpers]") {
+    auto out = CLI::detail::split("one.two.", '.');
+    REQUIRE(out.size() == 3u);
+    CHECK(out.at(0) == "one");
+    CHECK(out.at(1) == "two");
+    CHECK(out.at(2).empty());
+}
 
 TEST_CASE("String: InvalidName", "[helpers]") {
     CHECK(CLI::detail::valid_name_string("valid"));

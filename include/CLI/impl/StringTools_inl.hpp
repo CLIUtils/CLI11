@@ -24,17 +24,19 @@ namespace CLI {
 namespace detail {
 CLI11_INLINE std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
-    // Check to see if empty string, give consistent result
     if(s.empty()) {
         elems.emplace_back();
-    } else {
-        std::stringstream ss;
-        ss.str(s);
-        std::string item;
-        while(std::getline(ss, item, delim)) {
-            elems.push_back(item);
-        }
+        return elems;
     }
+
+    std::size_t start = 0;
+    std::size_t end = 0;
+
+    while((end = s.find(delim, start)) != std::string::npos) {
+        elems.push_back(s.substr(start, end - start));
+        start = end + 1;
+    }
+    elems.push_back(s.substr(start));
     return elems;
 }
 
