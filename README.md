@@ -2031,7 +2031,7 @@ try! Feedback is always welcome.
 [diana/hep]: http://diana-hep.org
 [nsf award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: http://www.uc.edu
-[gitbook]: https://cliutils.github.io/CLI11/book.html
+[gitbook]: https://cliutils.github.io/CLI11/book-installation.html
 [cli11 advanced topics/custom converters]:
   https://cliutils.github.io/CLI11/book-advanced-topics.html
 [programoptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx

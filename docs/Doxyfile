@@ -1028,8 +1028,6 @@ WARN_LOGFILE           =
 
 INPUT                  = include \
                          docs/mainpage.md \
-                         docs/api.md \
-                         book/README.md \
                          book/chapters
 
 # This tag can be used to specify the character encoding of the source files

@@ -1,7 +1,7 @@
 /* CLI11 tweaks on top of doxygen-awesome (sidebar-only layout). */
 
 /* doxygen-awesome hides the sidebar expander arrows until hover, which makes
-   collapsed sections (Tutorial, API Reference) easy to miss. Keep them
+   collapsed sections (Guide, API Reference) easy to miss. Keep them
    visible. */
 html {
   --side-nav-arrow-opacity: 0.4;
@@ -11,6 +11,18 @@ html {
      Its 120px default is a few pixels too short for our logo + two-line brief,
      which clips the bottom of the search bar. */
   --top-height: 140px;
+}
+
+/* The sidebar header already shows the project name, so the always-expanded
+   "CLI11" root node in the navtree is redundant. Hide its row and shift the
+   remaining rows left one indent level (the tree indents 16px per level with
+   inline padding, so a fixed negative margin promotes every row equally). */
+#nav-tree-contents > ul > li > div.item {
+  display: none;
+}
+
+#nav-tree-contents ul.children_ul .arrow {
+  margin-left: -16px;
 }
 
 /* Place the dark-mode toggle in the top-right corner of the sidebar header. */
