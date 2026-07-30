@@ -50,8 +50,9 @@ $extrastylesheet
         document.getElementById("titlearea").appendChild(toggleButton)
     })
     // The navtree renders with every group collapsed except the current
-    // page's path. Start the top-level groups (Guide, API Reference)
-    // open. The tree is built asynchronously, so wait for it to appear.
+    // page's path. Start the top-level groups (Guide, Examples, API
+    // Reference) open. The tree is built asynchronously, so wait for it to
+    // appear.
     window.addEventListener("load", () => {
         const expandTopLevel = () => {
             const items = document.querySelectorAll(
