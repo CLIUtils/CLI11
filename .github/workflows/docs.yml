@@ -22,9 +22,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: ./docs/Doxyfile
+      - name: Install Doxygen
+        run: |
+          curl -fsSL https://github.com/doxygen/doxygen/releases/download/Release_1_17_0/doxygen-1.17.0.linux.bin.tar.gz | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/doxygen-1.17.0/bin" >> "$GITHUB_PATH"
+
+      - name: Build API docs
+        run: doxygen docs/Doxyfile
 
       - uses: actions/upload-artifact@v4
         with:

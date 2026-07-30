@@ -1,0 +1,22 @@
+/* CLI11 tweaks on top of doxygen-awesome (sidebar-only layout). */
+
+/* Doxygen >= 1.13 places the search box in the title table row, where it
+   overlaps the project brief inside the narrow sidebar. Stack the header
+   elements (name, brief, search) vertically instead. */
+#titlearea table,
+#titlearea tbody,
+#titlearea tr,
+#titlearea td {
+  display: block;
+}
+
+/* Place the dark-mode toggle in the top-right corner of the sidebar header. */
+#titlearea {
+  position: relative;
+}
+
+doxygen-awesome-dark-mode-toggle {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
