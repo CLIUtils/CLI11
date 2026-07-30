@@ -38,10 +38,15 @@ the above function signature, since it will become that function), and the other
 is `name_`, and is the type name to set on the Option (unless empty, in which
 case the typename will be left unchanged).
 
-Validators can be combined with `&` and `|`, and they have an `operator()` so
-that you can call them as if they were a function. In CLI11, const static
-versions of the validators are provided so that the user does not have to call a
-constructor also.
+Validators can be combined with `&` and `|`, and inverted with `!`. They have an
+`operator()` so that you can call them as if they were a function. In CLI11,
+const static versions of the validators are provided so that the user does not
+have to call a constructor also.
+
+```cpp
+->check(CLI::Range(0, 10) | CLI::Range(20, 30));  // 0-10 or 20-30
+->check(!CLI::PositiveNumber);                    // zero or negative
+```
 
 An example of a custom validator:
 
@@ -129,6 +134,94 @@ support (C++17, `CLI11_HAS_FILESYSTEM`).
 | `ExecPermissions`   | Ensure a file has exec permissions                          |
 | `NonEmptyFile`      | Ensure that a file exists and is not empty                  |
 | `FileSizeValidator` | specify that the size must be between min and max sizes     |
+
+## Sets and transforms
+
+`IsMember` restricts a value to a set. Pass any iterable container with a
+`::value_type`, or a copyable pointer to one, or an initializer list:
+
+```cpp
+->check(CLI::IsMember({"choice1", "choice2"}));
+->check(CLI::IsMember(std::set<int>({2, 3, 4})));
+```
+
+After the set you can pass "filter" functions of the form `T(T)`, which are
+applied before the comparison. `CLI::ignore_case`, `CLI::ignore_underscore`, and
+`CLI::ignore_space` are provided:
+
+```cpp
+->check(CLI::IsMember({"choice1", "choice2"}, CLI::ignore_case, CLI::ignore_underscore));
+```
+
+`Transformer` and `CheckedTransformer` map one value to another. They take
+containers of pairs, so a map is the usual choice:
+
+```cpp
+std::map<std::string, int> levels{{"one", 1}, {"two", 2}};
+->transform(CLI::CheckedTransformer(levels));
+```
+
+`Transformer` passes values that are not in the map through unchanged.
+`CheckedTransformer` requires the value to match either a key or one of the
+expected outputs, and raises a `ValidationError` if it does not. A `Transformer`
+used with `check` does nothing, since `check` may not modify the value.
+
+If you pass a shared pointer to the container instead of the container itself,
+you can change the contents later, and the help text and the check both follow
+the current contents:
+
+```cpp
+auto p = std::make_shared<std::vector<std::string>>(
+    std::initializer_list<std::string>{"one", "two"});
+->check(CLI::IsMember(p));
+```
+
+`TransformPairs<T>` is an alias for `std::vector<std::pair<std::string, T>>` for
+the same use with the transformers. If the container has a `find` function, like
+`std::map`, that function does the search; otherwise the search is linear. With
+filters present, the fast search runs first and a filtered linear search is the
+fallback.
+
+## Validator operations
+
+A Validator is a copyable object with settings you can change. Every one of
+these functions returns a reference to the Validator, so they chain:
+
+| Operation                 | Effect                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| `.description(text)`      | Replace the description shown in the help.                                                   |
+| `.name(text)`             | Name the Validator, so it can be found later with `get_validator(name)`.                     |
+| `.active(bool)`           | Turn the Validator on or off.                                                                |
+| `.application_index(int)` | Apply only to one element of the result. Zero based; a negative index applies to all values. |
+| `.operation(func)`        | Replace the validation function.                                                             |
+
+The application index is what makes validation of compound types work. For a
+`std::pair<int, std::string>` where the first element must be positive and the
+second must be a file:
+
+```cpp
+opt->check(CLI::Validator(CLI::PositiveNumber).application_index(0));
+opt->check(CLI::Validator(CLI::ExistingFile).application_index(1));
+```
+
+A named Validator can be found and changed after the option is built, which is
+how you turn a check on or off at runtime:
+
+```cpp
+opt->check(CLI::Range(10, 20).description("sensible values").active(false).name("range"));
+// later
+opt->get_validator("range")->active();
+```
+
+`get_validator(name)` throws `CLI::OptionNotFound` if there is no match. With no
+name, or an empty name, it returns the first unnamed Validator, or the only one
+if there is just one. `get_validator(index)` takes the position in the applied
+order instead, and returns `nullptr` for an invalid index.
+
+For reading the current state there are `get_description()`, `get_name()`,
+`get_active()`, `get_application_index()`, and `get_modifying()`, which is true
+when the Validator may change the value. Modification is controlled by
+`non_modifying()`, but it is better to let `check` and `transform` set it.
 
 ## Custom Validators
 

@@ -266,8 +266,9 @@ There are several options can be set through the
 | Sum       | If the values are numeric, it sums them and returns the result                    |
 | Reverse   | Selects the last expected number of values given and return them in reverse order |
 
-NOTE: For reverse, the index used for an indexed validator is also applied in
-reverse order index 1 will be the last element and 2 second from last and so on.
+NOTE: For reverse, the index used for an indexed validator (a validator with an
+[application index](@ref book-validators)) is also applied in reverse order
+index 1 will be the last element and 2 second from last and so on.
 
 ## Using the `CLI::Option` pointer
 
@@ -286,6 +287,56 @@ CLI11_PARSE(app, argc, argv);
 if(* opt)
     std::cout << "Flag received " << opt->count() << " times." << '\n';
 ```
+
+## Getting results without a bound variable
+
+Binding a variable or a callback in the `add_*` call is the fastest way to get a
+result, and is what you should reach for first. When that is not possible, the
+values can be pulled back out of the option. These calls do the type conversion
+and processing at the point of the call, so keep them out of performance
+critical code.
+
+```cpp
+CLI::Option *opt = app.add_option("--opt");
+
+CLI11_PARSE(app, argc, argv);
+
+std::vector<std::string> raw = opt->results();  // every value, in order
+int value = opt->as<int>();                     // converted, one value
+std::vector<int> values = opt->as<std::vector<int>>();  // converted, all values
+opt->results(value);                            // same as as<int>(), without a copy
+```
+
+`as<T>()` and `results(T&)` apply the multi option policy for a single value,
+and return everything for a vector type. If you know that the results will be
+needed as a vector, tell CLI11 when you create the option, with
+`->expected(CLI::detail::expected_max_vector_size)` or `->allow_extra_args()`.
+
+You do not need to keep the pointer. `app["--opt"]` and
+`app.get_option("--opt")` find it again by any of its names:
+
+```cpp
+int value = app["--opt"]->as<int>();
+```
+
+## Options with a callback
+
+Instead of a variable, an option can take a function. `add_option_function<T>`
+converts the arguments to `T` first and hands you the finished value:
+
+```cpp
+app.add_option_function<int>("--count", [](int count) {
+    std::cout << "got " << count << '\n';
+});
+```
+
+The type argument is required, since it is what tells CLI11 how to parse. This
+pairs well with `->trigger_on_parse()` when the callback has to run while
+parsing rather than at the end; see the
+[custom_validator.cpp](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp)
+example. `add_flag_function` is the flag counterpart, and takes a
+`void(std::int64_t)` function. For full control over the raw strings, see
+[Custom option callbacks](@ref book-advanced-topics).
 
 ## Inheritance of defaults
 

@@ -12,8 +12,10 @@
       <tab type="user" url="book-options.html" title="Options"/>
       <tab type="user" url="book-validators.html" title="Validators"/>
       <tab type="user" url="book-subcommands.html" title="Subcommands and the App"/>
+      <tab type="user" url="book-option-groups.html" title="Option groups"/>
       <tab type="user" url="book-config.html" title="Accepting configure files"/>
       <tab type="user" url="book-formatting.html" title="Formatting help output"/>
+      <tab type="user" url="book-unicode.html" title="Unicode support"/>
       <tab type="user" url="book-toolkits.html" title="Using CLI11 in a Toolkit"/>
       <tab type="user" url="book-advanced-topics.html" title="Advanced topics"/>
       <tab type="user" url="book-internals.html" title="CLI11 Internals"/>

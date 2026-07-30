@@ -47,9 +47,59 @@ necessary `lib/cmake/CLI11/CLI11Config.cmake` files, so
 If you use conan.io, CLI11 supports that too. CLI11 also supports Meson and
 pkg-config if you are not using CMake.
 
-If the CMake option `CLI11_PRECOMPILED` is set then the library is compiled into
-a static library. This can be used to improve compile times if CLI11 is included
-in many different parts of a project.
+#### Precompiled mode
+
+CLI11 is header-only by default: every function is `inline`, so each translation
+unit that includes CLI11 compiles the whole library again. In a large project
+that includes CLI11 in many places, this is slow.
+
+Set the CMake option `CLI11_PRECOMPILED` to compile the library one time into a
+static library instead:
+
+```bash
+cmake -S . -B build -DCLI11_PRECOMPILED=ON
+```
+
+The target you link against does not change. `CLI11::CLI11` is a static library
+instead of an interface library, and it applies the `CLI11_COMPILE` definition
+to your code for you:
+
+```cmake
+target_link_libraries(MyTarget PRIVATE CLI11::CLI11)
+```
+
+The mechanism is the `CLI11_INLINE` macro. Each public header includes a
+matching `CLI/impl/*_inl.hpp` implementation header at the end. Without
+`CLI11_COMPILE`, `CLI11_INLINE` expands to `inline` and the implementation is
+part of the header. With `CLI11_COMPILE`, `CLI11_INLINE` expands to nothing, the
+headers stop including the implementation, and the definitions must come from
+somewhere else.
+
+If you do not use CLI11's CMake, you can do the same thing yourself. Define
+`CLI11_COMPILE` for all of your code, then compile one source file that includes
+the implementation headers:
+
+```cpp
+// cli11_impl.cpp - compiled one time
+#include <CLI/impl/App_inl.hpp>
+#include <CLI/impl/Argv_inl.hpp>
+#include <CLI/impl/Config_inl.hpp>
+#include <CLI/impl/Encoding_inl.hpp>
+#include <CLI/impl/ExtraValidators_inl.hpp>
+#include <CLI/impl/Formatter_inl.hpp>
+#include <CLI/impl/Option_inl.hpp>
+#include <CLI/impl/Split_inl.hpp>
+#include <CLI/impl/StringTools_inl.hpp>
+#include <CLI/impl/Validators_inl.hpp>
+```
+
+This is exactly what `src/Precompile.cpp` does in the CLI11 repository.
+
+Two limits apply. `CLI11_PRECOMPILED` and `CLI11_SINGLE_FILE` are mutually
+exclusive, because the single header is header-only by construction. Also, the
+`impl` headers must be installed for a precompiled build to be usable from an
+install tree; set `CLI11_DISABLE_IMPL_HEADERS_INSTALL` only if you do not need
+them.
 
 #### Global Headers
 
@@ -190,6 +240,11 @@ default to off if CLI11 is used as a subdirectory in another project.
 | `CLI11_DISABLE_IMPL_HEADERS_INSTALL` | Don't install the impl headers if the CLI11_PRECOMPILED is ON    |
 | `CLI11_CUDA_TESTS=OFF`               | Build the tests with NVCC                                        |
 | `CLI11_BUILD_TESTS=ON`               | Build the tests.                                                 |
+| `CLI11_ENABLE_EXTRA_VALIDATORS`      | Set to 1 to enable the extra validators, 0 to disable them       |
+| `CLI11_DISABLE_EXTRA_VALIDATORS`     | Set to 1 to disable the extra validators                         |
+
+The last two options set the macro of the same name on the CLI11 target. See
+[Validators](@ref book-validators) for what they control.
 
 ## Meson support
 
@@ -216,6 +271,26 @@ Meson upstream, but may be appropriate if a project needs to build with multiple
 build systems and wishes to share subprojects between them. As long as the
 submodule is in the parent project's subproject directory nothing additional is
 needed.
+
+## Bazel support
+
+CLI11 is a Bazel module. Add it to your `MODULE.bazel`:
+
+```python
+bazel_dep(name = "cli11", version = "2.6.2")
+```
+
+Then depend on the `@cli11//:cli11` target:
+
+```python
+cc_binary(
+    name = "my_app",
+    srcs = ["my_app.cpp"],
+    deps = ["@cli11//:cli11"],
+)
+```
+
+The module builds CLI11 in precompiled mode. Bazel 7.4 or later is required.
 
 ## Installing cli11 using vcpkg
 
