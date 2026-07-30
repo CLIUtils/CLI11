@@ -20,6 +20,8 @@ ignore:
   - "style"
 
 exclude_paths:
+  - "docs/doxygen-awesome*"
+  - "docs/header.html"
   - "fuzz/**/*"
   - "fuzz/*"
   - "scripts/**/*"
