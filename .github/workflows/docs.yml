@@ -30,6 +30,18 @@ jobs:
       - name: Build API docs
         run: doxygen docs/Doxyfile
 
+      - name: Create redirects for old book URLs
+        run: |
+          redirect() {
+            printf '<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=%s"><link rel="canonical" href="https://cliutils.github.io/CLI11/%s"><title>Page moved</title></head><body><p>This page moved to <a href="%s">%s</a>.</p></body></html>\n' "$1" "$2" "$1" "$2" > "$3"
+          }
+          mkdir -p html/book/chapters
+          redirect ../book.html book.html html/book/index.html
+          for f in book/chapters/*.md; do
+            name=$(basename "$f" .md)
+            redirect "../../book-$name.html" "book-$name.html" "html/book/chapters/$name.html"
+          done
+
       - uses: actions/upload-artifact@v4
         with:
           name: api-docs
