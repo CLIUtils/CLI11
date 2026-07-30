@@ -2,19 +2,20 @@
 
 """Print the CHANGELOG.md section for a version, for use as release notes.
 
-Usage: ExtractReleaseNotes.py VERSION [CHANGELOG]
-
 VERSION accepts a tag name ("v2.7.0") or a plain version ("2.7.0"). Older
 sections are titled with two components and a name, such as
 "## Version 2.5: Help Formatter", so "2.5.0" also matches "## Version 2.5".
 Each section keeps its own link definitions, so the output needs no fixup.
 """
 
+from __future__ import annotations
+
+import argparse
 import re
-import sys
+from pathlib import Path
 
 
-def extract(text, version):
+def extract(text: str, version: str) -> str | None:
     heads = list(re.finditer(r"^## Version (\S+?):?(?:[ \t].*)?$", text, re.M))
     for candidate in (version, version.rsplit(".", 1)[0]):
         for i, head in enumerate(heads):
@@ -25,17 +26,18 @@ def extract(text, version):
     return None
 
 
-def main():
-    if not 2 <= len(sys.argv) <= 3:
-        sys.exit(__doc__)
-    version = sys.argv[1].lstrip("v")
-    changelog = sys.argv[2] if len(sys.argv) == 3 else "CHANGELOG.md"
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("version", help='tag ("v2.7.0") or version ("2.7.0")')
+    parser.add_argument("changelog", nargs="?", type=Path, default=Path("CHANGELOG.md"))
+    args = parser.parse_args()
 
-    with open(changelog, encoding="utf-8") as fp:
-        notes = extract(fp.read(), version)
-
+    version = args.version.lstrip("v")
+    notes = extract(args.changelog.read_text(encoding="utf-8"), version)
     if notes is None:
-        sys.exit(f"No '## Version {version}' section in {changelog}")
+        raise SystemExit(f"No '## Version {version}' section in {args.changelog}")
     print(notes)
 
 
