@@ -72,9 +72,37 @@ environment variables as input. The base `App` can be subclassed and customized
 for use in a toolkit (like [GooFit][]). All the standard shell idioms, like
 `--`, work as well.
 
-The [tutorial](@ref book) walks through the library step by step, starting with
-installation and a first program. The [API reference](@ref api) has the full
-documentation for every class and function.
+The guide chapters in the sidebar walk through the library step by step,
+starting with [installation](@ref book-installation) and a first program. Feel
+free to contribute to [the guide here][cli11guide] if something can be
+improved!
+
+## API reference
+
+The main classes are:
+
+| Name           | Where used                                                |
+| -------------- | --------------------------------------------------------- |
+| CLI::Option    | Options, stored in the app                                |
+| CLI::App       | The main application or subcommands                       |
+| CLI::Validator | A check that can affect the type name                     |
+| CLI::Formatter | A subclassable formatter for help printing                |
+| CLI::ExitCode  | A scoped enum with exit codes                             |
+| CLI::Timer     | A timer class, only in CLI/Timer.hpp (not in `CLI11.hpp`) |
+| CLI::AutoTimer | A timer that prints on deletion                           |
+
+Groups of related topics:
+
+| Name                 | Description                                    |
+| -------------------- | ---------------------------------------------- |
+| @ref error_group     | Errors that can be thrown                      |
+| @ref validator_group | Common validators used in CLI::Option::check() |
+
+Full indexes:
+
+- [Errors & Validators](topics.html)
+- [Namespace List](namespaces.html)
+- [Class List](annotated.html)
 
 ## About
 
@@ -88,5 +116,6 @@ CLI11 was developed at the [University of Cincinnati][] in support of the
 [readme]: https://github.com/CLIUtils/CLI11/blob/main/README.md
 [nsf 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: https://www.uc.edu
+[cli11guide]: https://github.com/CLIUtils/CLI11/tree/main/book
 [plumbum]: https://plumbum.readthedocs.io/en/latest/
 [click]: https://click.palletsprojects.com

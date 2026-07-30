@@ -5,7 +5,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="Introduction"/>
     <tab type="pages" visible="no" title="" intro=""/>
-    <tab type="usergroup" title="Tutorial" url="book.html">
+    <tab type="usergroup" title="Guide" url="[none]">
       <tab type="user" url="book-installation.html" title="Installation"/>
       <tab type="user" url="book-basics.html" title="The Basics"/>
       <tab type="user" url="book-flags.html" title="Adding Flags"/>
@@ -19,7 +19,7 @@
       <tab type="user" url="book-advanced-topics.html" title="Advanced topics"/>
       <tab type="user" url="book-internals.html" title="CLI11 Internals"/>
     </tab>
-    <tab type="usergroup" title="API Reference" url="api.html">
+    <tab type="usergroup" title="API Reference" url="[none]">
       <tab type="topics" visible="yes" title="Errors &amp; Validators" intro=""/>
       <tab type="namespaces" visible="yes" title="">
         <tab type="namespacelist" visible="yes" title="" intro=""/>
