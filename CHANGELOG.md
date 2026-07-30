@@ -109,6 +109,9 @@ that remove unnecessary copies in hot paths.
 - Added C++26 CI coverage (GCC, and clang with modules), and made codecov wait
   for all coverage uploads. [#1388][], [#1391][]
 - Tidied the configuration files in the root directory. [#1393][]
+- Attached the source packages to tagged releases, wrote the release notes from
+  the changelog, and added a CI check for a changelog entry on every build.
+  [#1401][], [#1402][], [#1403][]
 
 [#1305]: https://github.com/CLIUtils/CLI11/pull/1305
 [#1382]: https://github.com/CLIUtils/CLI11/pull/1382
@@ -159,6 +162,9 @@ that remove unnecessary copies in hot paths.
 [#1397]: https://github.com/CLIUtils/CLI11/pull/1397
 [#1398]: https://github.com/CLIUtils/CLI11/pull/1398
 [#1400]: https://github.com/CLIUtils/CLI11/pull/1400
+[#1401]: https://github.com/CLIUtils/CLI11/pull/1401
+[#1402]: https://github.com/CLIUtils/CLI11/pull/1402
+[#1403]: https://github.com/CLIUtils/CLI11/pull/1403
 
 ## Version 2.6.2
 
