@@ -88,6 +88,8 @@ that remove unnecessary copies in hot paths.
   output with doxygen-awesome-css, and reorganized the sidebar navigation.
   [#1390][], [#1392][], [#1397][], [#1398][]
 - Corrected errors found in a documentation review. [#1394][]
+- Split the documentation into Guide and Examples sections and filled gaps in
+  the guide. [#1400][]
 
 ### Internal
 
@@ -156,6 +158,7 @@ that remove unnecessary copies in hot paths.
 [#1396]: https://github.com/CLIUtils/CLI11/pull/1396
 [#1397]: https://github.com/CLIUtils/CLI11/pull/1397
 [#1398]: https://github.com/CLIUtils/CLI11/pull/1398
+[#1400]: https://github.com/CLIUtils/CLI11/pull/1400
 
 ## Version 2.6.2
 
