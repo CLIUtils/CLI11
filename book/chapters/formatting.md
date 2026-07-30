@@ -1,4 +1,4 @@
-# Formatting help output
+# Formatting help output {#book-formatting}
 
 ## Customizing an existing formatter
 
@@ -42,7 +42,7 @@ specified words in place of the label.
 Some of the control parameters are visualized in Figure 1. They manage the
 column widths and ratios of the different sections of the help
 
-![example help output](../images/help_output1.png)
+![example help output](help_output1.png)
 
 ### long option alignment ratio
 

@@ -35,39 +35,9 @@ jobs:
           name: api-docs
           path: html
 
-  gitbook:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 16
-
-      - uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: calibre calibre-bin libxss1 libasound2
-          version: 1
-
-      - name: Install JS requirements
-        working-directory: book
-        run: |
-          npm install
-
-      - name: Build book
-        working-directory: book
-        run: |
-          npx gitbook build . public
-          npx gitbook pdf . public/cli11.pdf
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: gitbook
-          path: book/public
-
   pages:
     runs-on: ubuntu-latest
-    needs: [apidocs, gitbook]
+    needs: [apidocs]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -83,11 +53,6 @@ jobs:
         with:
           name: api-docs
           path: _site
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: gitbook
-          path: _site/book
 
       - uses: actions/upload-pages-artifact@v3
 

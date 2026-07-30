@@ -1,29 +1,29 @@
-# Making a git clone
+# Making a git clone {#book-an-advanced-example}
 
 Let's try our hand at a little `git` clone, called `geet`. It will just print
 it's intent, rather than running actual code, since it's just a demonstration.
 Let's start by adding an app and requiring 1 subcommand to run:
 
-[include:"Intro"](../code/geet.cpp)
+\snippet geet.cpp Intro
 
 Now, let's define the first subcommand, `add`, along with a few options:
 
-[include:"Add"](../code/geet.cpp)
+\snippet geet.cpp Add
 
 Now, let's add `commit`:
 
-[include:"Commit"](../code/geet.cpp)
+\snippet geet.cpp Commit
 
 All that's need now is the parse call. We'll print a little message after the
 code runs, and then return:
 
-[include:"Parse"](../code/geet.cpp)
+\snippet geet.cpp Parse
 
 [Source code](https://github.com/CLIUtils/CLI11/tree/main/book/code/geet.cpp)
 
 If you compile and run:
 
-```term
+```text
 gitbook:examples $ c++ -std=c++11 geet.cpp -o geet
 ```
 

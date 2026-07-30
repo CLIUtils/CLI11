@@ -1,4 +1,4 @@
-# CLI11 Internals
+# CLI11 Internals {#book-internals}
 
 ## Callbacks
 

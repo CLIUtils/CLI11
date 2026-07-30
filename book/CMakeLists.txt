@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-set(book_sources README.md SUMMARY.md)
+set(book_sources README.md)
 
 file(
   GLOB book_chapters
