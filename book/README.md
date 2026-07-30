@@ -1,7 +1,7 @@
-# CLI11: An introduction
+# CLI11: An introduction {#book}
 
-This gitbook is designed to provide an introduction to using the CLI11 library
-to write your own command line programs. The library is designed to be clean,
+This book is designed to provide an introduction to using the CLI11 library to
+write your own command line programs. The library is designed to be clean,
 intuitive, but powerful. There are no requirements beyond C++11 support (and
 even `<regex>` support not required). It works on Mac, Linux, and Windows, and
 has 100% test coverage on all three systems. You can simply drop in a single
@@ -21,7 +21,7 @@ The syntax is simple and scales from a basic application to a massive physics
 analysis with multiple models and many parameters and switches. For example,
 this is a simple program that has an optional parameter that defaults to 0:
 
-```term
+```text
 gitbook $ ./a.out
 Parameter value: 0
 
@@ -40,7 +40,7 @@ Options:
 Like any good command line application, help is provided. This program can be
 implemented in 10 lines:
 
-[include](code/intro.cpp)
+\include intro.cpp
 
 [Source code](https://github.com/CLIUtils/CLI11/blob/main/book/code/intro.cpp)
 
@@ -48,7 +48,7 @@ Unlike some other libraries, this is enough to exit correctly and cleanly if
 help is requested or if incorrect arguments are passed. You can try this example
 out for yourself. To compile with GCC:
 
-```term
+```text
 gitbook:examples $ c++ -std=c++11 intro.cpp
 ```
 
@@ -82,9 +82,24 @@ CLI11 was developed at the [University of Cincinnati][] in support of the
 [GooFit][] library under [NSF Award 1414736][nsf 1414736]. It was featured in a
 [DIANA/HEP][] meeting at CERN. Please give it a try! Feedback is always welcome.
 
+## Chapters
+
+- \subpage book-installation
+- \subpage book-basics
+- \subpage book-flags
+- \subpage book-options
+- \subpage book-validators
+- \subpage book-subcommands
+- \subpage book-an-advanced-example
+- \subpage book-config
+- \subpage book-formatting
+- \subpage book-toolkits
+- \subpage book-advanced-topics
+- \subpage book-internals
+
 [goofit]: https://github.com/GooFit/GooFit
 [diana/hep]: https://diana-hep.org
-[cli11tutorial]: https://cliutils.github.io/CLI11/book
+[cli11tutorial]: https://github.com/CLIUtils/CLI11/tree/main/book
 [releases]: https://github.com/CLIUtils/CLI11/releases
 [api docs]: https://cliutils.github.io/CLI11
 [readme]: https://github.com/CLIUtils/CLI11/blob/main/README.md

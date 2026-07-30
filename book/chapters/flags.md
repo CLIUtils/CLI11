@@ -1,4 +1,4 @@
-# Adding Flags
+# Adding Flags {#book-flags}
 
 The most basic addition to a command line program is a flag. This is simply
 something that does not take any arguments. Adding a flag in CLI11 is done in
@@ -126,7 +126,7 @@ app.add_flag("--flag", flag)
 
 would allow the following to count as passing the flag:
 
-```term
+```text
 gitbook $ ./my_app --fLaG
 ```
 
@@ -134,17 +134,17 @@ gitbook $ ./my_app --fLaG
 
 The following program will take several flags:
 
-[include:"define"](../code/flags.cpp)
+\snippet flags.cpp define
 
 The values would be used like this:
 
-[include:"usage"](../code/flags.cpp)
+\snippet flags.cpp usage
 
 [Source code](https://github.com/CLIUtils/CLI11/tree/main/book/code/flags.cpp)
 
 If you compile and run:
 
-```term
+```text
 gitbook:examples $ g++ -std=c++11 flags.cpp
 gitbook:examples $ ./a.out -h
 Flag example program

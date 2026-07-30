@@ -1,4 +1,4 @@
-# Subcommands and the App
+# Subcommands and the App {#book-subcommands}
 
 Subcommands are keyword that invoke a new set of options and features. For
 example, the `git` command has a long series of subcommands, like `add` and
@@ -128,7 +128,7 @@ Fallthrough allows an option that does not match in a subcommand to "fall
 through" to the parent command; if that parent allows that option, it matches
 there instead. This was added to allow CLI11 to represent models:
 
-```term
+```text
 gitbook:code $ ./my_program my_model_1 --model_flag --shared_flag
 ```
 

@@ -1,4 +1,4 @@
-# Using CLI11 in a Toolkit
+# Using CLI11 in a Toolkit {#book-toolkits}
 
 CLI11 was designed to be integrate into a toolkit, providing a native experience
 for users. This was used in GooFit to provide `GooFit::Application`, an class

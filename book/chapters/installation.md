@@ -1,4 +1,4 @@
-# Installation
+# Installation {#book-installation}
 
 ## Single file edition
 
@@ -155,7 +155,7 @@ until the dependency is available.
 As an example of the build system, the following code will download and test
 CLI11 in a simple Alpine Linux docker container [^1]:
 
-```term
+```text
 gitbook:~ $ docker run -it alpine
 root:/ # apk add --no-cache g++ cmake make git
 fetch ...
