@@ -22,6 +22,8 @@ order, or jump to the chapter you need:
 
 - [Making a git clone](chapters/an-advanced-example.md) — a walkthrough of a
   larger program
+- [Using CLI11 as a C++20 module](chapters/modules-example.md) — complete
+  `import cli11;` programs, with an `import std;` variant
 - [Example programs](../examples) — small, complete programs you can copy
 
 A rendered version is part of the

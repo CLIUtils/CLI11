@@ -139,21 +139,16 @@ really need.)
 
 #### Modules
 
-When using modules, you must be using C++20 or later. CMake supports modules
-with the Ninja generator, and with the Visual Studio generator in CMake 3.28+
-(Makefiles won't work). When enabling `CLI11_MODULES`, you will have a target
-`CLI11::Modules` for linking.
-
-```cpp
-import cli11;
-
-using CLI::App;
-
-int main(int argc, char* argv[]) {
-    App app{"MyApp"};
-    // ...
-}
-```
+Module support is experimental. To use modules, you must use C++20 or later,
+CMake 3.28 or later, and the Ninja or Visual Studio generator (Makefiles do not
+work). Build and install CLI11 with `-DCLI11_MODULES=ON`, then link the target
+`CLI11::Module` (the older name `CLI11::CLI11_Module` stays supported). The
+module library contains the precompiled implementation, so an `import cli11;`
+client usually compiles several times faster than one that includes the headers.
+Macros such as `CLI11_PARSE` are not available through `import cli11;` — use
+`app.parse()` and catch `CLI::ParseError`, or include the headers as well. For
+complete programs, including an `import std;` variant, see [Using CLI11 as a
+C++20 module](@ref book-modules-example).
 
 #### Using Fetchcontent
 

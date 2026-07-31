@@ -193,6 +193,9 @@ details are available at [installation][]:
   point at this folder. With CMake 3.10+, use `include_directories(/opt/CLI11)`
 - For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
+- Experimental C++20 named module: build with `-DCLI11_MODULES=ON` (CMake 3.28+
+  and a module-capable generator), link `CLI11::Module`, and write
+  `import cli11;`. See [installation][] for details.
 
 ### Precompiled mode
 
