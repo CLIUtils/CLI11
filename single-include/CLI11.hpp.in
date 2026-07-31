@@ -44,6 +44,8 @@
 
 {encoding_includes}
 
+{encoding_inl_includes}
+
 {argv_inl_includes}
 
 namespace {namespace} {{

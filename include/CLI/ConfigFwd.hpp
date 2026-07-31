@@ -11,14 +11,12 @@
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cstdint>
-#include <fstream>
-#include <iostream>
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
-#include "Encoding.hpp"
 #include "Error.hpp"
 #include "StringTools.hpp"
 
@@ -80,18 +78,7 @@ class Config {
     }
 
     /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
-    CLI11_NODISCARD std::vector<ConfigItem> from_file(const std::string &name) const {
-#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
-        std::ifstream input{to_path(name)};
-#else
-        std::ifstream input{name};
-#endif
-
-        if(!input.good())
-            throw FileError::Missing(name);
-
-        return from_config(input);
-    }
+    CLI11_NODISCARD std::vector<ConfigItem> from_file(const std::string &name) const;
 
     /// Virtual destructor
     virtual ~Config() = default;

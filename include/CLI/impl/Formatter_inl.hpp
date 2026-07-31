@@ -13,7 +13,9 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <iomanip>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

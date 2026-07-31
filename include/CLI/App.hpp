@@ -12,12 +12,11 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
-#include <iostream>
+#include <iosfwd>
 #include <iterator>
 #include <memory>
 #include <numeric>
 #include <set>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -964,7 +963,13 @@ class App {
     }
 
     /// Print a nice error message and return the exit code
-    int exit(const Error &e, std::ostream &out = std::cout, std::ostream &err = std::cerr) const;
+    int exit(const Error &e, std::ostream &out, std::ostream &err) const;
+
+    /// Print a nice error message to std::cout/std::cerr and return the exit code
+    int exit(const Error &e) const;
+
+    /// Print a nice error message and return the exit code; errors go to std::cerr
+    int exit(const Error &e, std::ostream &out) const;
 
     ///@}
     /// @name Post parsing
