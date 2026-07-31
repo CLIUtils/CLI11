@@ -129,7 +129,9 @@ not edit project version in `CMakeLists.txt`.
 
 When preparing a release (`chore: prepare X.Y.Z release`):
 
-- Add the changelog entry and bump `include/CLI/Version.hpp`.
+- Add the changelog entry and bump `include/CLI/Version.hpp`. Give the changelog
+  heading a short title, such as `## Version 2.7.0: Audit and documentation`;
+  the heading is the name of the GitHub release.
 - Update the feature markers in `README.md`: remove the old 🆕 markers (the
   previous release's features) and change 🚧 markers (main-only features) to 🆕.
   Removing an emoji from a heading also changes its TOC anchor — drop the
