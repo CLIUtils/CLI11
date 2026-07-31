@@ -62,6 +62,10 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
     }
 }
 
+CLI11_INLINE App::App(std::string app_description, std::string app_name) : App(app_description, app_name, nullptr) {
+    set_help_flag("-h,--help", "Print this help message and exit");
+}
+
 CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #ifdef _WIN32
     (void)argv;
@@ -82,6 +86,15 @@ CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #else
     return argv;
 #endif
+}
+
+CLI11_INLINE App *App::callback(std::function<void()> app_callback) {
+    if(immediate_callback_) {
+        parse_complete_callback_ = std::move(app_callback);
+    } else {
+        final_callback_ = std::move(app_callback);
+    }
+    return this;
 }
 
 CLI11_INLINE App *App::name(std::string app_name) {
@@ -116,6 +129,34 @@ CLI11_INLINE App *App::alias(std::string app_name) {
         aliases_.push_back(app_name);
     }
 
+    return this;
+}
+
+CLI11_INLINE App *App::disabled_by_default(bool disable) {
+    if(disable) {
+        default_startup = startup_mode::disabled;
+    } else {
+        default_startup = (default_startup == startup_mode::enabled) ? startup_mode::enabled : startup_mode::stable;
+    }
+    return this;
+}
+
+CLI11_INLINE App *App::enabled_by_default(bool enable) {
+    if(enable) {
+        default_startup = startup_mode::enabled;
+    } else {
+        default_startup = (default_startup == startup_mode::disabled) ? startup_mode::disabled : startup_mode::stable;
+    }
+    return this;
+}
+
+CLI11_INLINE App *App::allow_config_extras(bool allow) {
+    if(allow) {
+        allow_config_extras_ = ConfigExtrasMode::Capture;
+        allow_extras_ = ExtrasMode::Capture;
+    } else {
+        allow_config_extras_ = ConfigExtrasMode::Error;
+    }
     return this;
 }
 
@@ -275,6 +316,10 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
     return option.get();
 }
 
+CLI11_INLINE Option *App::add_option(std::string option_name) {
+    return add_option(option_name, CLI::callback_t{}, std::string{}, false);
+}
+
 CLI11_INLINE Option *App::set_help_flag(std::string flag_name, const std::string &help_description) {
     // take flag_description by const reference otherwise add_flag tries to assign to help_description
     if(help_ptr_ != nullptr) {
@@ -365,6 +410,10 @@ CLI11_INLINE Option *App::_add_flag_internal(std::string flag_name, CLI::callbac
     opt->expected(0);
     opt->required(false);
     return opt;
+}
+
+CLI11_INLINE Option *App::add_flag(std::string flag_name) {
+    return _add_flag_internal(flag_name, CLI::callback_t(), std::string{});
 }
 
 CLI11_INLINE Option *App::add_flag_callback(std::string flag_name,
@@ -759,6 +808,80 @@ CLI11_INLINE std::vector<App *> App::get_subcommands(const std::function<bool(Ap
     return subcomms;
 }
 
+CLI11_INLINE App *App::require_subcommand(int value) {
+    if(value < 0) {
+        require_subcommand_min_ = 0;
+        require_subcommand_max_ = static_cast<std::size_t>(-value);
+    } else {
+        require_subcommand_min_ = static_cast<std::size_t>(value);
+        require_subcommand_max_ = static_cast<std::size_t>(value);
+    }
+    return this;
+}
+
+CLI11_INLINE App *App::require_option(int value) {
+    if(value < 0) {
+        require_option_min_ = 0;
+        require_option_max_ = static_cast<std::size_t>(-value);
+    } else {
+        require_option_min_ = static_cast<std::size_t>(value);
+        require_option_max_ = static_cast<std::size_t>(value);
+    }
+    return this;
+}
+
+CLI11_INLINE bool App::got_subcommand(const App *subcom) const {
+    // get subcom needed to verify that this was a real subcommand
+    return get_subcommand(subcom)->parsed_ > 0;
+}
+
+CLI11_NODISCARD CLI11_INLINE bool App::got_subcommand(std::string subcommand_name) const noexcept {
+    App *sub = get_subcommand_no_throw(subcommand_name);
+    return (sub != nullptr) ? (sub->parsed_ > 0) : false;
+}
+
+CLI11_INLINE App *App::excludes(Option *opt) {
+    if(opt == nullptr) {
+        throw OptionNotFound("nullptr passed");
+    }
+    exclude_options_.insert(opt);
+    return this;
+}
+
+CLI11_INLINE App *App::excludes(App *app) {
+    if(app == nullptr) {
+        throw OptionNotFound("nullptr passed");
+    }
+    if(app == this) {
+        throw OptionNotFound("cannot self reference in excludes");
+    }
+    auto res = exclude_subcommands_.insert(app);
+    // subcommand exclusion should be symmetric
+    if(res.second) {
+        app->exclude_subcommands_.insert(this);
+    }
+    return this;
+}
+
+CLI11_INLINE App *App::needs(Option *opt) {
+    if(opt == nullptr) {
+        throw OptionNotFound("nullptr passed");
+    }
+    need_options_.insert(opt);
+    return this;
+}
+
+CLI11_INLINE App *App::needs(App *app) {
+    if(app == nullptr) {
+        throw OptionNotFound("nullptr passed");
+    }
+    if(app == this) {
+        throw OptionNotFound("cannot self reference in needs");
+    }
+    need_subcommands_.insert(app);
+    return this;
+}
+
 CLI11_INLINE bool App::remove_excludes(Option *opt) {
     auto iterator = std::find(std::begin(exclude_options_), std::end(exclude_options_), opt);
     if(iterator == std::end(exclude_options_)) {
@@ -795,6 +918,26 @@ CLI11_INLINE bool App::remove_needs(App *app) {
     }
     need_subcommands_.erase(iterator);
     return true;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::config_to_str() const {
+    return config_to_str(ConfigOutputMode::Active, false);
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::config_to_str(ConfigOutputMode mode, bool write_description) const {
+    return config_formatter_->to_config(this, mode, write_description, "");
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::config_to_str(bool default_also, bool write_description) const {
+    return config_to_str(default_also ? ConfigOutputMode::AllDefaults : ConfigOutputMode::Active, write_description);
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::get_usage() const {
+    return (usage_callback_) ? usage_callback_() + '\n' + usage_ : usage_;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::get_footer() const {
+    return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_;
 }
 
 CLI11_NODISCARD CLI11_INLINE std::string App::help(std::string prev, AppFormatMode mode) const {
@@ -2495,6 +2638,34 @@ CLI11_INLINE void App::_move_option(Option *opt, App *app) {
     }
 }
 
+CLI11_INLINE Option_group::Option_group(std::string group_description, std::string group_name, App *parent)
+    : App(std::move(group_description), "", parent) {
+    group(group_name);
+    // option groups should have automatic fallthrough
+    if(group_name.empty() || group_name.front() == '+') {
+        // help will not be used by default in these contexts
+        set_help_flag("");
+        set_help_all_flag("");
+    }
+}
+
+CLI11_INLINE Option *Option_group::add_option(Option *opt) {
+    if(get_parent() == nullptr) {
+        throw OptionNotFound("Unable to locate the specified option");
+    }
+    get_parent()->_move_option(opt, this);
+    return opt;
+}
+
+CLI11_INLINE void Option_group::add_options(Option *opt) { add_option(opt); }
+
+CLI11_INLINE App *Option_group::add_subcommand(App *subcom) {
+    App_p subc = subcom->get_parent()->get_subcommand_ptr(subcom);
+    subc->get_parent()->remove_subcommand(subcom);
+    add_subcommand(std::move(subc));
+    return subcom;
+}
+
 CLI11_INLINE void TriggerOn(App *trigger_app, App *app_to_enable) {
     app_to_enable->enabled_by_default(false);
     app_to_enable->disabled_by_default();
@@ -2545,6 +2716,16 @@ CLI11_INLINE void deprecate_option(Option *opt, const std::string &replacement) 
     if(!replacement.empty()) {
         opt->description(opt->get_description() + " DEPRECATED: please use '" + replacement + "' instead");
     }
+}
+
+CLI11_INLINE void deprecate_option(App *app, const std::string &option_name, const std::string &replacement) {
+    auto *opt = app->get_option(option_name);
+    deprecate_option(opt, replacement);
+}
+
+CLI11_INLINE void deprecate_option(App &app, const std::string &option_name, const std::string &replacement) {
+    auto *opt = app.get_option(option_name);
+    deprecate_option(opt, replacement);
 }
 
 CLI11_INLINE void retire_option(App *app, Option *opt) {

@@ -373,10 +373,7 @@ class Option : public OptionBase<Option> {
            std::string option_description,
            callback_t callback,
            App *parent,
-           bool allow_non_standard = false)
-        : description_(std::move(option_description)), parent_(parent), callback_(std::move(callback)) {
-        std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name), allow_non_standard);
-    }
+           bool allow_non_standard = false);
 
   public:
     /// @name Basic
@@ -395,11 +392,7 @@ class Option : public OptionBase<Option> {
     explicit operator bool() const { return !empty() || force_callback_; }
 
     /// Clear the parsed results (mostly for testing)
-    void clear() {
-        results_.clear();
-        proc_results_.clear();
-        current_option_state_ = option_state::parsing;
-    }
+    void clear();
 
     ///@}
     /// @name Setting options
@@ -486,12 +479,7 @@ class Option : public OptionBase<Option> {
     Validator *get_validator(int index);
 
     /// Sets required options
-    Option *needs(Option *opt) {
-        if(opt != this) {
-            needs_.insert(opt);
-        }
-        return this;
-    }
+    Option *needs(Option *opt);
 
     /// Can find a string if needed
     template <typename T = App> Option *needs(std::string opt_name) {
@@ -597,18 +585,7 @@ class Option : public OptionBase<Option> {
     /// Get the flag names with specified default values
     CLI11_NODISCARD const std::vector<std::string> &get_fnames() const { return fnames_; }
     /// Get a single name for the option, first of lname, sname, pname, envname
-    CLI11_NODISCARD const std::string &get_single_name() const {
-        if(!lnames_.empty()) {
-            return lnames_[0];
-        }
-        if(!snames_.empty()) {
-            return snames_[0];
-        }
-        if(!pname_.empty()) {
-            return pname_;
-        }
-        return envname_;
-    }
+    CLI11_NODISCARD const std::string &get_single_name() const;
     /// The number of times the option expects to be included
     CLI11_NODISCARD int get_expected() const { return expected_min_; }
 
@@ -782,10 +759,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Set a custom option typestring
-    Option *type_name(std::string typeval) {
-        type_name_fn([typeval]() { return typeval; });
-        return this;
-    }
+    Option *type_name(std::string typeval);
 
     /// Set a custom option size
     Option *type_size(int option_type_size);
@@ -803,12 +777,7 @@ class Option : public OptionBase<Option> {
     }
 
     /// Capture the default value from the original value (if it can be captured)
-    Option *capture_default_str() {
-        if(default_function_) {
-            default_str_ = default_function_();
-        }
-        return this;
-    }
+    Option *capture_default_str();
 
     /// Set the default value string representation (does not change the contained value)
     Option *default_str(std::string val) {
