@@ -31,6 +31,7 @@ set with a simple and intuitive interface.
     - [Other parsers](#other-parsers)
     - [Features not supported by this library](#features-not-supported-by-this-library)
   - [Install](#install)
+    - [Precompiled mode](#precompiled-mode)
   - [Usage](#usage)
     - [Adding options](#adding-options)
       - [Option types](#option-types)
@@ -192,6 +193,21 @@ details are available at [installation][]:
   point at this folder. With CMake 3.10+, use `include_directories(/opt/CLI11)`
 - For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
+
+### Precompiled mode
+
+CLI11 is header-only by default, so each translation unit that includes it
+compiles the full library. If you build CLI11 with CMake (`add_subdirectory` or
+an installed package), you can set `CLI11_PRECOMPILED` to compile the
+implementation one time into a static library instead:
+
+```bash
+cmake -S . -B build -DCLI11_PRECOMPILED=ON
+```
+
+This can markedly reduce the compile time of each file that includes CLI11 (in
+one simple measurement, approximately 4x faster per file). The `CLI11::CLI11`
+target does not change. See [installation][] for details.
 
 ## Usage
 
