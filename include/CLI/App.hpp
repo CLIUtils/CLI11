@@ -965,8 +965,9 @@ class App {
     /// Print a nice error message and return the exit code
     int exit(const Error &e, std::ostream &out, std::ostream &err) const;
 
-    /// Print a nice error message to std::cout/std::cerr and return the exit code
-    CLI11_NODISCARD int exit(const Error &e) const;
+    /// Print a nice error message to std::cout/std::cerr and return the exit code; the
+    /// result can be discarded when it is called only for the printing
+    int exit(const Error &e) const;  // NOLINT(modernize-use-nodiscard)
 
     /// Print a nice error message and return the exit code; errors go to std::cerr
     int exit(const Error &e, std::ostream &out) const;
