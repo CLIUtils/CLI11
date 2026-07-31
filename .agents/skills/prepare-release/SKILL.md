@@ -38,10 +38,10 @@ and the `CLI11_VERSION` string.
 
 ## Other files
 
-- Only if not a patch release: Update the feature markers in `README.md`:
-  remove the old 🆕 markers (the previous release's features) and change 🚧
-  markers (main-only features) to 🆕.  Removing an emoji from a heading also
-  changes its TOC anchor — drop the trailing `-` from the matching TOC links.
+- Only if not a patch release: Update the feature markers in `README.md`: remove
+  the old 🆕 markers (the previous release's features) and change 🚧 markers
+  (main-only features) to 🆕. Removing an emoji from a heading also changes its
+  TOC anchor — drop the trailing `-` from the matching TOC links.
 - Check the copyright year in `LICENSE` and the version in
   `book/chapters/installation.md`.
 
