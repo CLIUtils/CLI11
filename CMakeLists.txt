@@ -165,6 +165,7 @@ set(CLI11_impl_headers
     ${CLI11_headerLoc}/impl/Option_inl.hpp
     ${CLI11_headerLoc}/impl/Split_inl.hpp
     ${CLI11_headerLoc}/impl/StringTools_inl.hpp
+    ${CLI11_headerLoc}/impl/TypeTools_inl.hpp
     ${CLI11_headerLoc}/impl/Validators_inl.hpp
     ${CLI11_headerLoc}/impl/ExtraValidators_inl.hpp
     ${CLI11_headerLoc}/impl/Encoding_inl.hpp
