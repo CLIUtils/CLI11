@@ -726,6 +726,10 @@ CLI11_INLINE int App::exit(const Error &e, std::ostream &out, std::ostream &err)
     return e.get_exit_code();
 }
 
+CLI11_INLINE int App::exit(const Error &e) const { return exit(e, std::cout, std::cerr); }
+
+CLI11_INLINE int App::exit(const Error &e, std::ostream &out) const { return exit(e, out, std::cerr); }
+
 CLI11_INLINE std::vector<const App *> App::get_subcommands(const std::function<bool(const App *)> &filter) const {
     std::vector<const App *> subcomms(subcommands_.size());
     std::transform(

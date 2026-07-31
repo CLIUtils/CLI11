@@ -11,8 +11,14 @@
 // This include is only needed for IDEs to discover symbols
 #include "../Config.hpp"
 
+#include "../Encoding.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <istream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +26,19 @@
 
 namespace CLI {
 // [CLI11:config_inl_hpp:verbatim]
+
+CLI11_INLINE std::vector<ConfigItem> Config::from_file(const std::string &name) const {
+#if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
+    std::ifstream input{to_path(name)};
+#else
+    std::ifstream input{name};
+#endif
+
+    if(!input.good())
+        throw FileError::Missing(name);
+
+    return from_config(input);
+}
 
 static constexpr auto multiline_literal_quote = R"(''')";
 static constexpr auto multiline_string_quote = R"(""")";

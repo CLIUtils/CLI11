@@ -104,21 +104,14 @@
 #endif
 #endif
 
-/** <codecvt> availability */
-#if !defined(CLI11_CPP26) && !defined(CLI11_HAS_CODECVT)
-#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 5
+/** <codecvt> availability (the header is only included where it is used) */
+#ifndef CLI11_HAS_CODECVT
+#if defined(CLI11_CPP26)
+#define CLI11_HAS_CODECVT 0
+#elif defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 5
 #define CLI11_HAS_CODECVT 0
 #else
 #define CLI11_HAS_CODECVT 1
-#include <codecvt>
-#endif
-#else
-#if defined(CLI11_HAS_CODECVT)
-#if CLI11_HAS_CODECVT > 0
-#include <codecvt>
-#endif
-#else
-#define CLI11_HAS_CODECVT 0
 #endif
 #endif
 
