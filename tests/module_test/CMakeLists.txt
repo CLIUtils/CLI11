@@ -17,7 +17,7 @@ endif()
 
 # Default only; the outer build passes its own standard so the module BMI matches
 set(CMAKE_CXX_STANDARD
-    23
+    20
     CACHE STRING "The C++ standard to use")
 
 # Test the CLI11 CMake package config
