@@ -139,10 +139,12 @@ really need.)
 
 #### Modules
 
-When using modules, you must be using C++20 or later. CMake supports modules
-with the Ninja generator, and with the Visual Studio generator in CMake 3.28+
-(Makefiles won't work). When enabling `CLI11_MODULES`, you will have a target
-`CLI11::Modules` for linking.
+Module support is experimental. To use modules, you must use C++20 or later,
+CMake 3.28 or later, and the Ninja or Visual Studio generator (Makefiles do not
+work). When you enable `CLI11_MODULES`, you get a target `CLI11::CLI11_Module`
+for linking (also available as the alias `CLI11::Module` in the build tree).
+Macros such as `CLI11_PARSE` are not available through `import cli11;` — use
+`app.parse()` and catch `CLI::ParseError`, or include the headers as well.
 
 ```cpp
 import cli11;
