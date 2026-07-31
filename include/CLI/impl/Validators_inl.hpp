@@ -15,6 +15,7 @@
 #include "../TypeTools.hpp"
 
 // [CLI11:public_includes:set]
+#include <functional>
 #include <map>
 #include <string>
 #include <utility>
@@ -22,6 +23,15 @@
 
 namespace CLI {
 // [CLI11:validators_inl_hpp:verbatim]
+
+CLI11_INLINE Validator::Validator(std::string validator_desc, std::function<std::string(std::string &)> func)
+    : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(func)) {}
+
+CLI11_INLINE Validator::Validator(std::function<std::string(std::string &)> op,
+                                  std::string validator_desc,
+                                  std::string validator_name)
+    : desc_function_([validator_desc]() { return validator_desc; }), func_(std::move(op)),
+      name_(std::move(validator_name)) {}
 
 CLI11_INLINE std::string Validator::operator()(std::string &str) const {
     std::string retstring;
@@ -36,9 +46,39 @@ CLI11_INLINE std::string Validator::operator()(std::string &str) const {
     return retstring;
 }
 
+CLI11_INLINE std::string Validator::operator()(const std::string &str) const {
+    std::string value = str;
+    return (active_) ? func_(value) : std::string{};
+}
+
 CLI11_NODISCARD CLI11_INLINE Validator Validator::description(std::string validator_desc) const {
     Validator newval(*this);
     newval.desc_function_ = [validator_desc]() { return validator_desc; };
+    return newval;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string Validator::get_description() const {
+    if(active_) {
+        return desc_function_();
+    }
+    return std::string{};
+}
+
+CLI11_NODISCARD CLI11_INLINE Validator Validator::name(std::string validator_name) const {
+    Validator newval(*this);
+    newval.name_ = std::move(validator_name);
+    return newval;
+}
+
+CLI11_NODISCARD CLI11_INLINE Validator Validator::active(bool active_val) const {
+    Validator newval(*this);
+    newval.active_ = active_val;
+    return newval;
+}
+
+CLI11_NODISCARD CLI11_INLINE Validator Validator::application_index(int app_index) const {
+    Validator newval(*this);
+    newval.application_index_ = app_index;
     return newval;
 }
 

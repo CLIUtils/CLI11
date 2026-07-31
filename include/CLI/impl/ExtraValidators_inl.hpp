@@ -9,7 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../ExtraValidators.hpp"
 
-#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
 #include "../Encoding.hpp"
