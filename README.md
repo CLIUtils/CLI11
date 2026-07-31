@@ -194,7 +194,7 @@ details are available at [installation][]:
 - For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
 - Experimental C++20 named module: build with `-DCLI11_MODULES=ON` (CMake 3.28+
-  and a module-capable generator), link `CLI11::CLI11_Module`, and write
+  and a module-capable generator), link `CLI11::Module`, and write
   `import cli11;`. See [installation][] for details.
 
 ### Precompiled mode

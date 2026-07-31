@@ -27,6 +27,8 @@ else()
 endif()
 
 add_library(CLI11::Module ALIAS CLI11_Module)
+# Same name as in the installed package, for add_subdirectory consumers
+add_library(CLI11::CLI11_Module ALIAS CLI11_Module)
 
 # Installation
 install(

@@ -50,7 +50,7 @@ if(CLI11_MODULES)
   # Test the target
   add_executable(module-test module_test.cpp)
 
-  target_link_libraries(module-test CLI11::CLI11_Module)
+  target_link_libraries(module-test CLI11::Module)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(module-test PUBLIC -fmodules-ts)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
