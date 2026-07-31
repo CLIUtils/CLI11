@@ -1,8 +1,8 @@
 # Using CLI11 as a C++20 module {#book-modules-example}
 
 Module support is experimental. This page shows two complete programs that use
-`import cli11;`. For the build options, targets, and requirements, see
-[Modules in the installation chapter](@ref book-installation).
+`import cli11;`. For the build options, targets, and requirements, see [Modules
+in the installation chapter](@ref book-installation).
 
 ## A complete minimal project
 
