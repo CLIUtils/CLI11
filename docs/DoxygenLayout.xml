@@ -22,6 +22,7 @@
     </tab>
     <tab type="usergroup" title="Examples" url="[none]">
       <tab type="user" url="book-an-advanced-example.html" title="Making a git clone"/>
+      <tab type="user" url="book-modules-example.html" title="Using CLI11 as a C++20 module"/>
       <tab type="user" url="example-programs.html" title="Example programs"/>
     </tab>
     <tab type="usergroup" title="API Reference" url="[none]">
