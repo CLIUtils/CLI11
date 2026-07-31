@@ -82,6 +82,11 @@ jobs:
             options: -DCMAKE_CXX_FLAGS="-std=c++23 -stdlib=libc++"
               -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCMAKE_CXX_COMPILER=clang++
               -DCLI11_FORCE_LIBCXX=ON -DCMAKE_LINKER_TYPE=LLD
+          - name: gcc15 std17 precompiled shared lto
+            container: gcc:15
+            std: 17
+            precompile: ON
+            options: -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS="-O2 -flto=auto"
           - name: clang20 std26
             container: silkeh/clang:20
             std: 26
