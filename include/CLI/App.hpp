@@ -966,7 +966,7 @@ class App {
     int exit(const Error &e, std::ostream &out, std::ostream &err) const;
 
     /// Print a nice error message to std::cout/std::cerr and return the exit code
-    int exit(const Error &e) const;
+    CLI11_NODISCARD int exit(const Error &e) const;
 
     /// Print a nice error message and return the exit code; errors go to std::cerr
     int exit(const Error &e, std::ostream &out) const;
