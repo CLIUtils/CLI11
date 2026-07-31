@@ -1,4 +1,4 @@
-# Changelog
+# Changelog {#changelog}
 
 ## Version 2.7.0
 

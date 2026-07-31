@@ -37,6 +37,7 @@
         <tab type="classmembers" visible="yes" title="" intro=""/>
       </tab>
     </tab>
+    <tab type="user" url="changelog.html" title="Changelog"/>
   </navindex>
 
   <!-- Layout definition for a class page -->
