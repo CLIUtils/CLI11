@@ -28,8 +28,8 @@ such as `## Version 2.7.0: Audit and documentation`.
   tests, and tooling changes with no user-visible effect.
 - Reference PRs as `[#1305][]` and put the matching link definitions
   (`[#1305]: https://github.com/CLIUtils/CLI11/pull/1305`) at the end of the
-  section — each section keeps its own definitions so an extracted section needs
-  no fixup.
+  version section — each section keeps its own definitions so an extracted
+  section needs no fixup.
 
 ## Version bump
 
@@ -38,10 +38,10 @@ and the `CLI11_VERSION` string.
 
 ## Other files
 
-- Update the feature markers in `README.md`: remove the old 🆕 markers (the
-  previous release's features) and change 🚧 markers (main-only features) to 🆕.
-  Removing an emoji from a heading also changes its TOC anchor — drop the
-  trailing `-` from the matching TOC links.
+- Only if not a patch release: Update the feature markers in `README.md`:
+  remove the old 🆕 markers (the previous release's features) and change 🚧
+  markers (main-only features) to 🆕.  Removing an emoji from a heading also
+  changes its TOC anchor — drop the trailing `-` from the matching TOC links.
 - Check the copyright year in `LICENSE` and the version in
   `book/chapters/installation.md`.
 
