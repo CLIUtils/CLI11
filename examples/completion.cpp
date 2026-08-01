@@ -25,6 +25,8 @@ int main(int argc, char **argv) {
     remote->add_flag("--force,-f", "Do it anyway");
     remote->add_subcommand("add", "Add a remote");
     remote->add_subcommand("remove", "Drop a remote")->alias("rm");
+    // A description is arbitrary text, so the reply format has to escape it and the script has to put it back
+    remote->add_subcommand("sync", "Push\tand pull");
 
     app.require_subcommand(0, 1);
 
