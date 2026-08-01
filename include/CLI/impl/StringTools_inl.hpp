@@ -13,11 +13,15 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <iomanip>
+#include <iterator>
 #include <locale>
-#include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

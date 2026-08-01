@@ -110,6 +110,15 @@ docker run --rm -v "$PWD:/src:ro" debian:trixie sh -c '
   cmake --preset iwyu >/dev/null && cmake --build --preset iwyu'
 ```
 
+Take an addition from either platform, but only act on a removal both agree on.
+libc++ gives `<iterator>` away through other headers, so macOS asks to remove
+the `<iterator>` lines that libstdc++ needs for `std::begin`, `std::end`, and
+`std::pair`. Keep them.
+
+Two `<filesystem>` includes must stay whatever IWYU says: `Macros.hpp` needs it
+to define `__cpp_lib_filesystem` before the version check, and the one in
+`Validators.hpp` sits inside `#if CLI11_HAS_FILESYSTEM`.
+
 Known false positives, all in the "should add" lists: `<version>` for
 `Macros.hpp` on both platforms, plus `<AvailabilityInternal.h>` for `Macros.hpp`
 and `<math>` for `Validators.hpp` on macOS. The "should remove" lines for

@@ -13,16 +13,12 @@
 #include "../Macros.hpp"
 
 // [CLI11:public_includes:set]
-#include <array>
-#include <clocale>
-#include <cstdlib>
 #include <cstring>
 #include <cwchar>
+#include <filesystem>
 #include <locale>
-#include <stdexcept>
 #include <string>
-#include <type_traits>
-#include <utility>
+#include <string_view>
 // [CLI11:public_includes:end]
 
 // [CLI11:encoding_inl_includes:verbatim]

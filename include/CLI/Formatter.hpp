@@ -9,9 +9,6 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
-#include <algorithm>
-#include <string>
-#include <vector>
 // [CLI11:public_includes:end]
 
 #include "App.hpp"

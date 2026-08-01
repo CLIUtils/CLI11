@@ -19,10 +19,14 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
-#include <fstream>
+#include <cstdint>
+#include <filesystem>
+#include <functional>
+#include <initializer_list>
 #include <map>
 #include <string>
-#include <utility>
+#include <system_error>
+#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {

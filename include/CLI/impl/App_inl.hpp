@@ -16,9 +16,16 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cerrno>
+#include <cstddef>
+#include <cstdint>
 #include <exception>
+#include <functional>
 #include <iostream>
+#include <iterator>
 #include <memory>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

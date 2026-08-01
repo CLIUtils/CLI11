@@ -14,7 +14,11 @@
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cerrno>
+#include <cstdlib>
+#include <functional>
+#include <iterator>
 #include <memory>
+#include <set>
 #include <string>
 #include <tuple>
 #include <utility>

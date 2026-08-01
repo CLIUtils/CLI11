@@ -9,7 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
-#include <exception>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <utility>

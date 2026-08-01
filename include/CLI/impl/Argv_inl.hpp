@@ -14,10 +14,6 @@
 #include "../Encoding.hpp"
 
 // [CLI11:public_includes:set]
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <vector>
 // [CLI11:public_includes:end]
 
 // [CLI11:argv_inl_includes:verbatim]

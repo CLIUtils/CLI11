@@ -10,14 +10,15 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <memory>
-#include <numeric>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]

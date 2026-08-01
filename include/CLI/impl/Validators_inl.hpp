@@ -15,9 +15,12 @@
 #include "../TypeTools.hpp"
 
 // [CLI11:public_includes:set]
+#include <filesystem>
 #include <functional>
-#include <map>
+#include <stdexcept>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include <utility>
 // [CLI11:public_includes:end]
 

@@ -10,8 +10,10 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cstddef>
+#include <initializer_list>
+#include <iterator>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
