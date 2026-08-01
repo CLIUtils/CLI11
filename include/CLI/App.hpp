@@ -24,6 +24,7 @@
 // [CLI11:public_includes:end]
 
 // CLI Library includes
+#include "Completion.hpp"
 #include "ConfigFwd.hpp"
 #include "Error.hpp"
 #include "FormatterFwd.hpp"
@@ -197,6 +198,16 @@ class App {
 
     /// A pointer to a version flag if there is one
     Option *version_ptr_{nullptr};
+
+    /// A pointer to the flag that prints a completion script if there is one
+    Option *completion_ptr_{nullptr};
+
+    /// If true, parse() answers a completion request found in the environment instead of parsing
+    bool completion_enabled_{true};
+
+    /// The environment variable whose presence signals a completion request. The cursor index is read from the same
+    /// name with `_INDEX` appended
+    std::string completion_env_var_{"CLI11_COMPLETE"};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
@@ -647,6 +658,34 @@ class App {
     Option *set_version_flag(std::string flag_name,
                              std::function<std::string()> vfunc,
                              const std::string &version_help = "Display program version information and exit");
+
+    /// Set a flag that takes a shell name and prints its completion script, replacing any existing one.
+    /// Off unless called, because adding it changes the help output of every program that upgrades.
+    Option *
+    set_completion_flag(std::string flag_name = "--completion",
+                        const std::string &completion_help = "Print the completion script for a shell and exit");
+
+    /// Stop answering the completion requests that arrive through the environment
+    App *disable_completion(bool disabled = true) {
+        completion_enabled_ = !disabled;
+        return this;
+    }
+
+    /// Change the environment variable whose presence activates completion
+    App *set_completion_env_var(std::string env_var) {
+        completion_env_var_ = std::move(env_var);
+        return this;
+    }
+
+    /// Get the environment variable whose presence activates completion
+    CLI11_NODISCARD const std::string &get_completion_env_var() const { return completion_env_var_; }
+
+    /// Generate the script that teaches a shell to complete this program.
+    CLI11_NODISCARD std::string get_completion_script(const std::string &shell) const;
+
+    /// Get the completion candidates for the word at the cursor. The words are the arguments of the line being
+    /// completed excluding the program name, so words and cursor are both 0-based over real arguments.
+    CLI11_NODISCARD CompletionReply get_completions(const std::vector<std::string> &words, std::size_t cursor) const;
 
   private:
     /// Internal function for adding a flag
@@ -1169,6 +1208,12 @@ class App {
     /// Get a pointer to the version option. (const)
     CLI11_NODISCARD const Option *get_version_ptr() const { return version_ptr_; }
 
+    /// Get a pointer to the completion script option
+    Option *get_completion_ptr() { return completion_ptr_; }
+
+    /// Get a pointer to the completion script option. (const)
+    CLI11_NODISCARD const Option *get_completion_ptr() const { return completion_ptr_; }
+
     /// Get the parent of this subcommand (or nullptr if main app)
     App *get_parent() { return parent_; }
 
@@ -1281,6 +1326,10 @@ class App {
     /// Shared prologue for the public parse() overloads: clears prior state, validates and configures,
     /// and marks this app as the top-level app.
     void _parse_setup();
+
+    /// Answer a completion request sitting in the environment by throwing CallForCompletion.
+    /// Returns without doing anything if there is no request. Expects a reversed vector.
+    void _complete_intercept(const std::vector<std::string> &args) const;
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args);

@@ -394,6 +394,26 @@ App::set_version_flag(std::string flag_name, std::function<std::string()> vfunc,
     return version_ptr_;
 }
 
+CLI11_INLINE Option *App::set_completion_flag(std::string flag_name, const std::string &completion_help) {
+    if(completion_ptr_ != nullptr) {
+        remove_option(completion_ptr_);
+        completion_ptr_ = nullptr;
+    }
+
+    // Empty name will simply remove the completion flag
+    if(!flag_name.empty()) {
+        // Capturing this is safe because an App is neither copyable nor movable, so it outlives the
+        // option it owns. Throwing leaves the printing to App::exit, like the help and version flags.
+        completion_ptr_ = add_option_function<std::string>(
+            std::move(flag_name),
+            [this](const std::string &shell) { throw(CLI::CallForCompletion(get_completion_script(shell))); },
+            completion_help);
+        completion_ptr_->configurable(false)->callback_priority(CallbackPriority::First)->option_text("SHELL");
+    }
+
+    return completion_ptr_;
+}
+
 CLI11_INLINE Option *App::_add_flag_internal(std::string flag_name, CLI::callback_t fun, std::string flag_description) {
     Option *opt = nullptr;
     if(detail::has_default_flag_values(flag_name)) {
@@ -731,12 +751,14 @@ CLI11_INLINE void App::_parse_setup() {
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &args) {
+    _complete_intercept(args);
     _parse_setup();
     _parse(args);
     run_callback();
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &&args) {
+    _complete_intercept(args);
     _parse_setup();
     _parse(std::move(args));
     run_callback();
@@ -774,12 +796,75 @@ CLI11_INLINE int App::exit(const Error &e, std::ostream &out, std::ostream &err)
         return e.get_exit_code();
     }
 
+    if(e.get_name() == "CallForCompletion") {
+        // The payload is already newline terminated; a stray extra line would be read as a candidate
+        out << e.what();
+        return e.get_exit_code();
+    }
+
     if(e.get_exit_code() != static_cast<int>(ExitCodes::Success)) {
         if(failure_message_)
             err << failure_message_(this, e) << std::flush;
     }
 
     return e.get_exit_code();
+}
+
+CLI11_INLINE std::string App::get_completion_script(const std::string &shell) const {
+    if(shell == "bash")
+        return detail::completion_script_bash(get_display_name(), completion_env_var_);
+    throw ValidationError("shell", "no completion script is available for " + shell);
+}
+
+CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string> &words, std::size_t cursor) const {
+    CompletionReply reply;
+    if(cursor >= words.size()) {
+        // A shell always sends an empty word for a cursor sitting past the last one, so an index beyond the end is a
+        // malformed request rather than the start of a fresh word.
+        return reply;
+    }
+
+    const std::string &prefix = words[cursor];
+    reply.results.reserve(subcommands_.size());
+    for(const App_p &sub : subcommands_) {
+        const std::string &name = sub->get_name();
+        // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
+        // with it.
+        if(!name.empty() && name.compare(0, prefix.size(), prefix) == 0)
+            reply.results.push_back(CompletionResult{name});
+    }
+    reply.directive = CompletionDirective::NoFileComp;
+    return reply;
+}
+
+CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args) const {
+    if(!completion_enabled_ || parent_ != nullptr)
+        return;
+    if(detail::get_environment_value(completion_env_var_).empty())
+        return;
+
+    const std::string index_var = completion_env_var_ + "_INDEX";
+    const std::string index_string = detail::get_environment_value(index_var);
+    // Unset before anything else can observe them: completing may run another CLI11 binary, and an inherited request
+    // would make that one complete itself instead of doing its job.
+    detail::unset_environment_value(completion_env_var_);
+    detail::unset_environment_value(index_var);
+    detail::unset_environment_value(completion_env_var_ + "_PROTO");
+
+    // The parser hands over a reversed vector; put it back before indexing into it.
+    const std::vector<std::string> words(args.rbegin(), args.rend());
+
+    std::size_t index = 0;
+    if(!detail::lexical_cast(index_string, index))
+        index = 0;
+
+    CompletionReply reply;
+    // The shells number the program name as word 0, and everything downstream counts over real arguments alone. A
+    // cursor on the program name has nothing to complete.
+    if(index > 0)
+        reply = get_completions(words, index - 1);
+
+    throw CallForCompletion(format_completion_reply(reply));
 }
 
 CLI11_INLINE int App::exit(const Error &e) const { return exit(e, std::cout, std::cerr); }

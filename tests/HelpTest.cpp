@@ -882,7 +882,7 @@ TEST_CASE("THelp: HelpSubcommandPriority", "[help]") {
 
     std::string input{"sub1 -h"};
     CHECK_THROWS_AS(app.parse(input), CLI::CallForHelp);
-    unset_env("SOME_FILE");
+    CLI::detail::unset_environment_value("SOME_FILE");
 }
 
 TEST_CASE("THelp: NextLineShouldBeAlignmentInMultilineDescription", "[help]") {
