@@ -63,11 +63,58 @@ ctest --preset dev -R AppTest
 - `tidy` — Inherits `default`, adds `clang-tidy` with warnings-as-errors. Uses
   precompiled mode, so each `impl/*_inl.hpp` header is analyzed once (in
   `src/Precompile.cpp`) instead of in every test and example.
+- `iwyu` — Inherits `default`, runs `include-what-you-use`. Also precompiled,
+  with tests and examples off, so `src/Precompile.cpp` is the only translation
+  unit and each header is reported once.
 
 ```bash
 cmake --preset tidy
 cmake --build --preset tidy
 ```
+
+## Include-what-you-use
+
+`brew install include-what-you-use`, then:
+
+```bash
+cmake --preset iwyu
+cmake --build --preset iwyu
+```
+
+The build always succeeds; IWYU writes its advice to stderr. Nothing enforces
+it, so read the report and apply what is correct.
+
+Two things keep the report readable:
+
+- `scripts/iwyu.imp` maps the headers each standard library makes IWYU ask for
+  to the C++ header CLI11 should use. libc++ (macOS) exposes private detail
+  headers such as `<_stdlib.h>`; libstdc++ (Linux) exposes the C headers behind
+  `<cstdlib>`. Read the comment at the top before you add an entry: the
+  visibility on the left must agree with what IWYU already believes, or the run
+  aborts with a visibility assertion.
+- `--keep=*/CLI/*.hpp` holds the project's own includes. The
+  `IWYU pragma: private, include "CLI/CLI.hpp"` line at the top of each header
+  is for users of the library; inside the library IWYU applies it too and asks
+  every header to include `CLI/CLI.hpp` in place of its siblings. `--keep` drops
+  that advice and leaves the standard-library advice, which is what matters for
+  the single-header build. One `should add #include "CLI/CLI.hpp"` line per
+  header survives; ignore it.
+
+The mapping file covers both standard libraries, so check the other one after
+you change it:
+
+```bash
+docker run --rm -v "$PWD:/src:ro" debian:trixie sh -c '
+  apt-get update -qq && apt-get install -y -qq iwyu cmake ninja-build g++ &&
+  cp -r /src /work && rm -rf /work/build* && cd /work &&
+  cmake --preset iwyu >/dev/null && cmake --build --preset iwyu'
+```
+
+Known false positives, all in the "should add" lists: `<version>` for
+`Macros.hpp` on both platforms, plus `<AvailabilityInternal.h>` for `Macros.hpp`
+and `<math>` for `Validators.hpp` on macOS. The "should remove" lines for
+forward declarations are also wrong — the declarations exist to fix the order in
+the single header.
 
 ## Single Header Generation
 
