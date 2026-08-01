@@ -16,10 +16,13 @@ int main(int argc, char **argv) {
 
     app.set_completion_flag();
 
+    app.add_flag("--verbose,-v", "Say more");
+
     app.add_subcommand("start", "Get going");
     app.add_subcommand("stop", "Do you really want to stop?");
 
     auto *remote = app.add_subcommand("remote", "Work with remotes");
+    remote->add_flag("--force,-f", "Do it anyway");
     remote->add_subcommand("add", "Add a remote");
     remote->add_subcommand("remove", "Drop a remote")->alias("rm");
 

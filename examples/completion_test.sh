@@ -40,6 +40,15 @@ expect 2 "add remove rm" "remote" ""
 expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
+# Option names, from whichever subcommand the walk ended in
+expect 1 "--help --completion --verbose" "--"
+expect 1 "--verbose" "--v"
+expect 1 "-v" "-v"
+expect 2 "--help --force" "remote" "--"
+
+# Bash splits on COMP_WORDBREAKS, so this reaches the binary as three words and the cursor sits on the value
+expect 3 "" "--force" "=" ""
+
 # A program that is not a CLI11 app must not have its output mistaken for a reply
 prog=/bin/echo
 expect 1 "" "st"
