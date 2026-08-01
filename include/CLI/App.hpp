@@ -1334,6 +1334,9 @@ class App {
     /// Append every name and alias of this app's subcommands that starts with the prefix
     void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
 
+    /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
+    void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
+
     /// Internal parse function
     void _parse(std::vector<std::string> &args);
 

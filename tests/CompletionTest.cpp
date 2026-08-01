@@ -120,6 +120,65 @@ TEST_CASE("Completion: reaches through an unnamed subcommand group", "[completio
     CHECK(complete(app, {""}, "1") == "start\n:2\n");
 }
 
+TEST_CASE("Completion: offers option names once the word starts with a dash", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose,-v", "");
+    app.add_option("--file,-f", "");
+    app.add_subcommand("start", "");
+
+    // A single dash is a prefix of both spellings, so both are offered
+    CHECK(complete(app, {"-"}, "1") == "--verbose\n-v\n--file\n-f\n:2\n");
+    CHECK(complete(app, {"--"}, "1") == "--verbose\n--file\n:2\n");
+    CHECK(complete(app, {"--v"}, "1") == "--verbose\n:2\n");
+    CHECK(complete(app, {"-f"}, "1") == "-f\n:2\n");
+    CHECK(complete(app, {"--zzz"}, "1") == ":2\n");
+
+    // Options and subcommands never mix: a dash rules out one, its absence rules out the other
+    CHECK(complete(app, {"s"}, "1") == "start\n:2\n");
+}
+
+TEST_CASE("Completion: options come from the subcommand the walk ended in", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--top", "");
+    auto *remote = app.add_subcommand("remote", "");
+    remote->set_help_flag("");
+    remote->add_flag("--inner", "");
+
+    CHECK(complete(app, {"--"}, "1") == "--top\n:2\n");
+    CHECK(complete(app, {"remote", "--"}, "2") == "--inner\n:2\n");
+}
+
+TEST_CASE("Completion: the help flag is a candidate like any other", "[completion]") {
+    CLI::App app{"program"};
+
+    // It is typeable, so leaving it out would be a hole rather than a simplification
+    CHECK(complete(app, {"--h"}, "1") == "--help\n:2\n");
+}
+
+TEST_CASE("Completion: positionals are not offered as option names", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("input", "");
+    app.add_flag("--verbose", "");
+
+    CHECK(complete(app, {"-"}, "1") == "--verbose\n:2\n");
+}
+
+TEST_CASE("Completion: a value written after = is not read as a subcommand", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("--file", "");
+    app.add_subcommand("value", "");
+
+    // Bash tears `--file=value` apart on COMP_WORDBREAKS before the binary sees it. Values are not completable yet,
+    // so the reply is empty -- but with the default directive, leaving the shell free to complete filenames itself.
+    CHECK(complete(app, {"--file", "=", ""}, "3") == ":0\n");
+    CHECK(complete(app, {"--file", "=", "val"}, "3") == ":0\n");
+    CHECK(complete(app, {"--file", "="}, "2") == ":0\n");
+}
+
 TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[completion]") {
     CLI::App app{"program"};
     app.add_subcommand("start", "");

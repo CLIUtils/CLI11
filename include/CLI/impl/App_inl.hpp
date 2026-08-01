@@ -835,7 +835,21 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             current = sub;
     }
 
-    current->_add_subcommand_completions(words[cursor], reply);
+    // Bash splits the line on COMP_WORDBREAKS, whose default contains '=', so `--file=val` reaches the binary as the
+    // three words `--file`, `=`, `val`. Rejoining them is the walk's job rather than the script's, because only the
+    // binary knows which of the pieces is an option name. Values are not completable yet, so all the rejoin has to do
+    // here is keep a value from being read as the start of a subcommand name; the shell's own file completion is a
+    // better answer than a wrong one, so the directive stays at Default.
+    const std::string &word = words[cursor];
+    if(word == "=" || (cursor > 0 && words[cursor - 1] == "="))
+        return reply;
+
+    // A word that has begun with a dash can only become an option name, and anything else can only become a
+    // subcommand, so the two sources of candidates never both apply.
+    if(!word.empty() && word.front() == '-')
+        current->_add_option_completions(word, reply);
+    else
+        current->_add_subcommand_completions(word, reply);
     reply.directive = CompletionDirective::NoFileComp;
     return reply;
 }
@@ -856,6 +870,25 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
         for(const std::string &alias : sub->get_aliases()) {
             if(!alias.empty() && alias.compare(0, prefix.size(), prefix) == 0)
                 reply.results.push_back(CompletionResult{alias});
+        }
+    }
+}
+
+CLI11_INLINE void App::_add_option_completions(const std::string &prefix, CompletionReply &reply) const {
+    for(const Option_p &opt : options_) {
+        if(!opt->nonpositional())
+            continue;
+        // Whether the option takes a value makes no difference yet: a flag and a value-taking option are both just a
+        // name to insert, and the value candidates arrive in a later commit.
+        for(const std::string &lname : opt->get_lnames()) {
+            const std::string candidate = "--" + lname;
+            if(candidate.compare(0, prefix.size(), prefix) == 0)
+                reply.results.push_back(CompletionResult{candidate});
+        }
+        for(const std::string &sname : opt->get_snames()) {
+            const std::string candidate = "-" + sname;
+            if(candidate.compare(0, prefix.size(), prefix) == 0)
+                reply.results.push_back(CompletionResult{candidate});
         }
     }
 }
