@@ -901,12 +901,23 @@ CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args)
         return;
 
     const std::string index_var = completion_env_var_ + "_INDEX";
+    const std::string proto_var = completion_env_var_ + "_PROTO";
     const std::string index_string = detail::get_environment_value(index_var);
+    const std::string proto_string = detail::get_environment_value(proto_var);
     // Unset before anything else can observe them: completing may run another CLI11 binary, and an inherited request
     // would make that one complete itself instead of doing its job.
     detail::unset_environment_value(completion_env_var_);
     detail::unset_environment_value(index_var);
-    detail::unset_environment_value(completion_env_var_ + "_PROTO");
+    detail::unset_environment_value(proto_var);
+
+    int proto = 0;
+    // A missing version is as unusable as a wrong one -- every script this binary can generate exports it, so its
+    // absence means the request came from something that does not speak the format either.
+    if(!detail::lexical_cast(proto_string, proto) || proto != CLI11_COMPLETE_PROTO_VERSION) {
+        CompletionReply unusable;
+        unusable.directive = CompletionDirective::Error;
+        throw CallForCompletion(format_completion_reply(unusable));
+    }
 
     // The parser hands over a reversed vector; put it back before indexing into it.
     const std::vector<std::string> words(args.rbegin(), args.rend());

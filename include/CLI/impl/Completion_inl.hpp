@@ -147,7 +147,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     local response line comp desc tab=$'\t'
     local directive="" longest=0
 
-    response=$(@ENV@=bash @ENV@_INDEX="${COMP_CWORD}" "${COMP_WORDS[@]}" 2>/dev/null)
+    response=$(@ENV@=bash @ENV@_INDEX="${COMP_CWORD}" @ENV@_PROTO=@PROTO@ "${COMP_WORDS[@]}" 2>/dev/null)
 
     COMPREPLY=()
     while IFS='' read -r line; do
@@ -183,6 +183,12 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         return 0
     fi
 
+    # The binary could not answer the request -- most likely this script was generated against another version of it
+    if (( (directive & 1) != 0 )); then
+        COMPREPLY=()
+        return 0
+    fi
+
     if (( ${#COMPREPLY[@]} == 1 )); then
         # A lone candidate is inserted rather than listed, so its description would land on the command line
         COMPREPLY[0]=${COMPREPLY[0]%%"${tab}"*}
@@ -202,6 +208,7 @@ complete -o default -F @FUNCTION@ @PROGRAM@
     std::string out =
         find_and_replace(script, "@FUNCTION@", "_cli11_complete_" + completion_script_identifier(program_name));
     out = find_and_replace(std::move(out), "@ENV@", env_var);
+    out = find_and_replace(std::move(out), "@PROTO@", std::to_string(CLI11_COMPLETE_PROTO_VERSION));
     return find_and_replace(std::move(out), "@PROGRAM@", program_name);
 }
 

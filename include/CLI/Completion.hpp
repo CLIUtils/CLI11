@@ -19,6 +19,12 @@
 namespace CLI {
 // [CLI11:completion_hpp:verbatim]
 
+/// The version of the reply format that this build speaks.
+///
+/// A generated script exports it and the binary checks it, so a script that outlives the binary it was generated
+/// against -- one a distribution packaged as a static file -- offers nothing rather than offering nonsense.
+CLI11_MODULE_INLINE constexpr int CLI11_COMPLETE_PROTO_VERSION = 1;
+
 /// Instructions passed alongside the candidates telling the shell what else it may do.
 ///
 /// The values are a bit mask so a reply can carry several at once; each directive takes its bit
@@ -26,6 +32,8 @@ namespace CLI {
 enum class CompletionDirective : std::uint8_t {
     /// No special handling: the shell falls back to its own file completion when nothing matched.
     Default = 0,
+    /// The request could not be answered, so the shell must ignore the reply entirely.
+    Error = 1,
     /// The shell must not add filenames of its own to the candidates.
     NoFileComp = 2
 };

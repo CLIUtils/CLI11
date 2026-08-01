@@ -299,6 +299,44 @@ TEST_CASE("Completion: the request is out of the environment before it is answer
     CHECK(thrown);
 }
 
+TEST_CASE("Completion: a request from another protocol version gets no candidates", "[completion]") {
+    CLI::App app{"program"};
+    app.add_subcommand("start", "");
+
+    // A script generated against a different format would misread whatever came back, so the Error directive goes
+    // out alone: no completions beats wrong completions
+    for(const std::string &proto : {std::string("2"), std::string("bash"), std::string()}) {
+        put_env(complete_var, "bash");
+        put_env(index_var, "1");
+        if(proto.empty())
+            CLI::detail::unset_environment_value(proto_var);
+        else
+            put_env(proto_var, proto);
+
+        std::vector<std::string> args{"sta"};
+        std::string reply = "<not a completion request>";
+        try {
+            app.parse(args);
+        } catch(const CLI::CallForCompletion &e) {
+            reply = e.what();
+        }
+        clear_request();
+        CHECK(reply == ":1\n");
+    }
+
+    // and the version the scripts export is the one that is accepted
+    CHECK(complete(app, {"sta"}, "1") == "start\n:2\n");
+}
+
+TEST_CASE("Completion: the script asks for the version it was generated against", "[completion]") {
+    CLI::App app{"program", "myprog"};
+    const std::string script = app.get_completion_script("bash");
+
+    CHECK(script.find("CLI11_COMPLETE_PROTO=" + std::to_string(CLI::CLI11_COMPLETE_PROTO_VERSION)) !=
+          std::string::npos);
+    CHECK(script.find("@PROTO@") == std::string::npos);
+}
+
 TEST_CASE("Completion: parsing is untouched without the environment variable", "[completion]") {
     clear_request();
 
@@ -336,12 +374,21 @@ TEST_CASE("Completion: the activation variable is configurable", "[completion]")
     CHECK_NOTHROW(app.parse(args));
     clear_request();
 
+    // The version travels under the configured name too, or the request would be refused as unversioned
     put_env("MYPROG_COMPLETE", "bash");
     put_env("MYPROG_COMPLETE_INDEX", "1");
+    put_env("MYPROG_COMPLETE_PROTO", "1");
     std::vector<std::string> again{"sta"};
-    CHECK_THROWS_AS(app.parse(again), CLI::CallForCompletion);
+    std::string reply = "<not a completion request>";
+    try {
+        app.parse(again);
+    } catch(const CLI::CallForCompletion &e) {
+        reply = e.what();
+    }
+    CHECK(reply == "start\n:2\n");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE_INDEX");
+    CLI::detail::unset_environment_value("MYPROG_COMPLETE_PROTO");
 }
 
 TEST_CASE("Completion: the script flag is off unless it is asked for", "[completion]") {
