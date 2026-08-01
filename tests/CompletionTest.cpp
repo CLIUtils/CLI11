@@ -75,6 +75,51 @@ TEST_CASE("Completion: filters subcommands by the partial word", "[completion]")
     CHECK(complete(app, {"zzz"}, "1") == ":2\n");
 }
 
+TEST_CASE("Completion: descends into the subcommand named before the cursor", "[completion]") {
+    CLI::App app{"program"};
+    app.add_subcommand("start", "");
+    auto *remote = app.add_subcommand("remote", "");
+    remote->add_subcommand("add", "");
+    auto *show = remote->add_subcommand("show", "");
+    // Two deep, because one level can pass while the walk still only ever looks at the root
+    show->add_subcommand("origin", "");
+
+    CHECK(complete(app, {"remote", ""}, "2") == "add\nshow\n:2\n");
+    CHECK(complete(app, {"remote", "show", ""}, "3") == "origin\n:2\n");
+    // The words after the cursor are not part of the walk
+    CHECK(complete(app, {"remote", "", "show"}, "2") == "add\nshow\n:2\n");
+    // A word that names nothing leaves the walk where it was
+    CHECK(complete(app, {"zzz", ""}, "2") == "start\nremote\n:2\n");
+}
+
+TEST_CASE("Completion: an alias both completes and descends", "[completion]") {
+    CLI::App app{"program"};
+    auto *remote = app.add_subcommand("remote", "");
+    remote->alias("rmt");
+    remote->add_subcommand("add", "");
+
+    // Either spelling is a token the user may be typing, so both are offered
+    CHECK(complete(app, {"r"}, "1") == "remote\nrmt\n:2\n");
+    CHECK(complete(app, {"rmt", ""}, "2") == "add\n:2\n");
+}
+
+TEST_CASE("Completion: disabled subcommands are not offered", "[completion]") {
+    CLI::App app{"program"};
+    app.add_subcommand("start", "");
+    app.add_subcommand("secret", "")->disabled();
+
+    CHECK(complete(app, {"s"}, "1") == "start\n:2\n");
+}
+
+TEST_CASE("Completion: reaches through an unnamed subcommand group", "[completion]") {
+    CLI::App app{"program"};
+    auto *group = app.add_subcommand("", "");
+    group->add_subcommand("start", "");
+
+    // The parser reaches through the group to find `start`, so completion has to offer it
+    CHECK(complete(app, {""}, "1") == "start\n:2\n");
+}
+
 TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[completion]") {
     CLI::App app{"program"};
     app.add_subcommand("start", "");
