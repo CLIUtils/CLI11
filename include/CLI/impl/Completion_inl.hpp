@@ -12,7 +12,9 @@
 #include "../Completion.hpp"
 
 // [CLI11:public_includes:set]
+#include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -43,6 +45,49 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
 }
 
 namespace detail {
+
+CLI11_INLINE std::shared_ptr<const CompletionMeta>
+intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
+                          const std::shared_ptr<const CompletionMeta> &rhs) {
+    if(!lhs || !lhs->choices)
+        return rhs;
+    if(!rhs || !rhs->choices)
+        return lhs;
+
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->choices = [lhs, rhs]() {
+        // Walking the left one keeps its order, which is the order a declared set is offered in
+        const std::vector<std::string> allowed = rhs->choices();
+        std::vector<std::string> out;
+        for(const std::string &choice : lhs->choices()) {
+            if(std::find(allowed.begin(), allowed.end(), choice) != allowed.end())
+                out.push_back(choice);
+        }
+        return out;
+    };
+    return meta;
+}
+
+CLI11_INLINE std::shared_ptr<const CompletionMeta>
+unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
+                      const std::shared_ptr<const CompletionMeta> &rhs) {
+    if(!lhs || !lhs->choices)
+        return rhs;
+    if(!rhs || !rhs->choices)
+        return lhs;
+
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->choices = [lhs, rhs]() {
+        std::vector<std::string> out = lhs->choices();
+        for(const std::string &choice : rhs->choices()) {
+            // A value both sides accept is one value, and offering it twice would read as two ways to say it
+            if(std::find(out.begin(), out.end(), choice) == out.end())
+                out.push_back(choice);
+        }
+        return out;
+    };
+    return meta;
+}
 
 CLI11_INLINE std::string escape_completion_field(const std::string &field) {
     std::string out;
@@ -198,6 +243,10 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 
     if (( (directive & 2) != 0 )); then
         compopt +o default 2>/dev/null
+    fi
+    if (( (directive & 4) != 0 )); then
+        # The candidates came back in a meaningful order, which bash would otherwise sort away
+        compopt -o nosort 2>/dev/null
     fi
     return 0
 }

@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 
 #include <algorithm>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -165,6 +166,164 @@ TEST_CASE("Completion: positionals are not offered as option names", "[completio
 
     CHECK(complete(app, {"-"}, "1") == "--verbose\n:2\n");
 }
+
+TEST_CASE("Completion: the word after a flag is a fresh token", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose", "");
+    app.add_subcommand("start", "");
+
+    // A flag consumes nothing, so what follows it is whatever it would have been at the start of the line
+    CHECK(complete(app, {"--verbose", ""}, "2") == "start\n:2\n");
+    CHECK(complete(app, {"--verbose", "--"}, "2") == "--verbose\n:2\n");
+}
+
+TEST_CASE("Completion: an option with nothing to offer leaves the shell to it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string file;
+    app.add_option("--file", file);
+    app.add_subcommand("start", "");
+
+    // Nothing is known about the value, and a filename is a better guess than a subcommand that cannot go there
+    CHECK(complete(app, {"--file", ""}, "2") == ":0\n");
+    // An unknown option name says nothing about the next word either
+    CHECK(complete(app, {"--zzz", ""}, "2") == "start\n:2\n");
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("Completion: an option's values come from a set it is checked against", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_subcommand("fast-subcommand", "");
+
+    // The declared order is meaningful, so KeepOrder rides along with NoFileComp
+    CHECK(complete(app, {"--level", ""}, "2") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"--level", "f"}, "2") == "fast\n:6\n");
+    CHECK(complete(app, {"--level", "zzz"}, "2") == ":6\n");
+    // Either spelling of the option introduces its values
+    CHECK(complete(app, {"-l", ""}, "2") == "fast\nslow\n:6\n");
+
+    // A real parse would give the word to the option, so the subcommand that shares its prefix is not a candidate
+    CHECK(complete(app, {"--level", "fast-sub"}, "2") == ":6\n");
+}
+
+TEST_CASE("Completion: values survive being copied into the Validator base", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+    // Option::check copies its argument into a Validator, slicing IsMember away, so the values have to be reachable
+    // from the base class
+    CLI::Option *opt = app.add_option("--level", level)->check(CLI::IsMember({"fast", "slow"}));
+    CHECK(opt->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
+
+    // A value holding the characters generate_set writes around a set comes back whole
+    std::string odd;
+    CLI::Option *strange = app.add_option("--odd", odd)->check(CLI::IsMember({"a,b", "{c}"}));
+    CHECK(strange->get_completion_choices() == std::vector<std::string>{"a,b", "{c}"});
+}
+
+TEST_CASE("Completion: combining validators combines what they accept", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+
+    // A value has to satisfy both sides of an `&`, so offering all of the left one's set would offer values the right
+    // one rejects
+    CHECK(app.add_option("--and", level)
+              ->check(CLI::IsMember({"fast", "slow"}) & CLI::IsMember({"slow", "other"}))
+              ->get_completion_choices() == std::vector<std::string>{"slow"});
+    // and either side of an `|` is enough, so both sets are worth offering -- but a value both accept is one value
+    CHECK(app.add_option("--or", level)
+              ->check(CLI::IsMember({"fast"}) | CLI::IsMember({"slow"}))
+              ->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
+    CHECK(app.add_option("--overlap", level)
+              ->check(CLI::IsMember({"fast"}) | CLI::IsMember({"fast", "slow"}))
+              ->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
+}
+
+TEST_CASE("Completion: separate check calls narrow the values like a single & does", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+
+    // Two check() calls are the same demand as one `&`: the value has to get past both, so the two spellings cannot
+    // answer differently
+    CHECK(app.add_option("--split", level)
+              ->check(CLI::IsMember({"fast", "slow"}))
+              ->check(CLI::IsMember({"slow", "other"}))
+              ->get_completion_choices() == std::vector<std::string>{"slow"});
+    CHECK(app.add_option("--joined", level)
+              ->check(CLI::IsMember({"fast", "slow"}) & CLI::IsMember({"slow", "other"}))
+              ->get_completion_choices() == std::vector<std::string>{"slow"});
+
+    // and a check with nothing to enumerate narrows nothing
+    CHECK(app.add_option("--partial", level)
+              ->check(CLI::IsMember({"fast", "slow"}))
+              ->check([](const std::string &) { return std::string{}; })
+              ->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
+}
+
+TEST_CASE("Completion: a check outranks the transform in front of it", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+
+    // Whether `quick` is acceptable depends on the check accepting what the transform turns it into, which is only
+    // knowable by running the transform. So the check answers, and a key it would reject is never offered
+    CHECK(app.add_option("--level", level)
+              ->transform(CLI::Transformer(std::map<std::string, std::string>{{"quick", "fast"}}))
+              ->check(CLI::IsMember({"fast", "slow"}))
+              ->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
+
+    // and with nothing to check against, the keys are all there is to go on
+    std::string plain;
+    CHECK(app.add_option("--plain", plain)
+              ->transform(CLI::Transformer(std::map<std::string, std::string>{{"quick", "fast"}}))
+              ->get_completion_choices() == std::vector<std::string>{"quick"});
+}
+
+TEST_CASE("Completion: a validator that enumerates nothing does not erase the one that does", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+    const CLI::Validator plain = CLI::Validator([](std::string &) { return std::string{}; }, "anything");
+
+    // The unenumerated side still constrains the value, but applying that constraint would mean running it, and
+    // completion does not run user code -- so `ExistingFile & size_check` keeps whichever side has something to say
+    CHECK(app.add_option("--and", level)->check(CLI::IsMember({"fast"}) & plain)->get_completion_choices() ==
+          std::vector<std::string>{"fast"});
+    CHECK(app.add_option("--and-rev", level)->check(plain & CLI::IsMember({"fast"}))->get_completion_choices() ==
+          std::vector<std::string>{"fast"});
+    // For `|` the acceptable set is unbounded once one side does not enumerate, so this is a subset of it
+    CHECK(app.add_option("--or", level)->check(CLI::IsMember({"fast"}) | plain)->get_completion_choices() ==
+          std::vector<std::string>{"fast"});
+    // and neither side saying anything leaves nothing to offer
+    CHECK(app.add_option("--neither", level)->check(plain & plain)->get_completion_choices().empty());
+}
+
+TEST_CASE("Completion: a transformer offers the names it translates", "[completion]") {
+    CLI::App app{"program"};
+    int level{0};
+    // The keys are what there is to type; the values are what the program ends up with
+    CHECK(app.add_option("--t", level)
+              ->transform(CLI::Transformer(std::map<std::string, int>{{"one", 1}, {"two", 2}}))
+              ->get_completion_choices()
+              .size() == 2);
+    CHECK(app.add_option("--c", level)
+              ->transform(CLI::CheckedTransformer(std::map<std::string, int>{{"one", 1}}))
+              ->get_completion_choices() == std::vector<std::string>{"one"});
+}
+
+TEST_CASE("Completion: an inactive validator is not asked for values", "[completion]") {
+    CLI::App app{"program"};
+    std::string level;
+    CLI::Option *opt = app.add_option("--level", level)->check(CLI::IsMember({"fast"}).active(false));
+
+    // A validator that is not applied does not describe what the option accepts
+    CHECK(opt->get_completion_choices().empty());
+}
+
+#endif
 
 TEST_CASE("Completion: a value written after = is not read as a subcommand", "[completion]") {
     CLI::App app{"program"};

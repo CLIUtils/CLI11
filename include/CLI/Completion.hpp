@@ -10,6 +10,8 @@
 
 // [CLI11:public_includes:set]
 #include <cstdint>
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -35,7 +37,26 @@ enum class CompletionDirective : std::uint8_t {
     /// The request could not be answered, so the shell must ignore the reply entirely.
     Error = 1,
     /// The shell must not add filenames of its own to the candidates.
-    NoFileComp = 2
+    NoFileComp = 2,
+    /// The candidates arrive in a meaningful order, so the shell must not sort them.
+    KeepOrder = 4
+};
+
+/// Combine two directives, so that one reply can carry both
+CLI11_MODULE_INLINE constexpr CompletionDirective operator|(CompletionDirective lhs, CompletionDirective rhs) {
+    return static_cast<CompletionDirective>(static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs));
+}
+
+/// What completion can learn from a Validator about the values it accepts.
+///
+/// A Validator is copied into a `Validator` base by `Option::check`, which slices any derived class away, so this is
+/// how a validator that knows its accepted values hands them on: a plain member of the base that survives the copy.
+struct CompletionMeta {
+    /// Every value the validator accepts, or empty when it does not enumerate them.
+    ///
+    /// Read at completion time rather than stored as a list, because a validator may hold a reference to a set the
+    /// program fills in after construction.
+    std::function<std::vector<std::string>()> choices{};
 };
 
 /// A single thing the shell may insert on the command line.
@@ -60,6 +81,23 @@ struct CompletionReply {
 CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply);
 
 namespace detail {
+
+/// Combine what two Validators say about their values into what satisfies both of them
+///
+/// The intersection when both enumerate their values, and whichever one does when only one of them does -- a Validator
+/// that does not enumerate its values still constrains them, but the only way to apply that constraint would be to run
+/// it, and completion does not run user code.
+CLI11_INLINE std::shared_ptr<const CompletionMeta>
+intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
+                          const std::shared_ptr<const CompletionMeta> &rhs);
+
+/// Combine what two Validators say about their values into what satisfies either of them
+///
+/// The union when both enumerate their values. When only one does the answer is unbounded, so what comes back is that
+/// one's values: a subset of what is acceptable rather than the whole of it.
+CLI11_INLINE std::shared_ptr<const CompletionMeta>
+unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
+                      const std::shared_ptr<const CompletionMeta> &rhs);
 
 /// Turn what the shell scripts would otherwise read as structure -- `\` `\t` `\n` `\r`, and a leading `:` -- into the
 /// backslash sequences the generated scripts turn back
