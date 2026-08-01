@@ -13,6 +13,7 @@ cli11_headers = files(
   'include/CLI/App.hpp',
   'include/CLI/Argv.hpp',
   'include/CLI/CLI.hpp',
+  'include/CLI/Completion.hpp',
   'include/CLI/Config.hpp',
   'include/CLI/ConfigFwd.hpp',
   'include/CLI/Encoding.hpp',
@@ -32,6 +33,7 @@ cli11_headers = files(
 cli11_impl_headers = files(
   'include/CLI/impl/App_inl.hpp',
   'include/CLI/impl/Argv_inl.hpp',
+  'include/CLI/impl/Completion_inl.hpp',
   'include/CLI/impl/Config_inl.hpp',
   'include/CLI/impl/Encoding_inl.hpp',
   'include/CLI/impl/Formatter_inl.hpp',

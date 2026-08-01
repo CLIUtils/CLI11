@@ -1820,7 +1820,7 @@ TEST_CASE("String: environment", "[helpers]") {
 
     auto value = CLI::detail::get_environment_value("TEST1");
     CHECK(value == "TESTS");
-    unset_env("TEST1");
+    CLI::detail::unset_environment_value("TEST1");
 
     value = CLI::detail::get_environment_value("TEST2");
     CHECK(value.empty());

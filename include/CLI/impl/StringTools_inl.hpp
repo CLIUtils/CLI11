@@ -647,6 +647,15 @@ CLI11_INLINE std::string get_environment_value(const std::string &env_name) {
     return ename_string;
 }
 
+CLI11_INLINE void unset_environment_value(const std::string &env_name) {
+#ifdef _MSC_VER
+    // Assigning an empty value is how the Windows CRT deletes a variable
+    _putenv_s(env_name.c_str(), "");
+#else
+    unsetenv(env_name.c_str());
+#endif
+}
+
 CLI11_INLINE std::ostream &streamOutAsParagraph(std::ostream &out,
                                                 const std::string &text,
                                                 std::size_t paragraphWidth,

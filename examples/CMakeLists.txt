@@ -60,6 +60,19 @@ set_property(
     [=[Working on --file from start: name.*Working on --count from stop: 1, direct count: 1.*Count of --random flag: 1.*Subcommand: start.*Subcommand: stop]=]
 )
 
+add_cli_exe(completion completion.cpp)
+add_test(NAME completion_script COMMAND completion --completion bash)
+set_property(TEST completion_script PROPERTY PASS_REGULAR_EXPRESSION
+                                             "complete -o default -F _cli11_complete_completion completion")
+add_test(NAME completion_run COMMAND completion start)
+set_property(TEST completion_run PROPERTY PASS_REGULAR_EXPRESSION "Subcommand: start")
+# The body of the generated script is only really checked by running it
+find_program(BASH_EXECUTABLE bash)
+if(BASH_EXECUTABLE)
+  add_test(NAME completion_script_drive COMMAND ${BASH_EXECUTABLE}
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/completion_test.sh $<TARGET_FILE:completion>)
+endif()
+
 add_cli_exe(subcom_partitioned subcom_partitioned.cpp)
 add_test(NAME subcom_partitioned_none COMMAND subcom_partitioned)
 set_property(
