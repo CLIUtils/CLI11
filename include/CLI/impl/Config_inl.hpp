@@ -27,6 +27,28 @@
 namespace CLI {
 // [CLI11:config_inl_hpp:verbatim]
 
+CLI11_NODISCARD CLI11_INLINE std::string ConfigItem::fullname() const {
+    std::vector<std::string> tmp = parents;
+    tmp.emplace_back(name);
+    return detail::join(tmp, ".");
+    (void)multiline;  // suppression for cppcheck false positive
+}
+
+CLI11_INLINE std::string
+Config::to_config(const App *app, ConfigOutputMode mode, bool write_description, std::string prefix) const {
+    return to_config(app, mode != ConfigOutputMode::Active, write_description, std::move(prefix));
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string Config::to_flag(const ConfigItem &item) const {
+    if(item.inputs.size() == 1) {
+        return item.inputs.at(0);
+    }
+    if(item.inputs.empty()) {
+        return "{}";
+    }
+    throw ConversionError::TooManyInputsFlag(item.fullname());  // LCOV_EXCL_LINE
+}
+
 CLI11_INLINE std::vector<ConfigItem> Config::from_file(const std::string &name) const {
 #if defined CLI11_HAS_FILESYSTEM && CLI11_HAS_FILESYSTEM > 0
     std::ifstream input{to_path(name)};
@@ -773,6 +795,14 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
         return outString + out.str();
     }
     return out.str();
+}
+
+CLI11_INLINE ConfigINI::ConfigINI() {
+    commentChar = ';';
+    arrayStart = '\0';
+    arrayEnd = '\0';
+    arraySeparator = ' ';
+    valueDelimiter = '=';
 }
 // [CLI11:config_inl_hpp:end]
 }  // namespace CLI
