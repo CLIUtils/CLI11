@@ -38,6 +38,7 @@ cli11_impl_headers = files(
   'include/CLI/impl/Option_inl.hpp',
   'include/CLI/impl/Split_inl.hpp',
   'include/CLI/impl/StringTools_inl.hpp',
+  'include/CLI/impl/TypeTools_inl.hpp',
   'include/CLI/impl/Validators_inl.hpp',
   'include/CLI/impl/ExtraValidators_inl.hpp',
 )
