@@ -480,6 +480,9 @@ class Option : public OptionBase<Option> {
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index);
 
+    /// Get every value a shell should offer for this option, empty when no Validator enumerates them
+    CLI11_NODISCARD std::vector<std::string> get_completion_choices() const;
+
     /// Sets required options
     Option *needs(Option *opt);
 

@@ -34,6 +34,7 @@ using CLI::CallForVersion;
 using CLI::CheckedTransformer;
 using CLI::CLI11_COMPLETE_PROTO_VERSION;
 using CLI::CompletionDirective;
+using CLI::CompletionMeta;
 using CLI::CompletionReply;
 using CLI::CompletionResult;
 using CLI::Config;
@@ -97,6 +98,7 @@ using CLI::enums::operator<<;
 }
 
 using CLI::operator<<;
+using CLI::operator|;
 
 using CLI::AutoTimer;
 using CLI::conditional_t;

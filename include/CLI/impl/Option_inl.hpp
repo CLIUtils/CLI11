@@ -11,6 +11,8 @@
 // This include is only needed for IDEs to discover symbols
 #include "../Option.hpp"
 
+#include "../Completion.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cerrno>
@@ -192,6 +194,39 @@ CLI11_INLINE Validator *Option::get_validator(int index) {
         return validators_[static_cast<decltype(validators_)::size_type>(index)].get();
     }
     throw OptionNotFound("Validator index is not valid");
+}
+
+CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices() const {
+    // The keys of the transform() that runs first -- transform() inserts at the front, so that is the front of the list
+    // -- because a later transform only ever sees what an earlier one produced.
+    std::shared_ptr<const CompletionMeta> rewrite;
+    // Separate check() calls constrain one value exactly as `A & B` does -- every one of them has to pass -- so they
+    // combine the same way, and one that enumerates nothing leaves the others' lists alone.
+    std::shared_ptr<const CompletionMeta> checks;
+
+    for(const Validator_p &validator : validators_) {
+        if(!validator->get_active())
+            continue;
+        // check() forces every validator it takes to be non-modifying, so this is the transform/check split
+        if(validator->get_modifying()) {
+            if(!rewrite)
+                rewrite = validator->get_completion_meta();
+        } else {
+            checks = detail::intersect_completion_meta(checks, validator->get_completion_meta());
+        }
+    }
+
+    // A transform key is acceptable only if what it turns into gets past the checks, and nothing here can know that
+    // without running the transform. So the checks answer whenever they enumerate anything, and the keys answer only
+    // when no check does -- which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
+    for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
+        if(meta && meta->choices) {
+            std::vector<std::string> choices = meta->choices();
+            if(!choices.empty())
+                return choices;
+        }
+    }
+    return {};
 }
 
 CLI11_INLINE Option *Option::needs(Option *opt) {

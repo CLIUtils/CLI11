@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#define CLI11_ENABLE_EXTRA_VALIDATORS 1
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <string>
@@ -17,6 +18,9 @@ int main(int argc, char **argv) {
     app.set_completion_flag();
 
     app.add_flag("--verbose,-v", "Say more");
+
+    std::string level;
+    app.add_option("--level,-l", level, "How hard to try")->check(CLI::IsMember({"fast", "slow"}));
 
     app.add_subcommand("start", "Get going");
     app.add_subcommand("stop", "Do you really want to stop?");
