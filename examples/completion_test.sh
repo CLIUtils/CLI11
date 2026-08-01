@@ -70,6 +70,20 @@ run 30 1 "start  (Get going) stop   (Do you really want...)" "st"
 expect_wide 2 $'add     (Add a remote) remove  (Drop a remote) rm      (Drop a remote) sync    (Push\tand pull)' \
     "remote" ""
 
+# A script that outlived the binary it was generated against asks for a version the binary does not know, and is
+# answered with the Error directive alone
+reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 "$prog" "")
+if [[ ${reply} != ":1" ]]; then
+    echo "FAIL: a foreign protocol version got [${reply}] want [:1]" >&2
+    exit 1
+fi
+echo "ok: protocol version 99 -> [${reply}]"
+
+# and on this side of it, candidates arriving with that directive are dropped rather than offered
+error_reply() { printf 'start\n:1\n'; }
+prog=error_reply
+expect 1 "" "st"
+
 # A program that is not a CLI11 app must not have its output mistaken for a reply
 prog=/bin/echo
 expect 1 "" "st"
