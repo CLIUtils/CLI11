@@ -866,10 +866,10 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
         // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
         // with it. An alias is just as typeable as the name, so it is a candidate in its own right.
         if(sub->get_name().compare(0, prefix.size(), prefix) == 0)
-            reply.results.push_back(CompletionResult{sub->get_name()});
+            reply.results.push_back(CompletionResult{sub->get_name(), sub->get_description()});
         for(const std::string &alias : sub->get_aliases()) {
             if(!alias.empty() && alias.compare(0, prefix.size(), prefix) == 0)
-                reply.results.push_back(CompletionResult{alias});
+                reply.results.push_back(CompletionResult{alias, sub->get_description()});
         }
     }
 }
@@ -880,15 +880,16 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
             continue;
         // Whether the option takes a value makes no difference yet: a flag and a value-taking option are both just a
         // name to insert, and the value candidates arrive in a later commit.
+        // Every spelling of an option is the same option, so they all carry the same description
         for(const std::string &lname : opt->get_lnames()) {
             const std::string candidate = "--" + lname;
             if(candidate.compare(0, prefix.size(), prefix) == 0)
-                reply.results.push_back(CompletionResult{candidate});
+                reply.results.push_back(CompletionResult{candidate, opt->get_description()});
         }
         for(const std::string &sname : opt->get_snames()) {
             const std::string candidate = "-" + sname;
             if(candidate.compare(0, prefix.size(), prefix) == 0)
-                reply.results.push_back(CompletionResult{candidate});
+                reply.results.push_back(CompletionResult{candidate, opt->get_description()});
         }
     }
 }

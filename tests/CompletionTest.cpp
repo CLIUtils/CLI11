@@ -154,7 +154,7 @@ TEST_CASE("Completion: the help flag is a candidate like any other", "[completio
     CLI::App app{"program"};
 
     // It is typeable, so leaving it out would be a hole rather than a simplification
-    CHECK(complete(app, {"--h"}, "1") == "--help\n:2\n");
+    CHECK(complete(app, {"--h"}, "1") == "--help\tPrint this help message and exit\n:2\n");
 }
 
 TEST_CASE("Completion: positionals are not offered as option names", "[completion]") {
@@ -194,10 +194,74 @@ TEST_CASE("Completion: the reply format is one candidate per line and a directiv
     CLI::CompletionReply reply;
     CHECK(CLI::format_completion_reply(reply) == ":0\n");
 
-    reply.results.push_back(CLI::CompletionResult{"one"});
-    reply.results.push_back(CLI::CompletionResult{"two"});
+    reply.results.push_back(CLI::CompletionResult{"one", ""});
+    reply.results.push_back(CLI::CompletionResult{"two", ""});
     reply.directive = CLI::CompletionDirective::NoFileComp;
     CHECK(CLI::format_completion_reply(reply) == "one\ntwo\n:2\n");
+}
+
+TEST_CASE("Completion: a description rides along on the candidate's line", "[completion]") {
+    CLI::CompletionReply reply;
+    reply.results.push_back(CLI::CompletionResult{"one", "the first"});
+    reply.results.push_back(CLI::CompletionResult{"two", ""});
+
+    // The separator only appears when there is something to separate, so a description-less reply is unchanged
+    CHECK(CLI::format_completion_reply(reply) == "one\tthe first\ntwo\n:0\n");
+}
+
+TEST_CASE("Completion: subcommands and options send their descriptions", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose,-v", "Say more");
+    auto *remote = app.add_subcommand("remote", "Work with remotes");
+    remote->alias("rmt");
+
+    CHECK(complete(app, {"r"}, "1") == "remote\tWork with remotes\nrmt\tWork with remotes\n:2\n");
+    // Both spellings name the same option, so both carry its description
+    CHECK(complete(app, {"-"}, "1") == "--verbose\tSay more\n-v\tSay more\n:2\n");
+}
+
+TEST_CASE("Completion: a description is cut at its first line break", "[completion]") {
+    CLI::CompletionReply reply;
+    reply.results.push_back(CLI::CompletionResult{"one", "first line\nsecond line"});
+    reply.results.push_back(CLI::CompletionResult{"two", "first line\rsecond line"});
+
+    // The shell has a single line to show a description on, so the rest is dropped rather than escaped into
+    // something the listing cannot render
+    CHECK(CLI::format_completion_reply(reply) == "one\tfirst line\ntwo\tfirst line\n:0\n");
+}
+
+TEST_CASE("Completion: field escaping is reversible", "[completion]") {
+    CHECK(CLI::detail::escape_completion_field("plain") == "plain");
+    CHECK(CLI::detail::escape_completion_field("a\tb") == "a\\tb");
+    CHECK(CLI::detail::escape_completion_field("a\nb\rc") == "a\\nb\\rc");
+
+    // Without escaping the backslash, a value holding a literal backslash-t could not be told apart from a tab
+    CHECK(CLI::detail::escape_completion_field("a\\tb") == "a\\\\tb");
+    CHECK(CLI::detail::escape_completion_field("a\\b") == "a\\\\b");
+
+    // A leading ':' is the directive line's marker; only the leading one is ambiguous
+    CHECK(CLI::detail::escape_completion_field(":target") == "\\:target");
+    CHECK(CLI::detail::escape_completion_field("a:b") == "a:b");
+    // and the backslash of an already-escaped leading backslash is not itself a leading ':'
+    CHECK(CLI::detail::escape_completion_field("\\:x") == "\\\\:x");
+}
+
+TEST_CASE("Completion: a tab in a description does not fake a second field", "[completion]") {
+    CLI::CompletionReply reply;
+    reply.results.push_back(CLI::CompletionResult{"one", "a\tb"});
+
+    // A description is arbitrary user text; unescaped, the shell would read `b` as a field of its own
+    CHECK(CLI::format_completion_reply(reply) == "one\ta\\tb\n:0\n");
+}
+
+TEST_CASE("Completion: a candidate starting with a colon does not look like the directive", "[completion]") {
+    CLI::CompletionReply reply;
+    reply.results.push_back(CLI::CompletionResult{":target", ""});
+    reply.results.push_back(CLI::CompletionResult{"a:b", ""});
+
+    // Only the leading one is ambiguous, and the unescaper drops the backslash of a sequence it does not know
+    CHECK(CLI::format_completion_reply(reply) == "\\:target\na:b\n:0\n");
 }
 
 TEST_CASE("Completion: get_completions works in argument coordinates", "[completion]") {
