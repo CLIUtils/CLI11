@@ -32,9 +32,11 @@ enum class CompletionDirective : std::uint8_t {
 
 /// A single thing the shell may insert on the command line.
 ///
-/// The value is always a whole insertable token, never a fragment of one.
+/// The value is always a whole insertable token, never a fragment of one. The description is shown beside the value
+/// when the shell lists several candidates, and is dropped when there is only one to insert.
 struct CompletionResult {
     std::string value;
+    std::string description;
 };
 
 /// Everything the binary has to say about one completion request.
@@ -45,10 +47,15 @@ struct CompletionReply {
 
 /// Render a reply into the line-based text the generated shell scripts parse.
 ///
-/// One candidate per line, followed by a final line holding a `:` and the directive as an integer.
+/// One candidate per line as `value` or `value<TAB>description`, followed by a final line holding a `:` and the
+/// directive as an integer. Descriptions are cut at their first line break; both fields are escaped.
 CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply);
 
 namespace detail {
+
+/// Turn what the shell scripts would otherwise read as structure -- `\` `\t` `\n` `\r`, and a leading `:` -- into the
+/// backslash sequences the generated scripts turn back
+CLI11_INLINE std::string escape_completion_field(const std::string &field);
 
 /// Produce the bash completion script for a program, parameterized by the activation variable.
 CLI11_INLINE std::string completion_script_bash(const std::string &program_name, const std::string &env_var);

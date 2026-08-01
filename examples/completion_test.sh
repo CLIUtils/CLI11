@@ -13,9 +13,9 @@ if ! declare -F _cli11_complete_completion > /dev/null; then
     exit 1
 fi
 
-expect() { # expect <comp_cword> <expected COMPREPLY> <word>...
-    local cword="$1" want="$2"
-    shift 2
+run() { # run <terminal width> <comp_cword> <expected COMPREPLY> <word>...
+    local COLUMNS="$1" cword="$2" want="$3"
+    shift 3
     COMP_WORDS=("$prog" "$@")
     COMP_CWORD="$cword"
     COMPREPLY=()
@@ -28,6 +28,16 @@ expect() { # expect <comp_cword> <expected COMPREPLY> <word>...
     echo "ok: cword=${cword} [$*] -> [${got}]"
 }
 
+# A terminal one column wide has no room for a description, so these see the bare candidates
+expect() { # expect <comp_cword> <expected COMPREPLY> <word>...
+    run 1 "$@"
+}
+
+# and a wide one sees them aligned against the longest candidate
+expect_wide() { # expect_wide <comp_cword> <expected COMPREPLY> <word>...
+    run 80 "$@"
+}
+
 expect 1 "start stop remote" ""
 expect 1 "start stop" "st"
 expect 1 "start" "sta"
@@ -36,7 +46,7 @@ expect 1 "" "zzz"
 expect 0 "" ""
 
 # Inside a subcommand, and reached by an alias
-expect 2 "add remove rm" "remote" ""
+expect 2 "add remove rm sync" "remote" ""
 expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
@@ -48,6 +58,17 @@ expect 2 "--help --force" "remote" "--"
 
 # Bash splits on COMP_WORDBREAKS, so this reaches the binary as three words and the cursor sits on the value
 expect 3 "" "--force" "=" ""
+
+# Descriptions, shown beside the candidates and aligned against the longest of them
+expect_wide 1 "start   (Get going) stop    (Do you really want to stop?) remote  (Work with remotes)" ""
+expect_wide 2 "--help   (Print this help message and exit) --force  (Do it anyway)" "remote" "--"
+# A lone candidate is inserted rather than listed, so it loses its description
+expect_wide 1 "start" "sta"
+# and one that does not fit the terminal is cut short
+run 30 1 "start  (Get going) stop   (Do you really want...)" "st"
+# A tab in a description reaches the binary's output escaped, so the script has to put it back
+expect_wide 2 $'add     (Add a remote) remove  (Drop a remote) rm      (Drop a remote) sync    (Push\tand pull)' \
+    "remote" ""
 
 # A program that is not a CLI11 app must not have its output mistaken for a reply
 prog=/bin/echo
