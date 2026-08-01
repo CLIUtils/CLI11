@@ -17,7 +17,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
-#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <locale>

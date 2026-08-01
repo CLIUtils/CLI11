@@ -20,7 +20,6 @@
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cstdint>
-#include <filesystem>
 #include <functional>
 #include <initializer_list>
 #include <map>
