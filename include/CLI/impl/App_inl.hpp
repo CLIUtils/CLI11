@@ -824,17 +824,40 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
 
-    const std::string &prefix = words[cursor];
-    reply.results.reserve(subcommands_.size());
-    for(const App_p &sub : subcommands_) {
-        const std::string &name = sub->get_name();
-        // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
-        // with it.
-        if(!name.empty() && name.compare(0, prefix.size(), prefix) == 0)
-            reply.results.push_back(CompletionResult{name});
+    // Every word before the cursor is finished, so one naming a subcommand moves the walk into it and the candidates
+    // come from wherever the walk ends up. Matching is _find_subcommand's job, the same one the parser uses.
+    const App *current = this;
+    for(std::size_t ii = 0; ii < cursor; ++ii) {
+        if(words[ii].empty())
+            continue;
+        const App *sub = current->_find_subcommand(words[ii], true, false);
+        if(sub != nullptr)
+            current = sub;
     }
+
+    current->_add_subcommand_completions(words[cursor], reply);
     reply.directive = CompletionDirective::NoFileComp;
     return reply;
+}
+
+CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const {
+    for(const App_p &sub : subcommands_) {
+        if(sub->get_disabled())
+            continue;
+        if(sub->get_name().empty()) {
+            // An unnamed subcommand is a group; the parser reaches through it, so completion has to as well
+            sub->_add_subcommand_completions(prefix, reply);
+            continue;
+        }
+        // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
+        // with it. An alias is just as typeable as the name, so it is a candidate in its own right.
+        if(sub->get_name().compare(0, prefix.size(), prefix) == 0)
+            reply.results.push_back(CompletionResult{sub->get_name()});
+        for(const std::string &alias : sub->get_aliases()) {
+            if(!alias.empty() && alias.compare(0, prefix.size(), prefix) == 0)
+                reply.results.push_back(CompletionResult{alias});
+        }
+    }
 }
 
 CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args) const {

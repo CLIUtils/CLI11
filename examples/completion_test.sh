@@ -28,12 +28,17 @@ expect() { # expect <comp_cword> <expected COMPREPLY> <word>...
     echo "ok: cword=${cword} [$*] -> [${got}]"
 }
 
-expect 1 "start stop" ""
+expect 1 "start stop remote" ""
 expect 1 "start stop" "st"
 expect 1 "start" "sta"
 expect 1 "" "zzz"
 # The cursor is on the program name itself
 expect 0 "" ""
+
+# Inside a subcommand, and reached by an alias
+expect 2 "add remove rm" "remote" ""
+expect 2 "remove rm" "remote" "r"
+expect 3 "" "remote" "add" ""
 
 # A program that is not a CLI11 app must not have its output mistaken for a reply
 prog=/bin/echo

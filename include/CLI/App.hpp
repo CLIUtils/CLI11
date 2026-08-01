@@ -1331,6 +1331,9 @@ class App {
     /// Returns without doing anything if there is no request. Expects a reversed vector.
     void _complete_intercept(const std::vector<std::string> &args) const;
 
+    /// Append every name and alias of this app's subcommands that starts with the prefix
+    void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
+
     /// Internal parse function
     void _parse(std::vector<std::string> &args);
 
