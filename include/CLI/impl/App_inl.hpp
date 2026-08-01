@@ -837,12 +837,20 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
 
     // Bash splits the line on COMP_WORDBREAKS, whose default contains '=', so `--file=val` reaches the binary as the
     // three words `--file`, `=`, `val`. Rejoining them is the walk's job rather than the script's, because only the
-    // binary knows which of the pieces is an option name. Values are not completable yet, so all the rejoin has to do
-    // here is keep a value from being read as the start of a subcommand name; the shell's own file completion is a
-    // better answer than a wrong one, so the directive stays at Default.
+    // binary knows which of the pieces is an option name. The `--opt=value` form is not completable yet, so all the
+    // rejoin has to do here is keep a value from being read as the start of a subcommand name; the shell's own file
+    // completion is a better answer than a wrong one, so the directive stays at Default.
     const std::string &word = words[cursor];
     if(word == "=" || (cursor > 0 && words[cursor - 1] == "="))
         return reply;
+
+    // A real parse would hand the word after an option name to that option, so the candidates come from the option and
+    // nothing this app offers belongs here.
+    const Option *awaiting = (cursor > 0) ? current->_option_expecting_value(words[cursor - 1]) : nullptr;
+    if(awaiting != nullptr) {
+        current->_add_value_completions(*awaiting, word, reply);
+        return reply;
+    }
 
     // A word that has begun with a dash can only become an option name, and anything else can only become a
     // subcommand, so the two sources of candidates never both apply.
@@ -892,6 +900,41 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
                 reply.results.push_back(CompletionResult{candidate, opt->get_description()});
         }
     }
+}
+
+CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word) const {
+    // Only an option name can put the next word in a value position, and a lone dash names nothing
+    if(word.size() < 2 || word.front() != '-')
+        return nullptr;
+
+    const Option *opt = get_option_no_throw(word);
+    // check_name matches a positional by its name too, and a positional does not introduce a following value
+    if(opt == nullptr || !opt->nonpositional())
+        return nullptr;
+
+    // A flag consumes no words, so what follows it is a token of its own rather than its value. type_size_max would not
+    // say so -- it is 1 for a flag as well -- because a flag is expected(0) rather than type_size(0).
+    if(opt->get_items_expected_max() == 0)
+        return nullptr;
+
+    return opt;
+}
+
+CLI11_INLINE void
+App::_add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const {
+    const std::vector<std::string> choices = opt.get_completion_choices();
+    if(choices.empty()) {
+        // Nothing is known about the values, so the reply keeps the default directive and the shell's own filename
+        // completion stands in -- which is right far more often than it is wrong for an option that takes a value.
+        return;
+    }
+
+    for(const std::string &choice : choices) {
+        if(choice.compare(0, prefix.size(), prefix) == 0)
+            reply.results.push_back(CompletionResult{choice, ""});
+    }
+    // A declared set has a declared order, which is information the shell would throw away by sorting
+    reply.directive = CompletionDirective::NoFileComp | CompletionDirective::KeepOrder;
 }
 
 CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args) const {

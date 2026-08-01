@@ -51,10 +51,17 @@ expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
 # Option names, from whichever subcommand the walk ended in
-expect 1 "--help --completion --verbose" "--"
+expect 1 "--help --completion --verbose --level" "--"
 expect 1 "--verbose" "--v"
 expect 1 "-v" "-v"
 expect 2 "--help --force" "remote" "--"
+
+# The values an option is checked against, in the order they were declared
+expect 2 "fast slow" "--level" ""
+expect 2 "slow" "--level" "s"
+expect 2 "fast slow" "-l" ""
+# A flag consumes nothing, so what follows it is a token of its own
+expect 2 "start stop remote" "--verbose" ""
 
 # Bash splits on COMP_WORDBREAKS, so this reaches the binary as three words and the cursor sits on the value
 expect 3 "" "--force" "=" ""

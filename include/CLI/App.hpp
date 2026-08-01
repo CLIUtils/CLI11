@@ -1337,6 +1337,13 @@ class App {
     /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
     void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
 
+    /// The option that would take the word after this one as its value, null when this word is not such an option
+    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word) const;
+
+    /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
+    /// anything at all
+    void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
+
     /// Internal parse function
     void _parse(std::vector<std::string> &args);
 

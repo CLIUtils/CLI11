@@ -9,6 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../Validators.hpp"
 
+#include "../Completion.hpp"
 #include "../Encoding.hpp"
 #include "../Macros.hpp"
 #include "../StringTools.hpp"
@@ -102,6 +103,8 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // A value has to get past both sides, so only what both accept is worth offering
+    newval.completion_meta_ = detail::intersect_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
@@ -124,6 +127,8 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // Getting past either side is enough, so both sides' values are worth offering
+    newval.completion_meta_ = detail::unite_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
