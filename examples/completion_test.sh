@@ -38,6 +38,11 @@ expect_wide() { # expect_wide <comp_cword> <expected COMPREPLY> <word>...
     run 80 "$@"
 }
 
+# Stand in for the real _filedir, which the bash-completion package supplies to interactive shells only. This
+# stub records both of the things the script has to get right: the flag it passes, and `cur`, which the real
+# one reads out of its caller's scope to know what to filter on.
+_filedir() { COMPREPLY=("_filedir[$*|${cur-}]"); }
+
 expect 1 "start stop remote" ""
 expect 1 "start stop" "st"
 expect 1 "start" "sta"
@@ -51,7 +56,7 @@ expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
 # Option names, from whichever subcommand the walk ended in
-expect 1 "--help --completion --verbose --level" "--"
+expect 1 "--help --completion --verbose --level --config --workdir" "--"
 expect 1 "--verbose" "--v"
 expect 1 "-v" "-v"
 expect 2 "--help --force" "remote" "--"
@@ -62,6 +67,12 @@ expect 2 "slow" "--level" "s"
 expect 2 "fast slow" "-l" ""
 # A flag consumes nothing, so what follows it is a token of its own
 expect 2 "start stop remote" "--verbose" ""
+
+# A path validator says what kind of path it wants and offers nothing, leaving the walking of it to the shell
+expect 2 "_filedir[|]" "--config" ""
+expect 2 "_filedir[-d|]" "--workdir" ""
+# A partial value is filtered by _filedir, which only sees it because the script puts it in `cur` first
+expect 2 "_filedir[|/et]" "--config" "/et"
 
 # Bash splits on COMP_WORDBREAKS, so this reaches the binary as three words and the cursor sits on the value
 expect 3 "" "--force" "=" ""

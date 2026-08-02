@@ -22,6 +22,13 @@ int main(int argc, char **argv) {
     std::string level;
     app.add_option("--level,-l", level, "How hard to try")->check(CLI::IsMember({"fast", "slow"}));
 
+    // A path is left to the shell, which is the one that knows the directory the line is being typed in
+    std::string config;
+    app.add_option("--config", config, "Where the settings live")->check(CLI::ExistingFile);
+
+    std::string workdir;
+    app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
+
     app.add_subcommand("start", "Get going");
     app.add_subcommand("stop", "Do you really want to stop?");
 
