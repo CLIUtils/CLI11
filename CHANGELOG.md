@@ -1,5 +1,63 @@
 # Changelog {#changelog}
 
+## Version 2.7.2: Faster compiles
+
+This patch release makes the precompiled and experimental module modes cheaper
+for clients. Include-what-you-use is followed, more function bodies compile into
+the library instead of into every translation unit, and the C++20 named module
+now imports the precompiled implementation instead of the full header-only
+library. It also fixes the Bazel precompiled build, which could give consumers
+duplicate implementations.
+
+### Changed
+
+- The C++20 named module uses the precompiled implementation and we lowered its
+  floor from C++23 to C++20. `CLI11::Module` now works for both `find_package`
+  and `add_subdirectory`, and configure fails with a clear message if CMake is
+  older than 3.28. [#1413][]
+- Removed `<iostream>`, `<codecvt>`, `<iomanip>`, `<fstream>`, and `<locale>`
+  from the declaration headers, so precompiled clients do not parse them.
+  `App::exit()` is now three overloads instead of one with stream default
+  arguments. [#1411][]
+- Moved the remaining non-template function bodies out of `App.hpp`,
+  `Option.hpp`, `Validators.hpp`, `TypeTools.hpp`, `ConfigFwd.hpp`, and
+  `FormatterFwd.hpp` into the `impl/*_inl.hpp` files, so they compile into the
+  library in precompiled mode. Header-only mode is unchanged. [#1415][]
+  [#1416][] [#1417][]
+
+### Fixed
+
+- Fixed the Bazel precompiled build: `CLI11_COMPILE` and
+  `CLI11_ENABLE_EXTRA_VALIDATORS` now propagate to consumers, which previously
+  got duplicate implementations from both the headers and the library. Added a
+  `cli11_header_only` target, the Windows `shell32` link, and more tests.
+  [#1420][]
+- Made `ExtraValidators_inl.hpp` use the same `CLI11_ENABLE_EXTRA_VALIDATORS`
+  test as its header, and gave the file permission validators the
+  `CLI11_MODULE_INLINE` marker the other global validators have. [#1415][]
+
+### Documentation
+
+- Documented the precompiled mode in the README. [#1412][]
+- Added a minimal module example, corrected the `CLI11::Module` target name in
+  the book, and noted that macros such as `CLI11_PARSE` do not come through an
+  import. [#1413][]
+
+### Internal
+
+- Added an `iwyu` preset that runs include-what-you-use over the one precompiled
+  translation unit, with a mapping file for both standard libraries, and applied
+  its findings. [#1418][]
+
+[#1411]: https://github.com/CLIUtils/CLI11/pull/1411
+[#1412]: https://github.com/CLIUtils/CLI11/pull/1412
+[#1413]: https://github.com/CLIUtils/CLI11/pull/1413
+[#1415]: https://github.com/CLIUtils/CLI11/pull/1415
+[#1416]: https://github.com/CLIUtils/CLI11/pull/1416
+[#1417]: https://github.com/CLIUtils/CLI11/pull/1417
+[#1418]: https://github.com/CLIUtils/CLI11/pull/1418
+[#1420]: https://github.com/CLIUtils/CLI11/pull/1420
+
 ## Version 2.7.1: LTO link fix
 
 This patch release fixes linking against the precompiled shared library when it
