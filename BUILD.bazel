@@ -7,3 +7,11 @@ cc_library(
     strip_include_prefix = "/include",
     visibility = ["//visibility:public"],
 )
+
+# Header-only mode, like the CMake target without CLI11_PRECOMPILED
+cc_library(
+    name = "cli11_header_only",
+    hdrs = glob(["include/**/*.hpp"]),
+    strip_include_prefix = "/include",
+    visibility = ["//visibility:public"],
+)

@@ -45,6 +45,19 @@ cc_test(
     }),
 )
 
+cc_test(
+    name = "SimpleTestHeaderOnly",
+    srcs = [
+        "SimpleTest.cpp",
+        "app_helper.hpp",
+    ],
+    deps = [
+        "catch_main",
+        "//:cli11_header_only",
+        "@catch2",
+    ],
+)
+
 [
     cc_test(
         name = test,
