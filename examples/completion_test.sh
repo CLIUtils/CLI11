@@ -56,7 +56,7 @@ expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
 # Option names, from whichever subcommand the walk ended in
-expect 1 "--help --completion --verbose --level --config --workdir" "--"
+expect 1 "--help --completion --verbose --level --image --config --workdir" "--"
 expect 1 "--verbose" "--v"
 expect 1 "-v" "-v"
 expect 2 "--help --force" "remote" "--"
@@ -74,8 +74,26 @@ expect 2 "_filedir[-d|]" "--workdir" ""
 # A partial value is filtered by _filedir, which only sees it because the script puts it in `cur` first
 expect 2 "_filedir[|/et]" "--config" "/et"
 
-# Bash splits on COMP_WORDBREAKS, so this reaches the binary as three words and the cursor sits on the value
-expect 3 "" "--force" "=" ""
+# Bash tore the line apart at every COMP_WORDBREAKS character, so the script puts the words back together and asks the
+# binary about `--level=f`. Readline replaces only the piece after the `=`, so that much of each whole-token candidate
+# is what is left here.
+expect 3 "fast" "--level" "=" "f"
+expect 2 "fast slow" "--level" "="
+# A path after an `=` is still the shell's to walk, and only the value goes to _filedir
+expect 3 "_filedir[|/et]" "--config" "=" "/et"
+# The cursor on the `=` is a cursor on the empty value after it, not on a path beginning with an `=`
+expect 2 "_filedir[|]" "--config" "="
+# A flag has no value to complete, so this falls back to the shell's own files rather than to the subcommands
+expect 3 "" "--verbose" "=" "v"
+# and a space after the `=` finishes the value, so what follows it is a token of its own
+expect 3 "start stop remote" "--level" "=" ""
+
+# A colon is a word break as well. _filedir gets the whole value rather than the piece after the last colon, and its
+# answers come back trimmed to that piece, which is all readline will replace.
+expect 4 "_filedir[|a:b]" "--config" "a" ":" "b"
+expect 5 "_filedir[|a:b]" "--config" "=" "a" ":" "b"
+# A colon inside a candidate is trimmed the same way, so `alpine:` is not inserted a second time
+expect 4 "3.19 3.20" "--image" "=" "alpine" ":"
 
 # Descriptions, shown beside the candidates and aligned against the longest of them
 expect_wide 1 "start   (Get going) stop    (Do you really want to stop?) remote  (Work with remotes)" ""

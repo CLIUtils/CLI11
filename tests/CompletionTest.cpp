@@ -398,11 +398,56 @@ TEST_CASE("Completion: a value written after = is not read as a subcommand", "[c
     app.add_option("--file", "");
     app.add_subcommand("value", "");
 
-    // Bash tears `--file=value` apart on COMP_WORDBREAKS before the binary sees it. Values are not completable yet,
-    // so the reply is empty -- but with the default directive, leaving the shell free to complete filenames itself.
-    CHECK(complete(app, {"--file", "=", ""}, "3") == ":0\n");
-    CHECK(complete(app, {"--file", "=", "val"}, "3") == ":0\n");
-    CHECK(complete(app, {"--file", "="}, "2") == ":0\n");
+    // One word per argument, whatever a shell had to do to produce that: `value` here is the option's value, not the
+    // subcommand of the same name
+    CHECK(complete(app, {"--file=value"}, "1") == ":prefix=--file=\n:0\n");
+    CHECK(complete(app, {"--file="}, "1") == ":prefix=--file=\n:0\n");
+
+    // An empty word after a finished one is a token of its own, whatever the one before it ended with
+    CHECK(complete(app, {"--file=", ""}, "2") == "value\n:2\n");
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("Completion: a value written after = completes to a whole token", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level", level)->check(CLI::IsMember({"fast", "slow"}));
+
+    // The candidate is the whole word that has to end up on the command line; the prefix says how much of it the shell
+    // already has
+    CHECK(complete(app, {"--level="}, "1") == "--level=fast\n--level=slow\n:prefix=--level=\n:6\n");
+    CHECK(complete(app, {"--level=s"}, "1") == "--level=slow\n:prefix=--level=\n:6\n");
+    CHECK(complete(app, {"--level=zzz"}, "1") == ":prefix=--level=\n:6\n");
+}
+
+#endif
+
+TEST_CASE("Completion: a path written after = is still the shell's to complete", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    app.add_option("--config", path)->check(CLI::ExistingFile);
+
+    // No candidates, but still a prefix: the shell comes back from `/et` with `/etc/`, and only the binary could have
+    // said that `--config=` goes in front of it
+    CHECK(complete(app, {"--config=/et"}, "1") == ":prefix=--config=\n:8\n");
+    // A value holding a colon is a value, not a name to look up -- bash tears one apart the same way it does an `=`
+    CHECK(complete(app, {"--config", "a:b"}, "2") == ":8\n");
+}
+
+TEST_CASE("Completion: an = after something that takes no value offers nothing", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose", "");
+    app.add_subcommand("value", "");
+
+    // A flag has no value to complete, and neither has an unknown option. Both fall back to no candidates and the
+    // default directive rather than to the subcommand that shares the word.
+    CHECK(complete(app, {"--verbose=val"}, "1") == ":0\n");
+    CHECK(complete(app, {"--nope=val"}, "1") == ":0\n");
 }
 
 TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[completion]") {
@@ -488,6 +533,20 @@ TEST_CASE("Completion: a candidate starting with a colon does not look like the 
 
     // Only the leading one is ambiguous, and the unescaper drops the backslash of a sequence it does not know
     CHECK(CLI::format_completion_reply(reply) == "\\:target\na:b\n:0\n");
+}
+
+TEST_CASE("Completion: the prefix line comes before the directive line", "[completion]") {
+    CLI::CompletionReply reply;
+    reply.results.push_back(CLI::CompletionResult{"--file=a", ""});
+    reply.prefix = "--file=";
+
+    // The directive line stays last, since that is what tells a script the reply is whole rather than truncated
+    CHECK(CLI::format_completion_reply(reply) == "--file=a\n:prefix=--file=\n:0\n");
+
+    // and the prefix is escaped like any other field: an option name is user text too
+    reply.results.clear();
+    reply.prefix = "--od\td=";
+    CHECK(CLI::format_completion_reply(reply) == ":prefix=--od\\td=\n:0\n");
 }
 
 TEST_CASE("Completion: get_completions works in argument coordinates", "[completion]") {
