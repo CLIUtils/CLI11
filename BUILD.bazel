@@ -1,9 +1,28 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# CLI::argv() needs CommandLineToArgvW from shell32 on Windows
+WINDOWS_LINKOPTS = select({
+    "@rules_cc//cc/compiler:msvc-cl": ["-DEFAULTLIB:shell32.lib"],
+    "@rules_cc//cc/compiler:clang-cl": ["-DEFAULTLIB:shell32.lib"],
+    "@rules_cc//cc/compiler:mingw-gcc": ["-lshell32"],
+    "//conditions:default": [],
+})
+
 cc_library(
     name = "cli11",
     srcs = glob(["src/**/*.cpp"]),
     hdrs = glob(["include/**/*.hpp"]),
-    local_defines = ["CLI11_COMPILE", "CLI11_ENABLE_EXTRA_VALIDATORS=1"],
+    defines = ["CLI11_COMPILE", "CLI11_ENABLE_EXTRA_VALIDATORS=1"],
+    linkopts = WINDOWS_LINKOPTS,
+    strip_include_prefix = "/include",
+    visibility = ["//visibility:public"],
+)
+
+# Header-only mode, like the CMake target without CLI11_PRECOMPILED
+cc_library(
+    name = "cli11_header_only",
+    hdrs = glob(["include/**/*.hpp"]),
+    linkopts = WINDOWS_LINKOPTS,
     strip_include_prefix = "/include",
     visibility = ["//visibility:public"],
 )
