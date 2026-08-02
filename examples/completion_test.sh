@@ -38,6 +38,15 @@ expect_wide() { # expect_wide <comp_cword> <expected COMPREPLY> <word>...
     run 80 "$@"
 }
 
+# The cursor inside the last word rather than at the end of it. COMP_WORDS holds the whole word either way, so the
+# script has to read COMP_LINE and COMP_POINT to find out how much of it is being completed.
+expect_at() { # expect_at <characters left after the cursor> <comp_cword> <expected COMPREPLY> <word>...
+    local COMP_LINE="${prog} ${*:4}"
+    local COMP_POINT=$(( ${#COMP_LINE} - $1 ))
+    shift
+    run 1 "$@"
+}
+
 # Stand in for the real _filedir, which the bash-completion package supplies to interactive shells only. This
 # stub records both of the things the script has to get right: the flag it passes, and `cur`, which the real
 # one reads out of its caller's scope to know what to filter on.
@@ -88,12 +97,30 @@ expect 3 "" "--verbose" "=" "v"
 # and a space after the `=` finishes the value, so what follows it is a token of its own
 expect 3 "start stop remote" "--level" "=" ""
 
+# A short name carries its value in the same word, and that whole word is what readline replaces
+expect 1 "-lslow" "-ls"
+# and the flags in front of it are part of that word too
+expect 1 "-vlfast" "-vlf"
+expect 1 "-vl" "-vl"
+# and the value may be the next word instead, in which case it belongs to the last name in the bundle
+expect 2 "fast slow" "-vl" ""
+
+# With the cursor in the middle of a word, only what is in front of it is being completed -- the rest is text readline
+# will leave on the line, and answering for it would have the answer inserted in front of what is already there
+expect_at 1 1 "-v" "-vi"
+expect_at 4 1 "--verbose" "--verbose"
+expect_at 0 1 "--verbose" "--verbose"
+# A path written onto a short name keeps it: the shell never saw the `-c`, so the script puts it back on
+expect 1 "-c_filedir[|/et]" "-c/et"
+
 # A colon is a word break as well. _filedir gets the whole value rather than the piece after the last colon, and its
 # answers come back trimmed to that piece, which is all readline will replace.
 expect 4 "_filedir[|a:b]" "--config" "a" ":" "b"
 expect 5 "_filedir[|a:b]" "--config" "=" "a" ":" "b"
 # A colon inside a candidate is trimmed the same way, so `alpine:` is not inserted a second time
 expect 4 "3.19 3.20" "--image" "=" "alpine" ":"
+# and a value written onto a short name is trimmed against the same boundary
+expect 2 "3.19 3.20" "-ialpine" ":"
 
 # Descriptions, shown beside the candidates and aligned against the longest of them
 expect_wide 1 "start   (Get going) stop    (Do you really want to stop?) remote  (Work with remotes)" ""

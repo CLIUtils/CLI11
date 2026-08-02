@@ -24,12 +24,12 @@ int main(int argc, char **argv) {
 
     // A value may hold a colon, which bash breaks words on just as it does an `=`
     std::string image;
-    app.add_option("--image", image, "Which image to use")
+    app.add_option("--image,-i", image, "Which image to use")
         ->check(CLI::IsMember({"alpine:3.19", "alpine:3.20", "debian:12"}));
 
     // A path is left to the shell, which is the one that knows the directory the line is being typed in
     std::string config;
-    app.add_option("--config", config, "Where the settings live")->check(CLI::ExistingFile);
+    app.add_option("--config,-c", config, "Where the settings live")->check(CLI::ExistingFile);
 
     std::string workdir;
     app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
