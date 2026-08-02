@@ -924,8 +924,21 @@ CLI11_INLINE void
 App::_add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const {
     const std::vector<std::string> choices = opt.get_completion_choices();
     if(choices.empty()) {
-        // Nothing is known about the values, so the reply keeps the default directive and the shell's own filename
-        // completion stands in -- which is right far more often than it is wrong for an option that takes a value.
+        // Hand back to the shell for path completion.
+        switch(opt.get_completion_hint()) {
+        case CompletionHint::File:
+            reply.directive = CompletionDirective::FilterFileExt;
+            break;
+        case CompletionHint::Dir:
+            reply.directive = CompletionDirective::FilterDirs;
+            break;
+        case CompletionHint::Path:
+        case CompletionHint::None:
+        default:
+            // Either kind of path will do, which is what the shell offers unprompted -- and is also the best guess
+            // left when nothing at all is known about the value.
+            break;
+        }
         return;
     }
 

@@ -196,7 +196,17 @@ CLI11_INLINE Validator *Option::get_validator(int index) {
     throw OptionNotFound("Validator index is not valid");
 }
 
+CLI11_INLINE Option *Option::completion_hint(CompletionHint hint) {
+    completion_hint_ = hint;
+    return this;
+}
+
 CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices() const {
+    // A declared hint replaces what the Validators had to say rather than joining it: the two answer the same
+    // question, and a program that says "this is a file name" does not also want a stale list offered beside it
+    if(completion_hint_ != CompletionHint::None)
+        return {};
+
     // The keys of the transform() that runs first -- transform() inserts at the front, so that is the front of the list
     // -- because a later transform only ever sees what an earlier one produced.
     std::shared_ptr<const CompletionMeta> rewrite;
@@ -227,6 +237,28 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_cho
         }
     }
     return {};
+}
+
+CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint() const {
+    if(completion_hint_ != CompletionHint::None)
+        return completion_hint_;
+
+    // Ordered the way the values are: what a check says outranks what a transform in front of it says, because a
+    // transform's output still has to get past the checks. The first hint of each kind wins, since there is no
+    // combining "a file" with "a directory" -- the same rule intersect_completion_meta applies to an `&`.
+    CompletionHint rewrite = CompletionHint::None;
+    for(const Validator_p &validator : validators_) {
+        if(!validator->get_active())
+            continue;
+        const std::shared_ptr<const CompletionMeta> &meta = validator->get_completion_meta();
+        if(!meta || meta->hint == CompletionHint::None)
+            continue;
+        if(!validator->get_modifying())
+            return meta->hint;
+        if(rewrite == CompletionHint::None)
+            rewrite = meta->hint;
+    }
+    return rewrite;
 }
 
 CLI11_INLINE Option *Option::needs(Option *opt) {

@@ -21,6 +21,7 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+#include "Completion.hpp"
 #include "Error.hpp"
 #include "Macros.hpp"
 #include "Split.hpp"
@@ -324,6 +325,9 @@ class Option : public OptionBase<Option> {
     /// A list of Validators to run on each value parsed
     std::vector<Validator_p> validators_{};
 
+    /// What the program declared this option's value to be, for shell completion; None when it did not say
+    CompletionHint completion_hint_{CompletionHint::None};
+
     /// A list of options that are required with this option
     std::set<Option *> needs_{};
 
@@ -480,8 +484,17 @@ class Option : public OptionBase<Option> {
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index);
 
+    /// Declare what kind of value this option takes, for the benefit of shell completion
+    ///
+    /// Overrides whatever the Validators would have said, including the values they enumerate: the two are answers to
+    /// the same question, and this one comes from the program rather than from a guess about it.
+    Option *completion_hint(CompletionHint hint);
+
     /// Get every value a shell should offer for this option, empty when no Validator enumerates them
     CLI11_NODISCARD std::vector<std::string> get_completion_choices() const;
+
+    /// Get the kind of value a shell should complete for this option, declared or inferred from the Validators
+    CLI11_NODISCARD CompletionHint get_completion_hint() const;
 
     /// Sets required options
     Option *needs(Option *opt);
