@@ -827,13 +827,33 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     // Every word before the cursor is finished, so one naming a subcommand moves the walk into it and the candidates
     // come from wherever the walk ends up. Matching is _find_subcommand's job, the same one the parser uses.
     const App *current = this;
+    bool positional_only = false;
     for(std::size_t ii = 0; ii < cursor; ++ii) {
         if(words[ii].empty())
             continue;
+        if(positional_only)
+            continue;
+        if(words[ii] == "--") {
+            // The marker ends the options, and a positional is the one thing that cannot also name a subcommand, so
+            // the walk stops moving as well as stops offering names.
+            positional_only = true;
+            continue;
+        }
+        // `++` closes the subcommand it appears in and hands the rest of the line back to the parent, which is what
+        // _parse_single does with it by returning false. It is only a terminator where _recognize would say so.
+        if(words[ii] == "++" && current->parent_ != nullptr && !current->get_name().empty()) {
+            current = current->parent_;
+            continue;
+        }
         const App *sub = current->_find_subcommand(words[ii], true, false);
         if(sub != nullptr)
             current = sub;
     }
+
+    // Past the marker every word is a value for a positional. Those arrive in a later commit; until then an empty reply
+    // with no NoFileComp leaves the word to the shell, which is what a path-shaped positional wants anyway.
+    if(positional_only)
+        return reply;
 
     const std::string &word = words[cursor];
 
