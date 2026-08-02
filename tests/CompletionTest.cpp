@@ -191,6 +191,60 @@ TEST_CASE("Completion: an option with nothing to offer leaves the shell to it", 
     CHECK(complete(app, {"--zzz", ""}, "2") == "start\n:2\n");
 }
 
+TEST_CASE("Completion: a path is handed back to the shell", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    app.add_option("--file", path)->check(CLI::ExistingFile);
+    app.add_option("--dir", path)->check(CLI::ExistingDirectory);
+    app.add_option("--any", path)->check(CLI::ExistingPath);
+    app.add_option("--new", path)->check(CLI::NonexistentPath);
+
+    // The directive is the whole reply: only the shell knows the directory the line is being typed in, so it produces
+    // the candidates and none are sent to it
+    CHECK(complete(app, {"--file", ""}, "2") == ":8\n");
+    CHECK(complete(app, {"--dir", ""}, "2") == ":16\n");
+    // Either kind of path is what the shell offers unprompted, so saying so is the same as saying nothing
+    CHECK(complete(app, {"--any", ""}, "2") == ":0\n");
+    // A path that must not exist yet is still typed against the ones that do, and gets the same treatment
+    CHECK(complete(app, {"--new", ""}, "2") == ":0\n");
+    // A partial value changes nothing, because the side doing the filtering is the side doing the completing
+    CHECK(complete(app, {"--file", "/et"}, "2") == ":8\n");
+}
+
+TEST_CASE("Completion: an option can declare the kind of path it wants", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    // Nothing validates this, so the hint is the only way the shell can be told
+    app.add_option("--out", path)->completion_hint(CLI::CompletionHint::Dir);
+
+    CHECK(complete(app, {"--out", ""}, "2") == ":16\n");
+}
+
+TEST_CASE("Completion: a hint survives being copied into the Validator base", "[completion]") {
+    CLI::App app{"program"};
+    std::string path;
+    // Option::check slices ExistingFileValidator away, so the hint has to be reachable from the base class
+    CHECK(app.add_option("--file", path)->check(CLI::ExistingFile)->get_completion_hint() == CLI::CompletionHint::File);
+
+    const CLI::Validator plain = CLI::Validator([](std::string &) { return std::string{}; }, "anything");
+    // A side that describes nothing leaves the other side's answer standing, whichever way round it is written
+    CHECK(app.add_option("--and", path)->check(CLI::ExistingFile & plain)->get_completion_hint() ==
+          CLI::CompletionHint::File);
+    CHECK(app.add_option("--and-rev", path)->check(plain & CLI::ExistingFile)->get_completion_hint() ==
+          CLI::CompletionHint::File);
+    // and there is no intersecting "a file" with "a directory", so the left side wins
+    CHECK(app.add_option("--both", path)->check(CLI::ExistingFile & CLI::ExistingDirectory)->get_completion_hint() ==
+          CLI::CompletionHint::File);
+    CHECK(app.add_option("--either", path)->check(CLI::ExistingDirectory | CLI::ExistingFile)->get_completion_hint() ==
+          CLI::CompletionHint::Dir);
+
+    // A validator that is not applied does not describe what the option accepts
+    CHECK(app.add_option("--off", path)->check(CLI::ExistingFile.active(false))->get_completion_hint() ==
+          CLI::CompletionHint::None);
+}
+
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
@@ -321,6 +375,19 @@ TEST_CASE("Completion: an inactive validator is not asked for values", "[complet
 
     // A validator that is not applied does not describe what the option accepts
     CHECK(opt->get_completion_choices().empty());
+}
+
+TEST_CASE("Completion: values worth listing outrank the hint beside them", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    // Two named files are a better answer than every file in the directory, so the enumerated side is the one offered
+    app.add_option("--file", path)->check(CLI::ExistingFile & CLI::IsMember({"a.txt", "b.txt"}));
+    CHECK(complete(app, {"--file", ""}, "2") == "a.txt\nb.txt\n:6\n");
+
+    // and a declared hint outranks both, since it is the program speaking rather than a guess about what it meant
+    app.add_option("--dir", path)->check(CLI::IsMember({"a.txt"}))->completion_hint(CLI::CompletionHint::Dir);
+    CHECK(complete(app, {"--dir", ""}, "2") == ":16\n");
 }
 
 #endif

@@ -39,7 +39,11 @@ enum class CompletionDirective : std::uint8_t {
     /// The shell must not add filenames of its own to the candidates.
     NoFileComp = 2,
     /// The candidates arrive in a meaningful order, so the shell must not sort them.
-    KeepOrder = 4
+    KeepOrder = 4,
+    /// The value is a file name and the shell is to complete it; the candidates, if any, are the extensions to keep.
+    FilterFileExt = 8,
+    /// The value is a directory name and the shell is to complete it.
+    FilterDirs = 16
 };
 
 /// Combine two directives, so that one reply can carry both
@@ -47,11 +51,29 @@ CLI11_MODULE_INLINE constexpr CompletionDirective operator|(CompletionDirective 
     return static_cast<CompletionDirective>(static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs));
 }
 
+/// A kind of value that the shell completes better than the program can.
+///
+/// A path is the standing example: only the shell knows the working directory the user is typing in, and it already
+/// knows how to walk one. An option that wants a path therefore says so and offers no candidates of its own.
+enum class CompletionHint : std::uint8_t {
+    /// Nothing is known about the shape of the value.
+    None = 0,
+    /// A file name.
+    File,
+    /// A directory name.
+    Dir,
+    /// Either, so whatever the shell would offer on its own.
+    Path
+};
+
 /// What completion can learn from a Validator about the values it accepts.
 ///
 /// A Validator is copied into a `Validator` base by `Option::check`, which slices any derived class away, so this is
 /// how a validator that knows its accepted values hands them on: a plain member of the base that survives the copy.
 struct CompletionMeta {
+    /// The kind of value the validator accepts, when the shell is the one that can produce it.
+    CompletionHint hint{CompletionHint::None};
+
     /// Every value the validator accepts, or empty when it does not enumerate them.
     ///
     /// Read at completion time rather than stored as a list, because a validator may hold a reference to a set the
@@ -86,7 +108,7 @@ namespace detail {
 ///
 /// The intersection when both enumerate their values, and whichever one does when only one of them does -- a Validator
 /// that does not enumerate its values still constrains them, but the only way to apply that constraint would be to run
-/// it, and completion does not run user code.
+/// it, and completion does not run user code. Two hints cannot be intersected at all, so the left one wins.
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
 intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                           const std::shared_ptr<const CompletionMeta> &rhs);
@@ -94,7 +116,8 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
 /// Combine what two Validators say about their values into what satisfies either of them
 ///
 /// The union when both enumerate their values. When only one does the answer is unbounded, so what comes back is that
-/// one's values: a subset of what is acceptable rather than the whole of it.
+/// one's values: a subset of what is acceptable rather than the whole of it. Hints do not union either, so again the
+/// left one wins.
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
 unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                       const std::shared_ptr<const CompletionMeta> &rhs);
