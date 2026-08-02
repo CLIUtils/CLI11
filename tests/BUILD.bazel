@@ -46,6 +46,46 @@ cc_test(
 )
 
 cc_test(
+    name = "TimerTest",
+    srcs = ["TimerTest.cpp"],
+    deps = [
+        "catch_main",
+        "//:cli11",
+        "@catch2",
+    ],
+    linkopts = select({
+        "@rules_cc//cc/compiler:msvc-cl": [],
+        "@rules_cc//cc/compiler:clang-cl": [],
+        "//conditions:default": ["-pthread"],
+    }),
+)
+
+# Verifies there are no unguarded inlines (duplicate symbols across TUs)
+[
+    (
+        cc_library(
+            name = "link_test_1" + suffix,
+            srcs = ["link_test_1.cpp"],
+            deps = [lib],
+        ),
+        cc_test(
+            name = "link_test_2" + suffix,
+            srcs = ["link_test_2.cpp"],
+            deps = [
+                "catch_main",
+                "link_test_1" + suffix,
+                lib,
+                "@catch2",
+            ],
+        ),
+    )
+    for suffix, lib in [
+        ("", "//:cli11"),
+        ("_header_only", "//:cli11_header_only"),
+    ]
+]
+
+cc_test(
     name = "SimpleTestHeaderOnly",
     srcs = [
         "SimpleTest.cpp",
@@ -90,6 +130,8 @@ cc_test(
         "ComplexTypeTest",
         "TrueFalseTest",
         "OptionGroupTest",
+        "ExtraValidatorsTest",
+        "localeTest",
         "EncodingTest",
     ]
 ]
