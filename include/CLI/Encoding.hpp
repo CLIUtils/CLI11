@@ -10,6 +10,7 @@
 #include "Macros.hpp"
 
 // [CLI11:public_includes:set]
+#include <cstddef>
 #include <string>
 // [CLI11:public_includes:end]
 

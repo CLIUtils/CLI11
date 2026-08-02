@@ -16,13 +16,14 @@
 // [CLI11:public_includes:set]
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
+#include <iterator>
 #include <limits>
-#include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
-#include <vector>
 // [CLI11:public_includes:end]
 
 // [CLI11:validators_hpp_filesystem:verbatim]

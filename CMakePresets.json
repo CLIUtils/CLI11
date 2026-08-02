@@ -39,6 +39,22 @@
         "CLI11_PRECOMPILED": true,
         "CLI11_ENABLE_EXTRA_VALIDATORS": true
       }
+    },
+    {
+      "name": "iwyu",
+      "displayName": "Include-what-you-use",
+      "inherits": "default",
+      "binaryDir": "build-iwyu",
+      "cacheVariables": {
+        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Xiwyu;--mapping_file=${sourceDir}/scripts/iwyu.imp;-Xiwyu;--check_also=${sourceDir}/include/CLI/*.hpp;-Xiwyu;--check_also=${sourceDir}/include/CLI/impl/*.hpp;-Xiwyu;--keep=*/CLI/*.hpp;-Xiwyu;--no_fwd_decls",
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_OSX_SYSROOT": "macosx",
+        "CLI11_PRECOMPILED": true,
+        "CLI11_ENABLE_EXTRA_VALIDATORS": true,
+        "CLI11_WARNINGS_AS_ERRORS": false,
+        "CLI11_BUILD_TESTS": false,
+        "CLI11_BUILD_EXAMPLES": false
+      }
     }
   ],
   "buildPresets": [
@@ -57,6 +73,11 @@
       "displayName": "Clang-tidy Build",
       "configurePreset": "tidy",
       "nativeToolOptions": ["-k0"]
+    },
+    {
+      "name": "iwyu",
+      "displayName": "Include-what-you-use Build",
+      "configurePreset": "iwyu"
     }
   ],
   "testPresets": [

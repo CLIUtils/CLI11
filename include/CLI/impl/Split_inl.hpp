@@ -12,6 +12,9 @@
 #include "../Split.hpp"
 
 // [CLI11:public_includes:set]
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <string>
 #include <tuple>
 #include <utility>

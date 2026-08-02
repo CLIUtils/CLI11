@@ -15,15 +15,18 @@
 #include "Validators.hpp"
 
 // [CLI11:public_includes:set]
-#include <cmath>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <limits>
+#include <initializer_list>
+#include <iterator>
 #include <locale>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]

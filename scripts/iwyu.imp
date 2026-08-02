@@ -1,0 +1,25 @@
+# include-what-you-use mapping file for CLI11.
+#
+# Both standard libraries make IWYU ask for a header that CLI11 must not
+# include: libc++ (macOS) exposes private detail headers, libstdc++ (Linux)
+# exposes the C headers behind <cXXX>. Name the C++ header instead.
+#
+# Prefer a symbol entry. An include entry only takes effect when the left side
+# is private, and declaring a real C header private makes IWYU abort with a
+# "same file seen with two different visibilities" assertion.
+[
+  { symbol: ["abs", private, "<cstdlib>", public] },
+  { symbol: ["errno", private, "<cerrno>", public] },
+  { symbol: ["getenv", private, "<cstdlib>", public] },
+  { symbol: ["isprint", private, "<cctype>", public] },
+  { symbol: ["strlen", private, "<cstring>", public] },
+  { symbol: ["wcslen", private, "<cwchar>", public] },
+
+  # libc++ detail headers. These are private, so an include entry works and
+  # covers every symbol at once.
+  { include: ["<_ctype.h>", private, "<cctype>", public] },
+  { include: ["<_stdlib.h>", private, "<cstdlib>", public] },
+  { include: ["<_string.h>", private, "<cstring>", public] },
+  { include: ["<_wchar.h>", private, "<cwchar>", public] },
+  { include: ["<__locale>", private, "<locale>", public] },
+]

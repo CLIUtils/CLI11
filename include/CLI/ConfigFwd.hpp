@@ -9,12 +9,9 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
-#include <algorithm>
 #include <cstdint>
 #include <iosfwd>
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
 #include "Error.hpp"

@@ -16,9 +16,12 @@
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <fstream>
-#include <istream>
+#include <functional>
+#include <locale>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

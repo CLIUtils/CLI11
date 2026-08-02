@@ -12,11 +12,9 @@
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
-#include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <exception>
-#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>

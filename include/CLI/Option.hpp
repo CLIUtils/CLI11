@@ -10,11 +10,13 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <set>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
