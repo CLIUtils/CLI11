@@ -8,6 +8,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 
 // Run `source <(completion --completion bash)` and then press TAB after `completion `.
 
@@ -34,6 +35,10 @@ int main(int argc, char **argv) {
     std::string workdir;
     app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
 
+    // Somewhere for `completion -- --verbose` to land: past the marker even a dash-shaped word is a positional
+    std::vector<std::string> files;
+    app.add_option("files", files, "What to work on");
+
     app.add_subcommand("start", "Get going");
     app.add_subcommand("stop", "Do you really want to stop?");
 
@@ -47,6 +52,9 @@ int main(int argc, char **argv) {
     app.require_subcommand(0, 1);
 
     CLI11_PARSE(app, argc, argv);
+
+    for(const std::string &file : files)
+        std::cout << "File: " << file << '\n';
 
     for(auto *sub : app.get_subcommands())
         std::cout << "Subcommand: " << sub->get_name() << '\n';

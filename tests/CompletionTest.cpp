@@ -522,6 +522,49 @@ TEST_CASE("Completion: an = after something that takes no value offers nothing",
     CHECK(complete(app, {"--nope=val"}, "1") == ":0\n");
 }
 
+TEST_CASE("Completion: nothing is offered after the end-of-options marker", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose", "");
+    app.add_subcommand("start", "");
+
+    // Before the marker both sources still apply
+    CHECK(complete(app, {"--"}, "1") == "--verbose\n:2\n");
+    CHECK(complete(app, {"sta"}, "1") == "start\n:2\n");
+    // After it every word is a positional, so neither an option name nor a subcommand name can be one. The directive
+    // is the default rather than NoFileComp: a positional is the shape most likely to be a path.
+    CHECK(complete(app, {"--", "--verb"}, "2") == ":0\n");
+    CHECK(complete(app, {"--", "sta"}, "2") == ":0\n");
+    // The marker holds for the rest of the line, not just for the word after it
+    CHECK(complete(app, {"--", "one", "sta"}, "3") == ":0\n");
+    // And a word that would otherwise move the walk does not, so the marker cannot be escaped through a subcommand
+    CHECK(complete(app, {"--", "start", ""}, "3") == ":0\n");
+}
+
+TEST_CASE("Completion: the subcommand terminator hands the walk back to the parent", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--outer", "");
+    CLI::App *sub = app.add_subcommand("start", "");
+    sub->add_flag("--inner", "");
+    CLI::App *nested = sub->add_subcommand("now", "");
+    nested->add_flag("--deep", "");
+
+    // Inside the subcommand its own options are the candidates
+    CHECK(complete(app, {"start", "--"}, "2") == "--inner\n:2\n");
+    // `++` closes it, so the root's options are back and the subcommand's are gone
+    CHECK(complete(app, {"start", "++", "--"}, "3") == "--outer\n:2\n");
+    // One terminator closes one level
+    CHECK(complete(app, {"start", "now", "++", "--"}, "4") == "--inner\n:2\n");
+    CHECK(complete(app, {"start", "now", "++", "++", "--"}, "5") == "--outer\n:2\n");
+    // Past the root there is nothing left to close, so the extra one is an ordinary word
+    CHECK(complete(app, {"start", "++", "++", "--"}, "4") == "--outer\n:2\n");
+    // _recognize only reads it as a terminator inside a subcommand, and so does the walk
+    CHECK(complete(app, {"++", "--"}, "2") == "--outer\n:2\n");
+    // The marker outranks it: after `--` there are no more terminators either
+    CHECK(complete(app, {"start", "--", "++", "--outer"}, "4") == ":0\n");
+}
+
 TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[completion]") {
     CLI::App app{"program"};
     app.add_subcommand("start", "");
