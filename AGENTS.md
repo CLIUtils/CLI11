@@ -74,34 +74,22 @@ cmake --build --preset tidy
 
 ## Include-what-you-use
 
-`brew install include-what-you-use`, then:
+`brew install include-what-you-use`, then `cmake --preset iwyu` and
+`cmake --build --preset iwyu`. The build always succeeds and IWYU writes its
+advice to stderr. Nothing enforces it, so read the report and apply what is
+correct, with these exceptions:
 
-```bash
-cmake --preset iwyu
-cmake --build --preset iwyu
-```
+- Only act on a removal that both standard libraries agree on; take an addition
+  from either. macOS asks to remove the `<iterator>` includes that Linux needs.
+- Keep both `<filesystem>` includes. `Macros.hpp` needs it before the
+  `__cpp_lib_filesystem` check, and `Validators.hpp` guards its one with
+  `#if CLI11_HAS_FILESYSTEM`.
+- Ignore the "should add" lines for `CLI/CLI.hpp` (an artifact of the private
+  pragma in each header), `<version>`, `<AvailabilityInternal.h>`, and `<math>`.
 
-The build always succeeds; IWYU writes its advice to stderr. Nothing enforces
-it, so read the report and apply what is correct.
-
-Two things keep the report readable:
-
-- `scripts/iwyu.imp` maps the headers each standard library makes IWYU ask for
-  to the C++ header CLI11 should use. libc++ (macOS) exposes private detail
-  headers such as `<_stdlib.h>`; libstdc++ (Linux) exposes the C headers behind
-  `<cstdlib>`. Read the comment at the top before you add an entry: the
-  visibility on the left must agree with what IWYU already believes, or the run
-  aborts with a visibility assertion.
-- `--keep=*/CLI/*.hpp` holds the project's own includes. The
-  `IWYU pragma: private, include "CLI/CLI.hpp"` line at the top of each header
-  is for users of the library; inside the library IWYU applies it too and asks
-  every header to include `CLI/CLI.hpp` in place of its siblings. `--keep` drops
-  that advice and leaves the standard-library advice, which is what matters for
-  the single-header build. One `should add #include "CLI/CLI.hpp"` line per
-  header survives; ignore it.
-
-The mapping file covers both standard libraries, so check the other one after
-you change it:
+`scripts/iwyu.imp` maps the detail headers a standard library asks for to the
+C++ header CLI11 should use; read the comment at its top before you add an
+entry. It covers both standard libraries, so check Linux after a change:
 
 ```bash
 docker run --rm -v "$PWD:/src:ro" debian:trixie sh -c '
@@ -109,21 +97,6 @@ docker run --rm -v "$PWD:/src:ro" debian:trixie sh -c '
   cp -r /src /work && rm -rf /work/build* && cd /work &&
   cmake --preset iwyu >/dev/null && cmake --build --preset iwyu'
 ```
-
-Take an addition from either platform, but only act on a removal both agree on.
-libc++ gives `<iterator>` away through other headers, so macOS asks to remove
-the `<iterator>` lines that libstdc++ needs for `std::begin`, `std::end`, and
-`std::pair`. Keep them.
-
-Two `<filesystem>` includes must stay whatever IWYU says: `Macros.hpp` needs it
-to define `__cpp_lib_filesystem` before the version check, and the one in
-`Validators.hpp` sits inside `#if CLI11_HAS_FILESYSTEM`.
-
-Known false positives, all in the "should add" lists: `<version>` for
-`Macros.hpp` on both platforms, plus `<AvailabilityInternal.h>` for `Macros.hpp`
-and `<math>` for `Validators.hpp` on macOS. The "should remove" lines for
-forward declarations are also wrong — the declarations exist to fix the order in
-the single header.
 
 ## Single Header Generation
 
