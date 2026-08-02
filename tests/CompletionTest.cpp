@@ -425,6 +425,78 @@ TEST_CASE("Completion: a value written after = completes to a whole token", "[co
 
 #endif
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("Completion: a value written onto a short name completes to a whole token", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_flag("--verbose,-v", "");
+
+    // A short name takes its value with no separator at all, so the option and the value share one word
+    CHECK(complete(app, {"-ls"}, "1") == "-lslow\n:prefix=-l\n:6\n");
+    // An `=` is no separator for a short name -- a parse would take it as the first character of the value -- so it
+    // matches no value here either
+    CHECK(complete(app, {"-l="}, "1") == ":prefix=-l\n:6\n");
+    // The flags in front of it are part of the word the shell will replace, so they are part of every candidate
+    CHECK(complete(app, {"-vlf"}, "1") == "-vlfast\n:prefix=-vl\n:6\n");
+
+    // A word that ends at the name has no value in it yet: the value is the next word, which the shell reaches by
+    // adding a space rather than by completing this one
+    CHECK(complete(app, {"-l"}, "1") == "-l\n:2\n");
+    CHECK(complete(app, {"-vl"}, "1") == "-vl\n:2\n");
+}
+
+TEST_CASE("Completion: the value after a bundle belongs to the last name in it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_flag("--verbose,-v", "");
+    app.add_subcommand("start", "");
+
+    // A parse hands `-vl` to `-v` and then to `-l`, so the word after it is `-l`'s value and not a token of its own
+    CHECK(complete(app, {"-vl", ""}, "2") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"-vl", "f"}, "2") == "fast\n:6\n");
+
+    // A bundle that already holds its value has nothing left for the next word
+    CHECK(complete(app, {"-vlfast", ""}, "2") == "start\n:2\n");
+    // and neither has one that ends in a flag, or one holding a name this app does not have
+    CHECK(complete(app, {"-vv", ""}, "2") == "start\n:2\n");
+    CHECK(complete(app, {"-vz", ""}, "2") == "start\n:2\n");
+}
+
+#endif
+
+TEST_CASE("Completion: a finished bundle of flags is offered back unchanged", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose,-v", "");
+    app.add_flag("--quiet,-q", "");
+    app.add_option("input", "");
+
+    // Every name in it is one this app has, so the word stands as typed -- which is how the shell is told to move on
+    CHECK(complete(app, {"-vq"}, "1") == "-vq\n:2\n");
+    // A short name is one character long, so trailing text no name matches can only be a mistake. A filename is not a
+    // candidate for the middle of an option word either.
+    CHECK(complete(app, {"-vz"}, "1") == ":2\n");
+    CHECK(complete(app, {"-zv"}, "1") == ":2\n");
+    // A positional is not part of a bundle, whatever its name
+    CHECK(complete(app, {"-vinput"}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: a path written onto a short name is still the shell's to complete", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    app.add_option("--config,-c", path)->check(CLI::ExistingFile);
+
+    // The shell comes back from `/et` with `/etc/`, and only the binary could have said that `-c` goes in front of it
+    CHECK(complete(app, {"-c/et"}, "1") == ":prefix=-c\n:8\n");
+}
+
 TEST_CASE("Completion: a path written after = is still the shell's to complete", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");

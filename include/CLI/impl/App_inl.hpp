@@ -847,10 +847,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         const Option *assigned = current->_option_expecting_value("--" + long_name);
         // An unknown option, or one that takes no value, has nothing to say about what follows its `=`
         if(assigned != nullptr) {
-            reply.prefix = word.substr(0, assign + 1);
-            current->_add_value_completions(*assigned, attached, reply);
-            for(CompletionResult &result : reply.results)
-                result.value.insert(0, reply.prefix);
+            current->_add_attached_value_completions(*assigned, word.substr(0, assign + 1), attached, reply);
         }
         return reply;
     }
@@ -865,10 +862,19 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
 
     // A word that has begun with a dash can only become an option name, and anything else can only become a
     // subcommand, so the two sources of candidates never both apply.
-    if(!word.empty() && word.front() == '-')
+    if(!word.empty() && word.front() == '-') {
+        // A word holding a short name and then more text -- `-lfast`, `-vl` -- has to be taken apart before any of it
+        // can be completed. One that is nothing but a name does not.
+        std::string short_name;
+        std::string short_rest;
+        if(detail::split_short(word, short_name, short_rest) && !short_rest.empty()) {
+            current->_add_short_word_completions(word, reply);
+            return reply;
+        }
         current->_add_option_completions(word, reply);
-    else
+    } else {
         current->_add_subcommand_completions(word, reply);
+    }
     reply.directive = CompletionDirective::NoFileComp;
     return reply;
 }
@@ -919,8 +925,19 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
         return nullptr;
 
     const Option *opt = get_option_no_throw(word);
+    if(opt == nullptr) {
+        // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
+        std::string short_name;
+        std::string short_rest;
+        std::string::size_type consumed = 0;
+        if(detail::split_short(word, short_name, short_rest) && !short_rest.empty())
+            opt = _walk_short_names(word, consumed);
+        // A name with word left after it takes its value from that, so it leaves nothing for the following word
+        if(opt == nullptr || consumed != word.size())
+            return nullptr;
+    }
     // check_name matches a positional by its name too, and a positional does not introduce a following value
-    if(opt == nullptr || !opt->nonpositional())
+    if(!opt->nonpositional())
         return nullptr;
 
     // A flag consumes no words, so what follows it is a token of its own rather than its value. type_size_max would not
@@ -929,6 +946,55 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
         return nullptr;
 
     return opt;
+}
+
+CLI11_NODISCARD CLI11_INLINE const Option *App::_walk_short_names(const std::string &word,
+                                                                  std::string::size_type &consumed) const {
+    // A parse reads such a word one name at a time, each flag handing the rest of it to the next name
+    consumed = 1;  // the leading dash, which stays with the names rather than with the value
+    while(consumed < word.size()) {
+        const Option *opt = get_option_no_throw(std::string("-") + word[consumed]);
+        // check_name matches a positional by its name too, and a positional is not part of a bundle
+        if(opt == nullptr || !opt->nonpositional())
+            return nullptr;
+        ++consumed;
+        if(opt->get_items_expected_max() != 0)
+            return opt;
+    }
+    return nullptr;
+}
+
+CLI11_INLINE void App::_add_short_word_completions(const std::string &word, CompletionReply &reply) const {
+    std::string::size_type consumed = 0;
+    const Option *opt = _walk_short_names(word, consumed);
+
+    // A name at the end of the word takes no value from it: the value is the next word, and a shell gets there by
+    // adding a space rather than by completing this one.
+    if(opt != nullptr && consumed < word.size()) {
+        _add_attached_value_completions(*opt, word.substr(0, consumed), word.substr(consumed), reply);
+        return;
+    }
+
+    if(consumed == word.size()) {
+        // The word is names all the way through, so it is finished. Offering it back is what a lone `-v` does
+        // already, and it tells the shell to move on rather than ring the bell.
+        reply.results.push_back(CompletionResult{word, ""});
+    }
+    // Anything left over is text no name begins with, a short name being one character long. A filename is not a
+    // candidate for the middle of an option word either.
+    reply.directive = CompletionDirective::NoFileComp;
+}
+
+CLI11_INLINE void App::_add_attached_value_completions(const Option &opt,
+                                                       const std::string &head,
+                                                       const std::string &typed,
+                                                       CompletionReply &reply) const {
+    // Candidates are whole insertable tokens, so each carries the name it shares its word with; the prefix is how a
+    // script learns how much of one the shell already holds.
+    reply.prefix = head;
+    _add_value_completions(opt, typed, reply);
+    for(CompletionResult &result : reply.results)
+        result.value.insert(0, head);
 }
 
 CLI11_INLINE void

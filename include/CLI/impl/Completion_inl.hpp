@@ -213,14 +213,27 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     local response line comp desc ci ii tab=$'\t'
     local directive="" prefix="" longest=0
 
+    # Readline completes the text in front of the cursor and leaves the rest of the word on the line, but COMP_WORDS
+    # holds whole words. Sending that tail along would have the binary answer for a word nobody typed, and readline
+    # then insert the answer in front of the tail.
+    local -a raw=("${COMP_WORDS[@]}")
+    local comp_line=${COMP_LINE-} point=${COMP_POINT-0}
+    local after=${comp_line:point}
+    after=${after%%[[:space:]]*}
+    # Only when it really is the end of that word: with the cursor on the `=` of `--file=x`, the `x` after it belongs
+    # to the next word of COMP_WORDS rather than to this one.
+    if [[ -n ${after} && ${raw[COMP_CWORD]-} == *"${after}" ]]; then
+        raw[COMP_CWORD]=${raw[COMP_CWORD]%"${after}"}
+    fi
+
     # Readline splits the line on COMP_WORDBREAKS -- whose default holds `=` and `:` -- before bash hands it over, so
     # `--file=/et` arrives as the three words `--file`, `=`, `/et`. Rejoin them into the arguments the program would
     # have received, and move the cursor index with them. Spaces around a break character are not recoverable, so
     # `a : b` reads as `a:b`; an empty word is what bash sends for a cursor past a space, so it still starts a word.
     local -a words=()
     local cword=0 count=0 word glue="" is_break
-    for (( ii = 0; ii < ${#COMP_WORDS[@]}; ii++ )); do
-        word=${COMP_WORDS[ii]}
+    for (( ii = 0; ii < ${#raw[@]}; ii++ )); do
+        word=${raw[ii]}
         is_break=""
         if [[ -n ${word} && -z ${word//[=:]/} ]]; then
             is_break=1
@@ -306,36 +319,34 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     fi
 
     # A path is the shell's to complete, and it arrives with no candidates to get in the way. _filedir comes from the
-    # bash-completion package and does the job properly; without it readline's own completion stands in, which is what
-    # the -o default on the complete line below is for.
+    # bash-completion package; without it the `-o default` on the complete line leaves readline to it. It reads the
+    # word from a caller's local named `cur` rather than from an argument, which dynamic scoping is what makes work.
     #
-    # _filedir reads the word being completed from a variable named `cur` in its caller rather than from an argument
-    # -- bash-completion's convention, normally set by _init_completion. Bash scopes locals dynamically, so declaring
-    # it here is what the call below sees; without it _filedir completes against an empty prefix and offers the whole
-    # working directory.
-    #
-    # It gets the whole value, `a:b` rather than the `b` bash tore off the end of it, since the rejoined word is right
-    # here. Its answers are whole paths, so they are trimmed back to the last piece afterwards -- against the same
-    # boundary the binary's candidates were trimmed against, in value coordinates, since the shell never saw the
-    # `--file=` the binary stripped off before completing one.
-    local cur=${word#"${prefix}"}
-    local value_head=${head#"${prefix}"}
-    if (( (directive & 16) != 0 )); then
-        if declare -F _filedir > /dev/null; then
-            _filedir -d
-        else
-            compopt +o default -o dirnames 2>/dev/null
-        fi
-    elif (( (directive & 8) != 0 )); then
-        if declare -F _filedir > /dev/null; then
+    # Its answers are whole values, while readline replaces the word from its last break character on, so the two
+    # boundaries have to be lined up -- and either can be the later one. `--file=a:b` has the head of the value on the
+    # line already, so it comes back off the candidates; `-fa` has no break at all, so the `-f` goes on.
+    local cur=${word#"${prefix}"} value_head="" value_lead=""
+    if (( ${#head} >= ${#prefix} )); then
+        value_head=${head#"${prefix}"}
+    else
+        value_lead=${prefix#"${head}"}
+    fi
+    if (( (directive & 24) != 0 )); then
+        if (( (directive & 16) != 0 )); then
+            if declare -F _filedir > /dev/null; then
+                _filedir -d
+            else
+                compopt +o default -o dirnames 2>/dev/null
+            fi
+        elif declare -F _filedir > /dev/null; then
             _filedir
         else
             compopt -o default 2>/dev/null
         fi
-    fi
-    if [[ -n ${value_head} ]]; then
+        # Only what _filedir just added is in value coordinates: the binary sends no candidates of its own when it
+        # hands a path over, so there is nothing else in here to disturb.
         for ci in "${!COMPREPLY[@]}"; do
-            COMPREPLY[ci]=${COMPREPLY[ci]#"${value_head}"}
+            COMPREPLY[ci]=${value_lead}${COMPREPLY[ci]#"${value_head}"}
         done
     fi
     return 0

@@ -1343,6 +1343,19 @@ class App {
     /// The option that would take the word after this one as its value, null when this word is not such an option
     CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word) const;
 
+    /// Read a word of short names as a parse would, stopping at the first name that takes a value and returning it.
+    /// Sets consumed to how much of the word was names, which is all of it when the walk ran out of word.
+    CLI11_NODISCARD const Option *_walk_short_names(const std::string &word, std::string::size_type &consumed) const;
+
+    /// Fill in the whole reply for a word holding a short name and more text after it, `-lfast` or `-vl`
+    void _add_short_word_completions(const std::string &word, CompletionReply &reply) const;
+
+    /// Append the option's values as whole tokens, for a value sharing its word with the name in front of it
+    void _add_attached_value_completions(const Option &opt,
+                                         const std::string &head,
+                                         const std::string &typed,
+                                         CompletionReply &reply) const;
+
     /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
     /// anything at all
     void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
