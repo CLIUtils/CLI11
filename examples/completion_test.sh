@@ -122,6 +122,21 @@ expect 4 "3.19 3.20" "--image" "=" "alpine" ":"
 # and a value written onto a short name is trimmed against the same boundary
 expect 2 "3.19 3.20" "-ialpine" ":"
 
+# Past the end-of-options marker every word is a positional, so neither an option name nor a subcommand name is a
+# candidate. Nothing reaches _filedir either: the binary sends no path hint, and the `-o default` on the complete line
+# is what hands the word to the shell -- which this harness cannot see, only an interactive readline can.
+expect 2 "" "--" "--v"
+expect 2 "" "--" "st"
+# and the marker holds for the rest of the line, through a word that would otherwise move the walk
+expect 3 "" "--" "start" "--f"
+
+# `++` closes the subcommand it appears in, so the candidates come from the parent again
+expect 2 "" "remote" "--v"
+expect 3 "--verbose" "remote" "++" "--v"
+expect 3 "start stop remote" "remote" "++" ""
+# The marker outranks it: past `--` a `++` is a positional value like any other word
+expect 4 "" "remote" "--" "++" "--f"
+
 # Descriptions, shown beside the candidates and aligned against the longest of them
 expect_wide 1 "start   (Get going) stop    (Do you really want to stop?) remote  (Work with remotes)" ""
 expect_wide 2 "--help   (Print this help message and exit) --force  (Do it anyway)" "remote" "--"
