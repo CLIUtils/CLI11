@@ -22,6 +22,11 @@ int main(int argc, char **argv) {
     std::string level;
     app.add_option("--level,-l", level, "How hard to try")->check(CLI::IsMember({"fast", "slow"}));
 
+    // A value may hold a colon, which bash breaks words on just as it does an `=`
+    std::string image;
+    app.add_option("--image", image, "Which image to use")
+        ->check(CLI::IsMember({"alpine:3.19", "alpine:3.20", "debian:12"}));
+
     // A path is left to the shell, which is the one that knows the directory the line is being typed in
     std::string config;
     app.add_option("--config", config, "Where the settings live")->check(CLI::ExistingFile);

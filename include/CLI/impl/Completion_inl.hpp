@@ -38,6 +38,12 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
         }
         out += '\n';
     }
+    // Ahead of the directive line, which stays last so a script can tell a complete reply from a truncated one
+    if(!reply.prefix.empty()) {
+        out += ":prefix=";
+        out += detail::escape_completion_field(reply.prefix);
+        out += '\n';
+    }
     out += ':';
     out += std::to_string(static_cast<int>(reply.directive));
     out += '\n';
@@ -204,10 +210,40 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 }
 
 @FUNCTION@() {
-    local response line comp desc tab=$'\t'
-    local directive="" longest=0
+    local response line comp desc ci ii tab=$'\t'
+    local directive="" prefix="" longest=0
 
-    response=$(@ENV@=bash @ENV@_INDEX="${COMP_CWORD}" @ENV@_PROTO=@PROTO@ "${COMP_WORDS[@]}" 2>/dev/null)
+    # Readline splits the line on COMP_WORDBREAKS -- whose default holds `=` and `:` -- before bash hands it over, so
+    # `--file=/et` arrives as the three words `--file`, `=`, `/et`. Rejoin them into the arguments the program would
+    # have received, and move the cursor index with them. Spaces around a break character are not recoverable, so
+    # `a : b` reads as `a:b`; an empty word is what bash sends for a cursor past a space, so it still starts a word.
+    local -a words=()
+    local cword=0 count=0 word glue="" is_break
+    for (( ii = 0; ii < ${#COMP_WORDS[@]}; ii++ )); do
+        word=${COMP_WORDS[ii]}
+        is_break=""
+        if [[ -n ${word} && -z ${word//[=:]/} ]]; then
+            is_break=1
+        fi
+        # Never into word 0: gluing onto the program name would invoke something that does not exist
+        if [[ -n ${word} && -n ${glue}${is_break} ]] && (( count > 1 )); then
+            words[count-1]+=${word}
+        else
+            words+=("${word}")
+            (( ++count ))
+        fi
+        if (( ii == COMP_CWORD )); then
+            cword=$(( count - 1 ))
+        fi
+        glue=${is_break}
+    done
+
+    # Readline puts back only the part of the word that follows the last break character in it, so a whole-token
+    # candidate has to be trimmed down to that much before it is handed over.
+    word=${words[cword]-}
+    local head=${word%"${word##*[=:]}"}
+
+    response=$(@ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ "${words[@]}" 2>/dev/null)
 
     COMPREPLY=()
     while IFS='' read -r line; do
@@ -217,6 +253,10 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             # The directive line is last, so anything after it is not a reply we understand
             COMPREPLY=()
             return 0
+        elif [[ ${line} == ":prefix="* ]]; then
+            # Tested first, since the directive line is any other line beginning with a colon
+            @FUNCTION@_unescape prefix "${line#:prefix=}"
+            continue
         elif [[ ${line} == :* ]]; then
             directive=${line:1}
             continue
@@ -227,6 +267,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             @FUNCTION@_unescape desc "${line#*"${tab}"}"
         fi
         @FUNCTION@_unescape comp "${line%%"${tab}"*}"
+        comp=${comp#"${head}"}
         if (( ${#comp} > longest )); then
             longest=${#comp}
         fi
@@ -272,7 +313,13 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     # -- bash-completion's convention, normally set by _init_completion. Bash scopes locals dynamically, so declaring
     # it here is what the call below sees; without it _filedir completes against an empty prefix and offers the whole
     # working directory.
-    local cur=${COMP_WORDS[COMP_CWORD]-}
+    #
+    # It gets the whole value, `a:b` rather than the `b` bash tore off the end of it, since the rejoined word is right
+    # here. Its answers are whole paths, so they are trimmed back to the last piece afterwards -- against the same
+    # boundary the binary's candidates were trimmed against, in value coordinates, since the shell never saw the
+    # `--file=` the binary stripped off before completing one.
+    local cur=${word#"${prefix}"}
+    local value_head=${head#"${prefix}"}
     if (( (directive & 16) != 0 )); then
         if declare -F _filedir > /dev/null; then
             _filedir -d
@@ -285,6 +332,11 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         else
             compopt -o default 2>/dev/null
         fi
+    fi
+    if [[ -n ${value_head} ]]; then
+        for ci in "${!COMPREPLY[@]}"; do
+            COMPREPLY[ci]=${COMPREPLY[ci]#"${value_head}"}
+        done
     fi
     return 0
 }

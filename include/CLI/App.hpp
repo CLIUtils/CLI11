@@ -685,6 +685,9 @@ class App {
 
     /// Get the completion candidates for the word at the cursor. The words are the arguments of the line being
     /// completed excluding the program name, so words and cursor are both 0-based over real arguments.
+    ///
+    /// One word per argument, as the program would have received them. Where a shell hands its completion functions
+    /// something else -- bash breaks `--file=x` into three words -- rejoining them is that shell script's job.
     CLI11_NODISCARD CompletionReply get_completions(const std::vector<std::string> &words, std::size_t cursor) const;
 
   private:

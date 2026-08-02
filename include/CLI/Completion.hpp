@@ -93,13 +93,22 @@ struct CompletionResult {
 /// Everything the binary has to say about one completion request.
 struct CompletionReply {
     std::vector<CompletionResult> results{};
+
+    /// The leading part of the word being completed that is not the value, `--file=` at `--file=/et`.
+    ///
+    /// Candidates are whole tokens, so every one of them begins with it, but a shell rarely replaces a whole token:
+    /// bash has already broken the word at the `=` and puts back only what follows it. Only the binary knows how much
+    /// of the word is the option name, so it says so here rather than leaving each script to guess.
+    std::string prefix{};
+
     CompletionDirective directive{CompletionDirective::Default};
 };
 
 /// Render a reply into the line-based text the generated shell scripts parse.
 ///
-/// One candidate per line as `value` or `value<TAB>description`, followed by a final line holding a `:` and the
-/// directive as an integer. Descriptions are cut at their first line break; both fields are escaped.
+/// One candidate per line as `value` or `value<TAB>description`, then a `:prefix=` line when there is a prefix, then a
+/// final line holding a `:` and the directive as an integer. Descriptions are cut at their first line break; every
+/// field is escaped.
 CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply);
 
 namespace detail {

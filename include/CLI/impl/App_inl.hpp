@@ -835,14 +835,25 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             current = sub;
     }
 
-    // Bash splits the line on COMP_WORDBREAKS, whose default contains '=', so `--file=val` reaches the binary as the
-    // three words `--file`, `=`, `val`. Rejoining them is the walk's job rather than the script's, because only the
-    // binary knows which of the pieces is an option name. The `--opt=value` form is not completable yet, so all the
-    // rejoin has to do here is keep a value from being read as the start of a subcommand name; the shell's own file
-    // completion is a better answer than a wrong one, so the directive stays at Default.
     const std::string &word = words[cursor];
-    if(word == "=" || (cursor > 0 && words[cursor - 1] == "="))
+
+    // `--opt=value` is one word holding both, so the option is named by the word itself rather than by the one before
+    // it. Candidates are whole tokens, `--file=fast` and not `fast`, since that is the text that has to end up on the
+    // line; the prefix tells the script how much of it is already typed.
+    const std::string::size_type assign = word.find('=');
+    std::string long_name;
+    std::string attached;
+    if(assign != std::string::npos && detail::split_long(word, long_name, attached)) {
+        const Option *assigned = current->_option_expecting_value("--" + long_name);
+        // An unknown option, or one that takes no value, has nothing to say about what follows its `=`
+        if(assigned != nullptr) {
+            reply.prefix = word.substr(0, assign + 1);
+            current->_add_value_completions(*assigned, attached, reply);
+            for(CompletionResult &result : reply.results)
+                result.value.insert(0, reply.prefix);
+        }
         return reply;
+    }
 
     // A real parse would hand the word after an option name to that option, so the candidates come from the option and
     // nothing this app offers belongs here.
