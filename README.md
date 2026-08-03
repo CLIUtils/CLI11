@@ -466,12 +466,15 @@ Before parsing, you can set the following options:
   unlimited number of arguments like a vector, if false it will limit the number
   of arguments to the size of the type used in the option. Default value depends
   on the nature of the type use, containers default to true, others default to
-  false.
+  false. Set it to false to stop a container option from taking the arguments
+  that follow it, for example to keep them available for a positional.
 - `->delimiter(char)`: Allows specification of a custom delimiter for separating
   single arguments into vector arguments, for example specifying
   `->delimiter(',')` on an option would result in `--opt=1,2,3` producing 3
   elements of a vector and the equivalent of --opt 1 2 3 assuming opt is a
-  vector value.
+  vector value. A delimiter does not restrict the option to one argument; add
+  `->allow_extra_args(false)` if only the delimited argument must be taken, so
+  `--opt 1,2,3 pos` gives `pos` to a positional instead of to `--opt`.
 - `->description(str)`: Set/change the description.
 - `->multi_option_policy(CLI::MultiOptionPolicy::Throw)`: Set the multi-option
   policy. Shortcuts available: `->take_last()`, `->take_first()`,`->take_all()`,
