@@ -3,6 +3,11 @@ codecov:
   notify:
     after_n_builds: 8
 
+# Only comment when the coverage numbers actually move
+comment:
+  after_n_builds: 8
+  require_changes: true
+
 ignore:
   - "tests"
   - "examples"
