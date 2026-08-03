@@ -687,7 +687,7 @@ class App {
     /// completed excluding the program name, so words and cursor are both 0-based over real arguments.
     ///
     /// One word per argument, as the program would have received them. Where a shell hands its completion functions
-    /// something else -- bash breaks `--file=x` into three words -- rejoining them is that shell script's job.
+    /// something else, as bash does by breaking `--file=x` into three words, rejoining them is that script's job.
     CLI11_NODISCARD CompletionReply get_completions(const std::vector<std::string> &words, std::size_t cursor) const;
 
   private:
@@ -1359,6 +1359,10 @@ class App {
     /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
     /// anything at all
     void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
+
+    /// The positional that would receive the value at this index among the positional values of this app, counting
+    /// each positional's own capacity. Null once the positionals are all full.
+    CLI11_NODISCARD const Option *_positional_at(std::size_t index) const;
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args);

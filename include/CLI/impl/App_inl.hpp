@@ -828,14 +828,18 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     // come from wherever the walk ends up. Matching is _find_subcommand's job, the same one the parser uses.
     const App *current = this;
     bool positional_only = false;
+    // Descending resets this: each app fills its own positionals from the words that reach it
+    std::size_t positional_index = 0;
     for(std::size_t ii = 0; ii < cursor; ++ii) {
         if(words[ii].empty())
             continue;
-        if(positional_only)
+        if(positional_only) {
+            ++positional_index;
             continue;
+        }
         if(words[ii] == "--") {
-            // The marker ends the options, and a positional is the one thing that cannot also name a subcommand, so
-            // the walk stops moving as well as stops offering names.
+            // Every word past the marker is a positional value, and a value that happens to spell a subcommand name
+            // is still a value, so the marker stops the walk moving, not just the names being offered.
             positional_only = true;
             continue;
         }
@@ -843,19 +847,38 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         // _parse_single does with it by returning false. It is only a terminator where _recognize would say so.
         if(words[ii] == "++" && current->parent_ != nullptr && !current->get_name().empty()) {
             current = current->parent_;
+            positional_index = 0;
+            continue;
+        }
+        if(words[ii].size() > 1 && words[ii].front() == '-') {
+            // An option word is no positional value, and nor are the words it takes. Skipping the minimum is exact
+            // except for a greedy option, whose tail is then miscounted as turns the positionals never took.
+            const Option *opt = current->_option_expecting_value(words[ii]);
+            if(opt != nullptr && opt->get_items_expected_min() > 0)
+                ii += static_cast<std::size_t>(opt->get_items_expected_min());
             continue;
         }
         const App *sub = current->_find_subcommand(words[ii], true, false);
-        if(sub != nullptr)
+        if(sub != nullptr) {
             current = sub;
+            positional_index = 0;
+            continue;
+        }
+        ++positional_index;
     }
 
-    // Past the marker every word is a value for a positional. Those arrive in a later commit; until then an empty reply
-    // with no NoFileComp leaves the word to the shell, which is what a path-shaped positional wants anyway.
-    if(positional_only)
-        return reply;
-
     const std::string &word = words[cursor];
+
+    if(positional_only) {
+        const Option *positional = current->_positional_at(positional_index);
+        if(positional == nullptr) {
+            // A word past the last positional is a parse error, so don't provide any completions
+            reply.directive = CompletionDirective::NoFileComp;
+            return reply;
+        }
+        current->_add_value_completions(*positional, word, reply);
+        return reply;
+    }
 
     // `--opt=value` is one word holding both, so the option is named by the word itself rather than by the one before
     // it. Candidates are whole tokens, `--file=fast` and not `fast`, since that is the text that has to end up on the
@@ -880,10 +903,9 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
 
-    // A word that has begun with a dash can only become an option name, and anything else can only become a
-    // subcommand, so the two sources of candidates never both apply.
+    // A word that has begun with a dash can only become an option name, so no other source applies to it
     if(!word.empty() && word.front() == '-') {
-        // A word holding a short name and then more text -- `-lfast`, `-vl` -- has to be taken apart before any of it
+        // A word holding a short name and then more text, `-lfast` or `-vl`, has to be taken apart before any of it
         // can be completed. One that is nothing but a name does not.
         std::string short_name;
         std::string short_rest;
@@ -892,10 +914,24 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             return reply;
         }
         current->_add_option_completions(word, reply);
-    } else {
-        current->_add_subcommand_completions(word, reply);
+        reply.directive = CompletionDirective::NoFileComp;
+        return reply;
     }
-    reply.directive = CompletionDirective::NoFileComp;
+
+    // Nothing in a bare word says whether it is becoming a subcommand name or a positional value, so both answer.
+    // The positional goes last, so the names keep their place and its directive wins; only it can want a path.
+    current->_add_subcommand_completions(word, reply);
+    const std::size_t named = reply.results.size();
+    const Option *positional = current->_positional_at(positional_index);
+    if(positional == nullptr) {
+        reply.directive = CompletionDirective::NoFileComp;
+        return reply;
+    }
+    current->_add_value_completions(*positional, word, reply);
+    // A positional either lists its values, which are few enough to read beside a name, or asks for a path, which is a
+    // whole directory in one menu with the names lost in it. So a named word keeps the shell out until none matches.
+    if(named != 0 && reply.results.size() == named)
+        reply.directive = CompletionDirective::NoFileComp;
     return reply;
 }
 
@@ -961,7 +997,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
         return nullptr;
 
     // A flag consumes no words, so what follows it is a token of its own rather than its value. type_size_max would not
-    // say so -- it is 1 for a flag as well -- because a flag is expected(0) rather than type_size(0).
+    // say so, being 1 for a flag as well, because a flag is expected(0) rather than type_size(0).
     if(opt->get_items_expected_max() == 0)
         return nullptr;
 
@@ -1032,7 +1068,7 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
         case CompletionHint::Path:
         case CompletionHint::None:
         default:
-            // Either kind of path will do, which is what the shell offers unprompted -- and is also the best guess
+            // Either kind of path will do, which is what the shell offers unprompted, and is also the best guess
             // left when nothing at all is known about the value.
             break;
         }
@@ -1045,6 +1081,20 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
     }
     // A declared set has a declared order, which is information the shell would throw away by sorting
     reply.directive = CompletionDirective::NoFileComp | CompletionDirective::KeepOrder;
+}
+
+CLI11_NODISCARD CLI11_INLINE const Option *App::_positional_at(std::size_t index) const {
+    for(const Option_p &opt : options_) {
+        if(opt->nonpositional())
+            continue;
+        const int capacity = opt->get_items_expected_max();
+        if(capacity <= 0)
+            continue;
+        if(index < static_cast<std::size_t>(capacity))
+            return opt.get();
+        index -= static_cast<std::size_t>(capacity);
+    }
+    return nullptr;
 }
 
 CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args) const {
@@ -1064,7 +1114,7 @@ CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args)
     detail::unset_environment_value(proto_var);
 
     int proto = 0;
-    // A missing version is as unusable as a wrong one -- every script this binary can generate exports it, so its
+    // A missing version is as unusable as a wrong one. Every script this binary can generate exports it, so its
     // absence means the request came from something that does not speak the format either.
     if(!detail::lexical_cast(proto_string, proto) || proto != CLI11_COMPLETE_PROTO_VERSION) {
         CompletionReply unusable;
