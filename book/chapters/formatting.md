@@ -82,6 +82,11 @@ be turned off in the help output through `enable_option_defaults(false)`. The
 `enable_option_type_names(false)`. and the `{false}` or flag default values can
 be turned off using `enable_default_flag_values(false)`.
 
+An option with a delimiter shows it on the type name, so `--opt TEXT,...` takes
+values such as `a,b,c`. A trailing `...` is separate, it means the option also
+takes values separated by spaces. The delimiter is part of the type name, so
+`enable_option_type_names(false)` hides it as well.
+
 ## Subclassing
 
 You can further configure pieces of the code while still keeping most of the
