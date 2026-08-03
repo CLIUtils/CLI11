@@ -47,15 +47,18 @@ expect_at() { # expect_at <characters left after the cursor> <comp_cword> <expec
     run 1 "$@"
 }
 
-# Stand in for the real _filedir, which the bash-completion package supplies to interactive shells only. This
-# stub records both of the things the script has to get right: the flag it passes, and `cur`, which the real
-# one reads out of its caller's scope to know what to filter on.
-_filedir() { COMPREPLY=("_filedir[$*|${cur-}]"); }
+# Stand in for the real _filedir, which the bash-completion package supplies to interactive shells only.
+# This stub records both of the things the script has to get right: the flag it passes, and `cur`, which the real one
+# reads out of its caller's scope to know what to filter on. It appends, as the real one does, since a positional sends
+# its subcommand names along with the path hint.
+_filedir() { COMPREPLY+=("_filedir[$*|${cur-}]"); }
 
+# A bare word can become a subcommand name or a value for the `files` positional. While a name matches it answers
+# alone, since a whole directory listing in the same menu would bury it; once none does, the word is the shell's.
 expect 1 "start stop remote" ""
 expect 1 "start stop" "st"
 expect 1 "start" "sta"
-expect 1 "" "zzz"
+expect 1 "_filedir[|zzz]" "zzz"
 # The cursor is on the program name itself
 expect 0 "" ""
 
@@ -105,7 +108,7 @@ expect 1 "-vl" "-vl"
 # and the value may be the next word instead, in which case it belongs to the last name in the bundle
 expect 2 "fast slow" "-vl" ""
 
-# With the cursor in the middle of a word, only what is in front of it is being completed -- the rest is text readline
+# With the cursor in the middle of a word, only what is in front of it is being completed; the rest is text readline
 # will leave on the line, and answering for it would have the answer inserted in front of what is already there
 expect_at 1 1 "-v" "-vi"
 expect_at 4 1 "--verbose" "--verbose"
@@ -122,13 +125,12 @@ expect 4 "3.19 3.20" "--image" "=" "alpine" ":"
 # and a value written onto a short name is trimmed against the same boundary
 expect 2 "3.19 3.20" "-ialpine" ":"
 
-# Past the end-of-options marker every word is a positional, so neither an option name nor a subcommand name is a
-# candidate. Nothing reaches _filedir either: the binary sends no path hint, and the `-o default` on the complete line
-# is what hands the word to the shell -- which this harness cannot see, only an interactive readline can.
-expect 2 "" "--" "--v"
-expect 2 "" "--" "st"
+# Past the end-of-options marker every word is a value for the positional, so neither an option name nor a subcommand
+# name is a candidate, but the positional's own hint still is, dash-shaped word or not.
+expect 2 "_filedir[|--v]" "--" "--v"
+expect 2 "_filedir[|st]" "--" "st"
 # and the marker holds for the rest of the line, through a word that would otherwise move the walk
-expect 3 "" "--" "start" "--f"
+expect 3 "_filedir[|--f]" "--" "start" "--f"
 
 # `++` closes the subcommand it appears in, so the candidates come from the parent again
 expect 2 "" "remote" "--v"

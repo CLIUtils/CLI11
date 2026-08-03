@@ -54,7 +54,7 @@ TEST_CASE("Completion: un-reverses the argument vector", "[completion]") {
     app.add_subcommand("stop", "");
 
     // Both words name something completable, so getting the direction wrong still produces a
-    // plausible-looking reply -- the wrong one.
+    // plausible-looking reply, the wrong one.
     CHECK(complete(app, {"sta", "stop"}, "1") == "start\n:2\n");
     CHECK(complete(app, {"sta", "stop"}, "2") == "stop\n:2\n");
 }
@@ -289,7 +289,7 @@ TEST_CASE("Completion: combining validators combines what they accept", "[comple
     CHECK(app.add_option("--and", level)
               ->check(CLI::IsMember({"fast", "slow"}) & CLI::IsMember({"slow", "other"}))
               ->get_completion_choices() == std::vector<std::string>{"slow"});
-    // and either side of an `|` is enough, so both sets are worth offering -- but a value both accept is one value
+    // and either side of an `|` is enough, so both sets are worth offering, but a value both accept is one value
     CHECK(app.add_option("--or", level)
               ->check(CLI::IsMember({"fast"}) | CLI::IsMember({"slow"}))
               ->get_completion_choices() == std::vector<std::string>{"fast", "slow"});
@@ -343,7 +343,7 @@ TEST_CASE("Completion: a validator that enumerates nothing does not erase the on
     const CLI::Validator plain = CLI::Validator([](std::string &) { return std::string{}; }, "anything");
 
     // The unenumerated side still constrains the value, but applying that constraint would mean running it, and
-    // completion does not run user code -- so `ExistingFile & size_check` keeps whichever side has something to say
+    // completion does not run user code, so `ExistingFile & size_check` keeps whichever side has something to say
     CHECK(app.add_option("--and", level)->check(CLI::IsMember({"fast"}) & plain)->get_completion_choices() ==
           std::vector<std::string>{"fast"});
     CHECK(app.add_option("--and-rev", level)->check(plain & CLI::IsMember({"fast"}))->get_completion_choices() ==
@@ -437,7 +437,7 @@ TEST_CASE("Completion: a value written onto a short name completes to a whole to
 
     // A short name takes its value with no separator at all, so the option and the value share one word
     CHECK(complete(app, {"-ls"}, "1") == "-lslow\n:prefix=-l\n:6\n");
-    // An `=` is no separator for a short name -- a parse would take it as the first character of the value -- so it
+    // An `=` is no separator for a short name, a parse taking it as the first character of the value, so it
     // matches no value here either
     CHECK(complete(app, {"-l="}, "1") == ":prefix=-l\n:6\n");
     // The flags in front of it are part of the word the shell will replace, so they are part of every candidate
@@ -477,7 +477,7 @@ TEST_CASE("Completion: a finished bundle of flags is offered back unchanged", "[
     app.add_flag("--quiet,-q", "");
     app.add_option("input", "");
 
-    // Every name in it is one this app has, so the word stands as typed -- which is how the shell is told to move on
+    // Every name in it is one this app has, so the word stands as typed, which is how the shell is told to move on
     CHECK(complete(app, {"-vq"}, "1") == "-vq\n:2\n");
     // A short name is one character long, so trailing text no name matches can only be a mistake. A filename is not a
     // candidate for the middle of an option word either.
@@ -506,7 +506,7 @@ TEST_CASE("Completion: a path written after = is still the shell's to complete",
     // No candidates, but still a prefix: the shell comes back from `/et` with `/etc/`, and only the binary could have
     // said that `--config=` goes in front of it
     CHECK(complete(app, {"--config=/et"}, "1") == ":prefix=--config=\n:8\n");
-    // A value holding a colon is a value, not a name to look up -- bash tears one apart the same way it does an `=`
+    // A value holding a colon is a value, not a name to look up; bash tears one apart the same way it does an `=`
     CHECK(complete(app, {"--config", "a:b"}, "2") == ":8\n");
 }
 
@@ -531,15 +531,140 @@ TEST_CASE("Completion: nothing is offered after the end-of-options marker", "[co
     // Before the marker both sources still apply
     CHECK(complete(app, {"--"}, "1") == "--verbose\n:2\n");
     CHECK(complete(app, {"sta"}, "1") == "start\n:2\n");
-    // After it every word is a positional, so neither an option name nor a subcommand name can be one. The directive
-    // is the default rather than NoFileComp: a positional is the shape most likely to be a path.
-    CHECK(complete(app, {"--", "--verb"}, "2") == ":0\n");
-    CHECK(complete(app, {"--", "sta"}, "2") == ":0\n");
+    // After it every word is a positional, so neither an option name nor a subcommand name can be one. This app
+    // declares no positional either, so a word there would be a parse error and even a filename is a wrong answer.
+    CHECK(complete(app, {"--", "--verb"}, "2") == ":2\n");
+    CHECK(complete(app, {"--", "sta"}, "2") == ":2\n");
     // The marker holds for the rest of the line, not just for the word after it
-    CHECK(complete(app, {"--", "one", "sta"}, "3") == ":0\n");
+    CHECK(complete(app, {"--", "one", "sta"}, "3") == ":2\n");
     // And a word that would otherwise move the walk does not, so the marker cannot be escaped through a subcommand
-    CHECK(complete(app, {"--", "start", ""}, "3") == ":0\n");
+    CHECK(complete(app, {"--", "start", ""}, "3") == ":2\n");
 }
+
+TEST_CASE("Completion: a positional nothing is known about is left to the shell", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string anything;
+    app.add_option("input", anything);
+
+    // Nothing constrains the value, so a path is the best guess left, which the shell offers unprompted and is
+    // reached by saying nothing rather than by ringing the bell with NoFileComp
+    CHECK(complete(app, {""}, "1") == ":0\n");
+    // Once the positionals are full there is nothing a word could become, and a filename could not be right either
+    CHECK(complete(app, {"x", ""}, "2") == ":2\n");
+}
+
+TEST_CASE("Completion: a path-shaped positional waits until no name matches", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string path;
+    app.add_option("file", path)->check(CLI::ExistingFile);
+    app.add_subcommand("start", "");
+
+    // A whole directory in the same menu as a name buries it, so the name answers while one still matches
+    CHECK(complete(app, {""}, "1") == "start\n:2\n");
+    CHECK(complete(app, {"s"}, "1") == "start\n:2\n");
+    // and the word is the shell's as soon as none does
+    CHECK(complete(app, {"R"}, "1") == ":8\n");
+}
+
+TEST_CASE("Completion: a positional that takes many values keeps its turn", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::vector<std::string> files;
+    app.add_option("files", files)->check(CLI::ExistingFile);
+
+    // A vector positional never fills up, so every word of the line is still one of its values
+    CHECK(complete(app, {""}, "1") == ":8\n");
+    CHECK(complete(app, {"a", "b", ""}, "3") == ":8\n");
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("Completion: a positional offers its values beside the subcommand names", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string mode;
+    app.add_option("mode", mode)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_subcommand("start", "");
+
+    // A word with no dash on it can become either, and there is nothing in the word to say which, so both sources
+    // apply. The names are produced first, which is the order a script that keeps it will show.
+    CHECK(complete(app, {""}, "1") == "start\nfast\nslow\n:6\n");
+    CHECK(complete(app, {"f"}, "1") == "fast\n:6\n");
+    CHECK(complete(app, {"s"}, "1") == "start\nslow\n:6\n");
+}
+
+TEST_CASE("Completion: each positional takes its turn", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"one"}));
+    app.add_option("second", second)->check(CLI::IsMember({"two"}));
+
+    CHECK(complete(app, {""}, "1") == "one\n:6\n");
+    CHECK(complete(app, {"one", ""}, "2") == "two\n:6\n");
+    // A word that no value of the positional matches still took its turn: the walk classifies, it does not validate
+    CHECK(complete(app, {"zzz", ""}, "2") == "two\n:6\n");
+    CHECK(complete(app, {"one", "two", ""}, "3") == ":2\n");
+}
+
+TEST_CASE("Completion: an option and its value do not take a positional's turn", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    std::string first;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast"}));
+    app.add_flag("--verbose,-v", "");
+    app.add_option("first", first)->check(CLI::IsMember({"one"}));
+
+    // The word after the option name is its value, so the positional is still waiting for its first
+    CHECK(complete(app, {"--level", "fast", ""}, "3") == "one\n:6\n");
+    // and so are the shapes that carry the value inside the option's own word
+    CHECK(complete(app, {"--level=fast", ""}, "2") == "one\n:6\n");
+    CHECK(complete(app, {"-lfast", ""}, "2") == "one\n:6\n");
+    // A flag takes no word at all, and neither does a name this app does not have
+    CHECK(complete(app, {"--verbose", ""}, "2") == "one\n:6\n");
+    CHECK(complete(app, {"--nope", ""}, "2") == "one\n:6\n");
+}
+
+TEST_CASE("Completion: a subcommand fills its own positionals", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string outer;
+    std::string inner;
+    app.add_option("outer", outer)->check(CLI::IsMember({"one"}));
+    CLI::App *sub = app.add_subcommand("start", "");
+    sub->add_option("inner", inner)->check(CLI::IsMember({"two"}));
+
+    // Descending starts the count again, since each app fills its positionals from the words that reach it
+    CHECK(complete(app, {"start", ""}, "2") == "two\n:6\n");
+    // and the name that moved the walk is not one of the parent's positional values either
+    CHECK(complete(app, {"one", "start", ""}, "3") == "two\n:6\n");
+}
+
+TEST_CASE("Completion: the positional after the end-of-options marker is still offered", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"one"}));
+    app.add_option("second", second)->check(CLI::IsMember({"two"}));
+    app.add_subcommand("start", "");
+
+    // The marker rules out the other two sources, not the positional; a positional value is the only thing left a
+    // word after it can be
+    CHECK(complete(app, {"--", ""}, "2") == "one\n:6\n");
+    // Every word past the marker takes a turn, including one that would otherwise have moved the walk
+    CHECK(complete(app, {"--", "one", ""}, "3") == "two\n:6\n");
+    CHECK(complete(app, {"--", "start", ""}, "3") == "two\n:6\n");
+    // and once they are full, nothing valid can go there, not even a path
+    CHECK(complete(app, {"--", "one", "two", ""}, "4") == ":2\n");
+}
+
+#endif
 
 TEST_CASE("Completion: the subcommand terminator hands the walk back to the parent", "[completion]") {
     CLI::App app{"program"};
@@ -562,7 +687,7 @@ TEST_CASE("Completion: the subcommand terminator hands the walk back to the pare
     // _recognize only reads it as a terminator inside a subcommand, and so does the walk
     CHECK(complete(app, {"++", "--"}, "2") == "--outer\n:2\n");
     // The marker outranks it: after `--` there are no more terminators either
-    CHECK(complete(app, {"start", "--", "++", "--outer"}, "4") == ":0\n");
+    CHECK(complete(app, {"start", "--", "++", "--outer"}, "4") == ":2\n");
 }
 
 TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[completion]") {

@@ -24,7 +24,7 @@ namespace CLI {
 /// The version of the reply format that this build speaks.
 ///
 /// A generated script exports it and the binary checks it, so a script that outlives the binary it was generated
-/// against -- one a distribution packaged as a static file -- offers nothing rather than offering nonsense.
+/// against, such as one a distribution packaged as a static file, offers nothing rather than offering nonsense.
 CLI11_MODULE_INLINE constexpr int CLI11_COMPLETE_PROTO_VERSION = 1;
 
 /// Instructions passed alongside the candidates telling the shell what else it may do.
@@ -115,7 +115,7 @@ namespace detail {
 
 /// Combine what two Validators say about their values into what satisfies both of them
 ///
-/// The intersection when both enumerate their values, and whichever one does when only one of them does -- a Validator
+/// The intersection when both enumerate their values, and whichever one does when only one of them does. A Validator
 /// that does not enumerate its values still constrains them, but the only way to apply that constraint would be to run
 /// it, and completion does not run user code. Two hints cannot be intersected at all, so the left one wins.
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
@@ -131,7 +131,7 @@ CLI11_INLINE std::shared_ptr<const CompletionMeta>
 unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                       const std::shared_ptr<const CompletionMeta> &rhs);
 
-/// Turn what the shell scripts would otherwise read as structure -- `\` `\t` `\n` `\r`, and a leading `:` -- into the
+/// Turn what the shell scripts would otherwise read as structure (`\` `\t` `\n` `\r`, and a leading `:`) into the
 /// backslash sequences the generated scripts turn back
 CLI11_INLINE std::string escape_completion_field(const std::string &field);
 

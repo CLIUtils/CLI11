@@ -29,7 +29,7 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
     for(const CompletionResult &result : reply.results) {
         out += detail::escape_completion_field(result.value);
 
-        // A description is one line by definition -- the shell has one line to show it on -- so anything the user put
+        // A description is one line by definition, the shell having one line to show it on, so anything the user put
         // after the first break is cut rather than escaped into a candidate the listing cannot render.
         const std::string description = result.description.substr(0, result.description.find_first_of("\r\n"));
         if(!description.empty()) {
@@ -61,7 +61,7 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
         return lhs;
 
     auto meta = std::make_shared<CompletionMeta>();
-    // There is no intersecting "a file" with "a directory", so the left one wins -- `ExistingFile & size_check`
+    // There is no intersecting "a file" with "a directory", so the left one wins. `ExistingFile & size_check`
     // should still complete files, and that is the way round the combination is usually written
     meta->hint = (lhs->hint != CompletionHint::None) ? lhs->hint : rhs->hint;
     if(!lhs->choices || !rhs->choices) {
@@ -226,7 +226,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         raw[COMP_CWORD]=${raw[COMP_CWORD]%"${after}"}
     fi
 
-    # Readline splits the line on COMP_WORDBREAKS -- whose default holds `=` and `:` -- before bash hands it over, so
+    # Readline splits the line on COMP_WORDBREAKS, whose default holds `=` and `:`, before bash hands it over, so
     # `--file=/et` arrives as the three words `--file`, `=`, `/et`. Rejoin them into the arguments the program would
     # have received, and move the cursor index with them. Spaces around a break character are not recoverable, so
     # `a : b` reads as `a:b`; an empty word is what bash sends for a cursor past a space, so it still starts a word.
@@ -297,12 +297,46 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         return 0
     fi
 
-    # The binary could not answer the request -- most likely this script was generated against another version of it
+    # The binary could not answer the request, most likely because this script was generated against another version
     if (( (directive & 1) != 0 )); then
         COMPREPLY=()
         return 0
     fi
 
+    # A path is the shell's to complete. _filedir comes from the bash-completion package; without it the `-o default`
+    # on the complete line leaves readline to it. It reads the word from a caller's local named `cur` rather than from
+    # an argument, which dynamic scoping is what makes work.
+    #
+    # Its answers are whole values, while readline replaces the word from its last break character on, so the two
+    # boundaries have to be lined up, and either can be the later one. `--file=a:b` has the head of the value on the
+    # line already, so it comes back off the candidates; `-fa` has no break at all, so the `-f` goes on.
+    local cur=${word#"${prefix}"} value_head="" value_lead=""
+    if (( ${#head} >= ${#prefix} )); then
+        value_head=${head#"${prefix}"}
+    else
+        value_lead=${prefix#"${head}"}
+    fi
+    if (( (directive & 24) != 0 )); then
+        # Only what _filedir appends is in value coordinates. A positional sends its subcommand names along with the
+        # path hint, and those are whole tokens already, so the fixup starts where the candidates from the binary end.
+        local from=${#COMPREPLY[@]}
+        if (( (directive & 16) != 0 )); then
+            if declare -F _filedir > /dev/null; then
+                _filedir -d
+            else
+                compopt +o default -o dirnames 2>/dev/null
+            fi
+        elif declare -F _filedir > /dev/null; then
+            _filedir
+        else
+            compopt -o default 2>/dev/null
+        fi
+        for (( ci = from; ci < ${#COMPREPLY[@]}; ci++ )); do
+            COMPREPLY[ci]=${value_lead}${COMPREPLY[ci]#"${value_head}"}
+        done
+    fi
+
+    # After the paths, so that a name sharing the reply with them is still listed rather than inserted
     if (( ${#COMPREPLY[@]} == 1 )); then
         # A lone candidate is inserted rather than listed, so its description would land on the command line
         COMPREPLY[0]=${COMPREPLY[0]%%"${tab}"*}
@@ -316,38 +350,6 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     if (( (directive & 4) != 0 )); then
         # The candidates came back in a meaningful order, which bash would otherwise sort away
         compopt -o nosort 2>/dev/null
-    fi
-
-    # A path is the shell's to complete, and it arrives with no candidates to get in the way. _filedir comes from the
-    # bash-completion package; without it the `-o default` on the complete line leaves readline to it. It reads the
-    # word from a caller's local named `cur` rather than from an argument, which dynamic scoping is what makes work.
-    #
-    # Its answers are whole values, while readline replaces the word from its last break character on, so the two
-    # boundaries have to be lined up -- and either can be the later one. `--file=a:b` has the head of the value on the
-    # line already, so it comes back off the candidates; `-fa` has no break at all, so the `-f` goes on.
-    local cur=${word#"${prefix}"} value_head="" value_lead=""
-    if (( ${#head} >= ${#prefix} )); then
-        value_head=${head#"${prefix}"}
-    else
-        value_lead=${prefix#"${head}"}
-    fi
-    if (( (directive & 24) != 0 )); then
-        if (( (directive & 16) != 0 )); then
-            if declare -F _filedir > /dev/null; then
-                _filedir -d
-            else
-                compopt +o default -o dirnames 2>/dev/null
-            fi
-        elif declare -F _filedir > /dev/null; then
-            _filedir
-        else
-            compopt -o default 2>/dev/null
-        fi
-        # Only what _filedir just added is in value coordinates: the binary sends no candidates of its own when it
-        # hands a path over, so there is nothing else in here to disturb.
-        for ci in "${!COMPREPLY[@]}"; do
-            COMPREPLY[ci]=${value_lead}${COMPREPLY[ci]#"${value_head}"}
-        done
     fi
     return 0
 }
