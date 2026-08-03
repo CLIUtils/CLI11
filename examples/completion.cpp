@@ -35,9 +35,10 @@ int main(int argc, char **argv) {
     std::string workdir;
     app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
 
-    // Somewhere for `completion -- --verbose` to land: past the marker even a dash-shaped word is a positional
+    // Somewhere for `completion -- --verbose` to land: past the marker even a dash-shaped word is a positional. The
+    // hint is declared rather than validated, so completion offers files while the program still takes any word.
     std::vector<std::string> files;
-    app.add_option("files", files, "What to work on");
+    app.add_option("files", files, "What to work on")->completion_hint(CLI::CompletionHint::File);
 
     app.add_subcommand("start", "Get going");
     app.add_subcommand("stop", "Do you really want to stop?");

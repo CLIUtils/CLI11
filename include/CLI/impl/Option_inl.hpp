@@ -207,10 +207,10 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_cho
     if(completion_hint_ != CompletionHint::None)
         return {};
 
-    // The keys of the transform() that runs first -- transform() inserts at the front, so that is the front of the list
-    // -- because a later transform only ever sees what an earlier one produced.
+    // The keys of the transform() that runs first, which is the front of the list because transform() inserts there,
+    // since a later transform only ever sees what an earlier one produced.
     std::shared_ptr<const CompletionMeta> rewrite;
-    // Separate check() calls constrain one value exactly as `A & B` does -- every one of them has to pass -- so they
+    // Separate check() calls constrain one value exactly as `A & B` does, every one of them having to pass, so they
     // combine the same way, and one that enumerates nothing leaves the others' lists alone.
     std::shared_ptr<const CompletionMeta> checks;
 
@@ -228,7 +228,7 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_cho
 
     // A transform key is acceptable only if what it turns into gets past the checks, and nothing here can know that
     // without running the transform. So the checks answer whenever they enumerate anything, and the keys answer only
-    // when no check does -- which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
+    // when no check does, which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
     for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
         if(meta && meta->choices) {
             std::vector<std::string> choices = meta->choices();
@@ -245,7 +245,7 @@ CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint() const 
 
     // Ordered the way the values are: what a check says outranks what a transform in front of it says, because a
     // transform's output still has to get past the checks. The first hint of each kind wins, since there is no
-    // combining "a file" with "a directory" -- the same rule intersect_completion_meta applies to an `&`.
+    // combining "a file" with "a directory", the same rule intersect_completion_meta applies to an `&`.
     CompletionHint rewrite = CompletionHint::None;
     for(const Validator_p &validator : validators_) {
         if(!validator->get_active())

@@ -216,7 +216,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 #endif
 
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
-    // Which files exist is the shell's to know -- it is the one that knows the directory the user is typing in -- so
+    // Which files exist is the shell's to know, being the one that knows the directory the user is typing in, so
     // completion says what kind of value this is and leaves the candidates to it
     auto meta = std::make_shared<CompletionMeta>();
     meta->hint = CompletionHint::File;
