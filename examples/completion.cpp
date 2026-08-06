@@ -35,6 +35,10 @@ int main(int argc, char **argv) {
     std::string workdir;
     app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
 
+    // An option that takes as many words as it is given keeps offering its values, one word after another
+    std::vector<std::string> tags;
+    app.add_option("--tag", tags, "What to label it")->check(CLI::IsMember({"alpha", "beta"}));
+
     // Somewhere for `completion -- --verbose` to land: past the marker even a dash-shaped word is a positional. The
     // hint is declared rather than validated, so completion offers files while the program still takes any word.
     std::vector<std::string> files;
@@ -53,6 +57,9 @@ int main(int argc, char **argv) {
     app.require_subcommand(0, 1);
 
     CLI11_PARSE(app, argc, argv);
+
+    for(const std::string &tag : tags)
+        std::cout << "Tag: " << tag << '\n';
 
     for(const std::string &file : files)
         std::cout << "File: " << file << '\n';
