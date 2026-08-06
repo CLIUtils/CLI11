@@ -167,6 +167,48 @@ TEST_CASE("Completion: positionals are not offered as option names", "[completio
     CHECK(complete(app, {"-"}, "1") == "--verbose\n:2\n");
 }
 
+TEST_CASE("Completion: an option name is matched the way a parse would match it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("--my_opt", "")->ignore_underscore();
+    app.add_option("--other,-o", "")->ignore_case();
+
+    // The setting normalises the typed word as well as the name, so either spelling reaches the option
+    CHECK(complete(app, {"--my_o"}, "1") == "--my_opt\n:2\n");
+    CHECK(complete(app, {"--myo"}, "1") == "--my_opt\n:2\n");
+    CHECK(complete(app, {"--OT"}, "1") == "--other\n:2\n");
+    CHECK(complete(app, {"-O"}, "1") == "-o\n:2\n");
+
+    // Each setting is on for one option only, so the word that needs the other one reaches neither
+    CHECK(complete(app, {"--MY"}, "1") == ":2\n");
+    CHECK(complete(app, {"--oth_"}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: a subcommand name is matched the way a parse would match it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_subcommand("My_Sub", "")->ignore_case()->ignore_underscore()->alias("Other_Name");
+    app.add_subcommand("plain", "");
+
+    // The candidate is the declared spelling either way: it is the whole token the shell has to insert
+    CHECK(complete(app, {"my"}, "1") == "My_Sub\n:2\n");
+    CHECK(complete(app, {"othername"}, "1") == "Other_Name\n:2\n");
+    CHECK(complete(app, {"PLA"}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: a partial word completes whether or not a parse would accept the abbreviation", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_subcommand("start", "");
+
+    // allow_subcommand_prefix_matching decides whether `sta` can be run; completing it to `start` is what makes
+    // that question moot, so completion does not consult the setting
+    CHECK_FALSE(app.get_allow_subcommand_prefix_matching());
+    CHECK(complete(app, {"sta"}, "1") == "start\n:2\n");
+    app.allow_subcommand_prefix_matching();
+    CHECK(complete(app, {"sta"}, "1") == "start\n:2\n");
+}
+
 TEST_CASE("Completion: the word after a flag is a fresh token", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");

@@ -205,6 +205,20 @@ find_member(std::string name, const std::vector<std::string> &names, bool ignore
     return (it != std::end(names)) ? (it - std::begin(names)) : (-1);
 }
 
+CLI11_INLINE bool has_prefix(std::string name, std::string prefix, bool ignore_case, bool ignore_underscore) {
+    // Same normalisation, and the same order of operations, as find_member and App::check_name_detail; the three must
+    // agree on a name or an exact match and a prefix match answer differently for it
+    if(ignore_underscore) {
+        name = detail::remove_underscore(name);
+        prefix = detail::remove_underscore(prefix);
+    }
+    if(ignore_case) {
+        name = detail::to_lower(name);
+        prefix = detail::to_lower(prefix);
+    }
+    return name.size() >= prefix.size() && name.compare(0, prefix.size(), prefix) == 0;
+}
+
 CLI11_MODULE_INLINE const std::string &escapedChars() {
     static const std::string s{"\b\t\n\f\r\"\\"};
     return s;
