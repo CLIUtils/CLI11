@@ -28,12 +28,15 @@ int main(int argc, char **argv) {
     app.add_option("--image,-i", image, "Which image to use")
         ->check(CLI::IsMember({"alpine:3.19", "alpine:3.20", "debian:12"}));
 
+    // A group has no name to type, so the command line takes these two for the app's own and completion has to as well
+    auto *paths = app.add_option_group("Paths", "Where to find things");
+
     // A path is left to the shell, which is the one that knows the directory the line is being typed in
     std::string config;
-    app.add_option("--config,-c", config, "Where the settings live")->check(CLI::ExistingFile);
+    paths->add_option("--config,-c", config, "Where the settings live")->check(CLI::ExistingFile);
 
     std::string workdir;
-    app.add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
+    paths->add_option("--workdir", workdir, "Where to run")->check(CLI::ExistingDirectory);
 
     // An option that takes as many words as it is given keeps offering its values, one word after another
     std::vector<std::string> tags;
