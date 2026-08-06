@@ -523,6 +523,93 @@ TEST_CASE("Completion: an = after something that takes no value offers nothing",
     CHECK(complete(app, {"--nope=val"}, "1") == ":0\n");
 }
 
+TEST_CASE("Completion: a Windows-style name is offered once the word starts with a slash", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    app.add_option("--level,-l", "");
+    app.add_subcommand("levy", "");
+
+    CHECK(complete(app, {"/le"}, "1") == "/level\n:2\n");
+    CHECK(complete(app, {"/l"}, "1") == "/level\n/l\n:2\n");
+    CHECK(complete(app, {"--le"}, "1") == "--level\n:2\n");
+    // `/etc/passwd` reaches this program as an unrecognised option, verified, so it is not a path to complete
+    CHECK(complete(app, {"/et"}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: a lone slash starts an option name, as a lone dash does", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    app.add_option("--level,-l", "")->completion_hint(CLI::CompletionHint::File);
+    app.add_option("files", "")->completion_hint(CLI::CompletionHint::File);
+
+    // Every absolute path the shell would offer from `/` is an unknown option to this program
+    CHECK(complete(app, {"/"}, "1") == "/level\n/l\n:2\n");
+    CHECK(complete(app, {"-"}, "1") == "--level\n-l\n:2\n");
+    // A relative path is still the positional's
+    CHECK(complete(app, {"sub"}, "1") == ":8\n");
+}
+
+TEST_CASE("Completion: a slash is an ordinary word where Windows-style options are off", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("--level,-l", "");
+    app.add_option("file", "");
+
+    // The walk reads the setting, not the platform it was built for
+    app.allow_windows_style_options(false);
+    CHECK(complete(app, {"/et"}, "1") == ":0\n");
+    app.allow_windows_style_options(true);
+    CHECK(complete(app, {"/et"}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: an option and its Windows-style value do not take a positional's turn", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    app.add_option("--level,-l", "");
+    CLI::App *start = app.add_subcommand("start", "");
+    start->add_subcommand("inner", "");
+
+    // `start` is the option's value, not the subcommand, so the walk stays at the root
+    CHECK(complete(app, {"/level", "start", ""}, "3") == "start\n:2\n");
+    CHECK(complete(app, {"/level:fast", ""}, "2") == "start\n:2\n");
+}
+
+TEST_CASE("Completion: an unknown Windows-style option has nothing to say", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    app.add_flag("--verbose,-v", "");
+    app.add_subcommand("val", "");
+
+    // Neither has a value to complete, so the subcommand sharing the word is still not a candidate
+    CHECK(complete(app, {"/verbose:val"}, "1") == ":0\n");
+    CHECK(complete(app, {"/nope:val"}, "1") == ":0\n");
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
+TEST_CASE("Completion: a value written after a colon completes to a whole token", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    std::string level;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast", "slow"}));
+
+    CHECK(complete(app, {"/level:"}, "1") == "/level:fast\n/level:slow\n:prefix=/level:\n:6\n");
+    CHECK(complete(app, {"/level:s"}, "1") == "/level:slow\n:prefix=/level:\n:6\n");
+    // One spelling reaches the option by either of its names
+    CHECK(complete(app, {"/l:s"}, "1") == "/l:slow\n:prefix=/l:\n:6\n");
+    // A colon with nothing after it hands over no value, so the option still takes the following word
+    CHECK(complete(app, {"/level:", ""}, "2") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"/level", ""}, "2") == "fast\nslow\n:6\n");
+}
+
+#endif
+
 TEST_CASE("Completion: nothing is offered after the end-of-options marker", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");

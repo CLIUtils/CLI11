@@ -1340,6 +1340,9 @@ class App {
     /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
     void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
 
+    /// Whether this word is an option written the Windows way, `/name` or `/name:value`, and this app takes those
+    CLI11_NODISCARD bool _is_windows_option(const std::string &word) const;
+
     /// The option that the words after this one are values for, or null if this word is not an option that takes any.
     /// `attached_values` comes back as 1 when the word carries a value of its own, `--files=a` or `-la`, and 0 when it
     /// does not, so that a caller can tell how many values the option still needs from the words after it.

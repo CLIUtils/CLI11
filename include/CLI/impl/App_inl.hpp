@@ -854,7 +854,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             positional_index = 0;
             continue;
         }
-        if(words[ii].size() > 1 && words[ii].front() == '-') {
+        if((words[ii].size() > 1 && words[ii].front() == '-') || current->_is_windows_option(words[ii])) {
             int attached_values = 0;
             const Option *opt = current->_option_expecting_value(words[ii], attached_values);
             if(opt == nullptr)
@@ -922,6 +922,24 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
 
+    // `/opt:value` is the `--opt=value` shape with a colon. The test is the slash rather than _is_windows_option, as
+    // the dash branch below: a lone `/` is a positional to a parse, but no path reached from it would parse either.
+    if(current->allow_windows_style_options_ && !word.empty() && word.front() == '/') {
+        const std::string::size_type colon = word.find(':');
+        if(colon == std::string::npos) {
+            current->_add_option_completions(word, reply);
+            reply.directive = CompletionDirective::NoFileComp;
+            return reply;
+        }
+        int attached_values = 0;
+        const Option *assigned = current->_option_expecting_value(word, attached_values);
+        if(assigned != nullptr) {
+            current->_add_attached_value_completions(
+                *assigned, word.substr(0, colon + 1), word.substr(colon + 1), reply);
+        }
+        return reply;
+    }
+
     // A word that has begun with a dash can only become an option name, so no other source applies to it
     if(!word.empty() && word.front() == '-') {
         // A word holding a short name and then more text, `-lfast` or `-vl`, has to be taken apart before any of it
@@ -977,6 +995,10 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
 }
 
 CLI11_INLINE void App::_add_option_completions(const std::string &prefix, CompletionReply &reply) const {
+    auto offer = [&](const std::string &candidate, const Option_p &opt) {
+        if(candidate.compare(0, prefix.size(), prefix) == 0)
+            reply.results.push_back(CompletionResult{candidate, opt->get_description()});
+    };
     for(const Option_p &opt : options_) {
         if(!opt->nonpositional())
             continue;
@@ -984,44 +1006,59 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
         // name to insert, and the value candidates arrive in a later commit.
         // Every spelling of an option is the same option, so they all carry the same description
         for(const std::string &lname : opt->get_lnames()) {
-            const std::string candidate = "--" + lname;
-            if(candidate.compare(0, prefix.size(), prefix) == 0)
-                reply.results.push_back(CompletionResult{candidate, opt->get_description()});
+            offer("--" + lname, opt);
+            // Both spellings are accepted, and the prefix test keeps each to the word it belongs in
+            if(allow_windows_style_options_)
+                offer("/" + lname, opt);
         }
         for(const std::string &sname : opt->get_snames()) {
-            const std::string candidate = "-" + sname;
-            if(candidate.compare(0, prefix.size(), prefix) == 0)
-                reply.results.push_back(CompletionResult{candidate, opt->get_description()});
+            offer("-" + sname, opt);
+            if(allow_windows_style_options_)
+                offer("/" + sname, opt);
         }
     }
+}
+
+CLI11_NODISCARD CLI11_INLINE bool App::_is_windows_option(const std::string &word) const {
+    std::string name;
+    std::string value;
+    return allow_windows_style_options_ && detail::split_windows_style(word, name, value);
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word,
                                                                         int &attached_values) const {
     attached_values = 0;
-    // Only an option name can put the next word in a value position, and a lone dash names nothing
-    if(word.size() < 2 || word.front() != '-')
-        return nullptr;
-
     int carried = 0;
-    const Option *opt = get_option_no_throw(word);
-    if(opt == nullptr) {
-        std::string name;
-        std::string rest;
-        if(detail::split_long(word, name, rest)) {
-            // `--files=a` names its option and gives it one value; whether it takes more is up to its multiplicities
-            opt = get_option_no_throw("--" + name);
-            carried = rest.empty() ? 0 : 1;
-        } else if(detail::split_short(word, name, rest) && !rest.empty()) {
-            // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
-            std::string::size_type consumed = 0;
-            opt = _walk_short_names(word, consumed);
-            // Text after that name is a value the option already has, `-lfast`. A bundle with nothing after its last
-            // name, `-vl`, has no value yet and takes one from the word that follows.
-            carried = (consumed < word.size()) ? 1 : 0;
-        }
-        if(opt == nullptr)
+    const Option *opt = nullptr;
+    std::string name;
+    std::string rest;
+    if(_is_windows_option(word)) {
+        // No bundling and one spelling for both names, which is the lookup _parse_arg does for this classifier
+        detail::split_windows_style(word, name, rest);
+        auto found = std::find_if(std::begin(options_), std::end(options_), [&name](const Option_p &candidate) {
+            return candidate->check_lname(name) || candidate->check_sname(name);
+        });
+        if(found == std::end(options_))
             return nullptr;
+        opt = found->get();
+        carried = rest.empty() ? 0 : 1;
+    } else if(word.size() > 1 && word.front() == '-') {
+        opt = get_option_no_throw(word);
+        if(opt == nullptr) {
+            if(detail::split_long(word, name, rest)) {
+                opt = get_option_no_throw("--" + name);
+                carried = rest.empty() ? 0 : 1;
+            } else if(detail::split_short(word, name, rest) && !rest.empty()) {
+                // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
+                std::string::size_type consumed = 0;
+                opt = _walk_short_names(word, consumed);
+                carried = (consumed < word.size()) ? 1 : 0;
+            }
+            if(opt == nullptr)
+                return nullptr;
+        }
+    } else {
+        return nullptr;
     }
 
     // Ignore options that do not expect a value (flags and positionals)
