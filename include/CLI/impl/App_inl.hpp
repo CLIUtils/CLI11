@@ -984,11 +984,15 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
             continue;
         }
         // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
-        // with it. An alias is just as typeable as the name, so it is a candidate in its own right.
-        if(sub->get_name().compare(0, prefix.size(), prefix) == 0)
+        // with it. An alias is just as typeable as the name, so it is a candidate in its own right. A partial word is
+        // matched the way check_name_detail matches a whole one, minus its allow_prefix_matching_ gate: that setting
+        // says whether an abbreviation can be run, and completing one to its full name is what makes it moot.
+        const bool fold_case = sub->get_ignore_case();
+        const bool fold_underscore = sub->get_ignore_underscore();
+        if(detail::has_prefix(sub->get_name(), prefix, fold_case, fold_underscore))
             reply.results.push_back(CompletionResult{sub->get_name(), sub->get_description()});
         for(const std::string &alias : sub->get_aliases()) {
-            if(!alias.empty() && alias.compare(0, prefix.size(), prefix) == 0)
+            if(!alias.empty() && detail::has_prefix(alias, prefix, fold_case, fold_underscore))
                 reply.results.push_back(CompletionResult{alias, sub->get_description()});
         }
     }
@@ -1004,8 +1008,10 @@ CLI11_INLINE void App::_gather_options(std::vector<const Option *> &options) con
 }
 
 CLI11_INLINE void App::_add_option_completions(const std::string &prefix, CompletionReply &reply) const {
-    auto offer = [&](const std::string &candidate, const Option *opt) {
-        if(candidate.compare(0, prefix.size(), prefix) == 0)
+    // check_lname and check_fname fold underscores where check_sname does not, so the caller says which lookup's rules
+    // the spelling it is offering answers to
+    auto offer = [&](const std::string &candidate, const Option *opt, bool fold_underscore) {
+        if(detail::has_prefix(candidate, prefix, opt->get_ignore_case(), fold_underscore))
             reply.results.push_back(CompletionResult{candidate, opt->get_description()});
     };
     std::vector<const Option *> options;
@@ -1017,15 +1023,15 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
         // name to insert, and the value candidates arrive in a later commit.
         // Every spelling of an option is the same option, so they all carry the same description
         for(const std::string &lname : opt->get_lnames()) {
-            offer("--" + lname, opt);
+            offer("--" + lname, opt, opt->get_ignore_underscore());
             // Both spellings are accepted, and the prefix test keeps each to the word it belongs in
             if(allow_windows_style_options_)
-                offer("/" + lname, opt);
+                offer("/" + lname, opt, opt->get_ignore_underscore());
         }
         for(const std::string &sname : opt->get_snames()) {
-            offer("-" + sname, opt);
+            offer("-" + sname, opt, false);
             if(allow_windows_style_options_)
-                offer("/" + sname, opt);
+                offer("/" + sname, opt, false);
         }
     }
 }
