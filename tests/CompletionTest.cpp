@@ -589,6 +589,96 @@ TEST_CASE("Completion: an unknown Windows-style option has nothing to say", "[co
     CHECK(complete(app, {"/nope:val"}, "1") == ":0\n");
 }
 
+TEST_CASE("Completion: an option group's options are the app's own", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose", "");
+    CLI::App *outer = app.add_option_group("Outer");
+    outer->add_option("--host", "");
+    // Nested, because a walk that reaches one level deep can pass while getting the recursion wrong
+    CLI::App *inner = outer->add_option_group("Inner");
+    inner->add_option("--port", "");
+
+    CHECK(complete(app, {"--"}, "1") == "--verbose\n--host\n--port\n:2\n");
+    CHECK(complete(app, {"--ho"}, "1") == "--host\n:2\n");
+    // A group is reached through, not entered: its own name is empty and there is no word that names it
+    CHECK(complete(app, {""}, "1") == ":2\n");
+}
+
+TEST_CASE("Completion: an option group's option is offered once", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *group = app.add_option_group("Group");
+    group->add_option("--host,-h", "");
+
+    // Each Option belongs to exactly one App, so reaching through the groups cannot reach the same one twice
+    CHECK(complete(app, {"-"}, "1") == "--host\n-h\n:2\n");
+}
+
+TEST_CASE("Completion: a disabled option group is not reached through", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose", "");
+    CLI::App *group = app.add_option_group("Group");
+    group->add_option("--host", "");
+
+    CHECK(complete(app, {"--"}, "1") == "--verbose\n--host\n:2\n");
+    // A parse skips a disabled group, so its options are not this app's to offer
+    group->disabled();
+    CHECK(complete(app, {"--"}, "1") == "--verbose\n:2\n");
+}
+
+TEST_CASE("Completion: an option group's option completes its values", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *group = app.add_option_group("Group");
+    group->add_option("--level,-l", "")->check(CLI::IsMember({"fast", "slow"}));
+
+    CHECK(complete(app, {"--level", ""}, "2") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"--level=f"}, "1") == "--level=fast\n:prefix=--level=\n:6\n");
+    CHECK(complete(app, {"-lf"}, "1") == "-lfast\n:prefix=-l\n:6\n");
+}
+
+TEST_CASE("Completion: a Windows-style name reaches into an option group", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    CLI::App *group = app.add_option_group("Group");
+    group->add_option("--level,-l", "")->check(CLI::IsMember({"fast", "slow"}));
+
+    // This classifier has one lookup for both name kinds, so it cannot borrow get_option_no_throw's reach
+    CHECK(complete(app, {"/le"}, "1") == "/level\n:2\n");
+    CHECK(complete(app, {"/level:f"}, "1") == "/level:fast\n:prefix=/level:\n:6\n");
+    CHECK(complete(app, {"/l:"}, "1") == "/l:fast\n/l:slow\n:prefix=/l:\n:6\n");
+}
+
+TEST_CASE("Completion: an option group's positionals take their turn after the app's own", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("first", "")->check(CLI::IsMember({"a1", "a2"}));
+    CLI::App *outer = app.add_option_group("Outer");
+    CLI::App *inner = outer->add_option_group("Inner");
+    inner->add_option("second", "")->check(CLI::IsMember({"b1", "b2"}));
+
+    // _parse_positional fills this app's own positionals before it tries the nameless groups, so that is the order
+    CHECK(complete(app, {""}, "1") == "a1\na2\n:6\n");
+    CHECK(complete(app, {"a1", ""}, "2") == "b1\nb2\n:6\n");
+    // Both are full, and a third word is an error rather than a value, verified against a parse
+    CHECK(complete(app, {"a1", "b1", ""}, "3") == ":2\n");
+}
+
+TEST_CASE("Completion: an option group's positional is not reserved for", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_option("--files", "")->expected(-1);
+    CLI::App *group = app.add_option_group("Group");
+    group->add_option("target", "")->required()->check(CLI::IsMember({"t1", "t2"}));
+
+    // A required positional of this app's own would reserve this word and make it the positional's turn. A group's
+    // reserves nothing, so `--files a b` really does leave target empty and fail to parse, verified.
+    CHECK(complete(app, {"--files", "a", ""}, "3") == ":0\n");
+}
+
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 

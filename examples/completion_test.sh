@@ -67,8 +67,10 @@ expect 2 "add remove rm sync" "remote" ""
 expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
-# Option names, from whichever subcommand the walk ended in
-expect 1 "--help --completion --verbose --level --image --config --workdir --tag" "--"
+# Option names, from whichever subcommand the walk ended in. `--config` and `--workdir` live in an option group, which
+# a parse reaches through, so they are offered here too — after the app's own, which is the order a parse tries them in.
+expect 1 "--help --completion --verbose --level --image --tag --config --workdir" "--"
+expect 1 "--config" "--conf"
 expect 1 "--verbose" "--v"
 expect 1 "-v" "-v"
 expect 2 "--help --force" "remote" "--"
