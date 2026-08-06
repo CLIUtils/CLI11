@@ -994,12 +994,23 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
     }
 }
 
+CLI11_INLINE void App::_gather_options(std::vector<const Option *> &options) const {
+    for(const Option_p &opt : options_)
+        options.push_back(opt.get());
+    for(const App_p &sub : subcommands_) {
+        if(sub->get_name().empty() && !sub->get_disabled())
+            sub->_gather_options(options);
+    }
+}
+
 CLI11_INLINE void App::_add_option_completions(const std::string &prefix, CompletionReply &reply) const {
-    auto offer = [&](const std::string &candidate, const Option_p &opt) {
+    auto offer = [&](const std::string &candidate, const Option *opt) {
         if(candidate.compare(0, prefix.size(), prefix) == 0)
             reply.results.push_back(CompletionResult{candidate, opt->get_description()});
     };
-    for(const Option_p &opt : options_) {
+    std::vector<const Option *> options;
+    _gather_options(options);
+    for(const Option *opt : options) {
         if(!opt->nonpositional())
             continue;
         // Whether the option takes a value makes no difference yet: a flag and a value-taking option are both just a
@@ -1035,12 +1046,14 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
     if(_is_windows_option(word)) {
         // No bundling and one spelling for both names, which is the lookup _parse_arg does for this classifier
         detail::split_windows_style(word, name, rest);
-        auto found = std::find_if(std::begin(options_), std::end(options_), [&name](const Option_p &candidate) {
+        std::vector<const Option *> options;
+        _gather_options(options);
+        auto found = std::find_if(std::begin(options), std::end(options), [&name](const Option *candidate) {
             return candidate->check_lname(name) || candidate->check_sname(name);
         });
-        if(found == std::end(options_))
+        if(found == std::end(options))
             return nullptr;
-        opt = found->get();
+        opt = *found;
         carried = rest.empty() ? 0 : 1;
     } else if(word.size() > 1 && word.front() == '-') {
         opt = get_option_no_throw(word);
@@ -1112,6 +1125,8 @@ CLI11_NODISCARD CLI11_INLINE std::size_t App::_option_value_end(const Option &op
 
 CLI11_NODISCARD CLI11_INLINE std::size_t App::_count_pending_positionals(std::size_t assigned) const {
     std::size_t retval = 0;
+    // options_ and not _gather_options: a nameless group's positional is filled by a parse but not reserved for,
+    // since _count_remaining_positionals does not reach into the groups either
     for(const Option_p &opt : options_) {
         if(opt->nonpositional())
             continue;
@@ -1209,14 +1224,16 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_positional_at(std::size_t index) const {
-    for(const Option_p &opt : options_) {
+    std::vector<const Option *> options;
+    _gather_options(options);
+    for(const Option *opt : options) {
         if(opt->nonpositional())
             continue;
         const int capacity = opt->get_items_expected_max();
         if(capacity <= 0)
             continue;
         if(index < static_cast<std::size_t>(capacity))
-            return opt.get();
+            return opt;
         index -= static_cast<std::size_t>(capacity);
     }
     return nullptr;

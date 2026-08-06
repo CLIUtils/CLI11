@@ -1337,6 +1337,10 @@ class App {
     /// Append every name and alias of this app's subcommands that starts with the prefix
     void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
 
+    /// Every option a parse of this app accepts as its own, positionals included: this app's own, then those of each
+    /// nameless option group, in the order a parse tries them.
+    void _gather_options(std::vector<const Option *> &options) const;
+
     /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
     void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
 
