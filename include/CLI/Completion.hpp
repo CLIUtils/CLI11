@@ -40,7 +40,7 @@ enum class CompletionDirective : std::uint8_t {
     NoFileComp = 2,
     /// The candidates arrive in a meaningful order, so the shell must not sort them.
     KeepOrder = 4,
-    /// The value is a file name and the shell is to complete it; the candidates, if any, are the extensions to keep.
+    /// The value is a file name and the shell is to complete it.
     FilterFileExt = 8,
     /// The value is a directory name and the shell is to complete it.
     FilterDirs = 16

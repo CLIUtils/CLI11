@@ -13,6 +13,7 @@ order, or jump to the chapter you need:
 - [Option groups](chapters/option-groups.md)
 - [Accepting configure files](chapters/config.md)
 - [Formatting help output](chapters/formatting.md)
+- [Shell completion](chapters/completion.md)
 - [Unicode support](chapters/unicode.md)
 - [Using CLI11 in a Toolkit](chapters/toolkits.md)
 - [Advanced topics](chapters/advanced-topics.md)
