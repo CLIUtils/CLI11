@@ -403,8 +403,9 @@ TEST_CASE("Completion: a value written after = is not read as a subcommand", "[c
     CHECK(complete(app, {"--file=value"}, "1") == ":prefix=--file=\n:0\n");
     CHECK(complete(app, {"--file="}, "1") == ":prefix=--file=\n:0\n");
 
-    // An empty word after a finished one is a token of its own, whatever the one before it ended with
-    CHECK(complete(app, {"--file=", ""}, "2") == "value\n:2\n");
+    // An `=` with nothing after it hands the option no value at all, so it still takes the next word — and takes it
+    // without classifying it, so the subcommand of that name is not a candidate. Verified against the parser.
+    CHECK(complete(app, {"--file=", ""}, "2") == ":0\n");
 }
 
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
@@ -628,6 +629,78 @@ TEST_CASE("Completion: an option and its value do not take a positional's turn",
     // A flag takes no word at all, and neither does a name this app does not have
     CHECK(complete(app, {"--verbose", ""}, "2") == "one\n:6\n");
     CHECK(complete(app, {"--nope", ""}, "2") == "one\n:6\n");
+}
+
+TEST_CASE("Completion: an option takes as many words as its multiplicities say", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::pair<std::string, std::string> pair;
+    app.add_option("--pair", pair)->check(CLI::IsMember({"one", "two"}));
+    std::string first;
+    app.add_option("first", first)->check(CLI::IsMember({"pos"}));
+
+    // Two words go into one value, so the second of them is the option's turn and not the positional's
+    CHECK(complete(app, {"--pair", ""}, "2") == "one\ntwo\n:6\n");
+    CHECK(complete(app, {"--pair", "one", ""}, "3") == "one\ntwo\n:6\n");
+    CHECK(complete(app, {"--pair", "one", "two", ""}, "4") == "pos\n:6\n");
+    // A word the option still needs is taken as its value without being classified at all, so no other source applies:
+    // `--pair one --nope` really does put the `--nope` in the pair. The directive is what says which source answered.
+    CHECK(complete(app, {"--pair", "one", "-"}, "3") == ":6\n");
+}
+
+TEST_CASE("Completion: an option that takes any number of words keeps taking them", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::vector<std::string> files;
+    app.add_option("--files", files)->check(CLI::IsMember({"a", "b"}));
+    std::string first;
+    app.add_option("first", first)->check(CLI::IsMember({"pos"}));
+    app.add_subcommand("start", "");
+
+    // Its first value is one it must have, so nothing else can be there
+    CHECK(complete(app, {"--files", ""}, "2") == "a\nb\n:6\n");
+    // Past that it goes on eating words a parse would not recognise, so the next one is both another of its values and
+    // the name that would stop it
+    CHECK(complete(app, {"--files", "a", ""}, "3") == "start\na\nb\n:6\n");
+    CHECK(complete(app, {"--files", "a", "b", ""}, "4") == "start\na\nb\n:6\n");
+    // A value inside the option's own word does not fill it up either
+    CHECK(complete(app, {"--files=a", ""}, "2") == "start\na\nb\n:6\n");
+    // A dash-shaped word is one it would stop at, so that word is an option name again
+    CHECK(complete(app, {"--files", "a", "-"}, "3") == "--files\n:2\n");
+    // and a word that names a subcommand moves the walk there, as the parse would
+    CHECK(complete(app, {"--files", "a", "start", ""}, "4") == ":2\n");
+}
+
+TEST_CASE("Completion: a required positional keeps a word back from a greedy option", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::vector<std::string> files;
+    app.add_option("--files", files)->check(CLI::IsMember({"a", "b"}));
+    std::string first;
+    app.add_option("first", first)->check(CLI::IsMember({"pos"}))->required();
+
+    // A parse stops eating while the words left are the ones a required positional has to have, so the last word of the
+    // line is the positional's turn rather than another value
+    CHECK(complete(app, {"--files", "a", ""}, "3") == "pos\n:6\n");
+    // Once that positional has been given one, the option is free to eat to the end of the line again
+    CHECK(complete(app, {"pos", "--files", "a", ""}, "4") == "a\nb\n:6\n");
+}
+
+TEST_CASE("Completion: the marker that ends a list of values is eaten with it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::vector<std::string> files;
+    app.add_option("--files", files)->check(CLI::IsMember({"a", "b"}));
+    std::string first;
+    app.add_option("first", first)->check(CLI::IsMember({"pos"}));
+    app.add_subcommand("start", "");
+
+    // A parse ends an unbounded list at the marker and consumes it, so positional-only mode is never entered and the
+    // word after it is an ordinary one: `--files a -- start` really does run the subcommand. Verified.
+    CHECK(complete(app, {"--files", "a", "--", ""}, "4") == "start\npos\n:6\n");
+    // The minimum is not classified at all, so a marker inside it is a value rather than a marker, and the list it
+    // would have ended goes on: `--files -- b` really does put both words in the list. Verified.
+    CHECK(complete(app, {"--files", "--", ""}, "3") == "start\na\nb\n:6\n");
 }
 
 TEST_CASE("Completion: a subcommand fills its own positionals", "[completion]") {
