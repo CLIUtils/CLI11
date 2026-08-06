@@ -68,7 +68,7 @@ expect 2 "remove rm" "remote" "r"
 expect 3 "" "remote" "add" ""
 
 # Option names, from whichever subcommand the walk ended in
-expect 1 "--help --completion --verbose --level --image --config --workdir" "--"
+expect 1 "--help --completion --verbose --level --image --config --workdir --tag" "--"
 expect 1 "--verbose" "--v"
 expect 1 "-v" "-v"
 expect 2 "--help --force" "remote" "--"
@@ -79,6 +79,13 @@ expect 2 "slow" "--level" "s"
 expect 2 "fast slow" "-l" ""
 # A flag consumes nothing, so what follows it is a token of its own
 expect 2 "start stop remote" "--verbose" ""
+
+# An option that takes any number of words goes on offering its values, and once past the one it must have, the word is
+# also one of the names that would stop it
+expect 2 "alpha beta" "--tag" ""
+expect 3 "start stop remote alpha beta" "--tag" "alpha" ""
+# A word it would stop at is not its value: a dash-shaped one is an option name again
+expect 3 "--verbose" "--tag" "alpha" "--v"
 
 # A path validator says what kind of path it wants and offers nothing, leaving the walking of it to the shell
 expect 2 "_filedir[|]" "--config" ""
@@ -97,8 +104,9 @@ expect 3 "_filedir[|/et]" "--config" "=" "/et"
 expect 2 "_filedir[|]" "--config" "="
 # A flag has no value to complete, so this falls back to the shell's own files rather than to the subcommands
 expect 3 "" "--verbose" "=" "v"
-# and a space after the `=` finishes the value, so what follows it is a token of its own
-expect 3 "start stop remote" "--level" "=" ""
+# and a space after the `=` does not finish the value: an empty one is no value at all, so the option still takes the
+# next word, and `completion --level= fast` really does parse
+expect 3 "fast slow" "--level" "=" ""
 
 # A short name carries its value in the same word, and that whole word is what readline replaces
 expect 1 "-lslow" "-ls"

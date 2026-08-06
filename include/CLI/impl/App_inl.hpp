@@ -830,6 +830,10 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     bool positional_only = false;
     // Descending resets this: each app fills its own positionals from the words that reach it
     std::size_t positional_index = 0;
+    // An option still collecting values when the cursor arrives, and whether the cursor's word is one of the minimum
+    // it takes even when the word looks like an option name or a subcommand
+    const Option *awaiting = nullptr;
+    bool awaiting_minimum = false;
     for(std::size_t ii = 0; ii < cursor; ++ii) {
         if(words[ii].empty())
             continue;
@@ -851,11 +855,26 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             continue;
         }
         if(words[ii].size() > 1 && words[ii].front() == '-') {
-            // An option word is no positional value, and nor are the words it takes. Skipping the minimum is exact
-            // except for a greedy option, whose tail is then miscounted as turns the positionals never took.
-            const Option *opt = current->_option_expecting_value(words[ii]);
-            if(opt != nullptr && opt->get_items_expected_min() > 0)
-                ii += static_cast<std::size_t>(opt->get_items_expected_min());
+            int attached_values = 0;
+            const Option *opt = current->_option_expecting_value(words[ii], attached_values);
+            if(opt == nullptr)
+                continue;
+
+            bool hungry = false;
+            const std::size_t end = current->_option_value_end(*opt,
+                                                               attached_values,
+                                                               words,
+                                                               ii + 1,
+                                                               cursor,
+                                                               current->_count_pending_positionals(positional_index),
+                                                               hungry);
+            if(hungry && end >= cursor) {
+                // The option is still collecting when the cursor arrives, so the candidates are its values. Past its
+                // minimum that depends on the shape of the word, which only the cursor branches below can judge.
+                awaiting = opt;
+                awaiting_minimum = end > cursor;
+            }
+            ii = end - 1;  // the loop's own step moves onto the first word that is not one of the option's values
             continue;
         }
         const App *sub = current->_find_subcommand(words[ii], true, false);
@@ -880,6 +899,13 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
 
+    // A word inside an option's minimum is taken as its value without being classified, so this check comes before
+    // every other reading of the word below
+    if(awaiting_minimum) {
+        current->_add_value_completions(*awaiting, word, reply);
+        return reply;
+    }
+
     // `--opt=value` is one word holding both, so the option is named by the word itself rather than by the one before
     // it. Candidates are whole tokens, `--file=fast` and not `fast`, since that is the text that has to end up on the
     // line; the prefix tells the script how much of it is already typed.
@@ -887,19 +913,12 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     std::string long_name;
     std::string attached;
     if(assign != std::string::npos && detail::split_long(word, long_name, attached)) {
-        const Option *assigned = current->_option_expecting_value("--" + long_name);
+        int attached_values = 0;
+        const Option *assigned = current->_option_expecting_value(word, attached_values);
         // An unknown option, or one that takes no value, has nothing to say about what follows its `=`
         if(assigned != nullptr) {
             current->_add_attached_value_completions(*assigned, word.substr(0, assign + 1), attached, reply);
         }
-        return reply;
-    }
-
-    // A real parse would hand the word after an option name to that option, so the candidates come from the option and
-    // nothing this app offers belongs here.
-    const Option *awaiting = (cursor > 0) ? current->_option_expecting_value(words[cursor - 1]) : nullptr;
-    if(awaiting != nullptr) {
-        current->_add_value_completions(*awaiting, word, reply);
         return reply;
     }
 
@@ -918,18 +937,20 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
 
-    // Nothing in a bare word says whether it is becoming a subcommand name or a positional value, so both answer.
-    // The positional goes last, so the names keep their place and its directive wins; only it can want a path.
+    // Nothing in a bare word says whether it is becoming a subcommand name or a value, so both answer. The value goes
+    // last, so the names keep their place and its directive wins; only it can want a path.
     current->_add_subcommand_completions(word, reply);
     const std::size_t named = reply.results.size();
-    const Option *positional = current->_positional_at(positional_index);
-    if(positional == nullptr) {
+    // An option still collecting values takes this word before any positional does. A parse only stops it at a word it
+    // recognises, and those recognised names are the ones already in this reply.
+    const Option *value_source = (awaiting != nullptr) ? awaiting : current->_positional_at(positional_index);
+    if(value_source == nullptr) {
         reply.directive = CompletionDirective::NoFileComp;
         return reply;
     }
-    current->_add_value_completions(*positional, word, reply);
-    // A positional either lists its values, which are few enough to read beside a name, or asks for a path, which is a
-    // whole directory in one menu with the names lost in it. So a named word keeps the shell out until none matches.
+    current->_add_value_completions(*value_source, word, reply);
+    // A value source either lists its values, which are few enough to read beside a name, or asks for a path, which is
+    // a whole directory in one menu with the names lost in it. So a named word keeps the shell out until none matches.
     if(named != 0 && reply.results.size() == named)
         reply.directive = CompletionDirective::NoFileComp;
     return reply;
@@ -975,33 +996,100 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
     }
 }
 
-CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word) const {
+CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word,
+                                                                        int &attached_values) const {
+    attached_values = 0;
     // Only an option name can put the next word in a value position, and a lone dash names nothing
     if(word.size() < 2 || word.front() != '-')
         return nullptr;
 
+    int carried = 0;
     const Option *opt = get_option_no_throw(word);
     if(opt == nullptr) {
-        // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
-        std::string short_name;
-        std::string short_rest;
-        std::string::size_type consumed = 0;
-        if(detail::split_short(word, short_name, short_rest) && !short_rest.empty())
+        std::string name;
+        std::string rest;
+        if(detail::split_long(word, name, rest)) {
+            // `--files=a` names its option and gives it one value; whether it takes more is up to its multiplicities
+            opt = get_option_no_throw("--" + name);
+            carried = rest.empty() ? 0 : 1;
+        } else if(detail::split_short(word, name, rest) && !rest.empty()) {
+            // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
+            std::string::size_type consumed = 0;
             opt = _walk_short_names(word, consumed);
-        // A name with word left after it takes its value from that, so it leaves nothing for the following word
-        if(opt == nullptr || consumed != word.size())
+            // Text after that name is a value the option already has, `-lfast`. A bundle with nothing after its last
+            // name, `-vl`, has no value yet and takes one from the word that follows.
+            carried = (consumed < word.size()) ? 1 : 0;
+        }
+        if(opt == nullptr)
             return nullptr;
     }
-    // check_name matches a positional by its name too, and a positional does not introduce a following value
-    if(!opt->nonpositional())
+
+    // Ignore options that do not expect a value (flags and positionals)
+    if(!opt->nonpositional() || opt->get_items_expected_max() == 0)
         return nullptr;
 
-    // A flag consumes no words, so what follows it is a token of its own rather than its value. type_size_max would not
-    // say so, being 1 for a flag as well, because a flag is expected(0) rather than type_size(0).
-    if(opt->get_items_expected_max() == 0)
-        return nullptr;
-
+    attached_values = carried;
     return opt;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::size_t App::_option_value_end(const Option &opt,
+                                                                int attached_values,
+                                                                const std::vector<std::string> &words,
+                                                                std::size_t first,
+                                                                std::size_t cursor,
+                                                                std::size_t reserved,
+                                                                bool &hungry) const {
+    int minimum = 0;
+    int maximum = 0;
+    _value_appetite(opt, minimum, maximum);
+
+    // The words of the minimum are never classified, so an option-shaped one among them is a value like any other
+    int collected = attached_values;
+    std::size_t index = first + static_cast<std::size_t>((std::max)(minimum - collected, 0));
+    if(index > cursor) {
+        hungry = true;
+        return index;
+    }
+    collected = (std::max)(collected, minimum);
+
+    // Past the minimum the values are optional, so collecting ends at the first word a parse would read as something
+    // else, and at the point where the words left on the line are the ones the required positionals must be given.
+    while((collected < maximum || opt.get_allow_extra_args()) && reserved < words.size() - index) {
+        if(index == cursor) {
+            // Whether the word being completed is a value is for the cursor to decide, not for the walk
+            hungry = true;
+            return index;
+        }
+        if(_recognize(words[index], false) != detail::Classifier::NONE)
+            break;
+        ++collected;
+        ++index;
+    }
+    hungry = false;
+
+    // A marker after an unbounded list ends it and is consumed with it, so it never starts positional-only mode
+    if(index < cursor && words[index] == "--")
+        ++index;
+    return index;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::size_t App::_count_pending_positionals(std::size_t assigned) const {
+    std::size_t retval = 0;
+    for(const Option_p &opt : options_) {
+        if(opt->nonpositional())
+            continue;
+        // Words go to the positionals in declaration order, each taking all it can hold, as _positional_at reads them
+        std::size_t filled = 0;
+        const int capacity = opt->get_items_expected_max();
+        if(capacity > 0) {
+            filled = (std::min)(assigned, static_cast<std::size_t>(capacity));
+            assigned -= filled;
+        }
+        const int minimum = opt->get_items_expected_min();
+        if(opt->get_required() && minimum > 0 && filled < static_cast<std::size_t>(minimum))
+            retval += static_cast<std::size_t>(minimum) - filled;
+    }
+    return retval;
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_walk_short_names(const std::string &word,
@@ -2576,6 +2664,17 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
     return false;
 }
 
+CLI11_INLINE void App::_value_appetite(const Option &opt, int &minimum, int &maximum) {
+    minimum = (std::min)(opt.get_type_size_min(), opt.get_items_expected_min());
+    maximum = opt.get_items_expected_max();
+    // check container like options to limit the argument size to a single type if the allow_extra_flags argument is
+    // set. 16 is somewhat arbitrary (needs to be at least 4)
+    if(maximum >= detail::expected_max_vector_size / 16 && !opt.get_allow_extra_args()) {
+        auto tmax = opt.get_type_size_max();
+        maximum = detail::checked_multiply(tmax, opt.get_expected_min()) ? tmax : detail::expected_max_vector_size;
+    }
+}
+
 CLI11_INLINE bool
 App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only) {
 
@@ -2752,14 +2851,9 @@ App::_parse_arg(std::vector<std::string> &args, detail::Classifier current_type,
     if(op->get_trigger_on_parse() && op->current_option_state_ == Option::option_state::callback_run) {
         op->clear();
     }
-    int min_num = (std::min)(op->get_type_size_min(), op->get_items_expected_min());
-    int max_num = op->get_items_expected_max();
-    // check container like options to limit the argument size to a single type if the allow_extra_flags argument is
-    // set. 16 is somewhat arbitrary (needs to be at least 4)
-    if(max_num >= detail::expected_max_vector_size / 16 && !op->get_allow_extra_args()) {
-        auto tmax = op->get_type_size_max();
-        max_num = detail::checked_multiply(tmax, op->get_expected_min()) ? tmax : detail::expected_max_vector_size;
-    }
+    int min_num = 0;
+    int max_num = 0;
+    _value_appetite(*op, min_num, max_num);
     // Make sure we always eat the minimum for unlimited vectors
     int collected = 0;     // total number of arguments collected
     int result_count = 0;  // local variable for number of results in a single arg string

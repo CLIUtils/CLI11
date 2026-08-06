@@ -1340,8 +1340,28 @@ class App {
     /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
     void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
 
-    /// The option that would take the word after this one as its value, null when this word is not such an option
-    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word) const;
+    /// The option that the words after this one are values for, or null if this word is not an option that takes any.
+    /// `attached_values` comes back as 1 when the word carries a value of its own, `--files=a` or `-la`, and 0 when it
+    /// does not, so that a caller can tell how many values the option still needs from the words after it.
+    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word, int &attached_values) const;
+
+    /// Walk the words an option takes as its values and return the index one past the last of them.
+    ///
+    /// Values are read from `words[first]` onwards, in addition to the `attached_values` the option's own word carried.
+    /// `reserved` is how many words at the end of the line must be left for the required positionals. Nothing past
+    /// `cursor` is read, since the word being completed is not classified here; `hungry` is set if the option would
+    /// take a value there.
+    CLI11_NODISCARD std::size_t _option_value_end(const Option &opt,
+                                                  int attached_values,
+                                                  const std::vector<std::string> &words,
+                                                  std::size_t first,
+                                                  std::size_t cursor,
+                                                  std::size_t reserved,
+                                                  bool &hungry) const;
+
+    /// How many words at the end of the line the required positionals must be left, given that `assigned` words have
+    /// gone to positionals already. What _count_remaining_positionals counts, for a walk that has parsed nothing.
+    CLI11_NODISCARD std::size_t _count_pending_positionals(std::size_t assigned) const;
 
     /// Read a word of short names as a parse would, stopping at the first name that takes a value and returning it.
     /// Sets consumed to how much of the word was names, which is all of it when the walk ran out of word.
@@ -1415,6 +1435,9 @@ class App {
     /// if local_processing_only is set to true then fallthrough is disabled will return false if not found
     /// return true if the argument was processed or false if nothing was done
     bool _parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only);
+
+    /// Return the minimum and maximum number of words an option may take as values
+    static void _value_appetite(const Option &opt, int &minimum, int &maximum);
 
     /// Trigger the pre_parse callback if needed
     void _trigger_pre_parse(std::size_t remaining_args);
