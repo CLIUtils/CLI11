@@ -62,15 +62,17 @@ set_property(
 
 add_cli_exe(completion completion.cpp)
 add_test(NAME completion_script COMMAND completion --completion bash)
-set_property(TEST completion_script PROPERTY PASS_REGULAR_EXPRESSION
-                                             "complete -o default -F _cli11_complete_completion completion")
+set_property(
+  TEST completion_script PROPERTY PASS_REGULAR_EXPRESSION
+                                  "complete -o default -F _cli11_complete_completion completion")
 add_test(NAME completion_run COMMAND completion start)
 set_property(TEST completion_run PROPERTY PASS_REGULAR_EXPRESSION "Subcommand: start")
 # The body of the generated script is only really checked by running it
 find_program(BASH_EXECUTABLE bash)
 if(BASH_EXECUTABLE)
-  add_test(NAME completion_script_drive COMMAND ${BASH_EXECUTABLE}
-                                                ${CMAKE_CURRENT_SOURCE_DIR}/completion_test.sh $<TARGET_FILE:completion>)
+  add_test(NAME completion_script_drive
+           COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/completion_test.sh
+                   $<TARGET_FILE:completion>)
 endif()
 
 add_cli_exe(subcom_partitioned subcom_partitioned.cpp)

@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
 
@@ -260,6 +261,9 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 
     COMPREPLY=()
     while IFS='' read -r line; do
+        # A program built for Windows writes its lines with a CRLF. A carriage return inside a field arrives escaped,
+        # so one at the end of a line can only be part of the line ending.
+        line=${line%$'\r'}
         if [[ -z ${line} ]]; then
             continue
         elif [[ -n ${directive} ]]; then
