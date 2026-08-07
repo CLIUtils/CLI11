@@ -208,6 +208,10 @@ CLI11_INLINE std::ptrdiff_t find_member(std::string name,
                                         bool ignore_case = false,
                                         bool ignore_underscore = false);
 
+/// Check if a string begins with a prefix, optionally ignoring case or underscores on both sides
+CLI11_INLINE bool
+has_prefix(std::string name, std::string prefix, bool ignore_case = false, bool ignore_underscore = false);
+
 /// Find a trigger string and call a modify callable function that takes the current string and starting position of the
 /// trigger and returns the position in the string to search for the next trigger string
 template <typename Callable> inline std::string find_and_modify(std::string str, std::string trigger, Callable modify) {
@@ -229,6 +233,9 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter =
 
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
+
+/// remove an environmental variable from the environment of the current process
+CLI11_INLINE void unset_environment_value(const std::string &env_name);
 
 /// This function detects an equal or colon followed by an escaped quote after an argument
 /// then modifies the string to replace the equality with a space.  This is needed
