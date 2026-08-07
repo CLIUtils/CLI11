@@ -6,7 +6,8 @@
 set -u
 
 prog="$1"
-source <("$prog" --completion bash)
+# Not `source <(...)`: bash 3.2, which is what macOS ships, reads nothing from the process substitution
+eval "$("$prog" --completion bash)"
 
 if ! declare -F _cli11_complete_completion > /dev/null; then
     echo "FAIL: the generated script did not define the completion function" >&2

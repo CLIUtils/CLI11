@@ -666,8 +666,8 @@ class App {
                         const std::string &completion_help = "Print the completion script for a shell and exit");
 
     /// Stop answering the completion requests that arrive through the environment
-    App *disable_completion(bool disabled = true) {
-        completion_enabled_ = !disabled;
+    App *disable_completion(bool disable = true) {
+        completion_enabled_ = !disable;
         return this;
     }
 

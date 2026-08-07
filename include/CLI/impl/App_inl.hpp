@@ -991,9 +991,9 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
         const bool fold_underscore = sub->get_ignore_underscore();
         if(detail::has_prefix(sub->get_name(), prefix, fold_case, fold_underscore))
             reply.results.push_back(CompletionResult{sub->get_name(), sub->get_description()});
-        for(const std::string &alias : sub->get_aliases()) {
-            if(!alias.empty() && detail::has_prefix(alias, prefix, fold_case, fold_underscore))
-                reply.results.push_back(CompletionResult{alias, sub->get_description()});
+        for(const std::string &sub_alias : sub->get_aliases()) {
+            if(!sub_alias.empty() && detail::has_prefix(sub_alias, prefix, fold_case, fold_underscore))
+                reply.results.push_back(CompletionResult{sub_alias, sub->get_description()});
         }
     }
 }
@@ -1037,9 +1037,9 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
 }
 
 CLI11_NODISCARD CLI11_INLINE bool App::_is_windows_option(const std::string &word) const {
-    std::string name;
+    std::string opt_name;
     std::string value;
-    return allow_windows_style_options_ && detail::split_windows_style(word, name, value);
+    return allow_windows_style_options_ && detail::split_windows_style(word, opt_name, value);
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word,
@@ -1047,15 +1047,15 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
     attached_values = 0;
     int carried = 0;
     const Option *opt = nullptr;
-    std::string name;
+    std::string opt_name;
     std::string rest;
     if(_is_windows_option(word)) {
         // No bundling and one spelling for both names, which is the lookup _parse_arg does for this classifier
-        detail::split_windows_style(word, name, rest);
+        detail::split_windows_style(word, opt_name, rest);
         std::vector<const Option *> options;
         _gather_options(options);
-        auto found = std::find_if(std::begin(options), std::end(options), [&name](const Option *candidate) {
-            return candidate->check_lname(name) || candidate->check_sname(name);
+        auto found = std::find_if(std::begin(options), std::end(options), [&opt_name](const Option *candidate) {
+            return candidate->check_lname(opt_name) || candidate->check_sname(opt_name);
         });
         if(found == std::end(options))
             return nullptr;
@@ -1064,10 +1064,10 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
     } else if(word.size() > 1 && word.front() == '-') {
         opt = get_option_no_throw(word);
         if(opt == nullptr) {
-            if(detail::split_long(word, name, rest)) {
-                opt = get_option_no_throw("--" + name);
+            if(detail::split_long(word, opt_name, rest)) {
+                opt = get_option_no_throw("--" + opt_name);
                 carried = rest.empty() ? 0 : 1;
-            } else if(detail::split_short(word, name, rest) && !rest.empty()) {
+            } else if(detail::split_short(word, opt_name, rest) && !rest.empty()) {
                 // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
                 std::string::size_type consumed = 0;
                 opt = _walk_short_names(word, consumed);

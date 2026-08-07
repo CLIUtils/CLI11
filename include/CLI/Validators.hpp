@@ -20,6 +20,7 @@
 #include <functional>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
