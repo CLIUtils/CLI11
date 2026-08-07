@@ -10,6 +10,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -670,6 +671,9 @@ TEST_CASE("Completion: a disabled option group is not reached through", "[comple
     CHECK(complete(app, {"--"}, "1") == "--verbose\n:2\n");
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+
 TEST_CASE("Completion: an option group's option completes its values", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
@@ -720,9 +724,6 @@ TEST_CASE("Completion: an option group's positional is not reserved for", "[comp
     // reserves nothing, so `--files a b` really does leave target empty and fail to parse, verified.
     CHECK(complete(app, {"--files", "a", ""}, "3") == ":0\n");
 }
-
-#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
-    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
 TEST_CASE("Completion: a value written after a colon completes to a whole token", "[completion]") {
     CLI::App app{"program"};
@@ -1101,9 +1102,9 @@ TEST_CASE("Completion: the request is out of the environment before it is answer
     app.add_subcommand("start", "");
 
     set_request("1");
-    std::vector<std::string> args{"sta"};
     bool thrown = false;
     try {
+        std::vector<std::string> args{"sta"};
         app.parse(args);
     } catch(const CLI::CallForCompletion &) {
         thrown = true;
@@ -1130,9 +1131,9 @@ TEST_CASE("Completion: a request from another protocol version gets no candidate
         else
             put_env(proto_var, proto);
 
-        std::vector<std::string> args{"sta"};
         std::string reply = "<not a completion request>";
         try {
+            std::vector<std::string> args{"sta"};
             app.parse(args);
         } catch(const CLI::CallForCompletion &e) {
             reply = e.what();
@@ -1195,9 +1196,9 @@ TEST_CASE("Completion: the activation variable is configurable", "[completion]")
     put_env("MYPROG_COMPLETE", "bash");
     put_env("MYPROG_COMPLETE_INDEX", "1");
     put_env("MYPROG_COMPLETE_PROTO", "1");
-    std::vector<std::string> again{"sta"};
     std::string reply = "<not a completion request>";
     try {
+        std::vector<std::string> again{"sta"};
         app.parse(again);
     } catch(const CLI::CallForCompletion &e) {
         reply = e.what();
@@ -1231,8 +1232,8 @@ TEST_CASE("Completion: the script flag throws so exit() prints it", "[completion
     CLI::App app{"program", "myprog"};
     app.set_completion_flag();
 
-    std::vector<std::string> args{"bash", "--completion"};  // reversed, as parse expects
     try {
+        std::vector<std::string> args{"bash", "--completion"};  // reversed, as parse expects
         app.parse(args);
         FAIL("expected CallForCompletion");
     } catch(const CLI::CallForCompletion &e) {
