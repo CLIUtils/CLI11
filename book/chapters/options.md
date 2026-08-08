@@ -260,7 +260,7 @@ There are several options can be set through the
 | --------- | --------------------------------------------------------------------------------- |
 | Throw     | Throws an error if more values are given then expected                            |
 | TakeLast  | Selects the last expected number of values given                                  |
-| TakeFirst | Selects the first expected number of values given                              |
+| TakeFirst | Selects the first expected number of values given                                 |
 | Join      | Joins the strings together using the `delimiter` given                            |
 | TakeAll   | Takes all the values                                                              |
 | Sum       | If the values are numeric, it sums them and returns the result                    |
