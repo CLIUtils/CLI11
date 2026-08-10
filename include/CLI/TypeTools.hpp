@@ -16,8 +16,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
+#include <iomanip>
 #include <limits>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -349,10 +351,21 @@ std::string to_string(T &&value) {
     return std::string(value);  // NOLINT(google-readability-casting)
 }
 
+template <
+    typename T,
+    enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
+                    is_ostreamable<T>::value && std::is_floating_point<typename std::decay<T>::type>::value,
+                detail::enabler> = detail::dummy>
+std::string to_string(T &&value) {
+    std::ostringstream stream;
+    stream << std::setprecision(std::numeric_limits<typename std::decay<T>::type>::max_digits10) << value;
+    return stream.str();
+}
+
 /// Convert an object to a string (streaming must be supported for that type)
 template <typename T,
           enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
-                          is_ostreamable<T>::value,
+                          is_ostreamable<T>::value && !std::is_floating_point<typename std::decay<T>::type>::value,
                       detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
     std::stringstream stream;
@@ -468,10 +481,15 @@ template <typename T1,
 std::string checked_to_string(T &&) {
     return std::string{};
 }
-/// get a string as a convertible value for arithmetic types
-template <typename T, enable_if_t<std::is_arithmetic<T>::value, detail::enabler> = detail::dummy>
+/// get a string as a convertible value for integral types
+template <typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> = detail::dummy>
 std::string value_string(const T &value) {
     return std::to_string(value);
+}
+/// get a string as a convertible value for floating-point types
+template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
+std::string value_string(const T &value) {
+    return to_string(value);
 }
 /// get a string as a convertible value for enumerations
 template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>

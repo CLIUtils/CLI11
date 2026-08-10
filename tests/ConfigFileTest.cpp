@@ -3438,12 +3438,12 @@ TEST_CASE_METHOD(TApp, "TomlOutputHiddenOptions", "[config]") {
     std::string str = app.config_to_str(true, true);
     CHECK_THAT(str, Contains("group1"));
     CHECK_THAT(str, Contains("group2"));
-    CHECK_THAT(str, Contains("dval=12.7"));
-    auto loc = str.find("dval=12.7");
+    CHECK_THAT(str, Contains("dval=12.699999999999999"));
+    auto loc = str.find("dval=12.699999999999999");
     auto locg1 = str.find("group1");
     CHECK(loc < locg1);
     // make sure it doesn't come twice
-    loc = str.find("dval=12.7", loc + 4);
+    loc = str.find("dval=12.699999999999999", loc + 4);
     CHECK(std::string::npos == loc);
 }
 
@@ -3539,15 +3539,15 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
     std::string str = app.config_to_str(true, true);
     CHECK_THAT(str, Contains("group1"));
     CHECK_THAT(str, Contains("group2"));
-    CHECK_THAT(str, Contains("dval=12.7"));
+    CHECK_THAT(str, Contains("dval=12.699999999999999"));
     CHECK_THAT(str, Contains("group3"));
     CHECK_THAT(str, Contains("g3 desc"));
-    auto loc = str.find("dval=12.7");
+    auto loc = str.find("dval=12.699999999999999");
     auto locg1 = str.find("group1");
     auto locg3 = str.find("group3");
     CHECK(loc > locg1);
     // make sure it doesn't come twice
-    loc = str.find("dval=12.7", loc + 4);
+    loc = str.find("dval=12.699999999999999", loc + 4);
     CHECK(std::string::npos == loc);
     CHECK(locg1 < locg3);
 }
@@ -4041,12 +4041,12 @@ TEST_CASE_METHOD(TApp, "IniOutputHiddenOptions", "[config]") {
     std::string str = app.config_to_str(true, true);
     CHECK_THAT(str, Contains("group1"));
     CHECK_THAT(str, Contains("group2"));
-    CHECK_THAT(str, Contains("dval=12.7"));
-    auto loc = str.find("dval=12.7");
+    CHECK_THAT(str, Contains("dval=12.699999999999999"));
+    auto loc = str.find("dval=12.699999999999999");
     auto locg1 = str.find("group1");
     CHECK(loc < locg1);
     // make sure it doesn't come twice
-    loc = str.find("dval=12.7", loc + 4);
+    loc = str.find("dval=12.699999999999999", loc + 4);
     CHECK(std::string::npos == loc);
 }
 
@@ -4125,15 +4125,15 @@ TEST_CASE_METHOD(TApp, "IniOutputOptionGroup", "[config]") {
     std::string str = app.config_to_str(true, true);
     CHECK_THAT(str, Contains("group1"));
     CHECK_THAT(str, Contains("group2"));
-    CHECK_THAT(str, Contains("dval=12.7"));
+    CHECK_THAT(str, Contains("dval=12.699999999999999"));
     CHECK_THAT(str, Contains("group3"));
     CHECK_THAT(str, Contains("g3 desc"));
-    auto loc = str.find("dval=12.7");
+    auto loc = str.find("dval=12.699999999999999");
     auto locg1 = str.find("group1");
     auto locg3 = str.find("group3");
     CHECK(loc > locg1);
     // make sure it doesn't come twice
-    loc = str.find("dval=12.7", loc + 4);
+    loc = str.find("dval=12.699999999999999", loc + 4);
     CHECK(std::string::npos == loc);
     CHECK(locg1 < locg3);
 }
