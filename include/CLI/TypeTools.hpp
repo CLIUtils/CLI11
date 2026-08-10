@@ -352,11 +352,10 @@ std::string to_string(T &&value) {
     return std::string(value);  // NOLINT(google-readability-casting)
 }
 
-template <
-    typename T,
-    enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
-                    is_ostreamable<T>::value && std::is_floating_point<typename std::decay<T>::type>::value,
-                detail::enabler> = detail::dummy>
+template <typename T,
+          enable_if_t<!std::is_convertible<T, std::string>::value && !std::is_constructible<std::string, T>::value &&
+                          is_ostreamable<T>::value && std::is_floating_point<typename std::decay<T>::type>::value,
+                      detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
     std::ostringstream stream;
     stream << std::setprecision(std::numeric_limits<typename std::decay<T>::type>::max_digits10) << value;
