@@ -63,10 +63,39 @@ ctest --preset dev -R AppTest
 - `tidy` — Inherits `default`, adds `clang-tidy` with warnings-as-errors. Uses
   precompiled mode, so each `impl/*_inl.hpp` header is analyzed once (in
   `src/Precompile.cpp`) instead of in every test and example.
+- `iwyu` — Inherits `default`, runs `include-what-you-use`. Also precompiled,
+  with tests and examples off, so `src/Precompile.cpp` is the only translation
+  unit and each header is reported once.
 
 ```bash
 cmake --preset tidy
 cmake --build --preset tidy
+```
+
+## Include-what-you-use
+
+`brew install include-what-you-use`, then `cmake --preset iwyu` and
+`cmake --build --preset iwyu`. The build always succeeds and IWYU writes its
+advice to stderr. Nothing enforces it, so read the report and apply what is
+correct, with these exceptions:
+
+- Only act on a removal that both standard libraries agree on; take an addition
+  from either. macOS asks to remove the `<iterator>` includes that Linux needs.
+- Keep both `<filesystem>` includes. `Macros.hpp` needs it before the
+  `__cpp_lib_filesystem` check, and `Validators.hpp` guards its one with
+  `#if CLI11_HAS_FILESYSTEM`.
+- Ignore the "should add" lines for `CLI/CLI.hpp` (an artifact of the private
+  pragma in each header), `<version>`, `<AvailabilityInternal.h>`, and `<math>`.
+
+`scripts/iwyu.imp` maps the detail headers a standard library asks for to the
+C++ header CLI11 should use; read the comment at its top before you add an
+entry. It covers both standard libraries, so check Linux after a change:
+
+```bash
+docker run --rm -v "$PWD:/src:ro" debian:trixie sh -c '
+  apt-get update -qq && apt-get install -y -qq iwyu cmake ninja-build g++ &&
+  cp -r /src /work && rm -rf /work/build* && cd /work &&
+  cmake --preset iwyu >/dev/null && cmake --build --preset iwyu'
 ```
 
 ## Single Header Generation

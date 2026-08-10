@@ -21,6 +21,35 @@ The default is `CLI::FailureMessage::simple`, and you can easily define a new
 one. Just make a (lambda) function that takes an App pointer and a reference to
 an error code (even if you don't use them), and returns a string.
 
+### Inspecting the app
+
+An app can be queried after, or during, the parse:
+
+- `app.get_option("--name")` returns the option pointer, and throws
+  `CLI::OptionNotFound` if there is none. `app["--name"]` is the same thing on a
+  const app, and `get_option_no_throw` returns `nullptr` instead of throwing.
+- `app.get_options()` returns all options; `app.get_subcommands()` returns the
+  subcommands that were parsed, in order.
+- `app.count("--name")` counts one option, and `app.count_all()` counts every
+  option and subcommand use in the app.
+- `app.parse_order()` returns the options in the order they appeared on the
+  command line, which is how you recover the relative order of two different
+  options. See the
+  [inter_argument_order.cpp](https://github.com/CLIUtils/CLI11/blob/main/examples/inter_argument_order.cpp)
+  example.
+- `app.get_parent()` returns the parent app of a subcommand, or `nullptr` for
+  the main app.
+
+Options and subcommands can also be taken back out, which is mostly useful when
+you build an app from reusable pieces:
+
+```cpp
+app.remove_option(opt_pointer);
+app.remove_subcommand(sub_pointer);
+```
+
+Both return `true` if the item was found and removed.
+
 ## Adding a subcommand
 
 Subcommands can be added just like an option:
@@ -88,6 +117,56 @@ the state (Procedural! Yuck!). You can do that with lambda functions. A
 that all options are prepared and usable by reference capture before entering
 the callback. An example is shown below in the `geet` program.
 
+### The three callbacks
+
+`.callback()` sets the final callback. There are three call points in total, and
+each one answers a different need:
+
+| Callback                     | When it runs                                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `preparse_callback(f)`       | One time, after the first argument of the app or subcommand is seen. `f` takes the number of arguments left to process. |
+| `parse_complete_callback(f)` | As soon as the subcommand finishes parsing. Runs one time per use, so it can run several times.                         |
+| `final_callback(f)`          | One time, after all processing is complete. This is what `callback()` sets.                                             |
+
+The order for a whole app is: every subcommand `parse_complete_callback`, then
+the main app `parse_complete_callback`, then the used subcommand
+`final_callback`s, then the option group `final_callback`s, and last the main
+app `final_callback`.
+
+Configuration files matter here. A `parse_complete_callback` on a named
+subcommand sees no data from a config file, because it runs first. A
+`final_callback` runs after config processing. For option groups the
+`parse_complete_callback` runs after the config file is read.
+
+A subcommand is finished, and so its `parse_complete_callback` fires, when any
+of these happen:
+
+1. There are no more arguments.
+2. Another subcommand appears that does not fit an optional positional slot.
+3. The positional mark `--` appears and no positional slots are left.
+4. The subcommand terminator `++` appears.
+
+Calling a subcommand a second time resets its options and can trigger the
+callback again. `.immediate_callback()` is the shorthand for moving the callback
+you set with `callback()` to the parse-complete point.
+
+### Triggering subcommands from the command line
+
+A subcommand option can be given without entering the subcommand, using dot
+notation:
+
+```text
+--sub.long=val
+--sub.long val
+--sub.f val
+--sub1.subsub.f val
+```
+
+`--sub.long <args>` is the same as `sub --long <args> ++`, where `++` closes the
+subcommand again. The names may be quoted following the TOML rules, which is how
+you reach a subcommand whose name contains dots:
+`"subcommand.with.dots".arg1 = value`.
+
 ## Inheritance of defaults
 
 The following values are inherited when you add a new subcommand. This happens
@@ -114,6 +193,57 @@ at the point the subcommand is created:
 - Configurable
 - validate positional arguments
 - validate optional arguments
+
+## More subcommand modifiers
+
+Some further modifiers apply to an app, a subcommand, or an option group:
+
+| Modifier                              | Description                                                                                                                                                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `->require_option()`                  | Require 1 or more options or option groups. Also `require_option(N)` and `require_option(min, max)`, like `require_subcommand`.                                                                                      |
+| `->needs(opt_or_sub)`                 | The given option or subcommand must be used before this subcommand passes validation.                                                                                                                                |
+| `->excludes(opt_or_sub)`              | The given option or subcommand cannot be used together with this one.                                                                                                                                                |
+| `->disabled()`                        | Turn the subcommand off. Takes an optional bool.                                                                                                                                                                     |
+| `->disabled_by_default()`             | Disable at the start of each parse, so another subcommand can turn it on.                                                                                                                                            |
+| `->enabled_by_default()`              | Enable at the start of each parse, so another subcommand can turn it off.                                                                                                                                            |
+| `->positionals_at_end()`              | Positional arguments must come after all options.                                                                                                                                                                    |
+| `->configurable()`                    | Allow the subcommand to be triggered from a configuration file. By default config file entries only update defaults.                                                                                                 |
+| `->alias(name)`                       | Add another name for the subcommand.                                                                                                                                                                                 |
+| `->group(name)`                       | Set the help group for the subcommand. An empty name hides it from the help.                                                                                                                                         |
+| `->allow_non_standard_option_names()` | Accept long option names with a single dash, such as `-single`. Not recommended, but useful when you reproduce an existing interface. A short option may not share its first character with a single dash long name. |
+
+`disabled_by_default` and `enabled_by_default` are the building blocks behind
+`CLI::TriggerOn` and `CLI::TriggerOff`, described in @ref book-option-groups.
+
+## Help and version flags
+
+Every app is created with a help flag. You can rename it, replace it, or remove
+it:
+
+```cpp
+app.set_help_flag("-h,--help", "Print this help message and exit");
+app.set_help_flag();  // pass nothing to remove it
+```
+
+`set_help_all_flag` adds a second flag that expands every subcommand in the help
+output:
+
+```cpp
+app.set_help_all_flag("--help-all", "Expand all help");
+```
+
+A version flag is not created for you. Add one with a fixed string, or with a
+callback that produces the string when the flag is used:
+
+```cpp
+app.set_version_flag("--version", std::string(CLI11_VERSION));
+app.set_version_flag("--version", []() { return my_version_string(); });
+```
+
+All three functions return the option pointer, so the usual option modifiers
+apply, and all three replace the existing flag if there is one. The pointers can
+be read back later with `get_help_ptr()`, `get_help_all_ptr()`, and
+`get_version_ptr()`.
 
 ## Special modes
 

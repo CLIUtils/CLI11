@@ -10,10 +10,10 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
-#include <iomanip>
-#include <locale>
+#include <cstddef>
+#include <initializer_list>
+#include <iterator>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -177,17 +177,10 @@ inline bool is_separator(const std::string &str) {
 }
 
 /// Verify that str consists of letters only
-inline bool isalpha(const std::string &str) {
-    return std::all_of(str.begin(), str.end(), [](char c) { return std::isalpha(c, std::locale()); });
-}
+CLI11_INLINE bool isalpha(const std::string &str);
 
 /// Return a lower case version of a string
-inline std::string to_lower(std::string str) {
-    std::transform(std::begin(str), std::end(str), std::begin(str), [](const std::string::value_type &x) {
-        return std::tolower(x, std::locale());
-    });
-    return str;
-}
+CLI11_INLINE std::string to_lower(std::string str);
 
 /// remove underscores from a string
 inline std::string remove_underscore(std::string str) {

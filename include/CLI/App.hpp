@@ -10,15 +10,15 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <iostream>
+#include <iosfwd>
 #include <iterator>
 #include <memory>
-#include <numeric>
 #include <set>
-#include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -343,10 +343,7 @@ class App {
     ///@{
 
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
-    explicit App(std::string app_description = "", std::string app_name = "")
-        : App(app_description, app_name, nullptr) {
-        set_help_flag("-h,--help", "Print this help message and exit");
-    }
+    explicit App(std::string app_description = "", std::string app_name = "");
 
     App(const App &) = delete;
     App &operator=(const App &) = delete;
@@ -363,14 +360,7 @@ class App {
     /// it is not possible to overload on std::function (fixed in c++14
     /// and backported to c++11 on newer compilers). Use capture by reference
     /// to get a pointer to App if needed.
-    App *callback(std::function<void()> app_callback) {
-        if(immediate_callback_) {
-            parse_complete_callback_ = std::move(app_callback);
-        } else {
-            final_callback_ = std::move(app_callback);
-        }
-        return this;
-    }
+    App *callback(std::function<void()> app_callback);
 
     /// Set a callback for execution when all parsing and processing has completed
     /// aliased as callback
@@ -441,26 +431,11 @@ class App {
         return this;
     }
     /// Set the subcommand to be disabled by default, so on clear(), at the start of each parse it is disabled
-    App *disabled_by_default(bool disable = true) {
-        if(disable) {
-            default_startup = startup_mode::disabled;
-        } else {
-            default_startup = (default_startup == startup_mode::enabled) ? startup_mode::enabled : startup_mode::stable;
-        }
-        return this;
-    }
+    App *disabled_by_default(bool disable = true);
 
     /// Set the subcommand to be enabled by default, so on clear(), at the start of each parse it is enabled (not
     /// disabled)
-    App *enabled_by_default(bool enable = true) {
-        if(enable) {
-            default_startup = startup_mode::enabled;
-        } else {
-            default_startup =
-                (default_startup == startup_mode::disabled) ? startup_mode::disabled : startup_mode::stable;
-        }
-        return this;
-    }
+    App *enabled_by_default(bool enable = true);
 
     /// Set the subcommand callback to be executed immediately on subcommand completion
     App *immediate_callback(bool immediate = true);
@@ -478,15 +453,7 @@ class App {
     }
 
     /// ignore extras in config files
-    App *allow_config_extras(bool allow = true) {
-        if(allow) {
-            allow_config_extras_ = ConfigExtrasMode::Capture;
-            allow_extras_ = ExtrasMode::Capture;
-        } else {
-            allow_config_extras_ = ConfigExtrasMode::Error;
-        }
-        return this;
-    }
+    App *allow_config_extras(bool allow = true);
 
     /// ignore extras in config files
     App *allow_config_extras(config_extras_mode mode) {
@@ -655,9 +622,7 @@ class App {
     }
 
     /// Add option with no description or variable assignment
-    Option *add_option(std::string option_name) {
-        return add_option(option_name, CLI::callback_t{}, std::string{}, false);
-    }
+    Option *add_option(std::string option_name);
 
     /// Add option with description but with no variable assignment or callback
     template <typename T,
@@ -689,7 +654,7 @@ class App {
 
   public:
     /// Add a flag with no description or variable assignment
-    Option *add_flag(std::string flag_name) { return _add_flag_internal(flag_name, CLI::callback_t(), std::string{}); }
+    Option *add_flag(std::string flag_name);
 
     /// Add flag with description but with no variable assignment or callback
     /// takes a constant string or a rvalue reference to a string,  if a variable string is passed that variable will be
@@ -852,16 +817,7 @@ class App {
     /// Require a subcommand to be given (does not affect help call)
     /// The number required can be given. Negative values indicate maximum
     /// number allowed (0 for any number). Max number inheritable.
-    App *require_subcommand(int value) {
-        if(value < 0) {
-            require_subcommand_min_ = 0;
-            require_subcommand_max_ = static_cast<std::size_t>(-value);
-        } else {
-            require_subcommand_min_ = static_cast<std::size_t>(value);
-            require_subcommand_max_ = static_cast<std::size_t>(value);
-        }
-        return this;
-    }
+    App *require_subcommand(int value);
 
     /// Explicitly control the number of subcommands required. Setting 0
     /// for the max means unlimited number allowed. Max number inheritable.
@@ -881,16 +837,7 @@ class App {
     /// Require an option to be given (does not affect help call)
     /// The number required can be given. Negative values indicate maximum
     /// number allowed (0 for any number).
-    App *require_option(int value) {
-        if(value < 0) {
-            require_option_min_ = 0;
-            require_option_max_ = static_cast<std::size_t>(-value);
-        } else {
-            require_option_min_ = static_cast<std::size_t>(value);
-            require_option_max_ = static_cast<std::size_t>(value);
-        }
-        return this;
-    }
+    App *require_option(int value);
 
     /// Explicitly control the number of options required. Setting 0
     /// for the max means unlimited number allowed. Max number inheritable.
@@ -964,7 +911,14 @@ class App {
     }
 
     /// Print a nice error message and return the exit code
-    int exit(const Error &e, std::ostream &out = std::cout, std::ostream &err = std::cerr) const;
+    int exit(const Error &e, std::ostream &out, std::ostream &err) const;
+
+    /// Print a nice error message to std::cout/std::cerr and return the exit code; the
+    /// result can be discarded when it is called only for the printing
+    int exit(const Error &e) const;  // NOLINT(modernize-use-nodiscard)
+
+    /// Print a nice error message and return the exit code; errors go to std::cerr
+    int exit(const Error &e, std::ostream &out) const;
 
     ///@}
     /// @name Post parsing
@@ -986,60 +940,20 @@ class App {
     std::vector<App *> get_subcommands(const std::function<bool(App *)> &filter);
 
     /// Check to see if given subcommand was selected
-    bool got_subcommand(const App *subcom) const {
-        // get subcom needed to verify that this was a real subcommand
-        return get_subcommand(subcom)->parsed_ > 0;
-    }
+    bool got_subcommand(const App *subcom) const;
 
     /// Check with name instead of pointer to see if subcommand was selected
-    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const noexcept {
-        App *sub = get_subcommand_no_throw(subcommand_name);
-        return (sub != nullptr) ? (sub->parsed_ > 0) : false;
-    }
+    CLI11_NODISCARD bool got_subcommand(std::string subcommand_name) const noexcept;
 
     /// Sets excluded options for the subcommand
-    App *excludes(Option *opt) {
-        if(opt == nullptr) {
-            throw OptionNotFound("nullptr passed");
-        }
-        exclude_options_.insert(opt);
-        return this;
-    }
+    App *excludes(Option *opt);
 
     /// Sets excluded subcommands for the subcommand
-    App *excludes(App *app) {
-        if(app == nullptr) {
-            throw OptionNotFound("nullptr passed");
-        }
-        if(app == this) {
-            throw OptionNotFound("cannot self reference in excludes");
-        }
-        auto res = exclude_subcommands_.insert(app);
-        // subcommand exclusion should be symmetric
-        if(res.second) {
-            app->exclude_subcommands_.insert(this);
-        }
-        return this;
-    }
+    App *excludes(App *app);
 
-    App *needs(Option *opt) {
-        if(opt == nullptr) {
-            throw OptionNotFound("nullptr passed");
-        }
-        need_options_.insert(opt);
-        return this;
-    }
+    App *needs(Option *opt);
 
-    App *needs(App *app) {
-        if(app == nullptr) {
-            throw OptionNotFound("nullptr passed");
-        }
-        if(app == this) {
-            throw OptionNotFound("cannot self reference in needs");
-        }
-        need_subcommands_.insert(app);
-        return this;
-    }
+    App *needs(App *app);
 
     /// Removes an option from the excludes list of this subcommand
     bool remove_excludes(Option *opt);
@@ -1078,20 +992,15 @@ class App {
     }
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
     /// include default arguments. write_descriptions will print a description for the App and for each option.
-    CLI11_NODISCARD std::string config_to_str() const { return config_to_str(ConfigOutputMode::Active, false); }
+    CLI11_NODISCARD std::string config_to_str() const;
 
     /// Produce a string that could be read in as a config of the current values of the App.
-    CLI11_NODISCARD std::string config_to_str(ConfigOutputMode mode, bool write_description = false) const {
-        return config_formatter_->to_config(this, mode, write_description, "");
-    }
+    CLI11_NODISCARD std::string config_to_str(ConfigOutputMode mode, bool write_description = false) const;
 
     /// Produce a string that could be read in as a config of the current values of the App. Set default_also to
     /// include default arguments. write_descriptions will print a description for the App and for each option.
     /// This will be deprecated soon, use the version that takes a ConfigOutputMode instead.
-    CLI11_NODISCARD std::string config_to_str(bool default_also, bool write_description = false) const {
-        return config_to_str(default_also ? ConfigOutputMode::AllDefaults : ConfigOutputMode::Active,
-                             write_description);
-    }
+    CLI11_NODISCARD std::string config_to_str(bool default_also, bool write_description = false) const;
 
     /// Makes a help message, using the currently configured formatter
     /// Will only do one subcommand at a time
@@ -1177,14 +1086,10 @@ class App {
     CLI11_NODISCARD const std::string &get_group() const { return group_; }
 
     /// Generate and return the usage.
-    CLI11_NODISCARD std::string get_usage() const {
-        return (usage_callback_) ? usage_callback_() + '\n' + usage_ : usage_;
-    }
+    CLI11_NODISCARD std::string get_usage() const;
 
     /// Generate and return the footer.
-    CLI11_NODISCARD std::string get_footer() const {
-        return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_;
-    }
+    CLI11_NODISCARD std::string get_footer() const;
 
     /// Get the required min subcommand value
     CLI11_NODISCARD std::size_t get_require_subcommand_min() const { return require_subcommand_min_; }
@@ -1452,27 +1357,12 @@ class App {
 /// Extension of App to better manage groups of options
 class Option_group : public App {
   public:
-    Option_group(std::string group_description, std::string group_name, App *parent)
-        : App(std::move(group_description), "", parent) {
-        group(group_name);
-        // option groups should have automatic fallthrough
-        if(group_name.empty() || group_name.front() == '+') {
-            // help will not be used by default in these contexts
-            set_help_flag("");
-            set_help_all_flag("");
-        }
-    }
+    Option_group(std::string group_description, std::string group_name, App *parent);
     using App::add_option;
     /// Add an existing option to the Option_group
-    Option *add_option(Option *opt) {
-        if(get_parent() == nullptr) {
-            throw OptionNotFound("Unable to locate the specified option");
-        }
-        get_parent()->_move_option(opt, this);
-        return opt;
-    }
+    Option *add_option(Option *opt);
     /// Add an existing option to the Option_group
-    void add_options(Option *opt) { add_option(opt); }
+    void add_options(Option *opt);
     /// Add a bunch of options to the group
     template <typename... Args> void add_options(Option *opt, Args... args) {
         add_option(opt);
@@ -1480,12 +1370,7 @@ class Option_group : public App {
     }
     using App::add_subcommand;
     /// Add an existing subcommand to be a member of an option_group
-    App *add_subcommand(App *subcom) {
-        App_p subc = subcom->get_parent()->get_subcommand_ptr(subcom);
-        subc->get_parent()->remove_subcommand(subcom);
-        add_subcommand(std::move(subc));
-        return subcom;
-    }
+    App *add_subcommand(App *subcom);
 };
 
 /// Helper function to enable one option group/subcommand when another is used
@@ -1504,16 +1389,10 @@ CLI11_INLINE void TriggerOff(App *trigger_app, std::vector<App *> apps_to_enable
 CLI11_INLINE void deprecate_option(Option *opt, const std::string &replacement = "");
 
 /// Helper function to mark an option as deprecated
-inline void deprecate_option(App *app, const std::string &option_name, const std::string &replacement = "") {
-    auto *opt = app->get_option(option_name);
-    deprecate_option(opt, replacement);
-}
+CLI11_INLINE void deprecate_option(App *app, const std::string &option_name, const std::string &replacement = "");
 
 /// Helper function to mark an option as deprecated
-inline void deprecate_option(App &app, const std::string &option_name, const std::string &replacement = "") {
-    auto *opt = app.get_option(option_name);
-    deprecate_option(opt, replacement);
-}
+CLI11_INLINE void deprecate_option(App &app, const std::string &option_name, const std::string &replacement = "");
 
 /// Helper function to mark an option as retired
 CLI11_INLINE void retire_option(App *app, Option *opt);

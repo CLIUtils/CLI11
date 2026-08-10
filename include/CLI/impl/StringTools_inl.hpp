@@ -12,7 +12,16 @@
 #include "../StringTools.hpp"
 
 // [CLI11:public_includes:set]
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <iomanip>
+#include <iterator>
+#include <locale>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,6 +31,18 @@ namespace CLI {
 // [CLI11:string_tools_inl_hpp:verbatim]
 
 namespace detail {
+
+CLI11_INLINE bool isalpha(const std::string &str) {
+    return std::all_of(str.begin(), str.end(), [](char c) { return std::isalpha(c, std::locale()); });
+}
+
+CLI11_INLINE std::string to_lower(std::string str) {
+    std::transform(std::begin(str), std::end(str), std::begin(str), [](const std::string::value_type &x) {
+        return std::tolower(x, std::locale());
+    });
+    return str;
+}
+
 CLI11_INLINE std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     if(s.empty()) {

@@ -67,6 +67,28 @@ std::complex<double> comp{0, 0};
 add_option(app, "-c,--complex", comp);
 ```
 
+## Timers
+
+`CLI/Timer.hpp` is independent of the rest of the library and is not part of
+`CLI11.hpp` single file header. It times a block of code:
+
+```cpp
+#include <CLI/Timer.hpp>
+
+{
+    CLI::AutoTimer timer{"My Long Process", CLI::Timer::Big};
+    some_long_running_process();
+}
+```
+
+An `AutoTimer` prints the elapsed time when it is destroyed at the end of the
+block. A plain `Timer` does not; use `to_string()` or stream it when you want
+the value. The first argument is the title, which defaults to `Timer`. The
+second is the print function, either the provided `CLI::Timer::Simple` (the
+default) or `CLI::Timer::Big`, or any function that takes the title and the time
+as strings and returns the line to print. `time_it(func)` runs a function
+repeatedly and reports the average.
+
 ## Custom converters
 
 You can add your own converters to allow CLI11 to accept more option types in

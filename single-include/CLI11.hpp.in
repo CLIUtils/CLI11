@@ -44,6 +44,8 @@
 
 {encoding_includes}
 
+{encoding_inl_includes}
+
 {argv_inl_includes}
 
 namespace {namespace} {{
@@ -63,6 +65,8 @@ namespace {namespace} {{
 {error_hpp}
 
 {type_tools_hpp}
+
+{type_tools_inl_hpp}
 
 {split_hpp}
 

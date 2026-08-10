@@ -49,22 +49,26 @@ $extrastylesheet
         })
         document.getElementById("titlearea").appendChild(toggleButton)
     })
-    // The navtree only expands a node when its arrow is clicked; clicking the
-    // label navigates without expanding. Expand the selected node once the
-    // tree renders, so a page's subpages are visible after navigation.
+    // The navtree renders with every group collapsed except the current
+    // page's path. Start the top-level groups (Guide, Examples, API
+    // Reference) open. The tree is built asynchronously, so wait for it to
+    // appear.
     window.addEventListener("load", () => {
-        const expandSelected = () => {
-            const selected = document.querySelector("#nav-tree .item.selected")
-            if (!selected) return false
-            const arrow = selected.querySelector(".arrowhead.closed")
-            if (arrow) arrow.closest("a").click()
+        const expandTopLevel = () => {
+            const items = document.querySelectorAll(
+                "#nav-tree-contents > ul > li > ul > li > .item")
+            if (!items.length) return false
+            items.forEach((item) => {
+                const arrow = item.querySelector(".arrowhead.closed")
+                if (arrow) arrow.closest("a").click()
+            })
             return true
         }
-        if (expandSelected()) return
+        if (expandTopLevel()) return
         const contents = document.getElementById("nav-tree-contents")
         if (!contents) return
         const observer = new MutationObserver(() => {
-            if (expandSelected()) observer.disconnect()
+            if (expandTopLevel()) observer.disconnect()
         })
         observer.observe(contents, { childList: true, subtree: true })
     })

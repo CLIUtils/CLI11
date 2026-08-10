@@ -13,7 +13,11 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <functional>
+#include <iomanip>
+#include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -37,6 +41,22 @@ CLI11_INLINE std::string indent_block(const std::string &input, const std::strin
     return out.str();
 }
 }  // namespace detail
+
+CLI11_INLINE void FormatterBase::long_option_alignment_ratio(float ratio) {
+    long_option_alignment_ratio_ =
+        (ratio >= 0.0f) ? ((ratio <= 1.0f) ? ratio : 1.0f / ratio) : ((ratio < -1.0f) ? 1.0f / (-ratio) : -ratio);
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string FormatterBase::get_label(std::string key) const {
+    auto it = labels_.find(key);
+    return it != labels_.end() ? it->second : default_label(key);
+}
+
+CLI11_INLINE FormatterLambda::FormatterLambda(funct_t funct) : lambda_(std::move(funct)) {}
+
+CLI11_INLINE std::string FormatterLambda::make_help(const App *app, std::string name, AppFormatMode mode) const {
+    return lambda_(app, name, mode);
+}
 
 CLI11_INLINE std::string
 Formatter::make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const {

@@ -1028,9 +1028,9 @@ WARN_LOGFILE           =
 
 INPUT                  = include \
                          docs/mainpage.md \
-                         docs/api.md \
-                         book/README.md \
-                         book/chapters
+                         docs/examples.md \
+                         book/chapters \
+                         CHANGELOG.md
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1158,7 +1158,8 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = book/code
+EXAMPLE_PATH           = book/code \
+                         examples
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

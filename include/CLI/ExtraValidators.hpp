@@ -15,14 +15,18 @@
 #include "Validators.hpp"
 
 // [CLI11:public_includes:set]
-#include <cmath>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <iostream>
-#include <limits>
+#include <initializer_list>
+#include <iterator>
+#include <locale>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -618,16 +622,16 @@ class FileSizeValidator : public Validator {
 };
 
 /// Check that the file exist and available for read
-const detail::PermissionValidator ReadPermissions(detail::Permission::read);
+CLI11_MODULE_INLINE const detail::PermissionValidator ReadPermissions(detail::Permission::read);
 
 /// Check that the file exist and available for write
-const detail::PermissionValidator WritePermissions(detail::Permission::write);
+CLI11_MODULE_INLINE const detail::PermissionValidator WritePermissions(detail::Permission::write);
 
 /// Check that the file exist and available for execute
-const detail::PermissionValidator ExecPermissions(detail::Permission::exec);
+CLI11_MODULE_INLINE const detail::PermissionValidator ExecPermissions(detail::Permission::exec);
 
 /// Check that the file exists and is not empty
-const FileSizeValidator NonEmptyFile(1, 0);
+CLI11_MODULE_INLINE const FileSizeValidator NonEmptyFile(1, 0);
 #endif
 
 #endif

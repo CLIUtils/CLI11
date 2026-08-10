@@ -31,6 +31,7 @@ set with a simple and intuitive interface.
     - [Other parsers](#other-parsers)
     - [Features not supported by this library](#features-not-supported-by-this-library)
   - [Install](#install)
+    - [Precompiled mode](#precompiled-mode)
   - [Usage](#usage)
     - [Adding options](#adding-options)
       - [Option types](#option-types)
@@ -38,8 +39,8 @@ set with a simple and intuitive interface.
       - [Option options](#option-options)
       - [Validators](#validators)
       - [Default Validators](#default-validators)
-      - [Validators that may be disabled 🆕](#validators-that-may-be-disabled-)
-      - [Extra Validators 🆕](#extra-validators-)
+      - [Validators that may be disabled](#validators-that-may-be-disabled)
+      - [Extra Validators](#extra-validators)
       - [Validator Usage](#validator-usage)
         - [Transforming Validators](#transforming-validators)
         - [Validator operations](#validator-operations)
@@ -167,7 +168,7 @@ this library:
   parsers for python actually reimplement command line parsing rather than using
   argparse because of this perceived design flaw (recent versions do have an
   option to disable it). Recent releases of CLI11 include optional unambiguous
-  prefix matching for subcommand names 🆕, enabled by
+  prefix matching for subcommand names, enabled by
   `.allow_subcommand_prefix_matching()`, along with an example that generates
   suggested close matches.
 - Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
@@ -192,6 +193,24 @@ details are available at [installation][]:
   point at this folder. With CMake 3.10+, use `include_directories(/opt/CLI11)`
 - For other methods including using CMake, conan or vcpkg and some specific
   instructions for GCC 8 or WASI see [installation][].
+- Experimental C++20 named module: build with `-DCLI11_MODULES=ON` (CMake 3.28+
+  and a module-capable generator), link `CLI11::Module`, and write
+  `import cli11;`. See [installation][] for details.
+
+### Precompiled mode
+
+CLI11 is header-only by default, so each translation unit that includes it
+compiles the full library. If you build CLI11 with CMake (`add_subdirectory` or
+an installed package), you can set `CLI11_PRECOMPILED` to compile the
+implementation one time into a static library instead:
+
+```bash
+cmake -S . -B build -DCLI11_PRECOMPILED=ON
+```
+
+This can markedly reduce the compile time of each file that includes CLI11 (in
+one simple measurement, approximately 4x faster per file). The `CLI11::CLI11`
+target does not change. See [installation][] for details.
 
 ## Usage
 
@@ -506,8 +525,8 @@ Before parsing, you can set the following options:
   validation checks for the option to be executed when the option value is
   parsed vs. at the end of all parsing. This could cause the callback to be
   executed multiple times. Also works with positional options.
-- `->callback_priority(CallbackPriority priority)`: 🆕 changes the order in
-  which the option callback is executed. Four principal callback call-points are
+- `->callback_priority(CallbackPriority priority)`: changes the order in which
+  the option callback is executed. Four principal callback call-points are
   available. `CallbackPriority::First` executes at the very beginning of
   processing, before configuration files are read and environment variables are
   interpreted. `CallbackPriority::PreRequirementsCheck` executes after
@@ -600,8 +619,8 @@ the two function are that checks do not modify the input whereas transforms can
 and are executed before any Validators added through `check`.
 
 CLI11 has several Validators included that perform some common checks. By
-default the most commonly used ones are available. 🆕 If some are not needed
-they can be disabled by using
+default the most commonly used ones are available. If some are not needed they
+can be disabled by using
 
 ```c++
 #define CLI11_DISABLE_EXTRA_VALIDATORS 1
@@ -625,7 +644,7 @@ of flags.
 - `CLI::PositiveNumber`: Requires the number be greater than 0
 - `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
 
-#### Validators that may be disabled 🆕
+#### Validators that may be disabled
 
 Validators that may be disabled by setting `CLI11_DISABLE_EXTRA_VALIDATORS` to 1
 or enabled by setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1. By default they are
@@ -661,17 +680,22 @@ computation time that may not be valuable for some use cases.
   the input be convertible to an `unsigned int` regardless of the end
   conversion.
 
-#### Extra Validators 🆕
+#### Extra Validators
 
 New validators will go into code sections that must be explicitly enabled by
 setting `CLI11_ENABLE_EXTRA_VALIDATORS` to 1
 
-- `CLI::ReadPermission`: Requires that the file or folder given exist and have
+- `CLI::ReadPermissions`: Requires that the file or folder given exist and have
   read permission. Requires C++17.
-- `CLI::WritePermission`: Requires that the file or folder given exist and have
+- `CLI::WritePermissions`: Requires that the file or folder given exist and have
   write permission. Requires C++17.
-- `CLI::ExecPermission`: Requires that the file given exist and have execution
+- `CLI::ExecPermissions`: Requires that the file given exist and have execution
   permission. Requires C++17.
+- `CLI::FileSizeValidator(min_size, max_size = 0)`: 🆕 Requires that the file
+  exist and that its size in bytes be at least `min_size`. If `max_size` is
+  greater than 0, the size must also not exceed it. Requires C++17.
+- `CLI::NonEmptyFile`: 🆕 Requires that the file exist and not be empty. Same as
+  `CLI::FileSizeValidator(1)`. Requires C++17.
 
 #### Validator Usage
 
@@ -843,8 +867,8 @@ It is also possible to create a subclass of `CLI::Validator`, in which case it
 can also set a custom description function, and operation function. One example
 of this is in the
 [custom validator example](https://github.com/CLIUtils/CLI11/blob/main/examples/custom_validator.cpp).
-example. The `check` and `transform` operations can also take a shared_ptr 🆕 to
-a validator if you wish to reuse the validator in multiple locations or it is
+example. The `check` and `transform` operations can also take a shared_ptr to a
+validator if you wish to reuse the validator in multiple locations or it is
 mutating and the check is dependent on other operations or is variable. Note
 that in this case it is not recommended to use the same object for both check
 and transform operations, the check will modify some internal flags on the
@@ -1002,7 +1026,7 @@ option_groups. These are:
   is not allowed to have a single character short option starting with the same
   character as a single dash long form name; for example, `-s` and `-single` are
   not allowed in the same application.
-- `.allow_subcommand_prefix_matching()`:🆕 If this modifier is enabled,
+- `.allow_subcommand_prefix_matching()`: If this modifier is enabled,
   unambiguous prefix portions of a subcommand will match. For example
   `upgrade_package` would match on `upgrade_`, `upg`, `u` as long as no other
   subcommand would also match. It also disallows subcommand names that are full
@@ -1078,12 +1102,12 @@ option_groups. These are:
 - `.get_option_no_throw(name)`: Get an option pointer by option name. This
   function will return a `nullptr` instead of throwing if the option is not
   available. This method will not search parents of option_options or nameless
-  subcommands regardless of fallthrough status 🚧, this behavior is slightly
+  subcommands regardless of fallthrough status 🆕, this behavior is slightly
   different from `get_option`.
 - `.get_options(filter)`: Get the list of all defined option pointers (useful
   for processing the app for custom output formats). If used on a subcommand
   will also get options that are in the parent app if the subcommand has
-  fallthrough (and is not nameless 🚧).
+  fallthrough (and is not nameless 🆕).
 - `.parse_order()`: Get the list of option pointers in the order they were
   parsed (including duplicates).
 - `.formatter(std::shared_ptr<FormatterBase> fmt)`: Set a custom formatter for
@@ -1128,8 +1152,8 @@ option_groups. These are:
   executes after the first argument of an application is processed. See
   [Subcommand callbacks](#callbacks) for some additional details.
 - `.allow_extras()`: Do not throw an error if extra arguments are left over.
-- `.allow_extras(CLI::ExtrasMode)`: 🆕 Specify the method of handling
-  unrecognized arguments.
+- `.allow_extras(CLI::ExtrasMode)`: Specify the method of handling unrecognized
+  arguments.
   - `CLI::ExtrasMode::Error`: generate an error on unrecognized argument. Same
     as `.allow_extras(false)`.
   - `CLI::ExtrasMode::ErrorImmediately`: generate an error immediately on
@@ -1162,7 +1186,7 @@ option_groups. These are:
   `PrefixCommandMode::SeparatorOnly` will only trigger prefix command mode with
   the subcommand separator `--`; other unrecognized arguments are considered an
   error unless `allow_extras` is enabled. Calling with
-  `PrefixCommandMode::PositionalOnly` 🚧 will only trigger prefix command mode
+  `PrefixCommandMode::PositionalOnly` 🆕 will only trigger prefix command mode
   at the first positional argument or the separator `--`; unrecognized options
   do not stop processing and are collected in the remaining_arg list.
 - `.usage(message)`: Replace text to appear at the start of the help string
@@ -1445,7 +1469,7 @@ following overloads:
   active values, or include defaulted arguments if `default_also` is `true`.
   This overload will likely be deprecated in a future release in favor of the
   `CLI::ConfigOutputMode` overload.
-- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🚧
+- `.config_to_str(CLI::ConfigOutputMode, bool write_description = false)`: 🆕
   Specify how configuration output should be generated.
   - `CLI::ConfigOutputMode::Active`: print active values only. Same as
     `.config_to_str()`.
@@ -2031,7 +2055,7 @@ try! Feedback is always welcome.
 [diana/hep]: http://diana-hep.org
 [nsf award 1414736]: https://nsf.gov/awardsearch/showAward?AWD_ID=1414736
 [university of cincinnati]: http://www.uc.edu
-[gitbook]: https://cliutils.github.io/CLI11/book.html
+[gitbook]: https://cliutils.github.io/CLI11/book-installation.html
 [cli11 advanced topics/custom converters]:
   https://cliutils.github.io/CLI11/book-advanced-topics.html
 [programoptions.hxx]: https://github.com/Fytch/ProgramOptions.hxx

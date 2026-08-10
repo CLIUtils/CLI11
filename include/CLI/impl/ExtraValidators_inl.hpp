@@ -9,7 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../ExtraValidators.hpp"
 
-#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS != 0) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
 #include "../Encoding.hpp"
@@ -19,10 +19,13 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
-#include <fstream>
+#include <cstdint>
+#include <functional>
+#include <initializer_list>
 #include <map>
 #include <string>
-#include <utility>
+#include <system_error>
+#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {

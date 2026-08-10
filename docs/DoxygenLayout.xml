@@ -5,21 +5,27 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="Introduction"/>
     <tab type="pages" visible="no" title="" intro=""/>
-    <tab type="usergroup" title="Tutorial" url="book.html">
+    <tab type="usergroup" title="Guide" url="[none]">
       <tab type="user" url="book-installation.html" title="Installation"/>
       <tab type="user" url="book-basics.html" title="The Basics"/>
       <tab type="user" url="book-flags.html" title="Adding Flags"/>
       <tab type="user" url="book-options.html" title="Options"/>
       <tab type="user" url="book-validators.html" title="Validators"/>
       <tab type="user" url="book-subcommands.html" title="Subcommands and the App"/>
-      <tab type="user" url="book-an-advanced-example.html" title="Making a git clone"/>
+      <tab type="user" url="book-option-groups.html" title="Option groups"/>
       <tab type="user" url="book-config.html" title="Accepting configure files"/>
       <tab type="user" url="book-formatting.html" title="Formatting help output"/>
+      <tab type="user" url="book-unicode.html" title="Unicode support"/>
       <tab type="user" url="book-toolkits.html" title="Using CLI11 in a Toolkit"/>
       <tab type="user" url="book-advanced-topics.html" title="Advanced topics"/>
       <tab type="user" url="book-internals.html" title="CLI11 Internals"/>
     </tab>
-    <tab type="usergroup" title="API Reference" url="api.html">
+    <tab type="usergroup" title="Examples" url="[none]">
+      <tab type="user" url="book-an-advanced-example.html" title="Making a git clone"/>
+      <tab type="user" url="book-modules-example.html" title="Using CLI11 as a C++20 module"/>
+      <tab type="user" url="example-programs.html" title="Example programs"/>
+    </tab>
+    <tab type="usergroup" title="API Reference" url="[none]">
       <tab type="topics" visible="yes" title="Errors &amp; Validators" intro=""/>
       <tab type="namespaces" visible="yes" title="">
         <tab type="namespacelist" visible="yes" title="" intro=""/>
@@ -32,6 +38,7 @@
         <tab type="classmembers" visible="yes" title="" intro=""/>
       </tab>
     </tab>
+    <tab type="user" url="changelog.html" title="Changelog"/>
   </navindex>
 
   <!-- Layout definition for a class page -->

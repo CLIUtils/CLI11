@@ -33,7 +33,6 @@ jobs:
         run: |
           mkdir -p CLI11-Source
           cp build/CLI11-*-Source.* CLI11-Source
-          cp build/CLI11-*-Source.* .
 
       - name: Make header
         run: cmake --build build --target CLI11-generate-single-file
@@ -48,9 +47,29 @@ jobs:
           name: CLI11-Source
           path: CLI11-Source
 
+      # Runs on every build, so a version bump without a changelog entry fails
+      # here instead of at tag time.
+      - name: Make release notes
+        id: notes
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            version="$GITHUB_REF_NAME"
+          else
+            version="$(python3 scripts/ExtractVersion.py)"
+          fi
+          python3 scripts/ExtractReleaseNotes.py "$version" > release-notes.md
+          title="$(python3 scripts/ExtractReleaseNotes.py --title "$version")"
+          echo "title=$title" >> "$GITHUB_OUTPUT"
+          echo "$title"
+          cat release-notes.md
+
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          name: ${{ steps.notes.outputs.title }}
+          body_path: release-notes.md
           files: |
             build/single-include/CLI11.hpp
+            CLI11-Source/CLI11-*-Source.tar.gz
+            CLI11-Source/CLI11-*-Source.zip

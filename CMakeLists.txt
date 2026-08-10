@@ -165,6 +165,7 @@ set(CLI11_impl_headers
     ${CLI11_headerLoc}/impl/Option_inl.hpp
     ${CLI11_headerLoc}/impl/Split_inl.hpp
     ${CLI11_headerLoc}/impl/StringTools_inl.hpp
+    ${CLI11_headerLoc}/impl/TypeTools_inl.hpp
     ${CLI11_headerLoc}/impl/Validators_inl.hpp
     ${CLI11_headerLoc}/impl/ExtraValidators_inl.hpp
     ${CLI11_headerLoc}/impl/Encoding_inl.hpp
@@ -189,22 +190,21 @@ endif()
 # This folder should be installed
 if(CLI11_INSTALL OR CLI11_FULL_INSTALL)
 
-  # Use find_package on the installed package
-  # Since we have no custom code, we can directly write this
-  # to Config.cmake (otherwise we'd have a custom config and would
-  # import Targets.cmake
+  # Use find_package on the installed package: CLI11Config.cmake includes
+  # the exported CLI11Targets.cmake and adds the CLI11::Module alias
 
   # Add the version in a CMake readable way
   configure_file("cmake/CLI11ConfigVersion.cmake.in" "CLI11ConfigVersion.cmake" @ONLY)
 
-  # Make version available in the install
-  install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake"
+  # Make version available in the install; the config wrapper adds the
+  # CLI11::Module alias when the module target is present
+  install(FILES "${PROJECT_BINARY_DIR}/CLI11ConfigVersion.cmake" "cmake/CLI11Config.cmake"
           DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 
   # Install the export target as a file
   install(
     EXPORT CLI11Targets
-    FILE CLI11Config.cmake
+    FILE CLI11Targets.cmake
     NAMESPACE CLI11::
     DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/CLI11")
 

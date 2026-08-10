@@ -4,10 +4,12 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-import cli11;
-
-#include <print>
+// Keep the includes before the import; GCC rejects textual includes that
+// follow an import of a module whose global module fragment overlaps them.
+#include <iostream>
 #include <string>
+
+import cli11;
 
 using std::string;
 
@@ -26,7 +28,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-    std::println("OK: import cli11 module\nvalue = {}", value);
+    std::cout << "OK: import cli11 module\nvalue = " << value << '\n';
 
     return 0;
 }

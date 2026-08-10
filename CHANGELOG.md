@@ -1,8 +1,256 @@
-# Changelog
+# Changelog {#changelog}
 
-## Unreleased
+## Version 2.7.2: Faster compiles
 
-## Version 2.6.2
+This patch release makes the precompiled and experimental module modes cheaper
+for clients. Include-what-you-use is followed, more function bodies compile into
+the library instead of into every translation unit, and the C++20 named module
+now imports the precompiled implementation instead of the full header-only
+library. It also fixes the Bazel precompiled build, which could give consumers
+duplicate implementations.
+
+### Changed
+
+- The C++20 named module uses the precompiled implementation and we lowered its
+  floor from C++23 to C++20. `CLI11::Module` now works for both `find_package`
+  and `add_subdirectory`, and configure fails with a clear message if CMake is
+  older than 3.28. [#1413][]
+- Removed `<iostream>`, `<codecvt>`, `<iomanip>`, `<fstream>`, and `<locale>`
+  from the declaration headers, so precompiled clients do not parse them.
+  `App::exit()` is now three overloads instead of one with stream default
+  arguments. [#1411][]
+- Moved the remaining non-template function bodies out of `App.hpp`,
+  `Option.hpp`, `Validators.hpp`, `TypeTools.hpp`, `ConfigFwd.hpp`, and
+  `FormatterFwd.hpp` into the `impl/*_inl.hpp` files, so they compile into the
+  library in precompiled mode. Header-only mode is unchanged. [#1415][]
+  [#1416][] [#1417][]
+
+### Fixed
+
+- Fixed the Bazel precompiled build: `CLI11_COMPILE` and
+  `CLI11_ENABLE_EXTRA_VALIDATORS` now propagate to consumers, which previously
+  got duplicate implementations from both the headers and the library. Added a
+  `cli11_header_only` target, the Windows `shell32` link, and more tests.
+  [#1420][]
+- Made `ExtraValidators_inl.hpp` use the same `CLI11_ENABLE_EXTRA_VALIDATORS`
+  test as its header, and gave the file permission validators the
+  `CLI11_MODULE_INLINE` marker the other global validators have. [#1415][]
+
+### Documentation
+
+- Documented the precompiled mode in the README. [#1412][]
+- Added a minimal module example, corrected the `CLI11::Module` target name in
+  the book, and noted that macros such as `CLI11_PARSE` do not come through an
+  import. [#1413][]
+
+### Internal
+
+- Added an `iwyu` preset that runs include-what-you-use over the one precompiled
+  translation unit, with a mapping file for both standard libraries, and applied
+  its findings. [#1418][]
+
+[#1411]: https://github.com/CLIUtils/CLI11/pull/1411
+[#1412]: https://github.com/CLIUtils/CLI11/pull/1412
+[#1413]: https://github.com/CLIUtils/CLI11/pull/1413
+[#1415]: https://github.com/CLIUtils/CLI11/pull/1415
+[#1416]: https://github.com/CLIUtils/CLI11/pull/1416
+[#1417]: https://github.com/CLIUtils/CLI11/pull/1417
+[#1418]: https://github.com/CLIUtils/CLI11/pull/1418
+[#1420]: https://github.com/CLIUtils/CLI11/pull/1420
+
+## Version 2.7.1: LTO link fix
+
+This patch release fixes linking against the precompiled shared library when it
+is built with link-time optimization.
+
+### Fixed
+
+- Fixed missing symbols in the precompiled library under LTO: `Precompile.cpp`
+  now explicitly instantiates `Option::ignore_case<App>` and
+  `ignore_underscore<App>`, and the library always compiles the full validator
+  set unless CMake disables it. [#1409][]
+
+### Documentation
+
+- Added the changelog to the Doxygen site. [#1405][]
+- Titled the changelog entries and named the releases from them. [#1406][]
+
+### Internal
+
+- Moved the release checklist to a `prepare-release` skill. [#1407][]
+
+[#1405]: https://github.com/CLIUtils/CLI11/pull/1405
+[#1406]: https://github.com/CLIUtils/CLI11/pull/1406
+[#1407]: https://github.com/CLIUtils/CLI11/pull/1407
+[#1409]: https://github.com/CLIUtils/CLI11/pull/1409
+
+## Version 2.7.0: Audit and documentation
+
+This version adds a `FileSize` validator, a `PositionalOnly` prefix command
+mode, and more control over config file generation. It also contains a large set
+of bug fixes from a systematic audit of the parsing, config, help formatting,
+string handling, and type conversion code, along with performance improvements
+that remove unnecessary copies in hot paths.
+
+### Added
+
+- Added a `FileSize` validator to check minimum and maximum file sizes.
+  [#1305][]
+- Added `PrefixCommandMode::PositionalOnly`, which restores the pre-2.6.2 prefix
+  command behavior as an opt-in mode: only a positional argument or the `--`
+  separator triggers prefix mode, and unrecognized options are collected as
+  extras. [#1382][]
+- Added an option to write only the active subcommand defaults when generating a
+  config file. [#1314][]
+
+### Changed
+
+- Improved performance by removing unnecessary string and container copies in
+  parsing and validator hot paths. [#1368][]
+- Improved the performance of string splitting by replacing a `stringstream`
+  with a find-based loop. [#1396][]
+- Sorted the `excludes` and `needs` sets by name for stable help output.
+  [#1308][]
+- Removed `en_US.UTF-8` from the unicode locale fallback list. [#1312][]
+- Modernization and portability fixes: added missing standard includes, exported
+  `CLI::Number` from the C++20 module, and cleaned up the warning lists.
+  [#1367][]
+- Aligned the Meson build with wrapdb policy by removing `disable_auto_if` for
+  subprojects. [#1349][]
+
+### Fixed
+
+- Fixed `require_subcommand` maximum enforcement for dot notation and for
+  disabled fallthrough, dot-notation subcommands with Windows-style prefixes,
+  `get_options` const/non-const consistency, and a crash when parsing with
+  `argc == 0`. [#1363][], [#1384][]
+- Fixed missing symbol export from the precompiled shared library on macOS.
+  [#1387][]
+- Fixed double indentation of nested option groups in help output. [#1371][],
+  [#1379][]
+- Fixed config reading and writing bugs: section headers with trailing comments,
+  one-line multiline comments, embedded delimiters with the `Join` policy, and
+  multiline values for indented keys. [#1369][], [#1361][]
+- Fixed help formatting issues: hidden positionals appearing in the usage line,
+  long subcommand names running into their descriptions, and `ExtrasError`
+  reporting the wrong error name. [#1369][]
+- Fixed `ignore_case` and `ignore_underscore` so both apply when used together.
+  [#1358][]
+- Fixed string handling edge cases in `split_up`, `remove_quotes`,
+  `append_codepoint`, and `escape_detect`. [#1364][]
+- Fixed type conversion edge cases: negative input to unsigned types,
+  whitespace-only floating point input, containers of pairs with an odd element
+  count, large integer sums, and the `Join` policy with default values.
+  [#1362][]
+- Fixed stale processed values being returned after `Option::clear()`. [#1360][]
+- Fixed out-of-bounds reads in the non-codecvt narrow/widen conversion paths
+  used under C++26. [#1359][]
+- Fixed infinite recursion on subcommand option groups with fallthrough enabled.
+  [#1316][]
+- Fixed empty strings given to wrapper types such as `std::optional` to
+  consistently produce a default-constructed value. [#1340][]
+- Fixed `CLI::ExistingFile` to reject an empty filename with a clear error.
+  [#1351][]
+- Fixed an empty description on a modified `Transformer`. [#1345][]
+- Fixed unsigned wraparound in `split_program_name` for command lines without
+  spaces. [#1339][]
+- Fixed `FileOnDefaultPath` with an empty default path, and `PositiveNumber`
+  rejecting subnormal values. [#1366][]
+- Fixed compilation with libc++/clang in C++26 mode. [#1326][]
+- Fixed the case of the `shell32` library name in CMake. [#1347][]
+- Removed the `static` keyword from the precompiled library definition in CMake.
+  [#1304][]
+
+### Documentation
+
+- Clarified the behavior of the `prefix_command` overloads. [#1310][]
+- Documented the Catch2 dependency for the test build. [#1342][]
+- Corrected documentation errors, including the `AsSizeValue` example, the
+  `App::required()` doc, and validator comments. [#1304][], [#1366][]
+- Modernized some documentation. [#1336][]
+- Moved the tutorial book into the Doxygen documentation, modernized the HTML
+  output with doxygen-awesome-css, and reorganized the sidebar navigation.
+  [#1390][], [#1392][], [#1397][], [#1398][]
+- Corrected errors found in a documentation review. [#1394][]
+- Split the documentation into Guide and Examples sections and filled gaps in
+  the guide. [#1400][]
+
+### Internal
+
+- Added a `dev` CMake preset and workflow for faster local iteration using the
+  precompiled library and ccache. [#1387][]
+- Added a CUDA test for the single-header build. [#1381][]
+- Refactored the duplicated parse-completion pipeline and removed dead code.
+  [#1365][]
+- Moved static `std::string` reference initializers to helper functions.
+  [#1335][]
+- Routed formatter label fallback through an internal helper as a step toward
+  internationalization support. [#1320][]
+- Cleaned up the CMake logic for finding Catch2 and Boost, and corrected the
+  example test regular expressions. [#1325][], [#1322][]
+- Reorganized the GitHub workflows and reduced CI build times. [#1323][],
+  [#1387][]
+- Added C++26 CI coverage (GCC, and clang with modules), and made codecov wait
+  for all coverage uploads. [#1388][], [#1391][]
+- Tidied the configuration files in the root directory. [#1393][]
+- Attached the source packages to tagged releases, wrote the release notes from
+  the changelog, and added a CI check for a changelog entry on every build.
+  [#1401][], [#1402][], [#1403][]
+
+[#1305]: https://github.com/CLIUtils/CLI11/pull/1305
+[#1382]: https://github.com/CLIUtils/CLI11/pull/1382
+[#1314]: https://github.com/CLIUtils/CLI11/pull/1314
+[#1387]: https://github.com/CLIUtils/CLI11/pull/1387
+[#1381]: https://github.com/CLIUtils/CLI11/pull/1381
+[#1368]: https://github.com/CLIUtils/CLI11/pull/1368
+[#1308]: https://github.com/CLIUtils/CLI11/pull/1308
+[#1312]: https://github.com/CLIUtils/CLI11/pull/1312
+[#1365]: https://github.com/CLIUtils/CLI11/pull/1365
+[#1335]: https://github.com/CLIUtils/CLI11/pull/1335
+[#1367]: https://github.com/CLIUtils/CLI11/pull/1367
+[#1320]: https://github.com/CLIUtils/CLI11/pull/1320
+[#1325]: https://github.com/CLIUtils/CLI11/pull/1325
+[#1322]: https://github.com/CLIUtils/CLI11/pull/1322
+[#1349]: https://github.com/CLIUtils/CLI11/pull/1349
+[#1323]: https://github.com/CLIUtils/CLI11/pull/1323
+[#1310]: https://github.com/CLIUtils/CLI11/pull/1310
+[#1342]: https://github.com/CLIUtils/CLI11/pull/1342
+[#1336]: https://github.com/CLIUtils/CLI11/pull/1336
+[#1304]: https://github.com/CLIUtils/CLI11/pull/1304
+[#1363]: https://github.com/CLIUtils/CLI11/pull/1363
+[#1384]: https://github.com/CLIUtils/CLI11/pull/1384
+[#1371]: https://github.com/CLIUtils/CLI11/pull/1371
+[#1379]: https://github.com/CLIUtils/CLI11/pull/1379
+[#1369]: https://github.com/CLIUtils/CLI11/pull/1369
+[#1361]: https://github.com/CLIUtils/CLI11/pull/1361
+[#1358]: https://github.com/CLIUtils/CLI11/pull/1358
+[#1364]: https://github.com/CLIUtils/CLI11/pull/1364
+[#1362]: https://github.com/CLIUtils/CLI11/pull/1362
+[#1360]: https://github.com/CLIUtils/CLI11/pull/1360
+[#1359]: https://github.com/CLIUtils/CLI11/pull/1359
+[#1316]: https://github.com/CLIUtils/CLI11/pull/1316
+[#1340]: https://github.com/CLIUtils/CLI11/pull/1340
+[#1351]: https://github.com/CLIUtils/CLI11/pull/1351
+[#1345]: https://github.com/CLIUtils/CLI11/pull/1345
+[#1339]: https://github.com/CLIUtils/CLI11/pull/1339
+[#1366]: https://github.com/CLIUtils/CLI11/pull/1366
+[#1326]: https://github.com/CLIUtils/CLI11/pull/1326
+[#1347]: https://github.com/CLIUtils/CLI11/pull/1347
+[#1388]: https://github.com/CLIUtils/CLI11/pull/1388
+[#1390]: https://github.com/CLIUtils/CLI11/pull/1390
+[#1391]: https://github.com/CLIUtils/CLI11/pull/1391
+[#1392]: https://github.com/CLIUtils/CLI11/pull/1392
+[#1393]: https://github.com/CLIUtils/CLI11/pull/1393
+[#1394]: https://github.com/CLIUtils/CLI11/pull/1394
+[#1396]: https://github.com/CLIUtils/CLI11/pull/1396
+[#1397]: https://github.com/CLIUtils/CLI11/pull/1397
+[#1398]: https://github.com/CLIUtils/CLI11/pull/1398
+[#1400]: https://github.com/CLIUtils/CLI11/pull/1400
+[#1401]: https://github.com/CLIUtils/CLI11/pull/1401
+[#1402]: https://github.com/CLIUtils/CLI11/pull/1402
+[#1403]: https://github.com/CLIUtils/CLI11/pull/1403
+
+## Version 2.6.2: C++20 modules
 
 This version adds C++20 modules support, additional controls for help output and
 finer grained control for extras handling and prefix command operation. Fixes
@@ -67,7 +315,7 @@ help output and specific combinations of options and conditions.
 [#1261]: https://github.com/CLIUtils/CLI11/pull/1261
 [#1244]: https://github.com/CLIUtils/CLI11/pull/1244
 
-## Version 2.6.1
+## Version 2.6.1: Compilation fixes
 
 Patch fixing some compile issues in specific situations in the recent release,
 and a potential segmentation fault from specially crafted config files
@@ -89,7 +337,7 @@ and a potential segmentation fault from specially crafted config files
 [#1238]: https://github.com/CLIUtils/CLI11/pull/1238
 [#1239]: https://github.com/CLIUtils/CLI11/pull/1239
 
-## Version 2.6.0
+## Version 2.6.0: Callback control
 
 This version adds finer grained control of when option callbacks are executed,
 and further refinements in the help formatting. It also fixes a number of bugs

@@ -25,6 +25,12 @@
 #include <utility>
 // [CLI11:public_includes:end]
 
+// [CLI11:encoding_inl_includes:verbatim]
+#if CLI11_HAS_CODECVT
+#include <codecvt>
+#endif
+// [CLI11:encoding_inl_includes:end]
+
 namespace CLI {
 // [CLI11:encoding_inl_hpp:verbatim]
 
