@@ -561,6 +561,25 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
     CHECK_THAT(help, Contains("[18]"));
 }
 
+TEST_CASE("THelp: UnlimitedSubcommandsUsePlural", "[help]") {
+    // max==0 means unlimited (App::require_subcommand_max_); help must use plural.
+    CLI::App app{"My prog"};
+    app.add_subcommand("sub1");
+    app.add_subcommand("sub2");
+
+    // default max is 0 (unlimited)
+    CHECK(0u == app.get_require_subcommand_max());
+    CHECK_THAT(app.help(), Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
+
+    app.require_subcommand(0);  // still unlimited max
+    CHECK(0u == app.get_require_subcommand_max());
+    CHECK_THAT(app.help(), Contains("Usage: [OPTIONS] [SUBCOMMANDS]"));
+
+    app.require_subcommand(2, 0);  // min 2, max unlimited
+    CHECK(0u == app.get_require_subcommand_max());
+    CHECK_THAT(app.help(), Contains("Usage: [OPTIONS] SUBCOMMANDS"));
+}
+
 TEST_CASE("THelp: Subcom", "[help]") {
     CLI::App app{"My prog"};
 
