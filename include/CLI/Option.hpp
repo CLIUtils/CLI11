@@ -326,7 +326,7 @@ class Option : public OptionBase<Option> {
     std::vector<Validator_p> validators_{};
 
     /// What the program declared this option's value to be, for shell completion; None when it did not say
-    CompletionHint completion_hint_{CompletionHint::None};
+    CompletionHint completion_hint_{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
     /// A list of options that are required with this option
     std::set<Option *> needs_{};
