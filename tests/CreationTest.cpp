@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-
 TEST_CASE_METHOD(TApp, "ShortNameConflictMessage", "[creation]") {
     app.add_flag("--option,-o");
     try {
