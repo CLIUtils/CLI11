@@ -72,7 +72,7 @@ enum class CompletionHint : std::uint8_t {
 /// how a validator that knows its accepted values hands them on: a plain member of the base that survives the copy.
 struct CompletionMeta {
     /// The kind of value the validator accepts, when the shell is the one that can produce it.
-    CompletionHint hint{CompletionHint::None};
+    CompletionHint hint{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
     /// Every value the validator accepts, or empty when it does not enumerate them.
     ///
@@ -86,22 +86,22 @@ struct CompletionMeta {
 /// The value is always a whole insertable token, never a fragment of one. The description is shown beside the value
 /// when the shell lists several candidates, and is dropped when there is only one to insert.
 struct CompletionResult {
-    std::string value;
-    std::string description;
+    std::string value;        // cppcheck-suppress unusedStructMember
+    std::string description;  // cppcheck-suppress unusedStructMember
 };
 
 /// Everything the binary has to say about one completion request.
 struct CompletionReply {
-    std::vector<CompletionResult> results{};
+    std::vector<CompletionResult> results{};  // cppcheck-suppress unusedStructMember
 
     /// The leading part of the word being completed that is not the value, `--file=` at `--file=/et`.
     ///
     /// Candidates are whole tokens, so every one of them begins with it, but a shell rarely replaces a whole token:
     /// bash has already broken the word at the `=` and puts back only what follows it. Only the binary knows how much
     /// of the word is the option name, so it says so here rather than leaving each script to guess.
-    std::string prefix{};
+    std::string prefix{};  // cppcheck-suppress unusedStructMember
 
-    CompletionDirective directive{CompletionDirective::Default};
+    CompletionDirective directive{CompletionDirective::Default};  // cppcheck-suppress unusedStructMember
 };
 
 /// Render a reply into the line-based text the generated shell scripts parse.
