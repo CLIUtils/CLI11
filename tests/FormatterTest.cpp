@@ -64,6 +64,18 @@ TEST_CASE("Formatter: OptCustomize", "[formatter]") {
     CHECK_THAT(help, Contains("-h,   --help           Print"));
 }
 
+TEST_CASE("Formatter: DelimiterInHelp", "[formatter]") {
+    CLI::App app{"My prog"};
+
+    std::vector<int> vals;
+    app.add_option("--idx", vals)->delimiter(',');
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Delimiter"));
+    CHECK_THAT(help, Contains("','"));
+}
+
 TEST_CASE("Formatter: OptCustomizeSimple", "[formatter]") {
     CLI::App app{"My prog"};
 
