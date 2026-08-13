@@ -182,6 +182,14 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     return out.str();
 }
 
+CLI11_INLINE std::string Formatter::make_header(const App *app) const {
+    std::string header = app->get_header();
+    if(header.empty()) {
+        return std::string{};
+    }
+    return header + "\n\n";
+}
+
 CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
     std::string footer = app->get_footer();
     if(footer.empty()) {
@@ -207,6 +215,11 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
             out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
     } else {
         out << make_description(app);
+    }
+    if(is_description_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(out, make_header(app), description_paragraph_width_, "");
+    } else {
+        out << make_header(app);
     }
     out << make_usage(app, name);
     out << make_positionals(app);
@@ -300,6 +313,12 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
             out, make_description(sub), description_paragraph_width_, body_indent);  // Format description as paragraph
     } else {
         out << detail::indent_block(make_description(sub), body_indent) << '\n';
+    }
+
+    if(is_description_paragraph_formatting_enabled()) {
+        detail::streamOutAsParagraph(out, make_header(sub), description_paragraph_width_, body_indent);
+    } else {
+        out << detail::indent_block(make_header(sub), body_indent);
     }
 
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
@@ -460,6 +479,9 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
         }
         if(!opt->get_envname().empty())
             out << " (" << get_label("Env") << ":" << opt->get_envname() << ")";
+        if(opt->get_delimiter() != '\0') {
+            out << " (" << get_label("Delimiter") << ":'" << opt->get_delimiter() << "')";
+        }
         if(!opt->get_needs().empty()) {
             out << " " << get_label("Needs") << ":";
             print_option_set(opt->get_needs());
