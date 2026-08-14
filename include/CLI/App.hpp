@@ -1076,10 +1076,11 @@ class App {
     /// Check the status of the allow windows style options
     CLI11_NODISCARD bool get_allow_windows_style_options() const { return allow_windows_style_options_; }
 
-    /// Check the status of the allow windows style options
+    /// Check the status of positionals at end
     CLI11_NODISCARD bool get_positionals_at_end() const { return positionals_at_end_; }
 
-    /// Check the status of the allow windows style options
+    /// Check the status of configurable; a configurable subcommand can be triggered from a configuration file, and is
+    /// written out as its own section instead of dotted names
     CLI11_NODISCARD bool get_configurable() const { return configurable_; }
 
     /// Get the group of this subcommand
