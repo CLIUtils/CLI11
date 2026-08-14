@@ -127,10 +127,7 @@ TEST_CASE_METHOD(TApp, "CheckedTransformerMultilineHelp", "[transform]") {
     test_cli value{test_cli::val1};
     app.add_option("-s", value)
         ->transform(CLI::CheckedTransformer(CLI::TransformPairs<test_cli>{
-            {"val1", test_cli::val1},
-            {"val2", test_cli::val2},
-            {"val3", test_cli::val3},
-            {"val4", test_cli::val4}}));
+            {"val1", test_cli::val1}, {"val2", test_cli::val2}, {"val3", test_cli::val3}, {"val4", test_cli::val4}}));
 
     auto help = app.help();
     CHECK(help.find("value in {\n  ") != std::string::npos);
