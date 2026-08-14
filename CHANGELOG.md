@@ -1,16 +1,5 @@
 # Changelog {#changelog}
 
-## Version 2.7.3: Explicit shell32 for MSVC headers
-
-### Fixed
-
-- Link `shell32` for MSVC/clang-cl even when CLI11 is used as headers without
-  the CMake or Bazel target, via `#pragma comment(lib, "shell32.lib")` next to
-  `CommandLineToArgvW`. CMake/`shell32` and Bazel `DEFAULTLIB:shell32.lib`
-  remain for MinGW and target-based builds. Fixes [#1053][].
-
-[#1053]: https://github.com/CLIUtils/CLI11/issues/1053
-
 ## Version 2.7.2: Faster compiles
 
 This patch release makes the precompiled and experimental module modes cheaper
