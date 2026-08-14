@@ -14,6 +14,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <vector>
 
 class SimpleFormatter : public CLI::FormatterBase {
   public:
