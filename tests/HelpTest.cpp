@@ -67,7 +67,7 @@ TEST_CASE("THelp: Footer", "[help]") {
 }
 
 TEST_CASE("THelp: Header", "[help]") {
-    CLI::App app{"My prog", "prog"};
+    CLI::App app{"My prog"};
     app.header("Extended help with more details about this command.");
 
     std::string help = app.help();
@@ -82,7 +82,7 @@ TEST_CASE("THelp: Header", "[help]") {
 }
 
 TEST_CASE("THelp: HeaderSubcommand", "[help]") {
-    CLI::App app{"My prog", "prog"};
+    CLI::App app{"My prog"};
     auto *fmt = app.add_subcommand("fmt", "Format files in-place.");
     fmt->header("If a file is given, it reformats in-place. Otherwise output goes to stdout.");
 
