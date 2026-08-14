@@ -486,11 +486,15 @@ template <typename T, enable_if_t<std::is_integral<T>::value, detail::enabler> =
 std::string value_string(const T &value) {
     return std::to_string(value);
 }
+
 /// get a string as a convertible value for floating-point types
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
 std::string value_string(const T &value) {
-    return to_string(value);
+    std::ostringstream stream;
+    stream << std::setprecision(std::numeric_limits<T>::max_digits10) << value;
+    return stream.str();
 }
+
 /// get a string as a convertible value for enumerations
 template <typename T, enable_if_t<std::is_enum<T>::value, detail::enabler> = detail::dummy>
 std::string value_string(const T &value) {

@@ -443,8 +443,12 @@ CLI11_INLINE std::string Formatter::make_option_opts(const Option *opt) const {
     } else {
         if(opt->get_type_size() != 0) {
             if(enable_option_type_names_) {
-                if(!opt->get_type_name().empty())
+                if(!opt->get_type_name().empty()) {
                     out << " " << get_label(opt->get_type_name());
+                    // Show the delimiter on the type, a trailing "..." only means space separated values
+                    if(opt->get_delimiter() != '\0')
+                        out << opt->get_delimiter() << "...";
+                }
             }
             if(enable_option_defaults_) {
                 if(!opt->get_default_str().empty())

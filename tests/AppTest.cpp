@@ -487,6 +487,18 @@ TEST_CASE_METHOD(TApp, "OneStringFlagLike", "[app]") {
     CHECK(str.empty());
 }
 
+TEST_CASE_METHOD(TApp, "SmallFloatingPointDefaultVal", "[app]") {
+    double value = 0.0;
+
+    auto *opt = app.add_option("--value", value);
+
+    opt->default_val(1e-8);
+
+    run();
+
+    CHECK(value == Approx(1e-8));
+}
+
 TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
     int val{0};
     auto *opt = app.add_option("-i", val)->expected(0, 1);
