@@ -1680,3 +1680,35 @@ TEST_CASE("TVersion: exit_with_required", "[help]") {
         CHECK(0 == ret);
     }
 }
+
+TEST_CASE("THelp: Delimiter", "[help]") {
+    CLI::App app{"My prog"};
+
+    std::vector<std::string> greedy;
+    app.add_option("--greedy", greedy, "Greedy")->delimiter(',');
+
+    std::vector<std::string> single;
+    app.add_option("--single", single, "Single")->delimiter(',')->allow_extra_args(false);
+
+    std::vector<std::string> plain;
+    app.add_option("--plain", plain, "Plain");
+
+    std::string help = app.help();
+
+    // A greedy option keeps the trailing ellipsis for the extra arguments it takes
+    CHECK_THAT(help, Contains("--greedy TEXT,... ..."));
+    CHECK_THAT(help, Contains("--single TEXT,..."));
+    CHECK_THAT(help, Contains("--plain TEXT ..."));
+}
+
+TEST_CASE("THelp: DelimiterNoTypeNames", "[help]") {
+    CLI::App app{"My prog"};
+
+    std::vector<std::string> val;
+    app.add_option("--opt", val, "Option")->delimiter(',');
+    app.get_formatter()->enable_option_type_names(false);
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, !Contains(",..."));
+}
