@@ -514,7 +514,6 @@ TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
     CHECK(9 == val);
 }
 
-
 TEST_CASE_METHOD(TApp, "SmallFloatDefaultVal", "[app]") {
     float value = 0.0f;
     auto *opt = app.add_option("--value", value);
