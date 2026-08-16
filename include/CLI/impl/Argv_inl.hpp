@@ -54,7 +54,8 @@
 #include <shellapi.h>
 // CommandLineToArgvW lives in shell32. CMake/Bazel already link it when using the
 // CLI11 targets; this pragma covers MSVC/clang-cl consumers that only include the
-// headers (or clear CMAKE_CXX_STANDARD_LIBRARIES). See #1053.
+// headers (or clear CMAKE_CXX_STANDARD_LIBRARIES). See #1053 and
+// https://learn.microsoft.com/en-us/cpp/preprocessor/comment-c-cpp#lib
 #if defined(_MSC_VER)
 #pragma comment(lib, "shell32.lib")
 #endif
