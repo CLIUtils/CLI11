@@ -113,6 +113,7 @@ CLI11_INLINE bool narrow_impl(const wchar_t *str, std::size_t str_size, std::str
 CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
     std::string result;
     std::string error_msg;
+    // cppcheck-suppress knownConditionTrueFalse ; the codecvt branch cannot fail
     if(!narrow_impl(str, str_size, result, error_msg)) {
         throw std::runtime_error(error_msg);
     }
@@ -165,6 +166,7 @@ CLI11_INLINE bool widen_impl(const char *str, std::size_t str_size, std::wstring
 CLI11_INLINE std::wstring widen_impl(const char *str, std::size_t str_size) {
     std::wstring result;
     std::string error_msg;
+    // cppcheck-suppress knownConditionTrueFalse ; the codecvt branch cannot fail
     if(!widen_impl(str, str_size, result, error_msg)) {
         throw std::runtime_error(error_msg);
     }
