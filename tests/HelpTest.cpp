@@ -1681,6 +1681,41 @@ TEST_CASE("TVersion: exit_with_required", "[help]") {
     }
 }
 
+TEST_CASE("TVersion: help_precedence", "[help]") {
+    // help wins over version regardless of the order on the command line
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+
+    CHECK_THROWS_AS(app.parse("--version --help"), CLI::CallForHelp);
+    CHECK_THROWS_AS(app.parse("--help --version"), CLI::CallForHelp);
+}
+
+TEST_CASE("TVersion: no_parse_in_flight", "[help]") {
+    // version() works with no parse in flight and does not disturb parse results
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+    CHECK_THAT(app.version(), Equals(CLI11_VERSION));
+
+    try {
+        app.parse("--version");
+    } catch(const CLI::CallForVersion &v) {
+        CHECK_THAT(CLI11_VERSION, Equals(v.what()));
+    }
+    CHECK(1U == app.get_version_ptr()->count());
+    CHECK_THAT(app.version(), Equals(CLI11_VERSION));
+}
+
+TEST_CASE("TVersion: false_value", "[help]") {
+    // an explicit false value does not trigger the version output
+    CLI::App app;
+
+    app.set_version_flag("--version", CLI11_VERSION);
+
+    CHECK_NOTHROW(app.parse("--version=false"));
+}
+
 TEST_CASE("THelp: Delimiter", "[help]") {
     CLI::App app{"My prog"};
 

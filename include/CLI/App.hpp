@@ -198,6 +198,9 @@ class App {
     /// A pointer to a version flag if there is one
     Option *version_ptr_{nullptr};
 
+    /// This is a function that generates the version string
+    std::function<std::string()> version_producer_{};
+
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
 
