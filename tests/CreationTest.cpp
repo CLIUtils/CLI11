@@ -874,3 +874,20 @@ TEST_CASE_METHOD(TApp, "MakeUnstreamableOptions", "[creation]") {
     CHECK(3u == values.size());
     CHECK(34 == values[2].get_x());
 }
+
+TEST_CASE_METHOD(TApp, "TryGetFlagValue", "[creation]") {
+    auto *flg = app.add_flag("--flag,!--no-flag");
+    std::string output;
+
+    CHECK(flg->try_get_flag_value("flag", "{}", output));
+    CHECK(output == "true");
+    CHECK(flg->try_get_flag_value("no-flag", "{}", output));
+    CHECK(output == "false");
+
+    flg->disable_flag_override();
+    CHECK(flg->try_get_flag_value("flag", "true", output));
+    CHECK(output == "true");
+    // an override on a flag with overrides disabled is the failure case
+    CHECK_FALSE(flg->try_get_flag_value("flag", "false", output));
+    CHECK_THROWS_AS(static_cast<void>(flg->get_flag_value("flag", "false")), CLI::ArgumentMismatch);
+}

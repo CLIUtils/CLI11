@@ -38,9 +38,22 @@ CLI11_INLINE std::vector<std::string> split_names(std::string current);
 /// extract default flag values either {def} or starting with a !
 CLI11_INLINE std::vector<std::pair<std::string, std::string>> get_default_flag_values(const std::string &str);
 
-/// Get a vector of short names, one of long names, and a single name
+/// The failure conditions from get_names, matching the BadNameString variants
+enum class name_error : char {
+    success = 0,
+    one_char,            ///< BadNameString::OneCharName
+    missing_dash,        ///< BadNameString::MissingDash
+    bad_long_name,       ///< BadNameString::BadLongName
+    bad_positional,      ///< BadNameString::BadPositionalName
+    reserved,            ///< BadNameString::ReservedName
+    multiple_positional  ///< BadNameString::MultiPositionalNames
+};
+
+/// Get a vector of short names, one of long names, and a single name.
+/// Does not throw: on a bad name it stops and reports the failure through err and err_name,
+/// which identify the BadNameString variant and its argument.
 CLI11_INLINE std::tuple<std::vector<std::string>, std::vector<std::string>, std::string>
-get_names(const std::vector<std::string> &input, bool allow_non_standard = false);
+get_names(const std::vector<std::string> &input, bool allow_non_standard, name_error &err, std::string &err_name);
 
 }  // namespace detail
 // [CLI11:split_hpp:end]
