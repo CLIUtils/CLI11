@@ -1046,7 +1046,9 @@ option_groups. These are:
   default is true.
 - `.configurable()`: Allow the subcommand to be triggered from a configuration
   file. By default subcommand options in a configuration file do not trigger a
-  subcommand but will just update default values.
+  subcommand but will just update default values. This flag also controls how
+  the subcommand is written out by `config_to_str`; see
+  [the config chapter](https://cliutils.github.io/CLI11/book/chapters/config.html).
 - `.disable()`: Specify that the subcommand is disabled, if given with a bool
   value it will enable or disable the subcommand or option group.
 - `.disabled_by_default()`: Specify that at the start of parsing the

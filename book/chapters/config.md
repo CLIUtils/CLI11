@@ -329,6 +329,28 @@ following overloads:
 The `write_description` argument will include option descriptions and the App
 description.
 
+Subcommands are written in one of two forms. A subcommand set to
+`configurable()` gets its own section, such as `[sub]`, if the subcommand was
+passed on the command line or the mode is `CLI::ConfigOutputMode::AllDefaults`.
+In all other conditions, the options of the subcommand are written with dotted
+names, such as `sub.value=1`. Nested subcommands use the parent names as a
+prefix, such as `[sub.subsub]` or `sub.subsub.value=1`.
+
+```cpp
+ CLI::App app;
+ int a{1}, b{1};
+ app.add_subcommand("plain")->add_option("--value", a)->capture_default_str();
+ app.add_subcommand("configurable")->configurable()
+    ->add_option("--value", b)->capture_default_str();
+ std::cout<<app.config_to_str(CLI::ConfigOutputMode::AllDefaults);
+```
+
+```toml
+plain.value=1
+[configurable]
+value=1
+```
+
 ```cpp
  CLI::App app;
  app.add_option(...);
