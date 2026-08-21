@@ -420,21 +420,44 @@ TEST_CASE("StringTools: binaryStrings", "[helpers]") {
     CHECK(result == "\\XEM\\X7K");
 }
 
+/// run the escape processing on a copy and verify it succeeds, returning the processed string
+static std::string remove_escapes(std::string str) {
+    std::string error_msg;
+    CHECK(CLI::detail::remove_escaped_characters(str, error_msg));
+    CHECK(error_msg.empty());
+    return str;
+}
+
+/// run the escape processing on a copy and return the error message; verify it fails and leaves the
+/// string unmodified
+static std::string remove_escapes_error(std::string str) {
+    std::string error_msg;
+    CHECK_FALSE(CLI::detail::remove_escaped_characters(str, error_msg));
+    CHECK_FALSE(error_msg.empty());
+    return error_msg;
+}
+
 TEST_CASE("StringTools: escapeConversion", "[helpers]") {
-    CHECK(CLI::detail::remove_escaped_characters("test\\\"") == "test\"");
-    CHECK(CLI::detail::remove_escaped_characters("test\\\\") == "test\\");
-    CHECK(CLI::detail::remove_escaped_characters("test\\b") == "test\b");
-    CHECK(CLI::detail::remove_escaped_characters("test\\t") == "test\t");
-    CHECK(CLI::detail::remove_escaped_characters("test\\n\\r\\t\\f") == "test\n\r\t\f");
-    CHECK(CLI::detail::remove_escaped_characters("test\\r") == "test\r");
-    CHECK(CLI::detail::remove_escaped_characters("test\\f") == "test\f");
+    CHECK(remove_escapes("test\\\"") == "test\"");
+    CHECK(remove_escapes("test\\\\") == "test\\");
+    CHECK(remove_escapes("test\\b") == "test\b");
+    CHECK(remove_escapes("test\\t") == "test\t");
+    CHECK(remove_escapes("test\\n\\r\\t\\f") == "test\n\r\t\f");
+    CHECK(remove_escapes("test\\r") == "test\r");
+    CHECK(remove_escapes("test\\f") == "test\f");
     std::string zstring = "test";
     zstring.push_back('\0');
     zstring.append("test\n");
-    CHECK(CLI::detail::remove_escaped_characters("test\\0test\\n") == zstring);
+    CHECK(remove_escapes("test\\0test\\n") == zstring);
 
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\m_bad"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\"), std::invalid_argument);
+    CHECK(remove_escapes_error("test\\m_bad") == "unrecognized escape sequence \\m in test\\m_bad");
+    CHECK(remove_escapes_error("test\\") == "invalid escape sequence test\\");
+
+    // a failure must leave the input string unmodified
+    std::string bad = "test\\m_bad";
+    std::string error_msg;
+    CHECK_FALSE(CLI::detail::remove_escaped_characters(bad, error_msg));
+    CHECK(bad == "test\\m_bad");
 }
 
 TEST_CASE("StringTools: quotedString", "[helpers]") {
@@ -507,26 +530,54 @@ TEST_CASE("StringTools: quotedString", "[helpers]") {
     // test that '`' still works regardless of the other specified characters
     CHECK(CLI::detail::process_quoted_string(q3));
     CHECK(q3 == qliteral);
+
+    // an escape processing failure returns false and fills the error message
+    std::string qbad = "\"bad\\m_escape\"";
+    std::string error_msg;
+    CHECK_FALSE(CLI::detail::process_quoted_string(qbad, error_msg));
+    CHECK(error_msg == "unrecognized escape sequence \\m in bad\\m_escape");
+
+    // the overload without an error message ignores the failure
+    qbad = "\"bad\\m_escape\"";
+    CHECK_FALSE(CLI::detail::process_quoted_string(qbad));
+}
+
+TEST_CASE("StringTools: removeQuotesVector", "[helpers]") {
+    std::vector<std::string> args{"\"quoted\\tstring\"", "'literal\\n'", "plain"};
+    std::string error_msg;
+    CHECK(CLI::detail::remove_quotes(args, error_msg));
+    CHECK(error_msg.empty());
+    CHECK(args[0] == "quoted\tstring");
+    // escape processing is not done on literal strings
+    CHECK(args[1] == "literal\\n");
+    CHECK(args[2] == "plain");
+
+    args = {"\"bad\\m_escape\""};
+    CHECK_FALSE(CLI::detail::remove_quotes(args, error_msg));
+    CHECK(error_msg == "unrecognized escape sequence \\m in bad\\m_escape");
 }
 
 TEST_CASE("StringTools: unicode_literals", "[helpers]") {
 
-    CHECK(CLI::detail::remove_escaped_characters("test\\u03C0\\u00e9") == from_u8string(u8"test\u03C0\u00E9"));
-    CHECK(CLI::detail::remove_escaped_characters("test\\u73C0\\u0057") == from_u8string(u8"test\u73C0\u0057"));
+    CHECK(remove_escapes("test\\u03C0\\u00e9") == from_u8string(u8"test\u03C0\u00E9"));
+    CHECK(remove_escapes("test\\u73C0\\u0057") == from_u8string(u8"test\u73C0\u0057"));
 
-    CHECK(CLI::detail::remove_escaped_characters("test\\U0001F600\\u00E9") == from_u8string(u8"test\U0001F600\u00E9"));
+    CHECK(remove_escapes("test\\U0001F600\\u00E9") == from_u8string(u8"test\U0001F600\u00E9"));
 
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001M600\\u00E9"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\u00M9"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8E9"), std::invalid_argument);
+    CHECK(remove_escapes_error("test\\U0001M600\\u00E9") ==
+          "unicode sequence must have 8 hex codes test\\U0001M600\\u00E9");
+    CHECK(remove_escapes_error("test\\U0001E600\\u00M9") ==
+          "unicode sequence must have 4 hex codes test\\U0001E600\\u00M9");
+    CHECK(remove_escapes_error("test\\U0001E600\\uD8E9") == "[0xD800, 0xDFFF] are not valid code points.");
 
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E600\\uD8"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U0001E60"), std::invalid_argument);
-    // code points above U+10FFFF are not valid and must throw rather than silently vanish
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\U00110000"), std::invalid_argument);
-    CHECK_THROWS_AS(CLI::detail::remove_escaped_characters("test\\UFFFFFFFF"), std::invalid_argument);
+    CHECK(remove_escapes_error("test\\U0001E600\\uD8") ==
+          "unicode sequence must have 4 hex codes test\\U0001E600\\uD8");
+    CHECK(remove_escapes_error("test\\U0001E60") == "unicode sequence must have 8 hex codes test\\U0001E60");
+    // code points above U+10FFFF are not valid and must fail rather than silently vanish
+    CHECK(remove_escapes_error("test\\U00110000") == "values above 0x10FFFF are not valid code points.");
+    CHECK(remove_escapes_error("test\\UFFFFFFFF") == "values above 0x10FFFF are not valid code points.");
     // the largest valid code point still works
-    CHECK(CLI::detail::remove_escaped_characters("test\\U0010FFFF") == from_u8string(u8"test\U0010FFFF"));
+    CHECK(remove_escapes("test\\U0010FFFF") == from_u8string(u8"test\U0010FFFF"));
 }
 
 TEST_CASE("StringTools: handleSecondaryArray", "[helpers]") {
