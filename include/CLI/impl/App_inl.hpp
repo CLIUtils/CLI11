@@ -19,7 +19,6 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
-#include <exception>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -1638,7 +1637,7 @@ CLI11_INLINE void App::_process() {
     _process_help_flags(CallbackPriority::First);
     _process_callbacks(CallbackPriority::First);
 
-    std::exception_ptr config_exception;
+    std::unique_ptr<CLI::FileError> config_error;
     try {
         // the config file might generate a FileError but that should not be processed until later in the process
         // to allow for help, version and other errors to generate first.
@@ -1646,8 +1645,8 @@ CLI11_INLINE void App::_process() {
 
         // process env shouldn't throw but no reason to process it if config generated an error
         _process_env();
-    } catch(const CLI::FileError &) {
-        config_exception = std::current_exception();
+    } catch(const CLI::FileError &e) {
+        config_error.reset(new CLI::FileError(e));
     }
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
@@ -1661,8 +1660,8 @@ CLI11_INLINE void App::_process() {
     _process_help_flags(CallbackPriority::Normal);
     _process_callbacks(CallbackPriority::Normal);
 
-    if(config_exception) {
-        std::rethrow_exception(config_exception);
+    if(config_error) {
+        throw *config_error;
     }
 
     _process_callbacks(CallbackPriority::LastPreHelp);
