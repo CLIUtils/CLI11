@@ -54,6 +54,7 @@ set with a simple and intuitive interface.
     - [Configuration file](#configuration-file)
     - [Inheriting defaults](#inheriting-defaults)
     - [Formatting](#formatting)
+    - [Shell completion](#shell-completion-)
     - [Subclassing](#subclassing)
     - [How it works](#how-it-works)
     - [Unicode support](#unicode-support)
@@ -171,8 +172,6 @@ this library:
   prefix matching for subcommand names, enabled by
   `.allow_subcommand_prefix_matching()`, along with an example that generates
   suggested close matches.
-- Autocomplete: This might eventually be added to both Plumbum and CLI11, but it
-  is not supported yet.
 - While not recommended, CLI11 does now support non-standard option names such
   as `-option`. This is enabled through `allow_non_standard_option_names()`
   modifier on an app.
@@ -1554,6 +1553,20 @@ process in a subclass of either formatter. If you want to make a new formatter
 from scratch, you can do that too; you just need to implement the correct
 signature. see [formatting][] for more details.
 
+### Shell completion 🚧
+
+A CLI11 program can complete its own command lines in bash, offering its
+subcommands, its option names, and the values a validator accepts. Answering
+completion requests is built in and on by default; what a user installs is a
+small script, which `app.set_completion_flag()` makes the program print:
+
+```bash
+source <(myprog --completion bash)
+```
+
+See [Shell completion][] for the settings, for how an option describes values
+the validators do not, and for the known limitations.
+
 ### Subclassing
 
 The App class was designed allow toolkits to subclass it, to provide preset
@@ -2096,4 +2109,5 @@ try! Feedback is always welcome.
 [lyra]: https://github.com/bfgroup/Lyra
 [installation]: https://cliutils.github.io/CLI11/book-installation.html
 [formatting]: https://cliutils.github.io/CLI11/book-formatting.html
+[shell completion]: https://cliutils.github.io/CLI11/book-completion.html
 [config]: https://cliutils.github.io/CLI11/book-config.html

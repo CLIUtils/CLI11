@@ -20,6 +20,7 @@
 #include <functional>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -41,6 +42,7 @@ namespace CLI {
 // [CLI11:validators_hpp:verbatim]
 
 class Option;
+struct CompletionMeta;
 
 /// @defgroup validator_group Validators
 
@@ -68,6 +70,11 @@ class Validator {
     bool active_{true};
     /// specify that a validator should not modify the input
     bool non_modifying_{false};
+    /// What shell completion can say about the values this Validator accepts, if anything.
+    ///
+    /// Behind a pointer so that the struct can grow without changing the size of every Validator, which is part of the
+    /// precompiled library's ABI, and so that this header needs only a declaration of it.
+    std::shared_ptr<const CompletionMeta> completion_meta_{};
 
     Validator(std::string validator_desc, std::function<std::string(std::string &)> func);
 
@@ -138,6 +145,11 @@ class Validator {
 
     /// Get a boolean if the validator is allowed to modify the input returns true if it can modify the input
     CLI11_NODISCARD bool get_modifying() const { return !non_modifying_; }
+
+    /// Get what shell completion can say about the accepted values, null if this Validator does not describe them
+    CLI11_NODISCARD const std::shared_ptr<const CompletionMeta> &get_completion_meta() const {
+        return completion_meta_;
+    }
 
     /// Combining validators is a new validator. Type comes from left validator if function, otherwise only set if the
     /// same.

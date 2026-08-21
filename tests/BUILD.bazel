@@ -121,6 +121,7 @@ cc_test(
         "TransformTest",
         "CreationTest",
         "SubcommandTest",
+        "CompletionTest",
         "HelpTest",
         "FormatterTest",
         "NewParseTest",

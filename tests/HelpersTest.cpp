@@ -556,6 +556,26 @@ TEST_CASE("StringTools: close_sequence", "[helpers]") {
     CHECK(CLI::detail::close_sequence("[(),(),{},\"]]52{}\",[],[54],[[],[],()]]", 0, ']') == 37U);
 }
 
+TEST_CASE("StringTools: has_prefix", "[helpers]") {
+    CHECK(CLI::detail::has_prefix("--my-opt", "--my"));
+    CHECK(CLI::detail::has_prefix("--my-opt", ""));
+    CHECK(CLI::detail::has_prefix("--my-opt", "--my-opt"));
+    CHECK_FALSE(CLI::detail::has_prefix("--my-opt", "--my-opt-longer"));
+    CHECK_FALSE(CLI::detail::has_prefix("--my-opt", "--MY"));
+    CHECK_FALSE(CLI::detail::has_prefix("--my_opt", "--my-"));
+
+    CHECK(CLI::detail::has_prefix("--my-opt", "--MY", true));
+    CHECK_FALSE(CLI::detail::has_prefix("--my_opt", "--my-", true));
+
+    // The underscore goes from both sides, so either spelling of the prefix matches either of the name
+    CHECK(CLI::detail::has_prefix("--my_opt", "--my", false, true));
+    CHECK(CLI::detail::has_prefix("--my_opt", "--my_", false, true));
+    CHECK(CLI::detail::has_prefix("--myopt", "--my_", false, true));
+    CHECK_FALSE(CLI::detail::has_prefix("--my_opt", "--MY_", false, true));
+
+    CHECK(CLI::detail::has_prefix("--my_opt", "--MY_", true, true));
+}
+
 TEST_CASE("Trim: Various", "[helpers]") {
     std::string s1{"  sdlfkj sdflk sd s  "};
     std::string a1{"sdlfkj sdflk sd s"};
@@ -1820,7 +1840,7 @@ TEST_CASE("String: environment", "[helpers]") {
 
     auto value = CLI::detail::get_environment_value("TEST1");
     CHECK(value == "TESTS");
-    unset_env("TEST1");
+    CLI::detail::unset_environment_value("TEST1");
 
     value = CLI::detail::get_environment_value("TEST2");
     CHECK(value.empty());

@@ -24,6 +24,7 @@
 // [CLI11:public_includes:end]
 
 // CLI Library includes
+#include "Completion.hpp"
 #include "ConfigFwd.hpp"
 #include "Error.hpp"
 #include "FormatterFwd.hpp"
@@ -197,6 +198,16 @@ class App {
 
     /// A pointer to a version flag if there is one
     Option *version_ptr_{nullptr};
+
+    /// A pointer to the flag that prints a completion script if there is one
+    Option *completion_ptr_{nullptr};
+
+    /// If true, parse() answers a completion request found in the environment instead of parsing
+    bool completion_enabled_{true};
+
+    /// The environment variable whose presence signals a completion request. The cursor index is read from the same
+    /// name with `_INDEX` appended
+    std::string completion_env_var_{"CLI11_COMPLETE"};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
@@ -647,6 +658,37 @@ class App {
     Option *set_version_flag(std::string flag_name,
                              std::function<std::string()> vfunc,
                              const std::string &version_help = "Display program version information and exit");
+
+    /// Set a flag that takes a shell name and prints its completion script, replacing any existing one.
+    /// Off unless called, because adding it changes the help output of every program that upgrades.
+    Option *
+    set_completion_flag(std::string flag_name = "--completion",
+                        const std::string &completion_help = "Print the completion script for a shell and exit");
+
+    /// Stop answering the completion requests that arrive through the environment
+    App *disable_completion(bool disable = true) {
+        completion_enabled_ = !disable;
+        return this;
+    }
+
+    /// Change the environment variable whose presence activates completion
+    App *set_completion_env_var(std::string env_var) {
+        completion_env_var_ = std::move(env_var);
+        return this;
+    }
+
+    /// Get the environment variable whose presence activates completion
+    CLI11_NODISCARD const std::string &get_completion_env_var() const { return completion_env_var_; }
+
+    /// Generate the script that teaches a shell to complete this program.
+    CLI11_NODISCARD std::string get_completion_script(const std::string &shell) const;
+
+    /// Get the completion candidates for the word at the cursor. The words are the arguments of the line being
+    /// completed excluding the program name, so words and cursor are both 0-based over real arguments.
+    ///
+    /// One word per argument, as the program would have received them. Where a shell hands its completion functions
+    /// something else, as bash does by breaking `--file=x` into three words, rejoining them is that script's job.
+    CLI11_NODISCARD CompletionReply get_completions(const std::vector<std::string> &words, std::size_t cursor) const;
 
   private:
     /// Internal function for adding a flag
@@ -1170,6 +1212,12 @@ class App {
     /// Get a pointer to the version option. (const)
     CLI11_NODISCARD const Option *get_version_ptr() const { return version_ptr_; }
 
+    /// Get a pointer to the completion script option
+    Option *get_completion_ptr() { return completion_ptr_; }
+
+    /// Get a pointer to the completion script option. (const)
+    CLI11_NODISCARD const Option *get_completion_ptr() const { return completion_ptr_; }
+
     /// Get the parent of this subcommand (or nullptr if main app)
     App *get_parent() { return parent_; }
 
@@ -1283,6 +1331,67 @@ class App {
     /// and marks this app as the top-level app.
     void _parse_setup();
 
+    /// Answer a completion request sitting in the environment by throwing CallForCompletion.
+    /// Returns without doing anything if there is no request. Expects a reversed vector.
+    void _complete_intercept(const std::vector<std::string> &args) const;
+
+    /// Append every name and alias of this app's subcommands that starts with the prefix
+    void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
+
+    /// Every option a parse of this app accepts as its own, positionals included: this app's own, then those of each
+    /// nameless option group, in the order a parse tries them.
+    void _gather_options(std::vector<const Option *> &options) const;
+
+    /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
+    void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
+
+    /// Whether this word is an option written the Windows way, `/name` or `/name:value`, and this app takes those
+    CLI11_NODISCARD bool _is_windows_option(const std::string &word) const;
+
+    /// The option that the words after this one are values for, or null if this word is not an option that takes any.
+    /// `attached_values` comes back as 1 when the word carries a value of its own, `--files=a` or `-la`, and 0 when it
+    /// does not, so that a caller can tell how many values the option still needs from the words after it.
+    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word, int &attached_values) const;
+
+    /// Walk the words an option takes as its values and return the index one past the last of them.
+    ///
+    /// Values are read from `words[first]` onwards, in addition to the `attached_values` the option's own word carried.
+    /// `reserved` is how many words at the end of the line must be left for the required positionals. Nothing past
+    /// `cursor` is read, since the word being completed is not classified here; `hungry` is set if the option would
+    /// take a value there.
+    CLI11_NODISCARD std::size_t _option_value_end(const Option &opt,
+                                                  int attached_values,
+                                                  const std::vector<std::string> &words,
+                                                  std::size_t first,
+                                                  std::size_t cursor,
+                                                  std::size_t reserved,
+                                                  bool &hungry) const;
+
+    /// How many words at the end of the line the required positionals must be left, given that `assigned` words have
+    /// gone to positionals already. What _count_remaining_positionals counts, for a walk that has parsed nothing.
+    CLI11_NODISCARD std::size_t _count_pending_positionals(std::size_t assigned) const;
+
+    /// Read a word of short names as a parse would, stopping at the first name that takes a value and returning it.
+    /// Sets consumed to how much of the word was names, which is all of it when the walk ran out of word.
+    CLI11_NODISCARD const Option *_walk_short_names(const std::string &word, std::string::size_type &consumed) const;
+
+    /// Fill in the whole reply for a word holding a short name and more text after it, `-lfast` or `-vl`
+    void _add_short_word_completions(const std::string &word, CompletionReply &reply) const;
+
+    /// Append the option's values as whole tokens, for a value sharing its word with the name in front of it
+    void _add_attached_value_completions(const Option &opt,
+                                         const std::string &head,
+                                         const std::string &typed,
+                                         CompletionReply &reply) const;
+
+    /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
+    /// anything at all
+    void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
+
+    /// The positional that would receive the value at this index among the positional values of this app, counting
+    /// each positional's own capacity. Null once the positionals are all full.
+    CLI11_NODISCARD const Option *_positional_at(std::size_t index) const;
+
     /// Internal parse function
     void _parse(std::vector<std::string> &args);
 
@@ -1334,6 +1443,9 @@ class App {
     /// if local_processing_only is set to true then fallthrough is disabled will return false if not found
     /// return true if the argument was processed or false if nothing was done
     bool _parse_arg(std::vector<std::string> &args, detail::Classifier current_type, bool local_processing_only);
+
+    /// Return the minimum and maximum number of words an option may take as values
+    static void _value_appetite(const Option &opt, int &minimum, int &maximum);
 
     /// Trigger the pre_parse callback if needed
     void _trigger_pre_parse(std::size_t remaining_args);
