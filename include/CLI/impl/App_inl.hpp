@@ -77,7 +77,10 @@ CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #ifdef _WIN32
     (void)argv;
 
-    normalized_argv_ = detail::compute_win32_argv();
+    std::string win32_argv_error;
+    if(!detail::compute_win32_argv(normalized_argv_, win32_argv_error)) {
+        throw std::runtime_error(win32_argv_error);
+    }
 
     if(!normalized_argv_view_.empty()) {
         normalized_argv_view_.clear();
@@ -701,10 +704,9 @@ CLI11_INLINE void App::parse(std::string commandline, bool program_name_included
     auto args = detail::split_up(std::move(commandline));
     // remove all empty strings
     args.erase(std::remove(args.begin(), args.end(), std::string{}), args.end());
-    try {
-        detail::remove_quotes(args);
-    } catch(const std::invalid_argument &arg) {
-        throw CLI::ParseError(arg.what(), CLI::ExitCodes::InvalidError);
+    std::string error_msg;
+    if(!detail::remove_quotes(args, error_msg)) {
+        throw CLI::ParseError(error_msg, CLI::ExitCodes::InvalidError);
     }
     std::reverse(args.begin(), args.end());
     parse(std::move(args));

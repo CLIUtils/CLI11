@@ -21,7 +21,6 @@
 #include <iterator>
 #include <locale>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -257,7 +256,7 @@ CLI11_INLINE std::uint32_t hexConvert(char hc) {
 
 CLI11_INLINE char make_char(std::uint32_t code) { return static_cast<char>(static_cast<unsigned char>(code)); }
 
-CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
+CLI11_INLINE bool append_codepoint(std::string &str, std::uint32_t code, std::string &error_msg) {
     if(code < 0x80) {  // ascii code equivalent
         str.push_back(static_cast<char>(code));
     } else if(code < 0x800) {  // \u0080 to \u07FF
@@ -266,7 +265,8 @@ CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
         str.push_back(make_char(0x80 | (code & 0x3F)));
     } else if(code < 0x10000) {  // U+0800...U+FFFF
         if(0xD800 <= code && code <= 0xDFFF) {
-            throw std::invalid_argument("[0xD800, 0xDFFF] are not valid code points.");
+            error_msg = "[0xD800, 0xDFFF] are not valid code points.";
+            return false;
         }
         // 1110yyyy 10yxxxxx 10xxxxxx
         str.push_back(make_char(0xE0 | code >> 12));
@@ -279,18 +279,21 @@ CLI11_INLINE void append_codepoint(std::string &str, std::uint32_t code) {
         str.push_back(make_char(0x80 | (code >> 6 & 0x3F)));
         str.push_back(make_char(0x80 | (code & 0x3F)));
     } else {  // code points above U+10FFFF are not valid
-        throw std::invalid_argument("values above 0x10FFFF are not valid code points.");
+        error_msg = "values above 0x10FFFF are not valid code points.";
+        return false;
     }
+    return true;
 }
 
-CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
+CLI11_INLINE bool remove_escaped_characters(std::string &str, std::string &error_msg) {
 
     std::string out;
     out.reserve(str.size());
     for(auto loc = str.begin(); loc < str.end(); ++loc) {
         if(*loc == '\\') {
             if(str.end() - loc < 2) {
-                throw std::invalid_argument("invalid escape sequence " + str);
+                error_msg = "invalid escape sequence " + str;
+                return false;
             }
             auto ecloc = escapedCharsCode().find_first_of(*(loc + 1));
             if(ecloc != std::string::npos) {
@@ -299,48 +302,58 @@ CLI11_INLINE std::string remove_escaped_characters(const std::string &str) {
             } else if(*(loc + 1) == 'u') {
                 // must have 4 hex characters
                 if(str.end() - loc < 6) {
-                    throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
+                    error_msg = "unicode sequence must have 4 hex codes " + str;
+                    return false;
                 }
                 std::uint32_t code{0};
                 std::uint32_t mplier{16 * 16 * 16};
                 for(int ii = 2; ii < 6; ++ii) {
                     std::uint32_t res = hexConvert(*(loc + ii));
                     if(res > 0x0F) {
-                        throw std::invalid_argument("unicode sequence must have 4 hex codes " + str);
+                        error_msg = "unicode sequence must have 4 hex codes " + str;
+                        return false;
                     }
                     code += res * mplier;
                     mplier = mplier / 16;
                 }
-                append_codepoint(out, code);
+                if(!append_codepoint(out, code, error_msg)) {
+                    return false;
+                }
                 loc += 5;
             } else if(*(loc + 1) == 'U') {
                 // must have 8 hex characters
                 if(str.end() - loc < 10) {
-                    throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
+                    error_msg = "unicode sequence must have 8 hex codes " + str;
+                    return false;
                 }
                 std::uint32_t code{0};
                 std::uint32_t mplier{16 * 16 * 16 * 16 * 16 * 16 * 16};
                 for(int ii = 2; ii < 10; ++ii) {
                     std::uint32_t res = hexConvert(*(loc + ii));
                     if(res > 0x0F) {
-                        throw std::invalid_argument("unicode sequence must have 8 hex codes " + str);
+                        error_msg = "unicode sequence must have 8 hex codes " + str;
+                        return false;
                     }
                     code += res * mplier;
                     mplier = mplier / 16;
                 }
-                append_codepoint(out, code);
+                if(!append_codepoint(out, code, error_msg)) {
+                    return false;
+                }
                 loc += 9;
             } else if(*(loc + 1) == '0') {
                 out.push_back('\0');
                 ++loc;
             } else {
-                throw std::invalid_argument(std::string("unrecognized escape sequence \\") + *(loc + 1) + " in " + str);
+                error_msg = std::string("unrecognized escape sequence \\") + *(loc + 1) + " in " + str;
+                return false;
             }
         } else {
             out.push_back(*loc);
         }
     }
-    return out;
+    str = std::move(out);
+    return true;
 }
 
 CLI11_INLINE std::size_t close_string_quote(const std::string &str, std::size_t start, char closure_char) {
@@ -567,7 +580,7 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
     return outstring;
 }
 
-CLI11_INLINE void remove_quotes(std::vector<std::string> &args) {
+CLI11_INLINE bool remove_quotes(std::vector<std::string> &args, std::string &error_msg) {
     for(auto &arg : args) {
         if(arg.empty()) {
             continue;
@@ -575,11 +588,14 @@ CLI11_INLINE void remove_quotes(std::vector<std::string> &args) {
         if(arg.front() == '\"' && arg.back() == '\"') {
             remove_quotes(arg);
             // only remove escaped for string arguments not literal strings
-            arg = remove_escaped_characters(arg);
+            if(!remove_escaped_characters(arg, error_msg)) {
+                return false;
+            }
         } else {
             remove_quotes(arg);
         }
     }
+    return true;
 }
 
 CLI11_INLINE void handle_secondary_array(std::string &str) {
@@ -594,8 +610,11 @@ CLI11_INLINE void handle_secondary_array(std::string &str) {
     }
 }
 
-CLI11_INLINE bool
-process_quoted_string(std::string &str, char string_char, char literal_char, bool disable_secondary_array_processing) {
+CLI11_INLINE bool process_quoted_string(std::string &str,
+                                        std::string &error_msg,
+                                        char string_char,
+                                        char literal_char,
+                                        bool disable_secondary_array_processing) {
     if(str.size() <= 1) {
         return false;
     }
@@ -608,7 +627,9 @@ process_quoted_string(std::string &str, char string_char, char literal_char, boo
     if(str.front() == string_char && str.back() == string_char) {
         detail::remove_outer(str, string_char);
         if(str.find_first_of('\\') != std::string::npos) {
-            str = detail::remove_escaped_characters(str);
+            if(!detail::remove_escaped_characters(str, error_msg)) {
+                return false;
+            }
         }
         if(!disable_secondary_array_processing)
             handle_secondary_array(str);
@@ -621,6 +642,12 @@ process_quoted_string(std::string &str, char string_char, char literal_char, boo
         return true;
     }
     return false;
+}
+
+CLI11_INLINE bool
+process_quoted_string(std::string &str, char string_char, char literal_char, bool disable_secondary_array_processing) {
+    std::string error_msg;
+    return process_quoted_string(str, error_msg, string_char, literal_char, disable_secondary_array_processing);
 }
 
 CLI11_INLINE std::string get_environment_value(const std::string &env_name) {
