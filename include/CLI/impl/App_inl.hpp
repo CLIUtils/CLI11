@@ -1661,7 +1661,7 @@ CLI11_INLINE void App::_process() {
     _process_callbacks(CallbackPriority::Normal);
 
     if(config_error) {
-        throw *config_error;
+        throw CLI::FileError(*config_error);
     }
 
     _process_callbacks(CallbackPriority::LastPreHelp);
