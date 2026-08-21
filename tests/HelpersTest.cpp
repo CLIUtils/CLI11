@@ -1163,23 +1163,47 @@ TEST_CASE("RegEx: SplittingNew", "[helpers]") {
     std::vector<std::string> shorts;
     std::vector<std::string> longs;
     std::string pname;
+    CLI::detail::name_error err = CLI::detail::name_error::success;
+    std::string err_name;
 
-    CHECK_NOTHROW(std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}));
+    std::tie(shorts, longs, pname) =
+        CLI::detail::get_names({"--long", "-s", "-q", "--also-long"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::success);
+    CHECK(err_name.empty());
     CHECK(longs == std::vector<std::string>({"long", "also-long"}));
     CHECK(shorts == std::vector<std::string>({"s", "q"}));
     CHECK(pname.empty());
 
-    std::tie(shorts, longs, pname) = CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"});
+    std::tie(shorts, longs, pname) =
+        CLI::detail::get_names({"--long", "", "-s", "-q", "", "--also-long"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::success);
     CHECK(longs == std::vector<std::string>({"long", "also-long"}));
     CHECK(shorts == std::vector<std::string>({"s", "q"}));
 
-    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}); }(), CLI::BadNameString);
-    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}); }(), CLI::BadNameString);
-    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}); }(), CLI::BadNameString);
-    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}); }(),
-                    CLI::BadNameString);
-    CHECK_THROWS_AS([&]() { std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"}); }(),
-                    CLI::BadNameString);
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"-"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::reserved);
+    CHECK(err_name == "-");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"--"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::reserved);
+    CHECK(err_name == "--");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::missing_dash);
+    CHECK(err_name == "-hi");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"-hi"}, true, err, err_name);
+    CHECK(err == CLI::detail::name_error::success);
+    CHECK(shorts == std::vector<std::string>({"hi"}));
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"---hi"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::bad_long_name);
+    CHECK(err_name == "-hi");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"one", "two"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::multiple_positional);
+    CHECK(err_name == "two");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"-!"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::one_char);
+    CHECK(err_name == "-!");
+    std::tie(shorts, longs, pname) = CLI::detail::get_names({"one two"}, false, err, err_name);
+    CHECK(err == CLI::detail::name_error::bad_positional);
+    CHECK(err_name == "one two");
 }
 
 TEST_CASE("String: ToLower", "[helpers]") { CHECK("one and two" == CLI::detail::to_lower("one And TWO")); }

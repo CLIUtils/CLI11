@@ -684,6 +684,11 @@ class Option : public OptionBase<Option> {
     /// disabled
     CLI11_NODISCARD std::string get_flag_value(const std::string &name, std::string input_value) const;
 
+    /// Non-throwing form of get_flag_value: sets output and returns true on success, returns false where
+    /// get_flag_value would throw an ArgumentMismatch
+    CLI11_NODISCARD bool
+    try_get_flag_value(const std::string &name, std::string input_value, std::string &output) const;
+
     /// Puts a result at the end
     Option *add_result(std::string s);
 
@@ -791,32 +796,32 @@ class Option : public OptionBase<Option> {
     /// bound value only available for types that can be converted to a string
     template <typename X> Option *default_val(const X &val) {
         std::string val_str = detail::value_string(val);
-        auto old_option_state = current_option_state_;
-        results_t old_results{std::move(results_)};
-        results_.clear();
+        // validate on scratch results first; members are only modified on success, so a failure needs no rollback
+        results_t scratch_results;
+        _add_result(std::string(val_str), scratch_results);
         try {
-            add_result(val_str);
             // if trigger_on_result_ is set the callback already ran
             if(run_callback_for_default_ && !trigger_on_result_) {
-                run_callback();  // run callback sets the state, we need to reset it again
+                if(force_callback_ && scratch_results.empty()) {
+                    _add_result(std::string(default_str_), scratch_results);
+                }
+                _validate_results(scratch_results);
+                results_t reduced_results;
+                _reduce_results(reduced_results, scratch_results);
+                if(callback_) {
+                    const results_t &send_results = reduced_results.empty() ? scratch_results : reduced_results;
+                    if(!send_results.empty() && !callback_(send_results)) {
+                        throw ConversionError(get_name(), scratch_results);
+                    }
+                }
                 current_option_state_ = option_state::parsing;
             } else {
-                _validate_results(results_);
-                current_option_state_ = old_option_state;
+                _validate_results(scratch_results);
             }
         } catch(const ConversionError &err) {
-            // this should be done
-            results_ = std::move(old_results);
-            current_option_state_ = old_option_state;
-
             throw ConversionError(
                 get_name(), std::string("given default value(\"") + val_str + "\") produces an error : " + err.what());
-        } catch(const CLI::Error &) {
-            results_ = std::move(old_results);
-            current_option_state_ = old_option_state;
-            throw;
         }
-        results_ = std::move(old_results);
         default_str_ = std::move(val_str);
         return this;
     }
