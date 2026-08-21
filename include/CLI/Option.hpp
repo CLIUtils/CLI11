@@ -806,10 +806,10 @@ class Option : public OptionBase<Option> {
                     _add_result(std::string(default_str_), scratch_results);
                 }
                 _validate_results(scratch_results);
-                results_t reduced_results;
-                _reduce_results(reduced_results, scratch_results);
+                results_t scratch_reduced;
+                _reduce_results(scratch_reduced, scratch_results);
                 if(callback_) {
-                    const results_t &send_results = reduced_results.empty() ? scratch_results : reduced_results;
+                    const results_t &send_results = scratch_reduced.empty() ? scratch_results : scratch_reduced;
                     if(!send_results.empty() && !callback_(send_results)) {
                         throw ConversionError(get_name(), scratch_results);
                     }
