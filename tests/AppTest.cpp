@@ -514,6 +514,35 @@ TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
     CHECK(9 == val);
 }
 
+TEST_CASE_METHOD(TApp, "SmallFloatDefaultVal", "[app]") {
+    float value = 0.0f;
+    auto *opt = app.add_option("--value", value);
+    opt->default_val(1e-7f);
+    run();
+    CHECK(value == Approx(1e-7f));
+}
+
+TEST_CASE_METHOD(TApp, "SmallFloatingPointPairDefault", "[app]") {
+    std::pair<double, double> p{0.0, 0.0};
+    auto *opt = app.add_option("--pair", p)->expected(0, 2);
+    std::pair<double, double> pdef{1e-8, 2e-8};
+    opt->default_val(pdef);
+    run();
+    CHECK(p.first == Approx(1e-8));
+    CHECK(p.second == Approx(2e-8));
+}
+
+TEST_CASE_METHOD(TApp, "SmallFloatingPointVectorDefault", "[app]") {
+    std::vector<double> v;
+    auto *opt = app.add_option("--vec", v)->expected(-2);
+    std::vector<double> vdef{1e-8, 2e-8};
+    opt->default_val(vdef);
+    run();
+    REQUIRE(v.size() == 2);
+    CHECK(v[0] == Approx(1e-8));
+    CHECK(v[1] == Approx(2e-8));
+}
+
 TEST_CASE_METHOD(TApp, "PairDefault", "[app]") {
     std::pair<double, std::string> pr{57.5, "test"};
     auto *opt = app.add_option("-i", pr)->expected(0, 2);
