@@ -61,6 +61,7 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name, App *pa
         allow_windows_style_options_ = parent_->allow_windows_style_options_;
         group_ = parent_->group_;
         usage_ = parent_->usage_;
+        header_ = parent_->header_;
         footer_ = parent_->footer_;
         formatter_ = parent_->formatter_;
         config_formatter_ = parent_->config_formatter_;
@@ -941,6 +942,10 @@ CLI11_NODISCARD CLI11_INLINE std::string App::config_to_str(bool default_also, b
 
 CLI11_NODISCARD CLI11_INLINE std::string App::get_usage() const {
     return (usage_callback_) ? usage_callback_() + '\n' + usage_ : usage_;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string App::get_header() const {
+    return (header_callback_) ? header_callback_() + '\n' + header_ : header_;
 }
 
 CLI11_NODISCARD CLI11_INLINE std::string App::get_footer() const {

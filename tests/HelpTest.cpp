@@ -66,6 +66,52 @@ TEST_CASE("THelp: Footer", "[help]") {
     CHECK_THAT(help, Contains("Report bugs to bugs@example.com"));
 }
 
+TEST_CASE("THelp: Header", "[help]") {
+    CLI::App app{"My prog"};
+    app.header("Extended help with more details about this command.");
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Extended help with more details about this command."));
+    CHECK_THAT(help, Contains("Usage:"));
+    const auto header_pos = help.find("Extended help with more details");
+    const auto usage_pos = help.find("Usage:");
+    CHECK(header_pos != std::string::npos);
+    CHECK(usage_pos != std::string::npos);
+    CHECK(header_pos < usage_pos);
+}
+
+TEST_CASE("THelp: HeaderSubcommand", "[help]") {
+    CLI::App app{"My prog"};
+    auto *fmt = app.add_subcommand("fmt", "Format files in-place.");
+    fmt->header("If a file is given, it reformats in-place. Otherwise output goes to stdout.");
+
+    std::string help = fmt->help();
+
+    CHECK_THAT(help, Contains("Format files in-place."));
+    CHECK_THAT(help, Contains("If a file is given, it reformats in-place."));
+    CHECK_THAT(help, !Contains("Subcommands:"));
+}
+
+TEST_CASE("THelp: HeaderCallback", "[help]") {
+    CLI::App app{"My prog"};
+    app.header([]() { return "Dynamic extended help."; });
+
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Dynamic extended help."));
+}
+
+TEST_CASE("THelp: HeaderCallbackBoth", "[help]") {
+    CLI::App app{"My prog"};
+    app.header([]() { return "Dynamic extended help."; });
+    app.header(" static tail.");
+    std::string help = app.help();
+
+    CHECK_THAT(help, Contains("Dynamic extended help."));
+    CHECK_THAT(help, Contains("static tail."));
+}
+
 TEST_CASE("THelp: FooterCallback", "[help]") {
     CLI::App app{"My prog"};
     app.footer([]() { return "Report bugs to bugs@example.com"; });

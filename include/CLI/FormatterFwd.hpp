@@ -220,6 +220,9 @@ class Formatter : public FormatterBase {
     /// This prints out all the groups of options
     virtual std::string make_footer(const App *app) const;
 
+    /// This displays extended help text after the short description
+    virtual std::string make_header(const App *app) const;
+
     /// This displays the description line
     virtual std::string make_description(const App *app) const;
 
