@@ -737,6 +737,11 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
+            // groups whose display name starts with '+' have their options already merged into
+            // the parent's own option list by get_options(), so recursing here would duplicate them
+            if(!subcom->get_group().empty() && subcom->get_group().front() == '+') {
+                continue;
+            }
             if(!include_default_values && (subcom->count_all() == 0)) {
                 continue;
             }

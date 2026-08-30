@@ -3552,6 +3552,34 @@ TEST_CASE_METHOD(TApp, "TomlOutputOptionGroup", "[config]") {
     CHECK(locg1 < locg3);
 }
 
+TEST_CASE_METHOD(TApp, "TomlOutputPlusGroupNoDuplication", "[config]") {
+    // A nested option group whose name starts with '+' gets its options merged into the
+    // parent's own option list by get_options(), so the config writer must not also recurse
+    // into it as a subcommand, or the option ends up written twice.
+    auto *input = app.add_option_group("Input");
+    auto *dim = input->add_option_group("+dim");
+    bool is2d{false};
+    bool is3d{false};
+    dim->add_flag("--2d", is2d);
+    dim->add_flag("--3d", is3d);
+
+    args = {"--2d"};
+    run();
+
+    std::string str = app.config_to_str();
+    auto loc = str.find("2d=true");
+    CHECK(loc != std::string::npos);
+    loc = str.find("2d=true", loc + 4);
+    CHECK(std::string::npos == loc);
+
+    // the duplicated line used to also break reading the config back in
+    std::istringstream nfile(str);
+    app.clear();
+    is2d = false;
+    app.parse_from_stream(nfile);
+    CHECK(is2d);
+}
+
 TEST_CASE_METHOD(TApp, "TomlOutputVector", "[config]") {
 
     std::vector<int> v;
