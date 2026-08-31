@@ -18,9 +18,17 @@ endif
 link_test_lib = static_library(
     'link_test_1',
     'link_test_1.cpp',
-    dependencies: cli11_dep,
+    dependencies: cli11_nonamalgamated_dep,
     build_by_default: false,
 )
+link_test_exe = executable(
+  'link_test_2',
+  'link_test_2.cpp',
+  link_with: link_test_lib,
+  dependencies: [testdep, cli11_nonamalgamated_dep],
+  build_by_default: false,
+)
+test('link_test_2', link_test_exe)
 
 if cxx.get_argument_syntax() == 'msvc'
     nodeprecated = ['/wd4996']
@@ -64,10 +72,6 @@ testnames = {
     'ExtraValidatorsTest': {},
     'EncodingTest': {},
     'WindowsTest': {'dependencies': host_machine.system() == 'windows' ? declare_dependency() : disabler()},
-    # multi-only
-    'TimerTest': {},
-    # link_test
-    'link_test_2': {'link_with': link_test_lib},
 }
 
 fs = import('fs')
@@ -77,7 +81,7 @@ app_tgts = []
 foreach app: ['ensure_utf8', 'ensure_utf8_twice']
     app_tgt = executable(
         app, 'applications'/app + '.cpp',
-        dependencies: cli11_dep,
+        dependencies: cli11_nonamalgamated_dep,
         build_by_default: false,
     )
     app_cfgdata.set_quoted(app, fs.relative_to(app_tgt.full_path(), meson.current_build_dir()))
@@ -85,9 +89,23 @@ foreach app: ['ensure_utf8', 'ensure_utf8_twice']
     app_tgts += app_tgt
 endforeach
 
+timertest_exe = executable(
+  'TimerTest',
+  'TimerTest.cpp',
+  cpp_args: app_cflags,
+  build_by_default: false,
+  dependencies: [testdep, cli11_nonamalgamated_dep],
+)
+test('TimerTest', timertest_exe)
+
+app_cflags_single = []
+if get_option('mode') == 'amalgamated'
+  app_cflags_single += '-DCLI11_SINGLE_FILE'
+endif
+
 foreach name, kwargs: testnames
     test(name, executable(name, name + '.cpp',
-        cpp_args: app_cflags + kwargs.get('cpp_args', []),
+        cpp_args: app_cflags + kwargs.get('cpp_args', []) + app_cflags_single,
         build_by_default: false,
         dependencies: [testdep] + kwargs.get('dependencies', []),
         link_with: kwargs.get('link_with', [])
