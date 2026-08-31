@@ -12,4 +12,6 @@ single_header = custom_target(
     '--output', '@OUTPUT@', '--version', meson.project_version(),
   ],
   depend_files: [single_main_file],
+  install: true,
+  install_dir: get_option('includedir'),
 )
