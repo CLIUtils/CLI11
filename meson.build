@@ -65,7 +65,7 @@ if buildmode == 'amalgamated'
 
   cli11_dep = declare_dependency(
     sources: single_header,
-    include_directories : include_directories(meson.current_build_dir() / 'single-include'),
+    include_directories : include_directories('single-include'),
   )
 elif buildmode == 'headeronly'
   install_headers(cli11_headers, subdir: 'CLI')
