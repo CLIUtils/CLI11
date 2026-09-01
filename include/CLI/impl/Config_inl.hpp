@@ -614,7 +614,10 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
     bool defaultUsed = false;
     groups.insert(groups.begin(), std::string("OPTIONS"));
 
-    const std::vector<const Option *> options = app->get_options({});
+    // get_options() also merges options from '+' groups and fallthrough parents; those are written by
+    // their own App (the '+' groups through the nameless subcommand loop below), so keep only ours
+    const std::vector<const Option *> options =
+        app->get_options([app](const Option *opt) { return opt->parent_ == app; });
     for(auto &group : groups) {
         if(group == "OPTIONS" || group.empty()) {
             if(defaultUsed) {
@@ -625,7 +628,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
         if(write_description && group != "OPTIONS" && !group.empty()) {
             out << '\n' << commentChar << commentLead << group << " Options\n";
         }
-        for(const Option *opt : app->get_options({})) {
+        for(const Option *opt : options) {
             // Only process options that are configurable
             if(opt->get_configurable()) {
                 if(opt->get_group() != group) {
@@ -737,15 +740,11 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
     auto subcommands = app->get_subcommands({});
     for(const App *subcom : subcommands) {
         if(subcom->get_name().empty()) {
-            // groups whose display name starts with '+' have their options already merged into
-            // the parent's own option list by get_options(), so recursing here would duplicate them
-            if(!subcom->get_group().empty() && subcom->get_group().front() == '+') {
-                continue;
-            }
             if(!include_default_values && (subcom->count_all() == 0)) {
                 continue;
             }
-            if(write_description && !subcom->get_group().empty()) {
+            // a '+' group is displayed as part of its parent, so it gets no header of its own
+            if(write_description && !subcom->get_group().empty() && subcom->get_group().front() != '+') {
                 out << '\n' << commentChar << commentLead << subcom->get_group() << " Options\n";
             }
             /*if (!prefix.empty() || app->get_parent() == nullptr) {
