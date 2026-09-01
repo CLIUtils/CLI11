@@ -8,7 +8,7 @@ single_header = custom_target(
   input: [cli11_headers, cli11_impl_headers],
   output: 'CLI11.hpp',
   command : [
-    find_program('../scripts/MakeSingleHeader.py'), '@INPUT@', '--main', single_main_file,
+    find_program('python3'), find_program('../scripts/MakeSingleHeader.py'), '@INPUT@', '--main', single_main_file,
     '--output', '@OUTPUT@', '--version', meson.project_version(),
   ],
   depend_files: [single_main_file],

@@ -60,20 +60,15 @@ if cxx.get_argument_syntax() == 'gcc'
   add_project_arguments(cxx.get_supported_arguments(warnings), language: 'cpp')
 endif
 
-cli11_headeronly_dep = declare_dependency(include_directories : cli11_inc)
-
 if buildmode == 'amalgamated'
   subdir('single-include')
 
+  # The CLI/ include tree stays available: Timer.hpp is not part of the single header.
   cli11_dep = declare_dependency(
     sources: single_header,
-    include_directories : include_directories(meson.current_build_dir() / 'single-include'),
+    include_directories : [include_directories('single-include'), cli11_inc],
+    compile_args : '-DCLI11_SINGLE_FILE',
   )
-  # Some helper executables and specific tests assume traditional
-  # CLI/*.hpp include hierarchy even when building amalgamated.
-  # These tests will use the cli11_nonamalgamated_dep dep instead
-  # of cli11_dep.
-  cli11_nonamalgamated_dep = cli11_headeronly_dep
 elif buildmode == 'headeronly'
   install_headers(cli11_headers, subdir: 'CLI')
 
@@ -87,8 +82,7 @@ elif buildmode == 'headeronly'
     )
   endif
 
-  cli11_dep = cli11_headeronly_dep
-  cli11_nonamalgamated_dep = cli11_dep
+  cli11_dep = declare_dependency(include_directories : cli11_inc)
 elif buildmode == 'precompiled'
   cli11_cflags = ['-DCLI11_COMPILE', '-DCLI11_ENABLE_EXTRA_VALIDATORS=1']
 
@@ -116,7 +110,6 @@ elif buildmode == 'precompiled'
     link_with           : libcli11,
     include_directories : cli11_inc,
   )
-  cli11_nonamalgamated_dep = cli11_dep
 endif
 
 meson.override_dependency('CLI11', cli11_dep)
