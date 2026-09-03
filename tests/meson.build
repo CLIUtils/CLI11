@@ -1,7 +1,7 @@
 if catch2_dep.version().version_compare('< 3')
     testmain = static_library(
         'catch_main',
-        'main.cpp', 'catch.hpp',
+        'main.cpp',
         dependencies: catch2_dep,
     )
     testdep = declare_dependency(
