@@ -1507,7 +1507,7 @@ template <typename AssignTo,
           enable_if_t<classify_object<ConvertTo>::value <= object_category::other &&
                           classify_object<AssignTo>::value <= object_category::wrapper_value,
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     return lexical_assign<AssignTo, ConvertTo>(strings[0], output);
 }
 
@@ -1518,7 +1518,7 @@ template <typename AssignTo,
           enable_if_t<(type_count<AssignTo>::value <= 2) && expected_count<AssignTo>::value == 1 &&
                           is_tuple_like<ConvertTo>::value && type_count_base<ConvertTo>::value == 2,
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     // the remove const is to handle pair types coming from a container
     using FirstType = typename std::remove_const<typename std::tuple_element<0, ConvertTo>::type>::type;
     using SecondType = typename std::tuple_element<1, ConvertTo>::type;
@@ -1538,7 +1538,7 @@ template <class AssignTo,
           enable_if_t<is_mutable_container<AssignTo>::value && is_mutable_container<ConvertTo>::value &&
                           type_count<ConvertTo>::value == 1,
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     output.erase(output.begin(), output.end());
     if(strings.empty()) {
         return true;
@@ -1590,7 +1590,7 @@ template <class AssignTo,
           enable_if_t<is_mutable_container<AssignTo>::value && (expected_count<ConvertTo>::value == 1) &&
                           (type_count<ConvertTo>::value == 1),
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     bool retval = true;
     output.clear();
     output.reserve(strings.size());
@@ -1639,7 +1639,7 @@ template <typename AssignTo,
                           classify_object<ConvertTo>::value != object_category::wrapper_value &&
                           (is_mutable_container<ConvertTo>::value || type_count<ConvertTo>::value > 2),
                       detail::enabler> = detail::dummy>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
 
     if(strings.size() > 1 || (!strings.empty() && !(strings.front().empty()))) {
         ConvertTo val;
@@ -1755,7 +1755,7 @@ template <class AssignTo,
                           (type_count_base<ConvertTo>::value != type_count<ConvertTo>::value ||
                            type_count<ConvertTo>::value > 2),
                       detail::enabler>>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     static_assert(
         !is_tuple_like<ConvertTo>::value || type_count_base<AssignTo>::value == type_count_base<ConvertTo>::value,
         "if the conversion type is defined as a tuple it must be the same size as the type you are converting to");
@@ -1770,7 +1770,7 @@ template <class AssignTo,
                           ((type_count<ConvertTo>::value > 2) ||
                            (type_count<ConvertTo>::value > type_count_base<ConvertTo>::value)),
                       detail::enabler>>
-bool lexical_conversion(const std::vector<std ::string> &strings, AssignTo &output) {
+bool lexical_conversion(const std::vector<std::string> &strings, AssignTo &output) {
     bool retval = true;
     output.clear();
     std::vector<std::string> temp;

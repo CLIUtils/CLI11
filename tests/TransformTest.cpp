@@ -145,7 +145,7 @@ TEST_CASE_METHOD(TApp, "EnumCheckedDefaultTransform", "[transform]") {
     app.add_option("--existing", "What to do if file already exists in the destination")
         ->transform(
             CLI::CheckedTransformer(std::unordered_map<std::string, existing>{{"abort", existing::abort},
-                                                                              {"overwrite", existing ::overwrite},
+                                                                              {"overwrite", existing::overwrite},
                                                                               {"delete", existing::remove},
                                                                               {"remove", existing::remove}}))
         ->default_val("abort");
