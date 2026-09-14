@@ -8,12 +8,23 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace {
+
+// The built-in hints (ExistingFile and friends) are all non-modifying; this one is modifying, with a hint
+struct ModifyingHintValidator : CLI::Validator {
+    explicit ModifyingHintValidator(CLI::CompletionHint completion_hint) : CLI::Validator("MODHINT") {
+        auto meta = std::make_shared<CLI::CompletionMeta>();
+        meta->hint = completion_hint;
+        completion_meta_ = meta;
+        func_ = [](std::string &) { return std::string{}; };
+    }
+};
 
 const char *const complete_var = "CLI11_COMPLETE";
 const char *const index_var = "CLI11_COMPLETE_INDEX";
@@ -92,6 +103,17 @@ TEST_CASE("Completion: descends into the subcommand named before the cursor", "[
     CHECK(complete(app, {"remote", "", "show"}, "2") == "add\nshow\n:2\n");
     // A word that names nothing leaves the walk where it was
     CHECK(complete(app, {"zzz", ""}, "2") == "start\nremote\n:2\n");
+}
+
+TEST_CASE("Completion: an empty word before the cursor is skipped rather than counted", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *start = app.add_subcommand("start", "");
+    start->set_help_flag("");
+    start->add_flag("--inner", "");
+
+    // A doubled space produces an empty word; the walk skips it instead of counting it
+    CHECK(complete(app, {"", "start", "--"}, "3") == "--inner\n:2\n");
 }
 
 TEST_CASE("Completion: an alias both completes and descends", "[completion]") {
@@ -286,6 +308,16 @@ TEST_CASE("Completion: a hint survives being copied into the Validator base", "[
     // A validator that is not applied does not describe what the option accepts
     CHECK(app.add_option("--off", path)->check(CLI::ExistingFile.active(false))->get_completion_hint() ==
           CLI::CompletionHint::None);
+}
+
+TEST_CASE("Completion: a modifying validator's hint waits for the whole loop", "[completion]") {
+    CLI::App app{"program"};
+    std::string path;
+
+    // A transform's hint waits in case a later check outranks it
+    CHECK(app.add_option("--out", path)
+              ->transform(ModifyingHintValidator(CLI::CompletionHint::Dir))
+              ->get_completion_hint() == CLI::CompletionHint::Dir);
 }
 
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
@@ -632,6 +664,16 @@ TEST_CASE("Completion: an unknown Windows-style option has nothing to say", "[co
     CHECK(complete(app, {"/nope:val"}, "1") == ":0\n");
 }
 
+TEST_CASE("Completion: a slash into an invalid name character is not the Windows-style shape", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options(true);
+    app.add_option("--level,-l", "");
+
+    // A dash can't start a name, so this never becomes /name:value, even with a colon later in the word
+    CHECK(complete(app, {"/-x:y"}, "1") == ":0\n");
+}
+
 TEST_CASE("Completion: an option group's options are the app's own", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
@@ -955,6 +997,16 @@ TEST_CASE("Completion: the positional after the end-of-options marker is still o
     CHECK(complete(app, {"--", "start", ""}, "3") == "two\n:6\n");
     // and once they are full, nothing valid can go there, not even a path
     CHECK(complete(app, {"--", "one", "two", ""}, "4") == ":2\n");
+}
+
+TEST_CASE("Completion: a positional with nothing left to consume claims no slot", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    // expected(0) gives this positional no capacity, so it claims no slot
+    app.add_option("zero", "")->expected(0);
+    app.add_option("first", "")->check(CLI::IsMember({"one"}));
+
+    CHECK(complete(app, {"--", ""}, "2") == "one\n:6\n");
 }
 
 #endif
