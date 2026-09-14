@@ -2185,8 +2185,8 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
     auto *com = _find_subcommand(args.back(), true, true);
     bool help_requested{false};
     if(com != nullptr) {
-        const Option *help = com->get_help_ptr();
-        const Option *help_all = com->get_help_all_ptr();
+        const Option *help_option = com->get_help_ptr();
+        const Option *help_all_option = com->get_help_all_ptr();
         // Arguments are stored in reverse order. Inspect only arguments after the
         // subcommand and stop at the positional marker, just as parsing would.
         for(std::size_t index = args.size() - 1; index > 0;) {
@@ -2194,8 +2194,8 @@ CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
             if(args[index] == "--") {
                 break;
             }
-            if((help != nullptr && help->check_name(args[index])) ||
-               (help_all != nullptr && help_all->check_name(args[index]))) {
+            if((help_option != nullptr && help_option->check_name(args[index])) ||
+               (help_all_option != nullptr && help_all_option->check_name(args[index]))) {
                 help_requested = true;
                 break;
             }
