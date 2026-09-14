@@ -686,6 +686,20 @@ TEST_CASE("THelp: NestedSubcommandHelpWithRequiredParentPositional", "[help]") {
     app.parse("sub1 sub2");
     CHECK(id == "sub2");
     CHECK(sub2->count() == 0);
+
+    // A help-shaped argument after the positional marker must not change the
+    // subcommand/positional precedence decision.
+    try {
+        app.parse("sub1 sub2 -- --help");
+        FAIL("Expected help to be requested");
+    } catch(const CLI::CallForHelp &error) {
+        std::ostringstream output;
+        CHECK(app.exit(error, output) == 0);
+        CHECK_THAT(output.str(), Contains("First level command"));
+        CHECK_THAT(output.str(), !Contains("--flag"));
+    }
+    CHECK(id == "sub2");
+    CHECK(sub2->count() == 0);
 }
 
 TEST_CASE("THelp: MasterName", "[help]") {
