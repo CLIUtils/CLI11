@@ -345,6 +345,9 @@ class App {
     /// Create a new program. Pass in the same arguments as main(), along with a help string.
     explicit App(std::string app_description = "", std::string app_name = "");
 
+    /// Create a new program with a wide-string description.
+    explicit App(std::wstring app_description);
+
     App(const App &) = delete;
     App &operator=(const App &) = delete;
 
@@ -975,6 +978,8 @@ class App {
         usage_ = std::move(usage_string);
         return this;
     }
+    /// Set usage from a wide string.
+    App *usage(std::wstring usage_string);
     /// Set usage.
     App *usage(std::function<std::string()> usage_function) {
         usage_callback_ = std::move(usage_function);

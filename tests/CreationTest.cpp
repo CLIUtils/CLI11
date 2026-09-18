@@ -552,6 +552,17 @@ TEST_CASE_METHOD(TApp, "SubcommandDefaults", "[creation]") {
     CHECK(3u == app2->get_require_subcommand_max());
 }
 
+TEST_CASE("WideStringDescriptionAndUsage", "[creation][unicode]") {
+    const std::wstring wide_text = L"Hello \u4F60\u597D";
+    const std::string expected = CLI::narrow(wide_text);
+
+    CLI::App app{L"Hello \u4F60\u597D"};
+    CHECK(app.get_description() == expected);
+
+    app.usage(L"Hello \u4F60\u597D");
+    CHECK(app.get_usage() == expected);
+}
+
 TEST_CASE_METHOD(TApp, "SubcommandMinMax", "[creation]") {
 
     CHECK(0u == app.get_require_subcommand_min());
