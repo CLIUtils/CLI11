@@ -9,6 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../Validators.hpp"
 
+#include "../Completion.hpp"
 #include "../Encoding.hpp"
 #include "../Macros.hpp"
 #include "../StringTools.hpp"
@@ -16,6 +17,8 @@
 
 // [CLI11:public_includes:set]
 #include <functional>
+#include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -102,6 +105,8 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // A value has to get past both sides, so only what both accept is worth offering
+    newval.completion_meta_ = detail::intersect_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
@@ -124,6 +129,8 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // Getting past either side is enough, so both sides' values are worth offering
+    newval.completion_meta_ = detail::unite_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
@@ -209,6 +216,12 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 #endif
 
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
+    // Which files exist is the shell's to know, being the one that knows the directory the user is typing in, so
+    // completion says what kind of value this is and leaves the candidates to it
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->hint = CompletionHint::File;
+    completion_meta_ = meta;
+
     func_ = [](std::string &filename) -> std::string {
         if(filename.empty())
             return std::string("File name is missing.");
@@ -225,6 +238,10 @@ CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") 
 }
 
 CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validator("DIR") {
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->hint = CompletionHint::Dir;
+    completion_meta_ = meta;
+
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
         if(path_result == path_type::nonexistent) {
@@ -238,6 +255,10 @@ CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validato
 }
 
 CLI11_INLINE ExistingPathValidator::ExistingPathValidator() : Validator("PATH(existing)") {
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->hint = CompletionHint::Path;
+    completion_meta_ = meta;
+
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
         if(path_result == path_type::nonexistent) {

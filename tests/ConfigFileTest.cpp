@@ -986,7 +986,7 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
     CHECK(two == 99);
     CHECK(three == 3);
 
-    unset_env("CONFIG");
+    CLI::detail::unset_environment_value("CONFIG");
 
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
@@ -3354,7 +3354,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputEnvironmental", "[config]") {
     std::string str = app.config_to_str();
     CHECK(str == "CLI11_TEST_ENV_TMP=2\n");
 
-    unset_env("CLI11_TEST_ENV_TMP");
+    CLI::detail::unset_environment_value("CLI11_TEST_ENV_TMP");
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputNoConfigurable", "[config]") {
