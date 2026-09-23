@@ -219,7 +219,17 @@ CLI11_INLINE Option *App::add_option(std::string option_name,
         std::find_if(std::begin(options_), std::end(options_), [&myopt](const Option_p &v) { return *v == myopt; });
     if(res != options_.end()) {
         const auto &matchname = (*res)->matching_name(myopt);
-        throw(OptionAlreadyAdded("added option matched existing option name: " + matchname));
+        std::string conflict;
+        if((*res)->check_sname(matchname)) {
+            conflict = "short name '-" + matchname + "'";
+        } else if((*res)->check_lname(matchname)) {
+            conflict = "long name '--" + matchname + "'";
+        } else {
+            conflict = "name '" + matchname + "'";
+        }
+        throw OptionAlreadyAdded("cannot add '" + option_name + "': " + conflict + " already used by '" +
+                                     (*res)->get_name() + "'",
+                                 ExitCodes::OptionAlreadyAdded);
     }
     /** get a top level parent*/
     const App *top_level_parent = this;

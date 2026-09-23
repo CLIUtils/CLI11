@@ -1,5 +1,19 @@
 # Changelog {#changelog}
 
+## Version 2.7.3: Help plural and clearer option conflicts
+
+### Fixed
+
+- Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`
+  is `0` (unlimited), not only when max is greater than one. Adds a regression
+  test. Fixes [#1168][].
+- `OptionAlreadyAdded` for duplicate option names now states whether the short
+  or long name collided and which existing option owns it (instead of only
+  appending "is already added"). Fixes [#284][].
+
+[#1168]: https://github.com/CLIUtils/CLI11/issues/1168
+[#284]: https://github.com/CLIUtils/CLI11/issues/284
+
 ## Version 2.7.2: Faster compiles
 
 This patch release makes the precompiled and experimental module modes cheaper
