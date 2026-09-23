@@ -18,6 +18,7 @@
 #include <exception>
 #include <iomanip>
 #include <limits>
+#include <locale>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -358,6 +359,7 @@ template <typename T,
                       detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
     std::ostringstream stream;
+    stream.imbue(std::locale::classic());
     stream << std::setprecision(std::numeric_limits<typename std::decay<T>::type>::max_digits10) << value;
     return stream.str();
 }
@@ -491,6 +493,7 @@ std::string value_string(const T &value) {
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
 std::string value_string(const T &value) {
     std::ostringstream stream;
+    stream.imbue(std::locale::classic());
     stream << std::setprecision(std::numeric_limits<T>::max_digits10) << value;
     return stream.str();
 }
