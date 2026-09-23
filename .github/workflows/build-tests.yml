@@ -118,8 +118,12 @@ jobs:
         working-directory: build
 
   meson-build:
-    name: Meson build
+    name: Meson build (${{ matrix.mode }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [headeronly, amalgamated, precompiled]
     steps:
       - uses: actions/checkout@v4
 
@@ -129,7 +133,7 @@ jobs:
           pipx install ninja
 
       - name: Configure
-        run: meson setup build-meson . -Dtests=enabled
+        run: meson setup build-meson . -Dtests=enabled -Dmode=${{ matrix.mode }}
 
       - name: Build
         run: meson compile -C build-meson
