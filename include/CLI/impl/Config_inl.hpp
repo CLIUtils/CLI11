@@ -700,6 +700,20 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
 
                 if(!value.empty()) {
                     if(!opt->get_fnames().empty()) {
+                        // Each name of a flag can carry its own value (`--one{1},--two{2}`), and
+                        // single_name is merely the first of them.  Write out the name whose value
+                        // matches the result instead, so the key identifies the flag that was
+                        // given and stays right when the value is read back as a flag.  A `false`
+                        // value is left alone: it inverts the result it is read back with, so the
+                        // name it would select does not round trip.
+                        if(value != "false") {
+                            for(const auto &test_name : opt->get_fnames()) {
+                                if(opt->get_flag_value(test_name, "{}") == value) {
+                                    single_name = test_name;
+                                    break;
+                                }
+                            }
+                        }
                         try {
                             value = opt->get_flag_value(single_name, value);
                         } catch(const CLI::ArgumentMismatch &) {
