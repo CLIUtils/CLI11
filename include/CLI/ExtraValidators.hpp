@@ -238,7 +238,7 @@ class IsMember : public Validator {
             using CLI::detail::lexical_cast;
             local_item_t b;
             if(!lexical_cast(input, b)) {
-                throw ValidationError(input);  // name is added later
+                return input;  // name is added later
             }
             if(filter_fn) {
                 b = filter_fn(b);
@@ -443,7 +443,7 @@ class AsNumberWithUnit : public Validator {
   public:
     /// Adjust AsNumberWithUnit behavior.
     /// CASE_SENSITIVE/CASE_INSENSITIVE controls how units are matched.
-    /// UNIT_OPTIONAL/UNIT_REQUIRED throws ValidationError
+    /// UNIT_OPTIONAL/UNIT_REQUIRED reports a validation error
     ///   if UNIT_REQUIRED is set and unit literal is not found.
     enum Options : std::uint8_t {
         CASE_SENSITIVE = 0,
@@ -466,7 +466,7 @@ class AsNumberWithUnit : public Validator {
 
             detail::rtrim(input);
             if(input.empty()) {
-                throw ValidationError("Input is empty");
+                return std::string("Input is empty");
             }
 
             // Find split position between number and prefix
@@ -481,7 +481,7 @@ class AsNumberWithUnit : public Validator {
             detail::trim(input);
 
             if(opts & UNIT_REQUIRED && unit.empty()) {
-                throw ValidationError("Missing mandatory unit");
+                return std::string("Missing mandatory unit");
             }
             if(opts & CASE_INSENSITIVE) {
                 unit = detail::to_lower(unit);
@@ -489,8 +489,7 @@ class AsNumberWithUnit : public Validator {
             if(unit.empty()) {
                 using CLI::detail::lexical_cast;
                 if(!lexical_cast(input, num)) {
-                    throw ValidationError(std::string("Value ") + input + " could not be converted to " +
-                                          detail::type_name<Number>());
+                    return std::string("Value ") + input + " could not be converted to " + detail::type_name<Number>();
                 }
                 // No need to modify input if no unit passed
                 return {};
@@ -499,24 +498,23 @@ class AsNumberWithUnit : public Validator {
             // find corresponding factor
             auto it = mapping.find(unit);
             if(it == mapping.end()) {
-                throw ValidationError(unit +
-                                      " unit not recognized. "
-                                      "Allowed values: " +
-                                      detail::generate_map(mapping, true));
+                return unit +
+                       " unit not recognized. "
+                       "Allowed values: " +
+                       detail::generate_map(mapping, true);
             }
 
             if(!input.empty()) {
                 using CLI::detail::lexical_cast;
                 bool converted = lexical_cast(input, num);
                 if(!converted) {
-                    throw ValidationError(std::string("Value ") + input + " could not be converted to " +
-                                          detail::type_name<Number>());
+                    return std::string("Value ") + input + " could not be converted to " + detail::type_name<Number>();
                 }
                 // perform safe multiplication
                 bool ok = detail::checked_multiply(num, it->second);
                 if(!ok) {
-                    throw ValidationError(detail::to_string(num) + " multiplied by " + unit +
-                                          " factor would cause number overflow. Use smaller value.");
+                    return detail::to_string(num) + " multiplied by " + unit +
+                           " factor would cause number overflow. Use smaller value.";
                 }
             } else {
                 num = static_cast<Number>(it->second);
