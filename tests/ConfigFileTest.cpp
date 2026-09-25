@@ -1164,6 +1164,10 @@ TEST_CASE_METHOD(TApp, "IniRequiredNotFound", "[config]") {
     app.set_config("--config", noini, "", true);
 
     CHECK_THROWS_AS(run(), CLI::FileError);
+
+    // the FileError is deferred, so help takes priority over it
+    args = {"--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
 }
 
 TEST_CASE_METHOD(TApp, "IniDefaultNotExist", "[config]") {
