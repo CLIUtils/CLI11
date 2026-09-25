@@ -44,7 +44,26 @@ template <typename CRTP> template <typename T> void OptionBase<CRTP>::copy_to(T 
 CLI11_INLINE Option::Option(
     std::string option_name, std::string option_description, callback_t callback, App *parent, bool allow_non_standard)
     : description_(std::move(option_description)), parent_(parent), callback_(std::move(callback)) {
-    std::tie(snames_, lnames_, pname_) = detail::get_names(detail::split_names(option_name), allow_non_standard);
+    detail::name_error name_err = detail::name_error::success;
+    std::string bad_name;
+    std::tie(snames_, lnames_, pname_) =
+        detail::get_names(detail::split_names(option_name), allow_non_standard, name_err, bad_name);
+    switch(name_err) {
+    case detail::name_error::success:
+        break;
+    case detail::name_error::one_char:
+        throw BadNameString::OneCharName(bad_name);
+    case detail::name_error::missing_dash:
+        throw BadNameString::MissingDash(bad_name);
+    case detail::name_error::bad_long_name:
+        throw BadNameString::BadLongName(bad_name);
+    case detail::name_error::bad_positional:
+        throw BadNameString::BadPositionalName(bad_name);
+    case detail::name_error::reserved:
+        throw BadNameString::ReservedName(bad_name);
+    case detail::name_error::multiple_positional:
+        throw BadNameString::MultiPositionalNames(bad_name);
+    }
 }
 
 CLI11_INLINE void Option::clear() {
@@ -446,6 +465,15 @@ CLI11_NODISCARD CLI11_INLINE bool Option::check_name(const std::string &name) co
 
 CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::string &name,
                                                                 std::string input_value) const {
+    std::string output;
+    if(!try_get_flag_value(name, std::move(input_value), output)) {
+        throw(ArgumentMismatch::FlagOverride(name));
+    }
+    return output;
+}
+
+CLI11_NODISCARD CLI11_INLINE bool
+Option::try_get_flag_value(const std::string &name, std::string input_value, std::string &output) const {
     static const std::string trueString{"true"};
     static const std::string falseString{"false"};
     static const std::string emptyString{"{}"};
@@ -457,13 +485,14 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
                 // We can static cast this to std::size_t because it is more than 0 in this block
                 if(default_flag_values_[static_cast<std::size_t>(default_ind)].second != input_value) {
                     if(input_value == default_str_ && force_callback_) {
-                        return input_value;
+                        output = std::move(input_value);
+                        return true;
                     }
-                    throw(ArgumentMismatch::FlagOverride(name));
+                    return false;
                 }
             } else {
                 if(input_value != trueString) {
-                    throw(ArgumentMismatch::FlagOverride(name));
+                    return false;
                 }
             }
         }
@@ -471,23 +500,29 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
     auto ind = detail::find_member(name, fnames_, ignore_case_, ignore_underscore_);
     if((input_value.empty()) || (input_value == emptyString)) {
         if(flag_like_) {
-            return (ind < 0) ? trueString : default_flag_values_[static_cast<std::size_t>(ind)].second;
+            output = (ind < 0) ? trueString : default_flag_values_[static_cast<std::size_t>(ind)].second;
+        } else {
+            output = (ind < 0) ? default_str_ : default_flag_values_[static_cast<std::size_t>(ind)].second;
         }
-        return (ind < 0) ? default_str_ : default_flag_values_[static_cast<std::size_t>(ind)].second;
+        return true;
     }
     if(ind < 0) {
-        return input_value;
+        output = std::move(input_value);
+        return true;
     }
     if(default_flag_values_[static_cast<std::size_t>(ind)].second == falseString) {
         errno = 0;
         auto val = detail::to_flag_value(input_value);
         if(errno != 0) {
             errno = 0;
-            return input_value;
+            output = std::move(input_value);
+            return true;
         }
-        return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
+        output = (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
+        return true;
     }
-    return input_value;
+    output = std::move(input_value);
+    return true;
 }
 
 CLI11_INLINE Option *Option::add_result(std::string s) {
