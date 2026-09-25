@@ -38,15 +38,17 @@ namespace detail {
 
 #if !CLI11_HAS_CODECVT
 /// Attempt to set one of the acceptable unicode locales for conversion
-CLI11_INLINE void set_unicode_locale() {
+/// Returns true on success; on failure error_msg is filled with a description
+CLI11_INLINE bool set_unicode_locale(std::string &error_msg) {
     static const std::array<const char *, 2> unicode_locales{{"C.UTF-8", ".UTF-8"}};
 
     for(const auto &locale_name : unicode_locales) {
         if(std::setlocale(LC_ALL, locale_name) != nullptr) {
-            return;
+            return true;
         }
     }
-    throw std::runtime_error("CLI::narrow: could not set locale to C.UTF-8");
+    error_msg = "CLI::narrow: could not set locale to C.UTF-8";
+    return false;
 }
 
 template <typename F> struct scope_guard_t {
@@ -65,16 +67,20 @@ template <typename F> CLI11_NODISCARD CLI11_INLINE scope_guard_t<F> scope_guard(
 CLI11_DIAGNOSTIC_PUSH
 CLI11_DIAGNOSTIC_IGNORE_DEPRECATED
 
-CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
+/// Convert a wide string to a narrow string
+/// Returns true on success; on failure error_msg is filled with a description and result is unspecified
+CLI11_INLINE bool narrow_impl(const wchar_t *str, std::size_t str_size, std::string &result, std::string &error_msg) {
 #if CLI11_HAS_CODECVT
+    (void)error_msg;
 #ifdef _WIN32
-    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(str, str + str_size);
+    result = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(str, str + str_size);
 
 #else
-    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(str, str + str_size);
+    result = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(str, str + str_size);
 
 #endif  // _WIN32
-#else   // CLI11_HAS_CODECVT
+    return true;
+#else  // CLI11_HAS_CODECVT
     // Copy into a local, NUL-terminated buffer so the conversion is bounded by str_size: a view into the
     // middle of a larger buffer or a non-NUL-terminated buffer must not be read past str_size. Note that an
     // embedded NUL inside the first str_size characters will still terminate std::wcsrtombs early; this matches
@@ -87,31 +93,47 @@ CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
 
     std::string old_locale = std::setlocale(LC_ALL, nullptr);
     auto sg = scope_guard([&] { std::setlocale(LC_ALL, old_locale.c_str()); });
-    set_unicode_locale();
+    if(!set_unicode_locale(error_msg)) {
+        return false;
+    }
 
     std::size_t new_size = std::wcsrtombs(nullptr, &it, 0, &state);
     if(new_size == static_cast<std::size_t>(-1)) {
-        throw std::runtime_error("CLI::narrow: conversion error in std::wcsrtombs at offset " +
-                                 std::to_string(it - src));
+        error_msg = "CLI::narrow: conversion error in std::wcsrtombs at offset " + std::to_string(it - src);
+        return false;
     }
-    std::string result(new_size, '\0');
+    result.assign(new_size, '\0');
     std::wcsrtombs(const_cast<char *>(result.data()), &src, new_size, &state);
 
-    return result;
+    return true;
 
 #endif  // CLI11_HAS_CODECVT
 }
 
-CLI11_INLINE std::wstring widen_impl(const char *str, std::size_t str_size) {
+CLI11_INLINE std::string narrow_impl(const wchar_t *str, std::size_t str_size) {
+    std::string result;
+    std::string error_msg;
+    // cppcheck-suppress knownConditionTrueFalse ; the codecvt branch cannot fail
+    if(!narrow_impl(str, str_size, result, error_msg)) {
+        throw std::runtime_error(error_msg);
+    }
+    return result;
+}
+
+/// Convert a narrow string to a wide string
+/// Returns true on success; on failure error_msg is filled with a description and result is unspecified
+CLI11_INLINE bool widen_impl(const char *str, std::size_t str_size, std::wstring &result, std::string &error_msg) {
 #if CLI11_HAS_CODECVT
+    (void)error_msg;
 #ifdef _WIN32
-    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(str, str + str_size);
+    result = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(str, str + str_size);
 
 #else
-    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(str, str + str_size);
+    result = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(str, str + str_size);
 
 #endif  // _WIN32
-#else   // CLI11_HAS_CODECVT
+    return true;
+#else  // CLI11_HAS_CODECVT
     // Copy into a local, NUL-terminated buffer so the conversion is bounded by str_size: a view into the
     // middle of a larger buffer or a non-NUL-terminated buffer must not be read past str_size. Note that an
     // embedded NUL inside the first str_size characters will still terminate std::mbsrtowcs early; this matches
@@ -124,19 +146,31 @@ CLI11_INLINE std::wstring widen_impl(const char *str, std::size_t str_size) {
 
     std::string old_locale = std::setlocale(LC_ALL, nullptr);
     auto sg = scope_guard([&] { std::setlocale(LC_ALL, old_locale.c_str()); });
-    set_unicode_locale();
+    if(!set_unicode_locale(error_msg)) {
+        return false;
+    }
 
     std::size_t new_size = std::mbsrtowcs(nullptr, &it, 0, &state);
     if(new_size == static_cast<std::size_t>(-1)) {
-        throw std::runtime_error("CLI::widen: conversion error in std::mbsrtowcs at offset " +
-                                 std::to_string(it - src));
+        error_msg = "CLI::widen: conversion error in std::mbsrtowcs at offset " + std::to_string(it - src);
+        return false;
     }
-    std::wstring result(new_size, L'\0');
+    result.assign(new_size, L'\0');
     std::mbsrtowcs(const_cast<wchar_t *>(result.data()), &src, new_size, &state);
 
-    return result;
+    return true;
 
 #endif  // CLI11_HAS_CODECVT
+}
+
+CLI11_INLINE std::wstring widen_impl(const char *str, std::size_t str_size) {
+    std::wstring result;
+    std::string error_msg;
+    // cppcheck-suppress knownConditionTrueFalse ; the codecvt branch cannot fail
+    if(!widen_impl(str, str_size, result, error_msg)) {
+        throw std::runtime_error(error_msg);
+    }
+    return result;
 }
 
 CLI11_DIAGNOSTIC_POP

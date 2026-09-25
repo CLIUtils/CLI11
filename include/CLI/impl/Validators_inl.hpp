@@ -16,7 +16,6 @@
 
 // [CLI11:public_includes:set]
 #include <functional>
-#include <stdexcept>
 #include <string>
 #include <system_error>
 #include <utility>
@@ -259,21 +258,18 @@ CLI11_INLINE NonexistentPathValidator::NonexistentPathValidator() : Validator("P
 
 CLI11_INLINE EscapedStringTransformer::EscapedStringTransformer() {
     func_ = [](std::string &str) {
-        try {
-            if(str.size() > 1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&
-               str.front() == str.back()) {
-                process_quoted_string(str);
-            } else if(str.find_first_of('\\') != std::string::npos) {
-                if(detail::is_binary_escaped_string(str)) {
-                    str = detail::extract_binary_string(str);
-                } else {
-                    str = remove_escaped_characters(str);
-                }
+        std::string error_msg;
+        if(str.size() > 1 && (str.front() == '\"' || str.front() == '\'' || str.front() == '`') &&
+           str.front() == str.back()) {
+            process_quoted_string(str, error_msg);
+        } else if(str.find_first_of('\\') != std::string::npos) {
+            if(detail::is_binary_escaped_string(str)) {
+                str = detail::extract_binary_string(str);
+            } else {
+                remove_escaped_characters(str, error_msg);
             }
-            return std::string{};
-        } catch(const std::invalid_argument &ia) {
-            return std::string(ia.what());
         }
+        return error_msg;
     };
 }
 }  // namespace detail

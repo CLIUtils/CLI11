@@ -21,7 +21,6 @@
 #include <functional>
 #include <locale>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -194,10 +193,9 @@ generate_parents(const std::string &section, std::string &name, char parentSepar
         parents.insert(parents.end(), plist.begin(), plist.end());
     }
     // clean up quotes on the parents
-    try {
-        detail::remove_quotes(parents);
-    } catch(const std::invalid_argument &iarg) {
-        throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+    std::string error_msg;
+    if(!detail::remove_quotes(parents, error_msg)) {
+        throw CLI::ParseError(error_msg, CLI::ExitCodes::InvalidError);
     }
     return parents;
 }
@@ -451,10 +449,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                     item.pop_back();
                     item.pop_back();
                     if(keyChar == '\"') {
-                        try {
-                            item = detail::remove_escaped_characters(item);
-                        } catch(const std::invalid_argument &iarg) {
-                            throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+                        std::string error_msg;
+                        if(!detail::remove_escaped_characters(item, error_msg)) {
+                            throw CLI::ParseError(error_msg, CLI::ExitCodes::InvalidError);
                         }
                     }
                     inMLineValue = false;
@@ -482,10 +479,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                             item.pop_back();
                         }
                         if(keyChar == '\"') {
-                            try {
-                                item = detail::remove_escaped_characters(item);
-                            } catch(const std::invalid_argument &iarg) {
-                                throw CLI::ParseError(iarg.what(), CLI::ExitCodes::InvalidError);
+                            std::string error_msg;
+                            if(!detail::remove_escaped_characters(item, error_msg)) {
+                                throw CLI::ParseError(error_msg, CLI::ExitCodes::InvalidError);
                             }
                         }
                     } else {
@@ -525,16 +521,20 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             name = detail::trim_copy(line.substr(0, comment_pos));
             items_buffer = {"true"};
         }
-        std::vector<std::string> parents;
-        try {
-            parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
-            detail::process_quoted_string(name, '"', '\'', true);
+        std::vector<std::string> parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
+        std::string error_msg;
+        detail::process_quoted_string(name, error_msg, '"', '\'', true);
+        if(error_msg.empty()) {
             // clean up quotes on the items and check for escaped strings
             for(auto &it : items_buffer) {
-                detail::process_quoted_string(it, stringQuote, literalQuote);
+                detail::process_quoted_string(it, error_msg, stringQuote, literalQuote);
+                if(!error_msg.empty()) {
+                    break;
+                }
             }
-        } catch(const std::invalid_argument &ia) {
-            throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
+        }
+        if(!error_msg.empty()) {
+            throw CLI::ParseError(error_msg, CLI::ExitCodes::InvalidError);
         }
 
         if(parents.size() > maximumLayers) {

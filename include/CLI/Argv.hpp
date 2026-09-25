@@ -19,8 +19,9 @@ namespace CLI {
 // [CLI11:argv_hpp:verbatim]
 namespace detail {
 #ifdef _WIN32
-/// Decode and return UTF-8 argv from GetCommandLineW.
-CLI11_INLINE std::vector<std::string> compute_win32_argv();
+/// Decode UTF-8 argv from GetCommandLineW into result.
+/// Returns true on success; on failure error_msg is filled with a description
+CLI11_INLINE bool compute_win32_argv(std::vector<std::string> &result, std::string &error_msg);
 #endif
 }  // namespace detail
 // [CLI11:argv_hpp:end]

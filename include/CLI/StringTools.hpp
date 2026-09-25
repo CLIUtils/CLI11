@@ -132,7 +132,8 @@ CLI11_INLINE std::string &remove_outer(std::string &str, char key);
 CLI11_INLINE std::string &remove_quotes(std::string &str);
 
 /// remove quotes from all elements of a string vector and process escaped components
-CLI11_INLINE void remove_quotes(std::vector<std::string> &args);
+/// @return true on success; on failure false is returned and error_msg is filled with a description
+CLI11_INLINE bool remove_quotes(std::vector<std::string> &args, std::string &error_msg);
 
 /// Add a leader to the beginning of all new lines (nothing is added
 /// at the start of the first line). `"; "` would be for ini files
@@ -246,8 +247,9 @@ CLI11_INLINE bool has_escapable_character(const std::string &str);
 /// @return a string with the escapable characters escaped with '\'
 CLI11_INLINE std::string add_escaped_characters(const std::string &str);
 
-/// @brief replace the escaped characters with their equivalent
-CLI11_INLINE std::string remove_escaped_characters(const std::string &str);
+/// @brief replace the escaped characters with their equivalent in place
+/// @return true on success; on failure str is unmodified and error_msg is filled with a description
+CLI11_INLINE bool remove_escaped_characters(std::string &str, std::string &error_msg);
 
 /// generate a string with all non printable characters escaped to hex codes
 CLI11_INLINE std::string binary_escape_string(const std::string &string_to_escape, bool force = false);
@@ -261,6 +263,16 @@ CLI11_INLINE std::string extract_binary_string(const std::string &escaped_string
 CLI11_INLINE void handle_secondary_array(std::string &str);
 
 /// process a quoted string, remove the quotes and if appropriate handle escaped characters
+/// @return true if str was modified; if escape processing fails, false is returned and error_msg is
+/// filled with a description
+CLI11_INLINE bool process_quoted_string(std::string &str,
+                                        std::string &error_msg,
+                                        char string_char = '\"',
+                                        char literal_char = '\'',
+                                        bool disable_secondary_array_processing = false);
+
+/// process a quoted string, remove the quotes and if appropriate handle escaped characters, ignoring any
+/// escape processing errors
 CLI11_INLINE bool process_quoted_string(std::string &str,
                                         char string_char = '\"',
                                         char literal_char = '\'',

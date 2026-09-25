@@ -15,7 +15,6 @@
 
 // [CLI11:public_includes:set]
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <vector>
 // [CLI11:public_includes:end]
@@ -68,8 +67,8 @@ namespace CLI {
 namespace detail {
 
 #ifdef _WIN32
-CLI11_INLINE std::vector<std::string> compute_win32_argv() {
-    std::vector<std::string> result;
+CLI11_INLINE bool compute_win32_argv(std::vector<std::string> &result, std::string &error_msg) {
+    result.clear();
     int argc = 0;
 
     auto deleter = [](wchar_t **ptr) { LocalFree(ptr); };
@@ -78,7 +77,8 @@ CLI11_INLINE std::vector<std::string> compute_win32_argv() {
     // NOLINTEND(*-avoid-c-arrays)
 
     if(wargv == nullptr) {
-        throw std::runtime_error("CommandLineToArgvW failed with code " + std::to_string(GetLastError()));
+        error_msg = "CommandLineToArgvW failed with code " + std::to_string(GetLastError());
+        return false;
     }
 
     result.reserve(static_cast<size_t>(argc));
@@ -86,7 +86,7 @@ CLI11_INLINE std::vector<std::string> compute_win32_argv() {
         result.push_back(narrow(wargv[i]));
     }
 
-    return result;
+    return true;
 }
 #endif
 
