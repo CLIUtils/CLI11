@@ -723,8 +723,12 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                                     }
                                 }
                                 if(!valid) {
-                                    value = detail::ini_join(
-                                        opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
+                                    value = detail::ini_join(opt->results(),
+                                                             arraySeparator,
+                                                             arrayStart,
+                                                             arrayEnd,
+                                                             stringQuote,
+                                                             literalQuote);
                                 }
                             }
                         }

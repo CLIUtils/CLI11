@@ -4591,4 +4591,3 @@ TEST_CASE_METHOD(TApp, "FlagDefaultValuesTruthyConfig", "[config]") {
     app2.parse_from_stream(config_stream2);
     CHECK(mode2 == 30);
 }
-
