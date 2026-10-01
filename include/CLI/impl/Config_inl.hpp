@@ -700,22 +700,32 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
 
                 if(!value.empty()) {
                     if(!opt->get_fnames().empty()) {
-                        try {
-                            value = opt->get_flag_value(single_name, value);
-                        } catch(const CLI::ArgumentMismatch &) {
-                            bool valid{false};
-                            for(const auto &test_name : opt->get_fnames()) {
-                                try {
-                                    value = opt->get_flag_value(test_name, value);
-                                    single_name = test_name;
-                                    valid = true;
-                                } catch(const CLI::ArgumentMismatch &) {
-                                    continue;
-                                }
+                        bool matched_flag{false};
+                        for(const auto &flag_pair : opt->get_default_flag_values()) {
+                            if(flag_pair.second != "false" && flag_pair.second != "true" && flag_pair.second == value) {
+                                single_name = flag_pair.first;
+                                matched_flag = true;
+                                break;
                             }
-                            if(!valid) {
-                                value = detail::ini_join(
-                                    opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
+                        }
+                        if(!matched_flag) {
+                            try {
+                                value = opt->get_flag_value(single_name, value);
+                            } catch(const CLI::ArgumentMismatch &) {
+                                bool valid{false};
+                                for(const auto &test_name : opt->get_fnames()) {
+                                    try {
+                                        value = opt->get_flag_value(test_name, value);
+                                        single_name = test_name;
+                                        valid = true;
+                                    } catch(const CLI::ArgumentMismatch &) {
+                                        continue;
+                                    }
+                                }
+                                if(!valid) {
+                                    value = detail::ini_join(
+                                        opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
+                                }
                             }
                         }
                     }
