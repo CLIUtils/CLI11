@@ -422,11 +422,12 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
         if(comment_pos < delimiter_pos) {
             delimiter_pos = std::string::npos;
         }
+        bool mlquote{false};
         if(delimiter_pos != std::string::npos) {
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            bool mlquote =
+            mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos) {
                 auto citems = detail::split_up(item, commentChar);
@@ -530,8 +531,10 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
             detail::process_quoted_string(name, '"', '\'', true);
             // clean up quotes on the items and check for escaped strings
-            for(auto &it : items_buffer) {
-                detail::process_quoted_string(it, stringQuote, literalQuote);
+            if(!mlquote) {
+                for(auto &it : items_buffer) {
+                    detail::process_quoted_string(it, stringQuote, literalQuote);
+                }
             }
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
