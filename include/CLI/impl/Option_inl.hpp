@@ -347,9 +347,8 @@ Option::get_name(bool positional, bool all_options, bool disable_default_flag_va
 CLI11_INLINE void Option::run_callback() {
     const bool default_value = results_.empty() && (default_val_set_ || force_callback_);
     const auto old_option_state = current_option_state_;
-    results_t default_input;
-    results_t &input_results = default_value ? default_input : results_;
     try {
+        results_t default_input;
         if(default_value) {
             // Preserve the configured default: transforms must start from it again on each parse.
             // Split it here so delimiter and type settings registered after default_val() take effect.
@@ -362,6 +361,7 @@ CLI11_INLINE void Option::run_callback() {
             }
             current_option_state_ = option_state::parsing;
         }
+        results_t &input_results = default_value ? default_input : results_;
         if(current_option_state_ == option_state::parsing) {
             _validate_results(input_results);
             current_option_state_ = option_state::validated;
