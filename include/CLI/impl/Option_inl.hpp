@@ -345,35 +345,65 @@ Option::get_name(bool positional, bool all_options, bool disable_default_flag_va
 }
 
 CLI11_INLINE void Option::run_callback() {
-    bool used_default_str = false;
-    if(force_callback_ && results_.empty()) {
-        used_default_str = true;
-        add_result(default_str_);
-    }
-    if(current_option_state_ == option_state::parsing) {
-        _validate_results(results_);
-        current_option_state_ = option_state::validated;
-    }
-
-    if(current_option_state_ < option_state::reduced) {
-        _reduce_results(proc_results_, results_);
-    }
-
-    current_option_state_ = option_state::callback_run;
-    if(callback_) {
-        const results_t &send_results = proc_results_.empty() ? results_ : proc_results_;
-        if(send_results.empty()) {
-            return;
+    const bool default_value = results_.empty() && (default_val_set_ || force_callback_);
+    const auto old_option_state = current_option_state_;
+    results_t default_input;
+    results_t &input_results = default_value ? default_input : results_;
+    try {
+        if(default_value) {
+            // Preserve the configured default: transforms must start from it again on each parse.
+            // Split it here so delimiter and type settings registered after default_val() take effect.
+            if(default_val_set_) {
+                for(const auto &value : default_results_) {
+                    _add_result(std::string(value), default_input);
+                }
+            } else {
+                _add_result(std::string(default_str_), default_input);
+            }
+            current_option_state_ = option_state::parsing;
         }
-        bool local_result = callback_(send_results);
-        if(used_default_str) {
-            // we only clear the results if the callback was actually used
-            // otherwise the callback is the storage of the default
-            results_.clear();
+        if(current_option_state_ == option_state::parsing) {
+            _validate_results(input_results);
+            current_option_state_ = option_state::validated;
+        }
+
+        if(current_option_state_ < option_state::reduced) {
+            _reduce_results(proc_results_, input_results);
+        }
+
+        if(default_value) {
+            // Keep the processed default in stable output storage, including when no reduction was needed.
+            if(proc_results_.empty()) {
+                proc_results_ = std::move(input_results);
+            }
+        }
+        current_option_state_ = default_value && !force_callback_ ? old_option_state : option_state::callback_run;
+        const bool invoke_callback =
+            !default_value || force_callback_ || (run_callback_for_default_ && !trigger_on_result_);
+        if(invoke_callback && callback_) {
+            const results_t &send_results = default_value || !proc_results_.empty() ? proc_results_ : results_;
+            if(send_results.empty()) {
+                return;
+            }
+            bool local_result = callback_(send_results);
+            if(!local_result)
+                throw ConversionError(get_name(), default_value ? proc_results_ : results_);
+        }
+    } catch(const ConversionError &err) {
+        if(default_value) {
             proc_results_.clear();
+            current_option_state_ = old_option_state;
+            throw ConversionError(get_name(),
+                                  std::string("given default value(\"") + default_str_ +
+                                      "\") produces an error : " + err.what());
         }
-        if(!local_result)
-            throw ConversionError(get_name(), results_);
+        throw;
+    } catch(...) {
+        if(default_value) {
+            proc_results_.clear();
+            current_option_state_ = old_option_state;
+        }
+        throw;
     }
 }
 
@@ -592,6 +622,12 @@ CLI11_INLINE Option *Option::type_name(std::string typeval) {
 CLI11_INLINE Option *Option::capture_default_str() {
     if(default_function_) {
         default_str_ = default_function_();
+        default_val_set_ = false;
+        default_results_.clear();
+        if(results_.empty()) {
+            proc_results_.clear();
+            current_option_state_ = option_state::parsing;
+        }
     }
     return this;
 }

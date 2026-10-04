@@ -641,7 +641,8 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     continue;
                 }
 
-                auto results = opt->reduced_results();
+                // Cached fallback values are not supplied input. Export them only when defaults are requested.
+                auto results = opt->count() > 0 ? opt->reduced_results() : results_t{};
                 if(results.size() > 1 && opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Reverse) {
                     std::reverse(results.begin(), results.end());
                 }

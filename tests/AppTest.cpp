@@ -16,6 +16,10 @@
 #include <utility>
 #include <vector>
 
+#if defined(CLI11_HAS_STRING_VIEW)
+#include <string_view>
+#endif
+
 #ifdef _WIN32
 #define PLATFORM_TEXT(x) _PLATFORM_TEXT(x)
 #define _PLATFORM_TEXT(x) L##x
@@ -603,8 +607,373 @@ TEST_CASE_METHOD(TApp, "invalidDefault", "[app]") {
                     ->multi_option_policy(CLI::MultiOptionPolicy::Throw)
                     ->delimiter(',')
                     ->force_callback();
-    CHECK_THROWS(opt->default_val("4,6,2,8"));
+    CHECK_NOTHROW(opt->default_val("4,6,2,8"));
+    CHECK_THROWS_AS(run(), CLI::ArgumentMismatch);
 }
+
+TEST_CASE_METHOD(TApp, "defaultValCheckDeferredForAllCallbackModes", "[app]") {
+    const bool run_default_callback = GENERATE(false, true);
+    const bool trigger_on_parse = GENERATE(false, true);
+    const bool check_first = GENERATE(false, true);
+    CAPTURE(run_default_callback, trigger_on_parse, check_first);
+
+    int number{7};
+    auto *opt = app.add_option("-n", number)
+                    ->run_callback_for_default(run_default_callback)
+                    ->trigger_on_parse(trigger_on_parse);
+    if(check_first) {
+        opt->check(CLI::PositiveNumber);
+    }
+    CHECK_NOTHROW(opt->default_val(0));
+    if(!check_first) {
+        opt->check(CLI::PositiveNumber);
+    }
+    CHECK(number == 7);
+    CHECK(opt->count() == 0);
+    CHECK_FALSE(opt->get_callback_run());
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK(number == 7);
+    CHECK(opt->count() == 0);
+
+    args = {"-n", "3"};
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+    args.clear();
+    number = 7;
+
+    CHECK_NOTHROW(opt->default_val(2));
+    CHECK_NOTHROW(run());
+    CHECK(number == ((run_default_callback && !trigger_on_parse) ? 2 : 7));
+    CHECK(opt->count() == 0);
+    CHECK_FALSE(opt->get_callback_run());
+}
+
+// Regression for https://github.com/CLIUtils/CLI11/issues/1375.
+TEST_CASE_METHOD(TApp, "defaultValValidationDuringParse", "[app]") {
+    const bool bound = GENERATE(false, true);
+    const bool force = GENERATE(false, true);
+    CAPTURE(bound, force);
+    int number{7};
+    auto *opt = bound ? app.add_option("someNumber,-n,--someNumber", number)
+                      : app.add_option("someNumber,-n,--someNumber", "Some number");
+    opt->check(CLI::PositiveNumber)->force_callback(force);
+
+    REQUIRE_NOTHROW(opt->default_val(0));
+    CHECK(number == 7);
+    CHECK(opt->empty());
+
+    SECTION("Invalid default is rejected when used") {
+        REQUIRE_THROWS_AS(run(), CLI::ValidationError);
+        CHECK(number == 7);
+        CHECK(opt->empty());
+    }
+    SECTION("Valid input overrides the invalid default") {
+        args = {"--someNumber", "3"};
+        REQUIRE_NOTHROW(run());
+        CHECK(opt->count() == 1);
+        CHECK(opt->as<int>() == 3);
+        CHECK(number == (bound ? 3 : 7));
+    }
+    SECTION("Invalid input is still rejected") {
+        args = {"-n", "0"};
+        REQUIRE_THROWS_AS(run(), CLI::ValidationError);
+        CHECK(number == 7);
+    }
+    SECTION("Valid default is processed without counting as input") {
+        REQUIRE_NOTHROW(opt->default_val(2));
+        CHECK(number == 7);
+        REQUIRE_NOTHROW(run());
+        CHECK(opt->empty());
+        CHECK(opt->as<int>() == 2);
+        CHECK(number == (bound ? 2 : 7));
+    }
+}
+
+TEST_CASE_METHOD(TApp, "defaultValSkippedWhenOverridden", "[app]") {
+    int number{7};
+    auto *opt = app.add_option("-n", number)->check(CLI::PositiveNumber);
+    CHECK_NOTHROW(opt->default_val(0));
+    args = {"-n", "3"};
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+
+    opt->default_val("not an integer");
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+
+    args = {"-n", "0"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValConversionDeferredUntilUsed", "[app]") {
+    const bool force = GENERATE(false, true);
+    int number{7};
+    auto *opt = app.add_option("-n", number)->force_callback(force);
+    CHECK_NOTHROW(opt->default_val("not an integer"));
+    args = {"-n", "3"};
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    args.clear();
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValCheckDeferredInSubcommandsAndGroups", "[app]") {
+    const bool subcommand = GENERATE(false, true);
+    CLI::App *command = subcommand ? app.add_subcommand("command") : app.add_option_group("group");
+    if(subcommand) {
+        int unused{7};
+        command->add_option("--unused", unused)->default_val(0)->check(CLI::PositiveNumber);
+        CHECK_NOTHROW(run());
+        CHECK(unused == 7);
+        command->remove_option(command->get_option("--unused"));
+        args = {"command"};
+    }
+    int number{7};
+    CHECK_NOTHROW(command->add_option("-n", number)->default_val(0)->check(CLI::PositiveNumber));
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK(number == 7);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValInUnusedImmediateGroup", "[app]") {
+    const bool force = GENERATE(false, true);
+    int number{7};
+    int calls{0};
+    auto *group = app.add_option_group("group")->immediate_callback();
+    group->callback([&calls]() { ++calls; });
+    auto *opt = group->add_option("-n", number)->force_callback(force)->default_val(0)->check(CLI::PositiveNumber);
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK(number == 7);
+    opt->default_val(2);
+    CHECK_NOTHROW(run());
+    CHECK(number == 2);
+    CHECK(opt->empty());
+    CHECK(calls == 0);
+    args = {"-n", "3"};
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    CHECK(calls > 0);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValCheckDeferredFromStream", "[app]") {
+    int number{7};
+    auto *opt = app.add_option("--number", number)->default_val(0)->check(CLI::PositiveNumber);
+    std::istringstream invalid;
+    CHECK_THROWS_AS(app.parse_from_stream(invalid), CLI::ValidationError);
+    CHECK(number == 7);
+
+    std::istringstream supplied("number=3\n");
+    CHECK_NOTHROW(app.parse_from_stream(supplied));
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+
+    app.clear();
+    opt->default_val(2);
+    std::istringstream valid;
+    CHECK_NOTHROW(app.parse_from_stream(valid));
+    CHECK(number == 2);
+    CHECK(opt->empty());
+}
+
+TEST_CASE_METHOD(TApp, "defaultStrReplacesDeferredDefaultVal", "[app]") {
+    int number{7};
+    auto *opt = app.add_option("-n", number)->check(CLI::PositiveNumber)->default_val(0);
+    opt->default_str("2");
+    CHECK_NOTHROW(run());
+    CHECK(number == 7);
+    CHECK(opt->as<int>() == 2);
+}
+
+TEST_CASE_METHOD(TApp, "captureDefaultStrReplacesDeferredDefaultVal", "[app]") {
+    int number{7};
+    auto *opt = app.add_option("-n", number)->check(CLI::PositiveNumber)->default_val(0);
+    opt->capture_default_str();
+    CHECK_NOTHROW(run());
+    CHECK(number == 7);
+    CHECK(opt->get_default_str() == "7");
+    CHECK(opt->as<int>() == 7);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValUsesFinalDelimiterSettings", "[app]") {
+    const bool force = GENERATE(false, true);
+    int number{7};
+    auto *opt = app.add_option("-n", number)->force_callback(force)->default_val("2,3");
+    opt->delimiter(',')->take_last();
+    app.clear();
+    run();
+    CHECK(number == 3);
+    CHECK(opt->empty());
+    CHECK(opt->as<int>() == 3);
+
+    opt->default_val("4;5")->delimiter(';');
+    run();
+    CHECK(number == 5);
+    CHECK(opt->empty());
+    CHECK(opt->as<int>() == 5);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValResultsUseReducedDefaultWithoutCallback", "[app]") {
+    int number{7};
+    auto *opt =
+        app.add_option("-n", number)->run_callback_for_default(false)->take_last()->delimiter(',')->default_val("2,3");
+    CHECK_NOTHROW(run());
+    CHECK(number == 7);
+    CHECK(opt->as<int>() == 3);
+    CHECK(opt->empty());
+}
+
+TEST_CASE_METHOD(TApp, "defaultValCacheDoesNotReplaceParsedResults", "[app]") {
+    const bool force = GENERATE(false, true);
+    int number{7};
+    auto *opt = app.add_option("-n", number)->take_last()->force_callback(force);
+    args = {"-n", "2", "-n", "3"};
+    run();
+    CHECK(opt->as<int>() == 3);
+    opt->default_val(4);
+    CHECK(opt->as<int>() == 3);
+
+    args.clear();
+    run();
+    CHECK(number == 4);
+    CHECK(opt->as<int>() == 4);
+    opt->default_val(5);
+    CHECK(opt->as<int>() == 5);
+    opt->default_str("6");
+    CHECK(opt->as<int>() == 6);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValCallbackRunsOnlyForFallback", "[app]") {
+    int calls{0};
+    int number{0};
+    auto *opt = app.add_option_function<int>("-n",
+                                             [&](int value) {
+                                                 ++calls;
+                                                 number = value;
+                                             })
+                    ->run_callback_for_default()
+                    ->default_val(2);
+    CHECK(calls == 0);
+    run();
+    CHECK(calls == 1);
+    CHECK(number == 2);
+    CHECK(opt->empty());
+
+    args = {"-n", "3"};
+    run();
+    CHECK(calls == 2);
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValSkippedForHelpAndDisabledGroups", "[app]") {
+    const bool force = GENERATE(false, true);
+    SECTION("Help") {
+        app.add_option("-n")->default_val(0)->check(CLI::PositiveNumber)->force_callback(force);
+        args = {"--help"};
+        CHECK_THROWS_AS(run(), CLI::CallForHelp);
+    }
+    SECTION("Disabled group") {
+        auto *group = app.add_option_group("group")->disabled();
+        group->add_option("-n")->default_val(0)->check(CLI::PositiveNumber)->force_callback(force);
+        CHECK_NOTHROW(run());
+    }
+    SECTION("Inactive subcommand") {
+        auto *command = app.add_subcommand("command");
+        command->add_option("-n")->default_val(0)->check(CLI::PositiveNumber)->force_callback(force);
+        CHECK_NOTHROW(run());
+    }
+}
+
+TEST_CASE_METHOD(TApp, "defaultValSkippedForEnvironmentAndConfig", "[app]") {
+    const bool force = GENERATE(false, true);
+    const bool default_string = GENERATE(false, true);
+    const auto priority =
+        GENERATE(CLI::CallbackPriority::FirstPreHelp, CLI::CallbackPriority::First, CLI::CallbackPriority::Normal);
+    CAPTURE(force, default_string, priority);
+    int number{7};
+    auto *opt = app.add_option("--number", number)
+                    ->check(CLI::PositiveNumber)
+                    ->force_callback(force)
+                    ->callback_priority(priority);
+    if(default_string) {
+        opt->default_str("0");
+    } else {
+        opt->default_val(0);
+    }
+    SECTION("Environment") {
+        opt->envname("CLI11_TEST_DEFAULT_OVERRIDE");
+        put_env("CLI11_TEST_DEFAULT_OVERRIDE", "3");
+        CHECK_NOTHROW(run());
+        unset_env("CLI11_TEST_DEFAULT_OVERRIDE");
+    }
+    SECTION("Config file") {
+        TempFile file{"default_override.ini"};
+        std::ofstream output(file);
+        output << "number=3\n";
+        output.close();
+        app.set_config("--config");
+        args = {"--config", file};
+        CHECK_NOTHROW(run());
+    }
+    CHECK(number == 3);
+    CHECK(opt->count() == 1);
+}
+
+TEST_CASE_METHOD(TApp, "defaultValInImmediateSubcommands", "[app]") {
+    int number{7};
+    auto *command = app.add_subcommand("command")->immediate_callback()->configurable();
+    auto *opt = command->add_option("--number", number)->default_val(0)->check(CLI::PositiveNumber);
+    SECTION("Command line") {
+        args = {"command", "--number", "3"};
+        CHECK_NOTHROW(run());
+        CHECK(number == 3);
+    }
+    SECTION("Environment") {
+        opt->envname("CLI11_TEST_DEFAULT_OVERRIDE");
+        put_env("CLI11_TEST_DEFAULT_OVERRIDE", "3");
+        args = {"command"};
+        CHECK_NOTHROW(run());
+        unset_env("CLI11_TEST_DEFAULT_OVERRIDE");
+        CHECK(number == 3);
+    }
+    SECTION("Config section with environment override") {
+        opt->envname("CLI11_TEST_DEFAULT_OVERRIDE");
+        put_env("CLI11_TEST_DEFAULT_OVERRIDE", "3");
+        std::istringstream input("[command]\n");
+        CHECK_NOTHROW(app.parse_from_stream(input));
+        unset_env("CLI11_TEST_DEFAULT_OVERRIDE");
+        CHECK(number == 3);
+    }
+    SECTION("Default is used") {
+        args = {"command"};
+        CHECK_THROWS_AS(run(), CLI::ValidationError);
+        CHECK(number == 7);
+    }
+}
+
+#if defined(CLI11_HAS_STRING_VIEW)
+TEST_CASE_METHOD(TApp, "defaultValKeepsBoundViewAlive", "[app]") {
+    const bool force = GENERATE(false, true);
+    const std::string value = "a default value longer than the small string buffer";
+    std::string_view view;
+    auto *opt = app.add_option("--value", view)->force_callback(force)->default_val(value);
+    CHECK(view.empty());
+    run();
+    CHECK(view == value);
+    CHECK(opt->empty());
+    const char *stored = view.data();
+    CHECK(opt->as<std::string>() == value);
+    CHECK(opt->as<std::string_view>().data() == stored);
+    CHECK(view.data() == stored);
+    CHECK(view == value);
+    run();
+    CHECK(view == value);
+    CHECK(opt->empty());
+}
+#endif
 
 TEST_CASE_METHOD(TApp, "TogetherInt", "[app]") {
     int i{0};
