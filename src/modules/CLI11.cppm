@@ -28,9 +28,16 @@ using CLI::Bound;
 using CLI::callback_t;
 using CLI::CallbackPriority;
 using CLI::CallForAllHelp;
+using CLI::CallForCompletion;
 using CLI::CallForHelp;
 using CLI::CallForVersion;
 using CLI::CheckedTransformer;
+using CLI::CLI11_COMPLETE_PROTO_VERSION;
+using CLI::CompletionDirective;
+using CLI::CompletionHint;
+using CLI::CompletionMeta;
+using CLI::CompletionReply;
+using CLI::CompletionResult;
 using CLI::Config;
 using CLI::config_extras_mode;
 using CLI::ConfigBase;
@@ -48,6 +55,7 @@ using CLI::ExitCodes;
 using CLI::ExtrasError;
 using CLI::ExtrasMode;
 using CLI::FileError;
+using CLI::format_completion_reply;
 using CLI::Formatter;
 using CLI::FormatterBase;
 using CLI::FormatterLambda;
@@ -91,6 +99,7 @@ using CLI::enums::operator<<;
 }
 
 using CLI::operator<<;
+using CLI::operator|;
 
 using CLI::AutoTimer;
 using CLI::conditional_t;

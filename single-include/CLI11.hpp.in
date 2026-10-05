@@ -74,6 +74,10 @@ namespace {namespace} {{
 
 {config_fwd_hpp}
 
+{completion_hpp}
+
+{completion_inl_hpp}
+
 {validators_hpp}
 
 {validators_inl_hpp}

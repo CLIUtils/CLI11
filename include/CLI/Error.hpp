@@ -189,6 +189,12 @@ class CallForVersion : public Success {
         : CallForVersion("This should be caught in your main function, see examples", ExitCodes::Success) {}
 };
 
+/// Shell completion was requested through the completion environment variable; what() is the reply
+class CallForCompletion : public Success {
+    CLI11_ERROR_DEF(Success, CallForCompletion)
+    explicit CallForCompletion(std::string reply) : CallForCompletion(std::move(reply), ExitCodes::Success) {}
+};
+
 /// Does not output a diagnostic in CLI11_PARSE, but allows main() to return with a specific error code.
 class RuntimeError : public ParseError {
     CLI11_ERROR_DEF(ParseError, RuntimeError)
