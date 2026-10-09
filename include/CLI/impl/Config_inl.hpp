@@ -263,31 +263,31 @@ CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
 /// @brief  find the closing quotes of a multiline value
 /// @return the length of the content before the closing quotes, or npos if the value does not close
 CLI11_INLINE std::size_t find_ml_close(const std::string &str, char quote, char comment) {
-    const std::string closer(3, quote);
-    std::size_t pos = 0;
-    while((pos = str.find(closer, pos)) != std::string::npos) {
-        if(quote == '"') {
-            std::size_t slashes = 0;
-            while(slashes < pos && str[pos - slashes - 1] == '\\') {
-                ++slashes;
-            }
-            if(slashes % 2 == 1) {
-                ++pos;
-                continue;
-            }
-        }
-        // the content can end with up to two quote characters
-        auto end = str.find_first_not_of(quote, pos);
-        if(end == std::string::npos) {
-            end = str.size();
-        }
+    std::size_t end = 0;
+    while((end = close_multiline_quote(str, end, quote)) < str.size()) {
+        ++end;
         auto rest = str.find_first_not_of(" \t\r", end);
         if(rest == std::string::npos || str[rest] == comment) {
             return end - 3;
         }
-        pos = end;
     }
     return std::string::npos;
+}
+
+/// @brief  remove an unescaped backslash that ends a line in a multiline basic string
+/// @return true if the line ends with a line continuation
+CLI11_INLINE bool remove_line_continuation(std::string &line) {
+    auto last = line.find_last_not_of(" \t");
+    if(last == std::string::npos || line[last] != '\\') {
+        return false;
+    }
+    auto before = line.find_last_not_of('\\', last);
+    auto slashes = (before == std::string::npos) ? last + 1 : last - before;
+    if(slashes % 2 == 0) {
+        return false;
+    }
+    line.erase(last);
+    return true;
 }
 
 /// @brief  find a matching configItem in a list
@@ -347,6 +347,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
 
     std::string line_sep_chars{parentSeparatorChar, commentChar, valueDelimiter};
     while(getline(input, buffer)) {
+        if(!buffer.empty() && buffer.back() == '\r') {
+            buffer.pop_back();
+        }
         std::vector<std::string> items_buffer;
         std::string name;
         line = detail::trim_copy(buffer);
@@ -452,12 +455,11 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
         if(comment_pos < delimiter_pos) {
             delimiter_pos = std::string::npos;
         }
-        bool mlquote{false};
         if(delimiter_pos != std::string::npos) {
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            mlquote =
+            bool mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos) {
                 auto citems = detail::split_up(item, commentChar);
@@ -485,14 +487,16 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                         }
                     }
                     inMLineValue = false;
-                } else if(!item.empty() && item.back() == '\\' && keyChar == '\"') {
-                    item.pop_back();
+                } else if(keyChar == '\"' && detail::remove_line_continuation(item)) {
                     lineExtension = true;
                 }
                 while(inMLineValue) {
                     std::string l2;
                     if(!std::getline(input, l2)) {
                         break;
+                    }
+                    if(!l2.empty() && l2.back() == '\r') {
+                        l2.pop_back();
                     }
                     close = detail::find_ml_close(l2, keyChar, commentChar);
                     if(close != std::string::npos) {
@@ -523,9 +527,8 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                         }
                         lineExtension = false;
                         firstLine = false;
-                        if(!l2.empty() && l2.back() == '\\' && keyChar == '\"') {
+                        if(keyChar == '\"' && detail::remove_line_continuation(l2)) {
                             lineExtension = true;
-                            l2.pop_back();
                         }
                         item += l2;
                     }
@@ -534,22 +537,43 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                     item = detail::extract_binary_string(item);
                 }
                 items_buffer = {item};
-            } else if(!item.empty() && item.front() == aStart) {
-                for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
-                    detail::trim(multiline);
-                    item += multiline;
-                }
-                if(item.back() == aEnd) {
-                    items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
-                } else {
-                    items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep);
-                }
-            } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
-                items_buffer = detail::split_up(item, aSep);
-            } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
-                items_buffer = detail::split_up(item, '\0');
             } else {
-                items_buffer = {item};
+                if(!item.empty() && item.front() == aStart) {
+                    for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
+                        detail::trim(multiline);
+                        item += multiline;
+                    }
+                    if(item.back() == aEnd) {
+                        items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                    } else {
+                        items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep);
+                    }
+                } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
+                    items_buffer = detail::split_up(item, aSep);
+                } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
+                    items_buffer = detail::split_up(item, '\0');
+                } else {
+                    items_buffer = {item};
+                }
+                // clean up quotes on the items and check for escaped strings
+                try {
+                    for(auto &it : items_buffer) {
+                        if(it.size() >= 6 &&
+                           (it.compare(0, 3, multiline_literal_quote) == 0 ||
+                            it.compare(0, 3, multiline_string_quote) == 0) &&
+                           detail::close_multiline_quote(it, 3, it.front()) == it.size() - 1) {
+                            bool basic = (it.front() == '\"');
+                            it = it.substr(3, it.size() - 6);
+                            if(basic) {
+                                it = detail::remove_escaped_characters(it);
+                            }
+                        } else {
+                            detail::process_quoted_string(it, stringQuote, literalQuote);
+                        }
+                    }
+                } catch(const std::invalid_argument &ia) {
+                    throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
+                }
             }
         } else {
             name = detail::trim_copy(line.substr(0, comment_pos));
@@ -559,12 +583,6 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
         try {
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
             detail::process_quoted_string(name, '"', '\'', true);
-            // clean up quotes on the items and check for escaped strings
-            if(!mlquote) {
-                for(auto &it : items_buffer) {
-                    detail::process_quoted_string(it, stringQuote, literalQuote);
-                }
-            }
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
         }
