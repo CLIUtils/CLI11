@@ -453,6 +453,47 @@ TEST_CASE_METHOD(TApp, "TomlMultiLineStringPreservesContent", "[config]") {
     CHECK(value == expected);
     CHECK(ordinary == "single\tline");
 }
+
+TEST_CASE("StringBased: TomlMultiLineStringTrailingText", "[config]") {
+    const auto quote = GENERATE(std::string("'''"), std::string("\"\"\""));
+    const auto tail = GENERATE(std::string("  "), std::string(" # comment"), std::string("\r"));
+    const auto separate_lines = GENERATE(false, true);
+    CAPTURE(quote, tail, separate_lines);
+
+    std::stringstream input;
+    input << "value = " << quote << (separate_lines ? "\n" : "") << "abc" << quote << tail << '\n';
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).name == "value");
+    CHECK(output.at(0).inputs == std::vector<std::string>{"abc"});
+    CHECK(output.at(1).name == "other");
+    CHECK(output.at(1).inputs == std::vector<std::string>{"1"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringExtraQuotes", "[config]") {
+    const auto separate_lines = GENERATE(false, true);
+    CAPTURE(separate_lines);
+
+    std::stringstream input;
+    input << "value = '''" << (separate_lines ? "\n" : "") << "abc'''' # comment\n";
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"abc'"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringBinary", "[config]") {
+    std::stringstream input;
+    input << "value = '''B\"(\\x41\\x00)\"'''\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{std::string("A\0", 2)});
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
@@ -3557,6 +3598,7 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultilineStringWithQuotes", "[config]") {
     app.parse_from_stream(input);
     CHECK(value == expected);
 }
+
 TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
