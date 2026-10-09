@@ -430,7 +430,7 @@ TEST_CASE_METHOD(TApp, "TomlMultiLineStringPreservesContent", "[config]") {
                                    std::string("\"[one,two]\""),
                                    std::string{});
     const auto separate_lines = GENERATE(false, true);
-    CAPTURE(quote, expected, separate_lines);
+    INFO("quote: " << quote << ", expected: " << expected << ", separate_lines: " << separate_lines);
 
     std::stringstream input;
     input << "value = " << quote << (separate_lines ? "\n" : "")
@@ -458,7 +458,7 @@ TEST_CASE("StringBased: TomlMultiLineStringTrailingText", "[config]") {
     const auto quote = GENERATE(std::string("'''"), std::string("\"\"\""));
     const auto tail = GENERATE(std::string("  "), std::string(" # comment"), std::string("\r"));
     const auto separate_lines = GENERATE(false, true);
-    CAPTURE(quote, tail, separate_lines);
+    INFO("quote: " << quote << ", tail: " << tail << ", separate_lines: " << separate_lines);
 
     std::stringstream input;
     input << "value = " << quote << (separate_lines ? "\n" : "") << "abc" << quote << tail << '\n';
@@ -474,7 +474,7 @@ TEST_CASE("StringBased: TomlMultiLineStringTrailingText", "[config]") {
 
 TEST_CASE("StringBased: TomlMultiLineStringExtraQuotes", "[config]") {
     const auto separate_lines = GENERATE(false, true);
-    CAPTURE(separate_lines);
+    INFO("separate_lines: " << separate_lines);
 
     std::stringstream input;
     input << "value = '''" << (separate_lines ? "\n" : "") << "abc'''' # comment\n";
