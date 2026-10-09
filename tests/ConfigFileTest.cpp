@@ -553,6 +553,15 @@ TEST_CASE("StringBased: TomlMultiLineStringArray", "[config]") {
     CHECK(output.at(0).inputs == std::vector<std::string>{"\"a\"", "\"b\"", "c\td", "e"});
 }
 
+TEST_CASE("StringBased: TomlInvalidEscape", "[config]") {
+    const auto value = GENERATE(std::string("\"a\\q\""), std::string("[\"\"\"a\\q\"\"\"]"));
+    INFO("value: " << value);
+    std::stringstream input;
+    input << "v = " << value << "\n";
+
+    CHECK_THROWS_AS(CLI::ConfigTOML().from_config(input), CLI::ParseError);
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
