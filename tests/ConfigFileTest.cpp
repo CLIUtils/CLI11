@@ -420,6 +420,102 @@ TEST_CASE("StringBased: TomlMultiLineStringIndented", "[config]") {
     CHECK(output.at(2).inputs.at(0) == "7");
 }
 
+TEST_CASE_METHOD(TApp, "TomlMultiLineStringPreservesContent", "[config]") {
+    const auto quote = GENERATE(std::string("'''"), std::string("\"\"\""));
+    const auto expected = GENERATE(std::string("\"quoted\""),
+                                   std::string("'quoted'"),
+                                   std::string("`quoted`"),
+                                   std::string("\"C:\\temp\\file\""),
+                                   std::string("\"C:\\Users\\name\""),
+                                   std::string("\"[one,two]\""),
+                                   std::string{});
+    const auto separate_lines = GENERATE(false, true);
+    INFO("quote: " << quote << ", expected: " << expected << ", separate_lines: " << separate_lines);
+
+    std::stringstream input;
+    input << "value = " << quote << (separate_lines ? "\n" : "")
+          << (quote == "'''" ? expected : CLI::detail::add_escaped_characters(expected)) << quote << '\n';
+    input << "ordinary = \"single\\tline\"\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    REQUIRE(output.at(0).inputs.size() == 1u);
+    CHECK(output.at(0).name == "value");
+    CHECK(output.at(0).inputs.at(0) == expected);
+    CHECK(output.at(1).inputs.at(0) == "single\tline");
+
+    std::string value;
+    std::string ordinary;
+    app.add_option("--value", value);
+    app.add_option("--ordinary", ordinary);
+    std::istringstream app_input(input.str());
+    app.parse_from_stream(app_input);
+    CHECK(value == expected);
+    CHECK(ordinary == "single\tline");
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringTrailingText", "[config]") {
+    const auto quote = GENERATE(std::string("'''"), std::string("\"\"\""));
+    const auto tail = GENERATE(std::string("  "), std::string(" # comment"), std::string("\r"));
+    const auto separate_lines = GENERATE(false, true);
+    INFO("quote: " << quote << ", tail: " << tail << ", separate_lines: " << separate_lines);
+
+    std::stringstream input;
+    input << "value = " << quote << (separate_lines ? "\n" : "") << "abc" << quote << tail << '\n';
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).name == "value");
+    CHECK(output.at(0).inputs == std::vector<std::string>{"abc"});
+    CHECK(output.at(1).name == "other");
+    CHECK(output.at(1).inputs == std::vector<std::string>{"1"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringExtraQuotes", "[config]") {
+    const auto separate_lines = GENERATE(false, true);
+    INFO("separate_lines: " << separate_lines);
+
+    std::stringstream input;
+    input << "value = '''" << (separate_lines ? "\n" : "") << "abc'''' # comment\n";
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"abc'"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringTextAfterQuotes", "[config]") {
+    std::stringstream input;
+    input << "value = '''a'''b'''\n";
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"a'''b"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineCommentShortLine", "[config]") {
+    std::stringstream input;
+    input << "'''\n";
+    input << "ab\n";
+    input << "'''\n";
+    input << "value = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).name == "value");
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringBinary", "[config]") {
+    std::stringstream input;
+    input << "value = '''B\"(\\x41\\x00)\"'''\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{std::string("A\0", 2)});
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
@@ -3506,6 +3602,23 @@ TEST_CASE_METHOD(TApp, "TomlOutputMultilineString", "[config]") {
     desc = "";
     app.parse_from_stream(nfile);
     CHECK(desc == argString);
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputMultilineStringWithQuotes", "[config]") {
+    const auto quote = GENERATE(std::string("\""), std::string("'"), std::string("`"));
+    const std::string expected = quote + std::string(105, 'x') + "\n" + quote;
+    std::string value;
+    app.add_option("--value", value);
+    args = {"--value", expected};
+    run();
+
+    const auto config = app.config_to_str();
+    CHECK(config == "value='''" + expected + "'''\n");
+    app.clear();
+    value.clear();
+    std::istringstream input(config);
+    app.parse_from_stream(input);
+    CHECK(value == expected);
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputSubcommandMultiLineDescription", "[config]") {

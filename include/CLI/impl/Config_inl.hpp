@@ -260,6 +260,36 @@ CLI11_INLINE bool hasMLString(std::string const &fullString, char check) {
     return (*it == check) && (*(it + 1) == check) && (*(it + 2) == check);
 }
 
+/// @brief  find the closing quotes of a multiline value
+/// @return the length of the content before the closing quotes, or npos if the value does not close
+CLI11_INLINE std::size_t find_ml_close(const std::string &str, char quote, char comment) {
+    const std::string closer(3, quote);
+    std::size_t pos = 0;
+    while((pos = str.find(closer, pos)) != std::string::npos) {
+        if(quote == '"') {
+            std::size_t slashes = 0;
+            while(slashes < pos && str[pos - slashes - 1] == '\\') {
+                ++slashes;
+            }
+            if(slashes % 2 == 1) {
+                ++pos;
+                continue;
+            }
+        }
+        // the content can end with up to two quote characters
+        auto end = str.find_first_not_of(quote, pos);
+        if(end == std::string::npos) {
+            end = str.size();
+        }
+        auto rest = str.find_first_not_of(" \t\r", end);
+        if(rest == std::string::npos || str[rest] == comment) {
+            return end - 3;
+        }
+        pos = end;
+    }
+    return std::string::npos;
+}
+
 /// @brief  find a matching configItem in a list
 CLI11_INLINE auto find_matching_config(std::vector<ConfigItem> &items,
                                        const std::vector<std::string> &parents,
@@ -422,11 +452,12 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
         if(comment_pos < delimiter_pos) {
             delimiter_pos = std::string::npos;
         }
+        bool mlquote{false};
         if(delimiter_pos != std::string::npos) {
 
             name = detail::trim_copy(line.substr(0, delimiter_pos));
             std::string item = detail::trim_copy(line.substr(delimiter_pos + 1, std::string::npos));
-            bool mlquote =
+            mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos) {
                 auto citems = detail::split_up(item, commentChar);
@@ -442,14 +473,10 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                 inMLineValue = true;
                 bool lineExtension{false};
                 bool firstLine = true;
-                if(!item.empty() && item.back() == '\\' && keyChar == '\"') {
-                    item.pop_back();
-                    lineExtension = true;
-                } else if(detail::hasMLString(item, keyChar)) {
+                auto close = detail::find_ml_close(item, keyChar, commentChar);
+                if(close != std::string::npos) {
                     // deal with the first line closing the multiline literal
-                    item.pop_back();
-                    item.pop_back();
-                    item.pop_back();
+                    item.erase(close);
                     if(keyChar == '\"') {
                         try {
                             item = detail::remove_escaped_characters(item);
@@ -458,18 +485,18 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                         }
                     }
                     inMLineValue = false;
+                } else if(!item.empty() && item.back() == '\\' && keyChar == '\"') {
+                    item.pop_back();
+                    lineExtension = true;
                 }
                 while(inMLineValue) {
                     std::string l2;
                     if(!std::getline(input, l2)) {
                         break;
                     }
-                    line = l2;
-                    detail::rtrim(line);
-                    if(detail::hasMLString(line, keyChar)) {
-                        line.pop_back();
-                        line.pop_back();
-                        line.pop_back();
+                    close = detail::find_ml_close(l2, keyChar, commentChar);
+                    if(close != std::string::npos) {
+                        line = l2.substr(0, close);
                         if(lineExtension) {
                             detail::ltrim(line);
                         } else if(!(firstLine && item.empty())) {
@@ -503,6 +530,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                         item += l2;
                     }
                 }
+                if(detail::is_binary_escaped_string(item)) {
+                    item = detail::extract_binary_string(item);
+                }
                 items_buffer = {item};
             } else if(!item.empty() && item.front() == aStart) {
                 for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
@@ -530,8 +560,10 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
             detail::process_quoted_string(name, '"', '\'', true);
             // clean up quotes on the items and check for escaped strings
-            for(auto &it : items_buffer) {
-                detail::process_quoted_string(it, stringQuote, literalQuote);
+            if(!mlquote) {
+                for(auto &it : items_buffer) {
+                    detail::process_quoted_string(it, stringQuote, literalQuote);
+                }
             }
         } catch(const std::invalid_argument &ia) {
             throw CLI::ParseError(ia.what(), CLI::ExitCodes::InvalidError);
