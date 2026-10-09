@@ -485,6 +485,28 @@ TEST_CASE("StringBased: TomlMultiLineStringExtraQuotes", "[config]") {
     CHECK(output.at(0).inputs == std::vector<std::string>{"abc'"});
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringTextAfterQuotes", "[config]") {
+    std::stringstream input;
+    input << "value = '''a'''b'''\n";
+    input << "other = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"a'''b"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineCommentShortLine", "[config]") {
+    std::stringstream input;
+    input << "'''\n";
+    input << "ab\n";
+    input << "'''\n";
+    input << "value = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).name == "value");
+}
+
 TEST_CASE("StringBased: TomlMultiLineStringBinary", "[config]") {
     std::stringstream input;
     input << "value = '''B\"(\\x41\\x00)\"'''\n";
