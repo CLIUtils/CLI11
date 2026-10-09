@@ -516,6 +516,52 @@ TEST_CASE("StringBased: TomlMultiLineStringBinary", "[config]") {
     CHECK(output.at(0).inputs == std::vector<std::string>{std::string("A\0", 2)});
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringEscapedBackslash", "[config]") {
+    std::stringstream input;
+    input << "one = \"\"\"a\\\\\nb\"\"\"\n";
+    input << "two = \"\"\"\nx\\\\\ny\"\"\"\n";
+    input << "three = \"\"\"a\\  \n   b\"\"\"\n";
+    input << "four = \"\"\"\na\n\\\n  b\"\"\"\n";
+    input << "five = \"\"\"a\\\"\"\"\"\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 5u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"a\\\nb"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"x\\\ny"});
+    CHECK(output.at(2).inputs == std::vector<std::string>{"ab"});
+    CHECK(output.at(3).inputs == std::vector<std::string>{"a\nb"});
+    CHECK(output.at(4).inputs == std::vector<std::string>{"a\""});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringCRLF", "[config]") {
+    std::stringstream input;
+    input << "one = '''\r\nx\r\ny'''\r\n";
+    input << "two = \"\"\"\r\nx\\\r\n  y\r\nz\"\"\"\r\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"x\ny"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"xy\nz"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArray", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"\"a\"\"\"\", '''\"b\"''', \"\"\"c\\td\"\"\", \"e\"]\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"\"a\"", "\"b\"", "c\td", "e"});
+}
+
+TEST_CASE("StringBased: TomlInvalidEscape", "[config]") {
+    const auto value = GENERATE(std::string("\"a\\q\""), std::string("[\"\"\"a\\q\"\"\"]"));
+    INFO("value: " << value);
+    std::stringstream input;
+    input << "v = " << value << "\n";
+
+    CHECK_THROWS_AS(CLI::ConfigTOML().from_config(input), CLI::ParseError);
+}
+
 TEST_CASE("StringBased: Spaces", "[config]") {
     std::stringstream ofile;
 
