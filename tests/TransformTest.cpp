@@ -120,6 +120,22 @@ TEST_CASE_METHOD(TApp, "EnumCheckedTransform", "[transform]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
+// from GitHub issue: https://github.com/CLIUtils/CLI11/issues/554
+// CheckedTransformer help should list enum map entries on separate lines
+TEST_CASE_METHOD(TApp, "CheckedTransformerMultilineHelp", "[transform]") {
+    enum class test_cli : std::int16_t { val1 = 3, val2 = 4, val3 = 17, val4 = 21 };
+    test_cli value{test_cli::val1};
+    app.add_option("-s", value)
+        ->transform(CLI::CheckedTransformer(CLI::TransformPairs<test_cli>{
+            {"val1", test_cli::val1}, {"val2", test_cli::val2}, {"val3", test_cli::val3}, {"val4", test_cli::val4}}));
+
+    auto help = app.help();
+    CHECK(help.find("value in {\n  ") != std::string::npos);
+    CHECK(help.find(",\n  ") != std::string::npos);
+    CHECK(help.find("val1->3") != std::string::npos);
+    CHECK(help.find("val4->21") != std::string::npos);
+}
+
 // from to-mas-kral Issue #1086
 TEST_CASE_METHOD(TApp, "EnumCheckedTransformUint8", "[transform]") {
     enum class FooType : std::uint8_t { A, B };
