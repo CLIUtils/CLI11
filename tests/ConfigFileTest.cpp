@@ -1393,7 +1393,7 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
     args = {"--one=1", "--two=2"};
 
     CHECK_NOTHROW(run());
-    CHECK(cfg->count() == 1);
+    CHECK(cfg->count() == 0);
     CHECK(1 == one);
     CHECK(2 == two);
     CHECK(3 == three);
@@ -1405,6 +1405,61 @@ TEST_CASE_METHOD(TApp, "IniRequired", "[config]") {
     args = {"--two=2"};
 
     CHECK_THROWS_AS(run(), CLI::RequiredError);
+}
+
+TEST_CASE_METHOD(TApp, "RequiredConfigDefaultsAreSeparateFromInput", "[config]") {
+    TempFile config{"default_config_source.ini"};
+    TempFile missing{"missing_default_config_source.ini"};
+    auto *cfg = app.set_config("--config", missing, "", true);
+    int number{0};
+    app.add_option("--number", number);
+
+    SECTION("Default file missing") {
+        CHECK_THROWS_AS(run(), CLI::FileError);
+        CHECK(cfg->count() == 0);
+    }
+    SECTION("Default file exists") {
+        std::ofstream output(missing);
+        output << "number=3\n";
+        output.close();
+        CHECK_NOTHROW(run());
+        CHECK(number == 3);
+        CHECK(cfg->count() == 0);
+    }
+    SECTION("Input overrides missing default file") {
+        std::ofstream output(config);
+        output << "number=3\n";
+        output.close();
+        args = {"--config", config};
+        CHECK_NOTHROW(run());
+        CHECK(number == 3);
+        CHECK(cfg->count() == 1);
+    }
+}
+
+TEST_CASE_METHOD(TApp, "ProcessedDefaultsAreNotExportedAsInput", "[config]") {
+    int number{0}, negative{0};
+    auto *opt = app.add_option("--number", number)->default_val(3)->force_callback();
+    auto *flag = app.add_flag("!--negative", negative);
+
+    run();
+    CHECK(number == 3);
+    CHECK(negative == 0);
+    CHECK(opt->count() == 0);
+    CHECK(flag->count() == 0);
+    CHECK(app.config_to_str().empty());
+    CHECK(app.config_to_str(true).find("number=3") != std::string::npos);
+
+    args = {"--number", "4", "--negative"};
+    run();
+    std::stringstream config(app.config_to_str());
+    CLI::App restored;
+    int restored_number{0}, restored_negative{0};
+    restored.add_option("--number", restored_number)->default_val(3)->force_callback();
+    restored.add_flag("!--negative", restored_negative);
+    restored.parse_from_stream(config);
+    CHECK(restored_number == 4);
+    CHECK(restored_negative == -1);
 }
 
 TEST_CASE_METHOD(TApp, "IniInlineComment", "[config]") {
