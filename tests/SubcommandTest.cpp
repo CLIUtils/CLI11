@@ -6,6 +6,7 @@
 
 #include "app_helper.hpp"
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -935,6 +936,32 @@ TEST_CASE_METHOD(TApp, "RequiredPosInSubcommand", "[subcom]") {
 
     args = {};
     CHECK_THROWS_AS(run(), CLI::RequiredError);
+}
+
+TEST_CASE_METHOD(TApp, "HelpForNestedSubcommandWithMissingParentPositional", "[subcom]") {
+    std::string id;
+    auto *subc1 = app.add_subcommand("subc1");
+    subc1->add_option("ID", id)->required();
+    auto *subc2 = subc1->add_subcommand("subc2", "Nested subcommand help");
+
+    args = {"subc1", "subc2"};
+    run();
+    CHECK(id == "subc2");
+    CHECK_FALSE(subc1->got_subcommand(subc2));
+
+    id.clear();
+    args = {"subc1", "subc2", "--help"};
+    try {
+        run();
+        FAIL("Expected nested subcommand help");
+    } catch(const CLI::CallForHelp &e) {
+        CHECK(id.empty());
+        CHECK(subc1->got_subcommand(subc2));
+        std::ostringstream output;
+        std::ostringstream error;
+        CHECK(0 == app.exit(e, output, error));
+        CHECK_THAT(output.str(), Contains("Nested subcommand help"));
+    }
 }
 
 // from  https://github.com/CLIUtils/CLI11/issues/1002
