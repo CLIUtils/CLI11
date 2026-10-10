@@ -45,3 +45,25 @@ TEST_CASE_METHOD(TApp, "locale", "[separators]") {
     CHECK_THAT(qux, Catch::Matchers::WithinAbs(3456.78, 0.01));
 }
 #endif
+
+class DecimalComma : public std::numpunct<char> {
+  protected:
+    char do_decimal_point() const override { return ','; }
+};
+
+TEST_CASE_METHOD(TApp, "Floating point defaults with decimal comma locale", "[locale]") {
+    struct RestoreLocale {
+        std::locale previous = std::locale();
+        ~RestoreLocale() { std::locale::global(previous); }
+    } restore;
+    std::locale::global(std::locale(std::locale::classic(), new DecimalComma));
+
+    double value{0};
+    std::vector<double> values;
+    app.add_option("--value", value)->default_val(1.25)->force_callback();
+    app.add_option("--values", values)->default_val(std::vector<double>{1.25, 2.5})->force_callback();
+
+    CHECK_NOTHROW(run());
+    CHECK(value == 1.25);
+    CHECK(values == std::vector<double>{1.25, 2.5});
+}
