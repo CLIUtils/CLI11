@@ -514,6 +514,22 @@ TEST_CASE_METHOD(TApp, "OneIntFlagLike", "[app]") {
     CHECK(9 == val);
 }
 
+TEST_CASE_METHOD(TApp, "FlagDefaultsWithTruthyValues", "[app]") {
+    int mode{0};
+    auto *opt = app.add_flag("--fast{1},--slow{2},--turbo{3}", mode);
+    REQUIRE(opt != nullptr);
+    CHECK(opt->get_default_flag_values().size() == 3u);
+
+    args = {"--turbo"};
+    run();
+    CHECK(mode == 3);
+
+    // Verify get_flag_value with truthy inputs
+    CHECK(opt->get_flag_value("turbo", "true") == "3");
+    CHECK(opt->get_flag_value("fast", "1") == "1");
+    CHECK(opt->get_flag_value("slow", "yes") == "2");
+}
+
 TEST_CASE_METHOD(TApp, "SmallFloatDefaultVal", "[app]") {
     float value = 0.0f;
     auto *opt = app.add_option("--value", value);

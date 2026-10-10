@@ -1845,6 +1845,13 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
                         break;
                     }
                 }
+                if(!valid_value) {
+                    errno = 0;
+                    auto flag_val = detail::to_flag_value(res);
+                    if(errno == 0 && (flag_val == 1 || flag_val == 0)) {
+                        valid_value = true;
+                    }
+                }
             }
 
             if(valid_value) {

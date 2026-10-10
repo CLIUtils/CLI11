@@ -4664,3 +4664,43 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     CHECK(conf_filename.empty());
     CHECK(level == "off");
 }
+
+TEST_CASE_METHOD(TApp, "FlagDefaultValuesConfigRoundtrip", "[config]") {
+    int mode{0};
+    auto *group = app.add_option_group("Mode")->require_option(1);
+    group->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode, "Operation mode");
+
+    args = {"--mode-c"};
+    run();
+    CHECK(mode == 2);
+
+    std::string config_out = app.config_to_str(true, true);
+    CHECK(config_out.find("mode-c") != std::string::npos);
+    CHECK(config_out.find("mode-a=2") == std::string::npos);
+
+    // Roundtrip back to another app
+    CLI::App app2;
+    int mode2{0};
+    auto *group2 = app2.add_option_group("Mode")->require_option(1);
+    group2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+
+    std::stringstream config_stream(config_out);
+    app2.parse_from_stream(config_stream);
+    CHECK(mode2 == 2);
+}
+
+TEST_CASE_METHOD(TApp, "FlagDefaultValuesTruthyConfig", "[config]") {
+    int mode{0};
+    app.add_flag("--mode-a{10},--mode-b{20},--mode-c{30}", mode, "Operation mode");
+
+    std::stringstream config_stream("mode-b=true\n");
+    app.parse_from_stream(config_stream);
+    CHECK(mode == 20);
+
+    CLI::App app2;
+    int mode2{0};
+    app2.add_flag("--mode-a{10},--mode-b{20},--mode-c{30}", mode2, "Operation mode");
+    std::stringstream config_stream2("mode-c=1\n");
+    app2.parse_from_stream(config_stream2);
+    CHECK(mode2 == 30);
+}
