@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Reject octal and binary integer prefixes without digits (`0o`, `0b`) instead
+  of treating them as zero.
 - Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`
   is `0` (unlimited), not only when max is greater than one. Adds a regression
   test. Fixes [#1168][].
