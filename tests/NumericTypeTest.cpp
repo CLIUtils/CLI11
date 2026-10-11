@@ -164,6 +164,10 @@ static const std::map<std::string, std::int64_t> testValuesInt{
     {"0xdead'beef", 0xDEADBEEF},
     {"0o01234567", 001234567},
     {"0o755", 0755},
+    {"0o0", 0},
+    {"0O0", 0},
+    {"0b0", 0},
+    {"0B0", 0},
     {"0755", 0755},
     {"995862_262", 995862262},
     {"995862262", 995862262},
@@ -209,6 +213,24 @@ TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ParseError);
 }
 
+TEST_CASE_METHOD(TApp, "intConversionsEmptyBasePrefix", "[optiontype]") {
+    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'");
+    std::int64_t val{42};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsEmptyBasePrefix", "[optiontype]") {
+    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'");
+    std::uint64_t val{42};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
 static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"+99", 99},
     {"99", 99},
@@ -221,6 +243,10 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0xdead'beef", 0xDEADBEEF},
     {"0o01234567", 001234567},
     {"0o755", 0755},
+    {"0o0", 0},
+    {"0O0", 0},
+    {"0b0", 0},
+    {"0B0", 0},
     {"0o755\t", 0755},
     {"0755", 0755},
     {"995862_262", 995862262},
