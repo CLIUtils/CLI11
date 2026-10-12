@@ -43,7 +43,8 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
         int num = 0;
         for(const auto &var : result) {
             using CLI::detail::lexical_cast;
-            bool retval = lexical_cast(var, num);
+            bool retval =
+                var.size() <= 3 && var.find_first_not_of("0123456789") == std::string::npos && lexical_cast(var, num);
             if(!retval) {
                 return std::string("Failed parsing number (") + var + ')';
             }
