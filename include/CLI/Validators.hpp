@@ -242,7 +242,7 @@ class Range : public Validator {
             using CLI::detail::lexical_cast;
             T val;
             bool converted = lexical_cast(input, val);
-            if((!converted) || (val < min_val || val > max_val)) {
+            if((!converted) || is_nan(val, std::is_floating_point<T>{}) || (val < min_val || val > max_val)) {
                 std::stringstream out;
                 out << "Value " << input << " not in range [";
                 out << min_val << " - " << max_val << "]";
@@ -256,6 +256,10 @@ class Range : public Validator {
     template <typename T>
     explicit Range(T max_val, const std::string &validator_name = std::string{})
         : Range(static_cast<T>(0), max_val, validator_name) {}
+
+  private:
+    template <typename T> static bool is_nan(T value, std::true_type) { return std::isnan(value); }
+    template <typename T> static bool is_nan(const T &, std::false_type) { return false; }
 };
 
 /// Check for a non negative number
