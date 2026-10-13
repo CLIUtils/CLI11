@@ -649,6 +649,12 @@ TEST_CASE("Validators: FilePathModifier", "[helpers]") {
     CLI::FileOnDefaultPath defPathNoFail("../", false);
     CHECK(defPathNoFail(filename2).empty());
     CHECK(filename2 == "nonexistingfile.csv");
+    // An existing directory is not a file, even when no default-path lookup is needed.
+    std::string directory{"."};
+    CHECK_FALSE(defPath(directory).empty());
+    CHECK(directory == ".");
+    CHECK(defPathNoFail(directory).empty());
+    CHECK(directory == ".");
     // empty default path must not invoke UB via back() on an empty string
     CLI::FileOnDefaultPath defPathEmpty("", false);
     std::string filename3 = "nonexistingfile.csv";
