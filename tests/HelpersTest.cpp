@@ -770,11 +770,9 @@ TEST_CASE("Validators: OrAcceptsAlternativeValidationErrors", "[helpers]") {
     CHECK_FALSE(reversed("three").empty());
 
     CLI::Validator success([](std::string &) { return std::string{}; }, "SUCCESS");
-    CLI::Validator broken(
-        [](std::string &) -> std::string { throw std::logic_error("unexpected"); }, "BROKEN");
+    CLI::Validator broken([](std::string &) -> std::string { throw std::logic_error("unexpected"); }, "BROKEN");
     CHECK_THROWS_AS((success | broken)("one"), std::logic_error);
-    CLI::Validator empty_error(
-        [](std::string &) -> std::string { throw CLI::ValidationError(""); }, "EMPTY_ERROR");
+    CLI::Validator empty_error([](std::string &) -> std::string { throw CLI::ValidationError(""); }, "EMPTY_ERROR");
     CHECK_FALSE((empty_error | empty_error)("one").empty());
     CHECK((empty_error | success)("one").empty());
 }
