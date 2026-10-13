@@ -20,6 +20,19 @@ TEST_CASE("Validators:basic", "[helpers]") { CHECK(true); }
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 
+TEST_CASE("Validators: OrAcceptsMixedMembershipErrors", "[helpers]") {
+    auto validator = CLI::IsMember({"one", "two"}) | CLI::IsMember({1, 2});
+    CHECK(validator("one").empty());
+    CHECK(validator("1").empty());
+    CHECK_FALSE(validator("three").empty());
+
+    auto reversed = CLI::IsMember({1, 2}) | CLI::IsMember({"one", "two"});
+    CHECK(reversed("one").empty());
+    CHECK(reversed("1").empty());
+    CHECK_FALSE(reversed("three").empty());
+
+}
+
 TEST_CASE("Validators: IPValidate1", "[helpers]") {
     std::string ip = "1.1.1.1";
     CHECK(CLI::ValidIPV4(ip).empty());
