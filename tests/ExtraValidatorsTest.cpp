@@ -30,7 +30,6 @@ TEST_CASE("Validators: OrAcceptsMixedMembershipErrors", "[helpers]") {
     CHECK(reversed("one").empty());
     CHECK(reversed("1").empty());
     CHECK_FALSE(reversed("three").empty());
-
 }
 
 TEST_CASE("Validators: IPValidate1", "[helpers]") {
