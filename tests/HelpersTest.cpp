@@ -758,6 +758,27 @@ TEST_CASE("Validators: CombinedAndRange", "[helpers]") {
     CHECK_FALSE(crange("18").empty());
 }
 
+TEST_CASE("Validators: OrAcceptsAlternativeValidationErrors", "[helpers]") {
+    auto validator = CLI::IsMember({"one", "two"}) | CLI::IsMember({1, 2});
+    CHECK(validator("one").empty());
+    CHECK(validator("1").empty());
+    CHECK_FALSE(validator("three").empty());
+
+    auto reversed = CLI::IsMember({1, 2}) | CLI::IsMember({"one", "two"});
+    CHECK(reversed("one").empty());
+    CHECK(reversed("1").empty());
+    CHECK_FALSE(reversed("three").empty());
+
+    CLI::Validator success([](std::string &) { return std::string{}; }, "SUCCESS");
+    CLI::Validator broken(
+        [](std::string &) -> std::string { throw std::logic_error("unexpected"); }, "BROKEN");
+    CHECK_THROWS_AS((success | broken)("one"), std::logic_error);
+    CLI::Validator empty_error(
+        [](std::string &) -> std::string { throw CLI::ValidationError(""); }, "EMPTY_ERROR");
+    CHECK_FALSE((empty_error | empty_error)("one").empty());
+    CHECK((empty_error | success)("one").empty());
+}
+
 TEST_CASE("Validators: CombinedOrRange", "[helpers]") {
     auto crange = CLI::Range(0, 4) | CLI::Range(8, 12);
 

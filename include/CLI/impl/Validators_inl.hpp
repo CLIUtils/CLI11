@@ -115,8 +115,22 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     const std::function<std::string(std::string &)> &f2 = other.func_;
 
     newval.func_ = [f1, f2](std::string &input) {
-        std::string s1 = f1(input);
-        std::string s2 = f2(input);
+        std::string s1;
+        std::string s2;
+        try {
+            s1 = f1(input);
+        } catch(const ValidationError &error) {
+            s1 = error.what();
+            if(s1.empty())
+                s1 = error.get_name();
+        }
+        try {
+            s2 = f2(input);
+        } catch(const ValidationError &error) {
+            s2 = error.what();
+            if(s2.empty())
+                s2 = error.get_name();
+        }
         if(s1.empty() || s2.empty())
             return std::string();
 
