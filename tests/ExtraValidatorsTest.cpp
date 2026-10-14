@@ -44,21 +44,26 @@ TEST_CASE("Validators: IPValidate1", "[helpers]") {
     CHECK_FALSE(CLI::ValidIPV4(ip).empty());
 }
 
-TEST_CASE("Validators: IPV4 octet syntax", "[helpers]") {
-    for(std::string ip : {"+127.0.0.1",
-                          "127.0.0.+1",
-                          "127.0.0.-0",
+TEST_CASE("Validators: IPV4 negative zero", "[helpers]") {
+    for(std::string ip :
+        {"-0.0.0.0", "127.-0.0.1", "127.0.-0.1", "127.0.0.-0", "127.0.0.-00", "127.0.0.-0x0", "127.0.0. -0"}) {
+        INFO(ip);
+        CHECK_FALSE(CLI::ValidIPV4(ip).empty());
+    }
+    for(std::string ip : {"0.0.0.0",
+                          "255.255.255.255",
+                          "127.0.0.1",
+                          "192.168.1.2",
                           "0x7f.0.0.1",
+                          "127.0.0.0xFF",
                           "127.0.0.0b1",
+                          "+127.0.0.1",
+                          "127.0.0.+1",
                           " 127.0.0.1",
                           "127.0.0.1 ",
                           "127.0. 0.1",
                           "127.0.0.\t1",
                           "127.0.0.0000"}) {
-        INFO(ip);
-        CHECK_FALSE(CLI::ValidIPV4(ip).empty());
-    }
-    for(std::string ip : {"0.0.0.0", "255.255.255.255", "127.0.0.1", "192.168.1.2"}) {
         INFO(ip);
         CHECK(CLI::ValidIPV4(ip).empty());
     }

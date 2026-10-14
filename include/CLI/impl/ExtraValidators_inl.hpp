@@ -43,12 +43,11 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
         int num = 0;
         for(const auto &var : result) {
             using CLI::detail::lexical_cast;
-            bool retval =
-                var.size() <= 3 && var.find_first_not_of("0123456789") == std::string::npos && lexical_cast(var, num);
+            bool retval = lexical_cast(var, num);
             if(!retval) {
                 return std::string("Failed parsing number (") + var + ')';
             }
-            if(num < 0 || num > 255) {
+            if(num < 0 || num > 255 || var.find('-') != std::string::npos) {
                 return std::string("Each IP number must be between 0 and 255 ") + var;
             }
         }
