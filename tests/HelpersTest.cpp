@@ -758,6 +758,19 @@ TEST_CASE("Validators: CombinedAndRange", "[helpers]") {
     CHECK_FALSE(crange("18").empty());
 }
 
+TEST_CASE("Validators: OrAcceptsAlternativeValidationErrors", "[helpers]") {
+    CLI::Validator success([](std::string &) { return std::string{}; }, "SUCCESS");
+    CLI::Validator failure([](std::string &) -> std::string { throw CLI::ValidationError("rejected"); }, "FAILURE");
+    CHECK((success | failure)("one").empty());
+    CHECK((failure | success)("one").empty());
+    CHECK_FALSE((failure | failure)("one").empty());
+    CLI::Validator broken([](std::string &) -> std::string { throw std::logic_error("unexpected"); }, "BROKEN");
+    CHECK_THROWS_AS((success | broken)("one"), std::logic_error);
+    CLI::Validator empty_error([](std::string &) -> std::string { throw CLI::ValidationError(""); }, "EMPTY_ERROR");
+    CHECK_FALSE((empty_error | empty_error)("one").empty());
+    CHECK((empty_error | success)("one").empty());
+}
+
 TEST_CASE("Validators: CombinedOrRange", "[helpers]") {
     auto crange = CLI::Range(0, 4) | CLI::Range(8, 12);
 
