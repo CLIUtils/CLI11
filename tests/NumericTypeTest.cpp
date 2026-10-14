@@ -222,6 +222,9 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0o01234567", 001234567},
     {"0o755", 0755},
     {"0o755\t", 0755},
+    {"0O755", 0755},
+    {"0o+755", 0755},
+    {"0o\t755", 0755},
     {"0755", 0755},
     {"995862_262", 995862262},
     {"995862262", 995862262},
@@ -233,6 +236,8 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0b1101'0110                                                       ", 0xD6},
     {"0B11010110", 0xD6},
     {"0B1101'0110", 0xD6},
+    {"0b+11010110", 0xD6},
+    {"0B 11010110", 0xD6},
     {"1_2_3_4_5", 12345},
 };
 
@@ -248,6 +253,28 @@ TEST_CASE_METHOD(TApp, "uintConversions", "[optiontype]") {
     run();
 
     CHECK(val == test_data.second);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsNegativeBasePrefix", "[optiontype]") {
+    const auto *input = GENERATE("-1", " -1", "0o-1", "0O-2", "0b-1", "0B-0", "0o\t-1", "0B -1", "0o-7_7", "0b-1'01");
+    std::uint64_t val{42};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsMaximum", "[optiontype]") {
+    const auto *input = GENERATE("18446744073709551615",
+                                 "0o1777777777777777777777",
+                                 "0b1111111111111111111111111111111111111111111111111111111111111111",
+                                 "0B1111111111111111111111111111111111111111111111111111111111111111");
+    std::uint64_t val{0};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    run();
+    CHECK(val == (std::numeric_limits<std::uint64_t>::max)());
 }
 
 TEST_CASE_METHOD(TApp, "uintConversionsErange", "[optiontype]") {

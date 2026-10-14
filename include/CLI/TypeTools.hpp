@@ -972,9 +972,11 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     if(input.empty()) {
         return false;
     }
-    // strtoull skips leading whitespace and silently wraps a negative value, so reject any input whose
-    // first non-whitespace character is a minus sign before it reaches strtoull
-    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r");
+    // strtoull skips leading whitespace and silently wraps a negative value. Check the actual numeric
+    // payload, including when an explicit octal or binary prefix is removed before conversion.
+    const bool has_base_prefix = input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0 ||
+                                 input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0;
+    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r", has_base_prefix ? 2 : 0);
     if(first_non_ws != std::string::npos && input[first_non_ws] == '-') {
         return false;
     }

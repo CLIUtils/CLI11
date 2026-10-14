@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Reject negative binary and explicit octal values when parsing unsigned
+  integers.
 - Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`
   is `0` (unlimited), not only when max is greater than one. Adds a regression
   test. Fixes [#1168][].
