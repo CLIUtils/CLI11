@@ -73,6 +73,8 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name) : App(a
     set_help_flag("-h,--help", "Print this help message and exit");
 }
 
+CLI11_INLINE App::App(std::wstring app_description) : App(narrow(app_description)) {}
+
 CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #ifdef _WIN32
     (void)argv;
@@ -103,6 +105,8 @@ CLI11_INLINE App *App::callback(std::function<void()> app_callback) {
     }
     return this;
 }
+
+CLI11_INLINE App *App::usage(std::wstring usage_string) { return usage(narrow(usage_string)); }
 
 CLI11_INLINE App *App::name(std::string app_name) {
 
