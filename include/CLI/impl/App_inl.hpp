@@ -2193,11 +2193,35 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
 }
 
 CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
-    if(_count_remaining_positionals(/* required */ true) > 0) {
-        _parse_positional(args, false);
-        return true;
-    }
     auto *com = _find_subcommand(args.back(), true, true);
+    if(_count_remaining_positionals(/* required */ true) > 0) {
+        bool descendant_help_requested{false};
+        if(com != nullptr && args.size() > 1) {
+            // Arguments are stored in reverse order, so look past the subcommand token for a descendant help flag.
+            std::vector<const App *> pending_subcommands{com};
+            const auto pending_args_end = args.end() - 1;
+            while(!pending_subcommands.empty() && !descendant_help_requested) {
+                const App *sub = pending_subcommands.back();
+                pending_subcommands.pop_back();
+                for(auto arg = args.begin(); arg != pending_args_end; ++arg) {
+                    if((sub->help_ptr_ != nullptr && sub->help_ptr_->check_name(*arg)) ||
+                       (sub->help_all_ptr_ != nullptr && sub->help_all_ptr_->check_name(*arg))) {
+                        descendant_help_requested = true;
+                        break;
+                    }
+                }
+                for(const App_p &child : sub->subcommands_) {
+                    if(!child->disabled_) {
+                        pending_subcommands.push_back(child.get());
+                    }
+                }
+            }
+        }
+        if(!descendant_help_requested) {
+            _parse_positional(args, false);
+            return true;
+        }
+    }
     if(com == nullptr) {
         // the main way to get here is using .notation
         auto dotloc = args.back().find_first_of('.');
