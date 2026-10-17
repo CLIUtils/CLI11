@@ -295,6 +295,12 @@ class Option : public OptionBase<Option> {
     /// A human readable default value, either manually set, captured, or captured by default
     std::string default_str_{};
 
+    /// Whether an unused option has a default value to process during parsing
+    bool default_val_set_{false};
+
+    /// Unprocessed default input retained across parses, separate from supplied values
+    results_t default_results_{};
+
     /// If given, replace the text that describes the option type and usage in the help text
     std::string option_text_{};
 
@@ -430,12 +436,13 @@ class Option : public OptionBase<Option> {
     /// The status of force_callback
     CLI11_NODISCARD bool get_force_callback() const { return force_callback_; }
 
-    /// Set the value of run_callback_for_default which controls whether the callback function should be called to set
-    /// the default This is controlled automatically but could be manipulated by the user.
+    /// Control whether parsing runs the callback to assign the default value.
+    /// This is controlled automatically but can be manipulated by the user.
     Option *run_callback_for_default(bool value = true) {
         run_callback_for_default_ = value;
         return this;
     }
+
     /// Get the current value of run_callback_for_default
     CLI11_NODISCARD bool get_run_callback_for_default() const { return run_callback_for_default_; }
 
@@ -702,7 +709,10 @@ class Option : public OptionBase<Option> {
     /// Get the results as a specified type
     template <typename T> void results(T &output) const {
         bool retval = false;
-        if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
+        if(default_val_set_ && results_.empty() && !proc_results_.empty()) {
+            // Reuse a processed default without invalidating bound views or applying transforms again.
+            retval = detail::lexical_conversion<T, T>(proc_results_, output);
+        } else if(current_option_state_ >= option_state::reduced || (results_.size() == 1 && validators_.empty())) {
             const results_t &res = (proc_results_.empty()) ? results_ : proc_results_;
             if(!res.empty()) {
                 retval = detail::lexical_conversion<T, T>(res, output);
@@ -784,40 +794,25 @@ class Option : public OptionBase<Option> {
     /// Set the default value string representation (does not change the contained value)
     Option *default_str(std::string val) {
         default_str_ = std::move(val);
+        default_val_set_ = false;
+        default_results_.clear();
+        if(results_.empty()) {
+            proc_results_.clear();
+            current_option_state_ = option_state::parsing;
+        }
         return this;
     }
 
-    /// Set the default value and validate the results and run the callback if appropriate to set the value into the
-    /// bound value only available for types that can be converted to a string
+    /// Store a default value for validation and, if appropriate, assignment when no input supplies this option.
+    /// Only available for types that can be converted to a string.
     template <typename X> Option *default_val(const X &val) {
-        std::string val_str = detail::value_string(val);
-        auto old_option_state = current_option_state_;
-        results_t old_results{std::move(results_)};
-        results_.clear();
-        try {
-            add_result(val_str);
-            // if trigger_on_result_ is set the callback already ran
-            if(run_callback_for_default_ && !trigger_on_result_) {
-                run_callback();  // run callback sets the state, we need to reset it again
-                current_option_state_ = option_state::parsing;
-            } else {
-                _validate_results(results_);
-                current_option_state_ = old_option_state;
-            }
-        } catch(const ConversionError &err) {
-            // this should be done
-            results_ = std::move(old_results);
-            current_option_state_ = old_option_state;
-
-            throw ConversionError(
-                get_name(), std::string("given default value(\"") + val_str + "\") produces an error : " + err.what());
-        } catch(const CLI::Error &) {
-            results_ = std::move(old_results);
-            current_option_state_ = old_option_state;
-            throw;
+        default_str_ = detail::value_string(val);
+        default_results_ = {default_str_};
+        if(results_.empty()) {
+            proc_results_.clear();
+            current_option_state_ = option_state::parsing;
         }
-        results_ = std::move(old_results);
-        default_str_ = std::move(val_str);
+        default_val_set_ = true;
         return this;
     }
 

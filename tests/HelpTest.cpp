@@ -541,11 +541,15 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
     CHECK_THAT(help, Contains("BIGGLES"));
 
     op1->default_val("14");
+    CHECK(1 == x);
+    app.parse("");
     CHECK(14 == x);
     help = app.help();
     CHECK_THAT(help, Contains("[14]"));
 
     op1->default_val(12);
+    CHECK(14 == x);
+    app.parse("");
     CHECK(12 == x);
     help = app.help();
     CHECK_THAT(help, Contains("[12]"));
@@ -555,6 +559,7 @@ TEST_CASE("THelp: ManualSetters", "[help]") {
     CHECK(!op1->get_run_callback_for_default());
 
     op1->default_val(18);
+    app.parse("");
     // x should not be modified in this case
     CHECK(12 == x);
     help = app.help();
