@@ -47,7 +47,7 @@ CLI11_INLINE IPV4Validator::IPV4Validator() : Validator("IPV4") {
             if(!retval) {
                 return std::string("Failed parsing number (") + var + ')';
             }
-            if(num < 0 || num > 255) {
+            if(num < 0 || num > 255 || var.find('-') != std::string::npos) {
                 return std::string("Each IP number must be between 0 and 255 ") + var;
             }
         }
