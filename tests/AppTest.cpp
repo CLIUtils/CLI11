@@ -2454,6 +2454,42 @@ TEST_CASE_METHOD(TApp, "RangeFloat", "[app]") {
     run();
 }
 
+TEST_CASE_METHOD(TApp, "RangeRejectsNaN", "[app]") {
+    double value{0.0};
+    app.add_option("--ratio", value)->check(CLI::Range(0.0, 1.0));
+    args = {"--ratio", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    args = {"--ratio", "NaN"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    args = {"--ratio", "0"};
+    CHECK_NOTHROW(run());
+    CHECK(value == 0.0);
+    args = {"--ratio", "1"};
+    CHECK_NOTHROW(run());
+    CHECK(value == 1.0);
+}
+
+TEST_CASE_METHOD(TApp, "PositiveNumberRejectsNaN", "[app]") {
+    double value{0.0};
+    app.add_option("--value", value)->check(CLI::PositiveNumber);
+    args = {"--value", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "RangeWithInfiniteBounds", "[app]") {
+    double value{0.0};
+    const auto infinity = std::numeric_limits<double>::infinity();
+    app.add_option("--value", value)->check(CLI::Range(-infinity, infinity));
+    args = {"--value", "inf"};
+    CHECK_NOTHROW(run());
+    CHECK(value == infinity);
+    args = {"--value", "-inf"};
+    CHECK_NOTHROW(run());
+    CHECK(value == -infinity);
+    args = {"--value", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "NonNegative", "[app]") {
 
     std::string res;
