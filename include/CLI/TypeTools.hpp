@@ -1193,14 +1193,16 @@ bool lexical_cast(const std::string &input, T &output) {
     XC x{0.0}, y{0.0};
     auto str1 = input;
     bool worked = false;
+    // a sign may belong to an exponent, so split at the last sign where both parts convert
     auto nloc = str1.find_last_of("+-");
-    if(nloc != std::string::npos && nloc > 0) {
-        worked = lexical_cast(str1.substr(0, nloc), x);
-        str1 = str1.substr(nloc);
-        if(str1.back() == 'i' || str1.back() == 'j')
-            str1.pop_back();
-        worked = worked && lexical_cast(str1, y);
-    } else {
+    while(!worked && nloc != std::string::npos && nloc > 0) {
+        auto str2 = str1.substr(nloc);
+        if(str2.back() == 'i' || str2.back() == 'j')
+            str2.pop_back();
+        worked = lexical_cast(str1.substr(0, nloc), x) && lexical_cast(str2, y);
+        nloc = str1.find_last_of("+-", nloc - 1);
+    }
+    if(!worked) {
         if(str1.back() == 'i' || str1.back() == 'j') {
             str1.pop_back();
             worked = lexical_cast(str1, y);
