@@ -1781,6 +1781,40 @@ TEST_CASE_METHOD(TApp, "CallbackFlags", "[app]") {
     CHECK_THROWS_AS(app.add_flag_function("hi", func), CLI::IncorrectConstruction);
 }
 
+TEST_CASE_METHOD(TApp, "CallbackFlagsInvalidCount", "[app]") {
+    args = GENERATE(input_t{"--count=garbage"},
+                    input_t{"--count=1.5"},
+                    input_t{"--count=9223372036854775808"},
+                    input_t{"--count=-9223372036854775809"},
+                    input_t{"--count=9223372036854775807", "--count"},
+                    input_t{"--count=-9223372036854775808", "--count=-1"});
+    CAPTURE(args);
+    bool called{false};
+    app.add_flag_function("--count", [&called](std::int64_t) { called = true; });
+
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+    CHECK_FALSE(called);
+}
+
+TEST_CASE_METHOD(TApp, "CallbackFlagsForcedEmptyCount", "[app]") {
+    std::int64_t value{1};
+    app.add_flag_function("--count", [&value](std::int64_t count) { value = count; })->force_callback()->take_last();
+
+    run();
+    CHECK(value == 0);
+}
+
+TEST_CASE_METHOD(TApp, "CallbackFlagsCountLimits", "[app]") {
+    const auto expected =
+        GENERATE((std::numeric_limits<std::int64_t>::min)(), (std::numeric_limits<std::int64_t>::max)());
+    std::int64_t value{0};
+    app.add_flag_function("--count", [&value](std::int64_t count) { value = count; });
+    args = {"--count=" + std::to_string(expected)};
+
+    run();
+    CHECK(value == expected);
+}
+
 TEST_CASE_METHOD(TApp, "CallbackFlagsFalse", "[app]") {
     std::int64_t value = 0;
 
