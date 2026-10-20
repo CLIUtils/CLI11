@@ -11,6 +11,7 @@
 #include <complex>
 #include <cstdint>
 #include <limits>
+#include <locale>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -995,6 +996,32 @@ TEST_CASE_METHOD(TApp, "SumOptFloat", "[app]") {
     run();
 
     CHECK(std::fabs(0.6 - val) <= std::numeric_limits<double>::epsilon());
+}
+
+TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaLocale", "[app][locale]") {
+    class DecimalComma : public std::numpunct<char> {
+        CLI11_NODISCARD char do_decimal_point() const override { return ','; }
+    };
+    struct RestoreLocale {
+        std::locale previous = std::locale();
+        ~RestoreLocale() { std::locale::global(previous); }
+    } restore;
+    const std::locale custom_locale(std::locale::classic(), new DecimalComma);
+    std::locale::global(custom_locale);
+
+    double value = 0;
+    auto *option = app.add_option("--val", value)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=1.25", "--val=2.5"};
+    run();
+    CHECK(value == 3.75);
+    CHECK(option->as<std::string>() == "3.75");
+
+    args = {"--val=-1.25", "--val=-2.5"};
+    run();
+    CHECK(value == -3.75);
+    CHECK(option->as<std::string>() == "-3.75");
+    CHECK(std::locale() == custom_locale);
 }
 
 TEST_CASE_METHOD(TApp, "SumOptString", "[app]") {

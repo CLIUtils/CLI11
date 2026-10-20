@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
+#include <locale>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -122,6 +123,7 @@ CLI11_INLINE std::string sum_string_vector(const std::vector<std::string> &value
         }
     } else {
         std::ostringstream out;
+        out.imbue(std::locale::classic());
         out.precision(16);
         out << val;
         output = out.str();
