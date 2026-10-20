@@ -998,6 +998,7 @@ TEST_CASE_METHOD(TApp, "SumOptFloat", "[app]") {
     CHECK(std::fabs(0.6 - val) <= std::numeric_limits<double>::epsilon());
 }
 
+#if CLI11_HAS_RTTI != 0
 TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaLocale", "[app][locale]") {
     class DecimalComma : public std::numpunct<char> {
         CLI11_NODISCARD char do_decimal_point() const override { return ','; }
@@ -1023,6 +1024,7 @@ TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaLocale", "[app][locale]") {
     CHECK(option->as<std::string>() == "-3.75");
     CHECK(std::locale() == custom_locale);
 }
+#endif
 
 TEST_CASE_METHOD(TApp, "SumOptString", "[app]") {
 
