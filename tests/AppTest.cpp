@@ -615,7 +615,8 @@ TEST_CASE_METHOD(TApp, "defaultValCheckDeferredForAllCallbackModes", "[app]") {
     const bool run_default_callback = GENERATE(false, true);
     const bool trigger_on_parse = GENERATE(false, true);
     const bool check_first = GENERATE(false, true);
-    CAPTURE(run_default_callback, trigger_on_parse, check_first);
+    INFO("run_default_callback := " << run_default_callback << ", trigger_on_parse := " << trigger_on_parse
+                                    << ", check_first := " << check_first);
 
     int number{7};
     auto *opt = app.add_option("-n", number)
@@ -654,7 +655,7 @@ TEST_CASE_METHOD(TApp, "defaultValCheckDeferredForAllCallbackModes", "[app]") {
 TEST_CASE_METHOD(TApp, "defaultValValidationDuringParse", "[app]") {
     const bool bound = GENERATE(false, true);
     const bool force = GENERATE(false, true);
-    CAPTURE(bound, force);
+    INFO("bound := " << bound << ", force := " << force);
     int number{7};
     auto *opt = bound ? app.add_option("someNumber,-n,--someNumber", number)
                       : app.add_option("someNumber,-n,--someNumber", "Some number");
@@ -892,7 +893,8 @@ TEST_CASE_METHOD(TApp, "defaultValSkippedForEnvironmentAndConfig", "[app]") {
     const bool default_string = GENERATE(false, true);
     const auto priority =
         GENERATE(CLI::CallbackPriority::FirstPreHelp, CLI::CallbackPriority::First, CLI::CallbackPriority::Normal);
-    CAPTURE(force, default_string, priority);
+    INFO("force := " << force << ", default_string := " << default_string
+                     << ", priority := " << static_cast<int>(priority));
     int number{7};
     auto *opt = app.add_option("--number", number)
                     ->check(CLI::PositiveNumber)
