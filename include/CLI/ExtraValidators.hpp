@@ -83,6 +83,12 @@ class Bound : public Validator {
             if(!converted) {
                 return std::string("Value ") + input + " could not be converted";
             }
+            if(detail::is_nan(val)) {
+                std::stringstream err;
+                err << "Value " << input << " cannot be bounded to [";
+                err << min_val << " - " << max_val << "]";
+                return err.str();
+            }
             if(val < min_val)
                 input = detail::to_string(min_val);
             else if(val > max_val)
