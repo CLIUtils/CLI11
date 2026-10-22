@@ -201,9 +201,7 @@ class EscapedStringTransformer : public Validator {
 
 template <typename T> inline bool is_nan(T value, std::true_type) { return std::isnan(value); }
 template <typename T> inline bool is_nan(const T &, std::false_type) { return false; }
-template <typename T> inline bool is_nan(const T &value) {
-    return is_nan(value, std::is_floating_point<T>{});
-}
+template <typename T> inline bool is_nan(const T &value) { return is_nan(value, std::is_floating_point<T>{}); }
 
 }  // namespace detail
 
