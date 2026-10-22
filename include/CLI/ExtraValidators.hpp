@@ -16,7 +16,6 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
