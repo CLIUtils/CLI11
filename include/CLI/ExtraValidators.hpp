@@ -16,6 +16,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -82,6 +83,12 @@ class Bound : public Validator {
             bool converted = lexical_cast(input, val);
             if(!converted) {
                 return std::string("Value ") + input + " could not be converted";
+            }
+            if(detail::is_nan(val)) {
+                std::stringstream err;
+                err << "Value " << input << " cannot be bounded to [";
+                err << min_val << " - " << max_val << "]";
+                return err.str();
             }
             if(val < min_val)
                 input = detail::to_string(min_val);

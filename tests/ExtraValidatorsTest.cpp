@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -139,9 +140,55 @@ TEST_CASE_METHOD(TApp, "BoundTests", "[transform]") {
     run();
     CHECK(3.4 == value);
 
+    args = {"-s", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    args = {"-s", "NaN"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+
     auto help = app.help();
     CHECK(help.find("bounded to") != std::string::npos);
     CHECK(help.find("[3.4 - 5.9]") != std::string::npos);
+}
+
+TEST_CASE_METHOD(TApp, "BoundRejectsNaN", "[transform]") {
+    double value{0.0};
+    app.add_option("-s", value)->transform(CLI::Bound(0.0, 1.0));
+    args = {"-s", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    args = {"-s", "NaN"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    args = {"-s", "0"};
+    CHECK_NOTHROW(run());
+    CHECK(value == 0.0);
+    args = {"-s", "1"};
+    CHECK_NOTHROW(run());
+    CHECK(value == 1.0);
+
+    int ivalue{0};
+    app.add_option("-i", ivalue)->transform(CLI::Bound(10, 20));
+    args = {"-i", "5"};
+    CHECK_NOTHROW(run());
+    CHECK(ivalue == 10);
+    args = {"-i", "25"};
+    CHECK_NOTHROW(run());
+    CHECK(ivalue == 20);
+    args = {"-i", "15"};
+    CHECK_NOTHROW(run());
+    CHECK(ivalue == 15);
+}
+
+TEST_CASE_METHOD(TApp, "BoundWithInfiniteBounds", "[transform]") {
+    double value{0.0};
+    const auto infinity = std::numeric_limits<double>::infinity();
+    app.add_option("--value", value)->transform(CLI::Bound(-infinity, infinity));
+    args = {"--value", "inf"};
+    CHECK_NOTHROW(run());
+    CHECK(value == infinity);
+    args = {"--value", "-inf"};
+    CHECK_NOTHROW(run());
+    CHECK(value == -infinity);
+    args = {"--value", "nan"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 
 TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
