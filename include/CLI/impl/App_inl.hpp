@@ -459,9 +459,11 @@ App::add_flag_function(std::string flag_name,
     CLI::callback_t fun = [function](const CLI::results_t &res) {
         using CLI::detail::lexical_cast;
         std::int64_t flag_count{0};
-        lexical_cast(res[0], flag_count);
-        function(flag_count);
-        return true;
+        auto result = res[0].empty() || lexical_cast(res[0], flag_count);
+        if(result) {
+            function(flag_count);
+        }
+        return result;
     };
     return _add_flag_internal(flag_name, std::move(fun), std::move(flag_description))
         ->multi_option_policy(MultiOptionPolicy::Sum);
