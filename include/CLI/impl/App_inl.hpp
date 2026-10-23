@@ -73,6 +73,9 @@ CLI11_INLINE App::App(std::string app_description, std::string app_name) : App(a
     set_help_flag("-h,--help", "Print this help message and exit");
 }
 
+CLI11_INLINE App::App(std::wstring app_description, std::wstring app_name)
+    : App(narrow(app_description), narrow(app_name)) {}
+
 CLI11_NODISCARD CLI11_INLINE char **App::ensure_utf8(char **argv) {
 #ifdef _WIN32
     (void)argv;

@@ -57,6 +57,29 @@ TEST_CASE("THelp: UsageCallbackBoth", "[help]") {
     CHECK_THAT(help, Contains("like 1, 2, and 3"));
 }
 
+// #1130
+TEST_CASE("THelp: WideUsageLiteral", "[help][unicode]") {
+    CLI::App app{L"Some unicode string"};
+    app.usage(L"Some unicode string");
+
+    CHECK(app.get_description() == "Some unicode string");
+    CHECK(app.get_usage() == "Some unicode string");
+
+    std::string help = app.help();
+    CHECK_THAT(help, Contains("Some unicode string"));
+}
+
+// #1130
+TEST_CASE("THelp: WideUsageWstring", "[help][unicode]") {
+    CLI::App app{"My prog"};
+    std::wstring wide_usage = L"use: \u4f60\u597d";
+    app.usage(wide_usage);
+
+    CHECK(app.get_usage() == CLI::narrow(wide_usage));
+    std::string help = app.help();
+    CHECK_THAT(help, Contains(CLI::narrow(wide_usage)));
+}
+
 TEST_CASE("THelp: Footer", "[help]") {
     CLI::App app{"My prog"};
     app.footer("Report bugs to bugs@example.com");

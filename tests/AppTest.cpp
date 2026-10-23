@@ -332,6 +332,31 @@ TEST_CASE_METHOD(TApp, "OneStringSingleWideStringInput", "[app][unicode]") {
     CHECK("mystring" == str);
 }
 
+// #1130
+TEST_CASE("AppWideDescriptionAndName", "[app][unicode]") {
+    CLI::App app{L"Wide Description", L"wide_name"};
+    CHECK(app.get_description() == "Wide Description");
+    CHECK(app.get_name() == "wide_name");
+}
+
+// #1130
+TEST_CASE("AppWideUnicodeDescription", "[app][unicode]") {
+    std::wstring wide_desc = L"Hello \u4f60\u597d";
+    CLI::App app{wide_desc};
+    CHECK(app.get_description() == CLI::narrow(wide_desc));
+}
+
+// #1130
+TEST_CASE("AppConstructorDisambiguation", "[app]") {
+    CLI::App app_default;
+    CHECK(app_default.get_description().empty());
+    CHECK(app_default.get_name().empty());
+
+    CLI::App app_narrow{"Narrow Description", "narrow_name"};
+    CHECK(app_narrow.get_description() == "Narrow Description");
+    CHECK(app_narrow.get_name() == "narrow_name");
+}
+
 TEST_CASE_METHOD(TApp, "OneStringEqualVersion", "[app]") {
     std::string str;
     app.add_option("-s,--string", str);
