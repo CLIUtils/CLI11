@@ -21,7 +21,6 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
-#include "../Error.hpp"
 #include "../StringTools.hpp"
 
 namespace CLI {
@@ -106,11 +105,13 @@ CLI11_INLINE std::vector<std::pair<std::string, std::string>> get_default_flag_v
 }
 
 CLI11_INLINE std::tuple<std::vector<std::string>, std::vector<std::string>, std::string>
-get_names(const std::vector<std::string> &input, bool allow_non_standard) {
+get_names(const std::vector<std::string> &input, bool allow_non_standard, name_error &err, std::string &err_name) {
 
     std::vector<std::string> short_names;
     std::vector<std::string> long_names;
     std::string pos_name;
+    err = name_error::success;
+    err_name.clear();
     for(std::string name : input) {
         if(name.empty()) {
             continue;
@@ -124,32 +125,35 @@ get_names(const std::vector<std::string> &input, bool allow_non_standard) {
                     if(valid_name_string(name)) {
                         short_names.push_back(name);
                     } else {
-                        throw BadNameString::BadLongName(name);
+                        err = name_error::bad_long_name;
                     }
                 } else {
-                    throw BadNameString::MissingDash(name);
+                    err = name_error::missing_dash;
                 }
             } else {
-                throw BadNameString::OneCharName(name);
+                err = name_error::one_char;
             }
         } else if(name.length() > 2 && name.substr(0, 2) == "--") {
             name = name.substr(2);
             if(valid_name_string(name)) {
                 long_names.push_back(name);
             } else {
-                throw BadNameString::BadLongName(name);
+                err = name_error::bad_long_name;
             }
         } else if(name == "-" || name == "--" || name == "++") {
-            throw BadNameString::ReservedName(name);
+            err = name_error::reserved;
         } else {
             if(!pos_name.empty()) {
-                throw BadNameString::MultiPositionalNames(name);
-            }
-            if(valid_name_string(name)) {
+                err = name_error::multiple_positional;
+            } else if(valid_name_string(name)) {
                 pos_name = name;
             } else {
-                throw BadNameString::BadPositionalName(name);
+                err = name_error::bad_positional;
             }
+        }
+        if(err != name_error::success) {
+            err_name = name;
+            break;
         }
     }
     return std::make_tuple(short_names, long_names, pos_name);
