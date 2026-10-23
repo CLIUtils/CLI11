@@ -129,22 +129,26 @@ template <typename T> std::string generate_set(const T &set) {
 }
 
 /// Generate a string representation of a map
-template <typename T> std::string generate_map(const T &map, bool key_only = false) {
+template <typename T> std::string generate_map(const T &map, bool key_only = false, bool multiline = false) {
     using element_t = typename detail::element_type<T>::type;
     using iteration_type_t = typename detail::pair_adaptor<element_t>::value_type;  // the type of the object pair
-    std::string out(1, '{');
-    out.append(detail::join(
-        detail::smart_deref(map),
-        [key_only](const iteration_type_t &v) {
-            std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
+    auto entry_to_string = [key_only](const iteration_type_t &v) {
+        std::string res{detail::to_string(detail::pair_adaptor<element_t>::first(v))};
 
-            if(!key_only) {
-                res.append("->");
-                res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
-            }
-            return res;
-        },
-        ","));
+        if(!key_only) {
+            res.append("->");
+            res += detail::to_string(detail::pair_adaptor<element_t>::second(v));
+        }
+        return res;
+    };
+    if(multiline) {
+        std::string out("{\n  ");
+        out.append(detail::join(detail::smart_deref(map), entry_to_string, ",\n  "));
+        out.append("\n}");
+        return out;
+    }
+    std::string out(1, '{');
+    out.append(detail::join(detail::smart_deref(map), entry_to_string, ","));
     out.push_back('}');
     return out;
 }
@@ -368,7 +372,7 @@ class CheckedTransformer : public Validator {
 
         auto tfunc = [shared_mapping]() {
             std::string out("value in ");
-            out += detail::generate_map(detail::smart_deref(*shared_mapping)) + " OR {";
+            out += detail::generate_map(detail::smart_deref(*shared_mapping), false, true) + " OR {";
             out += detail::join(
                 detail::smart_deref(*shared_mapping),
                 [](const iteration_type_t &v) {
