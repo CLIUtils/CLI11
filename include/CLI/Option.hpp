@@ -586,6 +586,10 @@ class Option : public OptionBase<Option> {
 
     /// Get the flag names with specified default values
     CLI11_NODISCARD const std::vector<std::string> &get_fnames() const { return fnames_; }
+    /// Get the flag default values mapping (name -> default value)
+    CLI11_NODISCARD const std::vector<std::pair<std::string, std::string>> &get_default_flag_values() const {
+        return default_flag_values_;
+    }
     /// Get a single name for the option, first of lname, sname, pname, envname
     CLI11_NODISCARD const std::string &get_single_name() const;
     /// The number of times the option expects to be included

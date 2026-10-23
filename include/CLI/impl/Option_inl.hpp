@@ -459,6 +459,11 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
                     if(input_value == default_str_ && force_callback_) {
                         return input_value;
                     }
+                    errno = 0;
+                    auto flag_v = detail::to_flag_value(input_value);
+                    if(errno == 0 && flag_v == 1) {
+                        return default_flag_values_[static_cast<std::size_t>(default_ind)].second;
+                    }
                     throw(ArgumentMismatch::FlagOverride(name));
                 }
             } else {
@@ -487,6 +492,12 @@ CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::strin
         }
         return (val == 1) ? falseString : (val == (-1) ? trueString : std::to_string(-val));
     }
+    errno = 0;
+    auto val = detail::to_flag_value(input_value);
+    if(errno == 0 && val == 1) {
+        return default_flag_values_[static_cast<std::size_t>(ind)].second;
+    }
+    errno = 0;
     return input_value;
 }
 
