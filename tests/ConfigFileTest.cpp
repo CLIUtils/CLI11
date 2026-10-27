@@ -4664,3 +4664,44 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     CHECK(conf_filename.empty());
     CHECK(level == "off");
 }
+
+TEST_CASE_METHOD(TApp, "MissingRequiredSubcommandOptionIncludesName", "[config]") {
+
+    int consumer_value{0};
+    int producer_value{0};
+
+    auto *consumer = app.add_subcommand("consumer");
+    consumer->configurable();
+    consumer->add_option("--value", consumer_value)->required();
+
+    auto *producer = app.add_subcommand("producer");
+    producer->configurable();
+    producer->add_option("--value", producer_value)->required();
+
+    std::istringstream config("[consumer]\n"
+                              "# value intentionally missing\n"
+                              "[producer]\n"
+                              "value=102\n");
+    try {
+        app.parse_from_stream(config);
+        FAIL("Expected a required option error");
+    } catch(const CLI::RequiredError &e) {
+        std::string message = e.what();
+
+        CHECK(message.find("--consumer.value") != std::string::npos);
+    }
+}
+
+TEST_CASE_METHOD(TApp, "MissingRootRequiredOption", "[config]") {
+    int value{0};
+    app.add_option("--value", value)->required();
+
+    std::istringstream config("");
+
+    try {
+        app.parse_from_stream(config);
+        FAIL("Expected a required option error");
+    } catch(const CLI::RequiredError &e) {
+        CHECK(std::string(e.what()).find("--value is required") != std::string::npos);
+    }
+}
