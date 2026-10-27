@@ -50,6 +50,7 @@ set(CLI11_TESTS
     TransformTest
     CreationTest
     SubcommandTest
+    CompletionTest
     HelpTest
     FormatterTest
     NewParseTest

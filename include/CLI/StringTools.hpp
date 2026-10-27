@@ -230,6 +230,9 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter =
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);
 
+/// remove an environmental variable from the environment of the current process
+CLI11_INLINE void unset_environment_value(const std::string &env_name);
+
 /// This function detects an equal or colon followed by an escaped quote after an argument
 /// then modifies the string to replace the equality with a space.  This is needed
 /// to allow the split up function to work properly and is intended to be used with the find_and_modify function

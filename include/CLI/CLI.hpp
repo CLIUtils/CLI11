@@ -29,6 +29,8 @@
 
 #include "ConfigFwd.hpp"
 
+#include "Completion.hpp"
+
 #include "Validators.hpp"
 
 #include "FormatterFwd.hpp"

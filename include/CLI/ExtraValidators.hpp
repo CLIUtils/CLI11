@@ -9,6 +9,7 @@
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
+#include "Completion.hpp"
 #include "Error.hpp"
 #include "Macros.hpp"
 #include "StringTools.hpp"
@@ -128,6 +129,18 @@ template <typename T> std::string generate_set(const T &set) {
     return out;
 }
 
+/// Collect the keys of a set or map as the individual strings a shell can insert
+template <typename T> std::vector<std::string> generate_completion_choices(const T &set) {
+    using element_t = typename detail::element_type<T>::type;
+    // Taken from the container rather than by splitting generate_set's output, which would come apart on a value
+    // holding a ',' or a '{'
+    std::vector<std::string> out;
+    for(const auto &item : detail::smart_deref(set)) {
+        out.push_back(detail::to_string(detail::pair_adaptor<element_t>::first(item)));
+    }
+    return out;
+}
+
 /// Generate a string representation of a map
 template <typename T> std::string generate_map(const T &map, bool key_only = false) {
     using element_t = typename detail::element_type<T>::type;
@@ -232,6 +245,14 @@ class IsMember : public Validator {
         // This is the type name for help, it will take the current version of the set contents
         desc_function_ = [shared_set]() { return detail::generate_set(detail::smart_deref(*shared_set)); };
 
+        // The set is what a shell should offer, and completion can only reach it from the Validator base, since
+        // Option::check slices this class away
+        auto meta = std::make_shared<CompletionMeta>();
+        meta->choices = [shared_set]() {
+            return detail::generate_completion_choices(detail::smart_deref(*shared_set));
+        };
+        completion_meta_ = meta;
+
         // This is the function that validates
         // It stores a copy of the set pointer-like, so shared_ptr will stay alive
         func_ = [shared_set, filter_fn](std::string &input) {
@@ -305,6 +326,13 @@ class Transformer : public Validator {
 
         // This is the type name for help, it will take the current version of the set contents
         desc_function_ = [shared_mapping]() { return detail::generate_map(detail::smart_deref(*shared_mapping)); };
+
+        // The keys are what there is to type; the values are what one becomes afterwards
+        auto meta = std::make_shared<CompletionMeta>();
+        meta->choices = [shared_mapping]() {
+            return detail::generate_completion_choices(detail::smart_deref(*shared_mapping));
+        };
+        completion_meta_ = meta;
 
         func_ = [shared_mapping, filter_fn](std::string &input) {
             using CLI::detail::lexical_cast;
@@ -380,6 +408,14 @@ class CheckedTransformer : public Validator {
         };
 
         desc_function_ = tfunc;
+
+        // An already-transformed value is accepted too, but offering both spellings of the same choice would double
+        // every candidate, so only the keys are suggested
+        auto meta = std::make_shared<CompletionMeta>();
+        meta->choices = [shared_mapping]() {
+            return detail::generate_completion_choices(detail::smart_deref(*shared_mapping));
+        };
+        completion_meta_ = meta;
 
         func_ = [shared_mapping, tfunc, filter_fn](std::string &input) {
             using CLI::detail::lexical_cast;

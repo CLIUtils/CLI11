@@ -63,14 +63,6 @@ inline void put_env(std::string name, std::string value) {
 #endif
 }
 
-inline void unset_env(std::string name) {
-#ifdef _WIN32
-    _putenv_s(name.c_str(), "");
-#else
-    unsetenv(name.c_str());
-#endif
-}
-
 /// these are provided for compatibility with the char8_t for C++20 that breaks stuff
 inline std::string from_u8string(const std::string &s) { return s; }
 inline std::string from_u8string(std::string &&s) { return std::move(s); }

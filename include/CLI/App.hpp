@@ -24,6 +24,7 @@
 // [CLI11:public_includes:end]
 
 // CLI Library includes
+#include "Completion.hpp"
 #include "ConfigFwd.hpp"
 #include "Error.hpp"
 #include "FormatterFwd.hpp"
@@ -200,6 +201,16 @@ class App {
 
     /// This is a function that generates the version string
     std::function<std::string()> version_producer_{};
+
+    /// A pointer to the flag that prints a completion script if there is one
+    Option *completion_ptr_{nullptr};
+
+    /// If true, parse() answers a completion request found in the environment instead of parsing
+    bool completion_enabled_{true};
+
+    /// The environment variable whose presence signals a completion request. The cursor index is read from the same
+    /// name with `_INDEX` appended
+    std::string completion_env_var_{"CLI11_COMPLETE"};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
     std::shared_ptr<FormatterBase> formatter_{new Formatter()};
@@ -650,6 +661,37 @@ class App {
     Option *set_version_flag(std::string flag_name,
                              std::function<std::string()> vfunc,
                              const std::string &version_help = "Display program version information and exit");
+
+    /// Set a flag that takes a shell name and prints its completion script, replacing any existing one.
+    /// Off unless called, because adding it changes the help output of every program that upgrades.
+    Option *
+    set_completion_flag(std::string flag_name = "--completion",
+                        const std::string &completion_help = "Print the completion script for a shell and exit");
+
+    /// Stop answering the completion requests that arrive through the environment
+    App *disable_completion(bool disabled = true) {
+        completion_enabled_ = !disabled;
+        return this;
+    }
+
+    /// Change the environment variable whose presence activates completion
+    App *set_completion_env_var(std::string env_var) {
+        completion_env_var_ = std::move(env_var);
+        return this;
+    }
+
+    /// Get the environment variable whose presence activates completion
+    CLI11_NODISCARD const std::string &get_completion_env_var() const { return completion_env_var_; }
+
+    /// Generate the script that teaches a shell to complete this program.
+    CLI11_NODISCARD std::string get_completion_script(const std::string &shell) const;
+
+    /// Get the completion candidates for the word at the cursor. The words are the arguments of the line being
+    /// completed excluding the program name, so words and cursor are both 0-based over real arguments.
+    ///
+    /// One word per argument, as the program would have received them. Where a shell hands its completion functions
+    /// something else -- bash breaks `--file=x` into three words -- rejoining them is that shell script's job.
+    CLI11_NODISCARD CompletionReply get_completions(const std::vector<std::string> &words, std::size_t cursor) const;
 
   private:
     /// Internal function for adding a flag
@@ -1173,6 +1215,12 @@ class App {
     /// Get a pointer to the version option. (const)
     CLI11_NODISCARD const Option *get_version_ptr() const { return version_ptr_; }
 
+    /// Get a pointer to the completion script option
+    Option *get_completion_ptr() { return completion_ptr_; }
+
+    /// Get a pointer to the completion script option. (const)
+    CLI11_NODISCARD const Option *get_completion_ptr() const { return completion_ptr_; }
+
     /// Get the parent of this subcommand (or nullptr if main app)
     App *get_parent() { return parent_; }
 
@@ -1285,6 +1333,36 @@ class App {
     /// Shared prologue for the public parse() overloads: clears prior state, validates and configures,
     /// and marks this app as the top-level app.
     void _parse_setup();
+
+    /// Answer a completion request sitting in the environment by throwing CallForCompletion.
+    /// Returns without doing anything if there is no request. Expects a reversed vector.
+    void _complete_intercept(const std::vector<std::string> &args) const;
+
+    /// Append every name and alias of this app's subcommands that starts with the prefix
+    void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
+
+    /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
+    void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
+
+    /// The option that would take the word after this one as its value, null when this word is not such an option
+    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word) const;
+
+    /// Read a word of short names as a parse would, stopping at the first name that takes a value and returning it.
+    /// Sets consumed to how much of the word was names, which is all of it when the walk ran out of word.
+    CLI11_NODISCARD const Option *_walk_short_names(const std::string &word, std::string::size_type &consumed) const;
+
+    /// Fill in the whole reply for a word holding a short name and more text after it, `-lfast` or `-vl`
+    void _add_short_word_completions(const std::string &word, CompletionReply &reply) const;
+
+    /// Append the option's values as whole tokens, for a value sharing its word with the name in front of it
+    void _add_attached_value_completions(const Option &opt,
+                                         const std::string &head,
+                                         const std::string &typed,
+                                         CompletionReply &reply) const;
+
+    /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
+    /// anything at all
+    void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args);

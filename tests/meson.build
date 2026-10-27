@@ -58,6 +58,7 @@ testnames = {
     'TransformTest': {},
     'CreationTest': {},
     'SubcommandTest': {},
+    'CompletionTest': {},
     'HelpTest': {},
     'FormatterTest': {},
     'NewParseTest': {},
