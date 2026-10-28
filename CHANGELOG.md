@@ -6,6 +6,8 @@
 
 - Reject negative binary and explicit octal values when parsing unsigned
   integers.
+- Accept a sign before the `0o` and `0b` prefixes when parsing integers
+  (`-0o17`, `+0b101`), the same as for `0x`.
 - Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`
   is `0` (unlimited), not only when max is greater than one. Adds a regression
   test. Fixes [#1168][].

@@ -972,11 +972,13 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     if(input.empty()) {
         return false;
     }
+    // a + may come before the 0o and 0b prefixes, the same as for 0x
+    const std::size_t sign_size = (input[0] == '+') ? 1U : 0U;
     // strtoull skips leading whitespace and silently wraps a negative value. Check the actual numeric
     // payload, including when an explicit octal or binary prefix is removed before conversion.
-    const bool has_base_prefix = input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0 ||
-                                 input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0;
-    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r", has_base_prefix ? 2 : 0);
+    const bool has_base_prefix = input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0 ||
+                                 input.compare(sign_size, 2, "0b") == 0 || input.compare(sign_size, 2, "0B") == 0;
+    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r", has_base_prefix ? sign_size + 2 : 0);
     if(first_non_ws != std::string::npos && input[first_non_ws] == '-') {
         return false;
     }
@@ -1011,23 +1013,23 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     if(std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
-    if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
+    if(input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0) {
         val = nullptr;
         errno = 0;
-        output_ll = std::strtoull(input.c_str() + 2, &val, 8);
+        output_ll = std::strtoull(input.c_str() + sign_size + 2, &val, 8);
         if(errno == ERANGE) {
             return false;
         }
         output = static_cast<T>(output_ll);
         return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
     }
-    if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
+    if(input.compare(sign_size, 2, "0b") == 0 || input.compare(sign_size, 2, "0B") == 0) {
         // LCOV_EXCL_START
         // In some new compilers including the coverage testing one binary strings are handled properly in strtoull
         // automatically so this coverage is missing but is well tested in other compilers
         val = nullptr;
         errno = 0;
-        output_ll = std::strtoull(input.c_str() + 2, &val, 2);
+        output_ll = std::strtoull(input.c_str() + sign_size + 2, &val, 2);
         if(errno == ERANGE) {
             return false;
         }
@@ -1073,28 +1075,32 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     if(std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
-    if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
+    // a sign may come before the 0o and 0b prefixes, the same as for 0x
+    const std::size_t sign_size = (input[0] == '-' || input[0] == '+') ? 1U : 0U;
+    if(input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0) {
+        const std::string digits = input.substr(0, sign_size) + input.substr(sign_size + 2);
         val = nullptr;
         errno = 0;
-        output_ll = std::strtoll(input.c_str() + 2, &val, 8);
+        output_ll = std::strtoll(digits.c_str(), &val, 8);
         if(errno == ERANGE) {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+        return (val == (digits.c_str() + digits.size()) && static_cast<std::int64_t>(output) == output_ll);
     }
-    if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
+    if(input.compare(sign_size, 2, "0b") == 0 || input.compare(sign_size, 2, "0B") == 0) {
         // LCOV_EXCL_START
         // In some new compilers including the coverage testing one binary strings are handled properly in strtoll
         // automatically so this coverage is missing but is well tested in other compilers
+        const std::string digits = input.substr(0, sign_size) + input.substr(sign_size + 2);
         val = nullptr;
         errno = 0;
-        output_ll = std::strtoll(input.c_str() + 2, &val, 2);
+        output_ll = std::strtoll(digits.c_str(), &val, 2);
         if(errno == ERANGE) {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+        return (val == (digits.c_str() + digits.size()) && static_cast<std::int64_t>(output) == output_ll);
         // LCOV_EXCL_STOP
     }
     return false;
