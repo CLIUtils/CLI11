@@ -180,6 +180,12 @@ static const std::map<std::string, std::int64_t> testValuesInt{
     {"0b1101'0110", 0xD6},
     {"0B11010110", 0xD6},
     {"0B1101'0110", 0xD6},
+    {"-0o755", -0755},
+    {"+0o755", 0755},
+    {"-0O7_55", -0755},
+    {"-0b11010110", -0xD6},
+    {"+0B1101'0110", 0xD6},
+    {"-0o1000000000000000000000", (std::numeric_limits<std::int64_t>::min)()},
     {"1_2_3_4_5", 12345},
 };
 
@@ -216,7 +222,7 @@ TEST_CASE_METHOD(TApp, "intConversionsErange", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "intConversionsEmptyBasePrefix", "[optiontype]") {
-    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'");
+    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'", "-0o", "+0o", "-0b", "+0B");
     std::int64_t val{42};
     app.add_option("--val", val);
 
@@ -225,7 +231,7 @@ TEST_CASE_METHOD(TApp, "intConversionsEmptyBasePrefix", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "uintConversionsEmptyBasePrefix", "[optiontype]") {
-    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'");
+    const auto *input = GENERATE("0o", "0O", "0b", "0B", "0o_", "0b'", "+0o", "+0B");
     std::uint64_t val{42};
     app.add_option("--val", val);
 
@@ -268,6 +274,8 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0B1101'0110", 0xD6},
     {"0b+11010110", 0xD6},
     {"0B 11010110", 0xD6},
+    {"+0o755", 0755},
+    {"+0b11010110", 0xD6},
     {"1_2_3_4_5", 12345},
 };
 
