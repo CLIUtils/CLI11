@@ -469,8 +469,8 @@ template <typename T1,
           typename T2,
           typename T,
           enable_if_t<std::is_same<T1, T2>::value, detail::enabler> = detail::dummy>
-auto checked_to_string(T &&value) -> decltype(to_string(std::forward<T>(value))) {
-    return to_string(std::forward<T>(value));
+auto checked_to_string(T &&value) -> decltype(std::string(to_string(static_cast<const T2 &>(value)))) {
+    return std::string(to_string(static_cast<const T2 &>(value)));
 }
 
 /// special template overload
@@ -503,8 +503,8 @@ std::string value_string(const T &value) {
 /// for other types just use the regular to_string function
 template <typename T,
           enable_if_t<!std::is_enum<T>::value && !std::is_arithmetic<T>::value, detail::enabler> = detail::dummy>
-auto value_string(const T &value) -> decltype(to_string(value)) {
-    return to_string(value);
+auto value_string(const T &value) -> decltype(std::string(to_string(value))) {
+    return std::string(to_string(value));
 }
 
 /// template to get the underlying value type if it exists or use a default

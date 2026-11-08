@@ -44,6 +44,64 @@ TEST_CASE("TypeTools: Streaming", "[helpers]") {
     CHECK(CLI::detail::to_string(t1::enum1) == "0");
 }
 
+#if defined(CLI11_CPP17)
+#if defined(__has_include)
+#if __has_include(<string_view>)
+#include <string_view>
+
+enum class SVLevel : int { High, Medium, Low };
+
+inline constexpr std::string_view to_string(SVLevel level) {
+    switch(level) {
+    case SVLevel::High:
+        return "high";
+    case SVLevel::Medium:
+        return "medium";
+    case SVLevel::Low:
+        return "low";
+    }
+    return "unknown";
+}
+
+struct CustomSV {
+    int val{0};
+};
+
+inline constexpr std::string_view to_string(const CustomSV &) { return "custom_sv"; }
+
+inline std::istream &operator>>(std::istream &in, CustomSV &obj) { return in >> obj.val; }
+
+TEST_CASE("TypeTools: string_view_to_string", "[helpers]") {
+    SVLevel level{SVLevel::Low};
+    CHECK(CLI::detail::checked_to_string<SVLevel, SVLevel>(level) == "low");
+
+    CustomSV custom{42};
+    CHECK(CLI::detail::checked_to_string<CustomSV, CustomSV>(custom) == "custom_sv");
+    CHECK(CLI::detail::value_string(custom) == "custom_sv");
+
+    CLI::App app;
+    auto *opt1 = app.add_option("-l,--level", level, "Level settings");
+    CHECK(opt1 != nullptr);
+    opt1->capture_default_str();
+    CHECK(opt1->get_default_str() == "low");
+
+    auto *opt2 = app.add_option("-c,--custom", custom, "Custom settings");
+    CHECK(opt2 != nullptr);
+    opt2->capture_default_str();
+    CHECK(opt2->get_default_str() == "custom_sv");
+
+    std::map<std::string, SVLevel> map{
+        {"high", SVLevel::High},
+        {"medium", SVLevel::Medium},
+        {"low", SVLevel::Low},
+    };
+    auto *opt3 = app.add_option("-m,--mode", level)->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
+    CHECK(opt3 != nullptr);
+}
+#endif
+#endif
+#endif
+
 TEST_CASE("TypeTools: tuple", "[helpers]") {
     CHECK_FALSE(CLI::detail::is_tuple_like<int>::value);
     CHECK_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
