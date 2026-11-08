@@ -732,6 +732,12 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
 
                 if(!value.empty()) {
                     if(!opt->get_fnames().empty()) {
+                        for(const auto &flag_default : opt->default_flag_values_) {
+                            if(flag_default.second != "false" && flag_default.second == value) {
+                                single_name = flag_default.first;
+                                break;
+                            }
+                        }
                         try {
                             value = opt->get_flag_value(single_name, value);
                         } catch(const CLI::ArgumentMismatch &) {
