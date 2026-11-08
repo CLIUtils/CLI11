@@ -2192,8 +2192,23 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
     return bcom;
 }
 
+CLI11_NODISCARD CLI11_INLINE bool App::_has_help_flag(const std::vector<std::string> &args) const noexcept {
+    const Option *help_ptr = get_help_ptr();
+    const Option *help_all_ptr = get_help_all_ptr();
+    for(const auto &arg : args) {
+        if((help_ptr != nullptr && help_ptr->check_name(arg)) ||
+           (help_all_ptr != nullptr && help_all_ptr->check_name(arg))) {
+            return true;
+        }
+    }
+    if(parent_ != nullptr) {
+        return parent_->_has_help_flag(args);
+    }
+    return false;
+}
+
 CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
-    if(_count_remaining_positionals(/* required */ true) > 0) {
+    if(!_has_help_flag(args) && _count_remaining_positionals(/* required */ true) > 0) {
         _parse_positional(args, false);
         return true;
     }

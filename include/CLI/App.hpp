@@ -1333,6 +1333,9 @@ class App {
     /// return true if the subcommand was processed false otherwise
     bool _parse_subcommand(std::vector<std::string> &args);
 
+    /// Check if the argument list contains a help or help_all flag
+    CLI11_NODISCARD bool _has_help_flag(const std::vector<std::string> &args) const noexcept;
+
     /// Parse a short (false) or long (true) argument, must be at the top of the list
     /// if local_processing_only is set to true then fallthrough is disabled will return false if not found
     /// return true if the argument was processed or false if nothing was done
