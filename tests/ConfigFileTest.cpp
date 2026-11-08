@@ -4664,3 +4664,87 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     CHECK(conf_filename.empty());
     CHECK(level == "off");
 }
+
+TEST_CASE_METHOD(TApp, "FlagDefaultsRoundTrip", "[config]") {
+    int mode = 0;
+    auto *group = app.add_option_group("Mode")->require_option(1);
+    group->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode, "Operation mode");
+
+    args = {"--mode-c"};
+    run();
+    CHECK(mode == 2);
+
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("mode-c=2"));
+    CHECK_THAT(str, !Contains("mode-a=2"));
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss(str);
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 2);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-c=true\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 2);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-c\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 2);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-a=true\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 0);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-b=true\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 1);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-a\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 0);
+    }
+
+    {
+        CLI::App app2;
+        int mode2 = -1;
+        auto *g2 = app2.add_option_group("Mode")->require_option(1);
+        g2->add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode2, "Operation mode");
+        std::stringstream ss("mode-b\n");
+        app2.parse_from_stream(ss);
+        CHECK(mode2 == 1);
+    }
+}
