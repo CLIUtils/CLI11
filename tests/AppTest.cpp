@@ -4,6 +4,11 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+// MSSTL defines this to 1 by default, even when dynamic RTTI is enabled.
+#ifndef _HAS_STATIC_RTTI
+#define _HAS_STATIC_RTTI 1
+#endif
+
 #include "app_helper.hpp"
 
 #include <array>
@@ -3315,3 +3320,16 @@ TEST_CASE("Ensure UTF-8 called twice", "[app]") {
         FAIL("Executable " CLI11_ENSURE_UTF8_TWICE_EXE " failed with an unknown return code");
     }
 }
+
+#if defined(_CPPRTTI) || (!defined(_MSC_VER) && defined(__cpp_rtti))
+TEST_CASE_METHOD(TApp, "CustomConfigWithStaticRTTIMacro", "[app]") {
+    struct OtherConfig : CLI::Config {
+        std::string to_config(const CLI::App *, bool, bool, std::string) const override { return {}; }
+        std::vector<CLI::ConfigItem> from_config(std::istream &) const override { return {}; }
+    };
+
+    app.config_formatter(std::make_shared<OtherConfig>());
+    CHECK(CLI11_USE_STATIC_RTTI == 0);
+    CHECK(app.get_config_formatter_base() == nullptr);
+}
+#endif
