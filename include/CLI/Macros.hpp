@@ -60,6 +60,12 @@
 #define CLI11_NODISCARD [[nodiscard]]
 #endif
 
+#if defined __has_include
+#if __has_include(<yvals_core.h>)
+#include <yvals_core.h>
+#endif
+#endif
+
 /** detection of rtti */
 #ifndef CLI11_USE_STATIC_RTTI
 #if (defined(_HAS_STATIC_RTTI) && _HAS_STATIC_RTTI)
