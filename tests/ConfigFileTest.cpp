@@ -4273,6 +4273,17 @@ TEST_CASE_METHOD(TApp, "IniOutputMultiLineDescription", "[config]") {
     CHECK_THAT(str, Contains(flag + "=false\n"));
 }
 
+TEST_CASE_METHOD(TApp, "IniOutputCRLFDescriptions", "[config]") {
+    app.description("First app line.\r\nSecond app line.");
+    app.add_flag("--some_flag", "First option line.\r\nSecond option line.");
+    app.config_formatter(std::make_shared<CLI::ConfigINI>());
+    run();
+
+    const std::string str = app.config_to_str(true, true);
+    CHECK_THAT(str, Contains(";; First app line.\r\n;; Second app line.\n"));
+    CHECK_THAT(str, Contains("; First option line.\r\n; Second option line.\n"));
+}
+
 TEST_CASE_METHOD(TApp, "IniOutputOptionGroupMultiLineDescription", "[config]") {
     std::string flag = "flag";
     const std::string description = "Short flag description.\n";
