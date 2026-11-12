@@ -249,6 +249,12 @@ if(TARGET DeprecatedTest_Single)
   target_compile_options(DeprecatedTest_Single PRIVATE ${no-deprecated-declarations})
 endif()
 
+# Check relative header includes without CLI11's include directories
+add_executable(header_include_test header_include_test.cpp)
+target_link_libraries(header_include_test PRIVATE CLI11_warnings)
+set_target_properties(header_include_test PROPERTIES FOLDER "Tests")
+add_test(NAME header_include_test COMMAND header_include_test)
+
 # Link test (build error if inlines missing)
 add_library(link_test_1 link_test_1.cpp)
 target_link_libraries(link_test_1 PUBLIC CLI11)
