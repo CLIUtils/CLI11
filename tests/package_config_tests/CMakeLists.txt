@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.14...4.2)
 
-project(CLI11-package-config-test)
+project(CLI11-package-config-test LANGUAGES CXX)
 
 include(CTest)
 

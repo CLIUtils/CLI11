@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.28...4.2)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-project(CLI11-module-test)
+project(CLI11-module-test LANGUAGES CXX)
 
 include(CTest)
 
