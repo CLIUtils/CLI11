@@ -173,15 +173,10 @@ jobs:
       matrix:
         std: ["20", "23", "26"]
     steps:
-      - name: Set up Clang
-        uses: egor-tensin/setup-clang@v2
-        with:
-          version: 20
-          platform: x64
-      - name: Install specific libc++ version
+      - name: Install Clang and libc++
         run: |
           sudo apt-get update
-          sudo apt-get install -y libc++-20-dev libc++abi-20-dev lld-20
+          sudo apt-get install -y clang-20 libc++-20-dev libc++abi-20-dev lld-20
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -191,7 +186,7 @@ jobs:
           cmake-version: "4.4"
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=${{ matrix.std }} -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
+        run: cmake -S . -B build -G Ninja -DCLI11_INSTALL_PACKAGE_TESTS=ON -DCLI11_BUILD_EXAMPLES=OFF -DCLI11_MODULE_TESTS=ON -DCLI11_FORCE_LIBCXX=ON -DCLI11_MODULES=ON -DCMAKE_CXX_STANDARD=${{ matrix.std }} -DCMAKE_INSTALL_PREFIX=/home/runner/work/install -DCMAKE_CXX_COMPILER=clang++-20 -DCMAKE_LINKER_TYPE=LLD -DCMAKE_CXX_FLAGS=-stdlib=libc++
       - name: Build
         run: cmake --build build -j4
       - name: install

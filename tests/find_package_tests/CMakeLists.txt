@@ -6,7 +6,7 @@
 
 cmake_minimum_required(VERSION 3.14...4.2)
 
-project(CLI11-find-package-test)
+project(CLI11-find-package-test LANGUAGES CXX)
 
 include(CTest)
 
