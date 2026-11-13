@@ -271,7 +271,7 @@ function(setup_target_for_coverage_lcov)
       --gcov-tool
       ${GCOV_PATH}
       --ignore-errors
-      mismatch
+      mismatch,inconsistent
       -directory
       .
       -b
@@ -284,7 +284,7 @@ function(setup_target_for_coverage_lcov)
       --gcov-tool
       ${GCOV_PATH}
       --ignore-errors
-      mismatch
+      mismatch,inconsistent
       -c
       -i
       -d
@@ -307,7 +307,7 @@ function(setup_target_for_coverage_lcov)
       ${BASEDIR}
       --capture
       --ignore-errors
-      mismatch,gcov
+      mismatch,inconsistent,gcov
       --output-file
       ${Coverage_NAME}.capture)
   # add baseline counters
@@ -321,7 +321,7 @@ function(setup_target_for_coverage_lcov)
       -a
       ${Coverage_NAME}.capture
       --ignore-errors
-      mismatch,gcov
+      mismatch,inconsistent,gcov
       --output-file
       ${Coverage_NAME}.total)
   # filter collected data to final coverage report
@@ -331,7 +331,7 @@ function(setup_target_for_coverage_lcov)
       --gcov-tool
       ${GCOV_PATH}
       --ignore-errors
-      mismatch,mismatch,gcov
+      mismatch,inconsistent,gcov
       --remove
       ${Coverage_NAME}.total
       ${LCOV_EXCLUDES}
@@ -342,7 +342,7 @@ function(setup_target_for_coverage_lcov)
       ${GENHTML_PATH}
       ${GENHTML_EXTRA_ARGS}
       --ignore-errors
-      mismatch,mismatch
+      mismatch,inconsistent
       ${Coverage_GENHTML_ARGS}
       -o
       ${Coverage_NAME}
