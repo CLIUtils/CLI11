@@ -155,6 +155,44 @@ TEST_CASE_METHOD(TApp, "ComplexSingleImagOption", "[newparse]") {
     CHECK(comp.imag() == Approx(0));
 }
 
+TEST_CASE_METHOD(TApp, "ComplexSingleArgExponentOption", "[newparse]") {
+    cx comp{1, 2};
+    app.add_option("-c,--complex", comp);
+
+    args = {"-c", "1+2e-3i"};
+    run();
+    CHECK(comp.real() == Approx(1));
+    CHECK(comp.imag() == Approx(2e-3));
+
+    args = {"-c", "1.5e-1-2.5e-1i"};
+    run();
+    CHECK(comp.real() == Approx(0.15));
+    CHECK(comp.imag() == Approx(-0.25));
+
+    args = {"-c", "-1e-2-3e-2j"};
+    run();
+    CHECK(comp.real() == Approx(-1e-2));
+    CHECK(comp.imag() == Approx(-3e-2));
+
+    args = {"-c", "1.5E+2-3E+1j"};
+    run();
+    CHECK(comp.real() == Approx(150));
+    CHECK(comp.imag() == Approx(-30));
+
+    args = {"-c", "2e-3i"};
+    run();
+    CHECK(comp.real() == Approx(0));
+    CHECK(comp.imag() == Approx(2e-3));
+
+    args = {"-c", "1e-5"};
+    run();
+    CHECK(comp.real() == Approx(1e-5));
+    CHECK(comp.imag() == Approx(0));
+
+    args = {"-c", "1+2e-3+4i"};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
 /// Simple class containing two strings useful for testing lexical cast and conversions
 class spair {
   public:

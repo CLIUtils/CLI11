@@ -259,24 +259,25 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CLI11.CPack.Description.txt")
   set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
 
-  # CPack collects *everything* except what's listed here.
+  # CPack collects *everything* except what's listed here. These are regular
+  # expressions, so use [.] for literal dots and anchor file names at the end.
   set(CPACK_SOURCE_IGNORE_FILES
-      /.git
+      /[.]git
       /dist
       /.*build.*
-      /\\\\.DS_Store
-      /.*\\\\.egg-info
+      /[.]DS_Store$
+      /.*[.]egg-info
       /var
-      /azure-pipelines.yml
-      /.ci
+      /azure-pipelines[.]yml$
+      /[.]ci
       /docs
       /examples
       /test_package
       /book
-      /.travis.yml
-      .swp
-      /.all-contributorsrc
-      /.pre-commit.*yaml)
+      /[.]travis[.]yml$
+      [.]swp$
+      /[.]all-contributorsrc$
+      /[.]pre-commit.*[.]yaml$)
 
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
   set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
