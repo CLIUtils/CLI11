@@ -2103,4 +2103,3 @@ try! Feedback is always welcome.
 [installation]: https://cliutils.github.io/CLI11/book-installation.html
 [formatting]: https://cliutils.github.io/CLI11/book-formatting.html
 [config]: https://cliutils.github.io/CLI11/book-config.html
-[installation]: https://cliutils.github.io/CLI11/book-installation.html
