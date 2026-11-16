@@ -2782,10 +2782,8 @@ CLI11_INLINE void retire_option(App *app, const std::string &option_name) {
         retire_option(app, opt);
         return;
     }
-    auto *opt2 = app->add_option(option_name, "option has been retired and has no effect")
-                     ->type_name("RETIRED")
-                     ->expected(0, 1)
-                     ->default_str("RETIRED");
+    auto *opt2 = app->add_option(option_name, "option has been retired and has no effect");
+    opt2->type_name("RETIRED")->expected(0, 1)->default_str("RETIRED");
     // LCOV_EXCL_START
     // something odd with coverage on new compilers
     Validator retired_warning{[opt2](std::string &) {

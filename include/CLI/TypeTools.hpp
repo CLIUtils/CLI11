@@ -412,9 +412,8 @@ inline std::string to_string(T &&variable) {
         return {"{}"};
     }
     std::vector<std::string> defaults;
-    while(cval != end) {
+    for(; cval != end; ++cval) {
         defaults.emplace_back(CLI::detail::to_string(*cval));
-        ++cval;
     }
     return {"[" + detail::join(defaults) + "]"};
 }
