@@ -90,6 +90,7 @@ TEST_CASE("TypeTools: string_view_to_string", "[helpers]") {
     opt2->capture_default_str();
     CHECK(opt2->get_default_str() == "custom_sv");
 
+#if(!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
     std::map<std::string, SVLevel> map{
         {"high", SVLevel::High},
         {"medium", SVLevel::Medium},
@@ -97,6 +98,7 @@ TEST_CASE("TypeTools: string_view_to_string", "[helpers]") {
     };
     auto *opt3 = app.add_option("-m,--mode", level)->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
     CHECK(opt3 != nullptr);
+#endif
 }
 #endif
 #endif
