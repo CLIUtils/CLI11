@@ -469,8 +469,8 @@ template <typename T1,
           typename T2,
           typename T,
           enable_if_t<std::is_same<T1, T2>::value, detail::enabler> = detail::dummy>
-auto checked_to_string(T &&value) -> decltype(std::string(to_string(static_cast<const T2 &>(value)))) {
-    return std::string(to_string(static_cast<const T2 &>(value)));
+auto checked_to_string(T &&value) -> decltype(std::string(to_string(std::forward<T>(value)))) {
+    return std::string(to_string(std::forward<T>(value)));
 }
 
 /// special template overload
