@@ -4,7 +4,8 @@
 
 ### Fixed
 
-- Reject NaN values from numeric bound validator (`CLI::Bound`).
+- Reject NaN values from numeric bound validator (`CLI::Bound`). `CLI::Bound`
+  and `CLI::Range` also reject NaN endpoints.
 - Reject negative binary and explicit octal values when parsing unsigned
   integers.
 - Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`

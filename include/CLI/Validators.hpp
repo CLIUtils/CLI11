@@ -236,6 +236,9 @@ class Range : public Validator {
     /// needed to provide nice syntax for Range(a,b).
     template <typename T>
     Range(T min_val, T max_val, const std::string &validator_name = std::string{}) : Validator(validator_name) {
+        if(detail::is_nan(min_val) || detail::is_nan(max_val)) {
+            throw ValidationError("Range endpoints must not be NaN");
+        }
         if(validator_name.empty()) {
             std::stringstream out;
             out << detail::type_name<T>() << " in [" << min_val << " - " << max_val << "]";

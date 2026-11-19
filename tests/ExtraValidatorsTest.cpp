@@ -140,11 +140,6 @@ TEST_CASE_METHOD(TApp, "BoundTests", "[transform]") {
     run();
     CHECK(3.4 == value);
 
-    args = {"-s", "nan"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-    args = {"-s", "NaN"};
-    CHECK_THROWS_AS(run(), CLI::ValidationError);
-
     auto help = app.help();
     CHECK(help.find("bounded to") != std::string::npos);
     CHECK(help.find("[3.4 - 5.9]") != std::string::npos);
@@ -163,7 +158,16 @@ TEST_CASE_METHOD(TApp, "BoundRejectsNaN", "[transform]") {
     args = {"-s", "1"};
     CHECK_NOTHROW(run());
     CHECK(value == 1.0);
+}
 
+TEST_CASE("BoundRejectsNaNEndpoints", "[transform]") {
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    CHECK_THROWS_AS(CLI::Bound(nan, 1.0), CLI::ValidationError);
+    CHECK_THROWS_AS(CLI::Bound(0.0, nan), CLI::ValidationError);
+    CHECK_THROWS_AS(CLI::Bound(nan), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "BoundInteger", "[transform]") {
     int ivalue{0};
     app.add_option("-i", ivalue)->transform(CLI::Bound(10, 20));
     args = {"-i", "5"};

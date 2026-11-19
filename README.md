@@ -643,7 +643,8 @@ of flags.
   exists either directly or in a default path and update the path appropriately.
   See [Transforming Validators](#transforming-validators) for more details
 - `CLI::Range(min,max)`: Requires that the option be between min and max (make
-  sure to use floating point if needed). Min defaults to 0.
+  sure to use floating point if needed). Min defaults to 0. NaN input and NaN
+  endpoints are rejected.
 - `CLI::PositiveNumber`: Requires the number be greater than 0
 - `CLI::NonNegativeNumber`: Requires the number be greater or equal to 0
 
@@ -673,7 +674,8 @@ computation time that may not be valuable for some use cases.
 
 - `CLI::Bound(min,max)`: Modify the input such that it is always between min and
   max (make sure to use floating point if needed). Min defaults to 0. Will
-  produce an error if conversion is not possible.
+  produce an error if conversion is not possible or the input is NaN. NaN
+  endpoints are rejected.
 
 - `CLI::Number`: Requires the input be a number.
 - `CLI::ValidIPV4`: Requires that the option be a valid IPv4 string e.g.
