@@ -25,7 +25,7 @@ jobs:
         std: ["14", "17", "20", "23"]
         precompile: ["ON", "OFF"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -60,7 +60,7 @@ jobs:
           lcov --ignore-errors inconsistent --list coverage.info
         working-directory: build
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           files: build/coverage.info
           # Protected branches reject tokenless uploads; fork PRs still work without it.

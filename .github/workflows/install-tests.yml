@@ -21,7 +21,7 @@ jobs:
     name: install tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -38,7 +38,7 @@ jobs:
     name: install tests precompiled
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -55,7 +55,7 @@ jobs:
     name: install tests precompiled shared
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -72,7 +72,7 @@ jobs:
     name: install tests precompiled full install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -92,7 +92,7 @@ jobs:
     name: install tests precompiled shared macos
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -109,7 +109,7 @@ jobs:
     name: install tests precompiled macos no validators
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -126,7 +126,7 @@ jobs:
     name: install tests single file
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -148,7 +148,7 @@ jobs:
       matrix:
         std: ["20", "23"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - uses: ./.github/actions/quick_cmake
@@ -177,7 +177,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-20 libc++-20-dev libc++abi-20-dev lld-20
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - uses: ./.github/actions/quick_cmake

@@ -18,7 +18,7 @@ jobs:
   apidocs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Doxygen
         run: |
@@ -47,7 +47,7 @@ jobs:
             redirect "../../book-$name.html" "book-$name.html" "html/book/chapters/$name.html"
           done
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: api-docs
           path: html
@@ -66,15 +66,15 @@ jobs:
       && github.ref == 'refs/heads/main'
       && github.repository == 'CLIUtils/CLI11'
     steps:
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         id: pages
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: api-docs
           path: _site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
 
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment

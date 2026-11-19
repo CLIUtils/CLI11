@@ -15,11 +15,11 @@ jobs:
     permissions:
       contents: write # Grant write permission for contents to upload artifacts
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
@@ -37,12 +37,12 @@ jobs:
       - name: Make header
         run: cmake --build build --target CLI11-generate-single-file
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CLI11.hpp
           path: build/single-include/CLI11.hpp
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CLI11-Source
           path: CLI11-Source
@@ -64,7 +64,7 @@ jobs:
           cat release-notes.md
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: ${{ steps.notes.outputs.title }}
