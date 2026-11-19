@@ -4,6 +4,11 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+// A user override makes the RTTI detection test below meaningless.
+#ifdef CLI11_USE_STATIC_RTTI
+#define CLI11_TEST_RTTI_OVERRIDDEN
+#endif
+
 #include "app_helper.hpp"
 
 #include <array>
@@ -3315,3 +3320,21 @@ TEST_CASE("Ensure UTF-8 called twice", "[app]") {
         FAIL("Executable " CLI11_ENSURE_UTF8_TWICE_EXE " failed with an unknown return code");
     }
 }
+
+#ifndef CLI11_TEST_RTTI_OVERRIDDEN
+#if defined(_CPPRTTI) || (!defined(_MSC_VER) && (defined(__cpp_rtti) || defined(__GXX_RTTI)))
+TEST_CASE_METHOD(TApp, "CustomConfigRTTIDetection", "[app]") {
+    struct OtherConfig : CLI::Config {
+        std::string to_config(const CLI::App *, bool, bool, std::string) const override { return {}; }
+        std::vector<CLI::ConfigItem> from_config(std::istream &) const override { return {}; }
+    };
+
+    // The static cast in get_config_formatter_base is undefined behavior for OtherConfig.
+    REQUIRE(CLI11_USE_STATIC_RTTI == 0);
+    app.config_formatter(std::make_shared<OtherConfig>());
+    CHECK(app.get_config_formatter_base() == nullptr);
+}
+#else
+TEST_CASE("StaticRTTIWithoutRTTI", "[app]") { CHECK(CLI11_USE_STATIC_RTTI == 1); }
+#endif
+#endif
