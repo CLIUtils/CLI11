@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y cmake git python3 time
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Configure single-header build
         run: cmake -S . -B build -DCLI11_SINGLE_FILE=ON -DCLI11_BUILD_TESTS=OFF -DCLI11_BUILD_EXAMPLES=OFF
       - name: Generate single header
@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Add build tools
         run: apt-get update && apt-get install -y wget git cmake
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Configure
@@ -86,7 +86,7 @@ jobs:
     name: Boost build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Add boost
@@ -105,7 +105,7 @@ jobs:
     name: sanitizer build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       # this build step will fail
@@ -125,7 +125,7 @@ jobs:
       matrix:
         mode: [headeronly, amalgamated, precompiled]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Prepare commands
         run: |
@@ -145,7 +145,7 @@ jobs:
     name: Bazel build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build
         run: bazel build //...

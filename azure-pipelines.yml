@@ -67,11 +67,11 @@ jobs:
           cli11.std: 23
           cli11.single: ON
           cli11.options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
-        macOS-14_11:
-          vmImage: "macOS-14"
+        macOS-26_11:
+          vmImage: "macOS-26"
           cli11.std: 11
-        macOS-14_14_PC:
-          vmImage: "macOS-14"
+        macOS-26_14_PC:
+          vmImage: "macOS-26"
           cli11.std: 14
           cli11.precompile: ON
         Windows17:
