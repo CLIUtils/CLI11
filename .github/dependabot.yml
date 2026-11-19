@@ -6,7 +6,6 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "main"
-    open-pull-requests-limit: 10
     groups:
       actions:
         patterns:
