@@ -57,6 +57,11 @@ TEST_CASE("StringBased: convert_arg_for_ini", "[config]") {
     CHECK("0b01101110010" == CLI::detail::convert_arg_for_ini("0b01101110010"));
     // binary fail
     CHECK("\"0b01102110010\"" == CLI::detail::convert_arg_for_ini("0b01102110010"));
+
+    // prefix without digits
+    CHECK("\"0x\"" == CLI::detail::convert_arg_for_ini("0x"));
+    CHECK("\"0o\"" == CLI::detail::convert_arg_for_ini("0o"));
+    CHECK("\"0b\"" == CLI::detail::convert_arg_for_ini("0b"));
 }
 
 TEST_CASE("StringBased: IniJoin", "[config]") {

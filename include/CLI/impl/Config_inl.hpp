@@ -106,7 +106,7 @@ convert_arg_for_ini(const std::string &arg, char stringQuote, char literalQuote,
         return std::string(1, literalQuote) + arg + literalQuote;
     }
     // handle hex, binary or octal arguments
-    if(arg.front() == '0') {
+    if(arg.front() == '0' && arg.size() > 2) {
         if(arg[1] == 'x') {
             if(std::all_of(arg.begin() + 2, arg.end(), [](char x) {
                    return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'F') || (x >= 'a' && x <= 'f');

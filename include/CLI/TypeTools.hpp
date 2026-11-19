@@ -1007,7 +1007,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         return integral_conversion(nstring, output);
     }
 
-    if(std::isspace(static_cast<unsigned char>(input.back()))) {
+    if(std::isspace(static_cast<unsigned char>(input.front())) ||
+       std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
     if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
@@ -1018,7 +1019,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
+        return (val != input.c_str() + 2 && val == (input.c_str() + input.size()) &&
+                static_cast<std::uint64_t>(output) == output_ll);
     }
     if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
         // LCOV_EXCL_START
@@ -1031,7 +1033,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::uint64_t>(output) == output_ll);
+        return (val != input.c_str() + 2 && val == (input.c_str() + input.size()) &&
+                static_cast<std::uint64_t>(output) == output_ll);
         // LCOV_EXCL_STOP
     }
     return false;
@@ -1069,7 +1072,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             }
         }
     }
-    if(std::isspace(static_cast<unsigned char>(input.back()))) {
+    if(std::isspace(static_cast<unsigned char>(input.front())) ||
+       std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
     if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
@@ -1080,7 +1084,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+        return (val != input.c_str() + 2 && val == (input.c_str() + input.size()) &&
+                static_cast<std::int64_t>(output) == output_ll);
     }
     if(input.compare(0, 2, "0b") == 0 || input.compare(0, 2, "0B") == 0) {
         // LCOV_EXCL_START
@@ -1093,7 +1098,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             return false;
         }
         output = static_cast<T>(output_ll);
-        return (val == (input.c_str() + input.size()) && static_cast<std::int64_t>(output) == output_ll);
+        return (val != input.c_str() + 2 && val == (input.c_str() + input.size()) &&
+                static_cast<std::int64_t>(output) == output_ll);
         // LCOV_EXCL_STOP
     }
     return false;

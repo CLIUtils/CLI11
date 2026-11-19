@@ -8,6 +8,11 @@
   and `CLI::Range` also reject NaN endpoints.
 - Reject negative binary and explicit octal values when parsing unsigned
   integers.
+- Reject octal and binary integer prefixes without digits (`0o`, `0b`) instead
+  of treating them as zero.
+- Accept leading whitespace before `0o` and `0b` integer prefixes, the same as
+  for other integers.
+- Quote the bare prefixes `0x`, `0o`, and `0b` when writing a config file.
 - Help text uses the plural `SUBCOMMANDS` label when `require_subcommand_max()`
   is `0` (unlimited), not only when max is greater than one. Adds a regression
   test. Fixes [#1168][].
