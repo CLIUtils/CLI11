@@ -2474,6 +2474,13 @@ TEST_CASE_METHOD(TApp, "RangeRejectsNaN", "[app]") {
     CHECK(value == 1.0);
 }
 
+TEST_CASE("RangeRejectsNaNEndpoints", "[app]") {
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    CHECK_THROWS_AS(CLI::Range(nan, 1.0), CLI::ValidationError);
+    CHECK_THROWS_AS(CLI::Range(0.0, nan), CLI::ValidationError);
+    CHECK_THROWS_AS(CLI::Range(nan), CLI::ValidationError);
+}
+
 TEST_CASE_METHOD(TApp, "PositiveNumberRejectsNaN", "[app]") {
     double value{0.0};
     app.add_option("--value", value)->check(CLI::PositiveNumber);

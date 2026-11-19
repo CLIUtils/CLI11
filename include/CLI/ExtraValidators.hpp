@@ -72,6 +72,9 @@ class Bound : public Validator {
     /// Note that the constructor is templated, but the struct is not, so C++17 is not
     /// needed to provide nice syntax for Range(a,b).
     template <typename T> Bound(T min_val, T max_val) {
+        if(detail::is_nan(min_val) || detail::is_nan(max_val)) {
+            throw ValidationError("Bound endpoints must not be NaN");
+        }
         std::stringstream out;
         out << detail::type_name<T>() << " bounded to [" << min_val << " - " << max_val << "]";
         description(out.str());
@@ -82,6 +85,12 @@ class Bound : public Validator {
             bool converted = lexical_cast(input, val);
             if(!converted) {
                 return std::string("Value ") + input + " could not be converted";
+            }
+            if(detail::is_nan(val)) {
+                std::stringstream err;
+                err << "Value " << input << " cannot be bounded to [";
+                err << min_val << " - " << max_val << "]";
+                return err.str();
             }
             if(val < min_val)
                 input = detail::to_string(min_val);
