@@ -87,20 +87,24 @@ TEST_CASE_METHOD(TApp, "doubleVectorFunctionRunCallbackOnDefault", "[optiontype]
     CHECK(!opt->get_run_callback_for_default());
     opt->run_callback_for_default();
     opt->default_val(std::vector<int>{2, 1, -2});
+    CHECK(10.0 == res[0]);
+    args.clear();
+    run();
     CHECK(7.0 == res[0]);
     CHECK(3.0 == res[2]);
 
-    CHECK_THROWS_AS(opt->default_val("this is a string"), CLI::ConversionError);
-    auto vec = opt->as<std::vector<double>>();
-    REQUIRE(3U == vec.size());
-    CHECK(5.0 == vec[0]);
-    CHECK(7.0 == vec[2]);
+    CHECK_NOTHROW(opt->default_val("this is a string"));
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+    REQUIRE(3U == res.size());
+    CHECK(7.0 == res[0]);
+    CHECK(3.0 == res[2]);
 
 #if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
     (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
     opt->check(CLI::Number);
     opt->run_callback_for_default(false);
-    CHECK_THROWS_AS(opt->default_val("this is a string"), CLI::ValidationError);
+    CHECK_NOTHROW(opt->default_val("this is a string"));
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
 #endif
 }
 

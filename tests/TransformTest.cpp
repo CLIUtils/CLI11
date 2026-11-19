@@ -198,13 +198,131 @@ TEST_CASE_METHOD(TApp, "streamTransformCheck", "[transform]") {
         {"red", Color::kRed},   // User types "red"
         {"blue", Color::kBlue}  // User types "blue"
     };
-    Color color = Color::kRed;
+    Color color = Color::kBlue;
 
-    app.add_option("--color", color)
-        ->transform(CLI::CheckedTransformer(color_map, CLI::ignore_case))
-        ->default_val(Color::kRed);  // BUG: Validates "kRed" against {"red", "blue"}
+    auto *opt = app.add_option("--color", color)
+                    ->transform(CLI::CheckedTransformer(color_map, CLI::ignore_case))
+                    ->default_val(Color::kRed);
 
     CHECK_NOTHROW(app.parse(""));  // Should use default
+    CHECK(color == Color::kRed);
+
+    opt->default_val("blue");
+    CHECK_NOTHROW(run());
+    CHECK(color == Color::kBlue);
+
+    CHECK_NOTHROW(opt->default_val("unknown"));
+    args = {"--color", "red"};
+    CHECK_NOTHROW(run());
+    CHECK(color == Color::kRed);
+    args.clear();
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "defaultTransformRunsOnlyForUsedValue", "[transform]") {
+    const bool force = GENERATE(false, true);
+    const bool check_first = GENERATE(false, true);
+    int transforms{0};
+    int number{7};
+    auto *opt = app.add_option("-n", number)->force_callback(force);
+    if(check_first) {
+        opt->check(CLI::PositiveNumber);
+    }
+    opt->default_val(0)->transform([&transforms](const std::string &value) {
+        ++transforms;
+        return std::to_string(std::stoi(value) + 1);
+    });
+    if(!check_first) {
+        opt->check(CLI::PositiveNumber);
+    }
+    CHECK(transforms == 0);
+    CHECK_NOTHROW(run());
+    CHECK(number == 1);
+    CHECK(transforms == 1);
+    CHECK(opt->empty());
+    if(!force) {
+        CHECK(opt->as<int>() == 1);
+        CHECK(opt->as<int>() == 1);
+        CHECK(transforms == 1);
+    }
+
+    args = {"-n", "2"};
+    CHECK_NOTHROW(run());
+    CHECK(number == 3);
+    CHECK(transforms == 2);
+
+    args.clear();
+    CHECK_NOTHROW(run());
+    CHECK(number == 1);
+    CHECK(transforms == 3);
+}
+
+TEST_CASE_METHOD(TApp, "defaultAndInputShareValidationPipeline", "[transform]") {
+    bool using_default{true};
+    int number{7};
+    int transforms{0};
+    auto *opt = app.add_option("-n", number);
+    SECTION("default_val") { opt->default_val(2); }
+    SECTION("Forced default_val") { opt->default_val(2)->force_callback(); }
+    SECTION("Forced default_str") { opt->default_str("2")->force_callback(); }
+    opt->transform([&](const std::string &value) {
+        if(using_default) {
+            CHECK(opt->count() == 0);
+            CHECK(opt->results().empty());
+        } else {
+            CHECK(opt->count() == 1);
+            REQUIRE(opt->results().size() == 1);
+            CHECK(opt->results().front() == value);
+        }
+        ++transforms;
+        return std::to_string(std::stoi(value) + 1);
+    });
+    opt->check(CLI::PositiveNumber);
+
+    run();
+    CHECK(number == 3);
+    CHECK(transforms == 1);
+    CHECK(opt->empty());
+    CHECK(opt->as<int>() == 3);
+    CHECK(transforms == 1);
+
+    args = {"-n", "4"};
+    using_default = false;
+    run();
+    CHECK(number == 5);
+    CHECK(transforms == 2);
+    CHECK(opt->count() == 1);
+}
+
+TEST_CASE_METHOD(TApp, "defaultTransformStartsFromStoredValueAfterFailure", "[transform]") {
+    const bool force = GENERATE(false, true);
+    bool reject{true};
+    int transforms{0};
+    int number{7};
+    auto *opt = app.add_option("-n", number)->force_callback(force)->default_val(2);
+    opt->transform([&](const std::string &value) {
+        ++transforms;
+        return std::to_string(std::stoi(value) + 1);
+    });
+    opt->check([&](const std::string &) { return reject ? "rejected" : ""; });
+
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+    CHECK(transforms == 1);
+    CHECK(number == 7);
+    CHECK(opt->empty());
+
+    reject = false;
+    run();
+    CHECK(transforms == 2);
+    CHECK(number == 3);
+    CHECK(opt->as<int>() == 3);
+    CHECK(transforms == 2);
+
+    app.clear();
+    run();
+    CHECK(transforms == 3);
+    CHECK(number == 3);
+    CHECK(opt->empty());
 }
 
 #if defined(CLI11_HAS_STRING_VIEW)
