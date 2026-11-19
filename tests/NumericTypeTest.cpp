@@ -168,6 +168,8 @@ static const std::map<std::string, std::int64_t> testValuesInt{
     {"0O0", 0},
     {"0b0", 0},
     {"0B0", 0},
+    {" 0o755", 0755},
+    {"\t0b11010110", 0xD6},
     {"0755", 0755},
     {"995862_262", 995862262},
     {"995862262", 995862262},
@@ -251,6 +253,8 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0O755", 0755},
     {"0o+755", 0755},
     {"0o\t755", 0755},
+    {" 0o755", 0755},
+    {"\t0b11010110", 0xD6},
     {"0755", 0755},
     {"995862_262", 995862262},
     {"995862262", 995862262},
@@ -282,7 +286,8 @@ TEST_CASE_METHOD(TApp, "uintConversions", "[optiontype]") {
 }
 
 TEST_CASE_METHOD(TApp, "uintConversionsNegativeBasePrefix", "[optiontype]") {
-    const auto *input = GENERATE("-1", " -1", "0o-1", "0O-2", "0b-1", "0B-0", "0o\t-1", "0B -1", "0o-7_7", "0b-1'01");
+    const auto *input =
+        GENERATE("-1", " -1", "0o-1", "0O-2", "0b-1", "0B-0", "0o\t-1", "0B -1", "0o-7_7", "0b-1'01", " 0o-1");
     std::uint64_t val{42};
     app.add_option("--val", val);
 

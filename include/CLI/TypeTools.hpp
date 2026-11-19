@@ -1007,7 +1007,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         return integral_conversion(nstring, output);
     }
 
-    if(std::isspace(static_cast<unsigned char>(input.back()))) {
+    if(std::isspace(static_cast<unsigned char>(input.front())) ||
+       std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
     if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
@@ -1071,7 +1072,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
             }
         }
     }
-    if(std::isspace(static_cast<unsigned char>(input.back()))) {
+    if(std::isspace(static_cast<unsigned char>(input.front())) ||
+       std::isspace(static_cast<unsigned char>(input.back()))) {
         return integral_conversion(trim_copy(input), output);
     }
     if(input.compare(0, 2, "0o") == 0 || input.compare(0, 2, "0O") == 0) {
