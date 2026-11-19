@@ -106,7 +106,15 @@
 
 /** <codecvt> availability (the header is only included where it is used) */
 #ifndef CLI11_HAS_CODECVT
+#if defined CLI11_CPP17 && defined __has_include
+#if __has_include(<version>)
+#include <version>
+#endif
+#endif
 #if defined(CLI11_CPP26)
+#define CLI11_HAS_CODECVT 0
+// libc++ reports the wstring_convert deprecation inside its own header, where a pragma cannot silence it
+#elif defined(CLI11_CPP17) && defined(_LIBCPP_VERSION)
 #define CLI11_HAS_CODECVT 0
 #elif defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && __GNUC__ < 5
 #define CLI11_HAS_CODECVT 0
