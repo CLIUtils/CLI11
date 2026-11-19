@@ -70,7 +70,7 @@
 #endif
 #elif defined(__cpp_rtti)
 #define CLI11_USE_STATIC_RTTI 0
-#elif (defined(__GCC_RTTI) && __GXX_RTTI)
+#elif defined(__GXX_RTTI)
 #define CLI11_USE_STATIC_RTTI 0
 #else
 #define CLI11_USE_STATIC_RTTI 1
