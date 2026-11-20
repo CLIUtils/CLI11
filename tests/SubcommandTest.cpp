@@ -964,6 +964,88 @@ TEST_CASE_METHOD(TApp, "HelpForNestedSubcommandWithMissingParentPositional", "[s
     }
 }
 
+TEST_CASE_METHOD(TApp, "HelpForNestedSubcommandFollowsPath", "[subcom]") {
+    std::string id;
+    app.set_help_all_flag("--help-all");
+    auto *subc1 = app.add_subcommand("subc1");
+    subc1->add_option("ID", id)->required();
+    auto *subc2 = subc1->add_subcommand("subc2");
+    auto *subc3 = subc2->add_subcommand("subc3");
+
+    args = {"subc1", "subc2", "subc3", "--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
+    CHECK(subc1->get_option("ID")->count() == 0U);
+    CHECK(subc2->got_subcommand(subc3));
+
+    args = {"subc1", "subc2", "--help-all"};
+    CHECK_THROWS_AS(run(), CLI::CallForAllHelp);
+    CHECK(subc1->get_option("ID")->count() == 0U);
+    CHECK(subc1->got_subcommand(subc2));
+}
+
+TEST_CASE_METHOD(TApp, "HelpTokenAsValueKeepsParentPositional", "[subcom]") {
+    std::string id;
+    std::string name;
+    std::string opt;
+    auto *subc1 = app.add_subcommand("subc1");
+    subc1->add_option("ID", id)->required();
+    subc1->add_option("NAME", name);
+    subc1->add_option("--opt", opt);
+    auto *subc2 = subc1->add_subcommand("subc2");
+
+    args = {"subc1", "subc2", "--", "--help"};
+    run();
+    CHECK(id == "subc2");
+    CHECK(name == "--help");
+    CHECK_FALSE(subc1->got_subcommand(subc2));
+
+    args = {"subc1", "subc2", "--opt", "--help"};
+    run();
+    CHECK(id == "subc2");
+    CHECK(opt == "--help");
+    CHECK_FALSE(subc1->got_subcommand(subc2));
+}
+
+TEST_CASE_METHOD(TApp, "HelpNotOwnedBySubcommandKeepsParentPositional", "[subcom]") {
+    std::string id;
+    auto *subc1 = app.add_subcommand("subc1");
+    subc1->add_option("ID", id)->required();
+    auto *subc2 = subc1->add_subcommand("subc2");
+    subc2->set_help_flag();
+    subc2->add_subcommand("subc3");
+
+    args = {"subc1", "subc2", "--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
+    CHECK(subc1->get_option("ID")->count() == 1U);
+    CHECK_FALSE(subc1->got_subcommand(subc2));
+}
+
+TEST_CASE_METHOD(TApp, "HelpAfterPrefixCommandKeepsParentPositional", "[subcom]") {
+    std::string id;
+    app.add_option("ID", id)->required();
+    auto *runsub = app.add_subcommand("run")->prefix_command();
+
+    args = {"run", "prog", "--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
+    CHECK(app.get_option("ID")->count() == 1U);
+    CHECK_FALSE(app.got_subcommand(runsub));
+}
+
+TEST_CASE_METHOD(TApp, "HelpForSiblingSubcommandKeepsParentPositional", "[subcom]") {
+    std::string file;
+    int completed{0};
+    app.add_option("FILE", file)->required();
+    auto *suba = app.add_subcommand("a")->parse_complete_callback([&completed]() { ++completed; });
+    auto *subb = app.add_subcommand("b");
+
+    args = {"a", "b", "--help"};
+    CHECK_THROWS_AS(run(), CLI::CallForHelp);
+    CHECK(app.get_option("FILE")->count() == 1U);
+    CHECK(completed == 0);
+    CHECK_FALSE(app.got_subcommand(suba));
+    CHECK(app.got_subcommand(subb));
+}
+
 // from  https://github.com/CLIUtils/CLI11/issues/1002
 TEST_CASE_METHOD(TApp, "ForcedSubcommandExclude", "[subcom]") {
     auto *subcommand_1 = app.add_subcommand("sub_1");
