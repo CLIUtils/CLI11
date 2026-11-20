@@ -1224,7 +1224,9 @@ option_groups. These are:
 >
 > If you have a fixed number of required positional options, that will match
 > before subcommand names. `{}` is an empty filter function, and any positional
-> argument will match before repeated subcommand names.
+> argument will match before repeated subcommand names. The exception is a
+> subcommand name, or a chain of nested subcommand names, directly followed by
+> the help flag of that subcommand: this shows the help of the subcommand.
 
 #### Callbacks
 

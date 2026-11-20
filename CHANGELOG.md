@@ -24,8 +24,12 @@
   or long name collided and which existing option owns it (instead of only
   appending "is already added"). Fixes [#284][].
 
+- `app subc1 subc2 --help` shows the help of the nested `subc2` when `subc1` has
+  a required positional that is not filled. Fixes [#1450][].
+
 [#1168]: https://github.com/CLIUtils/CLI11/issues/1168
 [#284]: https://github.com/CLIUtils/CLI11/issues/284
+[#1450]: https://github.com/CLIUtils/CLI11/issues/1450
 
 ## Version 2.7.2: Faster compiles
 

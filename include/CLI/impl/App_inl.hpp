@@ -2193,11 +2193,25 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
 }
 
 CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
-    if(_count_remaining_positionals(/* required */ true) > 0) {
-        _parse_positional(args, false);
-        return true;
-    }
     auto *com = _find_subcommand(args.back(), true, true);
+    if(_count_remaining_positionals(/* required */ true) > 0) {
+        // Arguments are in reverse order. Follow the subcommand names; a help flag directly after them selects the
+        // subcommand and not the positional.
+        bool descendant_help_requested{false};
+        const App *sub = com;
+        for(auto arg = args.rbegin() + 1; sub != nullptr && arg != args.rend(); ++arg) {
+            if((sub->help_ptr_ != nullptr && sub->help_ptr_->check_name(*arg)) ||
+               (sub->help_all_ptr_ != nullptr && sub->help_all_ptr_->check_name(*arg))) {
+                descendant_help_requested = true;
+                break;
+            }
+            sub = sub->_find_subcommand(*arg, true, true);
+        }
+        if(!descendant_help_requested) {
+            _parse_positional(args, false);
+            return true;
+        }
+    }
     if(com == nullptr) {
         // the main way to get here is using .notation
         auto dotloc = args.back().find_first_of('.');
