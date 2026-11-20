@@ -239,6 +239,26 @@ TEST_CASE_METHOD(TApp, "uintConversionsEmptyBasePrefix", "[optiontype]") {
     CHECK_THROWS_AS(run(), CLI::ConversionError);
 }
 
+TEST_CASE_METHOD(TApp, "intConversionsNonDigitAfterBasePrefix", "[optiontype]") {
+    const auto *input = GENERATE(
+        "0o 17", "0o\t17", "0b\n101", "+0o 17", "-0o 17", "0o +17", "0o -17", "0o+17", "0o-17", "0b-101", "-0o+17");
+    std::int64_t val{42};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
+TEST_CASE_METHOD(TApp, "uintConversionsNonDigitAfterBasePrefix", "[optiontype]") {
+    const auto *input =
+        GENERATE("0o 17", "0o\t755", "0B 11010110", "+0o 17", "+0b 101", "0o +17", "0o+755", "0b+11010110", "+0o+17");
+    std::uint64_t val{42};
+    app.add_option("--val", val);
+
+    args = {"--val", input};
+    CHECK_THROWS_AS(run(), CLI::ConversionError);
+}
+
 static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"+99", 99},
     {"99", 99},
@@ -257,8 +277,6 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0B0", 0},
     {"0o755\t", 0755},
     {"0O755", 0755},
-    {"0o+755", 0755},
-    {"0o\t755", 0755},
     {" 0o755", 0755},
     {"\t0b11010110", 0xD6},
     {"0755", 0755},
@@ -272,8 +290,6 @@ static const std::map<std::string, std::uint64_t> testValuesUInt{
     {"0b1101'0110                                                       ", 0xD6},
     {"0B11010110", 0xD6},
     {"0B1101'0110", 0xD6},
-    {"0b+11010110", 0xD6},
-    {"0B 11010110", 0xD6},
     {"+0o755", 0755},
     {"+0b11010110", 0xD6},
     {"1_2_3_4_5", 12345},

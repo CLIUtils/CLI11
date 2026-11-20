@@ -973,11 +973,8 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     }
     // a + may come before the 0o and 0b prefixes, the same as for 0x
     const std::size_t sign_size = (input[0] == '+') ? 1U : 0U;
-    // strtoull skips leading whitespace and silently wraps a negative value. Check the actual numeric
-    // payload, including when an explicit octal or binary prefix is removed before conversion.
-    const bool has_base_prefix = input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0 ||
-                                 input.compare(sign_size, 2, "0b") == 0 || input.compare(sign_size, 2, "0B") == 0;
-    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r", has_base_prefix ? sign_size + 2 : 0);
+    // strtoull skips leading whitespace and silently wraps a negative value
+    auto first_non_ws = input.find_first_not_of(" \t\n\v\f\r");
     if(first_non_ws != std::string::npos && input[first_non_ws] == '-') {
         return false;
     }
@@ -1014,6 +1011,9 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         return integral_conversion(trim_copy(input), output);
     }
     if(input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0) {
+        if(!std::isdigit(static_cast<unsigned char>(input[sign_size + 2]))) {
+            return false;
+        }
         val = nullptr;
         errno = 0;
         output_ll = std::strtoull(input.c_str() + sign_size + 2, &val, 8);
@@ -1025,6 +1025,9 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
                 static_cast<std::uint64_t>(output) == output_ll);
     }
     if(input.compare(sign_size, 2, "0b") == 0 || input.compare(sign_size, 2, "0B") == 0) {
+        if(!std::isdigit(static_cast<unsigned char>(input[sign_size + 2]))) {
+            return false;
+        }
         // LCOV_EXCL_START
         // In some new compilers including the coverage testing one binary strings are handled properly in strtoull
         // automatically so this coverage is missing but is well tested in other compilers
@@ -1081,6 +1084,9 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
     // a sign may come before the 0o and 0b prefixes, the same as for 0x
     const std::size_t sign_size = (input[0] == '-' || input[0] == '+') ? 1U : 0U;
     if(input.compare(sign_size, 2, "0o") == 0 || input.compare(sign_size, 2, "0O") == 0) {
+        if(!std::isdigit(static_cast<unsigned char>(input[sign_size + 2]))) {
+            return false;
+        }
         const std::string digits = input.substr(0, sign_size) + input.substr(sign_size + 2);
         val = nullptr;
         errno = 0;
@@ -1096,6 +1102,9 @@ bool integral_conversion(const std::string &input, T &output) noexcept {
         // LCOV_EXCL_START
         // In some new compilers including the coverage testing one binary strings are handled properly in strtoll
         // automatically so this coverage is missing but is well tested in other compilers
+        if(!std::isdigit(static_cast<unsigned char>(input[sign_size + 2]))) {
+            return false;
+        }
         const std::string digits = input.substr(0, sign_size) + input.substr(sign_size + 2);
         val = nullptr;
         errno = 0;
