@@ -1640,6 +1640,10 @@ CLI11_INLINE void App::_process_requirements() {
             throw(CLI::RequiredError(sub->get_display_name()));
         }
     }
+
+    if (require_callback_) {
+        require_callback_();
+    }
 }
 
 CLI11_INLINE void App::_process() {
