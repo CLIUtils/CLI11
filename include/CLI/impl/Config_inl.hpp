@@ -462,7 +462,7 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             bool mlquote =
                 (item.compare(0, 3, multiline_literal_quote) == 0 || item.compare(0, 3, multiline_string_quote) == 0);
             if(!mlquote && comment_pos != std::string::npos) {
-                auto citems = detail::split_up(item, commentChar);
+                auto citems = detail::split_up(item, commentChar, true);
                 item = detail::trim_copy(citems.front());
             }
             if(mlquote) {
@@ -539,19 +539,52 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                 items_buffer = {item};
             } else {
                 if(!item.empty() && item.front() == aStart) {
-                    for(std::string multiline; item.back() != aEnd && std::getline(input, multiline);) {
-                        detail::trim(multiline);
+                    std::size_t scanPos{1};
+                    bool lineExtension{false};
+                    auto mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
+                    for(std::string multiline;;) {
+                        if(mlOpen == std::string::npos) {
+                            lineExtension = false;
+                            detail::rtrim(item);
+                            scanPos = (std::min)(scanPos, item.size());
+                            if(item.back() == aEnd) {
+                                break;
+                            }
+                        } else if(item[mlOpen] == '\"' && detail::remove_line_continuation(item)) {
+                            lineExtension = true;
+                        }
+                        if(!std::getline(input, multiline)) {
+                            break;
+                        }
+                        if(mlOpen == std::string::npos) {
+                            detail::trim(multiline);
+                        } else {
+                            // the line is in a multiline string element
+                            if(!multiline.empty() && multiline.back() == '\r') {
+                                multiline.pop_back();
+                            }
+                            if(lineExtension) {
+                                detail::ltrim(multiline);
+                                if(multiline.empty()) {
+                                    continue;
+                                }
+                                lineExtension = false;
+                            } else if(item.size() > mlOpen + 3) {
+                                item.push_back('\n');
+                            }
+                        }
                         item += multiline;
+                        mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
                     }
                     if(item.back() == aEnd) {
-                        items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep);
+                        items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep, true);
                     } else {
-                        items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep);
+                        items_buffer = detail::split_up(item.substr(1, std::string::npos), aSep, true);
                     }
                 } else if((isDefaultArray || isINIArray) && item.find_first_of(aSep) != std::string::npos) {
-                    items_buffer = detail::split_up(item, aSep);
+                    items_buffer = detail::split_up(item, aSep, true);
                 } else if((isDefaultArray || isINIArray) && item.find_first_of(' ') != std::string::npos) {
-                    items_buffer = detail::split_up(item, '\0');
+                    items_buffer = detail::split_up(item, '\0', true);
                 } else {
                     items_buffer = {item};
                 }
@@ -567,6 +600,7 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                             if(basic) {
                                 it = detail::remove_escaped_characters(it);
                             }
+                            detail::handle_secondary_array(it);
                         } else {
                             detail::process_quoted_string(it, stringQuote, literalQuote);
                         }

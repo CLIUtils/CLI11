@@ -221,15 +221,22 @@ template <typename Callable> inline std::string find_and_modify(std::string str,
 /// close a sequence of characters indicated by a closure character.  Brackets allows sub sequences
 /// recognized bracket sequences include double quote, single quote, backquote, [, (, <, and {; other closure
 /// characters are assumed to be literal strings
-CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char);
+CLI11_INLINE std::size_t
+close_sequence(const std::string &str, std::size_t start, char closure_char, bool multiline_quotes = false);
 
 /// find the next unescaped closing triple quote at or after start, returning the index of its last quote. The content
 /// can end with up to two quote characters. Returns str.size() if not found.
 CLI11_INLINE std::size_t close_multiline_quote(const std::string &str, std::size_t start, char quote);
 
+/// Find a triple quoted array element that is not closed
+/// pos is the start of the scan; updated to the start of the first element that is not complete
+/// Returns the index of the open triple quote, or npos
+CLI11_INLINE std::size_t find_open_multiline_quote(const std::string &str, std::size_t &pos, char separator);
+
 /// Split a string '"one two" "three"' into 'one two', 'three'
 /// Quote characters can be backquote, ' or " or bracket characters [{(< with matching to the matching bracket
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0');
+/// If multiline_quotes is set, a triple quoted string is one sequence
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter = '\0', bool multiline_quotes = false);
 
 /// get the value of an environmental variable or empty string if empty
 CLI11_INLINE std::string get_environment_value(const std::string &env_name);

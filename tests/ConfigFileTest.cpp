@@ -558,6 +558,44 @@ TEST_CASE("StringBased: TomlMultiLineStringArray", "[config]") {
     CHECK(output.at(0).inputs == std::vector<std::string>{"\"a\"", "\"b\"", "c\td", "e"});
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringArrayLines", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"a\\\n\n  bc\"\"\", \"c\"]\n";
+    input << "w = [\"\"\"a\nb\"\"\", '''x]\n y''', \"d\"]\n";
+    input << "x = [\"\"\"\r\na\"\"\",\r\n  \"e\"]\r\n";
+    input << "y = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 4u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"abc", "c"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"a\nb", "x]\n y", "d"});
+    CHECK(output.at(2).inputs == std::vector<std::string>{"a", "e"});
+    CHECK(output.at(3).inputs == std::vector<std::string>{"1"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArrayComment", "[config]") {
+    std::stringstream input;
+    input << "v = ['''it's''', 'ok'] # note\n";
+    input << "w = [\"\"\"a\"b\"\"\", \"ok\"] # note\n";
+    input << "x = [2]\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 3u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"it's", "ok"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"a\"b", "ok"});
+    CHECK(output.at(2).inputs == std::vector<std::string>{"2"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArrayBrackets", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"[a,b]\"\"\", \"c\"]\n";
+    input << "w = [\"[a,b]\", \"c\"]\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == output.at(1).inputs);
+}
+
 TEST_CASE("StringBased: TomlInvalidEscape", "[config]") {
     const auto value = GENERATE(std::string("\"a\\q\""), std::string("[\"\"\"a\\q\"\"\"]"));
     INFO("value: " << value);
