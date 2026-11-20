@@ -1514,6 +1514,29 @@ CLI11_INLINE void App::_process_help_flags(CallbackPriority priority, bool trigg
     }
 }
 
+CLI11_NODISCARD CLI11_INLINE std::string App::_qualified_option_name(const Option *opt) {
+    // get_name() is empty for a hidden option
+    const auto &lnames = opt->get_lnames();
+    const auto &snames = opt->get_snames();
+    std::string name = !lnames.empty() ? "--" + lnames[0] : !snames.empty() ? "-" + snames[0] : opt->get_name(true);
+
+    // option groups have no name, and the root name is not part of an argument
+    std::vector<std::string> subcommands;
+    for(const App *app = opt->parent_; app != nullptr && app->parent_ != nullptr; app = app->parent_) {
+        if(!app->name_.empty()) {
+            subcommands.insert(subcommands.begin(), app->name_);
+        }
+    }
+    if(subcommands.empty()) {
+        return name;
+    }
+    // dot notation reads a one character name as a short option, so it is only correct for long names
+    if(!lnames.empty() && lnames[0].size() > 1) {
+        return "--" + detail::join(subcommands, ".") + "." + lnames[0];
+    }
+    return detail::join(subcommands, " ") + ": " + name;
+}
+
 CLI11_INLINE void App::_process_requirements() {
     // check excludes
     bool excluded{false};
@@ -1521,7 +1544,7 @@ CLI11_INLINE void App::_process_requirements() {
     for(const auto &opt : exclude_options_) {
         if(opt->count() > 0) {
             excluded = true;
-            excluder = opt->get_name();
+            excluder = _qualified_option_name(opt);
         }
     }
     for(const auto &subc : exclude_subcommands_) {
@@ -1544,7 +1567,7 @@ CLI11_INLINE void App::_process_requirements() {
     for(const auto &opt : need_options_) {
         if(opt->count() == 0) {
             missing_needed = true;
-            missing_need = opt->get_name();
+            missing_need = _qualified_option_name(opt);
         }
     }
     for(const auto &subc : need_subcommands_) {
@@ -1569,21 +1592,16 @@ CLI11_INLINE void App::_process_requirements() {
         }
         // Required but empty
         if(opt->get_required() && opt->count() == 0) {
-            std::string missing_option = opt->get_name();
-
-            if(parent_ != nullptr && !name_.empty()) {
-                missing_option = "--" + name_ + "." + detail::trim_copy(missing_option, "-");
-            }
-            throw RequiredError(missing_option);
+            throw RequiredError(_qualified_option_name(opt.get()));
         }
         // Requires
         for(const Option *opt_req : opt->needs_)
             if(opt->count() > 0 && opt_req->count() == 0)
-                throw RequiresError(opt->get_name(), opt_req->get_name());
+                throw RequiresError(_qualified_option_name(opt.get()), _qualified_option_name(opt_req));
         // Excludes
         for(const Option *opt_ex : opt->excludes_)
             if(opt->count() > 0 && opt_ex->count() != 0)
-                throw ExcludesError(opt->get_name(), opt_ex->get_name());
+                throw ExcludesError(_qualified_option_name(opt.get()), _qualified_option_name(opt_ex));
     }
     // check for the required number of subcommands
     if(require_subcommand_min_ > 0) {

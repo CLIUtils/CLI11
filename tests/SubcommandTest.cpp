@@ -2527,3 +2527,85 @@ TEST_CASE_METHOD(TApp, "subcommandEnvironmentName", "[subcom]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
     unset_env("SOME_FILE");
 }
+
+// #536: errors name the subcommand that owns the option
+TEST_CASE_METHOD(TApp, "QualifiedOptionNameInErrors", "[subcom]") {
+    auto message = [this]() -> std::string {
+        try {
+            run();
+        } catch(const CLI::ParseError &e) {
+            return e.what();
+        }
+        return "no error";
+    };
+    std::string val;
+    auto *sub = app.add_subcommand("sub");
+    args = {"sub"};
+
+    SECTION("long") {
+        sub->add_option("--value", val)->required();
+        CHECK(message() == "--sub.value is required");
+    }
+    SECTION("command line form is valid") {
+        sub->add_option("--value", val)->required();
+        args = {"--sub.value", "x"};
+        CHECK(message() == "no error");
+        CHECK(val == "x");
+    }
+    SECTION("positional") {
+        sub->add_option("file", val)->required();
+        CHECK(message() == "sub: file is required");
+    }
+    SECTION("short only") {
+        sub->add_option("-v", val)->required();
+        CHECK(message() == "sub: -v is required");
+    }
+    SECTION("single character long") {
+        sub->add_option("--v", val)->required();
+        CHECK(message() == "sub: --v is required");
+    }
+    SECTION("trailing dash") {
+        sub->add_option("--no-", val)->required();
+        CHECK(message() == "--sub.no- is required");
+    }
+    SECTION("hidden") {
+        sub->add_option("--secret", val)->required()->group("");
+        CHECK(message() == "--sub.secret is required");
+    }
+    SECTION("hidden at root") {
+        app.add_option("--secret", val)->required()->group("");
+        args = {};
+        CHECK(message() == "--secret is required");
+    }
+    SECTION("nested") {
+        auto *subsub = sub->add_subcommand("subsub");
+        args = {"sub", "subsub"};
+        SECTION("long") {
+            subsub->add_option("--value", val)->required();
+            CHECK(message() == "--sub.subsub.value is required");
+        }
+        SECTION("short") {
+            subsub->add_option("-v", val)->required();
+            CHECK(message() == "sub subsub: -v is required");
+        }
+    }
+    SECTION("option group") {
+        auto *group = sub->add_option_group("group");
+        group->add_option("--value", val)->required();
+        CHECK(message() == "--sub.value is required");
+    }
+    SECTION("needs") {
+        std::string other;
+        auto *opt_b = sub->add_option("--bb", other);
+        sub->add_option("--aa", val)->needs(opt_b);
+        args = {"sub", "--aa", "1"};
+        CHECK(message() == "--sub.aa requires --sub.bb");
+    }
+    SECTION("excludes") {
+        std::string other;
+        auto *opt_b = sub->add_option("--bb", other);
+        sub->add_option("--aa", val)->excludes(opt_b);
+        args = {"sub", "--aa", "1", "--bb", "2"};
+        CHECK(message() == "--sub.bb excludes --sub.aa");
+    }
+}
