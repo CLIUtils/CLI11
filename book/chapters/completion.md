@@ -54,8 +54,11 @@ No extra code is needed for any of this:
 - Positionals, from the same two sources.
 
 Names are matched the way the parser matches them, so `ignore_case` and
-`ignore_underscore` apply. Nameless option groups and nameless subcommands are
-searched too, because a parse reaches through them.
+`ignore_underscore` apply, and so do the filters given to `CLI::IsMember` and
+the transformers. Nameless option groups and nameless subcommands are searched
+too, because a parse reaches through them, and a `fallthrough` subcommand also
+offers the options of its parent. An option or subcommand hidden from help with
+an empty group is not offered.
 
 ## Values the validators do not describe
 

@@ -841,6 +841,9 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
+    /// Get the completion choices, and the Validator metadata they came from when there are any
+    CLI11_NODISCARD std::vector<std::string> _completion_choices(std::shared_ptr<const CompletionMeta> &source) const;
+
     /// Run the results through the Validators
     void _validate_results(results_t &res) const;
 

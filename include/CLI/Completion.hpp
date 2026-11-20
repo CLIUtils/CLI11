@@ -79,6 +79,10 @@ struct CompletionMeta {
     /// Read at completion time rather than stored as a list, because a validator may hold a reference to a set the
     /// program fills in after construction.
     std::function<std::vector<std::string>()> choices{};
+
+    /// The normalisations the validator applies before it compares, such as `ignore_case`. Text typed so far matches
+    /// a choice when it is a prefix of it as written or after any one of these has been applied to both.
+    std::vector<std::function<std::string(std::string)>> filters{};  // cppcheck-suppress unusedStructMember
 };
 
 /// A single thing the shell may insert on the command line.

@@ -161,6 +161,50 @@ run 30 1 "start  (Get going) stop   (Do you really want...)" "st"
 expect_wide 2 $'add     (Add a remote) remove  (Drop a remote) rm      (Drop a remote) sync    (Push\tand pull)' \
     "remote" ""
 
+# A user can take `:` out of COMP_WORDBREAKS. Readline then replaces the whole word, so the candidates stay whole.
+saved_breaks=${COMP_WORDBREAKS}
+COMP_WORDBREAKS=${COMP_WORDBREAKS//:/}
+expect 2 "alpine:3.19 alpine:3.20" "--image" "alpine:"
+expect 3 "alpine:3.19 alpine:3.20" "--image" "=" "alpine:"
+COMP_WORDBREAKS=${COMP_WORDBREAKS//=/}
+expect 1 "--level=fast" "--level=f"
+expect 1 "--image=alpine:3.19 --image=alpine:3.20" "--image=alpine:"
+COMP_WORDBREAKS=${saved_breaks}
+
+# The command word arrives as typed, so the script has to expand it as the shell would before it can run it
+real=${prog}
+saved_home=${HOME-}
+HOME=$(dirname "${real}")
+prog="~/$(basename "${real}")"
+expect 1 "start" "sta"
+HOME=${saved_home}
+prog="\"${real}\""
+expect 1 "start" "sta"
+prog="'${real}'"
+expect 1 "start" "sta"
+prog=${real/completion/comp\\letion}
+expect 1 "start" "sta"
+# but a word that would run a command is not expanded
+canary="${TMPDIR:-/tmp}/cli11_completion_canary_$$"
+prog="\$(touch ${canary})"
+expect 1 "" "sta"
+if [[ -e ${canary} ]]; then
+    rm -f "${canary}"
+    echo "FAIL: the command word was executed during expansion" >&2
+    exit 1
+fi
+# An alias that only renames the program is followed. bash 3.2 has no BASH_ALIASES to read it from.
+if (( BASH_VERSINFO[0] >= 4 )); then
+    shopt -s expand_aliases
+    alias cli11_completion_alias="${real}"
+    prog=cli11_completion_alias
+    expect 1 "start" "sta"
+    alias cli11_completion_alias="${real} --verbose"
+    expect 1 "" "sta"
+    unalias cli11_completion_alias
+fi
+prog=${real}
+
 # A script that outlived the binary it was generated against asks for a version the binary does not know, and is
 # answered with the Error directive alone
 reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 "$prog" "")

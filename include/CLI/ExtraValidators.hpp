@@ -150,6 +150,16 @@ template <typename T> std::vector<std::string> generate_completion_choices(const
     return out;
 }
 
+/// Wrap the filter function of a set validator so that completion can apply it to text
+template <typename Item> std::function<std::string(std::string)> completion_filter(std::function<Item(Item)> filter) {
+    return [filter](std::string text) {
+        Item item;
+        if(!lexical_cast(text, item))
+            return text;
+        return detail::to_string(filter(item));
+    };
+}
+
 /// Generate a string representation of a map
 template <typename T> std::string generate_map(const T &map, bool key_only = false) {
     using element_t = typename detail::element_type<T>::type;
@@ -260,6 +270,8 @@ class IsMember : public Validator {
         meta->choices = [shared_set]() {
             return detail::generate_completion_choices(detail::smart_deref(*shared_set));
         };
+        if(filter_fn)
+            meta->filters.push_back(detail::completion_filter<local_item_t>(filter_fn));
         completion_meta_ = meta;
 
         // This is the function that validates
@@ -341,6 +353,8 @@ class Transformer : public Validator {
         meta->choices = [shared_mapping]() {
             return detail::generate_completion_choices(detail::smart_deref(*shared_mapping));
         };
+        if(filter_fn)
+            meta->filters.push_back(detail::completion_filter<local_item_t>(filter_fn));
         completion_meta_ = meta;
 
         func_ = [shared_mapping, filter_fn](std::string &input) {
@@ -424,6 +438,8 @@ class CheckedTransformer : public Validator {
         meta->choices = [shared_mapping]() {
             return detail::generate_completion_choices(detail::smart_deref(*shared_mapping));
         };
+        if(filter_fn)
+            meta->filters.push_back(detail::completion_filter<local_item_t>(filter_fn));
         completion_meta_ = meta;
 
         func_ = [shared_mapping, tfunc, filter_fn](std::string &input) {

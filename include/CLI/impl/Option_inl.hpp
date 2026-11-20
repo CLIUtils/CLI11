@@ -202,6 +202,12 @@ CLI11_INLINE Option *Option::completion_hint(CompletionHint hint) {
 }
 
 CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices() const {
+    std::shared_ptr<const CompletionMeta> source;
+    return _completion_choices(source);
+}
+
+CLI11_NODISCARD CLI11_INLINE std::vector<std::string>
+Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source) const {
     // A declared hint replaces what the Validators had to say rather than joining it: the two answer the same
     // question, and a program that says "this is a file name" does not also want a stale list offered beside it
     if(completion_hint_ != CompletionHint::None)
@@ -232,8 +238,10 @@ CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_cho
     for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
         if(meta && meta->choices) {
             std::vector<std::string> choices = meta->choices();
-            if(!choices.empty())
+            if(!choices.empty()) {
+                source = meta;
                 return choices;
+            }
         }
     }
     return {};

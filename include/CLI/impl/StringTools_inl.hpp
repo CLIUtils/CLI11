@@ -662,7 +662,8 @@ CLI11_INLINE std::string get_environment_value(const std::string &env_name) {
 }
 
 CLI11_INLINE void unset_environment_value(const std::string &env_name) {
-#ifdef _MSC_VER
+#ifdef _WIN32
+    // Not _MSC_VER: MinGW has no unsetenv either
     // Assigning an empty value is how the Windows CRT deletes a variable
     _putenv_s(env_name.c_str(), "");
 #else

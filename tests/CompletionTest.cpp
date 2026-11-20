@@ -1334,7 +1334,7 @@ TEST_CASE("Completion: the bash script is filled in for the program", "[completi
     // The function is named after the program, sanitized into something a shell will accept
     CHECK(script.find("\n_cli11_complete_my_prog_exe() {\n") != std::string::npos);
     // and the same name has to be the one registered, against the unsanitized program name
-    CHECK(script.find("\ncomplete -o default -F _cli11_complete_my_prog_exe my-prog.exe\n") != std::string::npos);
+    CHECK(script.find("\ncomplete -o default -F _cli11_complete_my_prog_exe 'my-prog.exe'\n") != std::string::npos);
 
     CHECK(script.find("@FUNCTION@") == std::string::npos);
     CHECK(script.find("@PROGRAM@") == std::string::npos);
@@ -1354,4 +1354,118 @@ TEST_CASE("Completion: the script asks for the configured environment variable",
 
 TEST_CASE("Completion: the script function name survives an awkward program name", "[completion]") {
     CHECK(CLI::detail::completion_script_identifier("my-prog.exe") == "my_prog_exe");
+}
+
+TEST_CASE("Completion: a marker after an option that is full starts positional-only mode", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--verbose");
+    std::string level;
+    app.add_option("--level", level);
+    std::string first;
+    app.add_option("first", first)->check(CLI::IsMember({"--vvv", "other"}));
+
+    // `--level` takes one value, so a parse does not consume the marker with it
+    CHECK(complete(app, {"--level", "fast", "--", "--v"}, "4") == "--vvv\n:6\n");
+    CHECK(complete(app, {"--level=fast", "--", "--v"}, "3") == "--vvv\n:6\n");
+}
+
+TEST_CASE("Completion: the script is registered for the basename of the program", "[completion]") {
+    CLI::App app{"program", "/usr/local/bin/my-prog"};
+    const std::string script = app.get_completion_script("bash");
+    CHECK(script.find("\ncomplete -o default -F _cli11_complete_my_prog 'my-prog'\n") != std::string::npos);
+
+    CLI::App windows{"program", "C:\\tools\\my-prog.exe"};
+    CHECK(windows.get_completion_script("bash").find(" 'my-prog.exe'\n") != std::string::npos);
+
+    CLI::App quoted{"program", "it's"};
+    CHECK(quoted.get_completion_script("bash").find(" 'it'\\''s'\n") != std::string::npos);
+
+    CLI::App nameless{"program"};
+    CHECK_THROWS_AS(nameless.get_completion_script("bash"), CLI::ValidationError);
+    CLI::App directory{"program", "bin/"};
+    CHECK_THROWS_AS(directory.get_completion_script("bash"), CLI::ValidationError);
+}
+
+TEST_CASE("Completion: what is hidden from help is not offered", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--shown");
+    std::string secret;
+    app.add_option("--secret", secret)->group("")->check(CLI::IsMember({"a", "b"}));
+    app.add_subcommand("visible", "");
+    auto *internal = app.add_subcommand("internal", "");
+    // Before the group is set, which a later subcommand would inherit
+    internal->add_subcommand("inner", "");
+    internal->group("");
+
+    CHECK(complete(app, {"--"}, "1") == "--shown\n:2\n");
+    CHECK(complete(app, {""}, "1") == "visible\n:2\n");
+    // A hidden name still parses, so what follows it is still completed
+    CHECK(complete(app, {"--secret", ""}, "2") == "a\nb\n:6\n");
+    CHECK(complete(app, {"internal", ""}, "2") == "inner\n:2\n");
+}
+
+TEST_CASE("Completion: a negative number is a positional value", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    int first{0};
+    app.add_option("first", first);
+    std::string second;
+    app.add_option("second", second)->check(CLI::IsMember({"one", "two"}));
+
+    CHECK(complete(app, {"5", ""}, "2") == "one\ntwo\n:6\n");
+    CHECK(complete(app, {"-5", ""}, "2") == "one\ntwo\n:6\n");
+    CHECK(complete(app, {"-.5", ""}, "2") == "one\ntwo\n:6\n");
+
+    // Where the digit is an option name, the word is that option
+    app.add_flag("-5");
+    CHECK(complete(app, {"-5", "x", ""}, "3") == "one\ntwo\n:6\n");
+}
+
+TEST_CASE("Completion: a value is matched through the filters of its validator", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level", level)->check(CLI::IsMember({"Fast", "Slow_Down"}, CLI::ignore_case));
+    std::string mode;
+    app.add_option("--mode", mode)
+        ->check(CLI::IsMember({"Fast", "Slow_Down"}, CLI::ignore_case, CLI::ignore_underscore));
+    std::string exact;
+    app.add_option("--exact", exact)->check(CLI::IsMember({"Fast", "Slow"}));
+    int number{0};
+    app.add_option("--number", number)
+        ->transform(CLI::CheckedTransformer(std::map<std::string, int>{{"One", 1}, {"Two", 2}}, CLI::ignore_case));
+    std::string both;
+    app.add_option("--both", both)
+        ->check(CLI::IsMember({"Fast", "Slow"}, CLI::ignore_case) & CLI::IsMember({"Fast", "Other"}));
+
+    CHECK(complete(app, {"--level", "f"}, "2") == "Fast\n:6\n");
+    CHECK(complete(app, {"--level", "slowd"}, "2") == ":6\n");
+    CHECK(complete(app, {"--mode", "slowd"}, "2") == "Slow_Down\n:6\n");
+    CHECK(complete(app, {"--level=s"}, "1") == "--level=Slow_Down\n:prefix=--level=\n:6\n");
+    CHECK(complete(app, {"--exact", "f"}, "2") == ":6\n");
+    CHECK(complete(app, {"--number", "t"}, "2") == "Two\n:6\n");
+    CHECK(complete(app, {"--both", "f"}, "2") == "Fast\n:6\n");
+}
+
+TEST_CASE("Completion: a fallthrough subcommand offers the options of its parent", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_windows_style_options();
+    std::string level;
+    app.add_option("--level", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_flag("--shared");
+    auto *sub = app.add_subcommand("sub", "")->fallthrough();
+    sub->allow_windows_style_options();
+    sub->add_flag("--own");
+    // The subcommand's own option hides the parent's one of the same name
+    sub->add_flag("--shared");
+    auto *plain = app.add_subcommand("plain", "");
+    plain->add_flag("--own");
+
+    CHECK(complete(app, {"sub", "--"}, "2") == "--own\n--shared\n--level\n:2\n");
+    CHECK(complete(app, {"sub", "--level", ""}, "3") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"sub", "/level", ""}, "3") == "fast\nslow\n:6\n");
+    CHECK(complete(app, {"plain", "--"}, "2") == "--own\n:2\n");
 }

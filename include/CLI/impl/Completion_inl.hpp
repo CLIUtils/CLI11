@@ -62,6 +62,9 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
         return lhs;
 
     auto meta = std::make_shared<CompletionMeta>();
+    // A candidate is a listed spelling whichever filter the typed text reached it through, so all of them apply
+    meta->filters = lhs->filters;
+    meta->filters.insert(meta->filters.end(), rhs->filters.begin(), rhs->filters.end());
     // There is no intersecting "a file" with "a directory", so the left one wins. `ExistingFile & size_check`
     // should still complete files, and that is the way round the combination is usually written
     meta->hint = (lhs->hint != CompletionHint::None) ? lhs->hint : rhs->hint;
@@ -92,6 +95,8 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
         return lhs;
 
     auto meta = std::make_shared<CompletionMeta>();
+    meta->filters = lhs->filters;
+    meta->filters.insert(meta->filters.end(), rhs->filters.begin(), rhs->filters.end());
     // A hint stands for a set of values too large to write down, so a union with one is still that hint
     meta->hint = (lhs->hint != CompletionHint::None) ? lhs->hint : rhs->hint;
     if(!lhs->choices || !rhs->choices) {
@@ -231,12 +236,20 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     # `--file=/et` arrives as the three words `--file`, `=`, `/et`. Rejoin them into the arguments the program would
     # have received, and move the cursor index with them. Spaces around a break character are not recoverable, so
     # `a : b` reads as `a:b`; an empty word is what bash sends for a cursor past a space, so it still starts a word.
+    # A user can take either character out of COMP_WORDBREAKS, and then it is part of a word like any other.
+    local breaks=""
+    if [[ ${COMP_WORDBREAKS-} == *"="* ]]; then
+        breaks+="="
+    fi
+    if [[ ${COMP_WORDBREAKS-} == *":"* ]]; then
+        breaks+=":"
+    fi
     local -a words=()
     local cword=0 count=0 word glue="" is_break
     for (( ii = 0; ii < ${#raw[@]}; ii++ )); do
         word=${raw[ii]}
         is_break=""
-        if [[ -n ${word} && -z ${word//[=:]/} ]]; then
+        if [[ -n ${word} && -n ${breaks} && -z ${word//[${breaks}]/} ]]; then
             is_break=1
         fi
         # Never into word 0: gluing onto the program name would invoke something that does not exist
@@ -255,7 +268,28 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     # Readline puts back only the part of the word that follows the last break character in it, so a whole-token
     # candidate has to be trimmed down to that much before it is handed over.
     word=${words[cword]-}
-    local head=${word%"${word##*[=:]}"}
+    local head=""
+    if [[ -n ${breaks} ]]; then
+        head=${word%"${word##*[${breaks}]}"}
+    fi
+
+    # The command word arrives as it was typed, so it gets the expansions the shell would give it before it is run. A
+    # word that could run a command when expanded is left as it is.
+    local program=${words[0]-} unsafe='[$`;&|<>()]'
+    if [[ ${program} == *[~\\\"\']* && ! ${program} =~ ${unsafe} && ${program} != *$'\n'* ]]; then
+        eval "program=${program}" 2>/dev/null || program=${words[0]}
+    fi
+    # An alias that renames the program and nothing more. One that adds words is not followed.
+    # BASH_ALIASES is not in bash 3.2.
+    if (( BASH_VERSINFO[0] >= 4 )) && [[ -n ${program} ]]; then
+        local target=${BASH_ALIASES[${program}]-}
+        if [[ -n ${target} && ! ${target} =~ [[:space:]] && ! ${target} =~ ${unsafe} ]]; then
+            eval "program=${target}" 2>/dev/null || program=${words[0]}
+        fi
+    fi
+    if (( ${#words[@]} > 0 )); then
+        words[0]=${program}
+    fi
 
     response=$(@ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ "${words[@]}" 2>/dev/null)
 
@@ -361,11 +395,14 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 complete -o default -F @FUNCTION@ @PROGRAM@
 )bash";
 
+    // Single quotes take everything literally except another single quote
+    const std::string quoted = "'" + find_and_replace(program_name, "'", "'\\''") + "'";
+
     std::string out =
         find_and_replace(script, "@FUNCTION@", "_cli11_complete_" + completion_script_identifier(program_name));
     out = find_and_replace(std::move(out), "@ENV@", env_var);
     out = find_and_replace(std::move(out), "@PROTO@", std::to_string(CLI11_COMPLETE_PROTO_VERSION));
-    return find_and_replace(std::move(out), "@PROGRAM@", program_name);
+    return find_and_replace(std::move(out), "@PROGRAM@", quoted);
 }
 
 }  // namespace detail

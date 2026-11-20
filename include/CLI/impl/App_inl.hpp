@@ -823,9 +823,14 @@ CLI11_INLINE int App::exit(const Error &e, std::ostream &out, std::ostream &err)
 }
 
 CLI11_INLINE std::string App::get_completion_script(const std::string &shell) const {
-    if(shell == "bash")
-        return detail::completion_script_bash(get_display_name(), completion_env_var_);
-    throw ValidationError("shell", "no completion script is available for " + shell);
+    if(shell != "bash")
+        throw ValidationError("shell", "no completion script is available for " + shell);
+    // The shell looks a completion up by the command word without its directory, and the name is argv[0] as typed
+    // when the program did not set one
+    const std::string program = name_.substr(name_.find_last_of("/\\") + 1);
+    if(program.empty())
+        throw ValidationError("shell", "the program has no name to register a completion script for");
+    return detail::completion_script_bash(program, completion_env_var_);
 }
 
 CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string> &words, std::size_t cursor) const {
@@ -866,7 +871,10 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             positional_index = 0;
             continue;
         }
-        if((words[ii].size() > 1 && words[ii].front() == '-') || current->_is_windows_option(words[ii])) {
+        // _recognize reads a dash-shaped word as a value when it is a number and no option has that digit for a name
+        const bool dashed = words[ii].size() > 1 && words[ii].front() == '-' &&
+                            current->_recognize(words[ii], false) != detail::Classifier::NONE;
+        if(dashed || current->_is_windows_option(words[ii])) {
             int attached_values = 0;
             const Option *opt = current->_option_expecting_value(words[ii], attached_values);
             if(opt == nullptr)
@@ -995,6 +1003,9 @@ CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, Co
             sub->_add_subcommand_completions(prefix, reply);
             continue;
         }
+        // An empty group hides a subcommand from help, and completion is help of another kind
+        if(sub->get_group().empty())
+            continue;
         // Candidates are whole insertable tokens, so the whole name goes back and the shell replaces the partial word
         // with it. An alias is just as typeable as the name, so it is a candidate in its own right. A partial word is
         // matched the way check_name_detail matches a whole one, minus its allow_prefix_matching_ gate: that setting
@@ -1022,17 +1033,24 @@ CLI11_INLINE void App::_gather_options(std::vector<const Option *> &options) con
 CLI11_INLINE void App::_add_option_completions(const std::string &prefix, CompletionReply &reply) const {
     // check_lname and check_fname fold underscores where check_sname does not, so the caller says which lookup's rules
     // the spelling it is offering answers to
+    const std::size_t inherited = reply.results.size();
     auto offer = [&](const std::string &candidate, const Option *opt, bool fold_underscore) {
-        if(detail::has_prefix(candidate, prefix, opt->get_ignore_case(), fold_underscore))
+        if(!detail::has_prefix(candidate, prefix, opt->get_ignore_case(), fold_underscore))
+            return;
+        // A parse tries the subcommand before its fallthrough parent, so a name both have belongs to the subcommand
+        const bool hidden =
+            std::any_of(reply.results.begin(),
+                        reply.results.begin() + static_cast<std::ptrdiff_t>(inherited),
+                        [&candidate](const CompletionResult &result) { return result.value == candidate; });
+        if(!hidden)
             reply.results.push_back(CompletionResult{candidate, opt->get_description()});
     };
     std::vector<const Option *> options;
     _gather_options(options);
     for(const Option *opt : options) {
-        if(!opt->nonpositional())
+        // An empty group hides an option from help, and completion is help of another kind
+        if(!opt->nonpositional() || opt->get_group().empty())
             continue;
-        // Whether the option takes a value makes no difference yet: a flag and a value-taking option are both just a
-        // name to insert, and the value candidates arrive in a later commit.
         // Every spelling of an option is the same option, so they all carry the same description
         for(const std::string &lname : opt->get_lnames()) {
             offer("--" + lname, opt, opt->get_ignore_underscore());
@@ -1046,6 +1064,8 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
                 offer("/" + sname, opt, false);
         }
     }
+    if(fallthrough_ && parent_ != nullptr && !name_.empty())
+        _get_fallthrough_parent()->_add_option_completions(prefix, reply);
 }
 
 CLI11_NODISCARD CLI11_INLINE bool App::_is_windows_option(const std::string &word) const {
@@ -1069,8 +1089,11 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
         auto found = std::find_if(std::begin(options), std::end(options), [&opt_name](const Option *candidate) {
             return candidate->check_lname(opt_name) || candidate->check_sname(opt_name);
         });
-        if(found == std::end(options))
+        if(found == std::end(options)) {
+            if(fallthrough_ && parent_ != nullptr && !name_.empty())
+                return _get_fallthrough_parent()->_option_expecting_value(word, attached_values);
             return nullptr;
+        }
         opt = *found;
         carried = rest.empty() ? 0 : 1;
     } else if(word.size() > 1 && word.front() == '-') {
@@ -1119,6 +1142,8 @@ CLI11_NODISCARD CLI11_INLINE std::size_t App::_option_value_end(const Option &op
         return index;
     }
     collected = (std::max)(collected, minimum);
+    // A parse decides this once, before it collects the optional values
+    const bool optional_values = collected < maximum || opt.get_allow_extra_args();
 
     // Past the minimum the values are optional, so collecting ends at the first word a parse would read as something
     // else, and at the point where the words left on the line are the ones the required positionals must be given.
@@ -1135,8 +1160,9 @@ CLI11_NODISCARD CLI11_INLINE std::size_t App::_option_value_end(const Option &op
     }
     hungry = false;
 
-    // A marker after an unbounded list ends it and is consumed with it, so it never starts positional-only mode
-    if(index < cursor && words[index] == "--")
+    // A marker after a list that could have gone on ends it and is consumed with it, so it never starts
+    // positional-only mode. After an option that was full, the marker is the positional one.
+    if(optional_values && index < cursor && words[index] == "--")
         ++index;
     return index;
 }
@@ -1213,7 +1239,8 @@ CLI11_INLINE void App::_add_attached_value_completions(const Option &opt,
 
 CLI11_INLINE void
 App::_add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const {
-    const std::vector<std::string> choices = opt.get_completion_choices();
+    std::shared_ptr<const CompletionMeta> source;
+    const std::vector<std::string> choices = opt._completion_choices(source);
     if(choices.empty()) {
         // Hand back to the shell for path completion.
         switch(opt.get_completion_hint()) {
@@ -1234,7 +1261,13 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
     }
 
     for(const std::string &choice : choices) {
-        if(choice.compare(0, prefix.size(), prefix) == 0)
+        bool matches = choice.compare(0, prefix.size(), prefix) == 0;
+        // A validator that folds case or underscores accepts more spellings than the one it lists
+        for(std::size_t ii = 0; !matches && ii < source->filters.size(); ++ii) {
+            const std::string folded = source->filters[ii](prefix);
+            matches = source->filters[ii](choice).compare(0, folded.size(), folded) == 0;
+        }
+        if(matches)
             reply.results.push_back(CompletionResult{choice, ""});
     }
     // A declared set has a declared order, which is information the shell would throw away by sorting
