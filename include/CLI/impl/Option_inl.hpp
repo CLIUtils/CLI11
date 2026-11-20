@@ -201,13 +201,22 @@ CLI11_INLINE Option *Option::completion_hint(CompletionHint hint) {
     return this;
 }
 
-CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices() const {
+CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices(int index) const {
     std::shared_ptr<const CompletionMeta> source;
-    return _completion_choices(source);
+    return _completion_choices(source, index);
+}
+
+CLI11_NODISCARD CLI11_INLINE bool Option::_completion_applies(const Validator &validator, int index) const {
+    if(!validator.get_active())
+        return false;
+    const int applies_to = validator.get_application_index();
+    // For a type of several values the index is the place inside the type, as in _validate_results
+    return applies_to == -1 || applies_to == ((type_size_max_ > 1) ? (index % type_size_max_) : index);
 }
 
 CLI11_NODISCARD CLI11_INLINE std::vector<std::string>
-Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source) const {
+Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source, int index) const {
+    source.reset();
     // A declared hint replaces what the Validators had to say rather than joining it: the two answer the same
     // question, and a program that says "this is a file name" does not also want a stale list offered beside it
     if(completion_hint_ != CompletionHint::None)
@@ -221,7 +230,7 @@ Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source) const
     std::shared_ptr<const CompletionMeta> checks;
 
     for(const Validator_p &validator : validators_) {
-        if(!validator->get_active())
+        if(!_completion_applies(*validator, index))
             continue;
         // check() forces every validator it takes to be non-modifying, so this is the transform/check split
         if(validator->get_modifying()) {
@@ -233,21 +242,19 @@ Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source) const
     }
 
     // A transform key is acceptable only if what it turns into gets past the checks, and nothing here can know that
-    // without running the transform. So the checks answer whenever they enumerate anything, and the keys answer only
-    // when no check does, which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
+    // without running the transform. So the checks answer whenever they enumerate their values, and the keys answer
+    // only when no check does, which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
+    // A list with nothing in it is still an answer: the option takes none of the values a shell could offer.
     for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
         if(meta && meta->choices) {
-            std::vector<std::string> choices = meta->choices();
-            if(!choices.empty()) {
-                source = meta;
-                return choices;
-            }
+            source = meta;
+            return meta->choices();
         }
     }
     return {};
 }
 
-CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint() const {
+CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint(int index) const {
     if(completion_hint_ != CompletionHint::None)
         return completion_hint_;
 
@@ -256,7 +263,7 @@ CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint() const 
     // combining "a file" with "a directory", the same rule intersect_completion_meta applies to an `&`.
     CompletionHint rewrite = CompletionHint::None;
     for(const Validator_p &validator : validators_) {
-        if(!validator->get_active())
+        if(!_completion_applies(*validator, index))
             continue;
         const std::shared_ptr<const CompletionMeta> &meta = validator->get_completion_meta();
         if(!meta || meta->hint == CompletionHint::None)

@@ -34,8 +34,9 @@ expect() { # expect <comp_cword> <expected COMPREPLY> <word>...
     run 1 "$@"
 }
 
-# and a wide one sees them aligned against the longest candidate
+# and a wide one sees them aligned against the longest candidate. 9 is a plain TAB, which lists what it cannot insert.
 expect_wide() { # expect_wide <comp_cword> <expected COMPREPLY> <word>...
+    local COMP_TYPE=9
     run 80 "$@"
 }
 
@@ -105,7 +106,7 @@ expect 2 "fast slow" "--level" "="
 expect 3 "_filedir[|/et]" "--config" "=" "/et"
 # The cursor on the `=` is a cursor on the empty value after it, not on a path beginning with an `=`
 expect 2 "_filedir[|]" "--config" "="
-# A flag has no value to complete, so this falls back to the shell's own files rather than to the subcommands
+# A flag has no value to complete, so nothing is offered: not the subcommands, and not a file either
 expect 3 "" "--verbose" "=" "v"
 # and a space after the `=` does not finish the value: an empty one is no value at all, so the option still takes the
 # next word, and `completion --level= fast` really does parse
@@ -156,7 +157,17 @@ expect_wide 2 "--help   (Print this help message and exit) --force  (Do it anywa
 # A lone candidate is inserted rather than listed, so it loses its description
 expect_wide 1 "start" "sta"
 # and one that does not fit the terminal is cut short
-run 30 1 "start  (Get going) stop   (Do you really want...)" "st"
+COMP_TYPE=9 run 30 1 "start  (Get going) stop   (Do you really want...)" "st"
+unset COMP_TYPE
+# Menu completion puts each candidate on the line in turn, so a description would be typed into the command. bash 3.2
+# does not say which kind of completion it is doing, and gets the same.
+COMP_TYPE=37 run 80 1 "start stop remote" ""
+COMP_TYPE=42 run 80 1 "start stop remote" ""
+unset COMP_TYPE
+run 80 1 "start stop remote" ""
+# The two that list without inserting keep them
+COMP_TYPE=63 run 80 1 "start  (Get going) stop   (Do you really want to stop?)" "st"
+unset COMP_TYPE
 # A tab in a description reaches the binary's output escaped, so the script has to put it back
 expect_wide 2 $'add     (Add a remote) remove  (Drop a remote) rm      (Drop a remote) sync    (Push\tand pull)' \
     "remote" ""
@@ -207,7 +218,8 @@ prog=${real}
 
 # A script that outlived the binary it was generated against asks for a version the binary does not know, and is
 # answered with the Error directive alone
-reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 "$prog" "")
+reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 CLI11_COMPLETE_WORDS=1 \
+    CLI11_COMPLETE_WORD_1="" "$prog" --cli11-complete)
 if [[ ${reply} != ":1" ]]; then
     echo "FAIL: a foreign protocol version got [${reply}] want [:1]" >&2
     exit 1
@@ -222,5 +234,63 @@ expect 1 "" "st"
 # A program that is not a CLI11 app must not have its output mistaken for a reply
 prog=/bin/echo
 expect 1 "" "st"
+
+# and it must not be handed the line that is being typed: a program that does not answer requests would run it. The
+# words travel in the environment, and the one argument is a fixed one.
+probe_file="${TMPDIR:-/tmp}/cli11_completion_probe_$$"
+probe() { printf '%s\n' "$#" "$@" "${CLI11_COMPLETE_WORDS-}" "${CLI11_COMPLETE_WORD_2-}" > "${probe_file}"; }
+prog=probe
+expect 2 "" "remote" "--force; x"
+probe_got=$(cat "${probe_file}")
+rm -f "${probe_file}"
+probe_want=$'1\n--cli11-complete\n2\n--force; x'
+if [[ ${probe_got} != "${probe_want}" ]]; then
+    echo "FAIL: the program was run with [${probe_got}] want [${probe_want}]" >&2
+    exit 1
+fi
+echo "ok: the line is not in the arguments"
+
+# The directives of a reply, apart from any program. Either kind of path is completed like a file, and a reply that
+# knows nothing about the value gets paths when it has no candidates of its own.
+reply_path() { printf ':24\n'; }
+prog=reply_path
+expect 1 "_filedir[|./fi]" "./fi"
+reply_unknown() { printf ':prefix=-p\n:0\n'; }
+prog=reply_unknown
+# The value is what the paths are looked up by, and the name it is written onto goes back on the answers
+expect 1 "-p_filedir[|./fi]" "-p./fi"
+reply_named() { printf 'start\n:0\n'; }
+prog=reply_named
+expect 1 "start" "st"
+reply_none() { printf ':2\n'; }
+prog=reply_none
+expect 1 "" "st"
+prog=${real}
+
+# Nothing is registered for bash to fall back on when the function offers nothing, which is what keeps a reply that
+# cannot be used from turning into a list of files
+registered=$(complete -p completion)
+if [[ ${registered} != "complete -F _cli11_complete_completion completion" ]]; then
+    echo "FAIL: registered as [${registered}]" >&2
+    exit 1
+fi
+echo "ok: ${registered}"
+
+# Without the bash-completion package the script finds the paths itself
+unset -f _filedir
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/cli11_completion_XXXXXX")
+touch "${scratch}/alpha.txt" "${scratch}/a star*.txt"
+mkdir "${scratch}/bdir"
+prog="$(cd "$(dirname "${real}")" && pwd)/$(basename "${real}")"
+pushd "${scratch}" > /dev/null || exit 1
+expect 2 "alpha.txt" "--config" "al"
+expect 2 "bdir" "--workdir" ""
+expect 1 "-calpha.txt" "-cal"
+expect 3 "alpha.txt" "--config" "=" "al"
+# A name is taken as it is, whatever is in it
+expect 2 "a star*.txt" "--config" "a "
+popd > /dev/null || exit 1
+rm -rf "${scratch}"
+prog=${real}
 
 echo "all ok"

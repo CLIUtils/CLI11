@@ -62,9 +62,8 @@ set_property(
 
 add_cli_exe(completion completion.cpp)
 add_test(NAME completion_script COMMAND completion --completion bash)
-set_property(
-  TEST completion_script PROPERTY PASS_REGULAR_EXPRESSION
-                                  "complete -o default -F _cli11_complete_completion 'completion'")
+set_property(TEST completion_script PROPERTY PASS_REGULAR_EXPRESSION
+                                             "complete -F _cli11_complete_completion 'completion'")
 add_test(NAME completion_run COMMAND completion start)
 set_property(TEST completion_run PROPERTY PASS_REGULAR_EXPRESSION "Subcommand: start")
 # The body of the generated script is only really checked by running it

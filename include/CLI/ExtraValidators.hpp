@@ -145,18 +145,21 @@ template <typename T> std::vector<std::string> generate_completion_choices(const
     // holding a ',' or a '{'
     std::vector<std::string> out;
     for(const auto &item : detail::smart_deref(set)) {
-        out.push_back(detail::to_string(detail::pair_adaptor<element_t>::first(item)));
+        // value_string is what the set validators write back into the input, so it is a spelling they accept, which
+        // to_string is not for a type that streams as something else, as a byte does
+        out.push_back(detail::value_string(detail::pair_adaptor<element_t>::first(item)));
     }
     return out;
 }
 
 /// Wrap the filter function of a set validator so that completion can apply it to text
 template <typename Item> std::function<std::string(std::string)> completion_filter(std::function<Item(Item)> filter) {
-    return [filter](std::string text) {
+    // The return type is spelled out because value_string hands some types back as they are, a path among them
+    return [filter](std::string text) -> std::string {
         Item item;
         if(!lexical_cast(text, item))
             return text;
-        return detail::to_string(filter(item));
+        return detail::value_string(filter(item));
     };
 }
 

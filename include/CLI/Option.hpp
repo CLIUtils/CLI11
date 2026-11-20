@@ -489,11 +489,13 @@ class Option : public OptionBase<Option> {
     /// the same question, and this one comes from the program rather than from a guess about it.
     Option *completion_hint(CompletionHint hint);
 
-    /// Get every value a shell should offer for this option, empty when no Validator enumerates them
-    CLI11_NODISCARD std::vector<std::string> get_completion_choices() const;
+    /// Get every value a shell should offer for this option, empty when no Validator enumerates them. The index is
+    /// the place of the value among those the option takes, which selects the Validators that apply to it.
+    CLI11_NODISCARD std::vector<std::string> get_completion_choices(int index = 0) const;
 
-    /// Get the kind of value a shell should complete for this option, declared or inferred from the Validators
-    CLI11_NODISCARD CompletionHint get_completion_hint() const;
+    /// Get the kind of value a shell should complete for this option, declared or inferred from the Validators that
+    /// apply to the value at this index
+    CLI11_NODISCARD CompletionHint get_completion_hint(int index = 0) const;
 
     /// Sets required options
     Option *needs(Option *opt);
@@ -840,8 +842,13 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
-    /// Get the completion choices, and the Validator metadata they came from when there are any
-    CLI11_NODISCARD std::vector<std::string> _completion_choices(std::shared_ptr<const CompletionMeta> &source) const;
+    /// Get the completion choices for the value at this index. The source is the Validator metadata they came from,
+    /// and is null when no Validator lists its values, which is not the same as one that lists none.
+    CLI11_NODISCARD std::vector<std::string> _completion_choices(std::shared_ptr<const CompletionMeta> &source,
+                                                                 int index) const;
+
+    /// Whether a Validator applies to the value at this index, by the rule _validate_results and _validate use
+    CLI11_NODISCARD bool _completion_applies(const Validator &validator, int index) const;
 
     /// Run the results through the Validators
     void _validate_results(results_t &res) const;

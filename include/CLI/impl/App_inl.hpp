@@ -426,6 +426,19 @@ CLI11_INLINE Option *App::set_completion_flag(std::string flag_name, const std::
     return completion_ptr_;
 }
 
+CLI11_INLINE App *App::set_completion_env_var(std::string env_var) {
+    // The name is written into the shell script as the target of an assignment, so it has to be an identifier there
+    const bool valid =
+        !env_var.empty() && !(env_var[0] >= '0' && env_var[0] <= '9') &&
+        std::all_of(env_var.begin(), env_var.end(), [](char c) {
+            return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+        });
+    if(!valid)
+        throw IncorrectConstruction("The completion environment variable must be a valid shell identifier");
+    completion_env_var_ = std::move(env_var);
+    return this;
+}
+
 CLI11_INLINE Option *App::_add_flag_internal(std::string flag_name, CLI::callback_t fun, std::string flag_description) {
     Option *opt = nullptr;
     if(detail::has_default_flag_values(flag_name)) {
@@ -529,6 +542,8 @@ CLI11_INLINE bool App::remove_option(Option *opt) {
         help_all_ptr_ = nullptr;
     if(config_ptr_ == opt)
         config_ptr_ = nullptr;
+    if(completion_ptr_ == opt)
+        completion_ptr_ = nullptr;
 
     auto iterator =
         std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });
@@ -763,14 +778,14 @@ CLI11_INLINE void App::_parse_setup() {
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &args) {
-    _complete_intercept(args);
+    _complete_intercept();
     _parse_setup();
     _parse(args);
     run_callback();
 }
 
 CLI11_INLINE void App::parse(std::vector<std::string> &&args) {
-    _complete_intercept(args);
+    _complete_intercept();
     _parse_setup();
     _parse(std::move(args));
     run_callback();
@@ -837,135 +852,82 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     CompletionReply reply;
     if(cursor >= words.size()) {
         // A shell always sends an empty word for a cursor sitting past the last one, so an index beyond the end is a
-        // malformed request rather than the start of a fresh word.
+        // malformed request rather than the start of a fresh word, and a path is no answer to one.
+        reply.directive = CompletionDirective::NoFileComp;
         return reply;
     }
 
-    // Every word before the cursor is finished, so one naming a subcommand moves the walk into it and the candidates
-    // come from wherever the walk ends up. Matching is _find_subcommand's job, the same one the parser uses.
-    const App *current = this;
-    bool positional_only = false;
-    // Descending resets this: each app fills its own positionals from the words that reach it
-    std::size_t positional_index = 0;
-    // An option still collecting values when the cursor arrives, and whether the cursor's word is one of the minimum
-    // it takes even when the word looks like an option name or a subcommand
-    const Option *awaiting = nullptr;
-    bool awaiting_minimum = false;
-    for(std::size_t ii = 0; ii < cursor; ++ii) {
-        if(words[ii].empty())
-            continue;
-        if(positional_only) {
-            ++positional_index;
-            continue;
-        }
-        if(words[ii] == "--") {
-            // Every word past the marker is a positional value, and a value that happens to spell a subcommand name
-            // is still a value, so the marker stops the walk moving, not just the names being offered.
-            positional_only = true;
-            continue;
-        }
-        // `++` closes the subcommand it appears in and hands the rest of the line back to the parent, which is what
-        // _parse_single does with it by returning false. It is only a terminator where _recognize would say so.
-        if(words[ii] == "++" && current->parent_ != nullptr && !current->get_name().empty()) {
-            current = current->parent_;
-            positional_index = 0;
-            continue;
-        }
-        // _recognize reads a dash-shaped word as a value when it is a number and no option has that digit for a name
-        const bool dashed = words[ii].size() > 1 && words[ii].front() == '-' &&
-                            current->_recognize(words[ii], false) != detail::Classifier::NONE;
-        if(dashed || current->_is_windows_option(words[ii])) {
-            int attached_values = 0;
-            const Option *opt = current->_option_expecting_value(words[ii], attached_values);
-            if(opt == nullptr)
-                continue;
+    // Every word before the cursor is finished, so each is read the way _parse_single would read it, and the
+    // candidates come from the state that leaves behind.
+    detail::CompletionWalk walk;
+    walk.frames.push_back({this, false});
+    std::size_t index = 0;
+    while(index < cursor)
+        index = walk.frames.back().app->_completion_step(walk, words[index], words, index, cursor);
 
-            bool hungry = false;
-            const std::size_t end = current->_option_value_end(*opt,
-                                                               attached_values,
-                                                               words,
-                                                               ii + 1,
-                                                               cursor,
-                                                               current->_count_pending_positionals(positional_index),
-                                                               hungry);
-            if(hungry && end >= cursor) {
-                // The option is still collecting when the cursor arrives, so the candidates are its values. Past its
-                // minimum that depends on the shape of the word, which only the cursor branches below can judge.
-                awaiting = opt;
-                awaiting_minimum = end > cursor;
-            }
-            ii = end - 1;  // the loop's own step moves onto the first word that is not one of the option's values
-            continue;
-        }
-        const App *sub = current->_find_subcommand(words[ii], true, false);
-        if(sub != nullptr) {
-            current = sub;
-            positional_index = 0;
-            continue;
-        }
-        ++positional_index;
-    }
-
+    const App *current = walk.frames.back().app;
     const std::string &word = words[cursor];
 
-    if(positional_only) {
-        const Option *positional = current->_positional_at(positional_index);
+    if(walk.frames.back().positional_only) {
+        const Option *positional = current->_completion_next_positional(walk);
         if(positional == nullptr) {
             // A word past the last positional is a parse error, so don't provide any completions
             reply.directive = CompletionDirective::NoFileComp;
             return reply;
         }
-        current->_add_value_completions(*positional, word, reply);
+        current->_add_value_completions(*positional, word, walk.count(positional), reply);
         return reply;
     }
 
     // A word inside an option's minimum is taken as its value without being classified, so this check comes before
     // every other reading of the word below
-    if(awaiting_minimum) {
-        current->_add_value_completions(*awaiting, word, reply);
+    if(walk.awaiting_minimum) {
+        current->_add_value_completions(*walk.awaiting, word, walk.awaiting_items, reply);
         return reply;
     }
 
     // `--opt=value` is one word holding both, so the option is named by the word itself rather than by the one before
     // it. Candidates are whole tokens, `--file=fast` and not `fast`, since that is the text that has to end up on the
     // line; the prefix tells the script how much of it is already typed.
-    auto add_assigned = [&](std::string::size_type separator) {
-        int attached_values = 0;
-        const Option *assigned = current->_option_expecting_value(word, attached_values);
-        // An unknown option, or one that takes no value, has nothing to say about what follows its separator
-        if(assigned != nullptr) {
+    auto add_assigned = [&](detail::Classifier type, const std::string &opt_name, std::string::size_type separator) {
+        const App *owner = nullptr;
+        const Option *assigned = current->_completion_find_option(type, opt_name, owner);
+        if(assigned != nullptr && assigned->get_items_expected_max() != 0) {
             current->_add_attached_value_completions(
                 *assigned, word.substr(0, separator + 1), word.substr(separator + 1), reply);
+        } else {
+            // An unknown option, or one that takes no value, has nothing to say about what follows its separator
+            reply.directive = CompletionDirective::NoFileComp;
         }
     };
-    const std::string::size_type assign = word.find('=');
-    std::string long_name;
+    std::string opt_name;
     std::string attached;
-    if(assign != std::string::npos && detail::split_long(word, long_name, attached)) {
-        add_assigned(assign);
+    const std::string::size_type assign = word.find('=');
+    if(assign != std::string::npos && detail::split_long(word, opt_name, attached)) {
+        add_assigned(detail::Classifier::LONG, opt_name, assign);
         return reply;
     }
 
-    // `/opt:value` is the `--opt=value` shape with a colon. The test is the slash rather than _is_windows_option, as
+    // `/opt:value` is the `--opt=value` shape with a colon. The test is the slash rather than the classifier, as in
     // the dash branch below: a lone `/` is a positional to a parse, but no path reached from it would parse either.
     if(current->allow_windows_style_options_ && !word.empty() && word.front() == '/') {
         const std::string::size_type colon = word.find(':');
         if(colon == std::string::npos) {
             current->_add_option_completions(word, reply);
             reply.directive = CompletionDirective::NoFileComp;
-            return reply;
+        } else if(detail::split_windows_style(word, opt_name, attached)) {
+            add_assigned(detail::Classifier::WINDOWS_STYLE, opt_name, colon);
         }
-        add_assigned(colon);
         return reply;
     }
 
-    // A word that has begun with a dash can only become an option name, so no other source applies to it
-    if(!word.empty() && word.front() == '-') {
+    // A word that has begun with a dash can only become an option name, so no other source applies to it. The
+    // exception is the parser's own: a negative number is a value where no option has that digit for a name.
+    if(!word.empty() && word.front() == '-' &&
+       (word.size() == 1 || current->_completion_recognize(word) != detail::Classifier::NONE)) {
         // A word holding a short name and then more text, `-lfast` or `-vl`, has to be taken apart before any of it
         // can be completed. One that is nothing but a name does not.
-        std::string short_name;
-        std::string short_rest;
-        if(detail::split_short(word, short_name, short_rest) && !short_rest.empty()) {
+        if(detail::split_short(word, opt_name, attached) && !attached.empty()) {
             current->_add_short_word_completions(word, reply);
             return reply;
         }
@@ -975,17 +937,21 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     }
 
     // Nothing in a bare word says whether it is becoming a subcommand name or a value, so both answer. The value goes
-    // last, so the names keep their place and its directive wins; only it can want a path.
-    current->_add_subcommand_completions(word, reply);
+    // last, so the names keep their place and its directive wins; only it can want a path. A required positional that
+    // is still empty takes the word even where it spells a name, as in _parse_subcommand, so then only the value does.
+    if(current->_completion_pending_positionals(walk, true) == 0)
+        current->_add_subcommand_completions(word, reply);
     const std::size_t named = reply.results.size();
     // An option still collecting values takes this word before any positional does. A parse only stops it at a word it
     // recognises, and those recognised names are the ones already in this reply.
-    const Option *value_source = (awaiting != nullptr) ? awaiting : current->_positional_at(positional_index);
+    const Option *value_source =
+        (walk.awaiting != nullptr) ? walk.awaiting : current->_completion_next_positional(walk);
     if(value_source == nullptr) {
         reply.directive = CompletionDirective::NoFileComp;
         return reply;
     }
-    current->_add_value_completions(*value_source, word, reply);
+    current->_add_value_completions(
+        *value_source, word, (walk.awaiting != nullptr) ? walk.awaiting_items : walk.count(value_source), reply);
     // A value source either lists its values, which are few enough to read beside a name, or asks for a path, which is
     // a whole directory in one menu with the names lost in it. So a named word keeps the shell out until none matches.
     if(named != 0 && reply.results.size() == named)
@@ -993,9 +959,18 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     return reply;
 }
 
+CLI11_NODISCARD CLI11_INLINE bool App::_completion_disabled() const {
+    // _configure applies the startup mode when a parse begins, and completion answers for that parse
+    if(default_startup == startup_mode::enabled)
+        return false;
+    if(default_startup == startup_mode::disabled)
+        return true;
+    return disabled_;
+}
+
 CLI11_INLINE void App::_add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const {
     for(const App_p &sub : subcommands_) {
-        if(sub->get_disabled())
+        if(sub->_completion_disabled())
             continue;
         if(sub->get_name().empty()) {
             // An unnamed subcommand is a group; the parser reaches through it, so completion has to as well
@@ -1024,7 +999,7 @@ CLI11_INLINE void App::_gather_options(std::vector<const Option *> &options) con
     for(const Option_p &opt : options_)
         options.push_back(opt.get());
     for(const App_p &sub : subcommands_) {
-        if(sub->get_name().empty() && !sub->get_disabled())
+        if(sub->get_name().empty() && !sub->_completion_disabled())
             sub->_gather_options(options);
     }
 }
@@ -1067,121 +1042,285 @@ CLI11_INLINE void App::_add_option_completions(const std::string &prefix, Comple
         _get_fallthrough_parent()->_add_option_completions(prefix, reply);
 }
 
-CLI11_NODISCARD CLI11_INLINE bool App::_is_windows_option(const std::string &word) const {
-    std::string opt_name;
-    std::string value;
-    return allow_windows_style_options_ && detail::split_windows_style(word, opt_name, value);
+CLI11_NODISCARD CLI11_INLINE const App *App::_completion_find_subcommand(const std::string &subc_name) const {
+    // An empty word matches the empty name of an option group, which is not a subcommand anyone can type
+    if(subc_name.empty())
+        return nullptr;
+    const App *found = nullptr;
+    for(const App_p &com : subcommands_) {
+        if(com->_completion_disabled())
+            continue;
+        const App *match = nullptr;
+        bool exact = false;
+        if(com->get_name().empty()) {
+            match = com->_completion_find_subcommand(subc_name);
+        } else {
+            const NameMatch res = com->check_name_detail(subc_name);
+            exact = res == NameMatch::exact;
+            if(res != NameMatch::none)
+                match = com.get();
+        }
+        if(match == nullptr)
+            continue;
+        if(exact)
+            return match;
+        // Two commands that an abbreviation could mean is no match at all
+        if(found != nullptr)
+            return nullptr;
+        found = match;
+        if(!allow_prefix_matching_)
+            return found;
+    }
+    return found;
 }
 
-CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word,
-                                                                        int &attached_values) const {
-    attached_values = 0;
-    const Option *opt = nullptr;
+CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_completion_recognize(const std::string &word) const {
     std::string opt_name;
     std::string rest;
-    if(allow_windows_style_options_ && detail::split_windows_style(word, opt_name, rest)) {
-        // No bundling and one spelling for both names, which is the lookup _parse_arg does for this classifier
-        std::vector<const Option *> options;
-        _gather_options(options);
-        auto found = std::find_if(std::begin(options), std::end(options), [&opt_name](const Option *candidate) {
-            return candidate->check_lname(opt_name) || candidate->check_sname(opt_name);
-        });
-        if(found == std::end(options)) {
-            if(fallthrough_ && parent_ != nullptr && !name_.empty())
-                return _get_fallthrough_parent()->_option_expecting_value(word, attached_values);
-            return nullptr;
-        }
-        opt = *found;
-        attached_values = rest.empty() ? 0 : 1;
-    } else if(word.size() > 1 && word.front() == '-') {
-        opt = get_option_no_throw(word);
-        if(opt == nullptr) {
-            if(detail::split_long(word, opt_name, rest)) {
-                opt = get_option_no_throw("--" + opt_name);
-                attached_values = rest.empty() ? 0 : 1;
-            } else if(detail::split_short(word, opt_name, rest) && !rest.empty()) {
-                // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
-                std::string::size_type consumed = 0;
-                opt = _walk_short_names(word, consumed);
-                attached_values = (consumed < word.size()) ? 1 : 0;
-            }
-            if(opt == nullptr)
-                return nullptr;
-        }
-    } else {
-        return nullptr;
+    if(word == "--")
+        return detail::Classifier::POSITIONAL_MARK;
+    // A name that only a parent has is still a subcommand, and the parent is the one that takes it
+    for(const App *app = this; app != nullptr; app = app->subcommand_fallthrough_ ? app->parent_ : nullptr) {
+        if(app->_completion_find_subcommand(word) != nullptr)
+            return detail::Classifier::SUBCOMMAND;
     }
-
-    // Ignore options that do not expect a value (flags and positionals)
-    if(!opt->nonpositional() || opt->get_items_expected_max() == 0)
-        return nullptr;
-
-    return opt;
+    if(detail::split_long(word, opt_name, rest))
+        return detail::Classifier::LONG;
+    if(detail::split_short(word, opt_name, rest)) {
+        if((opt_name[0] >= '0' && opt_name[0] <= '9') ||
+           (opt_name[0] == '.' && !rest.empty() && (rest[0] >= '0' && rest[0] <= '9'))) {
+            // It looks like a number, which it is unless an option has that character for a name
+            const App *owner = nullptr;
+            if(_completion_find_option(detail::Classifier::SHORT, opt_name, owner) == nullptr)
+                return detail::Classifier::NONE;
+        }
+        return detail::Classifier::SHORT;
+    }
+    if(allow_windows_style_options_ && detail::split_windows_style(word, opt_name, rest))
+        return detail::Classifier::WINDOWS_STYLE;
+    if(word == "++" && !name_.empty() && parent_ != nullptr)
+        return detail::Classifier::SUBCOMMAND_TERMINATOR;
+    return detail::Classifier::NONE;
 }
 
-CLI11_NODISCARD CLI11_INLINE std::size_t App::_option_value_end(const Option &opt,
-                                                                int attached_values,
-                                                                const std::vector<std::string> &words,
-                                                                std::size_t first,
-                                                                std::size_t cursor,
-                                                                std::size_t reserved,
-                                                                bool &hungry) const {
-    int minimum = 0;
-    int maximum = 0;
-    _value_appetite(opt, minimum, maximum);
-
-    // The words of the minimum are never classified, so an option-shaped one among them is a value like any other
-    int collected = attached_values;
-    std::size_t index = first + static_cast<std::size_t>((std::max)(minimum - collected, 0));
-    if(index > cursor) {
-        hungry = true;
-        return index;
-    }
-    collected = (std::max)(collected, minimum);
-    // A parse decides this once, before it collects the optional values
-    const bool optional_values = collected < maximum || opt.get_allow_extra_args();
-
-    // Past the minimum the values are optional, so collecting ends at the first word a parse would read as something
-    // else, and at the point where the words left on the line are the ones the required positionals must be given.
-    while((collected < maximum || opt.get_allow_extra_args()) && reserved < words.size() - index) {
-        if(index == cursor) {
-            // Whether the word being completed is a value is for the cursor to decide, not for the walk
-            hungry = true;
-            return index;
+CLI11_NODISCARD CLI11_INLINE const Option *
+App::_completion_find_option(detail::Classifier type, const std::string &opt_name, const App *&owner) const {
+    for(const Option_p &opt : options_) {
+        const bool long_match = type != detail::Classifier::SHORT && opt->check_lname(opt_name);
+        const bool short_match = type != detail::Classifier::LONG && opt->check_sname(opt_name);
+        if(long_match || short_match) {
+            owner = this;
+            return opt.get();
         }
-        if(_recognize(words[index], false) != detail::Classifier::NONE)
-            break;
-        ++collected;
-        ++index;
     }
-    hungry = false;
-
-    // A marker after a list that could have gone on ends it and is consumed with it, so it never starts
-    // positional-only mode. After an option that was full, the marker is the positional one.
-    if(optional_values && index < cursor && words[index] == "--")
-        ++index;
-    return index;
+    for(const App_p &sub : subcommands_) {
+        if(sub->get_name().empty() && !sub->_completion_disabled()) {
+            const Option *opt = sub->_completion_find_option(type, opt_name, owner);
+            if(opt != nullptr)
+                return opt;
+        }
+    }
+    if(fallthrough_ && parent_ != nullptr && !name_.empty())
+        return _get_fallthrough_parent()->_completion_find_option(type, opt_name, owner);
+    return nullptr;
 }
 
-CLI11_NODISCARD CLI11_INLINE std::size_t App::_count_pending_positionals(std::size_t assigned) const {
+CLI11_INLINE int App::_completion_items(const Option &opt, const std::string &word) {
+    std::vector<std::string> items;
+    return opt._add_result(std::string(word), items);
+}
+
+CLI11_INLINE std::size_t App::_completion_pending_positionals(detail::CompletionWalk &walk, bool required_only) const {
     std::size_t retval = 0;
     // options_ and not _gather_options: a nameless group's positional is filled by a parse but not reserved for,
     // since _count_remaining_positionals does not reach into the groups either
     for(const Option_p &opt : options_) {
-        if(opt->nonpositional())
+        if(!opt->get_positional() || (required_only && !opt->get_required()))
             continue;
-        // Words go to the positionals in declaration order, each taking all it can hold, as _positional_at reads them
-        std::size_t filled = 0;
-        const int capacity = opt->get_items_expected_max();
-        if(capacity > 0) {
-            filled = (std::min)(assigned, static_cast<std::size_t>(capacity));
-            assigned -= filled;
-        }
-        const int minimum = opt->get_items_expected_min();
-        if(opt->get_required() && minimum > 0 && filled < static_cast<std::size_t>(minimum))
-            retval += static_cast<std::size_t>(minimum) - filled;
+        const int missing = opt->get_items_expected_min() - walk.count(opt.get());
+        if(missing > 0)
+            retval += static_cast<std::size_t>(missing);
     }
     return retval;
+}
+
+CLI11_NODISCARD CLI11_INLINE const Option *App::_completion_next_positional(detail::CompletionWalk &walk) const {
+    for(const Option_p &opt : options_) {
+        if(opt->get_positional() &&
+           (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args()))
+            return opt.get();
+    }
+    for(const App_p &sub : subcommands_) {
+        if(sub->get_name().empty() && !sub->_completion_disabled()) {
+            const Option *opt = sub->_completion_next_positional(walk);
+            if(opt != nullptr)
+                return opt;
+        }
+    }
+    if(fallthrough_ && parent_ != nullptr && !name_.empty())
+        return _get_fallthrough_parent()->_completion_next_positional(walk);
+    return nullptr;
+}
+
+CLI11_INLINE std::size_t App::_completion_step(detail::CompletionWalk &walk,
+                                               const std::string &word,
+                                               const std::vector<std::string> &words,
+                                               std::size_t index,
+                                               std::size_t cursor) const {
+    // Closing the outermost command would leave nothing to read the rest of the line, so that one stays open
+    auto leave = [&walk]() {
+        if(walk.frames.size() < 2)
+            return false;
+        walk.frames.pop_back();
+        return true;
+    };
+    const detail::Classifier type =
+        walk.frames.back().positional_only ? detail::Classifier::NONE : _completion_recognize(word);
+    switch(type) {
+    case detail::Classifier::POSITIONAL_MARK:
+        // Every later word is a positional value here. With no positional left to give one to, the marker closes the
+        // subcommand instead, and the parent goes on reading its own words as before.
+        walk.frames.back().positional_only = true;
+        if(_completion_pending_positionals(walk, false) == 0)
+            leave();
+        return index + 1;
+    case detail::Classifier::SUBCOMMAND_TERMINATOR:
+        leave();
+        return index + 1;
+    case detail::Classifier::SUBCOMMAND: {
+        if(_completion_pending_positionals(walk, true) > 0) {
+            _completion_positional(walk, word, false);
+            return index + 1;
+        }
+        const App *com = _completion_find_subcommand(word);
+        if(com != nullptr) {
+            // The frames remember the command that was left, which is not always the parent: a subcommand may sit
+            // in an option group
+            walk.frames.push_back({com, false});
+            return index + 1;
+        }
+        // The name is a parent's, so this command is finished and the parent reads the word
+        return leave() ? index : index + 1;
+    }
+    case detail::Classifier::LONG:
+    case detail::Classifier::SHORT:
+    case detail::Classifier::WINDOWS_STYLE:
+        return _completion_option(walk, type, word, words, index, cursor);
+    case detail::Classifier::NONE:
+    default:
+        if(_completion_positional(walk, word, false))
+            return index + 1;
+        return leave() ? index : index + 1;
+    }
+}
+
+CLI11_INLINE std::size_t App::_completion_option(detail::CompletionWalk &walk,
+                                                 detail::Classifier type,
+                                                 const std::string &word,
+                                                 const std::vector<std::string> &words,
+                                                 std::size_t index,
+                                                 std::size_t cursor) const {
+    std::string opt_name;
+    std::string value;  // what the word holds past the name: `--opt=value`, `/opt:value`, or the rest of `-ovalue`
+    if(type == detail::Classifier::LONG)
+        detail::split_long(word, opt_name, value);
+    else if(type == detail::Classifier::SHORT)
+        detail::split_short(word, opt_name, value);
+    else
+        detail::split_windows_style(word, opt_name, value);
+
+    const App *owner = nullptr;
+    const Option *opt = _completion_find_option(type, opt_name, owner);
+    // A parse sets an unknown option aside and reads on
+    if(opt == nullptr)
+        return index + 1;
+
+    int minimum = 0;
+    int maximum = 0;
+    _value_appetite(*opt, minimum, maximum);
+    if(maximum == 0) {
+        ++walk.count(opt);
+        // A flag hands the rest of a short word back to be read as names of its own: `-vl` is `-v` and then `-l`
+        if(type == detail::Classifier::SHORT && !value.empty())
+            return _completion_step(walk, "-" + value, words, index, cursor);
+        return index + 1;
+    }
+
+    // Items and not words: one word can hold several, `--point 1,2` with a delimiter
+    int collected = value.empty() ? 0 : _completion_items(*opt, value);
+    std::size_t next = index + 1;
+    auto await = [&](bool required) {
+        walk.awaiting = opt;
+        walk.awaiting_items = collected;
+        walk.awaiting_minimum = required;
+        return cursor;
+    };
+
+    // The words of the minimum are never classified, so an option-shaped one among them is a value like any other
+    while(minimum > collected) {
+        if(next == cursor)
+            return await(true);
+        collected += _completion_items(*opt, words[next]);
+        ++next;
+    }
+
+    // Past the minimum the values are optional, so collecting ends at the first word a parse would read as something
+    // else, and at the point where the words left on the line are the ones the required positionals must be given.
+    // Both are judged by the app that owns the option, as in _parse_arg.
+    if(maximum > collected || opt->get_allow_extra_args()) {
+        const std::size_t reserved = owner->_completion_pending_positionals(walk, true);
+        while((collected < maximum || opt->get_allow_extra_args()) && reserved < words.size() - next) {
+            // Whether the word being completed is a value is for the cursor to decide, not for the walk
+            if(next == cursor)
+                return await(false);
+            if(owner->_completion_recognize(words[next]) != detail::Classifier::NONE)
+                break;
+            collected += _completion_items(*opt, words[next]);
+            ++next;
+        }
+        // A marker after a list that could have gone on ends it and is consumed with it, so it never starts
+        // positional-only mode. After an option that was full, the marker is the positional one.
+        if(next < cursor && words[next] == "--")
+            ++next;
+    }
+    // An option that also has a positional name is filled by either spelling
+    walk.count(opt) += (std::max)(collected, 1);
+    return next;
+}
+
+CLI11_INLINE bool
+App::_completion_positional(detail::CompletionWalk &walk, const std::string &word, bool halt_on_subcommand) const {
+    // The order _parse_positional tries things in: this app's positionals, those of its option groups, the
+    // fallthrough parent, and then a subcommand of that name
+    for(const Option_p &opt : options_) {
+        if(opt->get_positional() &&
+           (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args())) {
+            walk.count(opt.get()) += _completion_items(*opt, word);
+            return true;
+        }
+    }
+    for(const App_p &sub : subcommands_) {
+        if(sub->get_name().empty() && !sub->_completion_disabled() && sub->_completion_positional(walk, word, false))
+            return true;
+    }
+    if(fallthrough_ && parent_ != nullptr && !name_.empty()) {
+        return _get_fallthrough_parent()->_completion_positional(
+            walk, word, static_cast<bool>(parse_complete_callback_));
+    }
+    if(_completion_find_subcommand(word) != nullptr) {
+        if(halt_on_subcommand)
+            return false;
+        walk.frames.push_back({_completion_find_subcommand(word), false});
+        return true;
+    }
+    if(subcommand_fallthrough_) {
+        const App *parent_app = (parent_ != nullptr) ? _get_fallthrough_parent() : this;
+        if(parent_app->_completion_find_subcommand(word) != nullptr)
+            return false;
+    }
+    // An option group leaves the word to the command it belongs to. Anywhere else it is an extra, and a parse
+    // sets it aside or fails, neither of which changes what the next word can be.
+    return parent_ == nullptr || !name_.empty();
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_walk_short_names(const std::string &word,
@@ -1189,9 +1328,9 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_walk_short_names(const std::str
     // A parse reads such a word one name at a time, each flag handing the rest of it to the next name
     consumed = 1;  // the leading dash, which stays with the names rather than with the value
     while(consumed < word.size()) {
-        const Option *opt = get_option_no_throw(std::string("-") + word[consumed]);
-        // check_name matches a positional by its name too, and a positional is not part of a bundle
-        if(opt == nullptr || !opt->nonpositional())
+        const App *owner = nullptr;
+        const Option *opt = _completion_find_option(detail::Classifier::SHORT, std::string(1, word[consumed]), owner);
+        if(opt == nullptr)
             return nullptr;
         ++consumed;
         if(opt->get_items_expected_max() != 0)
@@ -1228,18 +1367,18 @@ CLI11_INLINE void App::_add_attached_value_completions(const Option &opt,
     // Candidates are whole insertable tokens, so each carries the name it shares its word with; the prefix is how a
     // script learns how much of one the shell already holds.
     reply.prefix = head;
-    _add_value_completions(opt, typed, reply);
+    _add_value_completions(opt, typed, 0, reply);
     for(CompletionResult &result : reply.results)
         result.value.insert(0, head);
 }
 
 CLI11_INLINE void
-App::_add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const {
+App::_add_value_completions(const Option &opt, const std::string &prefix, int index, CompletionReply &reply) const {
     std::shared_ptr<const CompletionMeta> source;
-    const std::vector<std::string> choices = opt._completion_choices(source);
-    if(choices.empty()) {
-        // Hand back to the shell for path completion.
-        switch(opt.get_completion_hint()) {
+    const std::vector<std::string> choices = opt._completion_choices(source, index);
+    if(!source) {
+        // No Validator lists the values, so the most there is to say is what kind of path the shell should complete
+        switch(opt.get_completion_hint(index)) {
         case CompletionHint::File:
             reply.directive = CompletionDirective::FilterFileExt;
             break;
@@ -1247,10 +1386,11 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
             reply.directive = CompletionDirective::FilterDirs;
             break;
         case CompletionHint::Path:
+            reply.directive = CompletionDirective::FilterFileExt | CompletionDirective::FilterDirs;
+            break;
         case CompletionHint::None:
         default:
-            // Either kind of path will do, which is what the shell offers unprompted, and is also the best guess
-            // left when nothing at all is known about the value.
+            // Nothing at all is known about the value, and a path is the best guess left
             break;
         }
         return;
@@ -1264,41 +1404,37 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
         if(matches)
             reply.results.push_back(CompletionResult{choice, ""});
     }
-    // A declared set has a declared order, which is information the shell would throw away by sorting
+    // A declared set has a declared order, which is information the shell would throw away by sorting. A set with
+    // nothing in it is still the whole answer, so the shell does not get to add file names to it.
     reply.directive = CompletionDirective::NoFileComp | CompletionDirective::KeepOrder;
 }
 
-CLI11_NODISCARD CLI11_INLINE const Option *App::_positional_at(std::size_t index) const {
-    std::vector<const Option *> options;
-    _gather_options(options);
-    for(const Option *opt : options) {
-        if(opt->nonpositional())
-            continue;
-        const int capacity = opt->get_items_expected_max();
-        if(capacity <= 0)
-            continue;
-        if(index < static_cast<std::size_t>(capacity))
-            return opt;
-        index -= static_cast<std::size_t>(capacity);
-    }
-    return nullptr;
-}
-
-CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args) const {
+CLI11_INLINE void App::_complete_intercept() const {
     if(!completion_enabled_ || parent_ != nullptr)
         return;
     if(detail::get_environment_value(completion_env_var_).empty())
         return;
 
-    const std::string index_var = completion_env_var_ + "_INDEX";
-    const std::string proto_var = completion_env_var_ + "_PROTO";
-    const std::string index_string = detail::get_environment_value(index_var);
-    const std::string proto_string = detail::get_environment_value(proto_var);
-    // Unset before anything else can observe them: completing may run another CLI11 binary, and an inherited request
-    // would make that one complete itself instead of doing its job.
-    detail::unset_environment_value(completion_env_var_);
-    detail::unset_environment_value(index_var);
-    detail::unset_environment_value(proto_var);
+    // Read and unset in one go. Unset before anything else can observe them: completing may run another CLI11
+    // binary, and an inherited request would make that one complete itself instead of doing its job.
+    auto take = [this](const std::string &suffix) {
+        const std::string value = detail::get_environment_value(completion_env_var_ + suffix);
+        detail::unset_environment_value(completion_env_var_ + suffix);
+        return value;
+    };
+    take("");
+    const std::string index_string = take("_INDEX");
+    const std::string proto_string = take("_PROTO");
+    const std::string count_string = take("_WORDS");
+
+    // The words of the line arrive as data. The arguments of this run are not the request: a script that outlived
+    // its binary would otherwise have run the command the user was still typing.
+    std::size_t count = 0;
+    if(!detail::lexical_cast(count_string, count))
+        count = 0;
+    std::vector<std::string> words;
+    for(std::size_t ii = 1; ii <= count; ++ii)
+        words.push_back(take("_WORD_" + std::to_string(ii)));
 
     int proto = 0;
     // A missing version is as unusable as a wrong one. Every script this binary can generate exports it, so its
@@ -1309,14 +1445,12 @@ CLI11_INLINE void App::_complete_intercept(const std::vector<std::string> &args)
         throw CallForCompletion(format_completion_reply(unusable));
     }
 
-    // The parser hands over a reversed vector; put it back before indexing into it.
-    const std::vector<std::string> words(args.rbegin(), args.rend());
-
     std::size_t index = 0;
     if(!detail::lexical_cast(index_string, index))
         index = 0;
 
     CompletionReply reply;
+    reply.directive = CompletionDirective::NoFileComp;
     // The shells number the program name as word 0, and everything downstream counts over real arguments alone. A
     // cursor on the program name has nothing to complete.
     if(index > 0)
@@ -3174,6 +3308,9 @@ CLI11_INLINE void App::_move_option(Option *opt, App *app) {
 
     if(config_ptr_ == opt)
         throw OptionAlreadyAdded("cannot move config file options");
+
+    if(completion_ptr_ == opt)
+        throw OptionAlreadyAdded("cannot move completion options");
 
     auto iterator =
         std::find_if(std::begin(options_), std::end(options_), [opt](const Option_p &v) { return v.get() == opt; });

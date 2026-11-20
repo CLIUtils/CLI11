@@ -43,15 +43,19 @@ No extra code is needed for any of this:
   nested.
 - Option names, with their descriptions shown beside them, in every spelling the
   program accepts: long, short, and `/flag` where `allow_windows_style_options`
-  is on.
+  is on. Descriptions need bash 4 or later, and are left out for menu
+  completion, which would type them into the command.
 - The values of an option checked against `CLI::IsMember`, and the keys of a
   `CLI::Transformer` or `CLI::CheckedTransformer`, in the order they were
   declared.
 - File and directory names for an option checked against `CLI::ExistingFile`,
   `CLI::ExistingDirectory` or `CLI::ExistingPath` — the shell completes those
   itself, since it is the one that knows the directory the line is being typed
-  in.
+  in. An option that nothing is known about gets the same.
 - Positionals, from the same two sources.
+
+A validator given an `application_index` applies to the value at that index
+only, so each value of a pair can have its own list.
 
 Names are matched the way the parser matches them, so `ignore_case` and
 `ignore_underscore` apply, and so do the filters given to `CLI::IsMember` and
@@ -87,26 +91,39 @@ app.set_completion_env_var("MYPROG_COMPLETE");  // the default is CLI11_COMPLETE
 ```
 
 The generated script uses whichever variable is configured, so the two stay
-together; generate a new script after changing it.
+together; generate a new script after changing it. The name goes into the script
+as a shell variable, so it has to be a shell identifier, and
+`set_completion_env_var` throws `CLI::IncorrectConstruction` for one that is
+not.
 
 ## How it works
 
-On TAB, the script runs the program again with the words of the line as ordinary
-arguments and three variables set. Completing `myprog st` runs:
+On TAB, the script runs the program again with the request in the environment.
+Completing `myprog st` runs:
 
 ```bash
-CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=1 myprog st
+CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=1 \
+  CLI11_COMPLETE_WORDS=1 CLI11_COMPLETE_WORD_1=st myprog --cli11-complete
 ```
 
-| Variable               | Example | Meaning                                                                                                  |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
-| `CLI11_COMPLETE`       | `bash`  | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
-| `CLI11_COMPLETE_INDEX` | `1`     | Which word the cursor is in, counting the program name as word 0.                                        |
-| `CLI11_COMPLETE_PROTO` | `1`     | The version of the reply format the script was generated for.                                            |
+| Variable                  | Example | Meaning                                                                                                  |
+| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| `CLI11_COMPLETE`          | `bash`  | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
+| `CLI11_COMPLETE_INDEX`    | `1`     | Which word the cursor is in, counting the program name as word 0.                                        |
+| `CLI11_COMPLETE_PROTO`    | `1`     | The version of the reply format the script was generated for.                                            |
+| `CLI11_COMPLETE_WORDS`    | `1`     | How many words the line has after the program name.                                                      |
+| `CLI11_COMPLETE_WORD_<n>` | `st`    | Word `n` of the line, numbered as `CLI11_COMPLETE_INDEX` numbers them.                                   |
 
-The last two are named after the first, so `set_completion_env_var` renames all
-three. The program removes them from the environment before it does anything
+All of them are named after the first, so `set_completion_env_var` renames them
+together. The program removes them from the environment before it does anything
 else, so nothing it runs later inherits the request.
+
+The words of the line are never the arguments of the run. A script can outlive
+the program it was generated for, and a program that does not answer requests
+(an older build, or one with `disable_completion`) runs what it is given; if
+that were the line, TAB would run the command being typed. The one argument is
+fixed and is not read. It is there for such a program to reject, as a CLI11
+program does with an option it does not know.
 
 The program then classifies those words the way a parse would — which subcommand
 the line has reached, which option is collecting values, which positional's turn
@@ -130,13 +147,17 @@ The last line is always the directive, a bit mask telling the shell what else it
 may do. The `2` above says the word being completed is not a file name, so bash
 is not to add any:
 
-| Bit | Name            | Meaning                                                     |
-| --- | --------------- | ----------------------------------------------------------- |
-| 1   | `Error`         | The request could not be answered; ignore the whole reply.  |
-| 2   | `NoFileComp`    | Do not add file names of your own.                          |
-| 4   | `KeepOrder`     | The candidates are in a meaningful order; do not sort them. |
-| 8   | `FilterFileExt` | The value is a file name; complete it.                      |
-| 16  | `FilterDirs`    | The value is a directory name; complete it.                 |
+| Bit | Name            | Meaning                                                         |
+| --- | --------------- | --------------------------------------------------------------- |
+| 1   | `Error`         | The request could not be answered; ignore the whole reply.      |
+| 2   | `NoFileComp`    | Do not add file names of your own.                              |
+| 4   | `KeepOrder`     | The candidates are in a meaningful order; do not sort them.     |
+| 8   | `FilterFileExt` | The value is a file name; complete it.                          |
+| 16  | `FilterDirs`    | The value is a directory name; complete it. With 8, either one. |
+
+With none of these set, nothing is known about the word, and the script offers
+paths if there are no candidates. The script produces every path itself and
+registers no fallback with bash, so a reply it cannot use offers nothing.
 
 Keeping the directive last is what lets a script tell a whole reply from a
 partial one. A program that crashed halfway through printing, or a different
@@ -159,9 +180,9 @@ The cases that reach it:
 - Options addressed through the `--sub.opt` dotted notation. It needs no setter,
   so every program accepts it.
 - Lines using `allow_non_standard_option_names`, `positionals_at_end`,
-  `prefix_command`, `subcommand_fallthrough`, or `require_subcommand_max`. Each
-  of these has to be turned on deliberately, so no program is affected without
-  asking for it.
+  `prefix_command`, `validate_positionals`, `validate_optional_arguments`, or
+  `require_subcommand_max`. Each of these has to be turned on deliberately, so
+  no program is affected without asking for it.
 - The extra words that `allow_extras` makes legal.
 
 Two gaps are worth knowing about on their own, because they do something worse
@@ -197,12 +218,14 @@ have to be a name no program could already be using, and would show up in the
 parse; a variable is invisible to everything except the run that is meant to see
 it.
 
-The differences are two, both about a script outliving the binary it was
-generated for. `CLI11_COMPLETE_PROTO` lets an old script be refused rather than
-misread, which matters more here than in either of those projects because a
-distribution may package the script as a static file. And the `:prefix=` line
-moves the splitting of `--config=/et` out of the script and into the program,
-which is the only side that knows how much of the word is an option name.
+The differences are three, all about a script outliving the binary it was
+generated for. The words of the line travel in the environment too, as they do
+in Python's click, so that a binary that does not answer cannot run them.
+`CLI11_COMPLETE_PROTO` lets an old script be refused rather than misread, which
+matters more here than in either of those projects because a distribution may
+package the script as a static file. And the `:prefix=` line moves the splitting
+of `--config=/et` out of the script and into the program, which is the only side
+that knows how much of the word is an option name.
 
 Neither project's code is used here: the generated scripts and the
 classification are written for CLI11, and the shared vocabulary of `COMPREPLY`

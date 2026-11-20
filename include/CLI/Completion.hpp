@@ -13,6 +13,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
 
@@ -20,6 +21,9 @@
 
 namespace CLI {
 // [CLI11:completion_hpp:verbatim]
+
+class App;
+class Option;
 
 /// The version of the reply format that this build speaks.
 ///
@@ -32,7 +36,7 @@ CLI11_MODULE_INLINE constexpr int CLI11_COMPLETE_PROTO_VERSION = 1;
 /// The values are a bit mask so a reply can carry several at once; each directive takes its bit
 /// with the feature that emits it.
 enum class CompletionDirective : std::uint8_t {
-    /// No special handling: the shell falls back to its own file completion when nothing matched.
+    /// Nothing is known about the value: the shell offers paths when there are no candidates.
     Default = 0,
     /// The request could not be answered, so the shell must ignore the reply entirely.
     Error = 1,
@@ -42,7 +46,8 @@ enum class CompletionDirective : std::uint8_t {
     KeepOrder = 4,
     /// The value is a file name and the shell is to complete it.
     FilterFileExt = 8,
-    /// The value is a directory name and the shell is to complete it.
+    /// The value is a directory name and the shell is to complete it. Together with FilterFileExt, either kind of
+    /// path will do.
     FilterDirs = 16
 };
 
@@ -62,7 +67,7 @@ enum class CompletionHint : std::uint8_t {
     File,
     /// A directory name.
     Dir,
-    /// Either, so whatever the shell would offer on its own.
+    /// Either a file or a directory.
     Path
 };
 
@@ -74,11 +79,16 @@ struct CompletionMeta {
     /// The kind of value the validator accepts, when the shell is the one that can produce it.
     CompletionHint hint{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
-    /// Every value the validator accepts, or empty when it does not enumerate them.
+    /// Every value the validator accepts, or an empty function when it does not enumerate them. A function that
+    /// returns no values says that the validator accepts none.
     ///
     /// Read at completion time rather than stored as a list, because a validator may hold a reference to a set the
     /// program fills in after construction.
     std::function<std::vector<std::string>()> choices{};
+
+    /// Whether the validator takes this text. Empty for a single validator, whose answer is a comparison against
+    /// `choices` through `filters`; a combination of validators sets it, because each side compares by its own rules.
+    std::function<bool(const std::string &)> accepts{};  // cppcheck-suppress unusedStructMember
 
     /// The normalisations the validator applies before it compares, such as `ignore_case`. Text typed so far matches
     /// a choice when it is a prefix of it as written or after any one of these has been applied to both.
@@ -116,6 +126,40 @@ struct CompletionReply {
 CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply);
 
 namespace detail {
+
+/// Whether the Validator a meta describes takes this text, as far as its listed values can say. One that lists no
+/// values is taken to accept it.
+CLI11_INLINE bool completion_meta_accepts(const CompletionMeta &meta, const std::string &text);
+
+/// What a completion request knows after reading the words in front of the cursor.
+///
+/// Completion parses nothing, so this holds the parts of the parser's state that decide what the next word can be.
+struct CompletionWalk {
+    /// A command the line has entered and not left, and whether it has seen the `--` marker
+    struct Frame {
+        const App *app;
+        bool positional_only;
+    };
+    /// The commands the line is inside, the innermost last. Empty when the line cannot be read any further.
+    std::vector<Frame> frames{};  // cppcheck-suppress unusedStructMember
+    /// How many items each option has been given, by name or as a positional
+    std::vector<std::pair<const Option *, int>> counts{};  // cppcheck-suppress unusedStructMember
+    /// The option that still takes values when the cursor is reached, and how many items it has from this use
+    const Option *awaiting{nullptr};  // cppcheck-suppress unusedStructMember
+    int awaiting_items{0};            // cppcheck-suppress unusedStructMember
+    /// Whether the word at the cursor is one of the values `awaiting` must have, which is taken whatever it looks like
+    bool awaiting_minimum{false};  // cppcheck-suppress unusedStructMember
+
+    /// The number of items the option has been given
+    int &count(const Option *opt) {
+        for(std::pair<const Option *, int> &entry : counts) {
+            if(entry.first == opt)
+                return entry.second;
+        }
+        counts.emplace_back(opt, 0);
+        return counts.back().second;
+    }
+};
 
 /// Combine what two Validators say about their values into what satisfies both of them
 ///

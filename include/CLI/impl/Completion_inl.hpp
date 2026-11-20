@@ -13,6 +13,7 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -65,9 +66,31 @@ merge_completion_meta(const CompletionMeta &lhs, const CompletionMeta &rhs, bool
     // a set of values too large to write down, so a union with one is still that hint
     meta->hint = (lhs.hint != CompletionHint::None) ? lhs.hint : rhs.hint;
     both = lhs.choices && rhs.choices;
-    if(!both)
-        meta->choices = lhs.choices ? lhs.choices : rhs.choices;
+    if(!both) {
+        // The side that lists nothing is taken to accept anything, so the other side's answer is the whole answer
+        const CompletionMeta &listed = lhs.choices ? lhs : rhs;
+        meta->choices = listed.choices;
+        meta->accepts = listed.accepts;
+        if(!meta->accepts && listed.choices)
+            meta->filters = listed.filters;
+    }
     return meta;
+}
+
+CLI11_INLINE bool completion_meta_accepts(const CompletionMeta &meta, const std::string &text) {
+    if(meta.accepts)
+        return meta.accepts(text);
+    if(!meta.choices)
+        return true;
+    for(const std::string &choice : meta.choices()) {
+        if(choice == text)
+            return true;
+        for(const std::function<std::string(std::string)> &filter : meta.filters) {
+            if(filter(choice) == filter(text))
+                return true;
+        }
+    }
+    return false;
 }
 
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
@@ -82,14 +105,17 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     auto meta = merge_completion_meta(*lhs, *rhs, both);
     if(both) {
         meta->choices = [lhs, rhs]() {
-            // Walking the left one keeps its order, which is the order a declared set is offered in
-            const std::vector<std::string> allowed = rhs->choices();
+            // Walking the left one keeps its order, which is the order a declared set is offered in. The right one
+            // decides by its own comparison, so a value the two sides spell differently is still in both.
             std::vector<std::string> out;
             for(const std::string &choice : lhs->choices()) {
-                if(std::find(allowed.begin(), allowed.end(), choice) != allowed.end())
+                if(completion_meta_accepts(*rhs, choice))
                     out.push_back(choice);
             }
             return out;
+        };
+        meta->accepts = [lhs, rhs](const std::string &text) {
+            return completion_meta_accepts(*lhs, text) && completion_meta_accepts(*rhs, text);
         };
     }
     return meta;
@@ -114,6 +140,9 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                     out.push_back(choice);
             }
             return out;
+        };
+        meta->accepts = [lhs, rhs](const std::string &text) {
+            return completion_meta_accepts(*lhs, text) || completion_meta_accepts(*rhs, text);
         };
     }
     return meta;
@@ -224,6 +253,26 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     done
 }
 
+@FUNCTION@_files() { # [-d]: append the paths that begin with the caller's `cur`, directories only with -d
+    # _filedir comes from the bash-completion package. It reads the word from a caller's local named `cur` rather
+    # than from an argument, which dynamic scoping is what makes work.
+    if declare -F _filedir > /dev/null; then
+        _filedir "$@"
+        return
+    fi
+    local kind=-f line
+    if [[ ${1-} == -d ]]; then
+        kind=-d
+    fi
+    while IFS='' read -r line; do
+        if [[ -n ${line} ]]; then
+            COMPREPLY+=("${line}")
+        fi
+    done <<< "$(compgen "${kind}" -- "${cur}")"
+    # Has readline quote the names and mark the directories. bash 3.2 has no compopt and does neither.
+    compopt -o filenames 2>/dev/null
+}
+
 @FUNCTION@() {
     local response line comp desc ci ii tab=$'\t'
     local directive="" prefix="" longest=0
@@ -300,7 +349,16 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         words[0]=${program}
     fi
 
-    response=$(@ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ "${words[@]}" 2>/dev/null)
+    # The words of the line go to the program as data in the environment, and never as its arguments: a program that
+    # does not answer, one older than this script or with completion turned off, must not run the line being typed.
+    # The one argument is there for that program to reject, where running with none could be a command of its own.
+    response=$(
+        export @ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ @ENV@_WORDS=$(( ${#words[@]} - 1 ))
+        for (( ii = 1; ii < ${#words[@]}; ii++ )); do
+            export "@ENV@_WORD_${ii}=${words[ii]}"
+        done
+        "${program}" --cli11-complete 2>/dev/null
+    )
 
     COMPREPLY=()
     while IFS='' read -r line; do
@@ -350,50 +408,56 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         return 0
     fi
 
-    # A path is the shell's to complete. _filedir comes from the bash-completion package; without it the `-o default`
-    # on the complete line leaves readline to it. It reads the word from a caller's local named `cur` rather than from
-    # an argument, which dynamic scoping is what makes work.
+    # A path is the shell's to complete, when the reply asks for one, and when it has no candidates and does not rule
+    # paths out. Nothing is registered for bash to fall back on, so a reply that cannot be used offers nothing.
     #
-    # Its answers are whole values, while readline replaces the word from its last break character on, so the two
+    # The answers are whole values, while readline replaces the word from its last break character on, so the two
     # boundaries have to be lined up, and either can be the later one. `--file=a:b` has the head of the value on the
     # line already, so it comes back off the candidates; `-fa` has no break at all, so the `-f` goes on.
-    local cur=${word#"${prefix}"} value_head="" value_lead=""
+    local cur=${word#"${prefix}"} value_head="" value_lead="" paths=""
     if (( ${#head} >= ${#prefix} )); then
         value_head=${head#"${prefix}"}
     else
         value_lead=${prefix#"${head}"}
     fi
-    if (( (directive & 24) != 0 )); then
-        # Only what _filedir appends is in value coordinates. A positional sends its subcommand names along with the
+    if (( (directive & 8) != 0 )); then
+        paths=any
+    elif (( (directive & 16) != 0 )); then
+        paths=dirs
+    elif (( (directive & 2) == 0 && ${#COMPREPLY[@]} == 0 )); then
+        paths=any
+    fi
+    if [[ -n ${paths} ]]; then
+        # Only what is appended here is in value coordinates. A positional sends its subcommand names along with the
         # path hint, and those are whole tokens already, so the fixup starts where the candidates from the binary end.
         local from=${#COMPREPLY[@]}
-        if (( (directive & 16) != 0 )); then
-            if declare -F _filedir > /dev/null; then
-                _filedir -d
-            else
-                compopt +o default -o dirnames 2>/dev/null
-            fi
-        elif declare -F _filedir > /dev/null; then
-            _filedir
+        if [[ ${paths} == dirs ]]; then
+            @FUNCTION@_files -d
         else
-            compopt -o default 2>/dev/null
+            @FUNCTION@_files
         fi
         for (( ci = from; ci < ${#COMPREPLY[@]}; ci++ )); do
             COMPREPLY[ci]=${value_lead}${COMPREPLY[ci]#"${value_head}"}
         done
     fi
 
-    # After the paths, so that a name sharing the reply with them is still listed rather than inserted
-    if (( ${#COMPREPLY[@]} == 1 )); then
-        # A lone candidate is inserted rather than listed, so its description would land on the command line
-        COMPREPLY[0]=${COMPREPLY[0]%%"${tab}"*}
-    else
+    # After the paths, so that a name sharing the reply with them is still listed rather than inserted. A description
+    # is text in the candidate, so it is only added where readline lists the candidates: COMP_TYPE is 9 for a plain
+    # TAB and 33, 63 or 64 for the listing variants. Menu completion (37) and insert-completions (42) put each
+    # candidate on the line, and bash 3.2 does not say which it is doing, so those get the candidates alone.
+    local listing=""
+    case ${COMP_TYPE-} in
+        9 | 33 | 63 | 64) listing=1 ;;
+    esac
+    if [[ -n ${listing} ]] && (( ${#COMPREPLY[@]} > 1 )); then
         @FUNCTION@_describe "${longest}"
+    else
+        # A lone candidate is inserted rather than listed, so its description would land on the command line
+        for ci in "${!COMPREPLY[@]}"; do
+            COMPREPLY[ci]=${COMPREPLY[ci]%%"${tab}"*}
+        done
     fi
 
-    if (( (directive & 2) != 0 )); then
-        compopt +o default 2>/dev/null
-    fi
     if (( (directive & 4) != 0 )); then
         # The candidates came back in a meaningful order, which bash would otherwise sort away
         compopt -o nosort 2>/dev/null
@@ -401,7 +465,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     return 0
 }
 
-complete -o default -F @FUNCTION@ @PROGRAM@
+complete -F @FUNCTION@ @PROGRAM@
 )bash";
 
     // Single quotes take everything literally except another single quote

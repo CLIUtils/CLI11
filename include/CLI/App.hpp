@@ -208,8 +208,8 @@ class App {
     /// If true, parse() answers a completion request found in the environment instead of parsing
     bool completion_enabled_{true};
 
-    /// The environment variable whose presence signals a completion request. The cursor index is read from the same
-    /// name with `_INDEX` appended
+    /// The environment variable whose presence signals a completion request. The rest of the request is read from
+    /// variables named after it, `_INDEX` and so on
     std::string completion_env_var_{"CLI11_COMPLETE"};
 
     /// This is the formatter for help printing. Default provided. INHERITABLE (same pointer)
@@ -674,11 +674,9 @@ class App {
         return this;
     }
 
-    /// Change the environment variable whose presence activates completion
-    App *set_completion_env_var(std::string env_var) {
-        completion_env_var_ = std::move(env_var);
-        return this;
-    }
+    /// Change the environment variable whose presence activates completion. The name has to be a shell identifier,
+    /// letters, digits and underscores with no leading digit, and IncorrectConstruction is thrown if it is not.
+    App *set_completion_env_var(std::string env_var);
 
     /// Get the environment variable whose presence activates completion
     CLI11_NODISCARD const std::string &get_completion_env_var() const { return completion_env_var_; }
@@ -1335,8 +1333,11 @@ class App {
     void _parse_setup();
 
     /// Answer a completion request sitting in the environment by throwing CallForCompletion.
-    /// Returns without doing anything if there is no request. Expects a reversed vector.
-    void _complete_intercept(const std::vector<std::string> &args) const;
+    /// Returns without doing anything if there is no request. The arguments of the run are not read.
+    void _complete_intercept() const;
+
+    /// Whether a parse would find this app disabled when it starts, which is what completion answers for
+    CLI11_NODISCARD bool _completion_disabled() const;
 
     /// Append every name and alias of this app's subcommands that starts with the prefix
     void _add_subcommand_completions(const std::string &prefix, CompletionReply &reply) const;
@@ -1348,31 +1349,46 @@ class App {
     /// Append every option name of this app, in its insertable `--long` or `-s` form, that starts with the prefix
     void _add_option_completions(const std::string &prefix, CompletionReply &reply) const;
 
-    /// Whether this word is an option written the Windows way, `/name` or `/name:value`, and this app takes those
-    CLI11_NODISCARD bool _is_windows_option(const std::string &word) const;
+    /// _find_subcommand for a parse that has not started: nothing is used yet, and the startup modes apply
+    CLI11_NODISCARD const App *_completion_find_subcommand(const std::string &subc_name) const;
 
-    /// The option that the words after this one are values for, or null if this word is not an option that takes any.
-    /// `attached_values` comes back as 1 when the word carries a value of its own, `--files=a` or `-la`, and 0 when it
-    /// does not, so that a caller can tell how many values the option still needs from the words after it.
-    CLI11_NODISCARD const Option *_option_expecting_value(const std::string &word, int &attached_values) const;
+    /// _recognize for a parse that has not started. The dotted `sub.opt` notation is not read.
+    CLI11_NODISCARD detail::Classifier _completion_recognize(const std::string &word) const;
 
-    /// Walk the words an option takes as its values and return the index one past the last of them.
-    ///
-    /// Values are read from `words[first]` onwards, in addition to the `attached_values` the option's own word carried.
-    /// `reserved` is how many words at the end of the line must be left for the required positionals. Nothing past
-    /// `cursor` is read, since the word being completed is not classified here; `hungry` is set if the option would
-    /// take a value there.
-    CLI11_NODISCARD std::size_t _option_value_end(const Option &opt,
-                                                  int attached_values,
-                                                  const std::vector<std::string> &words,
-                                                  std::size_t first,
-                                                  std::size_t cursor,
-                                                  std::size_t reserved,
-                                                  bool &hungry) const;
+    /// The option a parse of this app finds for a name of this kind, and the app whose _parse_arg handles it: this
+    /// one, an enabled option group, or the fallthrough parent. Null when the parse would not find one.
+    CLI11_NODISCARD const Option *
+    _completion_find_option(detail::Classifier type, const std::string &opt_name, const App *&owner) const;
 
-    /// How many words at the end of the line the required positionals must be left, given that `assigned` words have
-    /// gone to positionals already. What _count_remaining_positionals counts, for a walk that has parsed nothing.
-    CLI11_NODISCARD std::size_t _count_pending_positionals(std::size_t assigned) const;
+    /// How many items a word adds to an option, which is more than one where a delimiter splits it
+    static int _completion_items(const Option &opt, const std::string &word);
+
+    /// What _count_remaining_positionals counts, from the items the walk has given out
+    std::size_t _completion_pending_positionals(detail::CompletionWalk &walk, bool required_only) const;
+
+    /// The positional that takes the next positional value, as _parse_positional picks it. Null once all are full.
+    CLI11_NODISCARD const Option *_completion_next_positional(detail::CompletionWalk &walk) const;
+
+    /// Read one finished word the way _parse_single does and return the index of the next word to read. That is the
+    /// same index when the word closes this command and belongs to the one outside it. `word` is `words[index]`, or
+    /// what a flag left of it.
+    std::size_t _completion_step(detail::CompletionWalk &walk,
+                                 const std::string &word,
+                                 const std::vector<std::string> &words,
+                                 std::size_t index,
+                                 std::size_t cursor) const;
+
+    /// Read an option and the words it takes as values, as _parse_arg does, and return the index one past them.
+    /// Nothing at `cursor` is read: if the option would take a value there, the walk is left awaiting it.
+    std::size_t _completion_option(detail::CompletionWalk &walk,
+                                   detail::Classifier type,
+                                   const std::string &word,
+                                   const std::vector<std::string> &words,
+                                   std::size_t index,
+                                   std::size_t cursor) const;
+
+    /// Give a word to whatever _parse_positional would give it to. False when this app does not take it.
+    bool _completion_positional(detail::CompletionWalk &walk, const std::string &word, bool halt_on_subcommand) const;
 
     /// Read a word of short names as a parse would, stopping at the first name that takes a value and returning it.
     /// Sets consumed to how much of the word was names, which is all of it when the walk ran out of word.
@@ -1387,13 +1403,9 @@ class App {
                                          const std::string &typed,
                                          CompletionReply &reply) const;
 
-    /// Append every value the option accepts that starts with the prefix, leaving the reply alone if it accepts
-    /// anything at all
-    void _add_value_completions(const Option &opt, const std::string &prefix, CompletionReply &reply) const;
-
-    /// The positional that would receive the value at this index among the positional values of this app, counting
-    /// each positional's own capacity. Null once the positionals are all full.
-    CLI11_NODISCARD const Option *_positional_at(std::size_t index) const;
+    /// Append every value the option accepts at this index that starts with the prefix, or say what kind of value it
+    /// is when no Validator lists them
+    void _add_value_completions(const Option &opt, const std::string &prefix, int index, CompletionReply &reply) const;
 
     /// Internal parse function
     void _parse(std::vector<std::string> &args);

@@ -28,23 +28,36 @@ const char *const complete_var = "CLI11_COMPLETE";
 const char *const index_var = "CLI11_COMPLETE_INDEX";
 const char *const proto_var = "CLI11_COMPLETE_PROTO";
 
-void set_request(const std::string &index) {
+const char *const words_var = "CLI11_COMPLETE_WORDS";
+
+/// Put the words of a line in the environment the way the script does, under the names that follow `prefix`
+void set_words(const std::string &prefix, const std::vector<std::string> &words) {
+    put_env(prefix + "_WORDS", std::to_string(words.size()));
+    for(std::size_t ii = 0; ii < words.size(); ++ii)
+        put_env(prefix + "_WORD_" + std::to_string(ii + 1), words[ii]);
+}
+
+void set_request(const std::string &index, const std::vector<std::string> &words) {
     put_env(complete_var, "bash");
     put_env(index_var, index);
     put_env(proto_var, "1");
+    set_words(complete_var, words);
 }
 
 void clear_request() {
     CLI::detail::unset_environment_value(complete_var);
     CLI::detail::unset_environment_value(index_var);
     CLI::detail::unset_environment_value(proto_var);
+    CLI::detail::unset_environment_value(words_var);
 }
 
-/// Parse the words of a line with whatever request is in the environment, and return the reply if there was one
-std::string parse_reply(CLI::App &app, std::vector<std::string> words) {
-    std::reverse(words.begin(), words.end());
+/// The one argument the script runs the program with. It is not part of the request.
+const char *const guard_argument = "--cli11-complete";
+
+/// Parse with whatever request is in the environment, and return the reply if there was one
+std::string parse_reply(CLI::App &app) {
     try {
-        app.parse(words);
+        app.parse(std::vector<std::string>{guard_argument});
     } catch(const CLI::CallForCompletion &e) {
         return e.what();
     }
@@ -54,23 +67,46 @@ std::string parse_reply(CLI::App &app, std::vector<std::string> words) {
 /// Drive a completion request through the public parse() entry point exactly as a shell would: the words of the line
 /// with the program name excluded, and an index that still counts it.
 std::string complete(CLI::App &app, const std::vector<std::string> &words, const std::string &index) {
-    set_request(index);
-    std::string reply = parse_reply(app, words);
+    set_request(index, words);
+    std::string reply = parse_reply(app);
     clear_request();
     return reply;
 }
 
 }  // namespace
 
-TEST_CASE("Completion: un-reverses the argument vector", "[completion]") {
+TEST_CASE("Completion: the words of the request are read in order", "[completion]") {
     CLI::App app{"program"};
     app.add_subcommand("start", "");
     app.add_subcommand("stop", "");
 
-    // Both words name something completable, so getting the direction wrong still produces a
-    // plausible-looking reply, the wrong one.
     CHECK(complete(app, {"sta", "stop"}, "1") == "start\n:2\n");
     CHECK(complete(app, {"sta", "stop"}, "2") == "stop\n:2\n");
+}
+
+TEST_CASE("Completion: the arguments of the run are not the request", "[completion]") {
+    CLI::App app{"program"};
+    app.add_subcommand("start", "");
+    app.add_subcommand("stop", "");
+
+    // A script that outlives its binary must not have run the line being typed, so the line is not in the arguments
+    set_request("1", {"sta"});
+    std::string reply;
+    try {
+        app.parse(std::vector<std::string>{"stop"});
+    } catch(const CLI::CallForCompletion &e) {
+        reply = e.what();
+    }
+    clear_request();
+    CHECK(reply == "start\n:2\n");
+    CHECK_FALSE(app.got_subcommand("stop"));
+
+    // A count that cannot be read is no words at all
+    set_request("1", {"sta"});
+    put_env(words_var, "many");
+    CHECK(parse_reply(app) == ":2\n");
+    clear_request();
+    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
 }
 
 TEST_CASE("Completion: offers every subcommand on an empty word", "[completion]") {
@@ -107,14 +143,14 @@ TEST_CASE("Completion: descends into the subcommand named before the cursor", "[
     CHECK(complete(app, {"zzz", ""}, "2") == "start\nremote\n:2\n");
 }
 
-TEST_CASE("Completion: an empty word before the cursor is skipped rather than counted", "[completion]") {
+TEST_CASE("Completion: an empty word before the cursor does not stop the walk", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
     CLI::App *start = app.add_subcommand("start", "");
     start->set_help_flag("");
     start->add_flag("--inner", "");
 
-    // A doubled space produces an empty word; the walk skips it instead of counting it
+    // An empty argument is an extra here, and the words after it are read as before
     CHECK(complete(app, {"", "start", "--"}, "3") == "--inner\n:2\n");
 }
 
@@ -271,9 +307,9 @@ TEST_CASE("Completion: a path is handed back to the shell", "[completion]") {
     // the candidates and none are sent to it
     CHECK(complete(app, {"--file", ""}, "2") == ":8\n");
     CHECK(complete(app, {"--dir", ""}, "2") == ":16\n");
-    // Either kind of path is what the shell offers unprompted, so saying so is the same as saying nothing
-    CHECK(complete(app, {"--any", ""}, "2") == ":0\n");
-    // A path that must not exist yet is still typed against the ones that do, and gets the same treatment
+    // Either kind of path is both of them
+    CHECK(complete(app, {"--any", ""}, "2") == ":24\n");
+    // A path that must not exist yet says nothing about itself, which leaves it to the shell as well
     CHECK(complete(app, {"--new", ""}, "2") == ":0\n");
     // A partial value changes nothing, because the side doing the filtering is the side doing the completing
     CHECK(complete(app, {"--file", "/et"}, "2") == ":8\n");
@@ -594,10 +630,10 @@ TEST_CASE("Completion: an = after something that takes no value offers nothing",
     app.add_flag("--verbose", "");
     app.add_subcommand("value", "");
 
-    // A flag has no value to complete, and neither has an unknown option. Both fall back to no candidates and the
-    // default directive rather than to the subcommand that shares the word.
-    CHECK(complete(app, {"--verbose=val"}, "1") == ":0\n");
-    CHECK(complete(app, {"--nope=val"}, "1") == ":0\n");
+    // A flag has no value to complete, and neither has an unknown option. The subcommand that shares the word is
+    // not a candidate, and a file name is not one either.
+    CHECK(complete(app, {"--verbose=val"}, "1") == ":2\n");
+    CHECK(complete(app, {"--nope=val"}, "1") == ":2\n");
 }
 
 TEST_CASE("Completion: a Windows-style name is offered once the word starts with a slash", "[completion]") {
@@ -662,8 +698,8 @@ TEST_CASE("Completion: an unknown Windows-style option has nothing to say", "[co
     app.add_subcommand("val", "");
 
     // Neither has a value to complete, so the subcommand sharing the word is still not a candidate
-    CHECK(complete(app, {"/verbose:val"}, "1") == ":0\n");
-    CHECK(complete(app, {"/nope:val"}, "1") == ":0\n");
+    CHECK(complete(app, {"/verbose:val"}, "1") == ":2\n");
+    CHECK(complete(app, {"/nope:val"}, "1") == ":2\n");
 }
 
 TEST_CASE("Completion: a slash into an invalid name character is not the Windows-style shape", "[completion]") {
@@ -1034,6 +1070,8 @@ TEST_CASE("Completion: the subcommand terminator hands the walk back to the pare
     // _recognize only reads it as a terminator inside a subcommand, and so does the walk
     CHECK(complete(app, {"++", "--"}, "2") == "--outer\n:2\n");
     // The marker outranks it: after `--` there are no more terminators either
+    std::string value;
+    sub->add_option("value", value);
     CHECK(complete(app, {"start", "--", "++", "--outer"}, "4") == ":2\n");
 }
 
@@ -1042,10 +1080,10 @@ TEST_CASE("Completion: degenerate cursor positions reply with nothing", "[comple
     app.add_subcommand("start", "");
 
     // The cursor is on the program name itself
-    CHECK(complete(app, {""}, "0") == ":0\n");
+    CHECK(complete(app, {""}, "0") == ":2\n");
     // Past the last word the shell sent, and a bad index, are both malformed rather than empty
-    CHECK(complete(app, {"start", ""}, "9") == ":0\n");
-    CHECK(complete(app, {""}, "not-a-number") == ":0\n");
+    CHECK(complete(app, {"start", ""}, "9") == ":2\n");
+    CHECK(complete(app, {""}, "not-a-number") == ":2\n");
 }
 
 TEST_CASE("Completion: the reply format is one candidate per line and a directive", "[completion]") {
@@ -1155,17 +1193,18 @@ TEST_CASE("Completion: the request is out of the environment before it is answer
     CLI::App app{"program"};
     app.add_subcommand("start", "");
 
-    set_request("1");
+    set_request("1", {"sta"});
     bool thrown = false;
     try {
-        std::vector<std::string> args{"sta"};
-        app.parse(args);
+        app.parse(std::vector<std::string>{guard_argument});
     } catch(const CLI::CallForCompletion &) {
         thrown = true;
         // A completion callback may run another CLI11 binary, which must not complete itself
         CHECK(CLI::detail::get_environment_value(complete_var).empty());
         CHECK(CLI::detail::get_environment_value(index_var).empty());
         CHECK(CLI::detail::get_environment_value(proto_var).empty());
+        CHECK(CLI::detail::get_environment_value(words_var).empty());
+        CHECK(CLI::detail::get_environment_value("CLI11_COMPLETE_WORD_1").empty());
     }
     clear_request();
     CHECK(thrown);
@@ -1178,14 +1217,13 @@ TEST_CASE("Completion: a request from another protocol version gets no candidate
     // A script generated against a different format would misread whatever came back, so the Error directive goes
     // out alone: no completions beats wrong completions
     for(const std::string &proto : {std::string("2"), std::string("bash"), std::string()}) {
-        put_env(complete_var, "bash");
-        put_env(index_var, "1");
+        set_request("1", {"sta"});
         if(proto.empty())
             CLI::detail::unset_environment_value(proto_var);
         else
             put_env(proto_var, proto);
 
-        const std::string reply = parse_reply(app, {"sta"});
+        const std::string reply = parse_reply(app);
         clear_request();
         CHECK(reply == ":1\n");
     }
@@ -1218,10 +1256,11 @@ TEST_CASE("Completion: the intercept can be turned off", "[completion]") {
     app.add_subcommand("start", "");
     app.disable_completion();
 
-    set_request("1");
+    set_request("1", {"sta"});
     std::vector<std::string> args{"start"};
     CHECK_NOTHROW(app.parse(args));
     clear_request();
+    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
     CHECK(app.got_subcommand("start"));
 }
 
@@ -1235,16 +1274,18 @@ TEST_CASE("Completion: the activation variable is configurable", "[completion]")
     CHECK(app.get_completion_env_var() == "MYPROG_COMPLETE");
 
     // The default variable no longer activates anything, so this is an ordinary parse
-    set_request("1");
+    set_request("1", {"sta"});
     std::vector<std::string> args{"start"};
     CHECK_NOTHROW(app.parse(args));
     clear_request();
+    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
 
     // The version travels under the configured name too, or the request would be refused as unversioned
     put_env("MYPROG_COMPLETE", "bash");
     put_env("MYPROG_COMPLETE_INDEX", "1");
     put_env("MYPROG_COMPLETE_PROTO", "1");
-    CHECK(parse_reply(app, {"sta"}) == "start\n:2\n");
+    set_words("MYPROG_COMPLETE", {"sta"});
+    CHECK(parse_reply(app) == "start\n:2\n");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE_INDEX");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE_PROTO");
@@ -1323,7 +1364,7 @@ TEST_CASE("Completion: the bash script is filled in for the program", "[completi
     // The function is named after the program, sanitized into something a shell will accept
     CHECK(script.find("\n_cli11_complete_my_prog_exe() {\n") != std::string::npos);
     // and the same name has to be the one registered, against the unsanitized program name
-    CHECK(script.find("\ncomplete -o default -F _cli11_complete_my_prog_exe 'my-prog.exe'\n") != std::string::npos);
+    CHECK(script.find("\ncomplete -F _cli11_complete_my_prog_exe 'my-prog.exe'\n") != std::string::npos);
 
     CHECK(script.find("@FUNCTION@") == std::string::npos);
     CHECK(script.find("@PROGRAM@") == std::string::npos);
@@ -1337,7 +1378,8 @@ TEST_CASE("Completion: the script asks for the configured environment variable",
     app.set_completion_env_var("MYPROG_COMPLETE");
     const std::string script = app.get_completion_script("bash");
 
-    CHECK(script.find("MYPROG_COMPLETE=bash MYPROG_COMPLETE_INDEX=") != std::string::npos);
+    CHECK(script.find("export MYPROG_COMPLETE=bash MYPROG_COMPLETE_INDEX=") != std::string::npos);
+    CHECK(script.find("export \"MYPROG_COMPLETE_WORD_${ii}=") != std::string::npos);
     CHECK(script.find("CLI11_COMPLETE") == std::string::npos);
 }
 
@@ -1366,7 +1408,7 @@ TEST_CASE("Completion: a marker after an option that is full starts positional-o
 TEST_CASE("Completion: the script is registered for the basename of the program", "[completion]") {
     CLI::App app{"program", "/usr/local/bin/my-prog"};
     const std::string script = app.get_completion_script("bash");
-    CHECK(script.find("\ncomplete -o default -F _cli11_complete_my_prog 'my-prog'\n") != std::string::npos);
+    CHECK(script.find("\ncomplete -F _cli11_complete_my_prog 'my-prog'\n") != std::string::npos);
 
     CLI::App windows{"program", "C:\\tools\\my-prog.exe"};
     CHECK(windows.get_completion_script("bash").find(" 'my-prog.exe'\n") != std::string::npos);
@@ -1476,4 +1518,337 @@ TEST_CASE("Completion: a fallthrough subcommand offers the options of its parent
     CHECK(complete(app, {"sub", "/level", ""}, "3") == "fast\nslow\n:6\n");
     CHECK(complete(app, {"plain", "--"}, "2") == "--own\n:2\n");
 }
+
+namespace {
+
+/// The reply for the last of these words, which are the arguments of the line without the program name
+std::string ask(const CLI::App &app, const std::vector<std::string> &words) {
+    return CLI::format_completion_reply(app.get_completions(words, words.size() - 1));
+}
+
+}  // namespace
+
+TEST_CASE("Completion: removing the script flag forgets it", "[completion]") {
+    CLI::App app{"program", "myprog"};
+    app.remove_option(app.set_completion_flag());
+    CHECK(app.get_completion_ptr() == nullptr);
+
+    // An option group owns what is moved into it, and the app would be left with a pointer it cannot track
+    auto *group = app.add_option_group("Group");
+    CHECK_THROWS_AS(group->add_option(app.set_completion_flag()), CLI::OptionAlreadyAdded);
+    CHECK(app.get_completion_ptr() != nullptr);
+}
+
+TEST_CASE("Completion: the activation variable has to be a shell identifier", "[completion]") {
+    CLI::App app{"program", "myprog"};
+
+    // The name is written into a shell assignment, where anything else is a command or worse
+    CHECK_THROWS_AS(app.set_completion_env_var("MY-PROG_COMPLETE"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.set_completion_env_var("X=1; touch /tmp/x; Y"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.set_completion_env_var("1COMPLETE"), CLI::IncorrectConstruction);
+    CHECK_THROWS_AS(app.set_completion_env_var(""), CLI::IncorrectConstruction);
+    CHECK(app.get_completion_env_var() == "CLI11_COMPLETE");
+    CHECK_NOTHROW(app.set_completion_env_var("_my_prog2_COMPLETE"));
+}
+
+TEST_CASE("Completion: a required positional takes a word that spells a subcommand", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--outer", "");
+    std::string target;
+    app.add_option("target", target)->required();
+    CLI::App *start = app.add_subcommand("start", "");
+    start->set_help_flag("");
+    start->add_flag("--inner", "");
+
+    // _parse_subcommand hands the word to a required positional that is still empty
+    CHECK(ask(app, {"start", "--"}) == "--outer\n:2\n");
+    CHECK(ask(app, {"x", "start", "--"}) == "--inner\n:2\n");
+    // and while it is empty, the name is not something the word can become
+    CHECK(ask(app, {"st"}) == ":0\n");
+    CHECK(ask(app, {"x", "st"}) == "start\n:2\n");
+}
+
+TEST_CASE("Completion: a marker in a subcommand with no positionals closes it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--root-flag", "");
+    CLI::App *child = app.add_subcommand("child", "");
+    child->set_help_flag("");
+
+    // _parse_single returns to the parent, whose own words are classified as before
+    CHECK(ask(app, {"child", "--", "--root-"}) == "--root-flag\n:2\n");
+
+    // With a positional left to fill, the marker keeps its meaning and the subcommand stays open
+    std::string value;
+    child->add_option("value", value);
+    CHECK(ask(app, {"child", "--", "--root-"}) == ":0\n");
+}
+
+TEST_CASE("Completion: a subcommand found through a parent closes the one it was typed in", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *start = app.add_subcommand("start", "");
+    start->set_help_flag("");
+    start->add_flag("--inner", "");
+    CLI::App *stop = app.add_subcommand("stop", "");
+    stop->set_help_flag("");
+    stop->add_flag("--halt", "");
+
+    // subcommand_fallthrough is on by default, so `stop` here is the root's
+    CHECK(ask(app, {"start", "stop", "--"}) == "--halt\n:2\n");
+    start->subcommand_fallthrough(false);
+    CHECK(ask(app, {"start", "stop", "--"}) == "--inner\n:2\n");
+}
+
+TEST_CASE("Completion: an empty argument before the cursor is a value", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"a1", "a2"}));
+    app.add_option("second", second)->check(CLI::IsMember({"b1", "b2"}));
+
+    CHECK(ask(app, {""}) == "a1\na2\n:6\n");
+    CHECK(ask(app, {"", ""}) == "b1\nb2\n:6\n");
+}
+
+TEST_CASE("Completion: an option with a positional name is completed in both places", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string input;
+    app.add_option("input,--input", input)->check(CLI::IsMember({"abc"}));
+    std::string other;
+    app.add_option("other", other)->check(CLI::IsMember({"xyz"}));
+
+    CHECK(ask(app, {""}) == "abc\n:6\n");
+    CHECK(ask(app, {"--input", ""}) == "abc\n:6\n");
+    CHECK(ask(app, {"--in"}) == "--input\n:2\n");
+    // A value given through either spelling fills it
+    CHECK(ask(app, {"abc", ""}) == "xyz\n:6\n");
+    CHECK(ask(app, {"--input", "abc", ""}) == "xyz\n:6\n");
+    CHECK(ask(app, {"--input=abc", ""}) == "xyz\n:6\n");
+}
+
+TEST_CASE("Completion: the terminator restores the command that was left", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--outer", "");
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"a1"}));
+    app.add_option("second", second)->check(CLI::IsMember({"b2"}));
+    CLI::App *group = app.add_option_group("Group");
+    CLI::App *sub = group->add_subcommand("sub", "");
+    sub->set_help_flag("");
+    sub->add_flag("--inner", "");
+
+    // `first` is still filled when the subcommand closes
+    CHECK(ask(app, {"a1", "sub", "++", ""}) == "sub\nb2\n:6\n");
+    // and the walk is back in the command, not in the group the subcommand belongs to
+    CHECK(ask(app, {"a1", "sub", "++", "--"}) == "--outer\n:2\n");
+}
+
+TEST_CASE("Completion: a delimited value counts for the items it holds", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--other", "");
+    std::pair<int, int> point;
+    app.add_option("--point", point)->delimiter(',');
+
+    CHECK(ask(app, {"--point", "1,2", "--"}) == "--other\n--point\n:2\n");
+    CHECK(ask(app, {"--point=1,2", "--"}) == "--other\n--point\n:2\n");
+    // One item is half of it, so the next word is the other half whatever it looks like
+    CHECK(ask(app, {"--point", "1", "--"}) == ":0\n");
+}
+
+TEST_CASE("Completion: a validator applies to the value index it was given", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::pair<std::string, std::string> route;
+    app.add_option("--route", route)
+        ->check(CLI::IsMember({"north", "south"}).application_index(0))
+        ->check(CLI::IsMember({"fast", "slow"}).application_index(1));
+
+    CHECK(ask(app, {"--route", ""}) == "north\nsouth\n:6\n");
+    CHECK(ask(app, {"--route", "north", ""}) == "fast\nslow\n:6\n");
+    CHECK(ask(app, {"--route=n"}) == "--route=north\n:prefix=--route=\n:6\n");
+
+    std::vector<std::string> choices{"fast", "slow"};
+    CHECK(app.get_option("--route")->get_completion_choices(1) == choices);
+}
+
+TEST_CASE("Completion: a set of numbers is offered in the spelling the parser takes", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::uint8_t byte{0};
+    app.add_option("--byte", byte)->check(CLI::IsMember(std::vector<std::uint8_t>{65, 66}));
+
+    CHECK(ask(app, {"--byte", ""}) == "65\n66\n:6\n");
+    CHECK_NOTHROW(app.parse(std::vector<std::string>{"65", "--byte"}));
+    CHECK(byte == 65);
+}
+
+TEST_CASE("Completion: a set with nothing in it is not an unknown value", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string value;
+    // The set is live, and the program has not filled it in
+    auto live = std::make_shared<std::vector<std::string>>();
+    app.add_option("--live", value)->check(CLI::IsMember(live));
+    app.add_option("--disjoint", value)->check(CLI::IsMember({"a"}))->check(CLI::IsMember({"b"}));
+    app.add_option("--file", value)->check(CLI::ExistingFile)->check(CLI::IsMember({"a"}) & CLI::IsMember({"b"}));
+
+    // Nothing is accepted, so a file name is not either
+    CHECK(ask(app, {"--live", ""}) == ":6\n");
+    CHECK(ask(app, {"--disjoint", ""}) == ":6\n");
+    CHECK(ask(app, {"--file", ""}) == ":6\n");
+    live->push_back("now");
+    CHECK(ask(app, {"--live", ""}) == "now\n:6\n");
+}
+
+TEST_CASE("Completion: sets are intersected through their filters", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string value;
+    app.add_option("--speed", value)
+        ->check(CLI::IsMember({"FAST", "Slow"}, CLI::ignore_case) & CLI::IsMember({"fast", "other"}, CLI::ignore_case));
+    app.add_option("--exact", value)->check(CLI::IsMember({"FAST"}) & CLI::IsMember({"fast"}));
+    app.add_option("--nested", value)
+        ->check((CLI::IsMember({"FAST", "Slow"}, CLI::ignore_case) | CLI::IsMember({"mid"})) &
+                CLI::IsMember({"fast", "MID"}, CLI::ignore_case));
+
+    // A combination on the right decides the way its own sides do
+    app.add_option("--either", value)
+        ->check(CLI::IsMember({"fast", "MID", "other"}, CLI::ignore_case) &
+                (CLI::IsMember({"FAST", "Slow"}, CLI::ignore_case) | CLI::IsMember({"MID"})));
+    app.add_option("--all", value)
+        ->check(CLI::IsMember({"fast", "MID"}, CLI::ignore_case) &
+                (CLI::IsMember({"FAST", "mid"}, CLI::ignore_case) & CLI::IsMember({"Fast"}, CLI::ignore_case)));
+
+    CHECK(ask(app, {"--speed", ""}) == "FAST\n:6\n");
+    CHECK(ask(app, {"--exact", ""}) == ":6\n");
+    CHECK(ask(app, {"--nested", ""}) == "FAST\nmid\n:6\n");
+    CHECK(ask(app, {"--either", ""}) == "fast\nMID\n:6\n");
+    CHECK(ask(app, {"--all", ""}) == "fast\n:6\n");
+    // A Validator that lists nothing is taken to accept anything
+    CHECK(CLI::detail::completion_meta_accepts(*CLI::detail::completion_hint_meta(CLI::CompletionHint::File), "x"));
+    CHECK_NOTHROW(app.parse(std::vector<std::string>{"FAST", "--speed"}));
+}
+
+TEST_CASE("Completion: a subcommand disabled by default is not offered", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("--outer", "");
+    CLI::App *off = app.add_subcommand("off", "")->disabled_by_default();
+    off->set_help_flag("");
+    off->add_flag("--inner", "");
+    // disabled now, and enabled when a parse starts
+    CLI::App *on = app.add_subcommand("on", "")->disabled()->enabled_by_default();
+    on->set_help_flag("");
+    on->add_flag("--inner", "");
+    CLI::App *group = app.add_option_group("Group")->disabled_by_default();
+    group->add_flag("--grouped", "");
+
+    CHECK(ask(app, {"o"}) == "on\n:2\n");
+    CHECK(ask(app, {"off", "--"}) == "--outer\n:2\n");
+    CHECK(ask(app, {"on", "--"}) == "--inner\n:2\n");
+    // The app is not changed by being asked
+    CHECK_FALSE(off->get_disabled());
+    CHECK(on->get_disabled());
+}
+
+TEST_CASE("Completion: an option in a disabled group has no values", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.add_flag("-v", "");
+    CLI::App *group = app.add_option_group("Group");
+    std::string mode;
+    group->add_option("--mode,-m", mode)->check(CLI::IsMember({"fast", "slow"}));
+    std::string positional;
+    app.add_option("positional", positional)->check(CLI::IsMember({"pos"}));
+
+    CHECK(ask(app, {"--mode", ""}) == "fast\nslow\n:6\n");
+    CHECK(ask(app, {"-vm", ""}) == "fast\nslow\n:6\n");
+    group->disabled();
+    // A parse does not find the option, so the next word is the positional's
+    CHECK(ask(app, {"--mode", ""}) == "pos\n:6\n");
+    CHECK(ask(app, {"-vm", ""}) == "pos\n:6\n");
+    CHECK(ask(app, {"--mode=f"}) == ":2\n");
+    CHECK(ask(app, {"-mf"}) == ":2\n");
+}
+
+TEST_CASE("Completion: a word past the marker can still close a subcommand", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *stop = app.add_subcommand("stop", "");
+    stop->set_help_flag("");
+    stop->add_flag("--halt", "");
+    CLI::App *plain = app.add_subcommand("plain", "");
+    plain->set_help_flag("");
+    std::string value;
+    plain->add_option("value", value);
+    CLI::App *through = app.add_subcommand("through", "")->fallthrough();
+    through->set_help_flag("");
+    through->add_option("value", value);
+
+    // Once the positional is full, _parse_positional leaves a name the parent has to the parent
+    CHECK(ask(app, {"plain", "--", "x", "stop", "--"}) == "--halt\n:2\n");
+    // A fallthrough subcommand has the parent start it, and with a parse_complete_callback it closes first
+    CHECK(ask(app, {"through", "--", "x", "stop", "--"}) == "--halt\n:2\n");
+    through->parse_complete_callback([]() {});
+    CHECK(ask(app, {"through", "--", "x", "stop", "--"}) == "--halt\n:2\n");
+}
+
+TEST_CASE("Completion: a fallthrough subcommand fills the positionals of its parent", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"a1"}));
+    app.add_option("second", second)->check(CLI::IsMember({"b2"}));
+    CLI::App *sub = app.add_subcommand("sub", "")->fallthrough();
+    sub->set_help_flag("");
+
+    CHECK(ask(app, {"sub", ""}) == "a1\n:6\n");
+    CHECK(ask(app, {"sub", "a1", ""}) == "b2\n:6\n");
+}
+
+TEST_CASE("Completion: an abbreviation two subcommands share names neither", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_subcommand_prefix_matching();
+    app.add_flag("--outer", "");
+    app.add_subcommand("start", "")->add_flag("--begin", "");
+    app.add_subcommand("stop", "")->add_flag("--end", "");
+    app.add_subcommand("run", "")->add_flag("--go", "");
+
+    CHECK(ask(app, {"st", "--"}) == "--outer\n:2\n");
+    CHECK(ask(app, {"ru", "--"}) == "--go\n:2\n");
+}
+
+TEST_CASE("Completion: a negative number at the cursor is a value", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    int number{0};
+    app.add_option("number", number)->check(CLI::IsMember({-10, -11, 5}));
+
+    CHECK(ask(app, {"-1"}) == "-10\n-11\n:6\n");
+    // A lone dash is still the start of an option name
+    CHECK(ask(app, {"-"}) == ":2\n");
+    // and where the digit names an option, the word is that option
+    app.add_flag("-1", "");
+    CHECK(ask(app, {"-1"}) == "-1\n:2\n");
+}
+
+#if CLI11_HAS_FILESYSTEM && !defined(_WIN32)
+TEST_CASE("Completion: a set of paths still builds", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::filesystem::path path;
+    app.add_option("--path", path)->check(CLI::IsMember(std::vector<std::filesystem::path>{"a", "b"}));
+
+    CHECK(ask(app, {"--path", ""}) == "a\nb\n:6\n");
+}
+#endif
 #endif
