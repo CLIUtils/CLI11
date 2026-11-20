@@ -1356,6 +1356,8 @@ TEST_CASE("Completion: the script function name survives an awkward program name
     CHECK(CLI::detail::completion_script_identifier("my-prog.exe") == "my_prog_exe");
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE("Completion: a marker after an option that is full starts positional-only mode", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
@@ -1369,6 +1371,8 @@ TEST_CASE("Completion: a marker after an option that is full starts positional-o
     CHECK(complete(app, {"--level", "fast", "--", "--v"}, "4") == "--vvv\n:6\n");
     CHECK(complete(app, {"--level=fast", "--", "--v"}, "3") == "--vvv\n:6\n");
 }
+
+#endif
 
 TEST_CASE("Completion: the script is registered for the basename of the program", "[completion]") {
     CLI::App app{"program", "/usr/local/bin/my-prog"};
@@ -1387,6 +1391,8 @@ TEST_CASE("Completion: the script is registered for the basename of the program"
     CHECK_THROWS_AS(directory.get_completion_script("bash"), CLI::ValidationError);
 }
 
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE("Completion: what is hidden from help is not offered", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
@@ -1469,3 +1475,4 @@ TEST_CASE("Completion: a fallthrough subcommand offers the options of its parent
     CHECK(complete(app, {"sub", "/level", ""}, "3") == "fast\nslow\n:6\n");
     CHECK(complete(app, {"plain", "--"}, "2") == "--own\n:2\n");
 }
+#endif
