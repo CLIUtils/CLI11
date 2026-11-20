@@ -135,6 +135,9 @@ CLI11_INLINE std::shared_ptr<const CompletionMeta>
 unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                       const std::shared_ptr<const CompletionMeta> &rhs);
 
+/// What a Validator that only knows the kind of its value, and none of the values, tells completion
+CLI11_INLINE std::shared_ptr<const CompletionMeta> completion_hint_meta(CompletionHint hint);
+
 /// Turn what the shell scripts would otherwise read as structure (`\` `\t` `\n` `\r`, and a leading `:`) into the
 /// backslash sequences the generated scripts turn back
 CLI11_INLINE std::string escape_completion_field(const std::string &field);

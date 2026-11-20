@@ -325,9 +325,6 @@ class Option : public OptionBase<Option> {
     /// A list of Validators to run on each value parsed
     std::vector<Validator_p> validators_{};
 
-    /// What the program declared this option's value to be, for shell completion; None when it did not say
-    CompletionHint completion_hint_{CompletionHint::None};  // cppcheck-suppress unusedStructMember
-
     /// A list of options that are required with this option
     std::set<Option *> needs_{};
 
@@ -373,6 +370,8 @@ class Option : public OptionBase<Option> {
     bool trigger_on_result_{false};
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
+    /// What the program declared this option's value to be, for shell completion; None when it did not say
+    CompletionHint completion_hint_{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string option_name,

@@ -929,16 +929,20 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
     // `--opt=value` is one word holding both, so the option is named by the word itself rather than by the one before
     // it. Candidates are whole tokens, `--file=fast` and not `fast`, since that is the text that has to end up on the
     // line; the prefix tells the script how much of it is already typed.
+    auto add_assigned = [&](std::string::size_type separator) {
+        int attached_values = 0;
+        const Option *assigned = current->_option_expecting_value(word, attached_values);
+        // An unknown option, or one that takes no value, has nothing to say about what follows its separator
+        if(assigned != nullptr) {
+            current->_add_attached_value_completions(
+                *assigned, word.substr(0, separator + 1), word.substr(separator + 1), reply);
+        }
+    };
     const std::string::size_type assign = word.find('=');
     std::string long_name;
     std::string attached;
     if(assign != std::string::npos && detail::split_long(word, long_name, attached)) {
-        int attached_values = 0;
-        const Option *assigned = current->_option_expecting_value(word, attached_values);
-        // An unknown option, or one that takes no value, has nothing to say about what follows its `=`
-        if(assigned != nullptr) {
-            current->_add_attached_value_completions(*assigned, word.substr(0, assign + 1), attached, reply);
-        }
+        add_assigned(assign);
         return reply;
     }
 
@@ -951,12 +955,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             reply.directive = CompletionDirective::NoFileComp;
             return reply;
         }
-        int attached_values = 0;
-        const Option *assigned = current->_option_expecting_value(word, attached_values);
-        if(assigned != nullptr) {
-            current->_add_attached_value_completions(
-                *assigned, word.substr(0, colon + 1), word.substr(colon + 1), reply);
-        }
+        add_assigned(colon);
         return reply;
     }
 
@@ -1077,13 +1076,11 @@ CLI11_NODISCARD CLI11_INLINE bool App::_is_windows_option(const std::string &wor
 CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const std::string &word,
                                                                         int &attached_values) const {
     attached_values = 0;
-    int carried = 0;
     const Option *opt = nullptr;
     std::string opt_name;
     std::string rest;
-    if(_is_windows_option(word)) {
+    if(allow_windows_style_options_ && detail::split_windows_style(word, opt_name, rest)) {
         // No bundling and one spelling for both names, which is the lookup _parse_arg does for this classifier
-        detail::split_windows_style(word, opt_name, rest);
         std::vector<const Option *> options;
         _gather_options(options);
         auto found = std::find_if(std::begin(options), std::end(options), [&opt_name](const Option *candidate) {
@@ -1095,18 +1092,18 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
             return nullptr;
         }
         opt = *found;
-        carried = rest.empty() ? 0 : 1;
+        attached_values = rest.empty() ? 0 : 1;
     } else if(word.size() > 1 && word.front() == '-') {
         opt = get_option_no_throw(word);
         if(opt == nullptr) {
             if(detail::split_long(word, opt_name, rest)) {
                 opt = get_option_no_throw("--" + opt_name);
-                carried = rest.empty() ? 0 : 1;
+                attached_values = rest.empty() ? 0 : 1;
             } else if(detail::split_short(word, opt_name, rest) && !rest.empty()) {
                 // The name may be the last one in a bundle: `-vl` is `-v` and then `-l`, and the value belongs to `-l`
                 std::string::size_type consumed = 0;
                 opt = _walk_short_names(word, consumed);
-                carried = (consumed < word.size()) ? 1 : 0;
+                attached_values = (consumed < word.size()) ? 1 : 0;
             }
             if(opt == nullptr)
                 return nullptr;
@@ -1119,7 +1116,6 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_option_expecting_value(const st
     if(!opt->nonpositional() || opt->get_items_expected_max() == 0)
         return nullptr;
 
-    attached_values = carried;
     return opt;
 }
 
@@ -1261,12 +1257,10 @@ App::_add_value_completions(const Option &opt, const std::string &prefix, Comple
     }
 
     for(const std::string &choice : choices) {
-        bool matches = choice.compare(0, prefix.size(), prefix) == 0;
+        bool matches = detail::has_prefix(choice, prefix);
         // A validator that folds case or underscores accepts more spellings than the one it lists
-        for(std::size_t ii = 0; !matches && ii < source->filters.size(); ++ii) {
-            const std::string folded = source->filters[ii](prefix);
-            matches = source->filters[ii](choice).compare(0, folded.size(), folded) == 0;
-        }
+        for(std::size_t ii = 0; !matches && ii < source->filters.size(); ++ii)
+            matches = detail::has_prefix(source->filters[ii](choice), source->filters[ii](prefix));
         if(matches)
             reply.results.push_back(CompletionResult{choice, ""});
     }

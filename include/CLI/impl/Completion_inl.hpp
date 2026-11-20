@@ -13,7 +13,6 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -53,6 +52,24 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
 
 namespace detail {
 
+/// The part of combining two metas that does not depend on how: the filters of both, and the left hint if it has one.
+/// `both` comes back true when each side lists choices, which are then the caller's to combine.
+inline std::shared_ptr<CompletionMeta>
+merge_completion_meta(const CompletionMeta &lhs, const CompletionMeta &rhs, bool &both) {
+    auto meta = std::make_shared<CompletionMeta>();
+    // A candidate is a listed spelling whichever filter the typed text reached it through, so all of them apply
+    meta->filters = lhs.filters;
+    meta->filters.insert(meta->filters.end(), rhs.filters.begin(), rhs.filters.end());
+    // There is no intersecting "a file" with "a directory", so the left one wins. `ExistingFile & size_check`
+    // should still complete files, and that is the way round the combination is usually written. A hint stands for
+    // a set of values too large to write down, so a union with one is still that hint
+    meta->hint = (lhs.hint != CompletionHint::None) ? lhs.hint : rhs.hint;
+    both = lhs.choices && rhs.choices;
+    if(!both)
+        meta->choices = lhs.choices ? lhs.choices : rhs.choices;
+    return meta;
+}
+
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
 intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                           const std::shared_ptr<const CompletionMeta> &rhs) {
@@ -61,28 +78,20 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     if(!rhs)
         return lhs;
 
-    auto meta = std::make_shared<CompletionMeta>();
-    // A candidate is a listed spelling whichever filter the typed text reached it through, so all of them apply
-    meta->filters = lhs->filters;
-    meta->filters.insert(meta->filters.end(), rhs->filters.begin(), rhs->filters.end());
-    // There is no intersecting "a file" with "a directory", so the left one wins. `ExistingFile & size_check`
-    // should still complete files, and that is the way round the combination is usually written
-    meta->hint = (lhs->hint != CompletionHint::None) ? lhs->hint : rhs->hint;
-    if(!lhs->choices || !rhs->choices) {
-        meta->choices = lhs->choices ? lhs->choices : rhs->choices;
-        return meta;
+    bool both = false;
+    auto meta = merge_completion_meta(*lhs, *rhs, both);
+    if(both) {
+        meta->choices = [lhs, rhs]() {
+            // Walking the left one keeps its order, which is the order a declared set is offered in
+            const std::vector<std::string> allowed = rhs->choices();
+            std::vector<std::string> out;
+            for(const std::string &choice : lhs->choices()) {
+                if(std::find(allowed.begin(), allowed.end(), choice) != allowed.end())
+                    out.push_back(choice);
+            }
+            return out;
+        };
     }
-
-    meta->choices = [lhs, rhs]() {
-        // Walking the left one keeps its order, which is the order a declared set is offered in
-        const std::vector<std::string> allowed = rhs->choices();
-        std::vector<std::string> out;
-        for(const std::string &choice : lhs->choices()) {
-            if(std::find(allowed.begin(), allowed.end(), choice) != allowed.end())
-                out.push_back(choice);
-        }
-        return out;
-    };
     return meta;
 }
 
@@ -94,25 +103,25 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     if(!rhs)
         return lhs;
 
-    auto meta = std::make_shared<CompletionMeta>();
-    meta->filters = lhs->filters;
-    meta->filters.insert(meta->filters.end(), rhs->filters.begin(), rhs->filters.end());
-    // A hint stands for a set of values too large to write down, so a union with one is still that hint
-    meta->hint = (lhs->hint != CompletionHint::None) ? lhs->hint : rhs->hint;
-    if(!lhs->choices || !rhs->choices) {
-        meta->choices = lhs->choices ? lhs->choices : rhs->choices;
-        return meta;
+    bool both = false;
+    auto meta = merge_completion_meta(*lhs, *rhs, both);
+    if(both) {
+        meta->choices = [lhs, rhs]() {
+            std::vector<std::string> out = lhs->choices();
+            for(const std::string &choice : rhs->choices()) {
+                // A value both sides accept is one value, and offering it twice would read as two ways to say it
+                if(std::find(out.begin(), out.end(), choice) == out.end())
+                    out.push_back(choice);
+            }
+            return out;
+        };
     }
+    return meta;
+}
 
-    meta->choices = [lhs, rhs]() {
-        std::vector<std::string> out = lhs->choices();
-        for(const std::string &choice : rhs->choices()) {
-            // A value both sides accept is one value, and offering it twice would read as two ways to say it
-            if(std::find(out.begin(), out.end(), choice) == out.end())
-                out.push_back(choice);
-        }
-        return out;
-    };
+CLI11_INLINE std::shared_ptr<const CompletionMeta> completion_hint_meta(CompletionHint hint) {
+    auto meta = std::make_shared<CompletionMeta>();
+    meta->hint = hint;
     return meta;
 }
 

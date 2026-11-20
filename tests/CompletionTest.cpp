@@ -19,9 +19,7 @@ namespace {
 // The built-in hints (ExistingFile and friends) are all non-modifying; this one is modifying, with a hint
 struct ModifyingHintValidator : CLI::Validator {
     explicit ModifyingHintValidator(CLI::CompletionHint completion_hint) : CLI::Validator("MODHINT") {
-        auto meta = std::make_shared<CLI::CompletionMeta>();
-        meta->hint = completion_hint;
-        completion_meta_ = meta;
+        completion_meta_ = CLI::detail::completion_hint_meta(completion_hint);
         func_ = [](std::string &) { return std::string{}; };
     }
 };
@@ -42,18 +40,22 @@ void clear_request() {
     CLI::detail::unset_environment_value(proto_var);
 }
 
+/// Parse the words of a line with whatever request is in the environment, and return the reply if there was one
+std::string parse_reply(CLI::App &app, std::vector<std::string> words) {
+    std::reverse(words.begin(), words.end());
+    try {
+        app.parse(words);
+    } catch(const CLI::CallForCompletion &e) {
+        return e.what();
+    }
+    return "<not a completion request>";
+}
+
 /// Drive a completion request through the public parse() entry point exactly as a shell would: the words of the line
 /// with the program name excluded, and an index that still counts it.
 std::string complete(CLI::App &app, const std::vector<std::string> &words, const std::string &index) {
     set_request(index);
-    std::vector<std::string> args = words;
-    std::reverse(args.begin(), args.end());
-    std::string reply = "<not a completion request>";
-    try {
-        app.parse(args);
-    } catch(const CLI::CallForCompletion &e) {
-        reply = e.what();
-    }
+    std::string reply = parse_reply(app, words);
     clear_request();
     return reply;
 }
@@ -1183,13 +1185,7 @@ TEST_CASE("Completion: a request from another protocol version gets no candidate
         else
             put_env(proto_var, proto);
 
-        std::string reply = "<not a completion request>";
-        try {
-            std::vector<std::string> args{"sta"};
-            app.parse(args);
-        } catch(const CLI::CallForCompletion &e) {
-            reply = e.what();
-        }
+        const std::string reply = parse_reply(app, {"sta"});
         clear_request();
         CHECK(reply == ":1\n");
     }
@@ -1248,14 +1244,7 @@ TEST_CASE("Completion: the activation variable is configurable", "[completion]")
     put_env("MYPROG_COMPLETE", "bash");
     put_env("MYPROG_COMPLETE_INDEX", "1");
     put_env("MYPROG_COMPLETE_PROTO", "1");
-    std::string reply = "<not a completion request>";
-    try {
-        std::vector<std::string> again{"sta"};
-        app.parse(again);
-    } catch(const CLI::CallForCompletion &e) {
-        reply = e.what();
-    }
-    CHECK(reply == "start\n:2\n");
+    CHECK(parse_reply(app, {"sta"}) == "start\n:2\n");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE_INDEX");
     CLI::detail::unset_environment_value("MYPROG_COMPLETE_PROTO");

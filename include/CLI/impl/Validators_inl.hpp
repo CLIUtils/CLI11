@@ -17,7 +17,6 @@
 
 // [CLI11:public_includes:set]
 #include <functional>
-#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -232,9 +231,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
     // Which files exist is the shell's to know, being the one that knows the directory the user is typing in, so
     // completion says what kind of value this is and leaves the candidates to it
-    auto meta = std::make_shared<CompletionMeta>();
-    meta->hint = CompletionHint::File;
-    completion_meta_ = meta;
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::File);
 
     func_ = [](std::string &filename) -> std::string {
         if(filename.empty())
@@ -252,9 +249,7 @@ CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") 
 }
 
 CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validator("DIR") {
-    auto meta = std::make_shared<CompletionMeta>();
-    meta->hint = CompletionHint::Dir;
-    completion_meta_ = meta;
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::Dir);
 
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
@@ -269,9 +264,7 @@ CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validato
 }
 
 CLI11_INLINE ExistingPathValidator::ExistingPathValidator() : Validator("PATH(existing)") {
-    auto meta = std::make_shared<CompletionMeta>();
-    meta->hint = CompletionHint::Path;
-    completion_meta_ = meta;
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::Path);
 
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
