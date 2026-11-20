@@ -1209,6 +1209,15 @@ TEST_CASE("Join: Backward", "[helpers]") {
     CHECK(CLI::detail::rjoin(val, ";") == "one;two;three");
 }
 
+TEST_CASE("SplitUp: TripleQuotes", "[helpers]") {
+    std::string orig{"a \"\"\"\"\"\" b \"\"\"c d\"\"\""};
+    std::vector<std::string> plain = {"a", "\"\"", "\"\"", "b", "\"\"", "c", "d\"\"\""};
+    std::vector<std::string> multiline = {"a", "\"\"\"\"\"\"", "b", "\"\"\"c d\"\"\""};
+
+    CHECK(CLI::detail::split_up(orig) == plain);
+    CHECK(CLI::detail::split_up(orig, '\0', true) == multiline);
+}
+
 TEST_CASE("SplitUp: Simple", "[helpers]") {
     std::vector<std::string> oput = {"one", "\"two three\""};
     std::string orig{R"(one "two three")"};
