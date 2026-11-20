@@ -1455,6 +1455,18 @@ TEST_CASE("Completion: a value is matched through the filters of its validator",
     CHECK(complete(app, {"--both", "f"}, "2") == "Fast\n:6\n");
 }
 
+TEST_CASE("Completion: text that is not an item of the set skips its filter", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    int number{0};
+    app.add_option("--number", number)->check(CLI::IsMember({1, 20, 21}, [](int value) { return value; }));
+
+    CHECK(complete(app, {"--number", "2"}, "2") == "20\n21\n:6\n");
+    // An empty or non-numeric prefix cannot be converted, so it is compared unfiltered
+    CHECK(complete(app, {"--number", ""}, "2") == "1\n20\n21\n:6\n");
+    CHECK(complete(app, {"--number", "x"}, "2") == ":6\n");
+}
+
 TEST_CASE("Completion: a fallthrough subcommand offers the options of its parent", "[completion]") {
     CLI::App app{"program"};
     app.set_help_flag("");
