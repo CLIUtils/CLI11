@@ -676,6 +676,33 @@ TEST_CASE("THelp: nested_subcommand", "[help]") {
     }
 }
 
+// from https://github.com/CLIUtils/CLI11/issues/1450
+TEST_CASE("THelp: SubcommandHelpWithRequiredPositional", "[help]") {
+    CLI::App app{"CLI11 help bug MRE"};
+
+    auto *subc1 = app.add_subcommand("subc1", "First subcommand");
+
+    int id{};
+    subc1->add_option("ID", id, "Object ID")->required();
+
+    auto *subc2 = subc1->add_subcommand("subc2", "Nested subcommand");
+
+    bool flag{false};
+    subc2->add_flag("--flag", flag, "Example flag");
+
+    try {
+        app.parse("subc1 subc2 --help");
+        CHECK(false);
+    } catch(const CLI::ParseError &e) {
+        std::ostringstream eout;
+        auto res = app.exit(e, eout);
+        std::string help = eout.str();
+        CHECK(res == 0);
+        CHECK_THAT(help, Contains("Nested subcommand"));
+        CHECK_THAT(help, Contains("--flag"));
+    }
+}
+
 TEST_CASE("THelp: MasterName", "[help]") {
     CLI::App app{"My prog", "MyRealName"};
 
