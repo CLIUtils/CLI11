@@ -789,6 +789,11 @@ are interchangeable in the examples) of `Transformer`:
   You can use maps; in `->transform()` these replace the matched key with the
   value. `CheckedTransformer` also requires that the value either match one of
   the keys or match one of known outputs.
+- `CLI::CheckedTransformer(...).config_output_names()`: 🆕 When generating a
+  config file with `config_to_str()`, write the mapped name (e.g. `"high"`)
+  instead of the transformed value (e.g. `0`). If several names map to the same
+  value, the first one in map order is used; values with no name are written
+  unchanged. Off by default.
 - `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>{{"key1", "map1"},{"key2","map2"}}); CLI::Transformer(p)`:
   You can modify `p` later. `TransformPairs<T>` is an alias for
   `std::vector<std::pair<std::string,T>>`
