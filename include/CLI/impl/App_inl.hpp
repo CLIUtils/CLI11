@@ -1489,6 +1489,9 @@ CLI11_INLINE void App::_complete_intercept() const {
     const std::string index_string = take("_INDEX");
     const std::string proto_string = take("_PROTO");
     const std::string packed = take("_WORDS");
+    const std::string line = take("_LINE");
+    const std::string point_string = take("_POINT");
+    const std::string breaks = take("_BREAKS");
 
     // The words arrive in the environment, not as arguments. A binary without completion support would otherwise run
     // the line the user is typing. A unit separator ends each word, so one empty word is not the same as no words.
@@ -1507,12 +1510,27 @@ CLI11_INLINE void App::_complete_intercept() const {
         throw CallForCompletion(format_completion_reply(unusable));
     }
 
+    CompletionReply reply;
+    reply.directive = CompletionDirective::NoFileComp;
+
+    // bash sends the line as typed, because only the program can split it the same way on each bash version
+    if(!line.empty()) {
+        std::size_t point = line.size();
+        if(!detail::lexical_cast(point_string, point))
+            point = line.size();
+        detail::CompletionLine typed = detail::split_completion_line(line, point, breaks);
+        const std::string word = typed.words[typed.cursor];
+        if(typed.cursor > 0) {
+            typed.words.erase(typed.words.begin());
+            reply = get_completions(typed.words, typed.cursor - 1);
+        }
+        throw CallForCompletion(detail::format_completion_reply_bash(reply, word, typed.kept));
+    }
+
     std::size_t index = 0;
     if(!detail::lexical_cast(index_string, index))
         index = 0;
 
-    CompletionReply reply;
-    reply.directive = CompletionDirective::NoFileComp;
     // The shell counts the program name as word 0. get_completions counts the arguments only. A cursor on the program
     // name has no completions.
     if(index > 0)

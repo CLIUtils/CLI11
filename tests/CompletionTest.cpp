@@ -1190,6 +1190,96 @@ TEST_CASE("Completion: get_completions works in argument coordinates", "[complet
     CHECK(app.get_completions({}, 0).results.empty());
 }
 
+TEST_CASE("Completion: a bash line is split into the words a program receives", "[completion]") {
+    using CLI::detail::split_completion_line;
+    const std::string breaks = " \t\n\"'@><=;|&(:";
+    using words_t = std::vector<std::string>;
+
+    auto typed = split_completion_line("prog --level=f", 14, breaks);
+    CHECK(typed.words == words_t{"prog", "--level=f"});
+    CHECK(typed.cursor == 1U);
+    // Readline replaces the text after the `=`
+    CHECK(typed.kept == 8U);
+
+    // A cursor after a space is in a new, empty word
+    typed = split_completion_line("prog 'remote' ", 14, breaks);
+    CHECK(typed.words == words_t{"prog", "remote", ""});
+    CHECK(typed.cursor == 2U);
+    CHECK(typed.kept == 0U);
+
+    // Readline replaces the text after a quote that is still open, and a break character in quotes is not a break
+    typed = split_completion_line("prog --image=\"alpine:", 21, breaks);
+    CHECK(typed.words == words_t{"prog", "--image=alpine:"});
+    CHECK(typed.kept == 8U);
+    typed = split_completion_line("prog a\\:b \"c d\" e\\ f \"g\\\"h\\i\"", 30, breaks);
+    CHECK(typed.words == words_t{"prog", "a:b", "c d", "e f", "g\"h\\i"});
+    CHECK(typed.kept == 0U);
+
+    // The cursor word ends at the cursor. The words after it stay.
+    typed = split_completion_line("prog --le=x next \"\"", 7, breaks);
+    CHECK(typed.words == words_t{"prog", "--", "next", ""});
+    CHECK(typed.cursor == 1U);
+
+    // A point past the end is the end
+    typed = split_completion_line("prog", 99, breaks);
+    CHECK(typed.words == words_t{"prog"});
+    CHECK(typed.cursor == 0U);
+}
+
+TEST_CASE("Completion: a bash reply has only the text readline replaces", "[completion]") {
+    using CLI::detail::format_completion_reply_bash;
+    CLI::CompletionReply reply;
+    reply.directive = CLI::CompletionDirective::Files;
+
+    // `--file=a:b` with breaks at `=` and `:`: the path is looked up by `a:b` and `a:` comes off each answer
+    reply.prefix = "--file=";
+    CHECK(format_completion_reply_bash(reply, "--file=a:b", 9) == ":cur=a:b\n:strip=a:\n:8\n");
+    // `-fa` has no break, so `-f` goes on each answer
+    reply.prefix = "-f";
+    CHECK(format_completion_reply_bash(reply, "-fa", 0) == ":cur=a\n:lead=-f\n:8\n");
+
+    reply.prefix = "--level=";
+    reply.results.push_back(CLI::CompletionResult{"--level=fast", ""});
+    reply.directive = CLI::CompletionDirective::NoFileComp;
+    CHECK(format_completion_reply_bash(reply, "--level=f", 8) == "fast\n:cur=f\n:2\n");
+    CHECK(format_completion_reply_bash(reply, "--level=f", 0) == "--level=fast\n:cur=f\n:lead=--level=\n:2\n");
+}
+
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+TEST_CASE("Completion: a request can be the line as bash has it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string level;
+    app.add_option("--level,-l", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_subcommand("start", "");
+
+    auto ask_line = [&app](const std::string &line, const std::string &point) {
+        put_env(complete_var, "bash");
+        put_env(proto_var, "1");
+        put_env("CLI11_COMPLETE_LINE", line);
+        put_env("CLI11_COMPLETE_POINT", point);
+        put_env("CLI11_COMPLETE_BREAKS", " \t\n\"'@><=;|&(:");
+        const std::string reply = parse_reply(app);
+        clear_request();
+        // The request is out of the environment
+        CHECK(CLI::detail::get_environment_value("CLI11_COMPLETE_LINE").empty());
+        CHECK(CLI::detail::get_environment_value("CLI11_COMPLETE_POINT").empty());
+        CHECK(CLI::detail::get_environment_value("CLI11_COMPLETE_BREAKS").empty());
+        return reply;
+    };
+
+    CHECK(ask_line("program st", "10") == "start\n:cur=st\n:2\n");
+    CHECK(ask_line("program --level=f", "17") == "fast\n:cur=f\n:6\n");
+    CHECK(ask_line("program --level \"s", "18") == "slow\n:cur=s\n:6\n");
+    CHECK(ask_line("program -ls", "11") == "-lslow\n:cur=s\n:lead=-l\n:6\n");
+    // The cursor in the name of `--level=f`
+    CHECK(ask_line("program --level=f", "12") == "--level\n:cur=--le\n:2\n");
+    // The cursor on the program name
+    CHECK(ask_line("program st", "3") == ":cur=pro\n:2\n");
+}
+#endif
+
 TEST_CASE("Completion: the request is out of the environment before it is answered", "[completion]") {
     CLI::App app{"program"};
     app.add_subcommand("start", "");
@@ -1376,8 +1466,8 @@ TEST_CASE("Completion: the script asks for the configured environment variable",
     app.set_completion_env_var("MYPROG_COMPLETE");
     const std::string script = app.get_completion_script("bash");
 
-    CHECK(script.find("export MYPROG_COMPLETE=bash MYPROG_COMPLETE_INDEX=") != std::string::npos);
-    CHECK(script.find("MYPROG_COMPLETE_WORDS=\"${packed}\"") != std::string::npos);
+    CHECK(script.find("export MYPROG_COMPLETE=bash MYPROG_COMPLETE_PROTO=") != std::string::npos);
+    CHECK(script.find("MYPROG_COMPLETE_LINE=\"${COMP_LINE-}\"") != std::string::npos);
     CHECK(script.find("CLI11_COMPLETE") == std::string::npos);
 }
 

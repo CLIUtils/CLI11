@@ -18,7 +18,26 @@ run() { # run <terminal width> <comp_cword> <expected COMPREPLY> <word>...
     local COLUMNS="$1" cword="$2" want="$3"
     shift 3
     COMP_WORDS=("$prog" "$@")
-    COMP_CWORD="$cword"
+    # The words are the pieces bash 4 splits a line into, so a piece that is a break character has no space around it
+    if [[ -z ${COMP_LINE+set} ]]; then
+        local COMP_LINE="${prog}" COMP_POINT=${#prog} ii piece glue=""
+        for (( ii = 1; ii <= $#; ii++ )); do
+            piece=${!ii}
+            if [[ ( ${piece} == "=" || ${piece} == ":" ) && ${COMP_WORDBREAKS} == *"${piece}"* ]]; then
+                COMP_LINE+=${piece}
+                glue=1
+            else
+                if [[ -z ${glue} || -z ${piece} ]]; then
+                    COMP_LINE+=" "
+                fi
+                COMP_LINE+=${piece}
+                glue=""
+            fi
+            if (( ii == cword )); then
+                COMP_POINT=${#COMP_LINE}
+            fi
+        done
+    fi
     COMPREPLY=()
     _cli11_complete_completion
     local got="${COMPREPLY[*]-}"
@@ -270,12 +289,12 @@ expect 1 "" "st"
 # and it must not be handed the line that is being typed: a program that does not answer requests would run it. The
 # words travel in the environment, and the one argument is a fixed one.
 probe_file="${TMPDIR:-/tmp}/cli11_completion_probe_$$"
-probe() { printf '%s\n' "$#" "$@" "${CLI11_COMPLETE_WORDS-}" > "${probe_file}"; }
+probe() { printf '%s\n' "$#" "$@" "${CLI11_COMPLETE_LINE-}" > "${probe_file}"; }
 prog=probe
 expect 2 "" "remote" "--force; x"
 probe_got=$(cat "${probe_file}")
 rm -f "${probe_file}"
-probe_want=$'1\n--cli11-complete\nremote\x1f--force; x\x1f'
+probe_want=$'1\n--cli11-complete\nprobe remote --force; x'
 if [[ ${probe_got} != "${probe_want}" ]]; then
     echo "FAIL: the program was run with [${probe_got}] want [${probe_want}]" >&2
     exit 1
@@ -284,10 +303,10 @@ echo "ok: the line is not in the arguments"
 
 # The directives of a reply, apart from any program. Either kind of path is completed like a file, and a reply that
 # knows nothing about the value gets paths when it has no candidates of its own.
-reply_path() { printf ':24\n'; }
+reply_path() { printf ':cur=./fi\n:24\n'; }
 prog=reply_path
 expect 1 "_filedir[|./fi]" "./fi"
-reply_unknown() { printf ':prefix=-p\n:0\n'; }
+reply_unknown() { printf ':cur=./fi\n:lead=-p\n:0\n'; }
 prog=reply_unknown
 # The value is what the paths are looked up by, and the name it is written onto goes back on the answers
 expect 1 "-p_filedir[|./fi]" "-p./fi"
@@ -320,7 +339,6 @@ expect 2 "bdir" "--workdir" ""
 expect 1 "-calpha.txt" "-cal"
 expect 3 "alpha.txt" "--config" "=" "al"
 # A name is taken as it is, whatever is in it
-expect 2 "a star*.txt" "--config" "a "
 expect 2 "a star*.txt" "--config" 'a\ '
 expect 2 "a star*.txt" "--config" '"a '
 popd > /dev/null || exit 1

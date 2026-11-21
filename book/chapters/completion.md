@@ -105,16 +105,28 @@ On TAB, the script runs the program again with the request in the environment.
 Completing `myprog st` runs:
 
 ```bash
-CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=1 \
-  CLI11_COMPLETE_WORDS=$'st\x1f' myprog --cli11-complete
+CLI11_COMPLETE=bash CLI11_COMPLETE_PROTO=1 CLI11_COMPLETE_LINE='myprog st' \
+  CLI11_COMPLETE_POINT=9 CLI11_COMPLETE_BREAKS="$COMP_WORDBREAKS" \
+  myprog --cli11-complete
 ```
 
-| Variable               | Example | Meaning                                                                                                  |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
-| `CLI11_COMPLETE`       | `bash`  | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
-| `CLI11_COMPLETE_INDEX` | `1`     | Which word the cursor is in, counting the program name as word 0.                                        |
-| `CLI11_COMPLETE_PROTO` | `1`     | The version of the reply format the script was generated for.                                            |
-| `CLI11_COMPLETE_WORDS` | `st␟`   | The words of the line after the program name. A unit separator (`\x1f`) ends each word.                  |
+| Variable                | Example     | Meaning                                                                                                  |
+| ----------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| `CLI11_COMPLETE`        | `bash`      | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
+| `CLI11_COMPLETE_PROTO`  | `1`         | The version of the reply format the script was generated for.                                            |
+| `CLI11_COMPLETE_LINE`   | `myprog st` | The line as typed (`COMP_LINE`).                                                                         |
+| `CLI11_COMPLETE_POINT`  | `9`         | The byte offset of the cursor in the line (`COMP_POINT`).                                                |
+| `CLI11_COMPLETE_BREAKS` |             | The characters readline breaks a word at (`COMP_WORDBREAKS`).                                            |
+
+The program splits the line into words itself and removes the quotes and the
+escapes. bash 4 splits its `COMP_WORDS` at each break character and bash 3.2
+does not, so the script does not use them.
+
+A request can also give the words directly, for a shell that has them. In place
+of the last three variables, `CLI11_COMPLETE_WORDS` holds the words after the
+program name, with a unit separator (`\x1f`) after each word, and
+`CLI11_COMPLETE_INDEX` is the index of the cursor word, where the program name
+is word 0.
 
 All of them are named after the first, so `set_completion_env_var` renames them
 together. The program removes them from the environment before it does anything
@@ -141,9 +153,16 @@ The candidates come first, one per line, each followed by a tab and its
 description where it has one. A backslash, a tab or a line break inside either
 field is escaped, so a line always means one candidate.
 
-An optional `:prefix=` line comes next, carrying the part of the word that is
-already on the line and is not the value — the `--config=` of `--config=/et`.
-The shell needs it because it replaces less than a whole word.
+Readline replaces only the text after the last break character in the word, or
+after a quote that is still open. For a line request, the program removes the
+text in front of that point from each candidate. Up to three lines then tell the
+script how to complete a path: `:cur=` is the value typed so far, `:strip=` is
+text to remove from the front of each path, and `:lead=` is text to put in front
+of each path. For `-c/et`, `:cur=` is `/et` and `:lead=` is `-c`.
+
+For a words request, the candidates are full words. An optional `:prefix=` line
+gives the part of the word that is not the value: the `--config=` of
+`--config=/et`.
 
 The last line is always the directive, a bit mask telling the shell what else it
 may do. The `2` above says the word being completed is not a file name, so bash

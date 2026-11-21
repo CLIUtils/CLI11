@@ -172,6 +172,29 @@ CLI11_INLINE std::shared_ptr<const CompletionMeta>
 unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                       const std::shared_ptr<const CompletionMeta> &rhs);
 
+/// A command line as bash gives it, split into the words a program would receive
+struct CompletionLine {
+    /// The words with quotes and escapes removed. Word 0 is the program. The cursor word ends at the cursor.
+    std::vector<std::string> words{};  // cppcheck-suppress unusedStructMember
+    /// The index of the word the cursor is in
+    std::size_t cursor{0};  // cppcheck-suppress unusedStructMember
+    /// How much of the cursor word readline does not replace: the text in front of a quote that is still open, or
+    /// else the text up to the last break character that is not quoted
+    std::size_t kept{0};  // cppcheck-suppress unusedStructMember
+};
+
+/// Split a line as bash does. `point` is the byte offset of the cursor (COMP_POINT) and `breaks` is COMP_WORDBREAKS.
+CLI11_INLINE CompletionLine split_completion_line(const std::string &line,
+                                                  std::size_t point,
+                                                  const std::string &breaks);
+
+/// Render a reply for the bash script, which replaces only the part of `word` after its first `kept` characters.
+///
+/// The kept text is removed from each candidate. In place of the `:prefix=` line there are up to three lines for path
+/// completion: `:cur=` is the value typed so far, `:strip=` is text to remove from the front of each path, and
+/// `:lead=` is text to put in front of each path.
+CLI11_INLINE std::string format_completion_reply_bash(CompletionReply reply, const std::string &word, std::size_t kept);
+
 /// The directive that asks the shell for the kind of path in a hint. Default when the hint is None.
 CLI11_INLINE CompletionDirective completion_hint_directive(CompletionHint hint);
 

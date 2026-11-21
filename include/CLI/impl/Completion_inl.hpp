@@ -25,29 +25,38 @@
 namespace CLI {
 // [CLI11:completion_inl_hpp:verbatim]
 
-CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
+namespace detail {
+
+/// The reply text with the given `:name=value` lines between the candidates and the directive
+inline std::string format_completion_lines(const CompletionReply &reply,
+                                           const std::vector<std::pair<std::string, std::string>> &fields) {
     std::string out;
     for(const CompletionResult &result : reply.results) {
-        out += detail::escape_completion_field(result.value);
+        out += escape_completion_field(result.value);
 
         // The shell shows one line, so the description is cut at the first line break.
         const std::string description = result.description.substr(0, result.description.find_first_of("\r\n"));
         if(!description.empty()) {
             out += '\t';
-            out += detail::escape_completion_field(description);
+            out += escape_completion_field(description);
         }
         out += '\n';
     }
     // The directive line stays last, so a script can detect a truncated reply.
-    if(!reply.prefix.empty()) {
-        out += ":prefix=";
-        out += detail::escape_completion_field(reply.prefix);
-        out += '\n';
+    for(const std::pair<std::string, std::string> &field : fields) {
+        if(!field.second.empty())
+            out += ":" + field.first + "=" + escape_completion_field(field.second) + "\n";
     }
     out += ':';
     out += std::to_string(static_cast<int>(reply.directive));
     out += '\n';
     return out;
+}
+
+}  // namespace detail
+
+CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
+    return detail::format_completion_lines(reply, {{"prefix", reply.prefix}});
 }
 
 namespace detail {
@@ -155,6 +164,82 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     return meta;
 }
 
+/// Append the words of `text` to `words`. With `at_cursor`, the text ends at the cursor, so the last word is added when
+/// it is empty or has an open quote. Returns the kept length of the last word.
+inline std::size_t split_completion_words(const std::string &text,
+                                          const std::string &breaks,
+                                          bool at_cursor,
+                                          std::vector<std::string> &words) {
+    std::string word;
+    bool in_word = false;
+    char quote = '\0';
+    std::size_t quote_mark = 0;
+    std::size_t break_mark = 0;
+    for(std::size_t pos = 0; pos < text.size(); ++pos) {
+        const char ch = text[pos];
+        const bool has_next = pos + 1 < text.size();
+        if(quote == '\'') {
+            if(ch == '\'')
+                quote = '\0';
+            else
+                word += ch;
+        } else if(ch == '\\' && has_next &&
+                  (quote == '\0' || std::string("\"\\$`").find(text[pos + 1]) != std::string::npos)) {
+            in_word = true;
+            word += text[++pos];
+        } else if(quote != '\0' && ch == quote) {
+            quote = '\0';
+        } else if(quote == '\0' && (ch == '\'' || ch == '"')) {
+            in_word = true;
+            quote = ch;
+            quote_mark = word.size();
+        } else if(quote == '\0' && (ch == ' ' || ch == '\t' || ch == '\n')) {
+            if(in_word)
+                words.push_back(word);
+            word.clear();
+            in_word = false;
+            break_mark = 0;
+        } else {
+            in_word = true;
+            word += ch;
+            if(quote == '\0' && breaks.find(ch) != std::string::npos)
+                break_mark = word.size();
+        }
+    }
+    if(in_word || at_cursor)
+        words.push_back(word);
+    return (quote != '\0') ? quote_mark : break_mark;
+}
+
+CLI11_INLINE CompletionLine split_completion_line(const std::string &line,
+                                                  std::size_t point,
+                                                  const std::string &breaks) {
+    CompletionLine out;
+    point = (std::min)(point, line.size());
+    out.kept = split_completion_words(line.substr(0, point), breaks, true, out.words);
+    out.cursor = out.words.size() - 1;
+    // The rest of the cursor word is not part of the request. The words after it still count for the positionals.
+    const std::string::size_type rest = line.find_first_of(" \t\n", point);
+    if(rest != std::string::npos)
+        split_completion_words(line.substr(rest), breaks, false, out.words);
+    return out;
+}
+
+CLI11_INLINE std::string
+format_completion_reply_bash(CompletionReply reply, const std::string &word, std::size_t kept) {
+    kept = (std::min)(kept, word.size());
+    for(CompletionResult &result : reply.results) {
+        if(result.value.compare(0, kept, word, 0, kept) == 0)
+            result.value.erase(0, kept);
+    }
+    // A path candidate is a value. Either the prefix or the kept text can be the longer one: `--file=a:b` keeps
+    // `--file=a:`, so `a:` comes off each path, and `-fa` keeps nothing, so `-f` goes on.
+    const std::size_t named = (std::min)(reply.prefix.size(), word.size());
+    const std::string strip = (kept > named) ? word.substr(named, kept - named) : std::string{};
+    const std::string lead = (kept < named) ? word.substr(kept, named - kept) : std::string{};
+    return format_completion_lines(reply, {{"cur", word.substr(named)}, {"strip", strip}, {"lead", lead}});
+}
+
 CLI11_INLINE CompletionDirective completion_hint_directive(CompletionHint hint) {
     switch(hint) {
     case CompletionHint::File:
@@ -237,40 +322,6 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     printf -v "$1" '%s' "${out}"
 }
 
-@FUNCTION@_dequote() { # <destination variable> <word as typed> [<variable for the kept length> <break characters>]
-    # Removes quotes and escapes without eval. The kept length is the part of the result that readline does not replace:
-    # the text before an open quote, or else the text up to the last unquoted break character.
-    local rest=$2 out="" quote="" ch mark=0
-    while [[ -n ${rest} ]]; do
-        ch=${rest:0:1}
-        rest=${rest:1}
-        if [[ ${quote} == "'" ]]; then
-            if [[ ${ch} == "'" ]]; then
-                quote=""
-            else
-                out+=${ch}
-            fi
-        elif [[ ${ch} == "\\" && ( -z ${quote} || ${rest:0:1} == [\"\\\$\`] ) ]]; then
-            out+=${rest:0:1}
-            rest=${rest:1}
-        elif [[ -n ${quote} && ${ch} == "${quote}" ]]; then
-            quote=""
-        elif [[ -z ${quote} && ( ${ch} == "'" || ${ch} == '"' ) ]]; then
-            quote=${ch}
-            mark=${#out}
-        else
-            out+=${ch}
-            if [[ -z ${quote} && -n ${4-} && $4 == *"${ch}"* ]]; then
-                mark=${#out}
-            fi
-        fi
-    done
-    printf -v "$1" '%s' "${out}"
-    if [[ -n ${3-} ]]; then
-        printf -v "$3" '%s' "${mark}"
-    fi
-}
-
 @FUNCTION@_describe() { # <length of the longest candidate>
     local longest=$1 tab=$'\t'
     local ci comp desc room i
@@ -327,106 +378,30 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 }
 
 @FUNCTION@() {
-    local response line comp desc ci ii tab=$'\t'
-    local directive="" prefix="" longest=0
-
-    # COMP_WORDS holds full words, but readline completes only the text before the cursor. Remove the text after the
-    # cursor from the cursor word. Otherwise the binary answers for the full word and readline inserts the answer before
-    # the tail.
-    local -a raw=("${COMP_WORDS[@]}")
-    local comp_line=${COMP_LINE-} point=${COMP_POINT-0}
-    local after=${comp_line:point}
-    after=${after%%[[:space:]]*}
-    # bash 4 splits COMP_WORDS at a break character and bash 3.2 does not. For `--le|vel=f` the tail of the word is
-    # `vel` in bash 4 and `vel=f` in bash 3.2.
-    if [[ ${raw[COMP_CWORD]-} != *"${after}" ]]; then
-        for (( ii = 0; ii < ${#after}; ii++ )); do
-            if [[ ${COMP_WORDBREAKS-} == *"${after:ii:1}"* ]]; then
-                break
-            fi
-        done
-        after=${after:0:ii}
-    fi
-    if [[ -n ${after} && ${raw[COMP_CWORD]-} == *"${after}" ]]; then
-        raw[COMP_CWORD]=${raw[COMP_CWORD]%"${after}"}
-    fi
-
-    # Readline splits the line on COMP_WORDBREAKS, which holds `=` and `:` by default. `--file=/et` arrives as the three
-    # words `--file`, `=`, `/et`. Rejoin them into the arguments the program gets, and move the cursor index with them.
-    # Spaces around a break character are lost, so `a : b` reads as `a:b`. bash sends an empty word for a cursor after a
-    # space, so an empty word still starts a word. A character that the user removed from COMP_WORDBREAKS does not
-    # split.
-    local breaks=""
-    if [[ ${COMP_WORDBREAKS-} == *"="* ]]; then
-        breaks+="="
-    fi
-    if [[ ${COMP_WORDBREAKS-} == *":"* ]]; then
-        breaks+=":"
-    fi
-    #
-    # The words arrive as typed, so remove the quotes and the escapes. A quoted break character is not a break.
-    #
-    # `head` is the part of the cursor word that readline does not replace: the pieces before the piece the cursor is
-    # in, and the part of that piece that _dequote reports. Candidates are full tokens, so `head` is removed from them.
-    local -a words=()
-    local cword=0 count=0 word glue="" is_break kept head=""
-    for (( ii = 0; ii < ${#raw[@]}; ii++ )); do
-        word=${raw[ii]}
-        is_break=""
-        if [[ -n ${word} && -n ${breaks} && -z ${word//[${breaks}]/} ]]; then
-            is_break=1
-        fi
-        kept=0
-        # Word 0 is expanded below, as a command word.
-        if (( ii > 0 )) && [[ ii -eq COMP_CWORD || ${word} == *[\\\"\']* ]]; then
-            @FUNCTION@_dequote word "${word}" kept "${breaks}"
-        fi
-        # Do not join onto word 0: the result is not the name of a program. Do not join a later word onto the cursor
-        # word: the binary would answer for text after the cursor.
-        if [[ -n ${word} && -n ${glue}${is_break} ]] && (( count > 1 && (ii <= COMP_CWORD || count - 1 > cword) )); then
-            if (( ii == COMP_CWORD )); then
-                head=${words[count-1]}
-            fi
-            words[count-1]+=${word}
-        else
-            words+=("${word}")
-            (( ++count ))
-        fi
-        if (( ii == COMP_CWORD )); then
-            cword=$(( count - 1 ))
-            head+=${word:0:kept}
-        fi
-        glue=${is_break}
-    done
-    word=${words[cword]-}
+    local response line comp desc ci tab=$'\t'
+    local directive="" cur="" strip="" lead="" longest=0
 
     # The command word arrives as typed, so apply the expansions the shell applies before it runs the word. A word that
     # could run a command when expanded is not expanded.
-    local program=${words[0]-} unsafe='[$`;&|<>()]'
+    local program=${COMP_WORDS[0]-} unsafe='[$`;&|<>()]'
     if [[ ${program} == *[~\\\"\']* && ! ${program} =~ ${unsafe} && ${program} != *$'\n'* ]]; then
-        eval "program=${program}" 2>/dev/null || program=${words[0]}
+        eval "program=${program}" 2>/dev/null || program=${COMP_WORDS[0]}
     fi
     # Follow an alias that only renames the program, not one that adds words. bash 3.2 has no BASH_ALIASES.
     if (( BASH_VERSINFO[0] >= 4 )) && [[ -n ${program} ]]; then
         local target=${BASH_ALIASES[${program}]-}
         if [[ -n ${target} && ! ${target} =~ [[:space:]] && ! ${target} =~ ${unsafe} ]]; then
-            eval "program=${target}" 2>/dev/null || program=${words[0]}
+            eval "program=${target}" 2>/dev/null || program=${COMP_WORDS[0]}
         fi
     fi
-    if (( ${#words[@]} > 0 )); then
-        words[0]=${program}
-    fi
 
-    # The words go to the program in the environment, not as arguments. A program that does not answer (older than this
-    # script, or with completion off) must not run the line. The one argument is for such a program to reject. With no
-    # arguments it could run a default command.
-    # A unit separator ends each word.
-    local packed=""
-    for (( ii = 1; ii < ${#words[@]}; ii++ )); do
-        packed+=${words[ii]}$'\x1f'
-    done
+    # The program splits the line itself. COMP_WORDS is not used for that: bash 4 splits it at each break character and
+    # bash 3.2 does not. The line goes in the environment, not as arguments. A program that does not answer (older
+    # than this script, or with completion off) must not run the line. The one argument is for such a program to
+    # reject. With no arguments it could run a default command.
     response=$(
-        export @ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ @ENV@_WORDS="${packed}"
+        export @ENV@=bash @ENV@_PROTO=@PROTO@ @ENV@_LINE="${COMP_LINE-}" @ENV@_POINT="${COMP_POINT-}"
+        export @ENV@_BREAKS="${COMP_WORDBREAKS-}"
         "${program}" --cli11-complete 2>/dev/null
     )
 
@@ -441,9 +416,15 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             # The directive line is last. A line after it means the reply is not valid.
             COMPREPLY=()
             return 0
-        elif [[ ${line} == ":prefix="* ]]; then
-            # Test this first: any other line that starts with a colon is the directive line.
-            @FUNCTION@_unescape prefix "${line#:prefix=}"
+        elif [[ ${line} == ":cur="* ]]; then
+            # Test these first: any other line that starts with a colon is the directive line.
+            @FUNCTION@_unescape cur "${line#:cur=}"
+            continue
+        elif [[ ${line} == ":strip="* ]]; then
+            @FUNCTION@_unescape strip "${line#:strip=}"
+            continue
+        elif [[ ${line} == ":lead="* ]]; then
+            @FUNCTION@_unescape lead "${line#:lead=}"
             continue
         elif [[ ${line} == :* ]]; then
             directive=${line:1}
@@ -455,7 +436,6 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             @FUNCTION@_unescape desc "${line#*"${tab}"}"
         fi
         @FUNCTION@_unescape comp "${line%%"${tab}"*}"
-        comp=${comp#"${head}"}
         if (( ${#comp} > longest )); then
             longest=${#comp}
         fi
@@ -480,16 +460,8 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 
     # The shell completes paths when the reply asks for them, or when the reply has no candidates and does not forbid
     # paths. No fallback is registered with bash, so a reply that is not valid offers nothing.
-    #
-    # The path candidates are values, but readline replaces the word from its last break character. Either boundary can
-    # be the later one. For `--file=a:b` the line already has the head of the value, so remove it from the candidates.
-    # For `-fa` there is no break, so add the `-f`.
-    local cur=${word#"${prefix}"} value_head="" value_lead="" paths=""
-    if (( ${#head} >= ${#prefix} )); then
-        value_head=${head#"${prefix}"}
-    else
-        value_lead=${prefix#"${head}"}
-    fi
+    # `cur` is the value typed so far, which _files reads.
+    local paths=""
     if (( (directive & 8) != 0 )); then
         paths=any
     elif (( (directive & 16) != 0 )); then
@@ -507,7 +479,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             @FUNCTION@_files
         fi
         for (( ci = from; ci < ${#COMPREPLY[@]}; ci++ )); do
-            COMPREPLY[ci]=${value_lead}${COMPREPLY[ci]#"${value_head}"}
+            COMPREPLY[ci]=${lead}${COMPREPLY[ci]#"${strip}"}
         done
     fi
 
