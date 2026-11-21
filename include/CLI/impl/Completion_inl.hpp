@@ -398,10 +398,10 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     # The program splits the line itself. COMP_WORDS is not used for that: bash 4 splits it at each break character and
     # bash 3.2 does not. The line goes in the environment, not as arguments. A program that does not answer (older
     # than this script, or with completion off) must not run the line. The one argument is for such a program to
-    # reject. With no arguments it could run a default command.
+    # reject. With no arguments it could run a default command. MSYS must not convert a line that starts with a path.
     response=$(
         export @ENV@=bash @ENV@_PROTO=@PROTO@ @ENV@_LINE="${COMP_LINE-}" @ENV@_POINT="${COMP_POINT-}"
-        export @ENV@_BREAKS="${COMP_WORDBREAKS-}"
+        export @ENV@_BREAKS="${COMP_WORDBREAKS-}" MSYS2_ENV_CONV_EXCL="@ENV@_${MSYS2_ENV_CONV_EXCL:+;${MSYS2_ENV_CONV_EXCL}}"
         "${program}" --cli11-complete 2>/dev/null
     )
 
