@@ -703,15 +703,18 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     }
                 }
                 // write mapped names for transformers that support it (e.g. CheckedTransformer::config_output_names)
-                for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
-                    const auto &vali = *vit;
-                    if(vali && vali->get_active() && vali->get_application_index() < 0 &&
-                       vali->has_reverse_operation()) {
-                        for(auto &res : results) {
-                            res = vali->reverse(res);
+                auto apply_reverse = [opt](results_t &vals) {
+                    for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
+                        const auto &vali = *vit;
+                        if(vali && vali->get_active() && vali->get_application_index() < 0 &&
+                           vali->has_reverse_operation()) {
+                            for(auto &val : vals) {
+                                val = vali->reverse(val);
+                            }
                         }
                     }
-                }
+                };
+                apply_reverse(results);
                 std::string value;
 
                 if(opt->count() == 1 && results.size() == 2 && results.front() == "{}" && results.back() == "%%") {
@@ -729,6 +732,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     if(!opt->get_default_str().empty()) {
                         results_t res;
                         opt->results(res);
+                        apply_reverse(res);
                         value = detail::ini_join(res, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";

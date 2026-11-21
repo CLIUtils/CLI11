@@ -4771,3 +4771,55 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesRoundTrip", "[config]") {
     app.parse_from_stream(input);
     CHECK(level == Level::Medium);
 }
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesDefault", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)
+        ->transform(CLI::CheckedTransformer(names).config_output_names())
+        ->capture_default_str();
+    run();
+    CHECK(app.config_to_str(true) == "level=\"low\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesCaseInsensitiveInput", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names, CLI::ignore_case).config_output_names());
+    args = {"--level", "HIGH"};
+    run();
+    // the map's spelling is written, not the user's
+    CHECK(app.config_to_str() == "level=\"high\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesStdMapOrder", "[config]") {
+    enum class Level : int { High, Low };
+    Level level{Level::Low};
+    // std::map iterates in sorted key order: "hi" < "high" < "top"
+    std::map<std::string, Level> names{
+        {"top", Level::High}, {"high", Level::High}, {"hi", Level::High}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "top"};
+    run();
+    CHECK(app.config_to_str() == "level=\"hi\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesSubcommandRoundTrip", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    auto *sub = app.add_subcommand("sub");
+    sub->add_option("--level", level)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"sub", "--level", "medium"};
+    run();
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("sub.level=\"medium\""));
+
+    level = Level::Low;
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(level == Level::Medium);
+}
