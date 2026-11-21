@@ -183,6 +183,12 @@ class App {
     /// This is a function that generates a usage to put after program/subcommand description in help output
     std::function<std::string()> usage_callback_{};
 
+    /// Extended help text shown after the description in this app's own help, not in parent listings
+    std::string long_description_{};
+
+    /// This is a function that generates extended help text for help output
+    std::function<std::string()> long_description_callback_{};
+
     /// Footer to put after all options in the help output INHERITABLE
     std::string footer_{};
 
@@ -983,6 +989,16 @@ class App {
         usage_callback_ = std::move(usage_function);
         return this;
     }
+    /// Set extended help text shown after the description in this app's own help.
+    App *long_description(std::string long_description_string) {
+        long_description_ = std::move(long_description_string);
+        return this;
+    }
+    /// Set a callback to generate extended help text.
+    App *long_description(std::function<std::string()> long_description_function) {
+        long_description_callback_ = std::move(long_description_function);
+        return this;
+    }
     /// Set footer.
     App *footer(std::string footer_string) {
         footer_ = std::move(footer_string);
@@ -1091,6 +1107,9 @@ class App {
 
     /// Generate and return the usage.
     CLI11_NODISCARD std::string get_usage() const;
+
+    /// Generate and return the extended help text.
+    CLI11_NODISCARD std::string get_long_description() const;
 
     /// Generate and return the footer.
     CLI11_NODISCARD std::string get_footer() const;

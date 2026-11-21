@@ -955,6 +955,10 @@ CLI11_NODISCARD CLI11_INLINE std::string App::get_usage() const {
     return (usage_callback_) ? usage_callback_() + '\n' + usage_ : usage_;
 }
 
+CLI11_NODISCARD CLI11_INLINE std::string App::get_long_description() const {
+    return (long_description_callback_) ? long_description_callback_() + '\n' + long_description_ : long_description_;
+}
+
 CLI11_NODISCARD CLI11_INLINE std::string App::get_footer() const {
     return (footer_callback_) ? footer_callback_() + '\n' + footer_ : footer_;
 }

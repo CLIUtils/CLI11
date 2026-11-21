@@ -56,10 +56,10 @@ column width property.
 
 There are occasions where it is necessary to disable the formatting for headers
 and footers the two options `enable_description_formatting(false)` and
-`enable_footer_formatting(false)` turn off any formatting on the description and
-footer. This allows things like word art or external management of alignment and
-width. With formatting enabled the width is enforced and the paragraphs
-reflowed.
+`enable_footer_formatting(false)` turn off any formatting on the description
+(including the long description) and footer. This allows things like word art or
+external management of alignment and width. With formatting enabled the width is
+enforced and the paragraphs reflowed.
 
 ### Option output control
 
@@ -114,6 +114,7 @@ line.
 
 ```text
 <make_description(app)>
+<make_long_description(app)>
 <make_usage(app, name)>
 <make_positionals(app)>
   <make_group("POSITIONALS", true, opts)>
