@@ -228,7 +228,7 @@ close_sequence(const std::string &str, std::size_t start, char closure_char, boo
 /// can end with up to two quote characters. Returns str.size() if not found.
 CLI11_INLINE std::size_t close_multiline_quote(const std::string &str, std::size_t start, char quote);
 
-/// Find a triple quoted array element that is not closed
+/// Find a triple quoted array element that is not closed, also in a nested sequence
 /// pos is the start of the scan; updated to the start of the first element that is not complete
 /// Returns the index of the open triple quote, or npos
 CLI11_INLINE std::size_t find_open_multiline_quote(const std::string &str, std::size_t &pos, char separator);
