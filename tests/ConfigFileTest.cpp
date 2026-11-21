@@ -3474,7 +3474,7 @@ TEST_CASE_METHOD(TApp, "IniFlagValueBareKeyUsesFlagValue", "[config]") {
     CHECK(mode == 2);
 }
 
-TEST_CASE_METHOD(TApp, "IniFlagValueOneUsesFlagValue", "[config]") {
+TEST_CASE_METHOD(TApp, "IniFlagValueOneIsOverride", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
     app.set_config("--config", tmpini);
@@ -3490,7 +3490,7 @@ TEST_CASE_METHOD(TApp, "IniFlagValueOneUsesFlagValue", "[config]") {
 
     run();
 
-    CHECK(mode == 2);
+    CHECK(mode == 1);
 }
 
 TEST_CASE_METHOD(TApp, "IniFlagValueExplicitValueStillOverrides", "[config]") {
@@ -3552,6 +3552,80 @@ TEST_CASE("IniFlagValueRoundTrip", "[config]") {
     CHECK(round_trip("--mode-a") == std::make_pair(0, 0));
     CHECK(round_trip("--mode-b") == std::make_pair(1, 1));
     CHECK(round_trip("--mode-c") == std::make_pair(2, 2));
+}
+
+TEST_CASE("IniFlagValueOverrideOneRoundTrip", "[config]") {
+    CLI::App app1;
+    int written{-1};
+    app1.add_flag("--a{2},--b{3}", written);
+    app1.parse(std::vector<std::string>{"--b=1"});
+
+    CLI::App app2;
+    int read{-1};
+    app2.add_flag("--a{2},--b{3}", read);
+    std::stringstream stream{app1.config_to_str()};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == 1);
+    CHECK(read == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueStringOverrideKept", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "name=1st" << '\n';
+        out << "five=on" << '\n';
+    }
+
+    std::string name;
+    std::string five;
+    app.add_flag("--name{dflt}", name);
+    app.add_flag("--five{5}", five);
+
+    run();
+
+    CHECK(name == "1st");
+    CHECK(five == "on");
+}
+
+TEST_CASE_METHOD(TApp, "IniOptionalValueTruthyKept", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "str=true" << '\n';
+        out << "int=1" << '\n';
+    }
+
+    std::string str;
+    int val{0};
+    app.add_option("--str", str)->expected(0, 1);
+    app.add_option("--int", val)->expected(0, 1)->default_str("5");
+
+    run();
+
+    CHECK(str == "true");
+    CHECK(val == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueOutputStringWithSpace", "[config]") {
+
+    std::string val;
+    app.add_flag("--a{abc},--b{d e}", val);
+
+    args = {"--b"};
+    run();
+
+    CHECK(val == "d e");
+    CHECK(app.config_to_str() == "b=\"d e\"\n");
 }
 
 TEST_CASE("fclear", "[config]") {

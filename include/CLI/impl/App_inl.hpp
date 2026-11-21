@@ -1802,18 +1802,23 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
         // Flag parsing
         auto res = config_formatter_->to_flag(item);
         bool converted{false};
-        // A true value in a config file only says that the flag was given, so it resolves to the
-        // flag's own value, just as the bare flag does on the command line.  A config file has no
-        // way to spell a bare flag: a key with no value is read as `true`, and formats such as
-        // TOML require a value at all, so `flag=true` is the only spelling available for `--flag`.
-        errno = 0;
-        if(detail::to_flag_value(res) == 1) {
+        if(op->get_disable_flag_override()) {
+            errno = 0;
+            auto val = detail::to_flag_value(res);
+            if(val == 1 && errno == 0) {
+                res = op->get_flag_value(item.name, "{}");
+                converted = true;
+            }
+        } else if(res == "true" &&
+                  detail::find_member(
+                      item.name, op->get_fnames(), op->get_ignore_case(), op->get_ignore_underscore()) >= 0) {
+            // `name=true` is how a config file spells the bare flag `--name{value}`
             res = op->get_flag_value(item.name, "{}");
             converted = true;
         }
-        errno = 0;
 
         if(!converted) {
+            errno = 0;
             if(res != "{}" || op->get_expected_max() <= 1) {
                 res = op->get_flag_value(item.name, res);
             }

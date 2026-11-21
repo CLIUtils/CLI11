@@ -1434,6 +1434,17 @@ TEST_CASE_METHOD(TApp, "ExpectedRangePositional", "[app]") {
 
 // This makes sure unlimited option priority is
 // correct for space vs. no space #90
+TEST_CASE_METHOD(TApp, "PositionalOptionalValueTruthyKept", "[app]") {
+    std::string str;
+    app.add_option("pos", str)->expected(0, 1);
+
+    for(const std::string input : {"1", "yes", "true", "on", "1st"}) {
+        args = {input};
+        run();
+        CHECK(str == input);
+    }
+}
+
 TEST_CASE_METHOD(TApp, "PositionalNoSpace", "[app]") {
     std::vector<std::string> options;
     std::string foo, bar;
