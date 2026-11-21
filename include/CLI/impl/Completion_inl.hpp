@@ -158,11 +158,11 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
 CLI11_INLINE CompletionDirective completion_hint_directive(CompletionHint hint) {
     switch(hint) {
     case CompletionHint::File:
-        return CompletionDirective::FilterFileExt;
+        return CompletionDirective::Files;
     case CompletionHint::Dir:
-        return CompletionDirective::FilterDirs;
+        return CompletionDirective::Dirs;
     case CompletionHint::Path:
-        return CompletionDirective::FilterFileExt | CompletionDirective::FilterDirs;
+        return CompletionDirective::Files | CompletionDirective::Dirs;
     case CompletionHint::None:
     default:
         return CompletionDirective::Default;

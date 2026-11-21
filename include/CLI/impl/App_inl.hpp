@@ -879,7 +879,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
             reply.directive = CompletionDirective::NoFileComp;
             return reply;
         }
-        current->_add_value_completions(*positional, word, walk.count(positional), reply);
+        current->_add_value_completions(*positional, word, walk.counts[positional], reply);
         return reply;
     }
 
@@ -896,7 +896,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         const Option *assigned = current->_completion_find_option(type, opt_name, owner);
         if(assigned != nullptr && assigned->get_items_expected_max() != 0) {
             current->_add_attached_value_completions(
-                *assigned, word.substr(0, separator + 1), word.substr(separator + 1), walk.count(assigned), reply);
+                *assigned, word.substr(0, separator + 1), word.substr(separator + 1), walk.counts[assigned], reply);
         } else {
             // An unknown option, or one that takes no value, gives no candidates after its separator.
             reply.directive = CompletionDirective::NoFileComp;
@@ -952,7 +952,7 @@ CLI11_INLINE CompletionReply App::get_completions(const std::vector<std::string>
         return reply;
     }
     current->_add_value_completions(
-        *value_source, word, (walk.awaiting != nullptr) ? walk.awaiting_items : walk.count(value_source), reply);
+        *value_source, word, (walk.awaiting != nullptr) ? walk.awaiting_items : walk.counts[value_source], reply);
     // When names match and the value source adds no values, block paths. A directory listing would hide the names.
     if(named != 0 && reply.results.size() == named)
         reply.directive = CompletionDirective::NoFileComp;
@@ -1101,14 +1101,14 @@ CLI11_NODISCARD CLI11_INLINE detail::Classifier App::_completion_recognize(detai
 }
 
 CLI11_NODISCARD CLI11_INLINE bool App::_completion_subcommands_full(detail::CompletionWalk &walk) const {
-    return require_subcommand_max_ != 0 && walk.subcommands(this) >= require_subcommand_max_;
+    return require_subcommand_max_ != 0 && walk.entered[this] >= require_subcommand_max_;
 }
 
 CLI11_INLINE void App::_completion_enter(detail::CompletionWalk &walk, const App *com) const {
     if(!com->silent_) {
         // An option group between this command and the subcommand counts it too
         for(const App *app = com->parent_; app != nullptr; app = (app == this) ? nullptr : app->parent_)
-            ++walk.subcommands(app);
+            ++walk.entered[app];
     }
     walk.frames.push_back({com, false});
 }
@@ -1175,7 +1175,7 @@ CLI11_INLINE std::size_t App::_completion_pending_positionals(detail::Completion
     for(const Option_p &opt : options_) {
         if(!opt->get_positional() || (required_only && !opt->get_required()))
             continue;
-        const int missing = opt->get_items_expected_min() - walk.count(opt.get());
+        const int missing = opt->get_items_expected_min() - walk.counts[opt.get()];
         if(missing > 0)
             retval += static_cast<std::size_t>(missing);
     }
@@ -1186,7 +1186,7 @@ CLI11_NODISCARD CLI11_INLINE const Option *App::_completion_next_positional(deta
     return _completion_visit([&walk](const App &app) -> const Option * {
         for(const Option_p &opt : app.options_) {
             if(opt->get_positional() &&
-               (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args()))
+               (walk.counts[opt.get()] < opt->get_items_expected_max() || opt->get_allow_extra_args()))
                 return opt.get();
         }
         return nullptr;
@@ -1285,7 +1285,7 @@ CLI11_INLINE std::size_t App::_completion_option(detail::CompletionWalk &walk,
     int maximum = 0;
     _value_appetite(*opt, minimum, maximum);
     if(maximum == 0) {
-        ++walk.count(opt);
+        ++walk.counts[opt];
         // A flag passes the rest of a short word on as more names: `-vl` is `-v` then `-l`.
         if(type == detail::Classifier::SHORT && !value.empty())
             return _completion_step(walk, "-" + value, words, index, cursor);
@@ -1298,8 +1298,8 @@ CLI11_INLINE std::size_t App::_completion_option(detail::CompletionWalk &walk,
     auto await = [&](bool required) {
         walk.awaiting = opt;
         // A validator index counts the items of each use, as in _validate_results
-        walk.awaiting_items = walk.count(opt) + collected;
-        walk.count(opt) += collected;
+        walk.awaiting_items = walk.counts[opt] + collected;
+        walk.counts[opt] += collected;
         walk.awaiting_minimum = required;
         return cursor;
     };
@@ -1337,7 +1337,7 @@ CLI11_INLINE std::size_t App::_completion_option(detail::CompletionWalk &walk,
             ++next;
     }
     // An option that also has a positional name is filled by either spelling
-    walk.count(opt) += (std::max)(collected, 1);
+    walk.counts[opt] += (std::max)(collected, 1);
     return next;
 }
 
@@ -1347,8 +1347,8 @@ App::_completion_positional(detail::CompletionWalk &walk, const std::string &wor
     // then a subcommand with that name.
     for(const Option_p &opt : options_) {
         if(opt->get_positional() &&
-           (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args())) {
-            walk.count(opt.get()) += _completion_items(*opt, word);
+           (walk.counts[opt.get()] < opt->get_items_expected_max() || opt->get_allow_extra_args())) {
+            walk.counts[opt.get()] += _completion_items(*opt, word);
             // Only a validator run can tell which positional a parse gives this word to
             if(validate_positionals_)
                 walk.halted = true;
@@ -1413,7 +1413,7 @@ App::_add_short_word_completions(detail::CompletionWalk &walk, const std::string
 
     // A name at the end of the word takes its value from the next word, so there is no value to complete here.
     if(opt != nullptr && consumed < word.size()) {
-        _add_attached_value_completions(*opt, word.substr(0, consumed), word.substr(consumed), walk.count(opt), reply);
+        _add_attached_value_completions(*opt, word.substr(0, consumed), word.substr(consumed), walk.counts[opt], reply);
         return;
     }
 
@@ -1427,7 +1427,7 @@ App::_add_short_word_completions(detail::CompletionWalk &walk, const std::string
         const Option *named = _completion_find_nonstandard(word, value, owner);
         const std::string::size_type assign = word.find('=');
         if(named != nullptr && assign != std::string::npos && named->get_items_expected_max() != 0) {
-            _add_attached_value_completions(*named, word.substr(0, assign + 1), value, walk.count(named), reply);
+            _add_attached_value_completions(*named, word.substr(0, assign + 1), value, walk.counts[named], reply);
             return;
         }
         _add_option_completions(word, reply);

@@ -1938,7 +1938,7 @@ TEST_CASE("Completion: a set or a path offers the set and the path", "[completio
     app.add_option("--path", value)->check(CLI::ExistingDirectory | CLI::ExistingFile);
     app.add_option("--both", value)->check(CLI::ExistingFile & CLI::IsMember({"listed"}));
 
-    // KeepOrder with FilterFileExt: the shell adds file names to the set
+    // KeepOrder with Files: the shell adds file names to the set
     CHECK(ask(app, {"--in", ""}) == "stdin\n:12\n");
     CHECK(ask(app, {"--in", "/et"}) == ":12\n");
     CHECK(ask(app, {"--out", ""}) == "stdout\n:20\n");

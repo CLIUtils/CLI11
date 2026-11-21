@@ -149,13 +149,13 @@ The last line is always the directive, a bit mask telling the shell what else it
 may do. The `2` above says the word being completed is not a file name, so bash
 is not to add any:
 
-| Bit | Name            | Meaning                                                         |
-| --- | --------------- | --------------------------------------------------------------- |
-| 1   | `Error`         | The request could not be answered; ignore the whole reply.      |
-| 2   | `NoFileComp`    | Do not add file names of your own.                              |
-| 4   | `KeepOrder`     | The candidates are in a meaningful order; do not sort them.     |
-| 8   | `FilterFileExt` | The value is a file name; complete it.                          |
-| 16  | `FilterDirs`    | The value is a directory name; complete it. With 8, either one. |
+| Bit | Name         | Meaning                                                         |
+| --- | ------------ | --------------------------------------------------------------- |
+| 1   | `Error`      | The request could not be answered; ignore the whole reply.      |
+| 2   | `NoFileComp` | Do not add file names of your own.                              |
+| 4   | `KeepOrder`  | The candidates are in a meaningful order; do not sort them.     |
+| 8   | `Files`      | The value is a file name; complete it.                          |
+| 16  | `Dirs`       | The value is a directory name; complete it. With 8, either one. |
 
 With none of these set, nothing is known about the word, and the script offers
 paths if there are no candidates. The script produces every path itself and

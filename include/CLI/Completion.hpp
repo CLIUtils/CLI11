@@ -12,9 +12,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 // [CLI11:public_includes:end]
 
@@ -45,9 +45,9 @@ enum class CompletionDirective : std::uint8_t {
     /// The order of the candidates has a meaning. The shell must not sort them.
     KeepOrder = 4,
     /// The value is a file name. The shell completes it.
-    FilterFileExt = 8,
-    /// The value is a directory name. The shell completes it. With FilterFileExt, the value is a file or a directory.
-    FilterDirs = 16
+    Files = 8,
+    /// The value is a directory name. The shell completes it. With Files, the value is a file or a directory.
+    Dirs = 16
 };
 
 /// Combine two directives
@@ -143,7 +143,7 @@ struct CompletionWalk {
     /// The commands the line is in, the innermost last.
     std::vector<Frame> frames{};  // cppcheck-suppress unusedStructMember
     /// The number of items each option has, given by name or as a positional
-    std::vector<std::pair<const Option *, int>> counts{};  // cppcheck-suppress unusedStructMember
+    std::map<const Option *, int> counts{};  // cppcheck-suppress unusedStructMember
     /// The option that still takes values at the cursor, and the number of items it has from this use
     const Option *awaiting{nullptr};  // cppcheck-suppress unusedStructMember
     int awaiting_items{0};            // cppcheck-suppress unusedStructMember
@@ -152,27 +152,7 @@ struct CompletionWalk {
     /// True when the rest of the line cannot be read. The reply then has no candidates.
     bool halted{false};  // cppcheck-suppress unusedStructMember
     /// The number of subcommands each command has entered, as parsed_subcommands_ counts them
-    std::vector<std::pair<const App *, std::size_t>> entered{};  // cppcheck-suppress unusedStructMember
-
-    /// The number of items the option has
-    int &count(const Option *opt) {
-        for(std::pair<const Option *, int> &entry : counts) {
-            if(entry.first == opt)
-                return entry.second;
-        }
-        counts.emplace_back(opt, 0);
-        return counts.back().second;
-    }
-
-    /// The number of subcommands the command has entered
-    std::size_t &subcommands(const App *app) {
-        for(std::pair<const App *, std::size_t> &entry : entered) {
-            if(entry.first == app)
-                return entry.second;
-        }
-        entered.emplace_back(app, 0);
-        return entered.back().second;
-    }
+    std::map<const App *, std::size_t> entered{};  // cppcheck-suppress unusedStructMember
 };
 
 /// Combine the metas of two Validators into the meta of `A & B`.
