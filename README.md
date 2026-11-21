@@ -1222,7 +1222,15 @@ option_groups. These are:
 >
 > If you have a fixed number of required positional options, that will match
 > before subcommand names. `{}` is an empty filter function, and any positional
-> argument will match before repeated subcommand names.
+> argument will match before repeated subcommand names. There is one exception:
+> if a later argument is a help flag of that subcommand, such as
+> `app sub1 sub2 --help`, the subcommand is used so its help is shown. Only a
+> plain `-h` or `--help` (or the `help_all` flag) of that subcommand counts. A
+> grouped short flag (`-fh`), a `--help=value` form, a Windows-style `/h`, or
+> the help flag of a deeper subcommand does not. A help flag after `--`, after
+> `++`, or after a positional of a `prefix_command()` or `positionals_at_end()`
+> subcommand also does not count. With `allow_subcommand_prefix_matching()`, a
+> prefix of the subcommand name also selects the subcommand.
 
 #### Callbacks
 

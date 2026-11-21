@@ -1324,6 +1324,9 @@ class App {
     CLI11_NODISCARD App *
     _find_subcommand(const std::string &subc_name, bool ignore_disabled, bool ignore_used) const noexcept;
 
+    /// Check if the arguments after subcommand com contain a plain help flag for com
+    CLI11_NODISCARD static bool _help_requested_for(const App *com, const std::vector<std::string> &args);
+
     /// Parse a subcommand, modify args and continue
     ///
     /// Unlike the others, this one will always allow fallthrough
