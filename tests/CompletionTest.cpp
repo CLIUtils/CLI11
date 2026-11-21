@@ -1211,7 +1211,7 @@ TEST_CASE("Completion: a bash line is split into the words a program receives", 
     typed = split_completion_line("prog --image=\"alpine:", 21, breaks);
     CHECK(typed.words == words_t{"prog", "--image=alpine:"});
     CHECK(typed.kept == 8U);
-    typed = split_completion_line("prog a\\:b \"c d\" e\\ f \"g\\\"h\\i\"", 30, breaks);
+    typed = split_completion_line(R"(prog a\:b "c d" e\ f "g\"h\i")", 30, breaks);
     CHECK(typed.words == words_t{"prog", "a:b", "c d", "e f", "g\"h\\i"});
     CHECK(typed.kept == 0U);
 
@@ -1791,7 +1791,7 @@ TEST_CASE("Completion: a set with nothing in it is not an unknown value", "[comp
     CHECK(ask(app, {"--live", ""}) == ":6\n");
     CHECK(ask(app, {"--disjoint", ""}) == ":6\n");
     CHECK(ask(app, {"--file", ""}) == ":6\n");
-    live->push_back("now");
+    live->emplace_back("now");
     CHECK(ask(app, {"--live", ""}) == "now\n:6\n");
 }
 
