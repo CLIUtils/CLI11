@@ -4680,3 +4680,14 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     CHECK(conf_filename.empty());
     CHECK(level == "off");
 }
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNames", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names, CLI::ignore_case));
+    args = {"--level", "high"};
+    run();
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("level=high"));   // baseline writes level=0
+}
