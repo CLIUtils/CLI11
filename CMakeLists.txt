@@ -142,6 +142,7 @@ set(CLI11_headerLoc "${PROJECT_SOURCE_DIR}/include/CLI")
 
 set(CLI11_headers
     ${CLI11_headerLoc}/App.hpp
+    ${CLI11_headerLoc}/Completion.hpp
     ${CLI11_headerLoc}/Config.hpp
     ${CLI11_headerLoc}/ConfigFwd.hpp
     ${CLI11_headerLoc}/Error.hpp
@@ -160,6 +161,7 @@ set(CLI11_headers
 
 set(CLI11_impl_headers
     ${CLI11_headerLoc}/impl/App_inl.hpp
+    ${CLI11_headerLoc}/impl/Completion_inl.hpp
     ${CLI11_headerLoc}/impl/Config_inl.hpp
     ${CLI11_headerLoc}/impl/Formatter_inl.hpp
     ${CLI11_headerLoc}/impl/Option_inl.hpp

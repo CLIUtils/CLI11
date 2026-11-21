@@ -11,6 +11,8 @@
 // This include is only needed for IDEs to discover symbols
 #include "../Option.hpp"
 
+#include "../Completion.hpp"
+
 // [CLI11:public_includes:set]
 #include <algorithm>
 #include <cerrno>
@@ -192,6 +194,82 @@ CLI11_INLINE Validator *Option::get_validator(int index) {
         return validators_[static_cast<decltype(validators_)::size_type>(index)].get();
     }
     throw OptionNotFound("Validator index is not valid");
+}
+
+CLI11_INLINE Option *Option::completion_hint(CompletionHint hint) {
+    completion_hint_ = hint;
+    return this;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::vector<std::string> Option::get_completion_choices(int index) const {
+    std::shared_ptr<const CompletionMeta> source;
+    return _completion_choices(source, index);
+}
+
+CLI11_NODISCARD CLI11_INLINE bool Option::_completion_applies(const Validator &validator, int index) const {
+    if(!validator.get_active())
+        return false;
+    const int applies_to = validator.get_application_index();
+    // For a type of several values the index is the place inside the type, as in _validate_results
+    return applies_to == -1 || applies_to == ((type_size_max_ > 1) ? (index % type_size_max_) : index);
+}
+
+CLI11_NODISCARD CLI11_INLINE std::vector<std::string>
+Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source, int index) const {
+    source.reset();
+    // A declared hint replaces the Validator choices. The program stated the kind of value, so no list is offered.
+    if(completion_hint_ != CompletionHint::None)
+        return {};
+
+    // The meta of the transform() that runs first, because later transforms get its output. transform() inserts at the
+    // front, so it is the first in the list.
+    std::shared_ptr<const CompletionMeta> rewrite;
+    // Separate check() calls must all pass, as in `A & B`, so their metas are intersected.
+    std::shared_ptr<const CompletionMeta> checks;
+
+    for(const Validator_p &validator : validators_) {
+        if(!_completion_applies(*validator, index))
+            continue;
+        // check() makes each validator non-modifying, so this separates transforms from checks.
+        if(validator->get_modifying()) {
+            if(!rewrite)
+                rewrite = validator->get_completion_meta();
+        } else {
+            checks = detail::intersect_completion_meta(checks, validator->get_completion_meta());
+        }
+    }
+
+    // Only a run of the transform can tell if a transform key passes the checks. So the checks answer when they list
+    // values, and the keys answer only when no check does. An empty list is still an answer: the option accepts none of
+    // the values.
+    for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
+        if(meta && meta->choices) {
+            source = meta;
+            return meta->choices();
+        }
+    }
+    return {};
+}
+
+CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint(int index) const {
+    if(completion_hint_ != CompletionHint::None)
+        return completion_hint_;
+
+    // A check hint has priority over a transform hint, because the transform output must pass the checks. The first
+    // hint of each kind wins, as in intersect_completion_meta.
+    CompletionHint rewrite = CompletionHint::None;
+    for(const Validator_p &validator : validators_) {
+        if(!_completion_applies(*validator, index))
+            continue;
+        const std::shared_ptr<const CompletionMeta> &meta = validator->get_completion_meta();
+        if(!meta || meta->hint == CompletionHint::None)
+            continue;
+        if(!validator->get_modifying())
+            return meta->hint;
+        if(rewrite == CompletionHint::None)
+            rewrite = meta->hint;
+    }
+    return rewrite;
 }
 
 CLI11_INLINE Option *Option::needs(Option *opt) {
