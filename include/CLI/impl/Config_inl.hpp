@@ -274,6 +274,22 @@ CLI11_INLINE std::size_t find_ml_close(const std::string &str, char quote, char 
     return std::string::npos;
 }
 
+/// @brief  find a comment character that is not in a quoted string; str[start] must be outside of a string
+/// @return the index of the comment character, or npos
+CLI11_INLINE std::size_t find_comment(const std::string &str, std::size_t start, char comment) {
+    for(auto loc = start; loc < str.size(); ++loc) {
+        auto ch = str[loc];
+        if(ch == comment) {
+            return loc;
+        }
+        if(ch == '\"' || ch == '\'' || ch == '`') {
+            loc = (ch != '`' && str.compare(loc, 3, std::string(3, ch)) == 0) ? close_multiline_quote(str, loc + 3, ch)
+                                                                              : close_sequence(str, loc, ch);
+        }
+    }
+    return std::string::npos;
+}
+
 /// @brief  remove an unescaped backslash that ends a line in a multiline basic string
 /// @return true if the line ends with a line continuation
 CLI11_INLINE bool remove_line_continuation(std::string &line) {
@@ -545,6 +561,13 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                     std::size_t scanPos{1};
                     bool lineExtension{false};
                     bool mlFirstLine{true};
+                    if(item.back() != aEnd) {
+                        // the array continues on the next line; a comment was not removed above
+                        auto commentLoc = detail::find_comment(item, 1, commentChar);
+                        if(commentLoc != std::string::npos) {
+                            item.erase(commentLoc);
+                        }
+                    }
                     auto mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
                     if(mlOpen != std::string::npos) {
                         // keep the trailing whitespace of a line that ends in a multiline string
@@ -592,7 +615,16 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                             }
                             mlFirstLine = false;
                         }
+                        auto commentScan = item.size();
                         item += multiline;
+                        if(mlOpen != std::string::npos) {
+                            // a comment can only start after the end of the open multiline string
+                            commentScan = detail::close_multiline_quote(item, mlOpen + 3, item[mlOpen]) + 1;
+                        }
+                        auto commentLoc = detail::find_comment(item, commentScan, commentChar);
+                        if(commentLoc != std::string::npos) {
+                            item.erase(commentLoc);
+                        }
                         auto prevOpen = mlOpen;
                         mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
                         if(mlOpen != prevOpen) {
@@ -622,6 +654,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                             it = it.substr(3, it.size() - 6);
                             if(basic) {
                                 it = detail::remove_escaped_characters(it);
+                            }
+                            if(detail::is_binary_escaped_string(it)) {
+                                it = detail::extract_binary_string(it);
                             }
                             detail::handle_secondary_array(it);
                         } else {
