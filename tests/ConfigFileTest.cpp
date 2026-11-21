@@ -4681,13 +4681,93 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
     CHECK(level == "off");
 }
 
+// ---- #791: enum names in config_to_str() output ----
+
 TEST_CASE_METHOD(TApp, "IniOutputEnumNames", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names, CLI::ignore_case).config_output_names());
+    args = {"--level", "high"};
+    run();
+    std::string str = app.config_to_str();
+    CHECK_THAT(str, Contains("level=\"high\""));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesDisabledUnchanged", "[config]") {
     enum class Level : int { High, Medium, Low };
     Level level{Level::Low};
     std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
     app.add_option("--level", level)->transform(CLI::CheckedTransformer(names, CLI::ignore_case));
     args = {"--level", "high"};
     run();
+    CHECK(app.config_to_str() == "level=0\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesNumericInput", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "1"};
+    run();
+    CHECK(level == Level::Medium);
+    CHECK(app.config_to_str() == "level=\"medium\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesDuplicateValues", "[config]") {
+    enum class Level : int { High, Low };
+    Level level{Level::Low};
+    // vector of pairs keeps insertion order: "hi" comes first
+    std::vector<std::pair<std::string, Level>> names{{"hi", Level::High}, {"high", Level::High}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "high"};
+    run();
+    CHECK(app.config_to_str() == "level=\"hi\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesUnmappedValue", "[config]") {
+    enum class Level : int { High, Low };
+    std::map<std::string, Level> names{{"high", Level::High}, {"low", Level::Low}};
+    CLI::Validator val = CLI::CheckedTransformer(names).config_output_names();
+    CHECK(val.has_reverse_operation());
+    CHECK(val.reverse("0") == "high");
+    CHECK(val.reverse("7") == "7");
+    CLI::Validator off = CLI::CheckedTransformer(names);
+    CHECK_FALSE(off.has_reverse_operation());
+    CHECK(off.reverse("0") == "0");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesVectorRoundTrip", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    std::vector<Level> levels;
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", levels)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "high", "low"};
+    run();
     std::string str = app.config_to_str();
-    CHECK_THAT(str, Contains("level=high"));   // baseline writes level=0
+    CHECK(str == "level=[\"high\", \"low\"]\n");
+
+    levels.clear();
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(levels == std::vector<Level>{Level::High, Level::Low});
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesRoundTrip", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--level", level)->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "medium"};
+    run();
+    std::string str = app.config_to_str();
+    CHECK(str == "level=\"medium\"\n");
+
+    level = Level::Low;
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(level == Level::Medium);
 }

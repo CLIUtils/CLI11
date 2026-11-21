@@ -702,6 +702,16 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                         }
                     }
                 }
+                // write mapped names for transformers that support it (e.g. CheckedTransformer::config_output_names)
+                for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
+                    const auto &vali = *vit;
+                    if(vali && vali->get_active() && vali->get_application_index() < 0 &&
+                       vali->has_reverse_operation()) {
+                        for(auto &res : results) {
+                            res = vali->reverse(res);
+                        }
+                    }
+                }
                 std::string value;
 
                 if(opt->count() == 1 && results.size() == 2 && results.front() == "{}" && results.back() == "%%") {
