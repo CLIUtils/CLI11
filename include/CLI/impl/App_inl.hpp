@@ -1809,7 +1809,7 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
                 res = op->get_flag_value(item.name, "{}");
                 converted = true;
             }
-        } else if(res == "true" &&
+        } else if(res == "true" && !item.quoted &&
                   detail::find_member(
                       item.name, op->get_fnames(), op->get_ignore_case(), op->get_ignore_underscore()) >= 0) {
             // `name=true` is how a config file spells the bare flag `--name{value}`

@@ -556,13 +556,14 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             items_buffer = {"true"};
         }
         std::vector<std::string> parents;
+        bool quoted{mlquote};
         try {
             parents = detail::generate_parents(currentSection, name, parentSeparatorChar);
             detail::process_quoted_string(name, '"', '\'', true);
             // clean up quotes on the items and check for escaped strings
             if(!mlquote) {
                 for(auto &it : items_buffer) {
-                    detail::process_quoted_string(it, stringQuote, literalQuote);
+                    quoted = detail::process_quoted_string(it, stringQuote, literalQuote);
                 }
             }
         } catch(const std::invalid_argument &ia) {
@@ -598,6 +599,7 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
             output.back().parents = std::move(parents);
             output.back().name = std::move(name);
             output.back().inputs = std::move(items_buffer);
+            output.back().quoted = quoted;
         }
     }
     if(currentSection != "default") {
@@ -734,9 +736,11 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     if(!opt->get_fnames().empty()) {
                         // Use the name whose flag value matches, e.g. `--one{1},--two{2}`.
                         // A `false` value is inverted on read, so it keeps single_name.
+                        // `++` and `--` are section markers in a config file.
                         if(results.size() == 1 && results.front() != "false") {
                             for(const auto &test_name : opt->get_fnames()) {
-                                if(opt->get_flag_value(test_name, "{}") == results.front()) {
+                                if(test_name != "++" && test_name != "--" &&
+                                   opt->get_flag_value(test_name, "{}") == results.front()) {
                                     single_name = test_name;
                                     break;
                                 }
@@ -759,6 +763,11 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                                 value = detail::ini_join(
                                     opt->results(), arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
                             }
+                        }
+                        // an unquoted `true` is read back as the bare flag
+                        if(value == "true" && results.size() == 1 &&
+                           opt->get_flag_value(single_name, "{}") != results.front()) {
+                            value = std::string(1, stringQuote) + value + stringQuote;
                         }
                     }
                     if(write_description && opt->has_description()) {

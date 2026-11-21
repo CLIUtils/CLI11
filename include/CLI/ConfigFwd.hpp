@@ -36,6 +36,8 @@ struct ConfigItem {
     std::vector<std::string> inputs{};
     /// @brief indicator if a multiline vector separator was inserted
     bool multiline{false};
+    /// The single input was quoted, so `"true"` is a literal value and not a bare flag
+    bool quoted{false};
     /// The list of parents and name joined by "."
     CLI11_NODISCARD std::string fullname() const;
 };

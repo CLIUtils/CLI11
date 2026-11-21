@@ -3593,6 +3593,42 @@ TEST_CASE_METHOD(TApp, "IniFlagValueStringOverrideKept", "[config]") {
     CHECK(five == "on");
 }
 
+TEST_CASE("IniFlagValueLiteralTrueRoundTrip", "[config]") {
+    CLI::App app1;
+    std::string written;
+    app1.add_flag("--name{dflt}", written);
+    app1.parse(std::vector<std::string>{"--name=true"});
+    std::string config = app1.config_to_str();
+
+    CLI::App app2;
+    std::string read;
+    app2.add_flag("--name{dflt}", read);
+    std::stringstream stream{config};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == "true");
+    CHECK(config == "name=\"true\"\n");
+    CHECK(read == "true");
+}
+
+TEST_CASE("IniFlagValueSkipsReservedName", "[config]") {
+    CLI::App app1;
+    int written{-1};
+    app1.add_flag("--mode{1},--++{2}", written);
+    app1.parse(std::vector<std::string>{"--++"});
+    std::string config = app1.config_to_str();
+
+    CLI::App app2;
+    int read{-1};
+    app2.add_flag("--mode{1},--++{2}", read);
+    std::stringstream stream{config};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == 2);
+    CHECK(config == "mode=2\n");
+    CHECK(read == 2);
+}
+
 TEST_CASE_METHOD(TApp, "IniOptionalValueTruthyKept", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};

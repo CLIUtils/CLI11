@@ -151,7 +151,8 @@ A flag that carries its own value, such as `--one{1},--two{2}`, is given by the
 name of the value wanted. `two = true` or a bare `two` stores `2`, the same as
 `--two` on the command line. `config_to_str` writes the name whose value
 matches. Any other value, `1` included, is a flag override and is stored as
-given, so `two = 7` stores `7`, the same as `--two=7`.
+given, so `two = 7` stores `7`, the same as `--two=7`. A quoted `two = "true"`
+stores the string `true`.
 
 CLI11 also supports configuration file in INI format.
 
