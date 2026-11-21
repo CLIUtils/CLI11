@@ -1189,6 +1189,11 @@ option_groups. These are:
   `PrefixCommandMode::PositionalOnly` 🆕 will only trigger prefix command mode
   at the first positional argument or the separator `--`; unrecognized options
   do not stop processing and are collected in the remaining_arg list.
+- `.long_description(message)` 🆕: Set extended help text that appears after the
+  description in this app's own help. Parent help lists and `--help-all` show
+  only the description. Not inherited by subcommands.
+- `.long_description(std::string())` 🆕: Set a callback to generate the extended
+  help text.
 - `.usage(message)`: Replace text to appear at the start of the help string
   after description.
 - `.usage(std::string())`: Set a callback to generate a string that will appear

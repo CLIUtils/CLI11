@@ -182,12 +182,12 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     return out.str();
 }
 
-CLI11_INLINE std::string Formatter::make_header(const App *app) const {
-    std::string header = app->get_header();
-    if(header.empty()) {
+CLI11_INLINE std::string Formatter::make_long_description(const App *app) const {
+    std::string long_description = app->get_long_description();
+    if(long_description.empty()) {
         return std::string{};
     }
-    return header + "\n\n";
+    return long_description + "\n\n";
 }
 
 CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
@@ -213,13 +213,10 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     if(is_description_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(
             out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
+        detail::streamOutAsParagraph(out, make_long_description(app), description_paragraph_width_, "");
     } else {
         out << make_description(app);
-    }
-    if(is_description_paragraph_formatting_enabled()) {
-        detail::streamOutAsParagraph(out, make_header(app), description_paragraph_width_, "");
-    } else {
-        out << make_header(app);
+        out << make_long_description(app);
     }
     out << make_usage(app, name);
     out << make_positionals(app);
@@ -313,12 +310,6 @@ CLI11_INLINE std::string Formatter::make_expanded(const App *sub, AppFormatMode 
             out, make_description(sub), description_paragraph_width_, body_indent);  // Format description as paragraph
     } else {
         out << detail::indent_block(make_description(sub), body_indent) << '\n';
-    }
-
-    if(is_description_paragraph_formatting_enabled()) {
-        detail::streamOutAsParagraph(out, make_header(sub), description_paragraph_width_, body_indent);
-    } else {
-        out << detail::indent_block(make_header(sub), body_indent);
     }
 
     if(sub->get_name().empty() && !sub->get_aliases().empty()) {
