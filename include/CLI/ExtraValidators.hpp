@@ -138,15 +138,14 @@ template <typename T> std::string generate_set(const T &set) {
     return out;
 }
 
-/// Collect the keys of a set or map as the individual strings a shell can insert
+/// Collect the keys of a set or map as strings a shell can insert
 template <typename T> std::vector<std::string> generate_completion_choices(const T &set) {
     using element_t = typename detail::element_type<T>::type;
-    // Taken from the container rather than by splitting generate_set's output, which would come apart on a value
-    // holding a ',' or a '{'
+    // Read from the container. A split of the generate_set output fails on a value that holds a ',' or a '{'.
     std::vector<std::string> out;
     for(const auto &item : detail::smart_deref(set)) {
-        // value_string is what the set validators write back into the input, so it is a spelling they accept, which
-        // to_string is not for a type that streams as something else, as a byte does
+        // The set validators write value_string back into the input, so they accept it. to_string differs for a type
+        // that streams differently, such as a byte.
         out.push_back(detail::value_string(detail::pair_adaptor<element_t>::first(item)));
     }
     return out;
@@ -154,7 +153,7 @@ template <typename T> std::vector<std::string> generate_completion_choices(const
 
 /// Wrap the filter function of a set validator so that completion can apply it to text
 template <typename Item> std::function<std::string(std::string)> completion_filter(std::function<Item(Item)> filter) {
-    // The return type is spelled out because value_string hands some types back as they are, a path among them
+    // The explicit return type is needed: value_string returns some types unchanged, such as a path.
     return [filter](std::string text) -> std::string {
         Item item;
         if(!lexical_cast(text, item))
@@ -163,7 +162,7 @@ template <typename Item> std::function<std::string(std::string)> completion_filt
     };
 }
 
-/// Describe a set validator to completion: the keys of the shared set, and the filter it compares them through
+/// Describe a set validator to completion: the keys of the shared set and its filter
 template <typename SharedSet, typename Item>
 std::shared_ptr<const CompletionMeta> make_set_completion_meta(SharedSet shared_set,
                                                                std::function<Item(Item)> filter_fn) {
@@ -278,8 +277,7 @@ class IsMember : public Validator {
         // This is the type name for help, it will take the current version of the set contents
         desc_function_ = [shared_set]() { return detail::generate_set(detail::smart_deref(*shared_set)); };
 
-        // The set is what a shell should offer, and completion can only reach it from the Validator base, since
-        // Option::check slices this class away
+        // Completion reads the set from the Validator base, because Option::check slices this class.
         completion_meta_ = detail::make_set_completion_meta<decltype(shared_set), local_item_t>(shared_set, filter_fn);
 
         // This is the function that validates
@@ -356,7 +354,7 @@ class Transformer : public Validator {
         // This is the type name for help, it will take the current version of the set contents
         desc_function_ = [shared_mapping]() { return detail::generate_map(detail::smart_deref(*shared_mapping)); };
 
-        // The keys are what there is to type; the values are what one becomes afterwards
+        // The keys are what the user types. The values are the results of the transform.
         completion_meta_ =
             detail::make_set_completion_meta<decltype(shared_mapping), local_item_t>(shared_mapping, filter_fn);
 
@@ -435,8 +433,8 @@ class CheckedTransformer : public Validator {
 
         desc_function_ = tfunc;
 
-        // An already-transformed value is accepted too, but offering both spellings of the same choice would double
-        // every candidate, so only the keys are suggested
+        // A transformed value is also accepted, but only the keys are offered. Both spellings would double the
+        // candidates.
         completion_meta_ =
             detail::make_set_completion_meta<decltype(shared_mapping), local_item_t>(shared_mapping, filter_fn);
 

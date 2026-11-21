@@ -1563,7 +1563,7 @@ completion requests is built in and on by default; what a user installs is a
 small script, which `app.set_completion_flag()` makes the program print:
 
 ```bash
-source <(myprog --completion bash)
+eval "$(myprog --completion bash)"
 ```
 
 See [Shell completion][] for the settings, for how an option describes values

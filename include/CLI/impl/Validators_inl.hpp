@@ -104,7 +104,7 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
-    // A value has to get past both sides, so only what both accept is worth offering
+    // A value must pass both sides, so offer only what both accept
     newval.completion_meta_ = detail::intersect_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
@@ -142,7 +142,7 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
-    // Getting past either side is enough, so both sides' values are worth offering
+    // A value must pass one side, so offer the values of both
     newval.completion_meta_ = detail::unite_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
@@ -229,8 +229,7 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 #endif
 
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
-    // Which files exist is the shell's to know, being the one that knows the directory the user is typing in, so
-    // completion says what kind of value this is and leaves the candidates to it
+    // The shell knows which files exist, so completion sends only the kind of value.
     completion_meta_ = detail::completion_hint_meta(CompletionHint::File);
 
     func_ = [](std::string &filename) -> std::string {

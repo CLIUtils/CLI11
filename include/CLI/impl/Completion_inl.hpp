@@ -30,8 +30,7 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
     for(const CompletionResult &result : reply.results) {
         out += detail::escape_completion_field(result.value);
 
-        // A description is one line by definition, the shell having one line to show it on, so anything the user put
-        // after the first break is cut rather than escaped into a candidate the listing cannot render.
+        // The shell shows one line, so the description is cut at the first line break.
         const std::string description = result.description.substr(0, result.description.find_first_of("\r\n"));
         if(!description.empty()) {
             out += '\t';
@@ -39,7 +38,7 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
         }
         out += '\n';
     }
-    // Ahead of the directive line, which stays last so a script can tell a complete reply from a truncated one
+    // The directive line stays last, so a script can detect a truncated reply.
     if(!reply.prefix.empty()) {
         out += ":prefix=";
         out += detail::escape_completion_field(reply.prefix);
@@ -53,24 +52,24 @@ CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply) {
 
 namespace detail {
 
-/// The part of combining two metas that does not depend on how: the filters of both, and the left hint if it has one.
-/// `both` comes back true when each side lists choices, which are then the caller's to combine.
+/// The common part of the two combinations: the filters of both sides, and the left hint if there is one. `both` is set
+/// to true when each side lists choices. The caller then combines the choices.
 inline std::shared_ptr<CompletionMeta>
 merge_completion_meta(const CompletionMeta &lhs, const CompletionMeta &rhs, bool &both) {
     auto meta = std::make_shared<CompletionMeta>();
-    // A candidate is a listed spelling whichever filter the typed text reached it through, so all of them apply
+    // Typed text can match a choice through a filter of either side, so all filters apply.
     meta->filters = lhs.filters;
     meta->filters.insert(meta->filters.end(), rhs.filters.begin(), rhs.filters.end());
-    // There is no intersecting "a file" with "a directory", so the left one wins. `ExistingFile & size_check`
-    // should still complete files, and that is the way round the combination is usually written. A hint stands for
-    // a set of values too large to write down, so a union with one is still that hint
+    // "A file" and "a directory" cannot be intersected, so the left hint wins. `ExistingFile & size_check` then
+    // completes files. In a union, a hint is a set too large to list, so the result keeps the hint.
     meta->hint = (lhs.hint != CompletionHint::None) ? lhs.hint : rhs.hint;
     both = lhs.choices && rhs.choices;
     if(!both) {
-        // The side that lists nothing is taken to accept anything, so the other side's answer is the whole answer
+        // A side that lists no values accepts all values, so the other side gives the answer.
         const CompletionMeta &listed = lhs.choices ? lhs : rhs;
         meta->choices = listed.choices;
         meta->accepts = listed.accepts;
+        meta->open = listed.open;
         if(!meta->accepts && listed.choices)
             meta->filters = listed.filters;
     }
@@ -78,6 +77,8 @@ merge_completion_meta(const CompletionMeta &lhs, const CompletionMeta &rhs, bool
 }
 
 CLI11_INLINE bool completion_meta_accepts(const CompletionMeta &meta, const std::string &text) {
+    if(meta.open)
+        return true;
     if(meta.accepts)
         return meta.accepts(text);
     if(!meta.choices)
@@ -105,8 +106,8 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     auto meta = merge_completion_meta(*lhs, *rhs, both);
     if(both) {
         meta->choices = [lhs, rhs]() {
-            // Walking the left one keeps its order, which is the order a declared set is offered in. The right one
-            // decides by its own comparison, so a value the two sides spell differently is still in both.
+            // The left order is kept, because it is the order of the declared set. The right side uses its own
+            // comparison, so a value that the two sides spell differently is still in both.
             std::vector<std::string> out;
             for(const std::string &choice : lhs->choices()) {
                 if(completion_meta_accepts(*rhs, choice))
@@ -117,6 +118,7 @@ intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
         meta->accepts = [lhs, rhs](const std::string &text) {
             return completion_meta_accepts(*lhs, text) && completion_meta_accepts(*rhs, text);
         };
+        meta->open = lhs->open && rhs->open;
     }
     return meta;
 }
@@ -131,11 +133,16 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
 
     bool both = false;
     auto meta = merge_completion_meta(*lhs, *rhs, both);
+    if(lhs->hint != CompletionHint::None && rhs->hint != CompletionHint::None && lhs->hint != rhs->hint)
+        meta->hint = CompletionHint::Path;
+    // The side that lists no values accepts values that the other side does not list.
+    meta->open = static_cast<bool>(meta->choices);
     if(both) {
+        meta->open = lhs->open || rhs->open;
         meta->choices = [lhs, rhs]() {
             std::vector<std::string> out = lhs->choices();
             for(const std::string &choice : rhs->choices()) {
-                // A value both sides accept is one value, and offering it twice would read as two ways to say it
+                // Offer a value that both sides accept only one time.
                 if(std::find(out.begin(), out.end(), choice) == out.end())
                     out.push_back(choice);
             }
@@ -148,6 +155,20 @@ unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
     return meta;
 }
 
+CLI11_INLINE CompletionDirective completion_hint_directive(CompletionHint hint) {
+    switch(hint) {
+    case CompletionHint::File:
+        return CompletionDirective::FilterFileExt;
+    case CompletionHint::Dir:
+        return CompletionDirective::FilterDirs;
+    case CompletionHint::Path:
+        return CompletionDirective::FilterFileExt | CompletionDirective::FilterDirs;
+    case CompletionHint::None:
+    default:
+        return CompletionDirective::Default;
+    }
+}
+
 CLI11_INLINE std::shared_ptr<const CompletionMeta> completion_hint_meta(CompletionHint hint) {
     auto meta = std::make_shared<CompletionMeta>();
     meta->hint = hint;
@@ -157,8 +178,7 @@ CLI11_INLINE std::shared_ptr<const CompletionMeta> completion_hint_meta(Completi
 CLI11_INLINE std::string escape_completion_field(const std::string &field) {
     std::string out;
     out.reserve(field.size());
-    // The backslash is escaped along with the characters that need it, or the mapping would not be reversible: a
-    // field holding a literal backslash followed by a `t` would arrive indistinguishable from one holding a tab.
+    // The backslash is escaped too, so the mapping is reversible. Otherwise a backslash followed by `t` reads as a tab.
     for(char c : field) {
         switch(c) {
         case '\\':
@@ -178,8 +198,8 @@ CLI11_INLINE std::string escape_completion_field(const std::string &field) {
             break;
         }
     }
-    // After the loop, not before: escaping the backslash first would turn it into `\\:` and hand back a candidate
-    // that begins with a literal backslash. The unescaper drops the backslash of any sequence it does not know.
+    // Must be after the loop. Before it, the loop would escape the added backslash to `\\:`, and the candidate would
+    // start with a literal backslash. The unescaper drops the backslash of an unknown sequence.
     if(!out.empty() && out.front() == ':')
         out.insert(out.begin(), '\\');
     return out;
@@ -217,6 +237,40 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     printf -v "$1" '%s' "${out}"
 }
 
+@FUNCTION@_dequote() { # <destination variable> <word as typed> [<variable for the kept length> <break characters>]
+    # Removes quotes and escapes without eval. The kept length is the part of the result that readline does not replace:
+    # the text before an open quote, or else the text up to the last unquoted break character.
+    local rest=$2 out="" quote="" ch mark=0
+    while [[ -n ${rest} ]]; do
+        ch=${rest:0:1}
+        rest=${rest:1}
+        if [[ ${quote} == "'" ]]; then
+            if [[ ${ch} == "'" ]]; then
+                quote=""
+            else
+                out+=${ch}
+            fi
+        elif [[ ${ch} == "\\" && ( -z ${quote} || ${rest:0:1} == [\"\\\$\`] ) ]]; then
+            out+=${rest:0:1}
+            rest=${rest:1}
+        elif [[ -n ${quote} && ${ch} == "${quote}" ]]; then
+            quote=""
+        elif [[ -z ${quote} && ( ${ch} == "'" || ${ch} == '"' ) ]]; then
+            quote=${ch}
+            mark=${#out}
+        else
+            out+=${ch}
+            if [[ -z ${quote} && -n ${4-} && $4 == *"${ch}"* ]]; then
+                mark=${#out}
+            fi
+        fi
+    done
+    printf -v "$1" '%s' "${out}"
+    if [[ -n ${3-} ]]; then
+        printf -v "$3" '%s' "${mark}"
+    fi
+}
+
 @FUNCTION@_describe() { # <length of the longest candidate>
     local longest=$1 tab=$'\t'
     local ci comp desc room i
@@ -229,19 +283,19 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         desc=${comp#*"${tab}"}
         comp=${comp%%"${tab}"*}
 
-        # Two spaces and two parentheses sit between the candidate and its description. COLUMNS is unset in a
-        # non-interactive shell, which makes this negative and drops the descriptions rather than wrapping them.
+        # 4 is the two spaces and two parentheses around the description. COLUMNS is unset in a non-interactive shell.
+        # `room` is then negative and the descriptions are dropped.
         room=$(( COLUMNS - longest - 4 ))
         if (( room > 8 )); then
-            # There is room to align every description against the longest candidate
+            # Enough room: align the descriptions after the longest candidate.
             for (( i = ${#comp}; i < longest; i++ )); do
                 comp+=" "
             done
         else
-            # Aligning would leave too little for the text, so let each description start right after its candidate
+            # Not enough room to align: start each description directly after its candidate.
             room=$(( COLUMNS - ${#comp} - 4 ))
         fi
-        # Below the width of the ellipsis there is nothing left to say, so the description is dropped instead
+        # No room for more than the ellipsis: drop the description.
         if (( room > 3 )); then
             if (( ${#desc} > room )); then
                 desc=${desc:0:room-3}
@@ -254,8 +308,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 }
 
 @FUNCTION@_files() { # [-d]: append the paths that begin with the caller's `cur`, directories only with -d
-    # _filedir comes from the bash-completion package. It reads the word from a caller's local named `cur` rather
-    # than from an argument, which dynamic scoping is what makes work.
+    # _filedir (bash-completion) reads the word from the caller's local `cur`.
     if declare -F _filedir > /dev/null; then
         _filedir "$@"
         return
@@ -269,7 +322,7 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
             COMPREPLY+=("${line}")
         fi
     done <<< "$(compgen "${kind}" -- "${cur}")"
-    # Has readline quote the names and mark the directories. bash 3.2 has no compopt and does neither.
+    # Makes readline quote the names and mark the directories. bash 3.2 has no compopt and does neither.
     compopt -o filenames 2>/dev/null
 }
 
@@ -277,24 +330,32 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     local response line comp desc ci ii tab=$'\t'
     local directive="" prefix="" longest=0
 
-    # Readline completes the text in front of the cursor and leaves the rest of the word on the line, but COMP_WORDS
-    # holds whole words. Sending that tail along would have the binary answer for a word nobody typed, and readline
-    # then insert the answer in front of the tail.
+    # COMP_WORDS holds full words, but readline completes only the text before the cursor. Remove the text after the
+    # cursor from the cursor word. Otherwise the binary answers for the full word and readline inserts the answer before
+    # the tail.
     local -a raw=("${COMP_WORDS[@]}")
     local comp_line=${COMP_LINE-} point=${COMP_POINT-0}
     local after=${comp_line:point}
     after=${after%%[[:space:]]*}
-    # Only when it really is the end of that word: with the cursor on the `=` of `--file=x`, the `x` after it belongs
-    # to the next word of COMP_WORDS rather than to this one.
+    # bash 4 splits COMP_WORDS at a break character and bash 3.2 does not. For `--le|vel=f` the tail of the word is
+    # `vel` in bash 4 and `vel=f` in bash 3.2.
+    if [[ ${raw[COMP_CWORD]-} != *"${after}" ]]; then
+        for (( ii = 0; ii < ${#after}; ii++ )); do
+            if [[ ${COMP_WORDBREAKS-} == *"${after:ii:1}"* ]]; then
+                break
+            fi
+        done
+        after=${after:0:ii}
+    fi
     if [[ -n ${after} && ${raw[COMP_CWORD]-} == *"${after}" ]]; then
         raw[COMP_CWORD]=${raw[COMP_CWORD]%"${after}"}
     fi
 
-    # Readline splits the line on COMP_WORDBREAKS, whose default holds `=` and `:`, before bash hands it over, so
-    # `--file=/et` arrives as the three words `--file`, `=`, `/et`. Rejoin them into the arguments the program would
-    # have received, and move the cursor index with them. Spaces around a break character are not recoverable, so
-    # `a : b` reads as `a:b`; an empty word is what bash sends for a cursor past a space, so it still starts a word.
-    # A user can take either character out of COMP_WORDBREAKS, and then it is part of a word like any other.
+    # Readline splits the line on COMP_WORDBREAKS, which holds `=` and `:` by default. `--file=/et` arrives as the three
+    # words `--file`, `=`, `/et`. Rejoin them into the arguments the program gets, and move the cursor index with them.
+    # Spaces around a break character are lost, so `a : b` reads as `a:b`. bash sends an empty word for a cursor after a
+    # space, so an empty word still starts a word. A character that the user removed from COMP_WORDBREAKS does not
+    # split.
     local breaks=""
     if [[ ${COMP_WORDBREAKS-} == *"="* ]]; then
         breaks+="="
@@ -302,16 +363,30 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     if [[ ${COMP_WORDBREAKS-} == *":"* ]]; then
         breaks+=":"
     fi
+    #
+    # The words arrive as typed, so remove the quotes and the escapes. A quoted break character is not a break.
+    #
+    # `head` is the part of the cursor word that readline does not replace: the pieces before the piece the cursor is
+    # in, and the part of that piece that _dequote reports. Candidates are full tokens, so `head` is removed from them.
     local -a words=()
-    local cword=0 count=0 word glue="" is_break
+    local cword=0 count=0 word glue="" is_break kept head=""
     for (( ii = 0; ii < ${#raw[@]}; ii++ )); do
         word=${raw[ii]}
         is_break=""
         if [[ -n ${word} && -n ${breaks} && -z ${word//[${breaks}]/} ]]; then
             is_break=1
         fi
-        # Never into word 0: gluing onto the program name would invoke something that does not exist
-        if [[ -n ${word} && -n ${glue}${is_break} ]] && (( count > 1 )); then
+        kept=0
+        # Word 0 is expanded below, as a command word.
+        if (( ii > 0 )) && [[ ii -eq COMP_CWORD || ${word} == *[\\\"\']* ]]; then
+            @FUNCTION@_dequote word "${word}" kept "${breaks}"
+        fi
+        # Do not join onto word 0: the result is not the name of a program. Do not join a later word onto the cursor
+        # word: the binary would answer for text after the cursor.
+        if [[ -n ${word} && -n ${glue}${is_break} ]] && (( count > 1 && (ii <= COMP_CWORD || count - 1 > cword) )); then
+            if (( ii == COMP_CWORD )); then
+                head=${words[count-1]}
+            fi
             words[count-1]+=${word}
         else
             words+=("${word}")
@@ -319,26 +394,19 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         fi
         if (( ii == COMP_CWORD )); then
             cword=$(( count - 1 ))
+            head+=${word:0:kept}
         fi
         glue=${is_break}
     done
-
-    # Readline puts back only the part of the word that follows the last break character in it, so a whole-token
-    # candidate has to be trimmed down to that much before it is handed over.
     word=${words[cword]-}
-    local head=""
-    if [[ -n ${breaks} ]]; then
-        head=${word%"${word##*[${breaks}]}"}
-    fi
 
-    # The command word arrives as it was typed, so it gets the expansions the shell would give it before it is run. A
-    # word that could run a command when expanded is left as it is.
+    # The command word arrives as typed, so apply the expansions the shell applies before it runs the word. A word that
+    # could run a command when expanded is not expanded.
     local program=${words[0]-} unsafe='[$`;&|<>()]'
     if [[ ${program} == *[~\\\"\']* && ! ${program} =~ ${unsafe} && ${program} != *$'\n'* ]]; then
         eval "program=${program}" 2>/dev/null || program=${words[0]}
     fi
-    # An alias that renames the program and nothing more. One that adds words is not followed.
-    # BASH_ALIASES is not in bash 3.2.
+    # Follow an alias that only renames the program, not one that adds words. bash 3.2 has no BASH_ALIASES.
     if (( BASH_VERSINFO[0] >= 4 )) && [[ -n ${program} ]]; then
         local target=${BASH_ALIASES[${program}]-}
         if [[ -n ${target} && ! ${target} =~ [[:space:]] && ! ${target} =~ ${unsafe} ]]; then
@@ -349,9 +417,9 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         words[0]=${program}
     fi
 
-    # The words of the line go to the program as data in the environment, and never as its arguments: a program that
-    # does not answer, one older than this script or with completion turned off, must not run the line being typed.
-    # The one argument is there for that program to reject, where running with none could be a command of its own.
+    # The words go to the program in the environment, not as arguments. A program that does not answer (older than this
+    # script, or with completion off) must not run the line. The one argument is for such a program to reject. With no
+    # arguments it could run a default command.
     response=$(
         export @ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ @ENV@_WORDS=$(( ${#words[@]} - 1 ))
         for (( ii = 1; ii < ${#words[@]}; ii++ )); do
@@ -362,17 +430,17 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
 
     COMPREPLY=()
     while IFS='' read -r line; do
-        # A program built for Windows writes its lines with a CRLF. A carriage return inside a field arrives escaped,
-        # so one at the end of a line can only be part of the line ending.
+        # A Windows program ends its lines with CRLF. A carriage return in a field arrives escaped, so one at the end of
+        # a line is part of the line ending.
         line=${line%$'\r'}
         if [[ -z ${line} ]]; then
             continue
         elif [[ -n ${directive} ]]; then
-            # The directive line is last, so anything after it is not a reply we understand
+            # The directive line is last. A line after it means the reply is not valid.
             COMPREPLY=()
             return 0
         elif [[ ${line} == ":prefix="* ]]; then
-            # Tested first, since the directive line is any other line beginning with a colon
+            # Test this first: any other line that starts with a colon is the directive line.
             @FUNCTION@_unescape prefix "${line#:prefix=}"
             continue
         elif [[ ${line} == :* ]]; then
@@ -402,18 +470,18 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         return 0
     fi
 
-    # The binary could not answer the request, most likely because this script was generated against another version
+    # The binary could not answer. The usual cause is a script generated for another version.
     if (( (directive & 1) != 0 )); then
         COMPREPLY=()
         return 0
     fi
 
-    # A path is the shell's to complete, when the reply asks for one, and when it has no candidates and does not rule
-    # paths out. Nothing is registered for bash to fall back on, so a reply that cannot be used offers nothing.
+    # The shell completes paths when the reply asks for them, or when the reply has no candidates and does not forbid
+    # paths. No fallback is registered with bash, so a reply that is not valid offers nothing.
     #
-    # The answers are whole values, while readline replaces the word from its last break character on, so the two
-    # boundaries have to be lined up, and either can be the later one. `--file=a:b` has the head of the value on the
-    # line already, so it comes back off the candidates; `-fa` has no break at all, so the `-f` goes on.
+    # The path candidates are values, but readline replaces the word from its last break character. Either boundary can
+    # be the later one. For `--file=a:b` the line already has the head of the value, so remove it from the candidates.
+    # For `-fa` there is no break, so add the `-f`.
     local cur=${word#"${prefix}"} value_head="" value_lead="" paths=""
     if (( ${#head} >= ${#prefix} )); then
         value_head=${head#"${prefix}"}
@@ -428,8 +496,8 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         paths=any
     fi
     if [[ -n ${paths} ]]; then
-        # Only what is appended here is in value coordinates. A positional sends its subcommand names along with the
-        # path hint, and those are whole tokens already, so the fixup starts where the candidates from the binary end.
+        # Only the paths appended here are values. A positional can send subcommand names with the path hint, and those
+        # are full tokens. The fixup starts after the candidates from the binary.
         local from=${#COMPREPLY[@]}
         if [[ ${paths} == dirs ]]; then
             @FUNCTION@_files -d
@@ -441,10 +509,10 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
         done
     fi
 
-    # After the paths, so that a name sharing the reply with them is still listed rather than inserted. A description
-    # is text in the candidate, so it is only added where readline lists the candidates: COMP_TYPE is 9 for a plain
-    # TAB and 33, 63 or 64 for the listing variants. Menu completion (37) and insert-completions (42) put each
-    # candidate on the line, and bash 3.2 does not say which it is doing, so those get the candidates alone.
+    # Must be after the paths: the count then includes them, so a single name with paths is listed, not inserted. A
+    # description is text in the candidate, so add it only when readline lists the candidates: COMP_TYPE is 9 for a
+    # plain TAB and 33, 63 or 64 for the listing variants. Menu completion (37) and insert-completions (42) put each
+    # candidate on the line, and bash 3.2 does not report the type. Those cases get the candidates only.
     local listing=""
     case ${COMP_TYPE-} in
         9 | 33 | 63 | 64) listing=1 ;;
@@ -452,14 +520,14 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     if [[ -n ${listing} ]] && (( ${#COMPREPLY[@]} > 1 )); then
         @FUNCTION@_describe "${longest}"
     else
-        # A lone candidate is inserted rather than listed, so its description would land on the command line
+        # A single candidate is inserted, so its description would go on the command line.
         for ci in "${!COMPREPLY[@]}"; do
             COMPREPLY[ci]=${COMPREPLY[ci]%%"${tab}"*}
         done
     fi
 
     if (( (directive & 4) != 0 )); then
-        # The candidates came back in a meaningful order, which bash would otherwise sort away
+        # KeepOrder: stop bash from sorting the candidates.
         compopt -o nosort 2>/dev/null
     fi
     return 0

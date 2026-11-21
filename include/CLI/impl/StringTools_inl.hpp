@@ -206,8 +206,8 @@ find_member(std::string name, const std::vector<std::string> &names, bool ignore
 }
 
 CLI11_INLINE bool has_prefix(std::string name, std::string prefix, bool ignore_case, bool ignore_underscore) {
-    // Same normalisation, and the same order of operations, as find_member and App::check_name_detail; the three must
-    // agree on a name or an exact match and a prefix match answer differently for it
+    // Same normalisation, in the same order, as find_member and App::check_name_detail. If they differ, an exact match
+    // and a prefix match give different answers for a name.
     if(ignore_underscore) {
         name = detail::remove_underscore(name);
         prefix = detail::remove_underscore(prefix);
@@ -664,7 +664,7 @@ CLI11_INLINE std::string get_environment_value(const std::string &env_name) {
 CLI11_INLINE void unset_environment_value(const std::string &env_name) {
 #ifdef _WIN32
     // Not _MSC_VER: MinGW has no unsetenv either
-    // Assigning an empty value is how the Windows CRT deletes a variable
+    // The Windows CRT deletes a variable when it is assigned an empty value
     _putenv_s(env_name.c_str(), "");
 #else
     unsetenv(env_name.c_str());

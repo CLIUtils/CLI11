@@ -101,10 +101,10 @@ TEST_CASE("Completion: the arguments of the run are not the request", "[completi
     CHECK(reply == "start\n:2\n");
     CHECK_FALSE(app.got_subcommand("stop"));
 
-    // A count that cannot be read is no words at all
+    // A count that cannot be read is not a usable request
     set_request("1", {"sta"});
     put_env(words_var, "many");
-    CHECK(parse_reply(app) == ":2\n");
+    CHECK(parse_reply(app) == ":1\n");
     clear_request();
     CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
 }
@@ -340,8 +340,9 @@ TEST_CASE("Completion: a hint survives being copied into the Validator base", "[
     // and there is no intersecting "a file" with "a directory", so the left side wins
     CHECK(app.add_option("--both", path)->check(CLI::ExistingFile & CLI::ExistingDirectory)->get_completion_hint() ==
           CLI::CompletionHint::File);
+    // but either one is a path
     CHECK(app.add_option("--either", path)->check(CLI::ExistingDirectory | CLI::ExistingFile)->get_completion_hint() ==
-          CLI::CompletionHint::Dir);
+          CLI::CompletionHint::Path);
 
     // A validator that is not applied does not describe what the option accepts
     CHECK(app.add_option("--off", path)->check(CLI::ExistingFile.active(false))->get_completion_hint() ==
@@ -1839,6 +1840,142 @@ TEST_CASE("Completion: a negative number at the cursor is a value", "[completion
     // and where the digit names an option, the word is that option
     app.add_flag("-1", "");
     CHECK(ask(app, {"-1"}) == "-1\n:2\n");
+}
+
+TEST_CASE("Completion: positionals_at_end stops options after a positional", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.positionals_at_end();
+    std::string file;
+    std::string level;
+    app.add_option("file", file);
+    app.add_option("--level", level);
+
+    CHECK(ask(app, {"--"}) == "--level\n:2\n");
+    // A parse reads each word after the first positional as a positional, and `file` is full
+    CHECK(ask(app, {"file", "--"}) == ":2\n");
+}
+
+TEST_CASE("Completion: a prefix command offers nothing for the words it passes through", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.prefix_command();
+    std::string file;
+    app.add_option("--file", file);
+
+    CHECK(ask(app, {"--"}) == "--file\n:2\n");
+    CHECK(ask(app, {"foo", "--"}) == ":2\n");
+    CHECK(ask(app, {"foo", ""}) == ":2\n");
+    CHECK(ask(app, {"--unknown", "--"}) == ":2\n");
+}
+
+TEST_CASE("Completion: validate_positionals offers nothing after a positional", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.validate_positionals();
+    std::string first;
+    std::string second;
+    app.add_option("first", first)->check(CLI::IsMember({"a1"}));
+    app.add_option("second", second)->check(CLI::IsMember({"b2"}));
+
+    CHECK(ask(app, {""}) == "a1\n:6\n");
+    // A parse gives `b2` to `second`, which completion cannot know without a validator run
+    CHECK(ask(app, {"b2", ""}) == ":2\n");
+}
+
+TEST_CASE("Completion: validate_optional_arguments offers nothing after an optional value", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.validate_optional_arguments();
+    std::vector<std::string> tags;
+    app.add_option("--tag", tags)->check(CLI::IsMember({"x"}));
+    std::string rest;
+    app.add_option("rest", rest)->check(CLI::IsMember({"pos"}));
+
+    CHECK(ask(app, {"--tag", ""}) == "x\n:6\n");
+    // A parse ends the list at `other`, which completion cannot know without a validator run
+    CHECK(ask(app, {"--tag", "x", "other", ""}) == ":2\n");
+}
+
+TEST_CASE("Completion: a subcommand limit that is reached stops subcommand names", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    CLI::App *start = app.add_subcommand("start", "");
+    start->set_help_flag("");
+    start->add_flag("--inner", "");
+    CLI::App *stop = app.add_subcommand("stop", "");
+    stop->set_help_flag("");
+    stop->add_flag("--halt", "");
+    app.require_subcommand(0, 1);
+
+    CHECK(ask(app, {""}) == "start\nstop\n:2\n");
+    // A parse reads `stop` as an extra word of `start`
+    CHECK(ask(app, {"start", "stop", "--"}) == "--inner\n:2\n");
+
+    // The names of a command that is full are not candidates
+    start->add_subcommand("deep", "");
+    start->require_subcommand(0, 1);
+    CHECK(ask(app, {"start", ""}) == "deep\n:2\n");
+    CHECK(ask(app, {"start", "deep", "++", ""}) == ":2\n");
+}
+
+TEST_CASE("Completion: a validator index counts each use of the option", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::vector<std::string> tags;
+    app.add_option("--tag,-t", tags)->check(CLI::IsMember({"x", "y"}).application_index(1));
+
+    CHECK(ask(app, {"--tag", "a", ""}) == "x\ny\n:6\n");
+    CHECK(ask(app, {"--tag", "a", "--tag", ""}) == "x\ny\n:6\n");
+    CHECK(ask(app, {"--tag", "a", "--tag=x"}) == "--tag=x\n:prefix=--tag=\n:6\n");
+    CHECK(ask(app, {"--tag", "a", "-tx"}) == "-tx\n:prefix=-t\n:6\n");
+    CHECK(ask(app, {"--tag=a", "--tag", "b", "--tag", ""}) == ":0\n");
+}
+
+TEST_CASE("Completion: a set or a path offers the set and the path", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    std::string value;
+    app.add_option("--in", value)->check(CLI::IsMember({"stdin"}) | CLI::ExistingFile);
+    app.add_option("--out", value)->check(CLI::ExistingDirectory | CLI::IsMember({"stdout"}));
+    app.add_option("--path", value)->check(CLI::ExistingDirectory | CLI::ExistingFile);
+    app.add_option("--both", value)->check(CLI::ExistingFile & CLI::IsMember({"listed"}));
+
+    // KeepOrder with FilterFileExt: the shell adds file names to the set
+    CHECK(ask(app, {"--in", ""}) == "stdin\n:12\n");
+    CHECK(ask(app, {"--in", "/et"}) == ":12\n");
+    CHECK(ask(app, {"--out", ""}) == "stdout\n:20\n");
+    CHECK(ask(app, {"--path", ""}) == ":24\n");
+    // Each side of an `&` must accept the value, so the set is the full answer
+    CHECK(ask(app, {"--both", ""}) == "listed\n:6\n");
+}
+
+TEST_CASE("Completion: a long name behind one dash is read as a parse reads it", "[completion]") {
+    CLI::App app{"program"};
+    app.set_help_flag("");
+    app.allow_non_standard_option_names();
+    std::string level;
+    app.add_option("-level", level)->check(CLI::IsMember({"fast", "slow"}));
+    app.add_flag("-v", "");
+    app.add_subcommand("start", "");
+
+    CHECK(ask(app, {"-le"}) == "-level\n:2\n");
+    CHECK(ask(app, {"-level", ""}) == "fast\nslow\n:6\n");
+    CHECK(ask(app, {"-level", "fast", ""}) == "start\n:2\n");
+    CHECK(ask(app, {"-level=f"}) == "-level=fast\n:prefix=-level=\n:6\n");
+    CHECK(ask(app, {"-vx"}) == ":2\n");
+}
+
+TEST_CASE("Completion: a word count that is too large is not a usable request", "[completion]") {
+    CLI::App app{"program"};
+    app.add_subcommand("start", "");
+
+    set_request("1", {"sta"});
+    put_env(words_var, "99999999999");
+    const std::string reply = parse_reply(app);
+    clear_request();
+    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
+    CHECK(reply == ":1\n");
 }
 
 #if CLI11_HAS_FILESYSTEM && !defined(_WIN32)

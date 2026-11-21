@@ -21,7 +21,7 @@ app.set_completion_flag();  // --completion SHELL
 Then, in a shell:
 
 ```bash
-source <(myprog --completion bash)
+eval "$(myprog --completion bash)"
 ```
 
 Put that line in `~/.bashrc` for a program you have built yourself, or write the
@@ -56,6 +56,9 @@ No extra code is needed for any of this:
 
 A validator given an `application_index` applies to the value at that index
 only, so each value of a pair can have its own list.
+
+A list combined with a path validator, such as
+`CLI::IsMember({"stdin"}) | CLI::ExistingFile`, offers the list and the paths.
 
 Names are matched the way the parser matches them, so `ignore_case` and
 `ignore_underscore` apply, and so do the filters given to `CLI::IsMember` and
@@ -179,11 +182,17 @@ The cases that reach it:
 
 - Options addressed through the `--sub.opt` dotted notation. It needs no setter,
   so every program accepts it.
-- Lines using `allow_non_standard_option_names`, `positionals_at_end`,
-  `prefix_command`, `validate_positionals`, `validate_optional_arguments`, or
-  `require_subcommand_max`. Each of these has to be turned on deliberately, so
-  no program is affected without asking for it.
+- Each word after the first one that a `prefix_command` passes through.
+- With `validate_positionals`, each word after a positional. With
+  `validate_optional_arguments`, each word after an optional value of an option.
+  Only a validator run can tell where a parse puts such a word, and completion
+  runs no validator.
 - The extra words that `allow_extras` makes legal.
+
+After a subcommand, the names of its sibling subcommands are not offered,
+although a parse accepts one there unless `subcommand_fallthrough(false)` or a
+`require_subcommand` limit stops it. Type the name and completion continues in
+that subcommand.
 
 Two gaps are worth knowing about on their own, because they do something worse
 than offer nothing.

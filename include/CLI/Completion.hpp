@@ -9,6 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 
 // [CLI11:public_includes:set]
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -25,43 +26,41 @@ namespace CLI {
 class App;
 class Option;
 
-/// The version of the reply format that this build speaks.
+/// The version of the reply format.
 ///
-/// A generated script exports it and the binary checks it, so a script that outlives the binary it was generated
-/// against, such as one a distribution packaged as a static file, offers nothing rather than offering nonsense.
+/// A generated script exports it and the binary checks it. A script can outlive its binary, for example as a static
+/// file in a distribution package. On a mismatch, the script offers no candidates.
 CLI11_MODULE_INLINE constexpr int CLI11_COMPLETE_PROTO_VERSION = 1;
 
-/// Instructions passed alongside the candidates telling the shell what else it may do.
+/// Instructions for the shell, sent with the candidates.
 ///
-/// The values are a bit mask so a reply can carry several at once; each directive takes its bit
-/// with the feature that emits it.
+/// The values are a bit mask, so a reply can hold more than one.
 enum class CompletionDirective : std::uint8_t {
-    /// Nothing is known about the value: the shell offers paths when there are no candidates.
+    /// The value is unknown. The shell offers paths when there are no candidates.
     Default = 0,
-    /// The request could not be answered, so the shell must ignore the reply entirely.
+    /// The request has no answer. The shell must ignore the reply.
     Error = 1,
-    /// The shell must not add filenames of its own to the candidates.
+    /// The shell must not add file names to the candidates.
     NoFileComp = 2,
-    /// The candidates arrive in a meaningful order, so the shell must not sort them.
+    /// The order of the candidates has a meaning. The shell must not sort them.
     KeepOrder = 4,
-    /// The value is a file name and the shell is to complete it.
+    /// The value is a file name. The shell completes it.
     FilterFileExt = 8,
-    /// The value is a directory name and the shell is to complete it. Together with FilterFileExt, either kind of
-    /// path will do.
+    /// The value is a directory name. The shell completes it. With FilterFileExt, the value is a file or a directory.
     FilterDirs = 16
 };
 
-/// Combine two directives, so that one reply can carry both
+/// Combine two directives
 CLI11_MODULE_INLINE constexpr CompletionDirective operator|(CompletionDirective lhs, CompletionDirective rhs) {
     return static_cast<CompletionDirective>(static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs));
 }
 
 /// A kind of value that the shell completes better than the program can.
 ///
-/// A path is the standing example: only the shell knows the working directory the user is typing in, and it already
-/// knows how to walk one. An option that wants a path therefore says so and offers no candidates of its own.
+/// Only the shell knows the working directory of the user. An option that takes a path sets a hint and gives no
+/// candidates.
 enum class CompletionHint : std::uint8_t {
-    /// Nothing is known about the shape of the value.
+    /// The kind of value is unknown.
     None = 0,
     /// A file name.
     File,
@@ -71,86 +70,91 @@ enum class CompletionHint : std::uint8_t {
     Path
 };
 
-/// What completion can learn from a Validator about the values it accepts.
+/// What a Validator tells completion about the values it accepts.
 ///
-/// A Validator is copied into a `Validator` base by `Option::check`, which slices any derived class away, so this is
-/// how a validator that knows its accepted values hands them on: a plain member of the base that survives the copy.
+/// `Option::check` copies a Validator into a `Validator` base, which slices a derived class. This struct is a member of
+/// the base, so the copy keeps it.
 struct CompletionMeta {
-    /// The kind of value the validator accepts, when the shell is the one that can produce it.
+    /// The kind of value the validator accepts, when the shell completes it.
     CompletionHint hint{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
-    /// Every value the validator accepts, or an empty function when it does not enumerate them. A function that
-    /// returns no values says that the validator accepts none.
+    /// The values the validator accepts. An empty function means the validator does not list its values. A function
+    /// that returns no values means the validator accepts none.
     ///
-    /// Read at completion time rather than stored as a list, because a validator may hold a reference to a set the
-    /// program fills in after construction.
+    /// Completion calls it for each request, because a validator can hold a reference to a set that the program fills
+    /// later.
     std::function<std::vector<std::string>()> choices{};
 
-    /// Whether the validator takes this text. Empty for a single validator, whose answer is a comparison against
-    /// `choices` through `filters`; a combination of validators sets it, because each side compares by its own rules.
+    /// Whether the validator accepts this text. Empty for a single validator: completion compares the text with
+    /// `choices` through `filters`. A combination sets it, because each side has its own comparison rules.
     std::function<bool(const std::string &)> accepts{};  // cppcheck-suppress unusedStructMember
 
-    /// The normalisations the validator applies before it compares, such as `ignore_case`. Text typed so far matches
-    /// a choice when it is a prefix of it as written or after any one of these has been applied to both.
+    /// The normalisations the validator applies before it compares, such as `ignore_case`. Typed text matches a choice
+    /// when it is a prefix of the choice, as written or after one filter is applied to both.
     std::vector<std::function<std::string(std::string)>> filters{};  // cppcheck-suppress unusedStructMember
+
+    /// Whether the validator also accepts values that are not in `choices`, as `IsMember(...) | ExistingFile` does.
+    /// The hint then applies together with the choices.
+    bool open{false};  // cppcheck-suppress unusedStructMember
 };
 
-/// A single thing the shell may insert on the command line.
+/// One candidate that the shell can insert on the command line.
 ///
-/// The value is always a whole insertable token, never a fragment of one. The description is shown beside the value
-/// when the shell lists several candidates, and is dropped when there is only one to insert.
+/// The value is a full token. The shell shows the description when it lists more than one candidate.
 struct CompletionResult {
     std::string value;        // cppcheck-suppress unusedStructMember
     std::string description;  // cppcheck-suppress unusedStructMember
 };
 
-/// Everything the binary has to say about one completion request.
+/// The reply to one completion request.
 struct CompletionReply {
     std::vector<CompletionResult> results{};  // cppcheck-suppress unusedStructMember
 
-    /// The leading part of the word being completed that is not the value, `--file=` at `--file=/et`.
+    /// The part of the completed word that is not the value: `--file=` for `--file=/et`.
     ///
-    /// Candidates are whole tokens, so every one of them begins with it, but a shell rarely replaces a whole token:
-    /// bash has already broken the word at the `=` and puts back only what follows it. Only the binary knows how much
-    /// of the word is the option name, so it says so here rather than leaving each script to guess.
+    /// Each candidate is a full token and starts with the prefix. bash splits the word at the `=` and replaces only the
+    /// text after it. Only the binary knows where the option name ends, so it sends the prefix to the script.
     std::string prefix{};  // cppcheck-suppress unusedStructMember
 
     CompletionDirective directive{CompletionDirective::Default};  // cppcheck-suppress unusedStructMember
 };
 
-/// Render a reply into the line-based text the generated shell scripts parse.
+/// Render a reply as the line-based text that the generated shell scripts parse.
 ///
-/// One candidate per line as `value` or `value<TAB>description`, then a `:prefix=` line when there is a prefix, then a
-/// final line holding a `:` and the directive as an integer. Descriptions are cut at their first line break; every
-/// field is escaped.
+/// One candidate per line as `value` or `value<TAB>description`. Then a `:prefix=` line when there is a prefix. Then a
+/// last line with a `:` and the directive as an integer. Descriptions are cut at the first line break. Each field is
+/// escaped.
 CLI11_INLINE std::string format_completion_reply(const CompletionReply &reply);
 
 namespace detail {
 
-/// Whether the Validator a meta describes takes this text, as far as its listed values can say. One that lists no
-/// values is taken to accept it.
+/// Whether the Validator that a meta describes accepts this text. A meta that lists no values accepts all text.
 CLI11_INLINE bool completion_meta_accepts(const CompletionMeta &meta, const std::string &text);
 
-/// What a completion request knows after reading the words in front of the cursor.
+/// The state of a completion request after it reads the words before the cursor.
 ///
-/// Completion parses nothing, so this holds the parts of the parser's state that decide what the next word can be.
+/// Completion does not parse. This struct holds the parser state that decides what the next word can be.
 struct CompletionWalk {
-    /// A command the line has entered and not left, and whether it has seen the `--` marker
+    /// A command the line is in, and whether the line has the `--` marker there
     struct Frame {
         const App *app;
         bool positional_only;
     };
-    /// The commands the line is inside, the innermost last. Empty when the line cannot be read any further.
+    /// The commands the line is in, the innermost last.
     std::vector<Frame> frames{};  // cppcheck-suppress unusedStructMember
-    /// How many items each option has been given, by name or as a positional
+    /// The number of items each option has, given by name or as a positional
     std::vector<std::pair<const Option *, int>> counts{};  // cppcheck-suppress unusedStructMember
-    /// The option that still takes values when the cursor is reached, and how many items it has from this use
+    /// The option that still takes values at the cursor, and the number of items it has from this use
     const Option *awaiting{nullptr};  // cppcheck-suppress unusedStructMember
     int awaiting_items{0};            // cppcheck-suppress unusedStructMember
-    /// Whether the word at the cursor is one of the values `awaiting` must have, which is taken whatever it looks like
+    /// Whether the word at the cursor is a required value of `awaiting`. Such a word is a value whatever its shape.
     bool awaiting_minimum{false};  // cppcheck-suppress unusedStructMember
+    /// True when the rest of the line cannot be read. The reply then has no candidates.
+    bool halted{false};  // cppcheck-suppress unusedStructMember
+    /// The number of subcommands each command has entered, as parsed_subcommands_ counts them
+    std::vector<std::pair<const App *, std::size_t>> entered{};  // cppcheck-suppress unusedStructMember
 
-    /// The number of items the option has been given
+    /// The number of items the option has
     int &count(const Option *opt) {
         for(std::pair<const Option *, int> &entry : counts) {
             if(entry.first == opt)
@@ -159,37 +163,49 @@ struct CompletionWalk {
         counts.emplace_back(opt, 0);
         return counts.back().second;
     }
+
+    /// The number of subcommands the command has entered
+    std::size_t &subcommands(const App *app) {
+        for(std::pair<const App *, std::size_t> &entry : entered) {
+            if(entry.first == app)
+                return entry.second;
+        }
+        entered.emplace_back(app, 0);
+        return entered.back().second;
+    }
 };
 
-/// Combine what two Validators say about their values into what satisfies both of them
+/// Combine the metas of two Validators into the meta of `A & B`.
 ///
-/// The intersection when both enumerate their values, and whichever one does when only one of them does. A Validator
-/// that does not enumerate its values still constrains them, but the only way to apply that constraint would be to run
-/// it, and completion does not run user code. Two hints cannot be intersected at all, so the left one wins.
+/// When both list values, the result is the intersection. When one lists values, the result is that list: only a run of
+/// the other Validator can apply its constraint, and completion does not run user code. Two hints cannot be
+/// intersected, so the left hint wins.
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
 intersect_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                           const std::shared_ptr<const CompletionMeta> &rhs);
 
-/// Combine what two Validators say about their values into what satisfies either of them
+/// Combine the metas of two Validators into the meta of `A | B`.
 ///
-/// The union when both enumerate their values. When only one does the answer is unbounded, so what comes back is that
-/// one's values: a subset of what is acceptable rather than the whole of it. Hints do not union either, so again the
-/// left one wins.
+/// When both list values, the result is the union. When one lists values, the result keeps them and is `open`. A file
+/// hint and a directory hint make a path hint.
 CLI11_INLINE std::shared_ptr<const CompletionMeta>
 unite_completion_meta(const std::shared_ptr<const CompletionMeta> &lhs,
                       const std::shared_ptr<const CompletionMeta> &rhs);
 
-/// What a Validator that only knows the kind of its value, and none of the values, tells completion
+/// The directive that asks the shell for the kind of path in a hint. Default when the hint is None.
+CLI11_INLINE CompletionDirective completion_hint_directive(CompletionHint hint);
+
+/// The meta of a Validator that knows the kind of its value but not the values
 CLI11_INLINE std::shared_ptr<const CompletionMeta> completion_hint_meta(CompletionHint hint);
 
-/// Turn what the shell scripts would otherwise read as structure (`\` `\t` `\n` `\r`, and a leading `:`) into the
-/// backslash sequences the generated scripts turn back
+/// Escape the characters that the shell scripts read as structure: `\`, `\t`, `\n`, `\r`, and a leading `:`. The
+/// generated scripts reverse the backslash sequences.
 CLI11_INLINE std::string escape_completion_field(const std::string &field);
 
-/// Produce the bash completion script for a program, parameterized by the activation variable.
+/// Produce the bash completion script for a program. `env_var` is the activation variable.
 CLI11_INLINE std::string completion_script_bash(const std::string &program_name, const std::string &env_var);
 
-/// Turn an arbitrary program name into something usable as a shell function name.
+/// Convert a program name to text that is valid in a shell function name.
 CLI11_INLINE std::string completion_script_identifier(const std::string &program_name);
 
 }  // namespace detail

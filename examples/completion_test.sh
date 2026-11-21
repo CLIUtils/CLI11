@@ -49,6 +49,14 @@ expect_at() { # expect_at <characters left after the cursor> <comp_cword> <expec
     run 1 "$@"
 }
 
+# The cursor inside a line that is given as text, for a line where the words are not separated by spaces
+expect_line() { # expect_line <line after the program> <cursor offset in it> <comp_cword> <expected COMPREPLY> <word>...
+    local COMP_LINE="${prog} $1"
+    local COMP_POINT=$(( ${#prog} + 1 + $2 ))
+    shift 2
+    run 1 "$@"
+}
+
 # Stand in for the real _filedir, which the bash-completion package supplies to interactive shells only.
 # This stub records both of the things the script has to get right: the flag it passes, and `cur`, which the real one
 # reads out of its caller's scope to know what to filter on. It appends, as the real one does, since a positional sends
@@ -125,6 +133,15 @@ expect 2 "fast slow" "-vl" ""
 expect_at 1 1 "-v" "-vi"
 expect_at 4 1 "--verbose" "--verbose"
 expect_at 0 1 "--verbose" "--verbose"
+# The cursor in the name of `--level=f`: the `=` and the value after the cursor are not part of the word
+expect_line "--level=f" 4 1 "--level" "--level" "=" "f"
+expect_line "--level=f" 7 1 "--level" "--level" "=" "f"
+# bash 3.2 does not split COMP_WORDS at a break character, but its readline still replaces only the text after one
+expect 1 "fast" "--level=f"
+expect 1 "3.19 3.20" "--image=alpine:"
+expect 1 "fast" '--level="fa'
+expect_line "--level=f" 4 1 "--level" "--level=f"
+expect_line "--level=f" 7 1 "--level" "--level=f"
 # A path written onto a short name keeps it: the shell never saw the `-c`, so the script puts it back on
 expect 1 "-c_filedir[|/et]" "-c/et"
 
@@ -137,6 +154,20 @@ expect 4 "3.19 3.20" "--image" "=" "alpine" ":"
 # and a value written onto a short name is trimmed against the same boundary
 expect 2 "3.19 3.20" "-ialpine" ":"
 
+# Words arrive as typed, so the script removes the quotes and the escapes before the binary reads them
+expect 2 "add remove rm sync" "'remote'" ""
+expect 2 "add remove rm sync" '"remote"' ""
+expect 2 "add remove rm sync" 'rem\ote' ""
+# Readline replaces the text after an open quote, so the candidates have no quote
+expect 2 "fast" "--level" '"fa'
+expect 2 "fast" "--level" "'fa"
+expect 3 "fast" "--level" "=" '"fa'
+# and a break character in the quotes is not a break, so the candidates keep the text in front of it
+expect 2 "alpine:3.19 alpine:3.20" "--image" '"alpine:'
+expect 3 "alpine:3.19 alpine:3.20" "--image" "=" '"alpine:'
+expect 2 "_filedir[|my fi]" "--config" 'my\ fi'
+expect 2 "_filedir[|my fi]" "--config" '"my fi'
+
 # Past the end-of-options marker every word is a value for the positional, so neither an option name nor a subcommand
 # name is a candidate, but the positional's own hint still is, dash-shaped word or not.
 expect 2 "_filedir[|--v]" "--" "--v"
@@ -147,7 +178,8 @@ expect 3 "_filedir[|--f]" "--" "start" "--f"
 # `++` closes the subcommand it appears in, so the candidates come from the parent again
 expect 2 "" "remote" "--v"
 expect 3 "--verbose" "remote" "++" "--v"
-expect 3 "start stop remote" "remote" "++" ""
+# The limit of one subcommand is reached, so a parse reads the next word as a file and not as a name
+expect 3 "_filedir[|]" "remote" "++" ""
 # The marker outranks it: past `--` a `++` is a positional value like any other word
 expect 4 "" "remote" "--" "++" "--f"
 
@@ -289,6 +321,8 @@ expect 1 "-calpha.txt" "-cal"
 expect 3 "alpha.txt" "--config" "=" "al"
 # A name is taken as it is, whatever is in it
 expect 2 "a star*.txt" "--config" "a "
+expect 2 "a star*.txt" "--config" 'a\ '
+expect 2 "a star*.txt" "--config" '"a '
 popd > /dev/null || exit 1
 rm -rf "${scratch}"
 prog=${real}

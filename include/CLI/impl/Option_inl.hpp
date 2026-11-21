@@ -217,22 +217,20 @@ CLI11_NODISCARD CLI11_INLINE bool Option::_completion_applies(const Validator &v
 CLI11_NODISCARD CLI11_INLINE std::vector<std::string>
 Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source, int index) const {
     source.reset();
-    // A declared hint replaces what the Validators had to say rather than joining it: the two answer the same
-    // question, and a program that says "this is a file name" does not also want a stale list offered beside it
+    // A declared hint replaces the Validator choices. The program stated the kind of value, so no list is offered.
     if(completion_hint_ != CompletionHint::None)
         return {};
 
-    // The keys of the transform() that runs first, which is the front of the list because transform() inserts there,
-    // since a later transform only ever sees what an earlier one produced.
+    // The meta of the transform() that runs first, because later transforms get its output. transform() inserts at the
+    // front, so it is the first in the list.
     std::shared_ptr<const CompletionMeta> rewrite;
-    // Separate check() calls constrain one value exactly as `A & B` does, every one of them having to pass, so they
-    // combine the same way, and one that enumerates nothing leaves the others' lists alone.
+    // Separate check() calls must all pass, as in `A & B`, so their metas are intersected.
     std::shared_ptr<const CompletionMeta> checks;
 
     for(const Validator_p &validator : validators_) {
         if(!_completion_applies(*validator, index))
             continue;
-        // check() forces every validator it takes to be non-modifying, so this is the transform/check split
+        // check() makes each validator non-modifying, so this separates transforms from checks.
         if(validator->get_modifying()) {
             if(!rewrite)
                 rewrite = validator->get_completion_meta();
@@ -241,10 +239,9 @@ Option::_completion_choices(std::shared_ptr<const CompletionMeta> &source, int i
         }
     }
 
-    // A transform key is acceptable only if what it turns into gets past the checks, and nothing here can know that
-    // without running the transform. So the checks answer whenever they enumerate their values, and the keys answer
-    // only when no check does, which is the whole of it for the usual `transform(CheckedTransformer(map))` on its own.
-    // A list with nothing in it is still an answer: the option takes none of the values a shell could offer.
+    // Only a run of the transform can tell if a transform key passes the checks. So the checks answer when they list
+    // values, and the keys answer only when no check does. An empty list is still an answer: the option accepts none of
+    // the values.
     for(const std::shared_ptr<const CompletionMeta> &meta : {checks, rewrite}) {
         if(meta && meta->choices) {
             source = meta;
@@ -258,9 +255,8 @@ CLI11_NODISCARD CLI11_INLINE CompletionHint Option::get_completion_hint(int inde
     if(completion_hint_ != CompletionHint::None)
         return completion_hint_;
 
-    // Ordered the way the values are: what a check says outranks what a transform in front of it says, because a
-    // transform's output still has to get past the checks. The first hint of each kind wins, since there is no
-    // combining "a file" with "a directory", the same rule intersect_completion_meta applies to an `&`.
+    // A check hint has priority over a transform hint, because the transform output must pass the checks. The first
+    // hint of each kind wins, as in intersect_completion_meta.
     CompletionHint rewrite = CompletionHint::None;
     for(const Validator_p &validator : validators_) {
         if(!_completion_applies(*validator, index))

@@ -370,7 +370,7 @@ class Option : public OptionBase<Option> {
     bool trigger_on_result_{false};
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
-    /// What the program declared this option's value to be, for shell completion; None when it did not say
+    /// The kind of value the program declared for shell completion. None when not declared.
     CompletionHint completion_hint_{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
     /// Making an option by hand is not defined, it must be made by the App class
@@ -483,18 +483,17 @@ class Option : public OptionBase<Option> {
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index);
 
-    /// Declare what kind of value this option takes, for the benefit of shell completion
+    /// Declare the kind of value this option takes, for shell completion.
     ///
-    /// Overrides whatever the Validators would have said, including the values they enumerate: the two are answers to
-    /// the same question, and this one comes from the program rather than from a guess about it.
+    /// Overrides the Validators, including the values they list.
     Option *completion_hint(CompletionHint hint);
 
-    /// Get every value a shell should offer for this option, empty when no Validator enumerates them. The index is
-    /// the place of the value among those the option takes, which selects the Validators that apply to it.
+    /// Get the values a shell offers for this option. Empty when no Validator lists them. `index` is the position of
+    /// the value among the values of the option. It selects the Validators that apply.
     CLI11_NODISCARD std::vector<std::string> get_completion_choices(int index = 0) const;
 
-    /// Get the kind of value a shell should complete for this option, declared or inferred from the Validators that
-    /// apply to the value at this index
+    /// Get the kind of value a shell completes for this option: declared, or inferred from the Validators that apply to
+    /// the value at this index
     CLI11_NODISCARD CompletionHint get_completion_hint(int index = 0) const;
 
     /// Sets required options
@@ -842,8 +841,8 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
-    /// Get the completion choices for the value at this index. The source is the Validator metadata they came from,
-    /// and is null when no Validator lists its values, which is not the same as one that lists none.
+    /// Get the completion choices for the value at this index. `source` is the Validator meta they come from. It is
+    /// null when no Validator lists values, and not null when a Validator lists zero values.
     CLI11_NODISCARD std::vector<std::string> _completion_choices(std::shared_ptr<const CompletionMeta> &source,
                                                                  int index) const;
 
