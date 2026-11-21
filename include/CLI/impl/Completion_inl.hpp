@@ -420,11 +420,13 @@ CLI11_INLINE std::string completion_script_bash(const std::string &program_name,
     # The words go to the program in the environment, not as arguments. A program that does not answer (older than this
     # script, or with completion off) must not run the line. The one argument is for such a program to reject. With no
     # arguments it could run a default command.
+    # A unit separator ends each word.
+    local packed=""
+    for (( ii = 1; ii < ${#words[@]}; ii++ )); do
+        packed+=${words[ii]}$'\x1f'
+    done
     response=$(
-        export @ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ @ENV@_WORDS=$(( ${#words[@]} - 1 ))
-        for (( ii = 1; ii < ${#words[@]}; ii++ )); do
-            export "@ENV@_WORD_${ii}=${words[ii]}"
-        done
+        export @ENV@=bash @ENV@_INDEX="${cword}" @ENV@_PROTO=@PROTO@ @ENV@_WORDS="${packed}"
         "${program}" --cli11-complete 2>/dev/null
     )
 

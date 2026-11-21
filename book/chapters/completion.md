@@ -106,16 +106,15 @@ Completing `myprog st` runs:
 
 ```bash
 CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=1 \
-  CLI11_COMPLETE_WORDS=1 CLI11_COMPLETE_WORD_1=st myprog --cli11-complete
+  CLI11_COMPLETE_WORDS=$'st\x1f' myprog --cli11-complete
 ```
 
-| Variable                  | Example | Meaning                                                                                                  |
-| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
-| `CLI11_COMPLETE`          | `bash`  | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
-| `CLI11_COMPLETE_INDEX`    | `1`     | Which word the cursor is in, counting the program name as word 0.                                        |
-| `CLI11_COMPLETE_PROTO`    | `1`     | The version of the reply format the script was generated for.                                            |
-| `CLI11_COMPLETE_WORDS`    | `1`     | How many words the line has after the program name.                                                      |
-| `CLI11_COMPLETE_WORD_<n>` | `st`    | Word `n` of the line, numbered as `CLI11_COMPLETE_INDEX` numbers them.                                   |
+| Variable               | Example | Meaning                                                                                                  |
+| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| `CLI11_COMPLETE`       | `bash`  | The shell to answer for. Setting it is what makes the run a completion request rather than a normal one. |
+| `CLI11_COMPLETE_INDEX` | `1`     | Which word the cursor is in, counting the program name as word 0.                                        |
+| `CLI11_COMPLETE_PROTO` | `1`     | The version of the reply format the script was generated for.                                            |
+| `CLI11_COMPLETE_WORDS` | `st␟`   | The words of the line after the program name. A unit separator (`\x1f`) ends each word.                  |
 
 All of them are named after the first, so `set_completion_env_var` renames them
 together. The program removes them from the environment before it does anything

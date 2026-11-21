@@ -32,9 +32,10 @@ const char *const words_var = "CLI11_COMPLETE_WORDS";
 
 /// Put the words of a line in the environment the way the script does, under the names that follow `prefix`
 void set_words(const std::string &prefix, const std::vector<std::string> &words) {
-    put_env(prefix + "_WORDS", std::to_string(words.size()));
-    for(std::size_t ii = 0; ii < words.size(); ++ii)
-        put_env(prefix + "_WORD_" + std::to_string(ii + 1), words[ii]);
+    std::string packed;
+    for(const std::string &word : words)
+        packed += word + '\x1f';
+    put_env(prefix + "_WORDS", packed);
 }
 
 void set_request(const std::string &index, const std::vector<std::string> &words) {
@@ -101,12 +102,11 @@ TEST_CASE("Completion: the arguments of the run are not the request", "[completi
     CHECK(reply == "start\n:2\n");
     CHECK_FALSE(app.got_subcommand("stop"));
 
-    // A count that cannot be read is not a usable request
-    set_request("1", {"sta"});
-    put_env(words_var, "many");
-    CHECK(parse_reply(app) == ":1\n");
+    // Text with no separator after it is not a word
+    set_request("1", {});
+    put_env(words_var, "sta");
+    CHECK(parse_reply(app) == ":2\n");
     clear_request();
-    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
 }
 
 TEST_CASE("Completion: offers every subcommand on an empty word", "[completion]") {
@@ -1205,7 +1205,6 @@ TEST_CASE("Completion: the request is out of the environment before it is answer
         CHECK(CLI::detail::get_environment_value(index_var).empty());
         CHECK(CLI::detail::get_environment_value(proto_var).empty());
         CHECK(CLI::detail::get_environment_value(words_var).empty());
-        CHECK(CLI::detail::get_environment_value("CLI11_COMPLETE_WORD_1").empty());
     }
     clear_request();
     CHECK(thrown);
@@ -1261,7 +1260,6 @@ TEST_CASE("Completion: the intercept can be turned off", "[completion]") {
     std::vector<std::string> args{"start"};
     CHECK_NOTHROW(app.parse(args));
     clear_request();
-    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
     CHECK(app.got_subcommand("start"));
 }
 
@@ -1279,7 +1277,6 @@ TEST_CASE("Completion: the activation variable is configurable", "[completion]")
     std::vector<std::string> args{"start"};
     CHECK_NOTHROW(app.parse(args));
     clear_request();
-    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
 
     // The version travels under the configured name too, or the request would be refused as unversioned
     put_env("MYPROG_COMPLETE", "bash");
@@ -1380,7 +1377,7 @@ TEST_CASE("Completion: the script asks for the configured environment variable",
     const std::string script = app.get_completion_script("bash");
 
     CHECK(script.find("export MYPROG_COMPLETE=bash MYPROG_COMPLETE_INDEX=") != std::string::npos);
-    CHECK(script.find("export \"MYPROG_COMPLETE_WORD_${ii}=") != std::string::npos);
+    CHECK(script.find("MYPROG_COMPLETE_WORDS=\"${packed}\"") != std::string::npos);
     CHECK(script.find("CLI11_COMPLETE") == std::string::npos);
 }
 
@@ -1964,18 +1961,6 @@ TEST_CASE("Completion: a long name behind one dash is read as a parse reads it",
     CHECK(ask(app, {"-level", "fast", ""}) == "start\n:2\n");
     CHECK(ask(app, {"-level=f"}) == "-level=fast\n:prefix=-level=\n:6\n");
     CHECK(ask(app, {"-vx"}) == ":2\n");
-}
-
-TEST_CASE("Completion: a word count that is too large is not a usable request", "[completion]") {
-    CLI::App app{"program"};
-    app.add_subcommand("start", "");
-
-    set_request("1", {"sta"});
-    put_env(words_var, "99999999999");
-    const std::string reply = parse_reply(app);
-    clear_request();
-    CLI::detail::unset_environment_value("CLI11_COMPLETE_WORD_1");
-    CHECK(reply == ":1\n");
 }
 
 #if CLI11_HAS_FILESYSTEM && !defined(_WIN32)

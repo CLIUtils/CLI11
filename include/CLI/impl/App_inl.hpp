@@ -1114,50 +1114,53 @@ CLI11_INLINE void App::_completion_enter(detail::CompletionWalk &walk, const App
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *
-App::_completion_find_option(detail::Classifier type, const std::string &opt_name, const App *&owner) const {
-    for(const Option_p &opt : options_) {
-        const bool long_match = type != detail::Classifier::SHORT && opt->check_lname(opt_name);
-        const bool short_match = type != detail::Classifier::LONG && opt->check_sname(opt_name);
-        if(long_match || short_match) {
-            owner = this;
-            return opt.get();
-        }
-    }
+App::_completion_visit(const std::function<const Option *(const App &)> &visit) const {
+    if(const Option *found = visit(*this))
+        return found;
     for(const App_p &sub : subcommands_) {
         if(sub->get_name().empty() && !sub->_completion_disabled()) {
-            const Option *opt = sub->_completion_find_option(type, opt_name, owner);
-            if(opt != nullptr)
-                return opt;
+            if(const Option *found = sub->_completion_visit(visit))
+                return found;
         }
     }
     if(fallthrough_ && parent_ != nullptr && !name_.empty())
-        return _get_fallthrough_parent()->_completion_find_option(type, opt_name, owner);
+        return _get_fallthrough_parent()->_completion_visit(visit);
     return nullptr;
+}
+
+CLI11_NODISCARD CLI11_INLINE const Option *
+App::_completion_find_option(detail::Classifier type, const std::string &opt_name, const App *&owner) const {
+    return _completion_visit([&](const App &app) -> const Option * {
+        for(const Option_p &opt : app.options_) {
+            const bool long_match = type != detail::Classifier::SHORT && opt->check_lname(opt_name);
+            const bool short_match = type != detail::Classifier::LONG && opt->check_sname(opt_name);
+            if(long_match || short_match) {
+                owner = &app;
+                return opt.get();
+            }
+        }
+        return nullptr;
+    });
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *
 App::_completion_find_nonstandard(const std::string &word, std::string &value, const App *&owner) const {
     std::string opt_name;
     std::string attached;
-    if(allow_non_standard_options_ && word.size() > 2 && detail::split_long("-" + word, opt_name, attached)) {
-        for(const Option_p &opt : options_) {
+    if(word.size() <= 2 || !detail::split_long("-" + word, opt_name, attached))
+        return nullptr;
+    return _completion_visit([&](const App &app) -> const Option * {
+        if(!app.allow_non_standard_options_)
+            return nullptr;
+        for(const Option_p &opt : app.options_) {
             if(opt->check_sname(opt_name)) {
-                owner = this;
+                owner = &app;
                 value = attached;
                 return opt.get();
             }
         }
-    }
-    for(const App_p &sub : subcommands_) {
-        if(sub->get_name().empty() && !sub->_completion_disabled()) {
-            const Option *opt = sub->_completion_find_nonstandard(word, value, owner);
-            if(opt != nullptr)
-                return opt;
-        }
-    }
-    if(fallthrough_ && parent_ != nullptr && !name_.empty())
-        return _get_fallthrough_parent()->_completion_find_nonstandard(word, value, owner);
-    return nullptr;
+        return nullptr;
+    });
 }
 
 CLI11_INLINE int App::_completion_items(const Option &opt, const std::string &word) {
@@ -1180,21 +1183,14 @@ CLI11_INLINE std::size_t App::_completion_pending_positionals(detail::Completion
 }
 
 CLI11_NODISCARD CLI11_INLINE const Option *App::_completion_next_positional(detail::CompletionWalk &walk) const {
-    for(const Option_p &opt : options_) {
-        if(opt->get_positional() &&
-           (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args()))
-            return opt.get();
-    }
-    for(const App_p &sub : subcommands_) {
-        if(sub->get_name().empty() && !sub->_completion_disabled()) {
-            const Option *opt = sub->_completion_next_positional(walk);
-            if(opt != nullptr)
-                return opt;
+    return _completion_visit([&walk](const App &app) -> const Option * {
+        for(const Option_p &opt : app.options_) {
+            if(opt->get_positional() &&
+               (walk.count(opt.get()) < opt->get_items_expected_max() || opt->get_allow_extra_args()))
+                return opt.get();
         }
-    }
-    if(fallthrough_ && parent_ != nullptr && !name_.empty())
-        return _get_fallthrough_parent()->_completion_next_positional(walk);
-    return nullptr;
+        return nullptr;
+    });
 }
 
 CLI11_INLINE std::size_t App::_completion_step(detail::CompletionWalk &walk,
@@ -1492,20 +1488,20 @@ CLI11_INLINE void App::_complete_intercept() const {
     take("");
     const std::string index_string = take("_INDEX");
     const std::string proto_string = take("_PROTO");
-    const std::string count_string = take("_WORDS");
+    const std::string packed = take("_WORDS");
 
     // The words arrive in the environment, not as arguments. A binary without completion support would otherwise run
-    // the line the user is typing. Do not trust the count: each word costs an environment lookup and an allocation.
-    const std::size_t max_words = 65536;
-    std::size_t count = 0;
-    const bool countable = detail::lexical_cast(count_string, count) && count <= max_words;
+    // the line the user is typing. A unit separator ends each word, so one empty word is not the same as no words.
     std::vector<std::string> words;
-    for(std::size_t ii = 1; countable && ii <= count; ++ii)
-        words.push_back(take("_WORD_" + std::to_string(ii)));
+    std::string::size_type start = 0;
+    for(std::string::size_type end = packed.find('\x1f'); end != std::string::npos; end = packed.find('\x1f', start)) {
+        words.push_back(packed.substr(start, end - start));
+        start = end + 1;
+    }
 
     int proto = 0;
     // A missing version is as bad as a wrong one, because each generated script exports it.
-    if(!countable || !detail::lexical_cast(proto_string, proto) || proto != CLI11_COMPLETE_PROTO_VERSION) {
+    if(!detail::lexical_cast(proto_string, proto) || proto != CLI11_COMPLETE_PROTO_VERSION) {
         CompletionReply unusable;
         unusable.directive = CompletionDirective::Error;
         throw CallForCompletion(format_completion_reply(unusable));

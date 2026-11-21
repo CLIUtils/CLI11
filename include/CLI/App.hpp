@@ -1362,6 +1362,10 @@ class App {
     /// Enter a subcommand that this app found, and count it as _parse_subcommand does
     void _completion_enter(detail::CompletionWalk &walk, const App *com) const;
 
+    /// Call `visit` for this app, for each enabled option group in it, and then for the fallthrough parent, which is
+    /// the order a parse tries them in. Returns the first option that `visit` returns.
+    CLI11_NODISCARD const Option *_completion_visit(const std::function<const Option *(const App &)> &visit) const;
+
     /// The option a parse of this app finds for a name of this kind. `owner` is the app whose _parse_arg handles it:
     /// this app, an enabled option group, or the fallthrough parent. Null when a parse finds none.
     CLI11_NODISCARD const Option *

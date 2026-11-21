@@ -250,8 +250,8 @@ prog=${real}
 
 # A script that outlived the binary it was generated against asks for a version the binary does not know, and is
 # answered with the Error directive alone
-reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 CLI11_COMPLETE_WORDS=1 \
-    CLI11_COMPLETE_WORD_1="" "$prog" --cli11-complete)
+reply=$(CLI11_COMPLETE=bash CLI11_COMPLETE_INDEX=1 CLI11_COMPLETE_PROTO=99 \
+    CLI11_COMPLETE_WORDS=$'\x1f' "$prog" --cli11-complete)
 if [[ ${reply} != ":1" ]]; then
     echo "FAIL: a foreign protocol version got [${reply}] want [:1]" >&2
     exit 1
@@ -270,12 +270,12 @@ expect 1 "" "st"
 # and it must not be handed the line that is being typed: a program that does not answer requests would run it. The
 # words travel in the environment, and the one argument is a fixed one.
 probe_file="${TMPDIR:-/tmp}/cli11_completion_probe_$$"
-probe() { printf '%s\n' "$#" "$@" "${CLI11_COMPLETE_WORDS-}" "${CLI11_COMPLETE_WORD_2-}" > "${probe_file}"; }
+probe() { printf '%s\n' "$#" "$@" "${CLI11_COMPLETE_WORDS-}" > "${probe_file}"; }
 prog=probe
 expect 2 "" "remote" "--force; x"
 probe_got=$(cat "${probe_file}")
 rm -f "${probe_file}"
-probe_want=$'1\n--cli11-complete\n2\n--force; x'
+probe_want=$'1\n--cli11-complete\nremote\x1f--force; x\x1f'
 if [[ ${probe_got} != "${probe_want}" ]]; then
     echo "FAIL: the program was run with [${probe_got}] want [${probe_want}]" >&2
     exit 1
