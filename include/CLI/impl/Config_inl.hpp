@@ -522,6 +522,9 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                     } else {
                         if(lineExtension) {
                             detail::trim(l2);
+                            if(l2.empty()) {
+                                continue;
+                            }
                         } else if(!(firstLine && item.empty())) {
                             item.push_back('\n');
                         }
@@ -541,7 +544,17 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                 if(!item.empty() && item.front() == aStart) {
                     std::size_t scanPos{1};
                     bool lineExtension{false};
+                    bool mlFirstLine{true};
                     auto mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
+                    if(mlOpen != std::string::npos) {
+                        // keep the trailing whitespace of a line that ends in a multiline string
+                        auto offset = buffer.find_first_not_of(" \t");
+                        auto raw = buffer.substr((offset == std::string::npos ? 0 : offset) + delimiter_pos + 1);
+                        detail::ltrim(raw);
+                        if(raw.compare(0, item.size(), item) == 0) {
+                            item = std::move(raw);
+                        }
+                    }
                     for(std::string multiline;;) {
                         if(mlOpen == std::string::npos) {
                             lineExtension = false;
@@ -554,27 +567,37 @@ CLI11_INLINE std::vector<ConfigItem> ConfigBase::from_config(std::istream &input
                             lineExtension = true;
                         }
                         if(!std::getline(input, multiline)) {
+                            if(mlOpen != std::string::npos) {
+                                throw CLI::ParseError("multiline string in array is not closed",
+                                                      CLI::ExitCodes::InvalidError);
+                            }
                             break;
                         }
+                        if(!multiline.empty() && multiline.back() == '\r') {
+                            multiline.pop_back();
+                        }
                         if(mlOpen == std::string::npos) {
-                            detail::trim(multiline);
+                            // the right side is trimmed later, unless the line ends in a multiline string
+                            detail::ltrim(multiline);
                         } else {
-                            // the line is in a multiline string element
-                            if(!multiline.empty() && multiline.back() == '\r') {
-                                multiline.pop_back();
-                            }
                             if(lineExtension) {
                                 detail::ltrim(multiline);
                                 if(multiline.empty()) {
                                     continue;
                                 }
                                 lineExtension = false;
-                            } else if(item.size() > mlOpen + 3) {
+                            } else if(!(mlFirstLine && item.size() == mlOpen + 3)) {
+                                // only a newline directly after the opening quotes is trimmed
                                 item.push_back('\n');
                             }
+                            mlFirstLine = false;
                         }
                         item += multiline;
+                        auto prevOpen = mlOpen;
                         mlOpen = detail::find_open_multiline_quote(item, scanPos, aSep);
+                        if(mlOpen != prevOpen) {
+                            mlFirstLine = true;
+                        }
                     }
                     if(item.back() == aEnd) {
                         items_buffer = detail::split_up(item.substr(1, item.length() - 2), aSep, true);

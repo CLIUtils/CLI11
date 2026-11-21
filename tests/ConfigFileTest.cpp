@@ -596,6 +596,62 @@ TEST_CASE("StringBased: TomlMultiLineStringArrayBrackets", "[config]") {
     CHECK(output.at(0).inputs == output.at(1).inputs);
 }
 
+TEST_CASE("StringBased: TomlMultiLineStringArrayBlankLines", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"\n\nb\"\"\", '''\n\n\nc''']\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 1u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"\nb", "\n\nc"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArrayNested", "[config]") {
+    std::stringstream input;
+    input << "v = [[\"\"\"a\n  b\"\"\", \"c\"], [\"d\"]]\n";
+    input << "w = [[\"\"\"x]\n y\"\"\"]]\n";
+    input << "z = 1\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 3u);
+    REQUIRE(output.at(0).inputs.size() == 2u);
+    CHECK(output.at(0).inputs.at(0) == "[\"\"\"a\n  b\"\"\", \"c\"]");
+    CHECK(output.at(1).name == "w");
+    CHECK(output.at(1).inputs == std::vector<std::string>{"[\"\"\"x]\n y\"\"\"]"});
+    CHECK(output.at(2).inputs == std::vector<std::string>{"1"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArrayTrailingSpace", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"a   \nb\"\"\"]\n";
+    input << "w = [\n  '''a   \nb''', \"c\"  \n]\n";
+    input << "x = [\"\"\"a  \r\nb\"\"\"]\r\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 3u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"a   \nb"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"a   \nb", "c"});
+    CHECK(output.at(2).inputs == std::vector<std::string>{"a  \nb"});
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringArrayUnterminated", "[config]") {
+    std::stringstream input;
+    input << "v = [\"\"\"a, \"b\"]\n";
+    input << "z = 1\n";
+
+    CHECK_THROWS_AS(CLI::ConfigTOML().from_config(input), CLI::ParseError);
+}
+
+TEST_CASE("StringBased: TomlMultiLineStringContinuationBlankLine", "[config]") {
+    std::stringstream input;
+    input << "v = \"\"\"a\\\n\n  b\"\"\"\n";
+    input << "w = \"\"\"a\\\n\n  \n  b\\\n\n\"\"\"\n";
+
+    const auto output = CLI::ConfigTOML().from_config(input);
+    REQUIRE(output.size() == 2u);
+    CHECK(output.at(0).inputs == std::vector<std::string>{"ab"});
+    CHECK(output.at(1).inputs == std::vector<std::string>{"ab"});
+}
+
 TEST_CASE("StringBased: TomlInvalidEscape", "[config]") {
     const auto value = GENERATE(std::string("\"a\\q\""), std::string("[\"\"\"a\\q\"\"\"]"));
     INFO("value: " << value);

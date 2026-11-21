@@ -451,6 +451,24 @@ CLI11_INLINE std::size_t find_open_multiline_quote(const std::string &str, std::
             }
         } else if(bracketLoc != std::string::npos) {
             end = close_sequence(str, start, matchBracketChars()[bracketLoc], true);
+            if(end >= str.size() && bracketLoc > 2) {
+                // the nested sequence is not closed; look for an open triple quote in it
+                for(auto loc = start + 1; loc < str.size(); ++loc) {
+                    auto quoteLoc = bracketChars().find(str[loc]);
+                    if(quoteLoc < 2 && str.compare(loc, 3, std::string(3, str[loc])) == 0) {
+                        auto mlEnd = close_multiline_quote(str, loc + 3, str[loc]);
+                        if(mlEnd >= str.size()) {
+                            pos = start;
+                            return loc;
+                        }
+                        loc = mlEnd;
+                    } else if(quoteLoc == 0) {
+                        loc = close_string_quote(str, loc, str[loc]);
+                    } else if(quoteLoc <= 2) {
+                        loc = close_literal_quote(str, loc, str[loc]);
+                    }
+                }
+            }
         }
         auto next = (end < str.size()) ? str.find(separator, end) : std::string::npos;
         if(next == std::string::npos) {
