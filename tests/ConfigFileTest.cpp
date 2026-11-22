@@ -1092,6 +1092,45 @@ TEST_CASE_METHOD(TApp, "IniEnvironmentalFileName", "[config]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+TEST_CASE_METHOD(TApp, "IniEnvironmentAliasesFileName", "[config]") {
+    TempFile first{"TestIniEnvFirst.ini"};
+    TempFile second{"TestIniEnvSecond.ini"};
+    app.set_config("--config", "")->envname("CLI11_TEST_CONFIG_PRIMARY,CLI11_TEST_CONFIG_FALLBACK")->required();
+    int value{0};
+    app.add_option("--value", value);
+    {
+        std::ofstream out{first};
+        out << "value=1\n";
+    }
+    {
+        std::ofstream out{second};
+        out << "value=2\n";
+    }
+
+    put_env("CLI11_TEST_CONFIG_FALLBACK", second);
+    CHECK_NOTHROW(run());
+    CHECK(value == 2);
+
+    put_env("CLI11_TEST_CONFIG_PRIMARY", first);
+    CHECK_NOTHROW(run());
+    CHECK(value == 1);
+
+    args = {"--config", second};
+    CHECK_NOTHROW(run());
+    CHECK(value == 2);
+    args.clear();
+
+    put_env("CLI11_TEST_CONFIG_PRIMARY", "");
+    CHECK_NOTHROW(run());
+    CHECK(value == 2);
+
+    put_env("CLI11_TEST_CONFIG_PRIMARY", "TestIniEnvMissing.ini");
+    CHECK_THROWS_AS(run(), CLI::FileError);
+    unset_env("CLI11_TEST_CONFIG_PRIMARY");
+    unset_env("CLI11_TEST_CONFIG_FALLBACK");
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+}
+
 TEST_CASE_METHOD(TApp, "MultiConfig", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -3134,6 +3173,26 @@ TEST_CASE_METHOD(TApp, "IniEnvironmental", "[config]") {
     CHECK(3 == key);
 }
 
+TEST_CASE_METHOD(TApp, "IniEnvironmentAliases", "[config]") {
+    TempFile tmpini{"TestIniEnvAliases.ini"};
+    int key{0};
+    app.add_option("--key", key)->envname("CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK");
+    app.set_config("--config", tmpini);
+    {
+        std::ofstream out{tmpini};
+        out << "CLI11_TEST_ENV_FALLBACK=3\n";
+    }
+
+    put_env("CLI11_TEST_ENV_PRIMARY", "4");
+    CHECK_NOTHROW(run());
+    CHECK(key == 3);
+
+    args = {"--key", "5"};
+    CHECK_NOTHROW(run());
+    CHECK(key == 5);
+    unset_env("CLI11_TEST_ENV_PRIMARY");
+}
+
 TEST_CASE_METHOD(TApp, "IniFlagText", "[config]") {
 
     TempFile tmpini{"TestIniTmp.ini"};
@@ -3456,6 +3515,24 @@ TEST_CASE_METHOD(TApp, "TomlOutputEnvironmental", "[config]") {
     CHECK(str == "CLI11_TEST_ENV_TMP=2\n");
 
     unset_env("CLI11_TEST_ENV_TMP");
+}
+
+TEST_CASE_METHOD(TApp, "TomlOutputEnvironmentAliases", "[config]") {
+    put_env("CLI11_TEST_ENV_FALLBACK", "2");
+    int val{1};
+    app.add_option("", val)->envname("CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK");
+
+    CHECK_NOTHROW(run());
+    CHECK(val == 2);
+    std::string str = app.config_to_str();
+    CHECK(str == "CLI11_TEST_ENV_PRIMARY=2\n");
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+
+    app.clear();
+    val = 0;
+    std::istringstream input(str);
+    CHECK_NOTHROW(app.parse_from_stream(input));
+    CHECK(val == 2);
 }
 
 TEST_CASE_METHOD(TApp, "TomlOutputNoConfigurable", "[config]") {

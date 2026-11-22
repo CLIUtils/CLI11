@@ -437,6 +437,9 @@ TEST_CASE("THelp: EnvName", "[help]") {
     std::string help = app.help();
 
     CHECK_THAT(help, Contains("SOME_ENV"));
+
+    app.get_option("--something")->envname("SOME_ENV,OTHER_ENV");
+    CHECK_THAT(app.help(), Contains("(Env:SOME_ENV,OTHER_ENV)"));
 }
 
 TEST_CASE("THelp: Needs", "[help]") {
