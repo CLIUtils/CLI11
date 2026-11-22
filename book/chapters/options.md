@@ -247,6 +247,20 @@ message as a `std::string`; an empty string means the value passed. A `check`
 function receives the value by `const` reference, while a `transform` function
 may modify it.
 
+### Environment variable aliases
+
+Use `->envname("NAME_A,NAME_B")` to associate multiple environment variables
+with one option. The first nonempty value in the listed order is used. Unset or
+empty variables are skipped, but an invalid value does not fall back to another
+variable. Command-line and configuration-file values take precedence over the
+environment. The same alias lookup applies to the configuration file option.
+
+Whitespace around names and empty names are ignored. Calling `envname` again
+replaces the list; `envname("")` clears it. Commas separate names and cannot be
+part of a literal variable name. Environment names remain case-sensitive when
+looking up an option, even with `ignore_case()` or `ignore_underscore()`. An
+environment-only option uses its first alias when writing a configuration file.
+
 ### Multi Option policy
 
 The Multi option policy can be used to instruct CLI11 what to do when an option
