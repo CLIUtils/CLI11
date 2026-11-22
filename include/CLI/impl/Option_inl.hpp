@@ -437,11 +437,18 @@ CLI11_NODISCARD CLI11_INLINE bool Option::check_name(const std::string &name) co
         }
     }
 
-    if(!envname_.empty()) {
-        // this needs to be the original since envname_ shouldn't match on case insensitivity
-        return (name == envname_);
+    // Environment variable names remain case-sensitive even when option names are not.
+    return detail::find_member(name, envnames_) >= 0;
+}
+
+CLI11_NODISCARD CLI11_INLINE std::string Option::_get_env_value() const {
+    for(const auto &name : envnames_) {
+        auto value = detail::get_environment_value(name);
+        if(!value.empty()) {
+            return value;
+        }
     }
-    return false;
+    return {};
 }
 
 CLI11_NODISCARD CLI11_INLINE std::string Option::get_flag_value(const std::string &name,
@@ -581,7 +588,7 @@ CLI11_NODISCARD CLI11_INLINE const std::string &Option::get_single_name() const 
     if(!pname_.empty()) {
         return pname_;
     }
-    return envname_;
+    return envnames_.empty() ? pname_ : envnames_.front();
 }
 
 CLI11_INLINE Option *Option::type_name(std::string typeval) {
