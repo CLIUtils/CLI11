@@ -282,8 +282,8 @@ class Option : public OptionBase<Option> {
     /// A positional name
     std::string pname_{};
 
-    /// If given, check the environment for this option
-    std::string envname_{};
+    /// Environment variable names, checked in order for this option
+    std::vector<std::string> envnames_{};
 
     ///@}
     /// @name Help
@@ -522,9 +522,10 @@ class Option : public OptionBase<Option> {
     /// Remove needs link from an option. Returns true if the option really was in the needs list.
     bool remove_excludes(Option *opt);
 
-    /// Sets environment variable to read if no option given
+    /// Sets comma-separated environment variable names; the first nonempty value is used if no option is given
     Option *envname(std::string name) {
-        envname_ = std::move(name);
+        envnames_ = detail::split_names(std::move(name));
+        envnames_.erase(std::remove(envnames_.begin(), envnames_.end(), std::string{}), envnames_.end());
         return this;
     }
 
@@ -563,8 +564,8 @@ class Option : public OptionBase<Option> {
     /// Return the inject_separator flag
     CLI11_NODISCARD bool get_inject_separator() const { return inject_separator_; }
 
-    /// The environment variable associated to this value
-    CLI11_NODISCARD std::string get_envname() const { return envname_; }
+    /// The comma-separated environment variable names associated with this value
+    CLI11_NODISCARD std::string get_envname() const { return detail::join(envnames_, ","); }
 
     /// The set of options needed
     CLI11_NODISCARD std::set<Option *> get_needs() const { return needs_; }
@@ -825,6 +826,9 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
+    /// Get the first nonempty value from the environment variable names
+    CLI11_NODISCARD std::string _get_env_value() const;
+
     /// Run the results through the Validators
     void _validate_results(results_t &res) const;
 
