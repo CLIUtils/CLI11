@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Return a validation error for empty complex-number arguments passed to
+  `CLI::TypeValidator`.
 - Reject NaN values from numeric bound validator (`CLI::Bound`). `CLI::Bound`
   and `CLI::Range` also reject NaN endpoints.
 - Reject negative binary and explicit octal values when parsing unsigned

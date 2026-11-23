@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <chrono>
+#include <complex>
 #include <cstdint>
 #include <limits>
 #include <map>
@@ -210,6 +211,16 @@ TEST_CASE_METHOD(TApp, "typeCheck", "[app]") {
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 
     args = {"--one=4.568"};
+    CHECK_THROWS_AS(run(), CLI::ValidationError);
+}
+
+TEST_CASE_METHOD(TApp, "TypeValidatorRejectsEmptyComplexValue", "[app]") {
+    app.add_option("--value")->check(CLI::TypeValidator<std::complex<double>>());
+
+    args = {"--value", "1+2i"};
+    CHECK_NOTHROW(run());
+
+    args = {"--value", ""};
     CHECK_THROWS_AS(run(), CLI::ValidationError);
 }
 

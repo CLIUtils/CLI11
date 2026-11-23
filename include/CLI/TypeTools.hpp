@@ -1222,6 +1222,9 @@ bool lexical_cast(const std::string &input, T &output) {
 template <typename T,
           enable_if_t<classify_object<T>::value == object_category::complex_number, detail::enabler> = detail::dummy>
 bool lexical_cast(const std::string &input, T &output) {
+    if(input.empty()) {
+        return false;
+    }
     using XC = typename wrapped_type<T, double>::type;
     XC x{0.0}, y{0.0};
     auto str1 = input;
