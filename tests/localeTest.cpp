@@ -12,6 +12,7 @@
 #include <iostream>
 #include <locale>
 #include <numeric>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,3 +46,62 @@ TEST_CASE_METHOD(TApp, "locale", "[separators]") {
     CHECK_THAT(qux, Catch::Matchers::WithinAbs(3456.78, 0.01));
 }
 #endif
+
+namespace {
+struct RestoreLocale {
+    std::locale previous = std::locale();
+    ~RestoreLocale() { std::locale::global(previous); }
+};
+}  // namespace
+
+#if CLI11_HAS_RTTI != 0
+TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaFacet", "[locale]") {
+    class DecimalComma : public std::numpunct<char> {
+        CLI11_NODISCARD char do_decimal_point() const override { return ','; }
+    };
+    RestoreLocale restore;
+    const std::locale custom_locale(std::locale::classic(), new DecimalComma);
+    std::locale::global(custom_locale);
+
+    double value = 0;
+    auto *option = app.add_option("--val", value)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=1.25", "--val=2.5"};
+    run();
+    CHECK(value == 3.75);
+    CHECK(option->as<std::string>() == "3.75");
+
+    args = {"--val=-1.25", "--val=-2.5"};
+    run();
+    CHECK(value == -3.75);
+    CHECK(option->as<std::string>() == "-3.75");
+}
+#endif
+
+TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaNamedLocale", "[locale]") {
+    RestoreLocale restore;
+    bool found{false};
+    for(const char *name : {"de_DE.UTF-8", "de_DE.utf8", "fr_FR.UTF-8", "fr_FR.utf8"}) {
+        try {
+            std::locale::global(std::locale(name));
+            found = true;
+            break;
+        } catch(const std::runtime_error &) {
+        }
+    }
+    if(!found) {
+        WARN("No decimal comma locale installed, skipping");
+        return;
+    }
+
+    double value = 0;
+    app.add_option("--val", value)->multi_option_policy(CLI::MultiOptionPolicy::Sum);
+
+    args = {"--val=1,25", "--val=2,5"};
+    run();
+    CHECK(value == 3.75);
+
+    args = {"--val=1,25"};
+    run();
+    CHECK(value == 1.25);
+}
