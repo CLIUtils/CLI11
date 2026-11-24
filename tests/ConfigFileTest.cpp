@@ -7,6 +7,7 @@
 #include "app_helper.hpp"
 
 #include <cstdio>
+#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -4683,6 +4684,9 @@ TEST_CASE_METHOD(TApp, "CrashTest", "[config]") {
 
 // ---- #791: enum names in config_to_str() output ----
 
+// #791: CheckedTransformer is an extra validator
+#if (defined(CLI11_ENABLE_EXTRA_VALIDATORS) && CLI11_ENABLE_EXTRA_VALIDATORS == 1) ||                                  \
+    (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
 TEST_CASE_METHOD(TApp, "IniOutputEnumNames", "[config]") {
     enum class Level : int { High, Medium, Low };
     Level level{Level::Low};
@@ -4823,3 +4827,4 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesSubcommandRoundTrip", "[config]") {
     app.parse_from_stream(input);
     CHECK(level == Level::Medium);
 }
+#endif

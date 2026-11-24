@@ -415,7 +415,7 @@ class CheckedTransformer : public Validator {
         };
 
         // reverse lookup (value -> first name in map order); only used if config_output_names() is enabled
-        name_lookup_ = [shared_mapping](const std::string &value) {
+        name_lookup_ = [shared_mapping](const std::string &value) -> std::string {
             for(const auto &v : detail::smart_deref(*shared_mapping)) {
                 if(detail::value_string(detail::pair_adaptor<element_t>::second(v)) == value) {
                     return detail::value_string(detail::pair_adaptor<element_t>::first(v));
