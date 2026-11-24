@@ -343,14 +343,14 @@ template <typename T> struct type_count_base<T, typename std::enable_if<is_mutab
 /// snprintf uses the C locale, the same as strtold in lexical_cast.
 template <typename T, enable_if_t<!std::is_same<T, long double>::value, detail::enabler> = detail::dummy>
 std::string float_to_string(T value, int precision = std::numeric_limits<T>::max_digits10) {
-    std::array<char, 64> buffer;
+    std::array<char, 64> buffer{{}};
     std::snprintf(buffer.data(), buffer.size(), "%.*g", precision, static_cast<double>(value));
     return buffer.data();
 }
 
 template <typename T, enable_if_t<std::is_same<T, long double>::value, detail::enabler> = detail::dummy>
 std::string float_to_string(T value, int precision = std::numeric_limits<T>::max_digits10) {
-    std::array<char, 64> buffer;
+    std::array<char, 64> buffer{{}};
     std::snprintf(buffer.data(), buffer.size(), "%.*Lg", precision, value);
     return buffer.data();
 }
