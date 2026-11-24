@@ -76,6 +76,23 @@ TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaFacet", "[locale]") {
     CHECK(value == -3.75);
     CHECK(option->as<std::string>() == "-3.75");
 }
+
+TEST_CASE_METHOD(TApp, "FloatDefaultDecimalCommaFacet", "[locale]") {
+    class DecimalComma : public std::numpunct<char> {
+        CLI11_NODISCARD char do_decimal_point() const override { return ','; }
+    };
+    RestoreLocale restore;
+    std::locale::global(std::locale(std::locale::classic(), new DecimalComma));
+
+    double value = 0;
+    float fvalue = 2.25F;
+    app.add_option("--val", value)->default_val(3.5);
+    auto *option = app.add_option("--fval", fvalue)->capture_default_str();
+
+    run();
+    CHECK(value == 3.5);
+    CHECK(option->get_default_str() == "2.25");
+}
 #endif
 
 TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaNamedLocale", "[locale]") {

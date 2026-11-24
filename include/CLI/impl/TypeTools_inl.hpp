@@ -14,10 +14,8 @@
 #include "../StringTools.hpp"
 
 // [CLI11:public_includes:set]
-#include <array>
 #include <cerrno>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <limits>
 #include <string>
@@ -122,10 +120,7 @@ CLI11_INLINE std::string sum_string_vector(const std::vector<std::string> &value
             output.append(arg);
         }
     } else {
-        // snprintf uses the C locale, the same as strtold in lexical_cast
-        std::array<char, 32> buffer{};
-        std::snprintf(buffer.data(), buffer.size(), "%.16g", val);
-        output = buffer.data();
+        output = float_to_string(val, 16);
     }
     return output;
 }
