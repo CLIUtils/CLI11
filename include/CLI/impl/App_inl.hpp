@@ -1802,7 +1802,7 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
         // Flag parsing
         auto res = config_formatter_->to_flag(item);
         bool converted{false};
-        if(op->get_disable_flag_override()) {
+        if(op->get_disable_flag_override() || !op->default_flag_values_.empty()) {
             auto val = detail::to_flag_value(res);
             if(val == 1) {
                 res = op->get_flag_value(item.name, "{}");
