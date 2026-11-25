@@ -889,9 +889,10 @@ A transform can also set a reverse operation with 🆕
 `config_to_str()` uses it to write a stored value in the form a user would type.
 For example, `CheckedTransformer::config_output_names()` sets one that changes
 `0` back to `"high"`. The reverse operations run from the last transform to the
-first. They stop at a transform that has no reverse operation, and validators
-added with `check()` are skipped. `&` and `|` keep the reverse operations of
-both sides; `!` drops them.
+first. A result is used only if the transform changes it back to the stored
+value; otherwise the stored value is written. They stop at a transform that has
+no reverse operation, and validators added with `check()` are skipped. `&` and
+`|` keep the reverse operations of both sides; `!` drops them.
 
 ##### Querying Validators
 

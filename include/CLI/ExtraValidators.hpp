@@ -414,11 +414,17 @@ class CheckedTransformer : public Validator {
             return "Check " + input + " " + tfunc() + " FAILED";
         };
 
-        // reverse lookup (value -> first name in map order); only used if config_output_names() is enabled
-        reverse_func_ = [shared_mapping](const std::string &value) -> std::string {
+        // reverse lookup: the first name in map order that transforms back to the value
+        auto forward = func_;
+        reverse_func_ = [shared_mapping, forward](const std::string &value) -> std::string {
             for(const auto &v : detail::smart_deref(*shared_mapping)) {
-                if(detail::value_string(detail::pair_adaptor<element_t>::second(v)) == value) {
-                    return detail::value_string(detail::pair_adaptor<element_t>::first(v));
+                if(detail::value_string(detail::pair_adaptor<element_t>::second(v)) != value) {
+                    continue;
+                }
+                std::string name = detail::value_string(detail::pair_adaptor<element_t>::first(v));
+                std::string check = name;
+                if(forward(check).empty() && check == value) {
+                    return name;
                 }
             }
             return value;

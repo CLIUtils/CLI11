@@ -20,6 +20,7 @@
 #include <string>
 #include <system_error>
 #include <utility>
+#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -182,19 +183,37 @@ Validator::_merge_description(const Validator &val1, const Validator &val2, cons
 }
 
 CLI11_INLINE void Validator::_merge_reverse(const Validator &val1, const Validator &val2) {
-    // val1 runs before val2, so undo val2 first
-    const bool has1 = val1.has_reverse_operation();
-    const bool has2 = val2.has_reverse_operation();
-    if(has1 && has2) {
-        auto rfunc1 = val1.reverse_func_;
-        auto rfunc2 = val2.reverse_func_;
-        reverse_func_ = [rfunc1, rfunc2](const std::string &value) { return rfunc1(rfunc2(value)); };
-    } else if(has1) {
-        reverse_func_ = val1.reverse_func_;
-    } else if(has2) {
-        reverse_func_ = val2.reverse_func_;
+    reverse_active_ = val1.has_reverse_operation() || val2.has_reverse_operation();
+    if(!reverse_active_) {
+        return;
     }
-    reverse_active_ = has1 || has2;
+    auto rfunc1 = val1.has_reverse_operation() ? val1.reverse_func_ : nullptr;
+    auto rfunc2 = val2.has_reverse_operation() ? val2.reverse_func_ : nullptr;
+    auto forward = func_;
+    // val1 runs before val2; keep the first candidate that the combined operation maps back to the value
+    reverse_func_ = [rfunc1, rfunc2, forward](const std::string &value) -> std::string {
+        std::vector<std::string> candidates;
+        if(rfunc1 && rfunc2) {
+            candidates.push_back(rfunc1(rfunc2(value)));
+        }
+        if(rfunc1) {
+            candidates.push_back(rfunc1(value));
+        }
+        if(rfunc2) {
+            candidates.push_back(rfunc2(value));
+        }
+        for(const auto &candidate : candidates) {
+            std::string check = candidate;
+            try {
+                if(forward(check).empty() && check == value) {
+                    return candidate;
+                }
+            } catch(const ValidationError &) {
+                continue;
+            }
+        }
+        return value;
+    };
 }
 
 namespace detail {

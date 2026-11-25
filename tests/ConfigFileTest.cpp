@@ -4908,4 +4908,98 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesJoin", "[config]") {
     app.parse_from_stream(input);
     CHECK(val == "0,2");
 }
+TEST_CASE_METHOD(TApp, "IniOutputJoinValidatedWhileParsing", "[config]") {
+    std::string val;
+    std::map<std::string, int> names{{"A", 1}, {"a", 2}};
+    auto *opt = app.add_option("--val", val)
+                    ->transform(CLI::CheckedTransformer(names))
+                    ->delimiter(',')
+                    ->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    opt->add_result("A");
+    opt->add_result("a");
+    CHECK(app.config_to_str() == "val=\"1,2\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesIgnoreCaseCollision", "[config]") {
+    int val{0};
+    std::map<std::string, int> names{{"A", 1}, {"a", 2}};
+    app.add_option("--val", val)->transform(CLI::CheckedTransformer(names, CLI::ignore_case).config_output_names());
+    args = {"--val", GENERATE(std::string("1"), std::string("2"))};
+    run();
+    const int expected = val;
+    std::string str = app.config_to_str();
+
+    val = 0;
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(val == expected);
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesFixedTupleEmptyField", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    std::pair<std::string, Level> val;
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--val", val)->transform(CLI::CheckedTransformer(names).config_output_names().application_index(1));
+    args = {"--val", "", "high"};
+    run();
+    CHECK_THAT(app.config_to_str(), Contains("\"high\""));
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesBarrierOtherIndex", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    std::pair<std::string, Level> val;
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    // the upper-case transform runs after the CheckedTransformer, but only on index 0
+    app.add_option("--val", val)
+        ->transform(CLI::Validator(
+                        [](std::string &input) {
+                            input = CLI::detail::to_lower(input) == input ? "UP" + input : input;
+                            return std::string{};
+                        },
+                        "")
+                        .application_index(0))
+        ->transform(CLI::CheckedTransformer(names).config_output_names().application_index(1));
+    args = {"--val", "abc", "high"};
+    run();
+    CHECK(val.first == "UPabc");
+    CHECK(app.config_to_str() == "val=[\"UPabc\", \"high\"]\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesOrRoundTrip", "[config]") {
+    int val{0};
+    std::map<std::string, int> left{{"bar", 1}, {"foo", 2}};
+    std::map<std::string, int> right{{"foo", 1}};
+    app.add_option("--val", val)
+        ->transform(CLI::CheckedTransformer(left).config_output_names() |
+                    CLI::CheckedTransformer(right).config_output_names());
+    args = {"--val", "bar"};
+    run();
+    CHECK(val == 1);
+    std::string str = app.config_to_str();
+
+    val = 0;
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(val == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesAndModifying", "[config]") {
+    int val{0};
+    std::map<std::string, int> names{{"high", 0}, {"medium", 1}};
+    CLI::Validator increment(
+        [](std::string &input) {
+            input = std::to_string(std::stoi(input) + 1);
+            return std::string{};
+        },
+        "");
+    app.add_option("--val", val)->transform(CLI::CheckedTransformer(names).config_output_names() & increment);
+    args = {"--val", "high"};
+    run();
+    CHECK(val == 1);
+    // the increment cannot be undone, so "medium" would reload as 2
+    CHECK(app.config_to_str() == "val=1\n");
+}
+
 #endif
