@@ -71,6 +71,8 @@ class Validator {
     /// Optional inverse of func_: maps a stored (transformed) value back to the form written in config output.
     /// Empty by default, in which case the value is written unchanged.
     std::function<std::string(const std::string &)> reverse_func_{};
+    /// Whether reverse_func_ is applied when writing config output
+    bool reverse_active_{false};
 
     Validator(std::string validator_desc, std::function<std::string(std::string &)> func);
 
@@ -139,13 +141,14 @@ class Validator {
     /// Set a function that maps a transformed value back to the form written by config_to_str()
     Validator &reverse_operation(std::function<std::string(const std::string &)> rop) {
         reverse_func_ = std::move(rop);
+        reverse_active_ = static_cast<bool>(reverse_func_);
         return *this;
     }
-    /// True if a reverse operation has been set
-    CLI11_NODISCARD bool has_reverse_operation() const { return static_cast<bool>(reverse_func_); }
-    /// Apply the reverse operation to a value (returns the value unchanged if none is set)
+    /// True if a reverse operation is set and active
+    CLI11_NODISCARD bool has_reverse_operation() const { return reverse_active_ && static_cast<bool>(reverse_func_); }
+    /// Apply the reverse operation to a value (returns the value unchanged if none is active)
     CLI11_NODISCARD std::string reverse(const std::string &str) const {
-        return reverse_func_ ? reverse_func_(str) : str;
+        return has_reverse_operation() ? reverse_func_(str) : str;
     }
     /// Get a boolean if the validator is active
     CLI11_NODISCARD bool get_active() const { return active_; }
