@@ -4756,6 +4756,7 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesVectorRoundTrip", "[config]") {
     app.clear();
     std::istringstream input(str);
     app.parse_from_stream(input);
+    // cppcheck-suppress knownConditionTrueFalse
     CHECK(levels == std::vector<Level>{Level::High, Level::Low});
 }
 
@@ -4773,6 +4774,7 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesRoundTrip", "[config]") {
     app.clear();
     std::istringstream input(str);
     app.parse_from_stream(input);
+    // cppcheck-suppress knownConditionTrueFalse
     CHECK(level == Level::Medium);
 }
 
@@ -4825,6 +4827,7 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesSubcommandRoundTrip", "[config]") {
     app.clear();
     std::istringstream input(str);
     app.parse_from_stream(input);
+    // cppcheck-suppress knownConditionTrueFalse
     CHECK(level == Level::Medium);
 }
 #endif
