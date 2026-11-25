@@ -68,7 +68,8 @@ jobs:
             container: gcc:15
             std: 26
             precompile: OFF
-            options: -DCLI11_ENABLE_EXTRA_VALIDATORS=1
+            options: -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
+              -DCLI11_ENABLE_EXTRA_VALIDATORS=1
           - name: gcc12 std20
             container: gcc:12
             std: 20
@@ -91,7 +92,8 @@ jobs:
             container: silkeh/clang:20
             std: 26
             precompile: OFF
-            options: -DCMAKE_CXX_FLAGS="-std=c++2c -stdlib=libc++ -Wdocumentation"
+            options: -DCMAKE_CXX_FLAGS="-std=c++2c -stdlib=libc++ -Wdocumentation
+              -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE"
               -DCLI11_ENABLE_EXTRA_VALIDATORS=1 -DCMAKE_CXX_COMPILER=clang++
               -DCLI11_FORCE_LIBCXX=ON -DCMAKE_LINKER_TYPE=LLD
     steps:

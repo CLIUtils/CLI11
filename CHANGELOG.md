@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Fix an out-of-bounds read when an empty string is parsed as a complex number
+  (for example by `CLI::TypeValidator`).
 - Reject NaN values from numeric bound validator (`CLI::Bound`). `CLI::Bound`
   and `CLI::Range` also reject NaN endpoints.
 - Reject negative binary and explicit octal values when parsing unsigned
