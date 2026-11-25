@@ -10,13 +10,14 @@
 
 // [CLI11:public_includes:set]
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <exception>
-#include <iomanip>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -338,6 +339,22 @@ template <typename T> struct type_count_base<T, typename std::enable_if<is_mutab
     static constexpr int value{type_count_base<typename T::value_type>::value};
 };
 
+/// Convert a floating-point value to a string, by default with full round-trip precision.
+/// snprintf uses the C locale, the same as strtold in lexical_cast.
+template <typename T, enable_if_t<!std::is_same<T, long double>::value, detail::enabler> = detail::dummy>
+std::string float_to_string(T value, int precision = std::numeric_limits<T>::max_digits10) {
+    std::array<char, 64> buffer{{}};
+    std::snprintf(buffer.data(), buffer.size(), "%.*g", precision, static_cast<double>(value));
+    return buffer.data();
+}
+
+template <typename T, enable_if_t<std::is_same<T, long double>::value, detail::enabler> = detail::dummy>
+std::string float_to_string(T value, int precision = std::numeric_limits<T>::max_digits10) {
+    std::array<char, 64> buffer{{}};
+    std::snprintf(buffer.data(), buffer.size(), "%.*Lg", precision, value);
+    return buffer.data();
+}
+
 /// Convert an object to a string (directly forward if this can become a string)
 template <typename T, enable_if_t<std::is_convertible<T, std::string>::value, detail::enabler> = detail::dummy>
 auto to_string(T &&value) -> decltype(std::forward<T>(value)) {
@@ -357,9 +374,7 @@ template <typename T,
                           is_ostreamable<T>::value && std::is_floating_point<typename std::decay<T>::type>::value,
                       detail::enabler> = detail::dummy>
 std::string to_string(T &&value) {
-    std::ostringstream stream;
-    stream << std::setprecision(std::numeric_limits<typename std::decay<T>::type>::max_digits10) << value;
-    return stream.str();
+    return float_to_string(value);
 }
 
 /// Convert an object to a string (streaming must be supported for that type)
@@ -489,9 +504,7 @@ std::string value_string(const T &value) {
 /// get a string as a convertible value for floating-point types
 template <typename T, enable_if_t<std::is_floating_point<T>::value, detail::enabler> = detail::dummy>
 std::string value_string(const T &value) {
-    std::ostringstream stream;
-    stream << std::setprecision(std::numeric_limits<T>::max_digits10) << value;
-    return stream.str();
+    return float_to_string(value);
 }
 
 /// get a string as a convertible value for enumerations

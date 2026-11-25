@@ -18,7 +18,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -121,10 +120,7 @@ CLI11_INLINE std::string sum_string_vector(const std::vector<std::string> &value
             output.append(arg);
         }
     } else {
-        std::ostringstream out;
-        out.precision(16);
-        out << val;
-        output = out.str();
+        output = float_to_string(val, 16);
     }
     return output;
 }
