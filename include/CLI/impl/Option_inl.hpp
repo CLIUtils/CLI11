@@ -170,6 +170,7 @@ CLI11_INLINE Option *Option::each(const std::function<void(std::string)> &func) 
             return std::string{};
         },
         std::string{});
+    vp->non_modifying();
     validators_.push_back(std::move(vp));
     return this;
 }

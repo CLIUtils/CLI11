@@ -704,17 +704,46 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                 }
                 // write mapped names for transformers that support it (e.g. CheckedTransformer::config_output_names)
                 auto apply_reverse = [opt](results_t &vals) {
+                    // undo the validators from last to first; stop at a transform that cannot be undone
                     for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
                         const auto &vali = *vit;
-                        if(vali && vali->get_active() && vali->get_application_index() < 0 &&
-                           vali->has_reverse_operation()) {
-                            for(auto &val : vals) {
+                        if(!vali || !vali->get_active() || !vali->get_modifying()) {
+                            continue;
+                        }
+                        if(!vali->has_reverse_operation()) {
+                            break;
+                        }
+                        const int app_index = vali->get_application_index();
+                        const int type_size = opt->get_type_size_max();
+                        int index = 0;
+                        for(auto &val : vals) {
+                            if(type_size > 1 && detail::is_separator(val)) {
+                                index = 0;
+                                continue;
+                            }
+                            const int item_index = (type_size > 1) ? index % type_size : index;
+                            if(app_index < 0 || app_index == item_index) {
                                 val = vali->reverse(val);
                             }
+                            ++index;
                         }
                     }
                 };
-                apply_reverse(results);
+                if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && results.size() == 1 &&
+                   opt->results().size() > 1) {
+                    // the value is still joined; undo each item, then join again
+                    const char delim = opt->get_delimiter();
+                    results_t items = opt->results();
+                    apply_reverse(items);
+                    std::string joined = detail::join(items, std::string(1, delim));
+                    if(static_cast<std::size_t>(std::count(joined.begin(), joined.end(), delim)) == items.size() - 1) {
+                        results[0] = std::move(joined);
+                    } else {
+                        results = std::move(items);
+                    }
+                } else {
+                    apply_reverse(results);
+                }
                 std::string value;
 
                 if(opt->count() == 1 && results.size() == 2 && results.front() == "{}" && results.back() == "%%") {

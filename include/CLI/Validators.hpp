@@ -169,6 +169,8 @@ class Validator {
 
   private:
     void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger);
+    /// Combine the reverse operations of two validators
+    void _merge_reverse(const Validator &val1, const Validator &val2);
 };
 
 /// Alias for Validator for custom Validator for clarity

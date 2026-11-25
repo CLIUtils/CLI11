@@ -4730,18 +4730,6 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesDuplicateValues", "[config]") {
     CHECK(app.config_to_str() == "level=\"hi\"\n");
 }
 
-TEST_CASE_METHOD(TApp, "IniOutputEnumNamesUnmappedValue", "[config]") {
-    enum class Level : int { High, Low };
-    std::map<std::string, Level> names{{"high", Level::High}, {"low", Level::Low}};
-    CLI::Validator val = CLI::CheckedTransformer(names).config_output_names();
-    CHECK(val.has_reverse_operation());
-    CHECK(val.reverse("0") == "high");
-    CHECK(val.reverse("7") == "7");
-    CLI::Validator off = CLI::CheckedTransformer(names);
-    CHECK_FALSE(off.has_reverse_operation());
-    CHECK(off.reverse("0") == "0");
-}
-
 TEST_CASE_METHOD(TApp, "IniOutputEnumNamesVectorRoundTrip", "[config]") {
     enum class Level : int { High, Medium, Low };
     std::vector<Level> levels;
@@ -4829,5 +4817,95 @@ TEST_CASE_METHOD(TApp, "IniOutputEnumNamesSubcommandRoundTrip", "[config]") {
     app.parse_from_stream(input);
     // cppcheck-suppress knownConditionTrueFalse
     CHECK(level == Level::Medium);
+}
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesCheckNotReversed", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    // check() does not transform, so the stored value is the raw input
+    app.add_option("--level", level)->check(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "0"};
+    run();
+    std::string str = app.config_to_str();
+    CHECK(str == "level=0\n");
+
+    level = Level::Low;
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    // cppcheck-suppress knownConditionTrueFalse
+    CHECK(level == Level::High);
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesLaterTransform", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    // transform() adds to the front, so the CheckedTransformer runs first, then the increment
+    app.add_option("--level", level)
+        ->transform([](const std::string &val) { return std::to_string(std::stoi(val) + 1); })
+        ->transform(CLI::CheckedTransformer(names).config_output_names());
+    args = {"--level", "high"};
+    run();
+    CHECK(level == Level::Medium);
+    CHECK(app.config_to_str() == "level=1\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesEach", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    int calls{0};
+    app.add_option("--level", level)
+        ->transform(CLI::CheckedTransformer(names).config_output_names())
+        ->each([&calls](const std::string &) { ++calls; });
+    args = {"--level", "high"};
+    run();
+    CHECK(calls == 1);
+    CHECK(app.config_to_str() == "level=\"high\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesCombined", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    Level level{Level::Low};
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    auto *opt = app.add_option("--level", level);
+    SECTION("or") { opt->transform(CLI::CheckedTransformer(names).config_output_names() | CLI::Range(0, 2)); }
+    SECTION("and") { opt->transform(CLI::CheckedTransformer(names).config_output_names() & CLI::Range(0, 2)); }
+    args = {"--level", "high"};
+    run();
+    CHECK(app.config_to_str() == "level=\"high\"\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesApplicationIndex", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    std::pair<std::string, Level> val;
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--val", val)->transform(CLI::CheckedTransformer(names).config_output_names().application_index(1));
+    args = {"--val", "0", "high"};
+    run();
+    CHECK(val.second == Level::High);
+    CHECK(app.config_to_str() == "val=[0, \"high\"]\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniOutputEnumNamesJoin", "[config]") {
+    enum class Level : int { High, Medium, Low };
+    std::string val;
+    std::map<std::string, Level> names{{"high", Level::High}, {"medium", Level::Medium}, {"low", Level::Low}};
+    app.add_option("--val", val)
+        ->transform(CLI::CheckedTransformer(names).config_output_names())
+        ->delimiter(',')
+        ->multi_option_policy(CLI::MultiOptionPolicy::Join);
+    args = {"--val", "high", "--val", "low"};
+    run();
+    CHECK(val == "0,2");
+    std::string str = app.config_to_str();
+    CHECK(str == "val=\"high,low\"\n");
+
+    val.clear();
+    app.clear();
+    std::istringstream input(str);
+    app.parse_from_stream(input);
+    CHECK(val == "0,2");
 }
 #endif

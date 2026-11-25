@@ -102,6 +102,7 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    newval._merge_reverse(*this, other);
     return newval;
 }
 
@@ -138,6 +139,7 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    newval._merge_reverse(*this, other);
     return newval;
 }
 
@@ -177,6 +179,22 @@ Validator::_merge_description(const Validator &val1, const Validator &val2, cons
         }
         return std::string(1, '(') + f1 + ')' + merger + '(' + f2 + ')';
     };
+}
+
+CLI11_INLINE void Validator::_merge_reverse(const Validator &val1, const Validator &val2) {
+    // val1 runs before val2, so undo val2 first
+    const bool has1 = val1.has_reverse_operation();
+    const bool has2 = val2.has_reverse_operation();
+    if(has1 && has2) {
+        auto rfunc1 = val1.reverse_func_;
+        auto rfunc2 = val2.reverse_func_;
+        reverse_func_ = [rfunc1, rfunc2](const std::string &value) { return rfunc1(rfunc2(value)); };
+    } else if(has1) {
+        reverse_func_ = val1.reverse_func_;
+    } else if(has2) {
+        reverse_func_ = val2.reverse_func_;
+    }
+    reverse_active_ = has1 || has2;
 }
 
 namespace detail {

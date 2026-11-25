@@ -793,7 +793,7 @@ are interchangeable in the examples) of `Transformer`:
   config file with `config_to_str()`, write the mapped name (e.g. `"high"`)
   instead of the transformed value (e.g. `0`). If several names map to the same
   value, the first one in map order is used; values with no name are written
-  unchanged. Off by default.
+  unchanged. Off by default, and has no effect when added with `check()`.
 - `auto p = std::make_shared<CLI::TransformPairs<std::string>>(std::initializer_list<std::pair<std::string,std::string>>{{"key1", "map1"},{"key2","map2"}}); CLI::Transformer(p)`:
   You can modify `p` later. `TransformPairs<T>` is an alias for
   `std::vector<std::pair<std::string,T>>`
@@ -884,6 +884,15 @@ that in this case it is not recommended to use the same object for both check
 and transform operations, the check will modify some internal flags on the
 object so it will not be usable for transform operations.
 
+A transform can also set a reverse operation with 🆕
+`.reverse_operation(std::function<std::string(const std::string &)>)`.
+`config_to_str()` uses it to write a stored value in the form a user would type.
+For example, `CheckedTransformer::config_output_names()` sets one that changes
+`0` back to `"high"`. The reverse operations run from the last transform to the
+first. They stop at a transform that has no reverse operation, and validators
+added with `check()` are skipped. `&` and `|` keep the reverse operations of
+both sides; `!` drops them.
+
 ##### Querying Validators
 
 Once loaded into an Option, a pointer to a named Validator can be retrieved via
@@ -911,6 +920,9 @@ is given. Validators have a few functions to query the current values:
 - `get_active()`: Will return the current active state, true if the Validator is
   active.
 - `get_application_index()`: Will return the current application index.
+- `has_reverse_operation()`: 🆕 Will return true if a reverse operation is set
+  and active. `reverse(value)` applies it, or returns the value unchanged if
+  there is none.
 - `get_modifying()`: Will return true if the Validator is allowed to modify the
   input, this can be controlled via the `non_modifying()` method, though it is
   recommended to let `check` and `transform` option methods manipulate it if
