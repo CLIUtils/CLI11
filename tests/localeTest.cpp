@@ -104,6 +104,7 @@ TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaNamedLocale", "[locale]") {
             found = true;
             break;
         } catch(const std::runtime_error &) {
+            continue;  // locale not installed
         }
     }
     if(!found) {
