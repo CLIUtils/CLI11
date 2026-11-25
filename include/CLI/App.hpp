@@ -1235,6 +1235,9 @@ class App {
     /// makes sure parent is set correctly
     void _configure();
 
+    /// Process fallback defaults after collecting command line, config, and environment input
+    void _process_defaults();
+
     /// Internal function to run (App) callback, bottom up
     void run_callback(bool final_mode = false, bool suppress_final_callback = false);
 

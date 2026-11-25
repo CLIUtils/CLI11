@@ -1293,6 +1293,27 @@ CLI11_INLINE void App::_configure() {
     }
 }
 
+CLI11_INLINE void App::_process_defaults() {
+    const bool unused_immediate_group =
+        name_.empty() && parent_ != nullptr && parse_complete_callback_ && count_all() == 0;
+    for(const Option_p &opt : options_) {
+        // First-priority callbacks may have been deferred until input sources were resolved.
+        const bool deferred_callback =
+            opt->get_callback_priority() < CallbackPriority::PreRequirementsCheckPreHelp && (*opt);
+        const bool fallback_default =
+            opt->empty() && opt->default_val_set_ && (!opt->force_callback_ || unused_immediate_group);
+        if(!opt->get_callback_run() && (deferred_callback || fallback_default)) {
+            opt->run_callback();
+        }
+    }
+    for(const App_p &sub : subcommands_) {
+        if(!sub->disabled_ && (sub->name_.empty() || sub->parsed_ > 0) &&
+           (!sub->parse_complete_callback_ || (sub->name_.empty() && sub->count_all() == 0))) {
+            sub->_process_defaults();
+        }
+    }
+}
+
 CLI11_INLINE void App::run_callback(bool final_mode, bool suppress_final_callback) {
     pre_callback();
     // in the main app if immediate_callback_ is set it runs the main callback before the used subcommands
@@ -1478,6 +1499,12 @@ CLI11_INLINE void App::_process_callbacks(CallbackPriority priority) {
     for(const Option_p &opt : options_) {
         if(opt->get_callback_priority() == priority) {
             if((*opt) && !opt->get_callback_run()) {
+                // An empty option still needs config/environment input before using its default.
+                const bool inactive = disabled_ || (!name_.empty() && parsed_ == 0);
+                if(opt->empty() && ((opt->default_val_set_ && inactive) ||
+                                    (!inactive && priority < CallbackPriority::PreRequirementsCheckPreHelp))) {
+                    continue;
+                }
                 opt->run_callback();
             }
         }
@@ -1567,8 +1594,9 @@ CLI11_INLINE void App::_process_requirements() {
         if(opt->count() != 0) {
             ++used_options;
         }
-        // Required but empty
-        if(opt->get_required() && opt->count() == 0) {
+        // Config-file requirements are checked while loading, including default filenames.
+        if(opt->get_required() && opt->count() == 0 &&
+           !(opt.get() == config_ptr_ && opt->get_callback_run() && !opt->get_default_str().empty())) {
             throw RequiredError(opt->get_name());
         }
         // Requires
@@ -1662,6 +1690,7 @@ CLI11_INLINE void App::_process() {
     }
     // callbacks and requirements processing can generate exceptions which should take priority
     // over the config file error if one exists.
+    _process_defaults();
     _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
     _process_help_flags(CallbackPriority::PreRequirementsCheck);
     _process_callbacks(CallbackPriority::PreRequirementsCheck);
@@ -1715,9 +1744,8 @@ CLI11_INLINE void App::_process_completion_callbacks(bool with_help_flags) {
         _process_help_flags(CallbackPriority::First);
     }
     _process_callbacks(CallbackPriority::First);
-    if(with_help_flags) {
-        _process_env();
-    }
+    _process_env();
+    _process_defaults();
     _process_callbacks(CallbackPriority::PreRequirementsCheckPreHelp);
     if(with_help_flags) {
         _process_help_flags(CallbackPriority::PreRequirementsCheck);

@@ -513,13 +513,18 @@ Before parsing, you can set the following options:
 - `->default_str(string)`: Set the default string directly (NO VALIDATION OR
   CALLBACKS). This string will also be used as a default value if no arguments
   are passed and the value is requested.
-- `->default_val(value)`: Generate the default string from a value and validate
-  that the value is also valid. For options that assign directly to a value type
-  the value in that type is also updated. Value must be convertible to a
-  string(one of known types or have a stream operator). The callback may be
-  triggered if the `run_callback_for_default` is set.
+- `->default_val(value)`: Generate and store the default string from a value.
+  During parsing, defaults are processed only for options without command line,
+  config file, or environment input. Transforms are applied before checks and
+  assignment to a bound variable, so `CLI11_PARSE` can catch invalid defaults.
+  Overridden defaults are not processed. Defaults do not count as supplied
+  arguments, and defaults in inactive subcommands or disabled groups are
+  skipped. Value must be convertible to a string (one of the known types or have
+  a stream operator). The callback may be triggered if
+  `run_callback_for_default` is set.
 - `->run_callback_for_default()`: This will force the option callback to be
-  executed or the variable set when the `default_val` is set.
+  executed or the variable set from `default_val` when it is used during
+  parsing.
 - `->option_text(string)`: Sets the text between the option name and
   description.
 - `->force_callback()`: Causes the option callback or value set to be triggered
