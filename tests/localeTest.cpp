@@ -6,6 +6,7 @@
 
 #include "app_helper.hpp"
 
+#include <clocale>
 #include <complex>
 #include <cstdint>
 #include <iomanip>
@@ -24,9 +25,22 @@ class CustomThousandsSeparator : public std::numpunct<char> {
     std::string do_grouping() const override { return "\2"; }  // Group digits in sets of 2
 };
 
+namespace {
+// std::locale::global also calls setlocale for a named locale, so restore the C locale too.
+struct RestoreLocale {
+    std::locale previous = std::locale();
+    std::string previous_c = std::setlocale(LC_ALL, nullptr);
+    ~RestoreLocale() {
+        std::locale::global(previous);
+        std::setlocale(LC_ALL, previous_c.c_str());
+    }
+};
+}  // namespace
+
 #if CLI11_HAS_RTTI != 0
 // derived from https://github.com/CLIUtils/CLI11/pull/1160
 TEST_CASE_METHOD(TApp, "locale", "[separators]") {
+    RestoreLocale restore;
     std::locale customLocale(std::locale::classic(), new CustomThousandsSeparator);
     std::locale::global(customLocale);  // Set as the default system-wide locale
 
@@ -46,13 +60,6 @@ TEST_CASE_METHOD(TApp, "locale", "[separators]") {
     CHECK_THAT(qux, Catch::Matchers::WithinAbs(3456.78, 0.01));
 }
 #endif
-
-namespace {
-struct RestoreLocale {
-    std::locale previous = std::locale();
-    ~RestoreLocale() { std::locale::global(previous); }
-};
-}  // namespace
 
 #if CLI11_HAS_RTTI != 0
 TEST_CASE_METHOD(TApp, "SumOptFloatDecimalCommaFacet", "[locale]") {
