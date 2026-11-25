@@ -9,6 +9,7 @@
 // IWYU pragma: private, include "CLI/CLI.hpp"
 #include "../Validators.hpp"
 
+#include "../Completion.hpp"
 #include "../Encoding.hpp"
 #include "../Macros.hpp"
 #include "../StringTools.hpp"
@@ -16,6 +17,7 @@
 
 // [CLI11:public_includes:set]
 #include <functional>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -102,6 +104,8 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // A value must pass both sides, so offer only what both accept
+    newval.completion_meta_ = detail::intersect_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
@@ -138,6 +142,8 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
+    // A value must pass one side, so offer the values of both
+    newval.completion_meta_ = detail::unite_completion_meta(completion_meta_, other.completion_meta_);
     return newval;
 }
 
@@ -223,6 +229,9 @@ CLI11_INLINE path_type check_path(const char *file) noexcept {
 #endif
 
 CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") {
+    // The shell knows which files exist, so completion sends only the kind of value.
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::File);
+
     func_ = [](std::string &filename) -> std::string {
         if(filename.empty())
             return std::string("File name is missing.");
@@ -239,6 +248,8 @@ CLI11_INLINE ExistingFileValidator::ExistingFileValidator() : Validator("FILE") 
 }
 
 CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validator("DIR") {
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::Dir);
+
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
         if(path_result == path_type::nonexistent) {
@@ -252,6 +263,8 @@ CLI11_INLINE ExistingDirectoryValidator::ExistingDirectoryValidator() : Validato
 }
 
 CLI11_INLINE ExistingPathValidator::ExistingPathValidator() : Validator("PATH(existing)") {
+    completion_meta_ = detail::completion_hint_meta(CompletionHint::Path);
+
     func_ = [](std::string &filename) {
         auto path_result = check_path(filename.c_str());
         if(path_result == path_type::nonexistent) {

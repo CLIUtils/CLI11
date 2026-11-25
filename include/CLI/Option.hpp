@@ -21,6 +21,7 @@
 #include <vector>
 // [CLI11:public_includes:end]
 
+#include "Completion.hpp"
 #include "Error.hpp"
 #include "Macros.hpp"
 #include "Split.hpp"
@@ -369,6 +370,8 @@ class Option : public OptionBase<Option> {
     bool trigger_on_result_{false};
     /// flag indicating that the option should force the callback regardless if any results present
     bool force_callback_{false};
+    /// The kind of value the program declared for shell completion. None when not declared.
+    CompletionHint completion_hint_{CompletionHint::None};  // cppcheck-suppress unusedStructMember
 
     /// Making an option by hand is not defined, it must be made by the App class
     Option(std::string option_name,
@@ -479,6 +482,19 @@ class Option : public OptionBase<Option> {
 
     /// Get a Validator by index NOTE: this may not be the order of definition
     Validator *get_validator(int index);
+
+    /// Declare the kind of value this option takes, for shell completion.
+    ///
+    /// Overrides the Validators, including the values they list.
+    Option *completion_hint(CompletionHint hint);
+
+    /// Get the values a shell offers for this option. Empty when no Validator lists them. `index` is the position of
+    /// the value among the values of the option. It selects the Validators that apply.
+    CLI11_NODISCARD std::vector<std::string> get_completion_choices(int index = 0) const;
+
+    /// Get the kind of value a shell completes for this option: declared, or inferred from the Validators that apply to
+    /// the value at this index
+    CLI11_NODISCARD CompletionHint get_completion_hint(int index = 0) const;
 
     /// Sets required options
     Option *needs(Option *opt);
@@ -825,6 +841,14 @@ class Option : public OptionBase<Option> {
     CLI11_NODISCARD std::string get_type_name() const;
 
   private:
+    /// Get the completion choices for the value at this index. `source` is the Validator meta they come from. It is
+    /// null when no Validator lists values, and not null when a Validator lists zero values.
+    CLI11_NODISCARD std::vector<std::string> _completion_choices(std::shared_ptr<const CompletionMeta> &source,
+                                                                 int index) const;
+
+    /// Whether a Validator applies to the value at this index, by the rule _validate_results and _validate use
+    CLI11_NODISCARD bool _completion_applies(const Validator &validator, int index) const;
+
     /// Run the results through the Validators
     void _validate_results(results_t &res) const;
 

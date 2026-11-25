@@ -2359,7 +2359,7 @@ TEST_CASE_METHOD(TApp, "Env", "[app]") {
     vopt->required();
     run();
 
-    unset_env("CLI11_TEST_ENV_TMP");
+    CLI::detail::unset_environment_value("CLI11_TEST_ENV_TMP");
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
@@ -2379,7 +2379,7 @@ TEST_CASE_METHOD(TApp, "EnvOnly", "[app]") {
     vopt->required();
     run();
 
-    unset_env("CLI11_TEST_ENV_TMP");
+    CLI::detail::unset_environment_value("CLI11_TEST_ENV_TMP");
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
@@ -2392,7 +2392,7 @@ TEST_CASE_METHOD(TApp, "groupEnvRequired", "[app]") {
 
     run();
     CHECK(str == "string_abc");
-    unset_env("CLI11_TEST_GROUP_REQUIRED");
+    CLI::detail::unset_environment_value("CLI11_TEST_GROUP_REQUIRED");
 }
 
 TEST_CASE_METHOD(TApp, "RangeInt", "[app]") {
