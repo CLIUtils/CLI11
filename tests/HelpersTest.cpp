@@ -1565,6 +1565,7 @@ TEST_CASE("Types: LexicalCastParsable", "[helpers]") {
 
     CHECK_FALSE(CLI::detail::lexical_cast(fail_input, output));
     CHECK_FALSE(CLI::detail::lexical_cast(extra_input, output));
+    CHECK_FALSE(CLI::detail::lexical_cast("", output));
 }
 
 TEST_CASE("Types: LexicalCastEnum", "[helpers]") {
