@@ -108,6 +108,9 @@ CLI11_INLINE std::string fix_newlines(const std::string &leader, std::string inp
     while(n != std::string::npos && n < input.size()) {
         n = input.find_first_of("\r\n", n);
         if(n != std::string::npos) {
+            if(input[n] == '\r' && n + 1 < input.size() && input[n + 1] == '\n') {
+                ++n;
+            }
             input.insert(n + 1, leader);
             n += leader.size() + 1;
         }
