@@ -1803,11 +1803,18 @@ App::_add_flag_like_result(Option *op, const ConfigItem &item, const std::vector
         auto res = config_formatter_->to_flag(item);
         bool converted{false};
         if(op->get_disable_flag_override()) {
+            errno = 0;
             auto val = detail::to_flag_value(res);
-            if(val == 1) {
+            if(val == 1 && errno == 0) {
                 res = op->get_flag_value(item.name, "{}");
                 converted = true;
             }
+        } else if(res == "true" && !item.quoted &&
+                  detail::find_member(
+                      item.name, op->get_fnames(), op->get_ignore_case(), op->get_ignore_underscore()) >= 0) {
+            // `name=true` is how a config file spells the bare flag `--name{value}`
+            res = op->get_flag_value(item.name, "{}");
+            converted = true;
         }
 
         if(!converted) {

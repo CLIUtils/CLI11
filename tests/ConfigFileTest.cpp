@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include <array>
@@ -3393,6 +3394,274 @@ TEST_CASE_METHOD(TApp, "IniDisableFlagOverride", "[config]") {
 
     CHECK(val == 3);
     CHECK(tmpini3.c_str() == app.get_config_ptr()->as<std::string>());
+}
+
+// A flag with baked-in values (--mode-a{0},--mode-b{1},--mode-c{2}) has to name the flag that
+// carries the stored value when it is written to a config file, otherwise the key is misleading
+// and a truthy value read back resolves to the wrong flag. See #1455.
+TEST_CASE_METHOD(TApp, "IniFlagValueOutputUsesMatchingName", "[config]") {
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    args = {"--mode-c"};
+    run();
+
+    CHECK(mode == 2);
+    CHECK(app.config_to_str() == "mode-c=2\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueOutputUsesMatchingNameMiddle", "[config]") {
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    args = {"--mode-b"};
+    run();
+
+    CHECK(mode == 1);
+    CHECK(app.config_to_str() == "mode-b=1\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueOutputOverrideKeepsSingleName", "[config]") {
+
+    // an explicit override does not correspond to any flag name, so the first name is kept
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    args = {"--mode-c=7"};
+    run();
+
+    CHECK(mode == 7);
+    CHECK(app.config_to_str() == "mode-a=7\n");
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueTruthyInputUsesFlagValue", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "mode-c=true" << '\n';
+    }
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    run();
+
+    CHECK(mode == 2);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueBareKeyUsesFlagValue", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "mode-c" << '\n';
+    }
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    run();
+
+    CHECK(mode == 2);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueOneIsOverride", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "mode-c=1" << '\n';
+    }
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    run();
+
+    CHECK(mode == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueExplicitValueStillOverrides", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "mode-c=7" << '\n';
+    }
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    run();
+
+    CHECK(mode == 7);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueFalsyValueStillOverrides", "[config]") {
+
+    // a falsy value is an ordinary flag override, matching `--mode-c=0` on the command line
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "mode-c=0" << '\n';
+    }
+
+    int mode{-1};
+    app.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", mode);
+
+    run();
+
+    CHECK(mode == 0);
+}
+
+TEST_CASE("IniFlagValueRoundTrip", "[config]") {
+
+    auto round_trip = [](const std::string &flag) {
+        CLI::App app1;
+        int written{-1};
+        app1.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", written);
+        app1.parse(std::vector<std::string>{flag});
+
+        CLI::App app2;
+        int read{-1};
+        app2.add_flag("--mode-a{0},--mode-b{1},--mode-c{2}", read);
+        std::stringstream stream{app1.config_to_str()};
+        app2.parse_from_stream(stream);
+
+        return std::make_pair(written, read);
+    };
+
+    CHECK(round_trip("--mode-a") == std::make_pair(0, 0));
+    CHECK(round_trip("--mode-b") == std::make_pair(1, 1));
+    CHECK(round_trip("--mode-c") == std::make_pair(2, 2));
+}
+
+TEST_CASE("IniFlagValueOverrideOneRoundTrip", "[config]") {
+    CLI::App app1;
+    int written{-1};
+    app1.add_flag("--a{2},--b{3}", written);
+    app1.parse(std::vector<std::string>{"--b=1"});
+
+    CLI::App app2;
+    int read{-1};
+    app2.add_flag("--a{2},--b{3}", read);
+    std::stringstream stream{app1.config_to_str()};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == 1);
+    CHECK(read == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueStringOverrideKept", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "name=1st" << '\n';
+        out << "five=on" << '\n';
+    }
+
+    std::string name;
+    std::string five;
+    app.add_flag("--name{dflt}", name);
+    app.add_flag("--five{5}", five);
+
+    run();
+
+    CHECK(name == "1st");
+    CHECK(five == "on");
+}
+
+TEST_CASE("IniFlagValueLiteralTrueRoundTrip", "[config]") {
+    CLI::App app1;
+    std::string written;
+    app1.add_flag("--name{dflt}", written);
+    app1.parse(std::vector<std::string>{"--name=true"});
+    std::string config = app1.config_to_str();
+
+    CLI::App app2;
+    std::string read;
+    app2.add_flag("--name{dflt}", read);
+    std::stringstream stream{config};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == "true");
+    CHECK(config == "name=\"true\"\n");
+    CHECK(read == "true");
+}
+
+TEST_CASE("IniFlagValueSkipsReservedName", "[config]") {
+    CLI::App app1;
+    int written{-1};
+    app1.add_flag("--mode{1},--++{2}", written);
+    app1.parse(std::vector<std::string>{"--++"});
+    std::string config = app1.config_to_str();
+
+    CLI::App app2;
+    int read{-1};
+    app2.add_flag("--mode{1},--++{2}", read);
+    std::stringstream stream{config};
+    app2.parse_from_stream(stream);
+
+    CHECK(written == 2);
+    CHECK(config == "mode=2\n");
+    CHECK(read == 2);
+}
+
+TEST_CASE_METHOD(TApp, "IniOptionalValueTruthyKept", "[config]") {
+
+    TempFile tmpini{"TestIniTmp.ini"};
+    app.set_config("--config", tmpini);
+
+    {
+        std::ofstream out{tmpini};
+        out << "[default]" << '\n';
+        out << "str=true" << '\n';
+        out << "int=1" << '\n';
+    }
+
+    std::string str;
+    int val{0};
+    app.add_option("--str", str)->expected(0, 1);
+    app.add_option("--int", val)->expected(0, 1)->default_str("5");
+
+    run();
+
+    CHECK(str == "true");
+    CHECK(val == 1);
+}
+
+TEST_CASE_METHOD(TApp, "IniFlagValueOutputStringWithSpace", "[config]") {
+
+    std::string val;
+    app.add_flag("--a{abc},--b{d e}", val);
+
+    args = {"--b"};
+    run();
+
+    CHECK(val == "d e");
+    CHECK(app.config_to_str() == "b=\"d e\"\n");
 }
 
 TEST_CASE("fclear", "[config]") {
