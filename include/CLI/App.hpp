@@ -1270,6 +1270,9 @@ class App {
     /// (the option/dot-notation paths); when false they are omitted (the config-section-close path).
     void _process_completion_callbacks(bool with_help_flags);
 
+    /// Get the option name for an error message, with the names of the subcommands that contain the option.
+    CLI11_NODISCARD static std::string _qualified_option_name(const Option *opt);
+
     /// Verify required options and cross requirements. Subcommands too (only if selected).
     void _process_requirements();
 
