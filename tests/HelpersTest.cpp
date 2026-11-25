@@ -44,6 +44,110 @@ TEST_CASE("TypeTools: Streaming", "[helpers]") {
     CHECK(CLI::detail::to_string(t1::enum1) == "0");
 }
 
+#if defined(CLI11_CPP17)
+#if defined(__has_include)
+#if __has_include(<string_view>)
+#include <string_view>
+
+enum class SVLevel : int { High, Medium, Low };
+
+inline constexpr std::string_view to_string(SVLevel level) {
+    switch(level) {
+    case SVLevel::High:
+        return "high";
+    case SVLevel::Medium:
+        return "medium";
+    case SVLevel::Low:
+        return "low";
+    }
+    return "unknown";
+}
+
+struct CustomSV {
+    int val{0};
+};
+
+inline constexpr std::string_view to_string(const CustomSV &) { return "custom_sv"; }
+
+inline std::istream &operator>>(std::istream &in, CustomSV &obj) { return in >> obj.val; }
+
+TEST_CASE("TypeTools: string_view_to_string", "[helpers]") {
+    SVLevel level{SVLevel::Low};
+    CHECK(CLI::detail::checked_to_string<SVLevel, SVLevel>(level) == "low");
+
+    const CustomSV custom{42};
+    CHECK(CLI::detail::checked_to_string<CustomSV, CustomSV>(custom) == "custom_sv");
+    CHECK(CLI::detail::value_string(custom) == "custom_sv");
+
+    CLI::App app;
+    auto *opt1 = app.add_option("-l,--level", level, "Level settings");
+    CHECK(opt1 != nullptr);
+    opt1->capture_default_str();
+    CHECK(opt1->get_default_str() == "low");
+
+#if (!defined(CLI11_DISABLE_EXTRA_VALIDATORS) || CLI11_DISABLE_EXTRA_VALIDATORS == 0)
+    std::map<std::string, SVLevel> map{
+        {"high", SVLevel::High},
+        {"medium", SVLevel::Medium},
+        {"low", SVLevel::Low},
+    };
+    auto *opt3 = app.add_option("-m,--mode", level)->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
+    CHECK(opt3 != nullptr);
+
+    // a class type as the map value uses the to_string overload of value_string
+    std::string mapped;
+    std::map<std::string, CustomSV> cmap{{"a", CustomSV{1}}};
+    app.add_option("-t", mapped)->transform(CLI::Transformer(cmap));
+    app.parse("-t a");
+    CHECK(mapped == "custom_sv");
+#endif
+}
+#endif
+#endif
+#endif
+
+struct NonConstConv {
+    int val{3};
+    operator std::string() { return "nc_conv"; }  // NOLINT(google-explicit-constructor)
+};
+inline std::istream &operator>>(std::istream &in, NonConstConv &obj) { return in >> obj.val; }
+
+struct NonConstStream {
+    int val{3};
+};
+inline std::ostream &operator<<(std::ostream &out, NonConstStream &obj) { return out << "ns_stream" << obj.val; }
+inline std::istream &operator>>(std::istream &in, NonConstStream &obj) { return in >> obj.val; }
+
+struct StreamAndToString {
+    int val{3};
+};
+inline std::ostream &operator<<(std::ostream &out, const StreamAndToString &obj) { return out << obj.val; }
+inline std::istream &operator>>(std::istream &in, StreamAndToString &obj) { return in >> obj.val; }
+inline std::string to_string(const StreamAndToString &) { return "debug"; }
+
+struct NonConstToString {
+    int val{3};
+};
+inline std::istream &operator>>(std::istream &in, NonConstToString &obj) { return in >> obj.val; }
+inline std::string to_string(NonConstToString &) { return "nc_to_string"; }
+
+TEST_CASE("TypeTools: default_str_non_const", "[helpers]") {
+    CLI::App app;
+
+    NonConstConv conv;
+    CHECK(app.add_option("--conv", conv)->capture_default_str()->get_default_str() == "nc_conv");
+
+    NonConstStream stream;
+    CHECK(app.add_option("--stream", stream)->capture_default_str()->get_default_str() == "ns_stream3");
+
+    // operator<< has priority, the default string must parse with operator>>
+    StreamAndToString both;
+    CHECK(app.add_option("--both", both)->capture_default_str()->get_default_str() == "3");
+
+    NonConstToString ncts;
+    CHECK(app.add_option("--ncts", ncts)->capture_default_str()->get_default_str() == "nc_to_string");
+}
+
 TEST_CASE("TypeTools: tuple", "[helpers]") {
     CHECK_FALSE(CLI::detail::is_tuple_like<int>::value);
     CHECK_FALSE(CLI::detail::is_tuple_like<std::vector<double>>::value);
