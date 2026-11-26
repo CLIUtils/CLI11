@@ -20,7 +20,6 @@
 #include <string>
 #include <system_error>
 #include <utility>
-#include <vector>
 // [CLI11:public_includes:end]
 
 namespace CLI {
@@ -103,7 +102,6 @@ CLI11_INLINE Validator Validator::operator&(const Validator &other) const {
 
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
-    newval._merge_reverse(*this, other);
     return newval;
 }
 
@@ -140,7 +138,6 @@ CLI11_INLINE Validator Validator::operator|(const Validator &other) const {
     };
     newval.active_ = active_ && other.active_;
     newval.application_index_ = application_index_;
-    newval._merge_reverse(*this, other);
     return newval;
 }
 
@@ -179,40 +176,6 @@ Validator::_merge_description(const Validator &val1, const Validator &val2, cons
             return f1 + f2;
         }
         return std::string(1, '(') + f1 + ')' + merger + '(' + f2 + ')';
-    };
-}
-
-CLI11_INLINE void Validator::_merge_reverse(const Validator &val1, const Validator &val2) {
-    reverse_active_ = val1.has_reverse_operation() || val2.has_reverse_operation();
-    if(!reverse_active_) {
-        return;
-    }
-    auto rfunc1 = val1.has_reverse_operation() ? val1.reverse_func_ : nullptr;
-    auto rfunc2 = val2.has_reverse_operation() ? val2.reverse_func_ : nullptr;
-    auto forward = func_;
-    // val1 runs before val2; keep the first candidate that the combined operation maps back to the value
-    reverse_func_ = [rfunc1, rfunc2, forward](const std::string &value) -> std::string {
-        std::vector<std::string> candidates;
-        if(rfunc1 && rfunc2) {
-            candidates.push_back(rfunc1(rfunc2(value)));
-        }
-        if(rfunc1) {
-            candidates.push_back(rfunc1(value));
-        }
-        if(rfunc2) {
-            candidates.push_back(rfunc2(value));
-        }
-        for(const auto &candidate : candidates) {
-            std::string check = candidate;
-            try {
-                if(forward(check).empty() && check == value) {
-                    return candidate;
-                }
-            } catch(const ValidationError &) {
-                continue;
-            }
-        }
-        return value;
     };
 }
 

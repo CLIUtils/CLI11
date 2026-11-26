@@ -703,68 +703,18 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     }
                 }
                 // write mapped names for transformers that support it (e.g. CheckedTransformer::config_output_names)
-                auto reversible = [](const Validator_p &vali) {
-                    return vali && vali->get_active() && vali->get_modifying();
-                };
-                auto apply_reverse = [opt, &reversible](results_t &vals) {
-                    const int type_size = opt->get_type_size_max();
-                    const bool variable_size = type_size != opt->get_type_size_min();
-                    int index = 0;
-                    for(auto &val : vals) {
-                        if(type_size > 1 && variable_size && detail::is_separator(val)) {
-                            index = 0;
-                            continue;
-                        }
-                        const int item_index = (type_size > 1) ? index % type_size : index;
-                        ++index;
-                        // undo the transforms from last to first; stop at one that cannot be undone
-                        for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
-                            const auto &vali = *vit;
-                            const int app_index = reversible(vali) ? vali->get_application_index() : -2;
-                            if(app_index == -2 || (app_index >= 0 && app_index != item_index)) {
-                                continue;
+                auto write_names = [opt](results_t &vals) {
+                    for(auto vit = opt->validators_.rbegin(); vit != opt->validators_.rend(); ++vit) {
+                        const auto &vali = *vit;
+                        if(vali && vali->get_active() && vali->get_modifying() && vali->get_application_index() < 0 &&
+                           vali->has_reverse_operation()) {
+                            for(auto &val : vals) {
+                                val = vali->reverse(val);
                             }
-                            if(!vali->has_reverse_operation()) {
-                                break;
-                            }
-                            std::string candidate = vali->reverse(val);
-                            std::string forward = candidate;
-                            try {
-                                if(!(*vali)(forward).empty() || forward != val) {
-                                    break;
-                                }
-                            } catch(const ValidationError &) {
-                                break;
-                            }
-                            val = std::move(candidate);
                         }
                     }
                 };
-                const bool has_reverse =
-                    std::any_of(opt->validators_.begin(), opt->validators_.end(), [&reversible](const Validator_p &v) {
-                        return reversible(v) && v->has_reverse_operation();
-                    });
-                if(has_reverse) {
-                    if(opt->get_multi_option_policy() == CLI::MultiOptionPolicy::Join && results.size() == 1 &&
-                       opt->results().size() > 1) {
-                        // the value is still joined; undo each validated item, then join again
-                        const char delim = opt->get_delimiter();
-                        results_t items = opt->results();
-                        if(opt->current_option_state_ == Option::option_state::parsing) {
-                            opt->_validate_results(items);
-                        }
-                        apply_reverse(items);
-                        std::string joined = detail::join(items, std::string(1, delim));
-                        if(static_cast<std::size_t>(std::count(joined.begin(), joined.end(), delim)) ==
-                           items.size() - 1) {
-                            results[0] = std::move(joined);
-                        } else {
-                            results = std::move(items);
-                        }
-                    } else {
-                        apply_reverse(results);
-                    }
-                }
+                write_names(results);
                 std::string value;
 
                 if(opt->count() == 1 && results.size() == 2 && results.front() == "{}" && results.back() == "%%") {
@@ -782,9 +732,7 @@ ConfigBase::to_config(const App *app, ConfigOutputMode mode, bool write_descript
                     if(!opt->get_default_str().empty()) {
                         results_t res;
                         opt->results(res);
-                        if(has_reverse) {
-                            apply_reverse(res);
-                        }
+                        write_names(res);
                         value = detail::ini_join(res, arraySeparator, arrayStart, arrayEnd, stringQuote, literalQuote);
                     } else if(opt->get_expected_min() == 0) {
                         value = "false";

@@ -138,12 +138,6 @@ class Validator {
     CLI11_NODISCARD Validator application_index(int app_index) const;
     /// Get the current value of the application index
     CLI11_NODISCARD int get_application_index() const { return application_index_; }
-    /// Set a function that maps a transformed value back to the form written by config_to_str()
-    Validator &reverse_operation(std::function<std::string(const std::string &)> rop) {
-        reverse_func_ = std::move(rop);
-        reverse_active_ = static_cast<bool>(reverse_func_);
-        return *this;
-    }
     /// True if a reverse operation is set and active
     CLI11_NODISCARD bool has_reverse_operation() const { return reverse_active_ && static_cast<bool>(reverse_func_); }
     /// Apply the reverse operation to a value (returns the value unchanged if none is active)
@@ -169,8 +163,6 @@ class Validator {
 
   private:
     void _merge_description(const Validator &val1, const Validator &val2, const std::string &merger);
-    /// Combine the reverse operations of two validators
-    void _merge_reverse(const Validator &val1, const Validator &val2);
 };
 
 /// Alias for Validator for custom Validator for clarity
