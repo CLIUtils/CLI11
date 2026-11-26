@@ -2363,6 +2363,127 @@ TEST_CASE_METHOD(TApp, "Env", "[app]") {
     CHECK_THROWS_AS(run(), CLI::RequiredError);
 }
 
+TEST_CASE_METHOD(TApp, "EnvAliases", "[app]") {
+    int val{1};
+    auto *opt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK");
+
+    CHECK_NOTHROW(run());
+    CHECK(val == 1);
+    CHECK(opt->count() == 0u);
+
+    put_env("CLI11_TEST_ENV_FALLBACK", "2");
+    CHECK_NOTHROW(run());
+    CHECK(val == 2);
+    CHECK(opt->count() == 1u);
+
+    put_env("CLI11_TEST_ENV_PRIMARY", "3");
+    CHECK_NOTHROW(run());
+    CHECK(val == 3);
+    CHECK(opt->count() == 1u);
+
+    args = {"--tmp", "4"};
+    CHECK_NOTHROW(run());
+    CHECK(val == 4);
+    args.clear();
+
+    put_env("CLI11_TEST_ENV_PRIMARY", "");
+    CHECK_NOTHROW(run());
+    CHECK(val == 2);
+
+    opt->required();
+    put_env("CLI11_TEST_ENV_FALLBACK", "");
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+    unset_env("CLI11_TEST_ENV_PRIMARY");
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+}
+
+TEST_CASE_METHOD(TApp, "EnvAliasesReplaceAndClear", "[app]") {
+    put_env("CLI11_TEST_ENV_PRIMARY", "3");
+    put_env("CLI11_TEST_ENV_FALLBACK", "2");
+    int val{1};
+    auto *opt = app.add_option("--tmp", val)->envname("CLI11_TEST_ENV_PRIMARY");
+
+    opt->envname(" , CLI11_TEST_ENV_FALLBACK, , ");
+    CHECK(opt->get_envname() == "CLI11_TEST_ENV_FALLBACK");
+    CHECK_FALSE(opt->check_name("CLI11_TEST_ENV_PRIMARY"));
+    CHECK_NOTHROW(run());
+    CHECK(val == 2);
+
+    opt->envname("");
+    CHECK(opt->get_envname().empty());
+    CHECK_NOTHROW(run());
+    CHECK(opt->count() == 0u);
+
+    opt->envname(", ,");
+    CHECK(opt->get_envname().empty());
+    CHECK_FALSE(opt->check_name(""));
+    CHECK_NOTHROW(run());
+    CHECK(opt->count() == 0u);
+    unset_env("CLI11_TEST_ENV_PRIMARY");
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+}
+
+TEST_CASE_METHOD(TApp, "EnvAliasesValidation", "[app]") {
+    put_env("CLI11_TEST_ENV_PRIMARY", "2");
+    put_env("CLI11_TEST_ENV_FALLBACK", "5");
+    int val{1};
+    auto *opt = app.add_option("--tmp", val)
+                    ->envname("CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK")
+                    ->check(CLI::Range(3, 6));
+
+    CHECK_NOTHROW(run());
+    CHECK(val == 1);
+    CHECK(opt->count() == 0u);
+    opt->required();
+    CHECK_THROWS_AS(run(), CLI::RequiredError);
+
+    unset_env("CLI11_TEST_ENV_PRIMARY");
+    CHECK_NOTHROW(run());
+    CHECK(val == 5);
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+}
+
+TEST_CASE_METHOD(TApp, "EnvAliasesFlag", "[app]") {
+    put_env("CLI11_TEST_ENV_PRIMARY", "false");
+    put_env("CLI11_TEST_ENV_FALLBACK", "true");
+    bool flag{true};
+    auto *opt = app.add_flag("--flag", flag)->envname("CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK");
+
+    CHECK_NOTHROW(run());
+    CHECK_FALSE(flag);
+    CHECK(opt->count() == 1u);
+
+    unset_env("CLI11_TEST_ENV_PRIMARY");
+    CHECK_NOTHROW(run());
+    CHECK(flag);
+
+    args = {"--flag=false"};
+    CHECK_NOTHROW(run());
+    CHECK_FALSE(flag);
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+}
+
+TEST_CASE_METHOD(TApp, "EnvAliasesOnly", "[app]") {
+    put_env("CLI11_TEST_ENV_FALLBACK", "2");
+    int val{1};
+    auto *opt = app.add_option("", val)
+                    ->envname("CLI11_TEST_ENV_PRIMARY, CLI11_TEST_ENV_FALLBACK")
+                    ->ignore_case()
+                    ->ignore_underscore();
+
+    CHECK_NOTHROW(run());
+    CHECK(val == 2);
+    CHECK(app.get_option_no_throw("CLI11_TEST_ENV_PRIMARY") == opt);
+    CHECK(app.get_option_no_throw("CLI11_TEST_ENV_FALLBACK") == opt);
+    CHECK_FALSE(opt->check_name("cli11_test_env_fallback"));
+    CHECK_FALSE(opt->check_name("CLI11TESTENVFALLBACK"));
+    CHECK(opt->get_single_name() == "CLI11_TEST_ENV_PRIMARY");
+    CHECK(opt->get_envname() == "CLI11_TEST_ENV_PRIMARY,CLI11_TEST_ENV_FALLBACK");
+    opt->envname("");
+    CHECK(opt->get_single_name().empty());
+    unset_env("CLI11_TEST_ENV_FALLBACK");
+}
+
 // curiously check if an environmental only option works
 TEST_CASE_METHOD(TApp, "EnvOnly", "[app]") {
 

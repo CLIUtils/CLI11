@@ -1397,8 +1397,8 @@ CLI11_INLINE void App::_process_config_file() {
     if(config_ptr_ != nullptr) {
         bool config_required = config_ptr_->get_required();
         auto file_given = config_ptr_->count() > 0;
-        if(!(file_given || config_ptr_->envname_.empty())) {
-            std::string ename_string = detail::get_environment_value(config_ptr_->envname_);
+        if(!(file_given || config_ptr_->envnames_.empty())) {
+            std::string ename_string = config_ptr_->_get_env_value();
             if(!ename_string.empty()) {
                 config_ptr_->add_result(ename_string);
             }
@@ -1431,8 +1431,8 @@ CLI11_INLINE void App::_process_config_file() {
 
 CLI11_INLINE void App::_process_env() {
     for(const Option_p &opt : options_) {
-        if(opt->count() == 0 && !opt->envname_.empty()) {
-            std::string ename_string = detail::get_environment_value(opt->envname_);
+        if(opt->count() == 0 && !opt->envnames_.empty()) {
+            std::string ename_string = opt->_get_env_value();
             if(!ename_string.empty()) {
                 std::string result = ename_string;
                 result = opt->_validate(result, 0);

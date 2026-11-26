@@ -447,7 +447,13 @@ Before parsing, you can set the following options:
   `->remove_excludes(opt)`
 - `->envname(name)`: Gets the value from the environment if present and not
   passed on the command line. The value must also pass any validators to be
-  used.
+  used. A comma-separated list such as `envname("NAME_A,NAME_B")` uses the first
+  nonempty value, in the listed order. Unset or empty variables are skipped; an
+  invalid value does not fall back to another variable. Command-line and
+  configuration-file values take precedence. Whitespace around names and empty
+  names are ignored. Calling `envname` again replaces the list; `envname("")`
+  clears it. Commas separate names and cannot be part of a literal variable
+  name.
 - `->group(name)`: The help group to put the option in. No effect for positional
   options. Defaults to `"Options"`. Options given an empty string will not show
   up in the help print (hidden).
