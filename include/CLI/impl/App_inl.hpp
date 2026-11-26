@@ -2192,12 +2192,41 @@ App::_find_subcommand(const std::string &subc_name, bool ignore_disabled, bool i
     return bcom;
 }
 
+CLI11_NODISCARD CLI11_INLINE bool App::_help_requested_for(const App *com, const std::vector<std::string> &args) {
+    if(com == nullptr) {
+        return false;
+    }
+    const Option *help_option = com->get_help_ptr();
+    const Option *help_all_option = com->get_help_all_ptr();
+    if(help_option == nullptr && help_all_option == nullptr) {
+        return false;
+    }
+    // After a positional, these modes pass later options through as values.
+    bool stop_at_positional = com->get_prefix_command() || com->get_positionals_at_end();
+    // Arguments are stored in reverse order. Inspect only arguments after the subcommand.
+    for(std::size_t index = args.size() - 1; index > 0;) {
+        --index;
+        const std::string &arg = args[index];
+        auto classifier = com->_recognize(arg);
+        if(classifier == detail::Classifier::POSITIONAL_MARK ||
+           classifier == detail::Classifier::SUBCOMMAND_TERMINATOR ||
+           (stop_at_positional && classifier == detail::Classifier::NONE)) {
+            return false;
+        }
+        if((help_option != nullptr && help_option->check_name(arg)) ||
+           (help_all_option != nullptr && help_all_option->check_name(arg))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 CLI11_INLINE bool App::_parse_subcommand(std::vector<std::string> &args) {
-    if(_count_remaining_positionals(/* required */ true) > 0) {
+    auto *com = _find_subcommand(args.back(), true, true);
+    if(_count_remaining_positionals(/* required */ true) > 0 && !_help_requested_for(com, args)) {
         _parse_positional(args, false);
         return true;
     }
-    auto *com = _find_subcommand(args.back(), true, true);
     if(com == nullptr) {
         // the main way to get here is using .notation
         auto dotloc = args.back().find_first_of('.');

@@ -676,6 +676,94 @@ TEST_CASE("THelp: nested_subcommand", "[help]") {
     }
 }
 
+// from https://github.com/CLIUtils/CLI11/issues/1450
+TEST_CASE("THelp: NestedSubcommandHelpWithRequiredParentPositional", "[help]") {
+    CLI::App app{"Top level command"};
+
+    auto *sub1 = app.add_subcommand("sub1", "First level command");
+    std::string id;
+    sub1->add_option("ID", id, "Object ID")->required();
+
+    auto *sub2 = sub1->add_subcommand("sub2", "Second level command");
+    sub2->add_flag("--flag", "Example flag");
+
+    try {
+        app.parse("sub1 sub2 --help");
+        FAIL("Expected help to be requested");
+    } catch(const CLI::CallForHelp &error) {
+        std::ostringstream output;
+        CHECK(app.exit(error, output) == 0);
+        CHECK_THAT(output.str(), Contains("Second level command"));
+        CHECK_THAT(output.str(), Contains("--flag"));
+    }
+
+    CHECK(id.empty());
+    CHECK(sub2->count() == 1);
+
+    // Without a help flag, required positional arguments retain precedence over
+    // identically named subcommands.
+    app.parse("sub1 sub2");
+    CHECK(id == "sub2");
+    CHECK(sub2->count() == 0);
+
+    // A help-shaped argument after the positional marker must not change the
+    // subcommand/positional precedence decision.
+    try {
+        app.parse("sub1 sub2 -- --help");
+        FAIL("Expected help to be requested");
+    } catch(const CLI::CallForHelp &error) {
+        std::ostringstream output;
+        CHECK(app.exit(error, output) == 0);
+        CHECK_THAT(output.str(), Contains("First level command"));
+        CHECK_THAT(output.str(), !Contains("--flag"));
+    }
+    CHECK(id == "sub2");
+    CHECK(sub2->count() == 0);
+
+    // A help flag after the subcommand terminator belongs to the parent.
+    CHECK_THROWS_AS(app.parse("sub1 sub2 ++ --help"), CLI::CallForHelp);
+    CHECK(sub1->get_option("ID")->results() == std::vector<std::string>{"sub2"});
+    CHECK(sub2->count() == 0);
+}
+
+TEST_CASE("THelp: NestedPrefixCommandHelpWithRequiredParentPositional", "[help]") {
+    CLI::App app{"Top level command"};
+
+    auto *sub1 = app.add_subcommand("sub1", "First level command");
+    sub1->allow_extras();
+    sub1->add_option("ID", "Object ID")->required();
+
+    auto *sub2 = sub1->add_subcommand("sub2", "Second level command");
+    sub2->prefix_command();
+
+    // A prefix command passes --help through after the first positional, so it
+    // is not a help request for sub2.
+    CHECK_THROWS_AS(app.parse("sub1 sub2 run --help"), CLI::CallForHelp);
+    CHECK(sub1->get_option("ID")->results() == std::vector<std::string>{"sub2"});
+    CHECK(sub2->count() == 0);
+}
+
+TEST_CASE("THelp: NestedPositionalsAtEndHelpWithRequiredParentPositional", "[help]") {
+    CLI::App app{"Top level command"};
+
+    auto *sub1 = app.add_subcommand("sub1", "First level command");
+    std::string id;
+    sub1->add_option("ID", id, "Object ID")->required();
+
+    auto *sub2 = sub1->add_subcommand("sub2", "Second level command");
+    sub2->positionals_at_end();
+    std::vector<std::string> rest;
+    sub2->add_option("rest", rest);
+
+    CHECK_NOTHROW(app.parse("sub1 sub2"));
+    CHECK(id == "sub2");
+
+    // After a positional, sub2 reads --help as a positional value.
+    CHECK_THROWS_AS(app.parse("sub1 sub2 value --help"), CLI::ParseError);
+    CHECK(sub1->get_option("ID")->results() == std::vector<std::string>{"sub2"});
+    CHECK(sub2->count() == 0);
+}
+
 TEST_CASE("THelp: MasterName", "[help]") {
     CLI::App app{"My prog", "MyRealName"};
 
