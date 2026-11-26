@@ -365,7 +365,8 @@ CLI11_INLINE std::size_t close_literal_quote(const std::string &str, std::size_t
     return (loc != std::string::npos ? loc : str.size());
 }
 
-CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t start, char closure_char) {
+CLI11_INLINE std::size_t
+close_sequence(const std::string &str, std::size_t start, char closure_char, bool multiline_quotes) {
 
     auto bracket_loc = matchBracketChars().find(closure_char);
     switch(bracket_loc) {
@@ -394,7 +395,9 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
             }
         }
         bracket_loc = bracketChars().find(str[loc]);
-        if(bracket_loc != std::string::npos) {
+        if(multiline_quotes && bracket_loc < 2 && str.compare(loc, 3, std::string(3, str[loc])) == 0) {
+            loc = close_multiline_quote(str, loc + 3, str[loc]);
+        } else if(bracket_loc != std::string::npos) {
             switch(bracket_loc) {
             case 0:
                 loc = close_string_quote(str, loc, str[loc]);
@@ -416,7 +419,53 @@ CLI11_INLINE std::size_t close_sequence(const std::string &str, std::size_t star
     return loc;
 }
 
-CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) {
+CLI11_INLINE std::size_t close_multiline_quote(const std::string &str, std::size_t start, char quote) {
+    const std::string closer(3, quote);
+    while((start = str.find(closer, start)) != std::string::npos) {
+        if(quote == '"') {
+            std::size_t slashes = 0;
+            while(slashes < start && str[start - slashes - 1] == '\\') {
+                ++slashes;
+            }
+            if(slashes % 2 == 1) {
+                ++start;
+                continue;
+            }
+        }
+        auto end = str.find_first_not_of(quote, start);
+        return (end == std::string::npos ? str.size() : end) - 1;
+    }
+    return str.size();
+}
+
+CLI11_INLINE std::size_t find_open_multiline_quote(const std::string &str, std::size_t &pos, char separator) {
+    while(pos < str.size()) {
+        auto start = str.find_first_not_of(" \t\n", pos);
+        if(start == std::string::npos) {
+            break;
+        }
+        auto end = start;
+        auto bracketLoc = bracketChars().find(str[start]);
+        if(bracketLoc < 2 && str.compare(start, 3, std::string(3, str[start])) == 0) {
+            end = close_multiline_quote(str, start + 3, str[start]);
+            if(end >= str.size()) {
+                pos = start;
+                return start;
+            }
+        } else if(bracketLoc != std::string::npos) {
+            end = close_sequence(str, start, matchBracketChars()[bracketLoc], true);
+        }
+        auto next = (end < str.size()) ? str.find(separator, end) : std::string::npos;
+        if(next == std::string::npos) {
+            pos = start;
+            break;
+        }
+        pos = next + 1;
+    }
+    return std::string::npos;
+}
+
+CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter, bool multiline_quotes) {
 
     auto find_ws = [delimiter](char ch) {
         return (delimiter == '\0') ? std::isspace<char>(ch, std::locale()) : (ch == delimiter);
@@ -427,7 +476,9 @@ CLI11_INLINE std::vector<std::string> split_up(std::string str, char delimiter) 
     while(!str.empty()) {
         if(bracketChars().find_first_of(str[0]) != std::string::npos) {
             auto bracketLoc = bracketChars().find_first_of(str[0]);
-            auto end = close_sequence(str, 0, matchBracketChars()[bracketLoc]);
+            bool multiline = multiline_quotes && bracketLoc < 2 && str.compare(0, 3, std::string(3, str[0])) == 0;
+            auto end = multiline ? close_multiline_quote(str, 3, str[0])
+                                 : close_sequence(str, 0, matchBracketChars()[bracketLoc], multiline_quotes);
             if(end >= str.size()) {
                 output.push_back(std::move(str));
                 str.clear();
