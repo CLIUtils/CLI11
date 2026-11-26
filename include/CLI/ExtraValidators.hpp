@@ -413,6 +413,22 @@ class CheckedTransformer : public Validator {
 
             return "Check " + input + " " + tfunc() + " FAILED";
         };
+
+        // reverse lookup: the first name in map order that transforms back to the value
+        auto forward = func_;
+        reverse_func_ = [shared_mapping, forward](const std::string &value) -> std::string {
+            for(const auto &v : detail::smart_deref(*shared_mapping)) {
+                if(detail::value_string(detail::pair_adaptor<element_t>::second(v)) != value) {
+                    continue;
+                }
+                std::string name = detail::value_string(detail::pair_adaptor<element_t>::first(v));
+                std::string check = name;
+                if(forward(check).empty() && check == value) {
+                    return name;
+                }
+            }
+            return value;
+        };
     }
 
     /// You can pass in as many filter functions as you like, they nest
@@ -422,6 +438,13 @@ class CheckedTransformer : public Validator {
               std::forward<T>(mapping),
               [filter_fn_1, filter_fn_2](std::string a) { return filter_fn_2(filter_fn_1(a)); },
               other...) {}
+
+    /// Write the mapped names (instead of the transformed values) when generating a config file with
+    /// config_to_str(). If several names map to the same value, the first one in map order is used.
+    CheckedTransformer &config_output_names(bool value = true) {
+        reverse_active_ = value;
+        return *this;
+    }
 };
 
 /// Helper function to allow ignore_case to be passed to IsMember or Transform

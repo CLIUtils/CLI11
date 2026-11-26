@@ -663,6 +663,19 @@ TEST_CASE_METHOD(TApp, "IntTransformMergeWithCustomSharedValidator", "[transform
     help = app.help();
     CHECK(help.find("15->5") == std::string::npos);
 }
+
+TEST_CASE("CheckedTransformer: reverse unmapped value", "[transform]") {
+    enum class Level : int { High, Low };
+    std::map<std::string, Level> names{{"high", Level::High}, {"low", Level::Low}};
+    CLI::Validator val = CLI::CheckedTransformer(names).config_output_names();
+    CHECK(val.has_reverse_operation());
+    CHECK(val.reverse("0") == "high");
+    CHECK(val.reverse("7") == "7");
+    CLI::Validator off = CLI::CheckedTransformer(names);
+    CHECK_FALSE(off.has_reverse_operation());
+    CHECK(off.reverse("0") == "0");
+}
+
 #endif
 static const std::map<std::string, std::string> validValues = {
     {"test\\u03C0\\u00e9", from_u8string(u8"test\u03C0\u00E9")},
