@@ -182,6 +182,14 @@ CLI11_INLINE std::string Formatter::make_usage(const App *app, std::string name)
     return out.str();
 }
 
+CLI11_INLINE std::string Formatter::make_long_description(const App *app) const {
+    std::string long_description = app->get_long_description();
+    if(long_description.empty()) {
+        return std::string{};
+    }
+    return long_description + "\n\n";
+}
+
 CLI11_INLINE std::string Formatter::make_footer(const App *app) const {
     std::string footer = app->get_footer();
     if(footer.empty()) {
@@ -205,8 +213,10 @@ CLI11_INLINE std::string Formatter::make_help(const App *app, std::string name, 
     if(is_description_paragraph_formatting_enabled()) {
         detail::streamOutAsParagraph(
             out, make_description(app), description_paragraph_width_, "");  // Format description as paragraph
+        detail::streamOutAsParagraph(out, make_long_description(app), description_paragraph_width_, "");
     } else {
         out << make_description(app);
+        out << make_long_description(app);
     }
     out << make_usage(app, name);
     out << make_positionals(app);

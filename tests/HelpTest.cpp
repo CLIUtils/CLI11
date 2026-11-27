@@ -66,6 +66,75 @@ TEST_CASE("THelp: Footer", "[help]") {
     CHECK_THAT(help, Contains("Report bugs to bugs@example.com"));
 }
 
+TEST_CASE("THelp: LongDescription", "[help]") {
+    CLI::App app{"My prog"};
+    app.long_description("Extended help with more details about this command.");
+
+    std::string help = app.help();
+
+    const auto desc_pos = help.find("My prog");
+    const auto long_pos = help.find("Extended help with more details about this command.");
+    const auto usage_pos = help.find("Usage:");
+    REQUIRE(desc_pos != std::string::npos);
+    REQUIRE(long_pos != std::string::npos);
+    REQUIRE(usage_pos != std::string::npos);
+    CHECK(desc_pos < long_pos);
+    CHECK(long_pos < usage_pos);
+}
+
+TEST_CASE("THelp: LongDescriptionSubcommand", "[help]") {
+    CLI::App app{"My prog"};
+    auto *fmt = app.add_subcommand("fmt", "Format files in-place.");
+    fmt->long_description("If a file is given, it reformats in-place.");
+
+    CHECK_THAT(fmt->help(), Contains("If a file is given, it reformats in-place."));
+
+    std::string parent_help = app.help();
+    CHECK_THAT(parent_help, Contains("Format files in-place."));
+    CHECK_THAT(parent_help, !Contains("If a file is given"));
+
+    std::string help_all = app.help("", CLI::AppFormatMode::All);
+    CHECK_THAT(help_all, Contains("Format files in-place."));
+    CHECK_THAT(help_all, !Contains("If a file is given"));
+}
+
+TEST_CASE("THelp: LongDescriptionNotInherited", "[help]") {
+    CLI::App app{"My prog"};
+    app.long_description("Only for the main program.");
+    auto *sub = app.add_subcommand("sub", "A subcommand");
+
+    CHECK_THAT(app.help(), Contains("Only for the main program."));
+    CHECK_THAT(sub->help(), !Contains("Only for the main program."));
+}
+
+TEST_CASE("THelp: LongDescriptionParagraph", "[help]") {
+    CLI::App app{"My prog"};
+    app.long_description("one two three four five six seven eight nine ten");
+    app.get_formatter()->description_paragraph_width(20);
+
+    std::string help = app.help();
+    CHECK_THAT(help, Contains("one two three four\nfive six seven eight\nnine ten"));
+
+    app.get_formatter()->enable_description_formatting(false);
+    help = app.help();
+    CHECK_THAT(help, Contains("one two three four five six seven eight nine ten"));
+}
+
+TEST_CASE("THelp: LongDescriptionCallback", "[help]") {
+    CLI::App app{"My prog"};
+    app.long_description([]() { return "Dynamic extended help."; });
+
+    CHECK_THAT(app.help(), Contains("Dynamic extended help."));
+}
+
+TEST_CASE("THelp: LongDescriptionCallbackBoth", "[help]") {
+    CLI::App app{"My prog"};
+    app.long_description([]() { return "Dynamic extended help."; });
+    app.long_description("Static tail.");
+
+    CHECK(app.get_long_description() == "Dynamic extended help.\nStatic tail.");
+}
+
 TEST_CASE("THelp: FooterCallback", "[help]") {
     CLI::App app{"My prog"};
     app.footer([]() { return "Report bugs to bugs@example.com"; });
